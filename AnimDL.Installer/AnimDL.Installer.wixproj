@@ -75,7 +75,7 @@
 				   DirectoryRefId="INSTALLFOLDER"
 				   ComponentGroupName="PublishedComponents" 
 				   SuppressCom="true" 
-				   Directory="..\AnimDL.WinUI\x64\Release\net6.0-windows10.0.19041.0\win10-x64\publish\" 
+				   Directory="..\AnimDL.WinUI\bin\x64\Release\net6.0-windows10.0.19041.0\win10-x64\publish\" 
 				   SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" AutoGenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="$(RunWixToolsOutOfProc)" 
 				   PreprocessorVariable="var.BasePath"/>
   </Target>
