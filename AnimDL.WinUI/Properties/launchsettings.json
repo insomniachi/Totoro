@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "AnimDL.WinUI (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "AnimDL.WinUI (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}

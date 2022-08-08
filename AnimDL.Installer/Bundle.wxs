@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+	 xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+	
+	<Bundle Name="AnimDL" 
+			Version="0.0.1.0"
+			Manufacturer="athulrajts" 
+			UpgradeCode="0b78252d-1c5d-446a-84de-d0b17418218a">
+		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense" />
+
+		<util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
+		<util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
+
+		<Chain>
+			<ExePackage
+				 Name="MicrosoftEdgeWebview2Setup.exe"
+				 Compressed="yes"
+				 Id="WebView2"
+				 DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser"
+				 SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe"
+				 InstallCommand="/silent /install"
+				 RepairCommand="/repair /passive"
+				 Permanent="yes"
+				 PerMachine="yes"
+				 UninstallCommand="/silent /uninstall">
+			</ExePackage>
+			<MsiPackage SourceFile="bin\$(var.Configuration)\en-us\AnimDL-$(var.Configuration).msi"
+						Compressed="yes"
+						DisplayInternalUI="no">
+			</MsiPackage>
+		</Chain>
+	</Bundle>
+	
+</Wix>
