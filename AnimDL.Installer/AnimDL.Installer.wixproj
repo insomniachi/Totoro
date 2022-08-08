@@ -18,6 +18,11 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
+  <PropertyGroup>
+    <Version Condition=" '$(BuildVersion)' == '' ">0.0.1</Version>
+    <Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>
+    <DefineConstants>BuildVersion=$(Version)</DefineConstants>
+</PropertyGroup>
   <ItemGroup>
     <Compile Include="Components.wxs" />
     <Compile Include="ComponentsGenerated.wxs" />
@@ -61,13 +66,10 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
-    <Exec Command="rd /s /q ..\AnimDL.WinUI\bin\win10-x64\" />
+    <Exec Command="rd /s /q ..AnimDL.WinUI\bin\x64\Release\net6.0-windows10.0.19041.0\win10-x64\" />
     <Exec Command="dotnet publish ..\AnimDL.WinUI\AnimDL.WinUI.csproj -c $(Configuration) --self-contained -r win10-x64" />
-    <GetAssemblyIdentity AssemblyFiles="..\AnimDL.WinUI\bin\win10-x64\publish\AnimDL.WinUI.dll">
-      <Output TaskParameter="Assemblies" ItemName="AssemblyVersion" />
-    </GetAssemblyIdentity>
     <PropertyGroup>
-      <DefineConstants>BuildVersion=%(AssemblyVersion.Version); BasePath=..\AnimDL.WinUI\bin\win10-x64\publish</DefineConstants>
+      <DefineConstants>BuildVersion=$(Version);BasePath=..\AnimDL.WinUI\bin\win10-x64\publish</DefineConstants>
     </PropertyGroup>
     <HeatDirectory OutputFile="ComponentsGenerated.wxs"
 				   DirectoryRefId="INSTALLFOLDER"

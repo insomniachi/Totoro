@@ -4,7 +4,7 @@
      xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
 	
 	<Bundle Name="AnimDL" 
-			Version="0.0.1.0"
+			Version="$(var.BuildVersion)"
 			Manufacturer="athulrajts" 
 			UpgradeCode="0b78252d-1c5d-446a-84de-d0b17418218a">
 		<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense" />

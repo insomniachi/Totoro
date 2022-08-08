@@ -30,10 +30,10 @@ jobs:
             uses: battila7/get-version-action@v2
 
         -   name: 'Build MSI'
-            run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release
+            run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
 
         -   name: 'Build Bootstrapper'
-            run: msbuild ${{ env.BOOTSTRAPPER_PATH }} /property:Configuration=Release
+            run: msbuild ${{ env.BOOTSTRAPPER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
   
         -   name: 'Create release'
             id: create_release
