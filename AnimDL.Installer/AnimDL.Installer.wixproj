@@ -69,13 +69,13 @@
     <Exec Command="rd /s /q ..AnimDL.WinUI\bin\x64\Release\net6.0-windows10.0.19041.0\win10-x64\" />
     <Exec Command="dotnet publish ..\AnimDL.WinUI\AnimDL.WinUI.csproj -c $(Configuration) --self-contained -r win10-x64" />
     <PropertyGroup>
-      <DefineConstants>BuildVersion=$(Version);BasePath=..\AnimDL.WinUI\bin\win10-x64\publish</DefineConstants>
+      <DefineConstants>BuildVersion=$(Version);BasePath=..\AnimDL.WinUI\bin\x64\Release\net6.0-windows10.0.19041.0\win10-x64\publish\</DefineConstants>
     </PropertyGroup>
     <HeatDirectory OutputFile="ComponentsGenerated.wxs"
 				   DirectoryRefId="INSTALLFOLDER"
 				   ComponentGroupName="PublishedComponents" 
 				   SuppressCom="true" 
-				   Directory="..\AnimDL.WinUI\bin\win10-x64\publish" 
+				   Directory="..\AnimDL.WinUI\x64\Release\net6.0-windows10.0.19041.0\win10-x64\publish\" 
 				   SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" AutoGenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="$(RunWixToolsOutOfProc)" 
 				   PreprocessorVariable="var.BasePath"/>
   </Target>
