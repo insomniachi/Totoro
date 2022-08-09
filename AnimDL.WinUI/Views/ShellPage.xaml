@@ -40,6 +40,10 @@
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.MenuItems>
                 <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.DiscoverViewModel"
+                    Content="Discover"
+                    Icon="AllApps" />
+                <NavigationViewItem
                     x:Uid="Shell_UserList"
                     helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.UserListViewModel"
                     Icon="Library"

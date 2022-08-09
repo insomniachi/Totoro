@@ -20,6 +20,7 @@ public class PageService : IPageService
         Configure<WatchViewModel, WatchPage>();
         Configure<SeasonalViewModel, SeasonalPage>();
         Configure<ScheduleViewModel, SchedulePage>();
+        Configure<DiscoverViewModel, DiscoverPage>();
     }
 
     public Type GetPageType(string key)

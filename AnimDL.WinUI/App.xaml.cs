@@ -76,6 +76,8 @@ public partial class App : Application
             services.AddTransient<SeasonalViewModel>();
             services.AddTransient<SchedulePage>();
             services.AddTransient<ScheduleViewModel>();
+            services.AddTransient<DiscoverPage>();
+            services.AddTransient<DiscoverViewModel>();
 
 
             // Dialogs

@@ -13,7 +13,11 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "AnimDL.Bootstrapper", "..\A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2096F600-B2FF-4AA2-A9F4-19D6B36E0684}"
 	ProjectSection(SolutionItems) = preProject
+		..\.gitattributes = ..\.gitattributes
+		..\.gitignore = ..\.gitignore
+		..\LICENSE = ..\LICENSE
 		..\nuget.config = ..\nuget.config
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Global
@@ -41,7 +45,6 @@ Global
 		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Release|x86.ActiveCfg = Release|x64
 		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Release|x86.Build.0 = Release|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x64.ActiveCfg = Debug|x64
-		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x64.Build.0 = Debug|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x86.ActiveCfg = Debug|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x86.Build.0 = Debug|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Release|x64.ActiveCfg = Release|x64
@@ -49,7 +52,6 @@ Global
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Release|x86.ActiveCfg = Release|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Release|x86.Build.0 = Release|x64
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Debug|x64.ActiveCfg = Debug|x86
-		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Debug|x64.Build.0 = Debug|x86
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Debug|x86.ActiveCfg = Debug|x86
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Debug|x86.Build.0 = Debug|x86
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x64.ActiveCfg = Release|x86
