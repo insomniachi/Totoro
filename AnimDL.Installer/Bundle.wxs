@@ -18,7 +18,7 @@
 				 Compressed="yes"
 				 Id="WebView2"
 				 DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser"
-				 SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe"
+				 SourceFile="WebView2/MicrosoftEdgeWebview2Setup.exe"
 				 InstallCommand="/silent /install"
 				 RepairCommand="/repair /passive"
 				 Permanent="yes"

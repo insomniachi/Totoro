@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	
-	<?define ProductCode = "{317B29F6-E759-40DC-813D-C8B5F7AE43DD}"?>
 	<?define UpgradeCode = "{C64BF0BE-4AB6-48DA-ACC2-23FFF4C5A77A}"?>
 	
-	<Product Id="$(var.ProductCode)"
+	<Product Id="*"
 			 Name="!(loc.ProductName)" 
 			 Language="!(loc.Language)"
 			 Version="$(var.BuildVersion)" 

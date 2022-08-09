@@ -5,10 +5,12 @@ using AnimDL.WinUI.Activation;
 using AnimDL.WinUI.Contracts.Services;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Views;
-using MalApi;
 using MalApi.Interfaces;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinRT.Interop;
 
 namespace AnimDL.WinUI.Services;
 
@@ -99,6 +101,17 @@ public class ActivationService : IActivationService
     private async Task StartupAsync()
     {
         _themeSelectorService.SetRequestedTheme();
-        await Task.CompletedTask;
+        await RequestFullscreen();
+    }
+
+    private static async Task RequestFullscreen()
+    {
+        var windowHandle = WindowNative.GetWindowHandle(App.MainWindow);
+        var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
+        var appWindow = AppWindow.GetFromWindowId(windowId);
+        appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+        await Task.Delay(250);
+        appWindow.SetPresenter(AppWindowPresenterKind.Default);
+        appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
     }
 }
