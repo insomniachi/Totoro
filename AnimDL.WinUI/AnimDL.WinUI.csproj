@@ -12,7 +12,8 @@
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
-		<Version>0.0.1.0</Version>
+		<Version Condition=" '$(BuildVersion)' == '' ">1.0.0.0</Version>
+		<Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
