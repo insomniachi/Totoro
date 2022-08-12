@@ -1,5 +1,6 @@
 ﻿using AnimDL.Core;
 using AnimDL.WinUI.Activation;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Contracts.Services;
 using AnimDL.WinUI.Core;
 using AnimDL.WinUI.Core.Contracts;
@@ -49,6 +50,7 @@ public partial class App : Application
             services.AddTransient<IContentDialogService, ContentDialogService>();
             services.AddTransient<IViewService, ViewService>();
             services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
+            services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();

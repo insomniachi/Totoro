@@ -48,7 +48,20 @@ public class VideoJsHelper
                    window.chrome.webview.postMessage(obj);
                 }})
                 this.on('play', function () {{
+                    var obj = new Object();
+                    obj.MessageType = ""Play""
+                    window.chrome.webview.postMessage(obj);
                     this.requestFullscreen();
+                }})
+                this.on('pause', function () {{
+                    var obj = new Object();
+                    obj.MessageType = ""Pause""
+                    window.chrome.webview.postMessage(obj);
+                }})
+                this.on('seeked', function () {{
+                    var obj = new Object();
+                    obj.MessageType = ""Seeked""
+                    window.chrome.webview.postMessage(obj);
                 }})
               }});
               window.chrome.webview.addEventListener('message', event => {{

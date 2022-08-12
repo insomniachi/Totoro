@@ -23,8 +23,6 @@ public sealed partial class WatchPage : WatchPageBase
     {
         InitializeComponent();
 
-
-
         this.WhenActivated(d =>
         {
             // Suggestion Choosen
@@ -84,7 +82,10 @@ public enum WebMessageType
     TimeUpdate,
     DurationUpdate,
     Ended,
-    CanPlay
+    CanPlay,
+    Play,
+    Pause,
+    Seeked
 }
 
 public class WebMessage

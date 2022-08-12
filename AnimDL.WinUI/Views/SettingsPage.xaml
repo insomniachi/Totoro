@@ -72,6 +72,16 @@
                     ItemsSource="{x:Bind ViewModel.ProviderTypes}"
                     SelectedItem="{x:Bind ViewModel.DefaultProviderType, Mode=TwoWay}" />
             </labs:SettingsCard>
+            <labs:SettingsCard
+                Description="Let discord know what anime you're watching."
+                Header="Use discord rich presense"
+                Icon="&#xe7fc;">
+                <ToggleSwitch
+                    FlowDirection="RightToLeft"
+                    IsOn="{x:Bind ViewModel.UseDiscordRichPresense, Mode=TwoWay}"
+                    OffContent=""
+                    OnContent="" />
+            </labs:SettingsCard>
         </StackPanel>
 
         <TeachingTip

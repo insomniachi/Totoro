@@ -30,17 +30,21 @@ public class WatchViewModel : ViewModel
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly IPlaybackStateStorage _playbackStateStorage;
+    private readonly IDiscordRichPresense _discordRichPresense;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           IMalClient client,
                           IViewService viewService,
                           ISettings settings,
-                          IPlaybackStateStorage playbackStateStorage)
+                          IPlaybackStateStorage playbackStateStorage,
+                          IDiscordRichPresense discordRichPresense)
     {
         _client = client;
         _viewService = viewService;
         _settings = settings;
         _playbackStateStorage = playbackStateStorage;
+        _discordRichPresense = discordRichPresense;
+        
         SelectedProviderType = _settings.DefaultProviderType;
         SearchResultPicked = ReactiveCommand.CreateFromTask<SearchResult>(FetchEpisodes);
 
@@ -57,7 +61,6 @@ public class WatchViewModel : ViewModel
             .Subscribe(x => Provider = providerFactory.GetProvider(x));
 
         this.WhenAnyValue(x => x.Query)
-            .WhereNotNull()
             .Throttle(TimeSpan.FromMilliseconds(500), RxApp.TaskpoolScheduler)
             .SelectMany(async x => await Provider.Catalog.Search(x).ToListAsync())
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -100,6 +103,7 @@ public class WatchViewModel : ViewModel
     public Action<string, int> ShowNotification { get; set; }
     public ReactiveCommand<SearchResult, Unit> SearchResultPicked { get; }
     public ReadOnlyObservableCollection<SearchResult> SearchResult => _searchResults;
+    public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
 
 
     public async Task OnVideoPlayerMessageRecieved(WebMessage message)
@@ -131,6 +135,17 @@ public class WatchViewModel : ViewModel
                     var time = _playbackStateStorage.GetTime(Anime.Id, CurrentEpisode);
                     VideoPlayerRequestMessage = JsonSerializer.Serialize(new { MessageType = "Play", StartTime = time });
                 }
+                break;
+            case WebMessageType.Pause:
+                if(_settings.UseDiscordRichPresense)
+                {
+                    _discordRichPresense.UpdateState("Paused");
+                    _discordRichPresense.ClearTimer();
+                }
+                break;
+            case WebMessageType.Play:
+            case WebMessageType.Seeked:
+                TryDiscordRpcStartWatching();
                 break;
         }
     }
@@ -195,8 +210,35 @@ public class WatchViewModel : ViewModel
         }
     }
 
+    public override Task OnNavigatedFrom()
+    {
+        if(_settings.UseDiscordRichPresense)
+        {
+            _discordRichPresense.Clear();
+        }
+
+        return Task.CompletedTask;
+    }
+
     private static void RemoveDubs(List<SearchResult> results)
     {
         results.RemoveAll(x => x.Title.Contains("(DUB)", StringComparison.OrdinalIgnoreCase) || x.Title.Contains("[DUB]", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void TryDiscordRpcStartWatching()
+    {
+        if (_settings.UseDiscordRichPresense == false)
+        {
+            return;
+        }
+
+        if (Anime is null)
+        {
+            _discordRichPresense.SetPresense(SelectedResult.Title, CurrentEpisode, TimeRemaining);
+        }
+        else
+        {
+            _discordRichPresense.SetPresense(Anime, CurrentEpisode, TimeRemaining);
+        }
     }
 }
