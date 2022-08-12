@@ -1,4 +1,5 @@
 ﻿using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Helpers;
 using AnimDL.WinUI.Views;
 using Microsoft.UI.Xaml.Navigation;
 using ReactiveUI;
@@ -26,13 +27,15 @@ public partial class ShellViewModel : ReactiveObject
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
         IsBackEnabled = NavigationService.CanGoBack;
-        if (e.SourcePageType == typeof(SettingsPage))
+        var vmType = NavigationService.Frame.GetPageViewModel().GetType();
+        
+        if (vmType == typeof(SettingsViewModel))
         {
             Selected = NavigationViewService.SettingsItem;
             return;
         }
 
-        var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
+        var selectedItem = NavigationViewService.GetSelectedItem(vmType);
         if (selectedItem != null)
         {
             Selected = selectedItem;

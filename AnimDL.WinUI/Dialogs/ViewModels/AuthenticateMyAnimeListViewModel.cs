@@ -38,7 +38,7 @@ public class AuthenticateMyAnimeListViewModel : ReactiveObject, IClosable
                 _close.OnNext(Unit.Default);
                 malClient.SetAccessToken(token.AccessToken);
                 App.GetService<ShellViewModel>().IsAuthenticated = true;
-                navigationService.NavigateTo(typeof(UserListViewModel).FullName);
+                navigationService.NavigateTo<UserListViewModel>();
             });
     }
 

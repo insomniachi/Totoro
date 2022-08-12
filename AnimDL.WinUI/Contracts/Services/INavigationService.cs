@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -7,12 +9,15 @@ namespace AnimDL.WinUI.Contracts.Services;
 public interface INavigationService
 {
     event NavigatedEventHandler Navigated;
-
+    
     bool CanGoBack { get; }
     
     Frame Frame { get; set; }
-
-    bool NavigateTo(string pageKey, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false);
+    
+    bool NavigateTo(Type viewModelType, object viewModel = null, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false);
+  
+    bool NavigateTo<TViewModel>(TViewModel viewModel = null, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false)
+        where TViewModel : class, INotifyPropertyChanged;
 
     bool GoBack();
 }

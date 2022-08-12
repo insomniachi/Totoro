@@ -1,21 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using AnimDL.WinUI.Contracts.Services;
 using AnimDL.WinUI.Contracts.ViewModels;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Core.Contracts.Services;
 using AnimDL.WinUI.Helpers;
-
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using ReactiveUI;
 
 namespace AnimDL.WinUI.Services;
 
-// For more information on navigation between pages see
-// https://github.com/microsoft/TemplateStudio/blob/main/docs/WinUI/navigation.md
+
 public class NavigationService : INavigationService
 {
-    private readonly IPageService _pageService;
     private readonly IVolatileStateStorage _stateStorage;
+    private object _viewModel;
     private object _lastParameterUsed;
     private Frame _frame;
 
@@ -44,10 +45,8 @@ public class NavigationService : INavigationService
 
     public bool CanGoBack => Frame.CanGoBack;
 
-    public NavigationService(IPageService pageService, 
-                             IVolatileStateStorage stateStorage)
+    public NavigationService(IVolatileStateStorage stateStorage)
     {
-        _pageService = pageService;
         _stateStorage = stateStorage;
     }
 
@@ -84,33 +83,41 @@ public class NavigationService : INavigationService
         return false;
     }
 
-    public bool NavigateTo(string pageKey, IReadOnlyDictionary<string,object> parameter = null, bool clearNavigation = false)
+    public bool NavigateTo<TViewModel>(TViewModel viewModel = null, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false)
+        where TViewModel : class, INotifyPropertyChanged
     {
-        var pageType = _pageService.GetPageType(pageKey);
+        return NavigateTo(typeof(TViewModel), viewModel, parameter, clearNavigation);
+    }
 
-        if (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed)))
+    public bool NavigateTo(Type viewModelType, object viewModel, IReadOnlyDictionary<string,object> parameter = null, bool clearNavigation = false)
+    {
+        _viewModel = viewModel ?? App.GetService(viewModelType);
+        var viewKey = typeof(ViewType<>).MakeGenericType(viewModelType);
+        var pageType = ((ViewType)App.GetService(viewKey)).Type;
+
+        if ((_frame.Content?.GetType()) == pageType && (parameter == null || parameter.Equals(_lastParameterUsed)))
         {
-            _frame.Tag = clearNavigation;
-            var vmBeforeNavigation = _frame.GetPageViewModel();
-            var navigated = _frame.Navigate(pageType, parameter);
-            if (navigated)
+            return false;
+        }
+        
+        _frame.Tag = clearNavigation;
+        var vmBeforeNavigation = _frame.GetPageViewModel();
+        var navigated = _frame.Navigate(pageType, parameter);
+        if (navigated)
+        {
+            _lastParameterUsed = parameter;
+            if (vmBeforeNavigation is IHaveState stateAware)
             {
-                _lastParameterUsed = parameter;
-                if (vmBeforeNavigation is INavigationAware navigationAware)
-                {
-                    navigationAware.OnNavigatedFrom();
-                }
-                if(vmBeforeNavigation is IHaveState stateAware)
-                {
-                    var state = _stateStorage.GetState(stateAware.GetType());
-                    stateAware.StoreState(state);
-                }
+                var state = _stateStorage.GetState(stateAware.GetType());
+                stateAware.StoreState(state);
             }
-
-            return navigated;
+            if (vmBeforeNavigation is INavigationAware navigationAware)
+            {
+                navigationAware.OnNavigatedFrom();
+            }
         }
 
-        return false;
+        return navigated;
     }
 
     private async void OnNavigated(object sender, NavigationEventArgs e)
@@ -126,14 +133,17 @@ public class NavigationService : INavigationService
             frame.BackStack.Clear();
         }
 
-        var vm = frame.GetPageViewModel();
+        if(frame.Content is IViewFor view)
+        {
+            view.ViewModel = _viewModel;
+        }
 
-        if (vm is INavigationAware navigationAware)
+        if (_viewModel is INavigationAware navigationAware)
         {
             await navigationAware.OnNavigatedTo(e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>());
         }
         
-        if (vm is IHaveState stateAware)
+        if (_viewModel is IHaveState stateAware)
         {
             var state = _stateStorage.GetState(stateAware.GetType());
 
@@ -149,4 +159,18 @@ public class NavigationService : INavigationService
 
         Navigated?.Invoke(sender, e);
     }
+}
+
+public class ViewType<TViewModel> : ViewType
+    where TViewModel: class, INotifyPropertyChanged
+{
+    public ViewType(Type type)
+    {
+        Type = type;
+    }
+}
+
+public class ViewType
+{
+    public Type Type { get; set; }
 }

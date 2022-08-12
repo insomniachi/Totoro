@@ -57,6 +57,7 @@ public class WatchViewModel : ViewModel
             .Subscribe(x => Provider = providerFactory.GetProvider(x));
 
         this.WhenAnyValue(x => x.Query)
+            .WhereNotNull()
             .Throttle(TimeSpan.FromMilliseconds(500), RxApp.TaskpoolScheduler)
             .SelectMany(async x => await Provider.Catalog.Search(x).ToListAsync())
             .ObserveOn(RxApp.MainThreadScheduler)

@@ -60,7 +60,7 @@ public class UserListViewModel : ViewModel, IHaveState
 
     private void OnItemClicked(Anime anime)
     {
-        _navigationService.NavigateTo(typeof(WatchViewModel).FullName, new Dictionary<string, object> { ["Anime"] = anime });
+        _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object> { ["Anime"] = anime });
     }
 
     private Func<Anime, bool> FilterByStatusPredicate(AnimeStatus status) => x => x.UserStatus.Status == status;

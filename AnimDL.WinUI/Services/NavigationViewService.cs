@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using AnimDL.WinUI.Contracts.Services;
 using AnimDL.WinUI.Helpers;
 using AnimDL.WinUI.ViewModels;
-
 using Microsoft.UI.Xaml.Controls;
 
 namespace AnimDL.WinUI.Services;
@@ -14,18 +12,15 @@ public class NavigationViewService : INavigationViewService
 {
     private readonly INavigationService _navigationService;
 
-    private readonly IPageService _pageService;
-
     private NavigationView _navigationView;
 
     public IList<object> MenuItems => _navigationView.MenuItems;
 
     public object SettingsItem => _navigationView.SettingsItem;
 
-    public NavigationViewService(INavigationService navigationService, IPageService pageService)
+    public NavigationViewService(INavigationService navigationService)
     {
         _navigationService = navigationService;
-        _pageService = pageService;
     }
 
     public void Initialize(NavigationView navigationView)
@@ -49,29 +44,29 @@ public class NavigationViewService : INavigationViewService
     {
         if (args.IsSettingsInvoked)
         {
-            _navigationService.NavigateTo(typeof(SettingsViewModel).FullName);
+            _navigationService.NavigateTo<SettingsViewModel>();
         }
         else
         {
             var selectedItem = args.InvokedItemContainer as NavigationViewItem;
 
-            if (selectedItem.GetValue(NavigationHelper.NavigateToProperty) is string pageKey)
+            if (selectedItem.GetValue(NavigationHelper.NavigateToProperty) is string typeKey)
             {
-                _navigationService.NavigateTo(pageKey);
+                _navigationService.NavigateTo(Type.GetType(typeKey));
             }
         }
     }
 
-    private NavigationViewItem GetSelectedItem(IEnumerable<object> menuItems, Type pageType)
+    private NavigationViewItem GetSelectedItem(IEnumerable<object> menuItems, Type vmType)
     {
         foreach (var item in menuItems.OfType<NavigationViewItem>())
         {
-            if (IsMenuItemForPageType(item, pageType))
+            if (IsMenuItemForPageType(item, vmType))
             {
                 return item;
             }
 
-            var selectedChild = GetSelectedItem(item.MenuItems, pageType);
+            var selectedChild = GetSelectedItem(item.MenuItems, vmType);
             if (selectedChild != null)
             {
                 return selectedChild;
@@ -81,11 +76,11 @@ public class NavigationViewService : INavigationViewService
         return null;
     }
 
-    private bool IsMenuItemForPageType(NavigationViewItem menuItem, Type sourcePageType)
+    private static bool IsMenuItemForPageType(NavigationViewItem menuItem, Type vmType)
     {
-        if (menuItem.GetValue(NavigationHelper.NavigateToProperty) is string pageKey)
+        if (menuItem.GetValue(NavigationHelper.NavigateToProperty) is string typeKey)
         {
-            return _pageService.GetPageType(pageKey) == sourcePageType;
+            return Type.GetType(typeKey) == vmType;
         }
 
         return false;

@@ -1,7 +1,7 @@
 ﻿using AnimDL.Core;
 using AnimDL.WinUI.Activation;
-using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Core;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Core.Contracts.Services;
 using AnimDL.WinUI.Core.Services;
@@ -18,10 +18,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-using ReactiveUI;
 using Windows.ApplicationModel;
 
-// To learn more about WinUI3, see: https://docs.microsoft.com/windows/apps/winui/winui3/.
 namespace AnimDL.WinUI;
 
 public partial class App : Application
@@ -38,21 +36,16 @@ public partial class App : Application
         })
         .ConfigureServices((context, services) =>
         {
-
-
             // Default Activation Handler
             services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
-
-            // Other Activation Handlers
 
             // Services
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
             services.AddTransient<INavigationViewService, NavigationViewService>();
-
+            services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IActivationService, ActivationService>();
             services.AddSingleton<IPageService, PageService>();
-            services.AddSingleton<INavigationService, NavigationService>();
             services.AddTransient<IContentDialogService, ContentDialogService>();
             services.AddTransient<IViewService, ViewService>();
             services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
@@ -60,33 +53,22 @@ public partial class App : Application
             // Core Services
             services.AddSingleton<IFileService, FileService>();
             services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
+            services.AddSingleton<ISchedule, Schedule>();
             services.AddAnimDL();
 
-            // Views and ViewModels
-            services.AddSingleton<SettingsViewModel>();
-            services.AddTransient<SettingsPage>();
-            services.AddTransient<ISettings>(x => x.GetRequiredService<SettingsViewModel>());
-            services.AddTransient<UserListViewModel>();
-            services.AddTransient<UserListPage>();
-            services.AddTransient<ShellPage>();
-            services.AddSingleton<ShellViewModel>();
-            services.AddTransient<WatchViewModel>();
-            services.AddTransient<WatchPage>();
-            services.AddTransient<SeasonalPage>();
-            services.AddTransient<SeasonalViewModel>();
-            services.AddTransient<SchedulePage>();
-            services.AddTransient<ScheduleViewModel>();
-            services.AddTransient<DiscoverPage>();
-            services.AddTransient<DiscoverViewModel>();
-
+            services.AddCommonPages();
+            
+            // Navigatable views
+            services.AddPageForNavigation<UserListViewModel, UserListPage>();
+            services.AddPageForNavigation<WatchViewModel, WatchPage>();
+            services.AddPageForNavigation<SeasonalViewModel, SeasonalPage>();
+            services.AddPageForNavigation<ScheduleViewModel, SchedulePage>();
+            services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
 
             // Dialogs
-            services.AddTransient<UpdateAnimeStatusViewModel>();
-            services.AddTransient<IViewFor<UpdateAnimeStatusViewModel>, UpdateAnimeStatusView>();
-            services.AddTransient<ChooseSearchResultViewModel>();
-            services.AddTransient<IViewFor<ChooseSearchResultViewModel>, ChooseSearchResultView>();
-            services.AddTransient<AuthenticateMyAnimeListViewModel>();
-            services.AddTransient<IViewFor<AuthenticateMyAnimeListViewModel>, AuthenticateMyAnimeListView>();
+            services.AddPage<UpdateAnimeStatusViewModel, UpdateAnimeStatusView>();
+            services.AddPage<ChooseSearchResultViewModel, ChooseSearchResultView>();
+            services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
 
             services.AddSingleton<IMalClient, MalClient>(x => 
             {
@@ -115,6 +97,8 @@ public partial class App : Application
     {
         return _host.Services.GetService(typeof(T)) as T;
     }
+
+    public static object GetService(System.Type t) => _host.Services.GetService(t);
 
     public static Window MainWindow { get; set; } = new Window() { Title = "AppDisplayName".GetLocalized() };
 

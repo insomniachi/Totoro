@@ -42,7 +42,7 @@
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.DiscoverViewModel"
                     Content="Discover"
-                    Icon="AllApps" />
+                    Icon="Map" />
                 <NavigationViewItem
                     x:Uid="Shell_UserList"
                     helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.UserListViewModel"

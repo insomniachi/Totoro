@@ -8,6 +8,6 @@ public class ReactivePageEx<TViewModel> : ReactivePage<TViewModel>
 {
     public ReactivePageEx()
     {
-        ViewModel = App.GetService<TViewModel>();
+        //ViewModel = App.GetService<TViewModel>();
     }
 }

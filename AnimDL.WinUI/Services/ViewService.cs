@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AnimDL.Api;
 using AnimDL.Core.Models;
@@ -59,7 +60,7 @@ public class ViewService : IViewService
     {
         var vm = App.GetService<ChooseSearchResultViewModel>();
         vm.SetValues(searchResults);
-        vm.SelectedSearchResult = searchResults[0];
+        vm.SelectedSearchResult = searchResults.FirstOrDefault();
         vm.SelectedProviderType = providerType;
 
         await _contentDialogService.ShowDialog(vm, d =>

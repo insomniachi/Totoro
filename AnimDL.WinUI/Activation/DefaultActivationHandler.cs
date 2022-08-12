@@ -32,11 +32,11 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
         var token = _localSettingsService.ReadSetting<OAuthToken>("MalToken");
         if (token is null || string.IsNullOrEmpty(token.AccessToken)) 
         {
-            _navigationService.NavigateTo(typeof(SettingsViewModel).FullName, new Dictionary<string, object> { ["IsAuthenticated"] = true });
+            _navigationService.NavigateTo<SettingsViewModel>(parameter: new Dictionary<string, object> { ["IsAuthenticated"] = true });
         }
         else
         {
-            _navigationService.NavigateTo(typeof(UserListViewModel).FullName);
+            _navigationService.NavigateTo<UserListViewModel>();
         }
 
         await Task.CompletedTask;

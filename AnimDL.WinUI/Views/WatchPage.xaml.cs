@@ -17,25 +17,13 @@ public class WatchPageBase : ReactivePageEx<WatchViewModel> { }
 
 public sealed partial class WatchPage : WatchPageBase
 {
+    public CompositeDisposable Garbage { get; } = new();
+
     public WatchPage()
     {
         InitializeComponent();
 
-        // Load video html
-        this.ObservableForProperty(x => x.ViewModel.Url, x => x)
-            .Subscribe(async x =>
-            {
-                var html = VideoJsHelper.GetPlayerHtml(x);
-                await WebView.EnsureCoreWebView2Async();
-                WebView.NavigateToString(html);
-            });
 
-        this.ObservableForProperty(x => x.ViewModel.VideoPlayerRequestMessage, x => x)
-            .Subscribe(async x =>
-            {
-                await WebView.EnsureCoreWebView2Async();
-                WebView.CoreWebView2.PostWebMessageAsJson(x);
-            });
 
         this.WhenActivated(d =>
         {
@@ -59,10 +47,32 @@ public sealed partial class WatchPage : WatchPageBase
         });
     }
 
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        // Load video html
+        this.ObservableForProperty(x => x.ViewModel.Url, x => x)
+            .Subscribe(async x =>
+            {
+                var html = VideoJsHelper.GetPlayerHtml(x);
+                await WebView.EnsureCoreWebView2Async();
+                WebView.NavigateToString(html);
+            })
+            .DisposeWith(Garbage);
+
+        this.ObservableForProperty(x => x.ViewModel.VideoPlayerRequestMessage, x => x)
+            .Subscribe(async x =>
+            {
+                await WebView.EnsureCoreWebView2Async();
+                WebView.CoreWebView2.PostWebMessageAsJson(x);
+            })
+            .DisposeWith(Garbage);
+    }
+
     protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         await WebView.EnsureCoreWebView2Async();
         WebView.NavigateToString("");
+        Garbage.Dispose();
     }
 
 }
