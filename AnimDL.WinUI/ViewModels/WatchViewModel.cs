@@ -139,7 +139,7 @@ public class WatchViewModel : ViewModel
             case WebMessageType.Pause:
                 if(_settings.UseDiscordRichPresense)
                 {
-                    _discordRichPresense.UpdateState("Paused");
+                    _discordRichPresense.UpdateDetails("Paused");
                     _discordRichPresense.ClearTimer();
                 }
                 break;

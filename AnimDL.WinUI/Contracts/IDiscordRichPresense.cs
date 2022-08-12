@@ -7,7 +7,7 @@ public interface IDiscordRichPresense
 {
     void SetPresense(Anime a, int episode, TimeSpan duration);
     void SetPresense(string title, int episode, TimeSpan duration);
-    void UpdateState(string details);
+    void UpdateDetails(string details);
     void Clear();
     void ClearTimer();
     void Initialize();
