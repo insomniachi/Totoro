@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
-
 using Windows.UI;
 
 namespace AnimDL.WinUI.Helpers;
 
-// Helper class to workaround custom title bar bugs.
-// DISCLAIMER: The resource key names and color values used below are subject to change. Do not depend on them.
-// https://github.com/microsoft/TemplateStudio/issues/4516
 internal class TitleBarHelper
 {
     private const int WAINACTIVE = 0x00;

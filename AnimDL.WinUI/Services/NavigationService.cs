@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reactive.Subjects;
 using AnimDL.WinUI.Contracts.Services;
 using AnimDL.WinUI.Contracts.ViewModels;
 using AnimDL.WinUI.Core.Contracts;
@@ -16,11 +17,9 @@ namespace AnimDL.WinUI.Services;
 public class NavigationService : INavigationService
 {
     private readonly IVolatileStateStorage _stateStorage;
-    private object _viewModel;
     private object _lastParameterUsed;
     private Frame _frame;
-
-    public event NavigatedEventHandler Navigated;
+    private readonly Subject<NavigationEventArgs> _subject = new();
 
     public Frame Frame
     {
@@ -42,6 +41,8 @@ public class NavigationService : INavigationService
             RegisterFrameEvents();
         }
     }
+
+    public IObservable<NavigationEventArgs> Navigated => _subject;
 
     public bool CanGoBack => Frame.CanGoBack;
 
@@ -71,7 +72,9 @@ public class NavigationService : INavigationService
         if (CanGoBack)
         {
             var vmBeforeNavigation = _frame.GetPageViewModel();
+            
             _frame.GoBack();
+            
             if (vmBeforeNavigation is INavigationAware navigationAware)
             {
                 navigationAware.OnNavigatedFrom();
@@ -91,9 +94,20 @@ public class NavigationService : INavigationService
 
     public bool NavigateTo(Type viewModelType, object viewModel, IReadOnlyDictionary<string,object> parameter = null, bool clearNavigation = false)
     {
-        _viewModel = viewModel ?? App.GetService(viewModelType);
         var viewKey = typeof(ViewType<>).MakeGenericType(viewModelType);
         var pageType = ((ViewType)App.GetService(viewKey)).Type;
+
+        if (viewModel is not null)
+        {
+            var @params = parameter is not null
+                ? new Dictionary<string, object>(parameter)
+                : new Dictionary<string, object>();
+           
+            @params.Add("ViewModel", viewModel);
+
+            parameter = @params;
+        }
+
 
         if ((_frame.Content?.GetType()) == pageType && (parameter == null || parameter.Equals(_lastParameterUsed)))
         {
@@ -111,6 +125,10 @@ public class NavigationService : INavigationService
                 var state = _stateStorage.GetState(stateAware.GetType());
                 stateAware.StoreState(state);
             }
+            if (vmBeforeNavigation is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
             if (vmBeforeNavigation is INavigationAware navigationAware)
             {
                 navigationAware.OnNavigatedFrom();
@@ -126,28 +144,35 @@ public class NavigationService : INavigationService
         {
             return;
         }
-        
+
+        var parameter = e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>();
+
         var clearNavigation = (bool)frame.Tag;
         if (clearNavigation)
         {
             frame.BackStack.Clear();
         }
 
-        if(frame.Content is IViewFor view)
+        if (frame.Content is not IViewFor view)
         {
-            view.ViewModel = _viewModel;
+            _subject.OnNext(e);
+            return;
         }
 
-        if (_viewModel is INavigationAware navigationAware)
+        view.ViewModel = !parameter.ContainsKey("ViewModel") || parameter is null
+            ? App.GetService(view.GetType().GetProperty("ViewModel").PropertyType)
+            : parameter["ViewModel"];
+
+        if (view.ViewModel is INavigationAware navigationAware)
         {
             await navigationAware.OnNavigatedTo(e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>());
         }
-        
-        if (_viewModel is IHaveState stateAware)
+
+        if (view.ViewModel is IHaveState stateAware)
         {
             var state = _stateStorage.GetState(stateAware.GetType());
 
-            if(state.IsEmpty)
+            if (state.IsEmpty)
             {
                 await stateAware.SetInitialState();
             }
@@ -157,7 +182,7 @@ public class NavigationService : INavigationService
             }
         }
 
-        Navigated?.Invoke(sender, e);
+        _subject.OnNext(e);
     }
 }
 

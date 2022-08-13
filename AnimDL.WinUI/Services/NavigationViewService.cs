@@ -11,7 +11,6 @@ namespace AnimDL.WinUI.Services;
 public class NavigationViewService : INavigationViewService
 {
     private readonly INavigationService _navigationService;
-
     private NavigationView _navigationView;
 
     public IList<object> MenuItems => _navigationView.MenuItems;

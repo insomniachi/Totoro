@@ -17,8 +17,6 @@ public class WatchPageBase : ReactivePageEx<WatchViewModel> { }
 
 public sealed partial class WatchPage : WatchPageBase
 {
-    public CompositeDisposable Garbage { get; } = new();
-
     public WatchPage()
     {
         InitializeComponent();
@@ -55,7 +53,7 @@ public sealed partial class WatchPage : WatchPageBase
                 await WebView.EnsureCoreWebView2Async();
                 WebView.NavigateToString(html);
             })
-            .DisposeWith(Garbage);
+            .DisposeWith(ViewModel.Garbage);
 
         this.ObservableForProperty(x => x.ViewModel.VideoPlayerRequestMessage, x => x)
             .Subscribe(async x =>
@@ -63,14 +61,13 @@ public sealed partial class WatchPage : WatchPageBase
                 await WebView.EnsureCoreWebView2Async();
                 WebView.CoreWebView2.PostWebMessageAsJson(x);
             })
-            .DisposeWith(Garbage);
+            .DisposeWith(ViewModel.Garbage);
     }
 
     protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         await WebView.EnsureCoreWebView2Async();
         WebView.NavigateToString("");
-        Garbage.Dispose();
     }
 
 }

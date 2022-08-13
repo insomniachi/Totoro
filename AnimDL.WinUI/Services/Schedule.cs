@@ -35,7 +35,6 @@ public class Schedule : ISchedule
         using var client = new HttpClient();
         var stream = client.GetStreamAsync("https://animixplay.to/assets/s/schedule.json").Result;
         var data = JsonSerializer.Deserialize<List<ScheduleModel>>(stream);
-        //localSettingsService.SaveSetting("Schedule", new State { Time = DateTime.Now, Data = data });
         foreach (var item in data)
         {
             Dictionary.Add(item.MalId, TimeSpan.FromSeconds(item.TimeInSeconds));

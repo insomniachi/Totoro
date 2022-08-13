@@ -37,7 +37,13 @@ public class DiscordRichPresense : IDiscordRichPresense
 
     public void UpdateDetails(string details) => _client.UpdateDetails(details);
 
-    public void Clear() => _client.ClearPresence();
+    public void Clear()
+    {
+        _client.UpdateDetails("Idle");
+        _client.UpdateState(string.Empty);
+        _client.UpdateLargeAsset(string.Empty);
+        ClearTimer();
+    }
 
     public void ClearTimer() => _client.UpdateClearTime();
 

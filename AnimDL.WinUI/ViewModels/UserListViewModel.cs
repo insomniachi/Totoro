@@ -17,7 +17,7 @@ using ReactiveUI.Fody.Helpers;
 namespace AnimDL.WinUI.ViewModels;
 
 
-public class UserListViewModel : ViewModel, IHaveState
+public class UserListViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IMalClient _malClient;
     private readonly INavigationService _navigationService;

@@ -8,7 +8,7 @@ namespace AnimDL.WinUI.Contracts.Services;
 
 public interface INavigationService
 {
-    event NavigatedEventHandler Navigated;
+    IObservable<NavigationEventArgs> Navigated { get; }
     
     bool CanGoBack { get; }
     

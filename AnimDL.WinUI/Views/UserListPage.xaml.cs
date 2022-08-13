@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AnimDL.WinUI.ViewModels;
 using MalApi;
+using Microsoft.UI.Xaml.Navigation;
 using ReactiveMarbles.ObservableEvents;
 using ReactiveUI;
 
@@ -68,7 +69,7 @@ public sealed partial class UserListPage : UserListPageBase
             .ItemClick
             .Select(x => x.ClickedItem as Anime)
             .InvokeCommand(ViewModel.ItemClickedCommand)
-            .DisposeWith(d);
+            .DisposeWith(ViewModel.Garbage);
         });
     }
 }

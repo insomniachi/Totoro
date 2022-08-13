@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace AnimDL.WinUI.ViewModels;
 
-public class SettingsViewModel : ViewModel, ISettings
+public class SettingsViewModel : NavigatableViewModel, ISettings
 {
     [Reactive] public ElementTheme ElementTheme { get; set; }
     [Reactive] public bool PreferSubs { get; set; }

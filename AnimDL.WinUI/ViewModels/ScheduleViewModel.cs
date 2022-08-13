@@ -16,7 +16,7 @@ using AnimDL.WinUI.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 
-public class ScheduleViewModel : ViewModel, IHaveState
+public class ScheduleViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IMalClient _client;
     private readonly SourceCache<Anime, long> _animeCache = new(x => x.Id);

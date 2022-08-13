@@ -1,18 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using AnimDL.WinUI.Core.Contracts;
 using MalApi;
 using MalApi.Interfaces;
-using ReactiveUI.Fody.Helpers;
-using System;
-using System.Collections.ObjectModel;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 
-public class DiscoverViewModel : ViewModel, IHaveState
+public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IMalClient _client;
 
@@ -20,7 +18,8 @@ public class DiscoverViewModel : ViewModel, IHaveState
     {
         _client = client;
 
-        Observable.Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
+        Observable
+            .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x =>
             {

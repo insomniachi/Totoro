@@ -1,5 +1,5 @@
-﻿using AnimDL.WinUI.Contracts.Services;
-
+﻿using System;
+using AnimDL.WinUI.Contracts.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -53,19 +53,12 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
         base.OnAttached();
         _current = this;
         var navigationService = App.GetService<INavigationService>();
-        navigationService.Navigated += OnNavigated;
+        navigationService.Navigated.Subscribe(OnNavigated);
     }
 
-    protected override void OnDetaching()
+    private void OnNavigated(NavigationEventArgs e)
     {
-        base.OnDetaching();
-        var navigationService = App.GetService<INavigationService>();
-        navigationService.Navigated -= OnNavigated;
-    }
-
-    private void OnNavigated(object sender, NavigationEventArgs e)
-    {
-        var frame = sender as Frame;
+        var frame = App.GetService<INavigationService>().Frame;
         if (frame.Content is Page page)
         {
             _currentPage = page;

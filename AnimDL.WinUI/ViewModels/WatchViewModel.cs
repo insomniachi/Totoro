@@ -22,7 +22,7 @@ using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 
-public class WatchViewModel : ViewModel
+public class WatchViewModel : NavigatableViewModel
 {
     private readonly SourceCache<SearchResult, string> _searchResultCache = new(x => x.Title);
     private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
@@ -125,6 +125,7 @@ public class WatchViewModel : ViewModel
             case WebMessageType.Ended:
                 if (Anime is not null)
                 {
+                    _discordRichPresense.Clear();
                     await IncrementEpisode();
                     CurrentEpisode++;
                 }

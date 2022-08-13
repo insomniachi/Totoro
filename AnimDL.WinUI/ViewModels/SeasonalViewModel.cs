@@ -16,7 +16,7 @@ using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 
-public class SeasonalViewModel : ViewModel, IHaveState
+public class SeasonalViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IMalClient _client;
     private readonly IViewService _viewService;

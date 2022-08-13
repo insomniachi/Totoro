@@ -1,6 +1,6 @@
-﻿using AnimDL.WinUI.Contracts.Services;
+﻿using System;
+using AnimDL.WinUI.Contracts.Services;
 using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.Views;
 using Microsoft.UI.Xaml.Navigation;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -20,11 +20,11 @@ public partial class ShellViewModel : ReactiveObject
                           INavigationViewService navigationViewService)
     {
         NavigationService = navigationService;
-        NavigationService.Navigated += OnNavigated;
+        NavigationService.Navigated.Subscribe(OnNavigated);
         NavigationViewService = navigationViewService;
     }
 
-    private void OnNavigated(object sender, NavigationEventArgs e)
+    private void OnNavigated(NavigationEventArgs e)
     {
         IsBackEnabled = NavigationService.CanGoBack;
         var vmType = NavigationService.Frame.GetPageViewModel().GetType();

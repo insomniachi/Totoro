@@ -46,7 +46,6 @@ public partial class App : Application
             services.AddTransient<INavigationViewService, NavigationViewService>();
             services.AddSingleton<INavigationService, NavigationService>();
             services.AddSingleton<IActivationService, ActivationService>();
-            services.AddSingleton<IPageService, PageService>();
             services.AddTransient<IContentDialogService, ContentDialogService>();
             services.AddTransient<IViewService, ViewService>();
             services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
@@ -58,9 +57,9 @@ public partial class App : Application
             services.AddSingleton<ISchedule, Schedule>();
             services.AddAnimDL();
 
-            services.AddCommonPages();
-            
+
             // Navigatable views
+            services.AddCommonPages();
             services.AddPageForNavigation<UserListViewModel, UserListPage>();
             services.AddPageForNavigation<WatchViewModel, WatchPage>();
             services.AddPageForNavigation<SeasonalViewModel, SeasonalPage>();
@@ -72,6 +71,7 @@ public partial class App : Application
             services.AddPage<ChooseSearchResultViewModel, ChooseSearchResultView>();
             services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
 
+            // Mal client
             services.AddSingleton<IMalClient, MalClient>(x => 
             {
                 var token = x.GetRequiredService<ILocalSettingsService>().ReadSetting<OAuthToken>("MalToken");
