@@ -9,6 +9,7 @@
     xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:v="using:AnimDL.WinUI.Views"
     xmlns:viewmodels="using:AnimDL.WinUI.ViewModels"
     xmlns:views="using:AnimDL.WinUI.Views"
@@ -56,6 +57,7 @@
                 <GridView
                     x:Name="AnimeListView"
                     animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+                    ui:ListViewExtensions.Command="{x:Bind ViewModel.ItemClickedCommand}"
                     IsItemClickEnabled="True"
                     ItemsSource="{x:Bind ViewModel.Anime}">
                     <GridView.ItemTemplate>

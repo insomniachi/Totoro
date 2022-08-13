@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AnimDL.WinUI.ViewModels;
 using MalApi;
-using ReactiveMarbles.ObservableEvents;
 using ReactiveUI;
 
 namespace AnimDL.WinUI.Views;
@@ -31,7 +28,7 @@ public sealed partial class UserListPage : UserListPageBase
             AnimeStatus.OnHold => "On Hold",
             AnimeStatus.Completed => "Completed",
             AnimeStatus.Dropped => "Dropped",
-            _ => throw new ArgumentException()
+            _ => throw new ArgumentException(null, nameof(status))
         };
     }
 
@@ -61,15 +58,6 @@ public sealed partial class UserListPage : UserListPageBase
                         break;
                 }
             });
-
-        this.WhenActivated(d =>
-        {
-            AnimeListView.Events()
-            .ItemClick
-            .Select(x => x.ClickedItem as Anime)
-            .InvokeCommand(ViewModel.ItemClickedCommand)
-            .DisposeWith(ViewModel.Garbage);
-        });
     }
 }
 

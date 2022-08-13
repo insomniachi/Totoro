@@ -7,8 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:AnimDL.WinUI.Models"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
-    xmlns:viewmodels="using:AnimDL.WinUI.ViewModels"
     xmlns:views="using:AnimDL.WinUI.Views"
     mc:Ignorable="d">
 
@@ -24,7 +24,7 @@
             ItemsSource="{x:Bind ViewModel.Schedule.ToList(), Mode=OneWay}"
             SelectedItem="{x:Bind ViewModel.SelectedDay, Mode=TwoWay}">
             <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="viewmodels:ScheduleModel">
+                <DataTemplate x:DataType="model:ScheduleModel">
                     <TextBlock TextAlignment="Center">
                         <Run
                             FontSize="20"
