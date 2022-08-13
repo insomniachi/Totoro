@@ -1,5 +1,4 @@
 ﻿using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Core.Contracts.Services;
 
 namespace AnimDL.WinUI.Core.Services;
 

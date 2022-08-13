@@ -6,7 +6,7 @@ using ReactiveUI;
 
 namespace AnimDL.WinUI.Views;
 
-public class SeasonalPageBase : ReactivePageEx<SeasonalViewModel> { }
+public class SeasonalPageBase : ReactivePage<SeasonalViewModel> { }
 
 public sealed partial class SeasonalPage : SeasonalPageBase
 {

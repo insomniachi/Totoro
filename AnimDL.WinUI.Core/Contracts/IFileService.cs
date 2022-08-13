@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Core.Contracts.Services;
+﻿namespace AnimDL.WinUI.Core.Contracts;
 
 public interface IFileService
 {

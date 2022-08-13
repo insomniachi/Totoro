@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>AnimDL.WinUI.Core</RootNamespace>
+    <RootNamespace>AnimDL.UI.Core</RootNamespace>
     <Platforms>x64</Platforms>
     <Platforms>x64</Platforms>
     <Nullable>disable</Nullable>
@@ -17,6 +17,6 @@
 
   <ItemGroup>
     <PackageReference Include="MalApi.V2" Version="2.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	<PackageReference Include="AnimDL.Core" Version="0.3.1" />
   </ItemGroup>
 </Project>

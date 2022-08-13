@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.ViewModels;
 using MalApi;
 using Microsoft.UI.Xaml;

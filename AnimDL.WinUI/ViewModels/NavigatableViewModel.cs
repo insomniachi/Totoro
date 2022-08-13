@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Threading.Tasks;
-using AnimDL.WinUI.Contracts.ViewModels;
+using AnimDL.WinUI.Contracts;
 using ReactiveUI;
 
 namespace AnimDL.WinUI.ViewModels;

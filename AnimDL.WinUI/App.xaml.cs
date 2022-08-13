@@ -1,10 +1,8 @@
 ﻿using AnimDL.Core;
 using AnimDL.WinUI.Activation;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Contracts.Services;
 using AnimDL.WinUI.Core;
 using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Core.Contracts.Services;
 using AnimDL.WinUI.Core.Services;
 using AnimDL.WinUI.Dialogs.ViewModels;
 using AnimDL.WinUI.Dialogs.Views;
@@ -19,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using ReactiveUI;
 using Windows.ApplicationModel;
 
 namespace AnimDL.WinUI;
@@ -41,6 +40,7 @@ public partial class App : Application
             services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
 
             // Services
+            services.AddSingleton(MessageBus.Current);
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
             services.AddTransient<INavigationViewService, NavigationViewService>();

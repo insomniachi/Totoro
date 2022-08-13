@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reactive.Subjects;
-using AnimDL.WinUI.Contracts.Services;
-using AnimDL.WinUI.Contracts.ViewModels;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Core.Contracts.Services;
 using AnimDL.WinUI.Helpers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Dialogs.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

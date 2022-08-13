@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace AnimDL.WinUI.Contracts.Services;
+﻿namespace AnimDL.WinUI.Contracts;
 
 public interface ILocalSettingsService
 {

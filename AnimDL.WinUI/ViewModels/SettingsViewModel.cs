@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
-using AnimDL.WinUI.Contracts.Services;
 using Microsoft.UI.Xaml;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

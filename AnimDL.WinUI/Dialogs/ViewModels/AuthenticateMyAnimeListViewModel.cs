@@ -2,7 +2,7 @@
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Web;
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.ViewModels;
 using MalApi;
 using MalApi.Interfaces;
@@ -12,14 +12,13 @@ using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.Dialogs.ViewModels;
 
-public class AuthenticateMyAnimeListViewModel : ReactiveObject, IClosable
+public class AuthenticateMyAnimeListViewModel : DialogViewModel
 {
-    private readonly ScheduledSubject<Unit> _close = new(RxApp.MainThreadScheduler);
-
     public AuthenticateMyAnimeListViewModel(IConfiguration configuration,
                                             ILocalSettingsService localSettingsService,
                                             INavigationService navigationService,
-                                            IMalClient malClient)
+                                            IMalClient malClient,
+                                            IMessageBus messageBus)
     {
         var clientId = configuration["ClientId"];
         AuthUrl = MalAuthHelper.GetAuthUrl(clientId);
@@ -37,7 +36,7 @@ public class AuthenticateMyAnimeListViewModel : ReactiveObject, IClosable
                 IsLoading = false;
                 _close.OnNext(Unit.Default);
                 malClient.SetAccessToken(token.AccessToken);
-                App.GetService<ShellViewModel>().IsAuthenticated = true;
+                messageBus.SendMessage(new MalAuthenticatedMessage());
                 navigationService.NavigateTo<UserListViewModel>();
             });
     }
@@ -45,8 +44,6 @@ public class AuthenticateMyAnimeListViewModel : ReactiveObject, IClosable
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public string AuthUrl { get; set; }
     [Reactive] public bool IsAuthenticated { get; set; }
-
-    public IObservable<Unit> Close => _close;
 }
 
 public interface IClosable

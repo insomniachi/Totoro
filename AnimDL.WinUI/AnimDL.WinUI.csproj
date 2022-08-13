@@ -17,7 +17,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AnimDL.Core" Version="0.3.1" />
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.1" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
@@ -36,7 +35,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\AnimDL.WinUI.Core\AnimDL.WinUI.Core.csproj" />
+		<ProjectReference Include="..\AnimDL.WinUI.Core\AnimDL.UI.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="appsettings.json">

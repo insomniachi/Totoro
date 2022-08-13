@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Text;
-
-using AnimDL.WinUI.Core.Contracts.Services;
-
+using AnimDL.WinUI.Core.Contracts;
 using Newtonsoft.Json;
 
 namespace AnimDL.WinUI.Core.Services;

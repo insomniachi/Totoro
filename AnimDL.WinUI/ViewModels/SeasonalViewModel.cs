@@ -5,7 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Helpers;
 using DynamicData;

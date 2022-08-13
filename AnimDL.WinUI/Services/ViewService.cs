@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AnimDL.Api;
 using AnimDL.Core.Models;
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Dialogs.ViewModels;
 using MalApi;
 using MalApi.Interfaces;

@@ -1,5 +1,6 @@
 ﻿using System;
-using AnimDL.WinUI.Contracts.Services;
+using System.Reactive.Linq;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Helpers;
 using Microsoft.UI.Xaml.Navigation;
 using ReactiveUI;
@@ -17,11 +18,16 @@ public partial class ShellViewModel : ReactiveObject
     public INavigationViewService NavigationViewService { get; set; }
 
     public ShellViewModel(INavigationService navigationService,
-                          INavigationViewService navigationViewService)
+                          INavigationViewService navigationViewService,
+                          IMessageBus messageBus)
     {
         NavigationService = navigationService;
         NavigationService.Navigated.Subscribe(OnNavigated);
         NavigationViewService = navigationViewService;
+
+        messageBus.Listen<MalAuthenticatedMessage>()
+                  .ObserveOn(RxApp.MainThreadScheduler)
+                  .Subscribe(_ => IsAuthenticated = true);
     }
 
     private void OnNavigated(NavigationEventArgs e)

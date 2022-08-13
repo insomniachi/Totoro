@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Helpers;
 
 using Microsoft.UI.Xaml;

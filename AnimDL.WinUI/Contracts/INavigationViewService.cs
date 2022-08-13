@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 using Microsoft.UI.Xaml.Controls;
 
-namespace AnimDL.WinUI.Contracts.Services;
+namespace AnimDL.WinUI.Contracts;
 
 public interface INavigationViewService
 {
     IList<object> MenuItems { get; }
-    
+
     object SettingsItem { get; }
 
     void Initialize(NavigationView navigationView);

@@ -1,4 +1,4 @@
-﻿using AnimDL.WinUI.Contracts.Services;
+﻿using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Helpers;
 using AnimDL.WinUI.ViewModels;
 

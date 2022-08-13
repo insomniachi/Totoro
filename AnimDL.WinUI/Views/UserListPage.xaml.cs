@@ -5,13 +5,12 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AnimDL.WinUI.ViewModels;
 using MalApi;
-using Microsoft.UI.Xaml.Navigation;
 using ReactiveMarbles.ObservableEvents;
 using ReactiveUI;
 
 namespace AnimDL.WinUI.Views;
 
-public class UserListPageBase : ReactivePageEx<UserListViewModel> { }
+public class UserListPageBase : ReactivePage<UserListViewModel> { }
 public sealed partial class UserListPage : UserListPageBase
 {
     public List<AnimeStatus> Statuses { get; set; } = new List<AnimeStatus>

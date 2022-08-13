@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-using Newtonsoft.Json;
+﻿using System.Text.Json;
 
 namespace AnimDL.WinUI.Core.Helpers;
 
@@ -8,11 +6,11 @@ public static class Json
 {
     public static T ToObject<T>(string value)
     {
-        return JsonConvert.DeserializeObject<T>(value);
+        return JsonSerializer.Deserialize<T>(value);
     }
 
     public static string Stringify(object value)
     {
-        return JsonConvert.SerializeObject(value);
+        return JsonSerializer.Serialize(value);
     }
 }

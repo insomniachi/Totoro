@@ -13,7 +13,7 @@ using ReactiveUI;
 
 namespace AnimDL.WinUI.Views;
 
-public class WatchPageBase : ReactivePageEx<WatchViewModel> { }
+public class WatchPageBase : ReactivePage<WatchViewModel> { }
 
 public sealed partial class WatchPage : WatchPageBase
 {

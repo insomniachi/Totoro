@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using AnimDL.Api;
+﻿using AnimDL.Api;
 using AnimDL.Core.Models;
 using MalApi;
 
-namespace AnimDL.WinUI.Contracts.Services;
+namespace AnimDL.WinUI.Contracts;
 
 public interface IViewService
 {

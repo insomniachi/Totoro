@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AnimDL.WinUI.Activation;
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Views;
 using MalApi.Interfaces;

@@ -2,7 +2,7 @@
 
 using Microsoft.UI.Xaml;
 
-namespace AnimDL.WinUI.Contracts.Services;
+namespace AnimDL.WinUI.Contracts;
 
 public interface IThemeSelectorService
 {

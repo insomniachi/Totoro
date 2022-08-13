@@ -10,10 +10,10 @@ internal class State : IState
     public bool IsEmpty => !_state.Any();
 
     public TState GetValue<TState>(string name) => (TState)_state[name];
-    
+
     public void AddOrUpdate<TState>(TState value, [CallerArgumentExpression("value")] string propertyName = "")
     {
-        if(!_state.ContainsKey(propertyName))
+        if (!_state.ContainsKey(propertyName))
         {
             _state.Add(propertyName, value);
         }

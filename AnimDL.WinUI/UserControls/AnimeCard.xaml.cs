@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Input;
-using AnimDL.WinUI.Contracts.Services;
+using AnimDL.WinUI.Contracts;
 using MalApi;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
