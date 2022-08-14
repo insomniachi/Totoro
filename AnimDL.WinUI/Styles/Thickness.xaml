@@ -24,8 +24,8 @@
     <Thickness x:Key="NavigationViewContentGridBorderThickness">1,1,0,0</Thickness>
     <CornerRadius x:Key="NavigationViewContentGridCornerRadius">8,0,0,0</CornerRadius>
     <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
-    <Thickness x:Key="NavigationViewHeaderMargin">56,0,0,0</Thickness>
-    <Thickness x:Key="NavigationViewPageContentMargin">56,0,56,0</Thickness>
+    <Thickness x:Key="NavigationViewHeaderMargin">56,-56,0,0</Thickness>
+    <Thickness x:Key="NavigationViewPageContentMargin">12,0,12,0</Thickness>
 
     <Thickness x:Key="MenuBarContentMargin">36,24,0,0</Thickness>
 

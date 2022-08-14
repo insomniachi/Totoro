@@ -24,14 +24,15 @@ public class AuthenticateMyAnimeListViewModel : DialogViewModel
         AuthUrl = MalAuthHelper.GetAuthUrl(clientId);
 
         this.ObservableForProperty(x => x.AuthUrl, x => x)
-            .Where(x => x.Contains("code"))
+            .Where(url => url.Contains("code"))
+            .Do(_ => IsLoading = true)
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .Select(query => HttpUtility.ParseQueryString(query)[0])
+            .SelectMany(code => MalAuthHelper.DoAuth(clientId, code))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(async x =>
+            .Subscribe(token =>
             {
-                IsLoading = true;
                 IsAuthenticated = true;
-                var code = HttpUtility.ParseQueryString(x)[0];
-                var token = await MalAuthHelper.DoAuth(clientId, code);
                 localSettingsService.SaveSetting("MalToken", token);
                 IsLoading = false;
                 _close.OnNext(Unit.Default);

@@ -10,7 +10,7 @@
     xmlns:vm="using:AnimDL.WinUI.ViewModels"
     Name="Page"
     mc:Ignorable="d">
-    <Grid>
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
@@ -66,7 +66,8 @@
             <labs:SettingsCard
                 Description="Default provider used to stream."
                 Header="Default Stream Provider"
-                Icon="&#xe93e;">
+                Icon="&#xe93e;"
+                IsEnabled="False">
                 <ComboBox
                     Width="150"
                     ItemsSource="{x:Bind ViewModel.ProviderTypes}"

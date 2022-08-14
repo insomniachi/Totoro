@@ -1,5 +1,4 @@
 ﻿using AnimDL.WinUI.Dialogs.ViewModels;
-using Microsoft.UI.Xaml.Controls;
 using ReactiveUI;
 
 
@@ -10,6 +9,6 @@ public sealed partial class ChooseSearchResultView : ChooseSearchResultViewBase
 {
     public ChooseSearchResultView()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 }

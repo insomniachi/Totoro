@@ -35,13 +35,10 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
 
-        var filter = this.WhenAnyValue(x => x.CurrentView)
-                         .Select(FilterByStatusPredicate);
-
         _animeCache
             .Connect()
             .RefCount()
-            .Filter(filter)
+            .Filter(this.WhenAnyValue(x => x.CurrentView).Select(FilterByStatusPredicate))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)

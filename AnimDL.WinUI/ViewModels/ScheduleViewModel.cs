@@ -22,17 +22,16 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     private readonly IMalClient _client;
     private readonly SourceCache<Anime, long> _animeCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<Anime> _anime;
+    private readonly ObservableAsPropertyHelper<DayOfWeek> _filter;
 
     public ScheduleViewModel(IMalClient client)
     {
         _client = client;
 
-        var filter = this.WhenAnyValue(x => x.Filter).Select(FilterByDay);
-
         _animeCache
             .Connect()
             .RefCount()
-            .Filter(filter)
+            .Filter(this.WhenAnyValue(x => x.Filter).Select(FilterByDay))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
@@ -41,20 +40,20 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         this.WhenAnyValue(x => x.SelectedDay)
             .WhereNotNull()
             .Select(x => Enum.Parse<DayOfWeek>($"{x.Key[..1].ToUpper()}{x.Key[1..]}"))
-            .Subscribe(x => Filter = x);
+            .ToProperty(this, x => x.Filter, out _filter);
     }
 
-    [Reactive] public DayOfWeek Filter { get; set; }
     [Reactive] public ScheduleModel SelectedDay { get; set; }
     public ReadOnlyObservableCollection<Anime> Anime => _anime;
     public WeeklyScheduleModel Schedule { get; } = new();
+    public DayOfWeek Filter => _filter?.Value ?? DayOfWeek.Sunday;
 
     public void RestoreState(IState state)
     {
         var anime = state.GetValue<IEnumerable<Anime>>(nameof(Anime));
         InitSchedule(anime);
         _animeCache.Edit(x => x.AddOrUpdate(anime));
-        Filter = state.GetValue<DayOfWeek>(nameof(Filter));
+        SelectedDay = state.GetValue<ScheduleModel>(nameof(SelectedDay));
     }
 
     public async Task SetInitialState()
@@ -80,7 +79,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     public void StoreState(IState state)
     {
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
-        state.AddOrUpdate(Filter);
+        state.AddOrUpdate(SelectedDay);
     }
 
     private void InitSchedule(IEnumerable<Anime> anime)

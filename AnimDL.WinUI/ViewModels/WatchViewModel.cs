@@ -7,6 +7,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using AnimDL.Api;
 using AnimDL.Core.Models;
 using AnimDL.WinUI.Contracts;
@@ -23,13 +24,14 @@ namespace AnimDL.WinUI.ViewModels;
 
 public class WatchViewModel : NavigatableViewModel
 {
-    private readonly SourceCache<SearchResult, string> _searchResultCache = new(x => x.Title);
-    private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
     private readonly IMalClient _client;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IDiscordRichPresense _discordRichPresense;
+    private readonly ObservableAsPropertyHelper<IProvider> _provider;
+    private readonly SourceCache<SearchResult, string> _searchResultCache = new(x => x.Title);
+    private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           IMalClient client,
@@ -47,6 +49,7 @@ public class WatchViewModel : NavigatableViewModel
         SelectedProviderType = _settings.DefaultProviderType;
         SearchResultPicked = ReactiveCommand.CreateFromTask<SearchResult>(FetchEpisodes);
 
+
         _searchResultCache
             .Connect()
             .RefCount()
@@ -57,31 +60,27 @@ public class WatchViewModel : NavigatableViewModel
             .DisposeWith(Garbage);
 
         this.WhenAnyValue(x => x.SelectedProviderType)
-            .Subscribe(x => Provider = providerFactory.GetProvider(x));
+            .Select(x => providerFactory.GetProvider(x))
+            .ToProperty(this, x => x.Provider, out _provider);
 
         this.WhenAnyValue(x => x.Query)
-            .Throttle(TimeSpan.FromMilliseconds(500), RxApp.TaskpoolScheduler)
-            .SelectMany(async x => await Provider.Catalog.Search(x).ToListAsync())
+            .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
+            .SelectMany(x => Provider.Catalog.Search(x).ToListAsync().AsTask())
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x =>
-            {
-                if (_settings.PreferSubs)
-                {
-                    RemoveDubs(x);
-                }
-
-                _searchResultCache.EditDiff(x, (first, second) => first.Title == second.Title);
-            });
+            .Select(FilterDubsIfEnabled)
+            .Subscribe(x => _searchResultCache.EditDiff(x, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
 
         this.WhenAnyValue(x => x.CurrentPlayerTime)
             .Where(_ => Anime is not null)
             .Where(_ => Anime.UserStatus.WatchedEpisodes <= CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= 135)
-            .Subscribe(async _ => await IncrementEpisode());
+            .SelectMany(_ => IncrementEpisode())
+            .Subscribe();
 
         this.WhenAnyValue(x => x.CurrentEpisode)
             .Where(x => x > 0)
-            .Subscribe(async x => await FetchUrlForEp(x));
+            .SelectMany(FetchUrlForEp)
+            .Subscribe();
     }
 
     [Reactive] public string Query { get; set; }
@@ -95,12 +94,10 @@ public class WatchViewModel : NavigatableViewModel
     [Reactive] public string VideoPlayerRequestMessage { get; set; }
     public double CurrentMediaDuration { get; set; }
     public Anime Anime { get; set; }
-    public long? MalId { get; }
     public SearchResult SelectedResult { get; set; }
-    public List<ProviderType> Providers { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
-    public IProvider Provider { get; private set; }
-    public Action<string, int> ShowNotification { get; set; }
-    public ReactiveCommand<SearchResult, Unit> SearchResultPicked { get; }
+    public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
+    public IProvider Provider => _provider.Value;
+    public ICommand SearchResultPicked { get; }
     public ReadOnlyObservableCollection<SearchResult> SearchResult => _searchResults;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
 
@@ -165,13 +162,14 @@ public class WatchViewModel : NavigatableViewModel
         }
     }
 
-    public async Task FetchUrlForEp(int ep)
+    public async Task<Unit> FetchUrlForEp(int ep)
     {
         var epStream = await Provider.StreamProvider.GetStreams(SelectedResult.Url, ep..ep).ToListAsync();
         Url = epStream[0].Qualities.Values.ElementAt(0).Url;
+        return Unit.Default;
     }
 
-    private async Task IncrementEpisode()
+    private async Task<Unit> IncrementEpisode()
     {
         _playbackStateStorage.Reset(Anime.Id, CurrentEpisode);
         
@@ -187,27 +185,41 @@ public class WatchViewModel : NavigatableViewModel
         }
 
         Anime.UserStatus = await request.Publish();
+
+        return Unit.Default;
     }
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if (parameters.ContainsKey("Anime"))
+        if (!parameters.ContainsKey("Anime"))
         {
-            NavigatedToWithParameter = true;
-            Anime = parameters["Anime"] as Anime;
-            var results = await Provider.Catalog.Search(Anime.Title).ToListAsync();
-
-            if (_settings.PreferSubs)
-            {
-                RemoveDubs(results);
-            }
-
-            var selected = results.Count == 1
-                ? results[0]
-                : await _viewService.ChoooseSearchResult(results, SelectedProviderType);
-
-            await FetchEpisodes(selected);
+            return;
         }
+
+        NavigatedToWithParameter = true;
+        Anime = parameters["Anime"] as Anime;
+        var results = await Provider.Catalog.Search(Anime.Title).ToListAsync();
+
+        var selected = results.Count == 1
+            ? results[0]
+            : await _viewService.ChoooseSearchResult(results, SelectedProviderType);
+
+        if (selected is null)
+        {
+            return; // TODO : what to do here ?
+        }
+
+        await FetchEpisodes(selected);
+    }
+
+    private List<SearchResult> FilterDubsIfEnabled(List<SearchResult> results)
+    {
+        if (_settings.PreferSubs)
+        {
+            results.RemoveAll(x => x.Title.Contains("(DUB)", StringComparison.OrdinalIgnoreCase) || x.Title.Contains("[DUB]", StringComparison.OrdinalIgnoreCase));
+        }
+
+        return results;
     }
 
     public override Task OnNavigatedFrom()
@@ -218,11 +230,6 @@ public class WatchViewModel : NavigatableViewModel
         }
 
         return Task.CompletedTask;
-    }
-
-    private static void RemoveDubs(List<SearchResult> results)
-    {
-        results.RemoveAll(x => x.Title.Contains("(DUB)", StringComparison.OrdinalIgnoreCase) || x.Title.Contains("[DUB]", StringComparison.OrdinalIgnoreCase));
     }
 
     private void TryDiscordRpcStartWatching()

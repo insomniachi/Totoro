@@ -31,11 +31,10 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
         AddToListCommand = ReactiveCommand.CreateFromTask<Anime>(AddToList);
 
-        var filter = this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason);
         _animeCache
             .Connect()
             .RefCount()
-            .Filter(filter)
+            .Filter(this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)

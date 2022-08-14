@@ -18,20 +18,19 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
     public readonly CompositeDisposable Garbage = new();
     private readonly SourceCache<SearchResult, string> _searchResultCache = new(x => x.Title);
     private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
+    private readonly ObservableAsPropertyHelper<IProvider> _provider;
     public ChooseSearchResultViewModel(IProviderFactory providerFactory)
     {
 
         this.WhenAnyValue(x => x.SelectedProviderType)
-            .Subscribe(x => Provider = providerFactory.GetProvider(x));
+            .Select(x => providerFactory.GetProvider(x))
+            .ToProperty(this, x => x.Provider, out _provider);
 
         this.ObservableForProperty(x => x.Title, x => x)
             .Throttle(TimeSpan.FromMilliseconds(500), RxApp.TaskpoolScheduler)
-            .SelectMany(async x => await Provider.Catalog.Search(x).ToListAsync())
+            .SelectMany(x => Provider.Catalog.Search(x).ToListAsync().AsTask())
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x =>
-            {
-                _searchResultCache.EditDiff(x, (first, second) => first.Title == second.Title);
-            });
+            .Subscribe(x => _searchResultCache.EditDiff(x, (first, second) => first.Title == second.Title));
 
         _searchResultCache
             .Connect()
@@ -50,7 +49,7 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
     [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
     public IEnumerable<SearchResult> SearchResults => _searchResults;
     public List<ProviderType> Providers { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
-    public IProvider Provider { get; set; }
+    public IProvider Provider => _provider.Value;
     public void SetValues(IEnumerable<SearchResult> values)
     {
         _searchResultCache.Clear();
