@@ -41,14 +41,14 @@ public class MalToModelConverter
 
         var time = _schedule.GetTimeTillEpisodeAirs(model.Id);
         
-		if (time == TimeSpan.Zero)
+		if (time is null)
         {
 			model.BroadcastDay = malModel.Broadcast.DayOfWeek;
 			return model;
         }
 
-        model.BroadcastDay = (DateTime.Now + time).DayOfWeek;
-		model.TimeToAir = time;
+        model.BroadcastDay = (DateTime.Now + time.TimeSpan).DayOfWeek;
+		model.TimeRemaining = time;
         return model;
 	}
 
@@ -56,7 +56,31 @@ public class MalToModelConverter
 	{
 		Populate(model, malModel);
 		model.Season = malModel.StartSeason;
+
+		if(model.Season == CurrentSeason())
+		{
+			PopulateSchedule(model, malModel);
+		}
+
 		return model;
 	}
+
+    private static Season CurrentSeason()
+    {
+        var date = DateTime.Now;
+        var year = date.Year;
+        var month = date.Month;
+
+        var current = month switch
+        {
+            1 or 2 or 3 => AnimeSeason.Winter,
+            4 or 5 or 6 => AnimeSeason.Spring,
+            7 or 8 or 9 => AnimeSeason.Summer,
+            10 or 11 or 12 => AnimeSeason.Fall,
+            _ => throw new InvalidOperationException()
+        };
+
+        return new(current, year);
+    }
 
 }

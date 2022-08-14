@@ -1,4 +1,5 @@
-﻿using AnimDL.Core;
+﻿using System.Reactive.Linq;
+using AnimDL.Core;
 using AnimDL.WinUI.Activation;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core;
@@ -38,6 +39,8 @@ public partial class App : Application
         {
             // Default Activation Handler
             services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+
+            MessageBus.Current.RegisterMessageSource(Observable.Timer(System.TimeSpan.FromMinutes(1), System.TimeSpan.FromMinutes(1)).Select(_ => new MinuteTick()));
 
             // Services
             services.AddSingleton(MessageBus.Current);
