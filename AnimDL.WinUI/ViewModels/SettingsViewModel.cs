@@ -21,7 +21,6 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public bool UseDiscordRichPresense { get; set; }
     public List<ElementTheme> Themes { get; set; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
-    
     public ICommand AuthenticateCommand { get; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, 
@@ -34,10 +33,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.AnimixPlay);
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
         
-        AuthenticateCommand = ReactiveCommand.Create(async () => 
-        {
-            await viewService.AuthenticateMal();
-        });
+        AuthenticateCommand = ReactiveCommand.CreateFromTask(viewService.AuthenticateMal);
 
         if(UseDiscordRichPresense && !dRpc.IsInitialized)
         {
@@ -47,14 +43,14 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         this.ObservableForProperty(x => x.ElementTheme, x => x)
             .Subscribe(themeSelectorService.SetTheme);
         this.ObservableForProperty(x => x.PreferSubs, x => x)
-            .Subscribe(x => localSettingsService.SaveSetting(nameof(PreferSubs), PreferSubs));
+            .Subscribe(value => localSettingsService.SaveSetting(nameof(PreferSubs), value));
         this.ObservableForProperty(x => x.DefaultProviderType, x => x)
-            .Subscribe(x => localSettingsService.SaveSetting(nameof(DefaultProviderType), DefaultProviderType));
+            .Subscribe(value => localSettingsService.SaveSetting(nameof(DefaultProviderType), value));
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
-            .Subscribe(x => 
+            .Subscribe(value => 
             {
-                localSettingsService.SaveSetting(nameof(UseDiscordRichPresense), UseDiscordRichPresense);
-                if(x && !dRpc.IsInitialized)
+                localSettingsService.SaveSetting(nameof(UseDiscordRichPresense), value);
+                if(value && !dRpc.IsInitialized)
                 {
                     dRpc.Initialize();
                 }

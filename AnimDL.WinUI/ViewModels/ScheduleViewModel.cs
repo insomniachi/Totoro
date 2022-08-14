@@ -20,13 +20,21 @@ namespace AnimDL.WinUI.ViewModels;
 public class ScheduleViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IMalClient _client;
-    private readonly SourceCache<Anime, long> _animeCache = new(x => x.Id);
-    private readonly ReadOnlyObservableCollection<Anime> _anime;
+    private readonly MalToModelConverter _converter;
+    private readonly SourceCache<ScheduledAnimeModel, long> _animeCache = new(x => x.Id);
+    private readonly ReadOnlyObservableCollection<ScheduledAnimeModel> _anime;
     private readonly ObservableAsPropertyHelper<DayOfWeek> _filter;
 
-    public ScheduleViewModel(IMalClient client)
+    public ScheduleViewModel(IMalClient client,
+                             MalToModelConverter converter)
     {
         _client = client;
+        _converter = converter;
+
+        this.WhenAnyValue(x => x.SelectedDay)
+            .WhereNotNull()
+            .Select(schedule => Enum.Parse<DayOfWeek>($"{schedule.Day[..1].ToUpper()}{schedule.Day[1..]}"))
+            .ToProperty(this, x => x.Filter, out _filter, DayOfWeek.Sunday);
 
         _animeCache
             .Connect()
@@ -36,21 +44,16 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
-
-        this.WhenAnyValue(x => x.SelectedDay)
-            .WhereNotNull()
-            .Select(x => Enum.Parse<DayOfWeek>($"{x.Key[..1].ToUpper()}{x.Key[1..]}"))
-            .ToProperty(this, x => x.Filter, out _filter);
     }
 
     [Reactive] public ScheduleModel SelectedDay { get; set; }
-    public ReadOnlyObservableCollection<Anime> Anime => _anime;
+    public ReadOnlyObservableCollection<ScheduledAnimeModel> Anime => _anime;
     public WeeklyScheduleModel Schedule { get; } = new();
-    public DayOfWeek Filter => _filter?.Value ?? DayOfWeek.Sunday;
+    public DayOfWeek Filter => _filter.Value;
 
     public void RestoreState(IState state)
     {
-        var anime = state.GetValue<IEnumerable<Anime>>(nameof(Anime));
+        var anime = state.GetValue<IEnumerable<ScheduledAnimeModel>>(nameof(Anime));
         InitSchedule(anime);
         _animeCache.Edit(x => x.AddOrUpdate(anime));
         SelectedDay = state.GetValue<ScheduleModel>(nameof(SelectedDay));
@@ -66,14 +69,11 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
                                      .WithField(x => x.TotalEpisodes)
                                      .Find();
 
-        var current = AnimeHelpers.CurrentSeason();
-        var userAnimeInCurrentSeason = userAnime.Data.Where(x => x.Status is AiringStatus.CurrentlyAiring);
-
-        
+        var userAnimeInCurrentSeason = ConvertToModel(userAnime.Data.Where(x => x.Status is AiringStatus.CurrentlyAiring).ToList());
         InitSchedule(userAnimeInCurrentSeason);
         _animeCache.Edit(x => x.AddOrUpdate(userAnimeInCurrentSeason));
         var schedule = Schedule.ToList();
-        SelectedDay = schedule.FirstOrDefault(x => x.Key == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? schedule.FirstOrDefault();
+        SelectedDay = schedule.FirstOrDefault(x => x.Day == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? schedule.FirstOrDefault();
     }
 
     public void StoreState(IState state)
@@ -82,10 +82,20 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         state.AddOrUpdate(SelectedDay);
     }
 
-    private void InitSchedule(IEnumerable<Anime> anime)
+    private List<ScheduledAnimeModel> ConvertToModel(List<Anime> anime)
     {
-        var grouping = anime.GroupBy(x => x.Broadcast.DayOfWeek);
-        
+        var result = new List<ScheduledAnimeModel>();
+        anime.ForEach(malModel =>
+        {
+            result.Add(_converter.Convert<ScheduledAnimeModel>(malModel) as ScheduledAnimeModel);
+        });
+        return result;
+    }
+
+    private void InitSchedule(IEnumerable<ScheduledAnimeModel> anime)
+    {
+        var grouping = anime.GroupBy(x => x.BroadcastDay);
+
         foreach (var item in grouping.Where(x => x.Key is not null))
         {
             Schedule[item.Key.Value].Count = item.Count();
@@ -94,6 +104,6 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         this.RaisePropertyChanged(nameof(Schedule));
     }
 
-    private static Func<Anime, bool> FilterByDay(DayOfWeek day) => a => a.Broadcast.DayOfWeek == day;
+    private static Func<ScheduledAnimeModel, bool> FilterByDay(DayOfWeek day) => a => a.BroadcastDay == day;
 
 }

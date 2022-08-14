@@ -50,6 +50,7 @@ public partial class App : Application
             services.AddTransient<IViewService, ViewService>();
             services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
             services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
+            services.AddTransient<MalToModelConverter>();
 
             // Core Services
             services.AddSingleton<IFileService, FileService>();

@@ -12,6 +12,7 @@ using AnimDL.Api;
 using AnimDL.Core.Models;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
+using AnimDL.WinUI.Models;
 using AnimDL.WinUI.Views;
 using DynamicData;
 using DynamicData.Binding;
@@ -29,7 +30,7 @@ public class WatchViewModel : NavigatableViewModel
     private readonly ISettings _settings;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IDiscordRichPresense _discordRichPresense;
-    private readonly ObservableAsPropertyHelper<IProvider> _provider;
+    private ObservableAsPropertyHelper<IProvider> _provider;
     private readonly SourceCache<SearchResult, string> _searchResultCache = new(x => x.Title);
     private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
 
@@ -49,7 +50,6 @@ public class WatchViewModel : NavigatableViewModel
         SelectedProviderType = _settings.DefaultProviderType;
         SearchResultPicked = ReactiveCommand.CreateFromTask<SearchResult>(FetchEpisodes);
 
-
         _searchResultCache
             .Connect()
             .RefCount()
@@ -59,9 +59,9 @@ public class WatchViewModel : NavigatableViewModel
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
-        this.WhenAnyValue(x => x.SelectedProviderType)
-            .Select(x => providerFactory.GetProvider(x))
-            .ToProperty(this, x => x.Provider, out _provider);
+        _provider = this.WhenAnyValue(x => x.SelectedProviderType)
+            .Select(providerFactory.GetProvider)
+            .ToProperty(this, x => x.Provider, providerFactory.GetProvider(ProviderType.AnimixPlay));
 
         this.WhenAnyValue(x => x.Query)
             .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
@@ -72,19 +72,23 @@ public class WatchViewModel : NavigatableViewModel
 
         this.WhenAnyValue(x => x.CurrentPlayerTime)
             .Where(_ => Anime is not null)
-            .Where(_ => Anime.UserStatus.WatchedEpisodes <= CurrentEpisode)
+            .Where(_ => Anime.UserAnimeStatus.WatchedEpisodes <= CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= 135)
+            .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(_ => IncrementEpisode())
-            .Subscribe();
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(status => Anime.UserAnimeStatus = status);
 
         this.WhenAnyValue(x => x.CurrentEpisode)
             .Where(x => x > 0)
+            .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(FetchUrlForEp)
-            .Subscribe();
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(url => Url = url);
     }
 
     [Reactive] public string Query { get; set; }
-    [Reactive] public ProviderType SelectedProviderType { get; set; }
+    [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
     [Reactive] public ObservableCollection<int> Episodes { get; set; } = new();
     [Reactive] public string Url { get; set; }
     [Reactive] public bool IsSuggestionListOpen { get; set; }
@@ -93,7 +97,7 @@ public class WatchViewModel : NavigatableViewModel
     [Reactive] public bool NavigatedToWithParameter { get; set; }
     [Reactive] public string VideoPlayerRequestMessage { get; set; }
     public double CurrentMediaDuration { get; set; }
-    public Anime Anime { get; set; }
+    public AnimeModel Anime { get; set; }
     public SearchResult SelectedResult { get; set; }
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public IProvider Provider => _provider.Value;
@@ -102,7 +106,7 @@ public class WatchViewModel : NavigatableViewModel
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
 
 
-    public async Task OnVideoPlayerMessageRecieved(WebMessage message)
+    public async Task<Unit> OnVideoPlayerMessageRecieved(WebMessage message)
     {
         switch (message.MessageType)
         {
@@ -145,6 +149,8 @@ public class WatchViewModel : NavigatableViewModel
                 TryDiscordRpcStartWatching();
                 break;
         }
+
+        return Unit.Default;
     }
 
     public async Task FetchEpisodes(SearchResult result)
@@ -156,20 +162,19 @@ public class WatchViewModel : NavigatableViewModel
         await obs.LastAsync();
         SelectedResult = result;
         
-        if (Anime is not null && Episodes.Contains(Anime.UserStatus.WatchedEpisodes + 1))
+        if (Anime is not null && Episodes.Contains(Anime.UserAnimeStatus.WatchedEpisodes + 1))
         {
-            CurrentEpisode = Anime.UserStatus.WatchedEpisodes + 1;
+            CurrentEpisode = Anime.UserAnimeStatus.WatchedEpisodes + 1;
         }
     }
 
-    public async Task<Unit> FetchUrlForEp(int ep)
+    public async Task<string> FetchUrlForEp(int ep)
     {
         var epStream = await Provider.StreamProvider.GetStreams(SelectedResult.Url, ep..ep).ToListAsync();
-        Url = epStream[0].Qualities.Values.ElementAt(0).Url;
-        return Unit.Default;
+        return epStream[0].Qualities.Values.ElementAt(0).Url;
     }
 
-    private async Task<Unit> IncrementEpisode()
+    private Task<UserAnimeStatus> IncrementEpisode()
     {
         _playbackStateStorage.Reset(Anime.Id, CurrentEpisode);
         
@@ -184,9 +189,7 @@ public class WatchViewModel : NavigatableViewModel
             request.WithStatus(AnimeStatus.Completed);
         }
 
-        Anime.UserStatus = await request.Publish();
-
-        return Unit.Default;
+        return request.Publish();
     }
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
@@ -197,7 +200,7 @@ public class WatchViewModel : NavigatableViewModel
         }
 
         NavigatedToWithParameter = true;
-        Anime = parameters["Anime"] as Anime;
+        Anime = parameters["Anime"] as AnimeModel;
         var results = await Provider.Catalog.Search(Anime.Title).ToListAsync();
 
         var selected = results.Count == 1

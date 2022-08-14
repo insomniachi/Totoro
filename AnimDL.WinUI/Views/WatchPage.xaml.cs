@@ -23,44 +23,45 @@ public sealed partial class WatchPage : WatchPageBase
 
         this.WhenActivated(d =>
         {
-            // Suggestion Choosen
-            SearchBox.Events().SuggestionChosen
-                              .Select(x => x.args.SelectedItem as SearchResult)
-                              .InvokeCommand(ViewModel.SearchResultPicked)
-                              .DisposeWith(d);
+            SearchBox
+            .Events()
+            .SuggestionChosen
+            .Select(@event => @event.args.SelectedItem as SearchResult)
+            .InvokeCommand(ViewModel.SearchResultPicked)
+            .DisposeWith(ViewModel.Garbage);
 
-            // Relay messages from webview
-            WebView.Events()
-                   .WebMessageReceived
-                   .Select(x => JsonSerializer.Deserialize<WebMessage>(x.args.WebMessageAsJson))
-                   .Subscribe(async x => await ViewModel.OnVideoPlayerMessageRecieved(x))
-                   .DisposeWith(d);
+            WebView
+            .Events()
+            .WebMessageReceived
+            .Select(@event => JsonSerializer.Deserialize<WebMessage>(@event.args.WebMessageAsJson))
+            .SelectMany(ViewModel.OnVideoPlayerMessageRecieved)
+            .Subscribe()
+            .DisposeWith(ViewModel.Garbage);
+            
+            WebView
+            .Events()
+            .NavigationCompleted
+            .Where(@event => @event.args.IsSuccess)
+            .SelectMany(@event => @event.sender.ExecuteScriptAsync("document.querySelector('body').style.overflow='hidden'"))
+            .Subscribe()
+            .DisposeWith(ViewModel.Garbage);
 
-            WebView.Events()
-                   .NavigationCompleted
-                   .Where(x => x.args.IsSuccess)
-                   .Subscribe(async x => await x.sender.ExecuteScriptAsync("document.querySelector('body').style.overflow='hidden'"));
         });
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
+        await WebView.EnsureCoreWebView2Async();
+
         // Load video html
         this.ObservableForProperty(x => x.ViewModel.Url, x => x)
-            .Subscribe(async x =>
-            {
-                var html = VideoJsHelper.GetPlayerHtml(x);
-                await WebView.EnsureCoreWebView2Async();
-                WebView.NavigateToString(html);
-            })
+            .Select(VideoJsHelper.GetPlayerHtml)
+            .Subscribe(WebView.NavigateToString)
             .DisposeWith(ViewModel.Garbage);
 
+        // Send message to webview
         this.ObservableForProperty(x => x.ViewModel.VideoPlayerRequestMessage, x => x)
-            .Subscribe(async x =>
-            {
-                await WebView.EnsureCoreWebView2Async();
-                WebView.CoreWebView2.PostWebMessageAsJson(x);
-            })
+            .Subscribe(WebView.CoreWebView2.PostWebMessageAsJson)
             .DisposeWith(ViewModel.Garbage);
     }
 

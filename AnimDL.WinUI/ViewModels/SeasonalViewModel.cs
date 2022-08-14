@@ -8,6 +8,7 @@ using System.Windows.Input;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Helpers;
+using AnimDL.WinUI.Models;
 using DynamicData;
 using MalApi;
 using MalApi.Interfaces;
@@ -20,14 +21,17 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IMalClient _client;
     private readonly IViewService _viewService;
-    private readonly SourceCache<Anime, long> _animeCache = new(x => x.Id);
-    private readonly ReadOnlyObservableCollection<Anime> _anime;
+    private readonly MalToModelConverter _converter;
+    private readonly SourceCache<SeasonalAnimeModel, long> _animeCache = new(x => x.Id);
+    private readonly ReadOnlyObservableCollection<SeasonalAnimeModel> _anime;
 
-    public SeasonalViewModel(IMalClient client, IViewService viewService)
+    public SeasonalViewModel(IMalClient client,
+                             IViewService viewService,
+                             MalToModelConverter converter)
     {
         _client = client;
         _viewService = viewService;
-
+        _converter = converter;
         SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
         AddToListCommand = ReactiveCommand.CreateFromTask<Anime>(AddToList);
 
@@ -50,7 +54,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     public Season Current { get; private set; }
     public Season Next { get; private set; }
     public Season Prev { get; private set; }
-    public ReadOnlyObservableCollection<Anime> Anime => _anime;
+    public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }
 
@@ -64,32 +68,39 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
 
         Season = Current;
 
-        var currAnime = await _client.Anime().OfSeason(Current.SeasonName, Current.Year)
-                                             .WithField(x => x.UserStatus)
-                                             .WithField(x => x.StartSeason)
-                                             .WithField(x => x.TotalEpisodes)
-                                             .Find();
+        var currAnime = await _client
+            .Anime()
+            .OfSeason(Current.SeasonName, Current.Year)
+            .WithField(x => x.UserStatus)
+            .WithField(x => x.StartSeason)
+            .WithField(x => x.TotalEpisodes)
+            .Find();
+       
         _animeCache.Edit(x =>
         {
-            x.AddOrUpdate(currAnime.Data);
+            x.AddOrUpdate(ConvertToModel(currAnime.Data));
         });
 
-        var prevAnime = await _client.Anime().OfSeason(Prev.SeasonName, Prev.Year)
-                                             .WithField(x => x.UserStatus)
-                                             .WithField(x => x.StartSeason)
-                                             .WithField(x => x.TotalEpisodes)
-                                             .Find();
+        var prevAnime = await _client
+            .Anime()
+            .OfSeason(Prev.SeasonName, Prev.Year)
+            .WithField(x => x.UserStatus)
+            .WithField(x => x.StartSeason)
+            .WithField(x => x.TotalEpisodes)
+            .Find();
 
-        var nextAnime = await _client.Anime().OfSeason(Next.SeasonName, Next.Year)
-                                             .WithField(x => x.UserStatus)
-                                             .WithField(x => x.StartSeason)
-                                             .WithField(x => x.TotalEpisodes)
-                                             .Find();
+        var nextAnime = await _client
+            .Anime()
+            .OfSeason(Next.SeasonName, Next.Year)
+            .WithField(x => x.UserStatus)
+            .WithField(x => x.StartSeason)
+            .WithField(x => x.TotalEpisodes)
+            .Find();
 
         _animeCache.Edit(x =>
         {
-            x.AddOrUpdate(prevAnime.Data);
-            x.AddOrUpdate(nextAnime.Data);
+            x.AddOrUpdate(ConvertToModel(prevAnime.Data));
+            x.AddOrUpdate(ConvertToModel(nextAnime.Data));
         });
 
         IsLoading = false;
@@ -103,7 +114,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
 
     public void RestoreState(IState state)
     {
-        var anime = state.GetValue<IEnumerable<Anime>>(nameof(Anime));
+        var anime = state.GetValue<IEnumerable<SeasonalAnimeModel>>(nameof(Anime));
         Season = state.GetValue<Season>(nameof(Season));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
     }
@@ -119,8 +130,18 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         };
     }
 
-    private async Task AddToList(Anime a) => await _viewService.UpdateAnimeStatus(a);
+    private List<SeasonalAnimeModel> ConvertToModel(List<Anime> anime)
+    {
+        var result = new List<SeasonalAnimeModel>();
+        anime.ForEach(malModel =>
+        {
+            result.Add(_converter.Convert<SeasonalAnimeModel>(malModel) as SeasonalAnimeModel);
+        });
+        return result;
+    }
 
-    private Func<Anime, bool> FilterBySeason(Season s) => x => x.StartSeason.SeasonName == s.SeasonName && x.StartSeason.Year == s.Year;
+    private async Task AddToList(Anime a) => await _viewService.UpdateAnimeStatus(new AnimeModel { Id = a.Id, Title = a.Title});
+
+    private Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season.SeasonName == s.SeasonName && x.Season.Year == s.Year;
 
 }

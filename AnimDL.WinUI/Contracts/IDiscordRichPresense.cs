@@ -1,11 +1,11 @@
 ﻿using System;
-using MalApi;
+using AnimDL.WinUI.Models;
 
 namespace AnimDL.WinUI.Contracts;
 
 public interface IDiscordRichPresense
 {
-    void SetPresense(Anime a, int episode, TimeSpan duration);
+    void SetPresense(AnimeModel a, int episode, TimeSpan duration);
     void SetPresense(string title, int episode, TimeSpan duration);
     void UpdateDetails(string details);
     void Clear();

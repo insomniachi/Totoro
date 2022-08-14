@@ -1,7 +1,7 @@
 ﻿using System;
 using AnimDL.WinUI.Contracts;
+using AnimDL.WinUI.Models;
 using DiscordRPC;
-using MalApi;
 
 namespace AnimDL.WinUI.Services;
 
@@ -13,7 +13,7 @@ public class DiscordRichPresense : IDiscordRichPresense
 
     public bool IsInitialized => _client.IsInitialized;
 
-    public void SetPresense(Anime anime, int episode, TimeSpan duration)
+    public void SetPresense(AnimeModel anime, int episode, TimeSpan duration)
     {
         var message = new RichPresence()
             .WithDetails("Watching")

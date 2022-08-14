@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
+using AnimDL.WinUI.Models;
 using AnimDL.WinUI.Views;
 using DynamicData;
 using MalApi;
@@ -21,16 +22,18 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IMalClient _malClient;
     private readonly INavigationService _navigationService;
-    private readonly SourceCache<Anime, long> _animeCache = new(x => x.Id);
-    private readonly ReadOnlyObservableCollection<Anime> _anime;
+    private readonly MalToModelConverter _converter;
+    private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
+    private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
 
     public UserListViewModel(IMalClient malClient,
-                             INavigationService navigationService)
+                             INavigationService navigationService,
+                             MalToModelConverter converter)
     {
         _malClient = malClient;
         _navigationService = navigationService;
-
-        ItemClickedCommand = ReactiveCommand.Create<Anime>(OnItemClicked);
+        _converter = converter;
+        ItemClickedCommand = ReactiveCommand.Create<AnimeModel>(OnItemClicked);
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => CurrentView = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
@@ -49,18 +52,18 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
 
-    public ReadOnlyObservableCollection<Anime> Anime => _anime;
+    public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ItemClickedCommand { get; }
     public ICommand ChangeCurrentViewCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand SetDisplayMode { get; }
 
-    private void OnItemClicked(Anime anime)
+    private void OnItemClicked(AnimeModel anime)
     {
         _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object> { ["Anime"] = anime });
     }
 
-    private Func<Anime, bool> FilterByStatusPredicate(AnimeStatus status) => x => x.UserStatus.Status == status;
+    private Func<AnimeModel, bool> FilterByStatusPredicate(AnimeStatus status) => x => x.UserAnimeStatus.Status == status;
 
     public async Task SetInitialState()
     {
@@ -73,8 +76,18 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                                         .WithField(x => x.Broadcast)
                                         .Find();
         
-        _animeCache.AddOrUpdate(userAnime.Data);
+        _animeCache.AddOrUpdate(ConvertToModel(userAnime.Data));
         IsLoading = false;
+    }
+
+    private List<AnimeModel> ConvertToModel(List<Anime> anime)
+    {
+        var result = new List<AnimeModel>();
+        anime.ForEach(malModel =>
+        {
+            result.Add(_converter.Convert<AnimeModel>(malModel));
+        });
+        return result;
     }
 
     public void StoreState(IState state)
@@ -85,7 +98,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public void RestoreState(IState state)
     {
-        var anime = state.GetValue<IEnumerable<Anime>>(nameof(Anime));
+        var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
         CurrentView = state.GetValue<AnimeStatus>(nameof(CurrentView));
     }

@@ -8,6 +8,7 @@
     xmlns:help="using:AnimDL.WinUI.Helpers"
     xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:AnimDL.WinUI.Models"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:v="using:AnimDL.WinUI.Views"
@@ -61,7 +62,7 @@
                     IsItemClickEnabled="True"
                     ItemsSource="{x:Bind ViewModel.Anime}">
                     <GridView.ItemTemplate>
-                        <DataTemplate x:DataType="mal:Anime">
+                        <DataTemplate x:DataType="models:AnimeModel">
                             <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
                                 <uc:AnimeCard.Flyout>
                                     <MenuFlyout>

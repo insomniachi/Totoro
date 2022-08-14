@@ -21,7 +21,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         Observable
             .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x =>
+            .Subscribe(_ =>
             {
                 if (TopAiring.Count == 0)
                 {

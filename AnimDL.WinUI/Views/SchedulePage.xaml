@@ -29,7 +29,7 @@
                         <Run
                             FontSize="20"
                             FontWeight="Bold"
-                            Text="{x:Bind UIText}" />
+                            Text="{x:Bind DisplayText}" />
                         <LineBreak />
                         <Run FontSize="15" Text="{x:Bind Count}" />
                     </TextBlock>
@@ -55,7 +55,7 @@
             IsItemClickEnabled="True"
             ItemsSource="{x:Bind ViewModel.Anime}">
             <GridView.ItemTemplate>
-                <DataTemplate x:DataType="mal:Anime">
+                <DataTemplate x:DataType="model:ScheduledAnimeModel">
                     <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
                         <uc:AnimeCard.Flyout>
                             <MenuFlyout>

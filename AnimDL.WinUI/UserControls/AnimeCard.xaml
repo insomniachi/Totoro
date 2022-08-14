@@ -20,7 +20,7 @@
             Grid.Row="0"
             CacheMode="BitmapCache"
             IsCacheEnabled="True"
-            Source="{x:Bind Anime.MainPicture.Large, Mode=OneWay}"
+            Source="{x:Bind Anime.Image, Mode=OneWay}"
             Stretch="UniformToFill" />
 
         <Border

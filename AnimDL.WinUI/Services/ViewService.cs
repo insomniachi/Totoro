@@ -5,6 +5,7 @@ using AnimDL.Api;
 using AnimDL.Core.Models;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Dialogs.ViewModels;
+using AnimDL.WinUI.Models;
 using MalApi;
 using MalApi.Interfaces;
 using Microsoft.UI.Xaml.Controls;
@@ -23,7 +24,7 @@ public class ViewService : IViewService
         _client = client;
     }
 
-    public async Task UpdateAnimeStatus(Anime a)
+    public async Task UpdateAnimeStatus(AnimeModel a)
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
         vm.Anime = a;
@@ -52,7 +53,7 @@ public class ViewService : IViewService
                 request.WithEpisodesWatched((int)vm.EpisodesWatched);
             }
 
-            a.UserStatus = await request.Publish();
+            a.UserAnimeStatus = await request.Publish();
         }
     }
 

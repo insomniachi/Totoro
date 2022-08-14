@@ -16,17 +16,17 @@ public sealed partial class SeasonalPage : SeasonalPageBase
 
         this.WhenAnyValue(x => x.ViewModel.Season)
             .WhereNotNull()
-            .Subscribe(x =>
+            .Subscribe(season =>
             {
-                if (x == ViewModel.Current)
+                if (season == ViewModel.Current)
                 {
                     CurrentFlyoutToggle.IsChecked = true;
                 }
-                else if (x == ViewModel.Next)
+                else if (season == ViewModel.Next)
                 {
                     NextFlyoutToggle.IsChecked = true;
                 }
-                else if (x == ViewModel.Prev)
+                else if (season == ViewModel.Prev)
                 {
                     PrevFlyoutToggle.IsChecked = true;
                 }
