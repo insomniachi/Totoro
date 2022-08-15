@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reactive.Linq;
-using AnimDL.WinUI.Models;
-using MalApi;
+using AnimDL.UI.Core.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
@@ -18,13 +17,13 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
 
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
-            .Select(x => x.UserAnimeStatus)
+            .Select(x => x.Tracking)
             .WhereNotNull()
             .Subscribe(x =>
             {
-                Status = x.Status;
-                EpisodesWatched = x.WatchedEpisodes;
-                Score = x.Score;
+                Status = x.Status ?? AnimeStatus.None;
+                EpisodesWatched = x.WatchedEpisodes ?? 0;
+                Score = x.Score ?? 0;
             });
 
         this.ObservableForProperty(x => x.EpisodesWatched, x => x)
@@ -37,10 +36,8 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
     [Reactive] public AnimeModel Anime { get; set; }
     [Reactive] public AnimeStatus Status { get; set; }
     [Reactive] public double EpisodesWatched { get; set; }
-    [Reactive] public Score Score { get; set; }
+    [Reactive] public int Score { get; set; }
     [Reactive] public string Tags { get; set; }
-    [Reactive] public Priority? Priority { get; set; }
     [Reactive] public int? RewatchCount { get; set; }
-    [Reactive] public Value? RewatchValue { get; set; }
     [Reactive] public double TotalEpisodes { get; set; } 
 }

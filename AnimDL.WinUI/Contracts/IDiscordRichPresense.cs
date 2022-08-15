@@ -1,5 +1,5 @@
 ﻿using System;
-using AnimDL.WinUI.Models;
+using AnimDL.UI.Core.Models;
 
 namespace AnimDL.WinUI.Contracts;
 

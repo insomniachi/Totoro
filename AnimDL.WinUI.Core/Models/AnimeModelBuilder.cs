@@ -1,5 +1,5 @@
-﻿using AnimDL.WinUI.Core.Contracts;
-using MalApi;
+﻿using AnimDL.UI.Core.Models;
+using AnimDL.WinUI.Core.Contracts;
 
 namespace AnimDL.WinUI.Models;
 
@@ -12,7 +12,7 @@ public class MalToModelConverter
 		_schedule = schedule;
 	}
 
-	public AnimeModel Convert<T>(Anime anime)
+	public AnimeModel Convert<T>(MalApi.Anime anime)
 		where T : AnimeModel, new()
 	{
 		var model = new T();
@@ -25,17 +25,31 @@ public class MalToModelConverter
 		};
 	}
 
-	private AnimeModel Populate(AnimeModel model, Anime malModel)
+	private static AnimeModel Populate(AnimeModel model, MalApi.Anime malModel)
 	{
 		model.Id = malModel.Id;
 		model.Title = malModel.Title;
 		model.Image = malModel.MainPicture.Large;
-		model.UserAnimeStatus = malModel.UserStatus;
+		if (malModel.UserStatus is { } progress)
+		{
+			model.Tracking = new Tracking
+			{
+				WatchedEpisodes = progress.WatchedEpisodes,
+				Status = (AnimeStatus)(int)progress.Status,
+				Score = (int)progress.Score,
+				UpdatedAt = progress.UpdatedAt,
+				StartDate = progress.StartDate,
+				FinishDate = progress.FinishDate
+			}; 
+		}
+		model.AiringStatus = (AiringStatus)(int)(malModel.Status ?? MalApi.AiringStatus.NotYetAired);
 		model.TotalEpisodes = malModel.TotalEpisodes;
+		model.MeanScore = malModel.MeanScore;
+		model.Popularity = malModel.Popularity ?? 0;
 		return model;
 	}
 
-	private ScheduledAnimeModel PopulateSchedule(ScheduledAnimeModel model, Anime malModel)
+	private ScheduledAnimeModel PopulateSchedule(ScheduledAnimeModel model, MalApi.Anime malModel)
 	{
 		Populate(model, malModel);
 
@@ -43,7 +57,7 @@ public class MalToModelConverter
         
 		if (time is null)
         {
-			model.BroadcastDay = malModel.Broadcast.DayOfWeek;
+			model.BroadcastDay = malModel.Broadcast?.DayOfWeek;
 			return model;
         }
 
@@ -52,10 +66,13 @@ public class MalToModelConverter
         return model;
 	}
 
-	private SeasonalAnimeModel PopulateSeason(SeasonalAnimeModel model, Anime malModel)
+	private SeasonalAnimeModel PopulateSeason(SeasonalAnimeModel model, MalApi.Anime malModel)
 	{
 		Populate(model, malModel);
-		model.Season = malModel.StartSeason;
+		if(malModel.StartSeason is { } season)
+		{
+            model.Season = new((AnimeSeason)(int)season.SeasonName, season.Year);
+        }
 
 		if(model.Season == CurrentSeason())
 		{

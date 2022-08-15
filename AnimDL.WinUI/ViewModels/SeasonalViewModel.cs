@@ -5,12 +5,13 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using AnimDL.UI.Core.Contracts;
+using AnimDL.UI.Core.Models;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.Models;
 using DynamicData;
-using MalApi;
+using DynamicData.Binding;
 using MalApi.Interfaces;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -19,91 +20,58 @@ namespace AnimDL.WinUI.ViewModels;
 
 public class SeasonalViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly IMalClient _client;
+    private readonly IAnimeService _animeService;
     private readonly IViewService _viewService;
-    private readonly MalToModelConverter _converter;
     private readonly SourceCache<SeasonalAnimeModel, long> _animeCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<SeasonalAnimeModel> _anime;
 
-    public SeasonalViewModel(IMalClient client,
-                             IViewService viewService,
-                             MalToModelConverter converter)
+    public SeasonalViewModel(IAnimeService animeService,
+                             IViewService viewService)
     {
-        _client = client;
+        _animeService = animeService;
         _viewService = viewService;
-        _converter = converter;
-        SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
-        AddToListCommand = ReactiveCommand.CreateFromTask<Anime>(AddToList);
 
         _animeCache
             .Connect()
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason))
+            .Sort(SortExpressionComparer<SeasonalAnimeModel>.Ascending(x => x.Popularity))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
         this.WhenAnyValue(x => x.SeasonFilter).Subscribe(SwitchSeasonFilter);
+
+
+        SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
+        AddToListCommand = ReactiveCommand.CreateFromTask<AnimeModel>(AddToList);
     }
 
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public Season Season { get; set; }
     [Reactive] public string SeasonFilter { get; set; } = "Current";
 
-    public Season Current { get; private set; }
-    public Season Next { get; private set; }
-    public Season Prev { get; private set; }
+    public Season Current => AnimeHelpers.CurrentSeason();
+    public Season Next => AnimeHelpers.NextSeason();
+    public Season Prev => AnimeHelpers.PrevSeason();
     public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }
 
-    public async Task SetInitialState()
+    public Task SetInitialState()
     {
-        IsLoading = true;
+        _animeService.GetSeasonalAnime()
+                     .ObserveOn(RxApp.MainThreadScheduler)
+                     .Subscribe(list =>
+                     {
+                         _animeCache.Edit(x => x.AddOrUpdate(list));
 
-        Prev = AnimeHelpers.PrevSeason();
-        Current = AnimeHelpers.CurrentSeason();
-        Next = AnimeHelpers.NextSeason();
+                     }).DisposeWith(Garbage);
 
         Season = Current;
 
-        var currAnime = await _client
-            .Anime()
-            .OfSeason(Current.SeasonName, Current.Year)
-            .WithField(x => x.UserStatus)
-            .WithField(x => x.StartSeason)
-            .WithField(x => x.TotalEpisodes)
-            .Find();
-       
-        _animeCache.Edit(x =>
-        {
-            x.AddOrUpdate(ConvertToModel(currAnime.Data));
-        });
-
-        var prevAnime = await _client
-            .Anime()
-            .OfSeason(Prev.SeasonName, Prev.Year)
-            .WithField(x => x.UserStatus)
-            .WithField(x => x.StartSeason)
-            .WithField(x => x.TotalEpisodes)
-            .Find();
-
-        var nextAnime = await _client
-            .Anime()
-            .OfSeason(Next.SeasonName, Next.Year)
-            .WithField(x => x.UserStatus)
-            .WithField(x => x.StartSeason)
-            .WithField(x => x.TotalEpisodes)
-            .Find();
-
-        _animeCache.Edit(x =>
-        {
-            x.AddOrUpdate(ConvertToModel(prevAnime.Data));
-            x.AddOrUpdate(ConvertToModel(nextAnime.Data));
-        });
-
-        IsLoading = false;
+        return Task.CompletedTask;
     }
 
     public void StoreState(IState state)
@@ -130,18 +98,8 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         };
     }
 
-    private List<SeasonalAnimeModel> ConvertToModel(List<Anime> anime)
-    {
-        var result = new List<SeasonalAnimeModel>();
-        anime.ForEach(malModel =>
-        {
-            result.Add(_converter.Convert<SeasonalAnimeModel>(malModel) as SeasonalAnimeModel);
-        });
-        return result;
-    }
+    private async Task AddToList(AnimeModel a) => await _viewService.UpdateAnimeStatus(a);
 
-    private async Task AddToList(Anime a) => await _viewService.UpdateAnimeStatus(new AnimeModel { Id = a.Id, Title = a.Title});
-
-    private Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season.SeasonName == s.SeasonName && x.Season.Year == s.Year;
+    private Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
 
 }

@@ -1,8 +1,6 @@
 ﻿using System.ComponentModel;
-using System.Reactive.Linq;
-using MalApi;
 
-namespace AnimDL.WinUI.Models;
+namespace AnimDL.UI.Core.Models;
 
 public class Inpc : INotifyPropertyChanged
 {
@@ -15,8 +13,11 @@ public class AnimeModel : Inpc
     public long Id { get; set; }
     public string Image { get; set; }
     public string Title { get; set; }
-    public UserAnimeStatus UserAnimeStatus { get; set; }
+    public Tracking Tracking { get; set; }
     public int? TotalEpisodes { get; set; }
+    public AiringStatus AiringStatus { get; set; }
+    public float? MeanScore { get; set; }
+    public int Popularity { get; set; }
 }
 
 public class ScheduledAnimeModel : AnimeModel
@@ -39,15 +40,5 @@ public class TimeRemaining : Inpc
     {
         TimeSpan = timeSpan;
         LastUpdatedAt = lastUpdatedAt;
-
-        Observable.Timer(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1))
-                  .Subscribe(_ =>
-                  {
-                      var now = DateTime.Now;
-                      var diff = now - LastUpdatedAt;
-                      TimeSpan -= diff;
-                      lastUpdatedAt = now;
-                      RaisePropertyChanged(nameof(TimeSpan));
-                  });
     }
 }

@@ -2,8 +2,8 @@
 using System.Reactive.Linq;
 using System.Text;
 using System.Windows.Input;
+using AnimDL.UI.Core.Models;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveUI;
@@ -74,7 +74,7 @@ public sealed partial class AnimeCard : UserControl
             return Visibility.Collapsed;
         }
 
-        return a.UserAnimeStatus is null ? Visibility.Visible : Visibility.Collapsed;
+        return a.Tracking is null ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public Visibility NextEpisodeInVisibility(AnimeModel a)

@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AnimDL.Api;
 using AnimDL.Core.Models;
+using AnimDL.UI.Core.Contracts;
+using AnimDL.UI.Core.Models;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Dialogs.ViewModels;
-using AnimDL.WinUI.Models;
-using MalApi;
 using MalApi.Interfaces;
 using Microsoft.UI.Xaml.Controls;
 
@@ -15,13 +16,13 @@ namespace AnimDL.WinUI.Services;
 public class ViewService : IViewService
 {
     private readonly IContentDialogService _contentDialogService;
-    private readonly IMalClient _client;
+    private readonly ITrackingService _trackingService;
 
     public ViewService(IContentDialogService contentDialogService,
-                       IMalClient client)
+                       ITrackingService trackingService)
     {
         _contentDialogService = contentDialogService;
-        _client = client;
+        _trackingService = trackingService;
     }
 
     public async Task UpdateAnimeStatus(AnimeModel a)
@@ -39,21 +40,18 @@ public class ViewService : IViewService
 
         if(result == ContentDialogResult.Primary)
         {
-            var request = _client.Anime()
-                                 .WithId(a.Id)
-                                 .UpdateStatus()
-                                 .WithStatus(vm.Status);
+            var tracking = new Tracking() { Status = vm.Status };
 
             if(vm.Score is { } s)
             {
-                request.WithScore(s);
+                tracking.Score = s;
             }
             if(vm.EpisodesWatched > 0)
             {
-                request.WithEpisodesWatched((int)vm.EpisodesWatched);
+                tracking.WatchedEpisodes = (int)vm.EpisodesWatched;
             }
 
-            a.UserAnimeStatus = await request.Publish();
+            _trackingService.Update(a.Id, tracking).Subscribe(x => a.Tracking = x);
         }
     }
 

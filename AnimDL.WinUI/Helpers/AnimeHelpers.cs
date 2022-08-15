@@ -1,5 +1,5 @@
 ﻿using System;
-using MalApi;
+using AnimDL.UI.Core.Models;
 
 namespace AnimDL.WinUI.Helpers;
 
@@ -69,6 +69,6 @@ public class AnimeHelpers
         return new(current, year);
     }
 
-    public static double ScoreToRating(Score score) => score == Score.Unscored ? -1 : ((int)score / 2.0);
-    public static string Eps(Anime a) => $"{a.UserStatus.WatchedEpisodes}/{(a.TotalEpisodes == 0 ? "??" : a.TotalEpisodes)}";
+    public static double ScoreToRating(MalApi.Score score) => score == MalApi.Score.Unscored ? -1 : ((int)score / 2.0);
+    public static string Eps(MalApi.Anime a) => $"{a.UserStatus.WatchedEpisodes}/{(a.TotalEpisodes == 0 ? "??" : a.TotalEpisodes)}";
 }

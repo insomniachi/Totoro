@@ -4,6 +4,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using AnimDL.Core.Models;
 using AnimDL.WinUI.Helpers;
 using AnimDL.WinUI.ViewModels;

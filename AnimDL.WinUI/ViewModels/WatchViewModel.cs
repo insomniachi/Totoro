@@ -10,14 +10,13 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using AnimDL.Api;
 using AnimDL.Core.Models;
+using AnimDL.UI.Core.Contracts;
+using AnimDL.UI.Core.Models;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Models;
 using AnimDL.WinUI.Views;
 using DynamicData;
 using DynamicData.Binding;
-using MalApi;
-using MalApi.Interfaces;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
@@ -25,7 +24,7 @@ namespace AnimDL.WinUI.ViewModels;
 
 public class WatchViewModel : NavigatableViewModel
 {
-    private readonly IMalClient _client;
+    private readonly ITrackingService _trackingService;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly IPlaybackStateStorage _playbackStateStorage;
@@ -35,13 +34,13 @@ public class WatchViewModel : NavigatableViewModel
     private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
 
     public WatchViewModel(IProviderFactory providerFactory,
-                          IMalClient client,
+                          ITrackingService trackingService,
                           IViewService viewService,
                           ISettings settings,
                           IPlaybackStateStorage playbackStateStorage,
                           IDiscordRichPresense discordRichPresense)
     {
-        _client = client;
+        _trackingService = trackingService;
         _viewService = viewService;
         _settings = settings;
         _playbackStateStorage = playbackStateStorage;
@@ -72,12 +71,10 @@ public class WatchViewModel : NavigatableViewModel
 
         this.WhenAnyValue(x => x.CurrentPlayerTime)
             .Where(_ => Anime is not null)
-            .Where(_ => Anime.UserAnimeStatus.WatchedEpisodes <= CurrentEpisode)
+            .Where(_ => Anime.Tracking.WatchedEpisodes <= CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= 135)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(_ => IncrementEpisode())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(status => Anime.UserAnimeStatus = status);
+            .Subscribe(_ => IncrementEpisode());
 
         this.WhenAnyValue(x => x.CurrentEpisode)
             .Where(x => x > 0)
@@ -106,7 +103,7 @@ public class WatchViewModel : NavigatableViewModel
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
 
 
-    public async Task<Unit> OnVideoPlayerMessageRecieved(WebMessage message)
+    public Task<Unit> OnVideoPlayerMessageRecieved(WebMessage message)
     {
         switch (message.MessageType)
         {
@@ -126,7 +123,7 @@ public class WatchViewModel : NavigatableViewModel
                 if (Anime is not null)
                 {
                     _discordRichPresense.Clear();
-                    await IncrementEpisode();
+                    IncrementEpisode();
                     CurrentEpisode++;
                 }
                 break;
@@ -150,7 +147,7 @@ public class WatchViewModel : NavigatableViewModel
                 break;
         }
 
-        return Unit.Default;
+        return Task.FromResult(Unit.Default);
     }
 
     public async Task FetchEpisodes(SearchResult result)
@@ -162,9 +159,9 @@ public class WatchViewModel : NavigatableViewModel
         await obs.LastAsync();
         SelectedResult = result;
         
-        if (Anime is not null && Episodes.Contains(Anime.UserAnimeStatus.WatchedEpisodes + 1))
+        if (Anime is not null && Episodes.Contains(Anime.Tracking.WatchedEpisodes ?? 0 + 1))
         {
-            CurrentEpisode = Anime.UserAnimeStatus.WatchedEpisodes + 1;
+            CurrentEpisode = Anime.Tracking.WatchedEpisodes ?? 0 + 1;
         }
     }
 
@@ -174,22 +171,20 @@ public class WatchViewModel : NavigatableViewModel
         return epStream[0].Qualities.Values.ElementAt(0).Url;
     }
 
-    private Task<UserAnimeStatus> IncrementEpisode()
+    private void IncrementEpisode()
     {
         _playbackStateStorage.Reset(Anime.Id, CurrentEpisode);
-        
-        var request = _client
-            .Anime()
-            .WithId(Anime.Id)
-            .UpdateStatus()
-            .WithEpisodesWatched(CurrentEpisode);
+
+        var tracking = new Tracking() { WatchedEpisodes = CurrentEpisode };
 
         if (CurrentEpisode == Anime.TotalEpisodes)
         {
-            request.WithStatus(AnimeStatus.Completed);
+            tracking.Status = UI.Core.Models.AnimeStatus.Completed;
         }
 
-        return request.Publish();
+        _trackingService.Update(Anime.Id, tracking)
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(x => Anime.Tracking = x);
     }
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)

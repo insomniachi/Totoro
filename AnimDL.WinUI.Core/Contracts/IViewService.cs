@@ -1,6 +1,6 @@
 ﻿using AnimDL.Api;
 using AnimDL.Core.Models;
-using AnimDL.WinUI.Models;
+using AnimDL.UI.Core.Models;
 using MalApi;
 
 namespace AnimDL.WinUI.Contracts;

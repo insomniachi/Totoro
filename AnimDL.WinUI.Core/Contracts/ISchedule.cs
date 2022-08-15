@@ -1,4 +1,4 @@
-﻿using AnimDL.WinUI.Models;
+﻿using AnimDL.UI.Core.Models;
 
 namespace AnimDL.WinUI.Core.Contracts;
 

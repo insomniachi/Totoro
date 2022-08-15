@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using AnimDL.UI.Core.Models;
 using AnimDL.WinUI.ViewModels;
-using MalApi;
 using ReactiveUI;
 
 namespace AnimDL.WinUI.Views;

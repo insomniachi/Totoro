@@ -4,8 +4,8 @@ using System.Net.Http;
 using System.Reactive.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using AnimDL.UI.Core.Models;
 using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Models;
 using ReactiveUI;
 
 namespace AnimDL.WinUI.Core;

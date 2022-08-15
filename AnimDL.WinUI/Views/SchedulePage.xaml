@@ -3,9 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:cm="using:AnimDL.UI.Core.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:AnimDL.WinUI.Models"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
@@ -55,7 +54,7 @@
             IsItemClickEnabled="True"
             ItemsSource="{x:Bind ViewModel.Anime}">
             <GridView.ItemTemplate>
-                <DataTemplate x:DataType="model:ScheduledAnimeModel">
+                <DataTemplate x:DataType="cm:ScheduledAnimeModel">
                     <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
                         <uc:AnimeCard.Flyout>
                             <MenuFlyout>

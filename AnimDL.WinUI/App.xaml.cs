@@ -60,6 +60,7 @@ public partial class App : Application
             services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
             services.AddSingleton<ISchedule, Schedule>();
             services.AddAnimDL();
+            services.AddMyAnimeList();
 
 
             // Navigatable views

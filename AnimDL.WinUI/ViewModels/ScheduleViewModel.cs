@@ -2,34 +2,31 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using AnimDL.UI.Core.Contracts;
+using AnimDL.UI.Core.Models;
 using AnimDL.WinUI.Core.Contracts;
-using DynamicData;
-using MalApi;
-using MalApi.Interfaces;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using System.Linq;
 using AnimDL.WinUI.Helpers;
 using AnimDL.WinUI.Models;
+using DynamicData;
+using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 
 public class ScheduleViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly IMalClient _client;
-    private readonly MalToModelConverter _converter;
     private readonly SourceCache<ScheduledAnimeModel, long> _animeCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<ScheduledAnimeModel> _anime;
     private readonly ObservableAsPropertyHelper<DayOfWeek> _filter;
+    private readonly ITrackingService _trackingService;
 
-    public ScheduleViewModel(IMalClient client,
-                             MalToModelConverter converter)
+    public ScheduleViewModel(ITrackingService trackingService)
     {
-        _client = client;
-        _converter = converter;
+        _trackingService = trackingService;
 
         this.WhenAnyValue(x => x.SelectedDay)
             .WhereNotNull()
@@ -59,37 +56,29 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         SelectedDay = state.GetValue<ScheduleModel>(nameof(SelectedDay));
     }
 
-    public async Task SetInitialState()
+    public Task SetInitialState()
     {
-        var userAnime = await _client.Anime().OfUser()
-                                     .WithStatus(AnimeStatus.Watching)
-                                     .WithField(x => x.Broadcast)
-                                     .WithField(x => x.Status)
-                                     .WithField(x => x.UserStatus)
-                                     .WithField(x => x.TotalEpisodes)
-                                     .Find();
+        var current = AnimeHelpers.CurrentSeason();
 
-        var userAnimeInCurrentSeason = ConvertToModel(userAnime.Data.Where(x => x.Status is AiringStatus.CurrentlyAiring).ToList());
-        InitSchedule(userAnimeInCurrentSeason);
-        _animeCache.Edit(x => x.AddOrUpdate(userAnimeInCurrentSeason));
-        var schedule = Schedule.ToList();
-        SelectedDay = schedule.FirstOrDefault(x => x.Day == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? schedule.FirstOrDefault();
+        _trackingService.GetAiringAnime()
+                        .Do(list => InitSchedule(list))
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(list => 
+                        {
+                            this.RaisePropertyChanged(nameof(Schedule));
+                            var schedule = Schedule.ToList();
+                            SelectedDay = schedule.FirstOrDefault(x => x.Day == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? schedule.FirstOrDefault();
+
+                            _animeCache.Edit(x => x.AddOrUpdate(list.Where(x => x.AiringStatus == AiringStatus.CurrentlyAiring)));
+                        });
+
+        return Task.CompletedTask;
     }
 
     public void StoreState(IState state)
     {
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
         state.AddOrUpdate(SelectedDay);
-    }
-
-    private List<ScheduledAnimeModel> ConvertToModel(List<Anime> anime)
-    {
-        var result = new List<ScheduledAnimeModel>();
-        anime.ForEach(malModel =>
-        {
-            result.Add(_converter.Convert<ScheduledAnimeModel>(malModel) as ScheduledAnimeModel);
-        });
-        return result;
     }
 
     private void InitSchedule(IEnumerable<ScheduledAnimeModel> anime)
@@ -100,8 +89,6 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         {
             Schedule[item.Key.Value].Count = item.Count();
         }
-
-        this.RaisePropertyChanged(nameof(Schedule));
     }
 
     private static Func<ScheduledAnimeModel, bool> FilterByDay(DayOfWeek day) => a => a.BroadcastDay == day;

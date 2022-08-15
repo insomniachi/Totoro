@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using AnimDL.UI.Core.Contracts;
+using AnimDL.UI.Core.Services.MyAnimeList;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Services;
 using AnimDL.WinUI.ViewModels;
@@ -38,6 +40,13 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ISettings>(x => x.GetRequiredService<SettingsViewModel>());
         services.AddTransient<ShellPage>();
         services.AddSingleton<ShellViewModel>();
+        return services;
+    }
+
+    public static IServiceCollection AddMyAnimeList(this IServiceCollection services)
+    {
+        services.AddTransient<ITrackingService, MyAnimeListTrackingService>();
+        services.AddTransient<IAnimeService, MyAnimeListService>();
         return services;
     }
 }
