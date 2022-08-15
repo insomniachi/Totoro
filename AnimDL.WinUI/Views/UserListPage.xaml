@@ -6,6 +6,7 @@
     xmlns:cm="using:AnimDL.UI.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:AnimDL.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
@@ -98,21 +99,14 @@
                         <ctk:DataGridTemplateColumn Width="150" Header="Rating">
                             <ctk:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
-                                    <RatingControl IsReadOnly="True" ToolTipService.ToolTip="{x:Bind Tracking.Score}" />
+                                    <RatingControl IsReadOnly="True" Value="{x:Bind help:AnimeHelpers.ScoreToRating(Tracking.Score)}" />
                                 </DataTemplate>
                             </ctk:DataGridTemplateColumn.CellTemplate>
                         </ctk:DataGridTemplateColumn>
                         <ctk:DataGridTemplateColumn Width="100" Header="Ep">
                             <ctk:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
-                                    <TextBlock HorizontalAlignment="Center" />
-                                </DataTemplate>
-                            </ctk:DataGridTemplateColumn.CellTemplate>
-                        </ctk:DataGridTemplateColumn>
-                        <ctk:DataGridTemplateColumn Width="150" Header="Day">
-                            <ctk:DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <TextBlock HorizontalAlignment="Center" Text="" />
+                                    <TextBlock HorizontalAlignment="Center" Text="{x:Bind help:AnimeHelpers.Eps((cm:AnimeModel))}" />
                                 </DataTemplate>
                             </ctk:DataGridTemplateColumn.CellTemplate>
                         </ctk:DataGridTemplateColumn>

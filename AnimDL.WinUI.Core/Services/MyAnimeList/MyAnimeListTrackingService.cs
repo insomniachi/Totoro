@@ -28,20 +28,21 @@ public class MyAnimeListTrackingService : ITrackingService
                 .WithField(x => x.UserStatus)
                 .WithField(x => x.TotalEpisodes)
                 .WithField(x => x.Broadcast)
-                .WithLimit(500)
+                .WithField(x => x.MeanScore)
                 .Find()
                 .ToObservable()
-                .Subscribe(pagedAnime =>
+                .Subscribe(async pagedAnime =>
                 {
                     observer.OnNext(ConvertToAnimeModel(pagedAnime.Data));
 
-                    //while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
-                    //{
-                    //    pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                    //    observer.OnNext(ConvertToAnimeModel(pagedAnime.Data));
-                    //}
+                    while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
+                    {
+                        pagedAnime = await _client.GetNextAnimePage(pagedAnime);
+                        observer.OnNext(ConvertToAnimeModel(pagedAnime.Data));
+                    }
 
                     observer.OnCompleted();
+
                 }, observer.OnError);
         });
     }

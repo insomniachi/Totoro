@@ -41,10 +41,11 @@
 
         <StackPanel>
             <TextBlock Text="Score" />
-            <ComboBox
-                Width="150"
-                ItemsSource="{x:Bind Scores}"
-                SelectedItem="{x:Bind ViewModel.Score, Mode=TwoWay}" />
+            <NumberBox
+                Maximum="10"
+                Minimum="0"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.Score, Mode=TwoWay}" />
         </StackPanel>
     </StackPanel>
 </views:UpdateAnimeStatusViewBase>

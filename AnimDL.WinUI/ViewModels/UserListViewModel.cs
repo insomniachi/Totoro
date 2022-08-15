@@ -11,6 +11,7 @@ using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Views;
 using DynamicData;
+using DynamicData.Binding;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
@@ -38,6 +39,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Connect()
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.CurrentView).Select(FilterByStatusPredicate))
+            .Sort(SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)

@@ -69,6 +69,6 @@ public class AnimeHelpers
         return new(current, year);
     }
 
-    public static double ScoreToRating(MalApi.Score score) => score == MalApi.Score.Unscored ? -1 : ((int)score / 2.0);
-    public static string Eps(MalApi.Anime a) => $"{a.UserStatus.WatchedEpisodes}/{(a.TotalEpisodes == 0 ? "??" : a.TotalEpisodes)}";
+    public static double ScoreToRating(int? score) => score is > 0 ? score.Value / 2.0 : -1;
+    public static string Eps(AnimeModel a) => $"{a.Tracking?.WatchedEpisodes ?? 0}/{(a.TotalEpisodes == 0 ? "??" : a.TotalEpisodes)}";
 }
