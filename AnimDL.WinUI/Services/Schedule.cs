@@ -62,7 +62,7 @@ public class Schedule : ISchedule
             return;
 
         new ToastContentBuilder().SetToastScenario(ToastScenario.Reminder)
-            .AddText("New episode aired").AddText(anime.Title).AddHeroImage(new Uri(anime.MainPicture.Large)).Show();
+            .AddText("New episode aired").AddText(anime.Title).Show();
     }
 
     public async Task FetchSchedule()
@@ -88,11 +88,15 @@ public class Schedule : ISchedule
         _isRefreshing = false;
     }
 
-    private TimeSpan Convert(long now, long time)
+    private static TimeSpan Convert(long now, long time)
     {
         double i;
+        
         for (i = 1e3 * (time + 7200) - now; i < -216e5; i += 6048e5)
-            ; // TODO : check if there is a inbuilt way of doing this
+        {
+            // TODO : check if there is a inbuilt way of doing this
+        }
+
         return TimeSpan.FromSeconds(Math.Floor(i / 1e3));
     }
 

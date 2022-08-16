@@ -68,8 +68,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
                             this.RaisePropertyChanged(nameof(Schedule));
                             var schedule = Schedule.ToList();
                             SelectedDay = schedule.FirstOrDefault(x => x.Day == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? schedule.FirstOrDefault();
-
-                            _animeCache.Edit(x => x.AddOrUpdate(list.Where(x => x.AiringStatus == AiringStatus.CurrentlyAiring)));
+                            _animeCache.Edit(x => x.AddOrUpdate(list));
                         });
 
         return Task.CompletedTask;

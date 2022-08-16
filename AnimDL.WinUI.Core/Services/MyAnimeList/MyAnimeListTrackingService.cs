@@ -62,12 +62,12 @@ public class MyAnimeListTrackingService : ITrackingService
                 .ToObservable()
                 .Subscribe(async pagedAnime =>
                 {
-                    observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data));
+                    observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
 
                     while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
                     {
                         pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                        observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data));
+                        observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
                     }
 
                     observer.OnCompleted();

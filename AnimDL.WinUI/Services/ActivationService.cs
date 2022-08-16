@@ -98,10 +98,11 @@ public class ActivationService : IActivationService
         await Task.CompletedTask;
     }
 
-    private async Task StartupAsync()
+    private Task StartupAsync()
     {
         _themeSelectorService.SetRequestedTheme();
-        await RequestFullscreen();
+        //await RequestFullscreen();
+        return Task.CompletedTask;
     }
 
     private static async Task RequestFullscreen()
