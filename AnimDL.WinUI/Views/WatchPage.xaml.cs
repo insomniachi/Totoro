@@ -4,7 +4,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using AnimDL.Core.Models;
 using AnimDL.WinUI.Helpers;
 using AnimDL.WinUI.ViewModels;
@@ -35,8 +34,7 @@ public sealed partial class WatchPage : WatchPageBase
             .Events()
             .WebMessageReceived
             .Select(@event => JsonSerializer.Deserialize<WebMessage>(@event.args.WebMessageAsJson))
-            .SelectMany(ViewModel.OnVideoPlayerMessageRecieved)
-            .Subscribe()
+            .Subscribe(@event => MessageBus.Current.SendMessage(@event))
             .DisposeWith(ViewModel.Garbage);
             
             WebView
@@ -57,11 +55,13 @@ public sealed partial class WatchPage : WatchPageBase
         // Load video html
         this.ObservableForProperty(x => x.ViewModel.Url, x => x)
             .Select(VideoJsHelper.GetPlayerHtml)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(WebView.NavigateToString)
             .DisposeWith(ViewModel.Garbage);
 
         // Send message to webview
         this.ObservableForProperty(x => x.ViewModel.VideoPlayerRequestMessage, x => x)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(WebView.CoreWebView2.PostWebMessageAsJson)
             .DisposeWith(ViewModel.Garbage);
     }
