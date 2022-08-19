@@ -11,6 +11,7 @@
     xmlns:uc="using:AnimDL.WinUI.UserControls"
     xmlns:views="using:AnimDL.WinUI.Views"
     x:Name="Page"
+    Margin="{ThemeResource MediumLeftRightMargin}"
     mc:Ignorable="d">
 
     <views:SeasonalPageBase.Resources>

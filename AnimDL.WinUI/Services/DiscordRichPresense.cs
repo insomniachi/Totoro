@@ -16,8 +16,8 @@ public class DiscordRichPresense : IDiscordRichPresense
     public void SetPresense(AnimeModel anime, int episode, TimeSpan duration)
     {
         var message = new RichPresence()
-            .WithDetails("Watching")
-            .WithState($"{anime.Title} - Episode {episode}")
+            .WithDetails(anime.Title)
+            .WithState($"Episode {episode}")
             .WithAssets(new Assets() { LargeImageKey = "icon" })
             .WithTimestamps(Timestamps.FromTimeSpan(duration));
 
@@ -27,8 +27,8 @@ public class DiscordRichPresense : IDiscordRichPresense
     public void SetPresense(string title, int episode, TimeSpan duration)
     {
         var message = new RichPresence()
-            .WithDetails("Watching")
-            .WithState($"{title} - Episode {episode}")
+            .WithDetails(title)
+            .WithState($"Episode {episode}")
             .WithAssets(new Assets() { LargeImageKey = "icon" })
             .WithTimestamps(Timestamps.FromTimeSpan(duration));
 

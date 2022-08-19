@@ -65,19 +65,14 @@
             </Grid.RowDefinitions>
             <Expander
                 Grid.Row="1"
-                Margin="{StaticResource SmallTopBottomMargin}"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
                 HorizontalContentAlignment="Stretch"
                 ExpandDirection="Up"
                 IsExpanded="True">
                 <Expander.Header>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal">
                         <TextBlock
+                            Margin="0,0,50,0"
                             VerticalAlignment="Center"
                             FontSize="15"
                             FontWeight="Bold"
@@ -89,7 +84,7 @@
                             OffContent="Sub"
                             OnContent="Dub"
                             Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasSubAndDub), Mode=OneWay}" />
-                    </Grid>
+                    </StackPanel>
                 </Expander.Header>
                 <Grid>
                     <ListView

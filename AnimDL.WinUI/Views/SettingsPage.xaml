@@ -9,8 +9,9 @@
     xmlns:views="using:AnimDL.WinUI.Views"
     xmlns:vm="using:AnimDL.WinUI.ViewModels"
     Name="Page"
+    Margin="24"
     mc:Ignorable="d">
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />

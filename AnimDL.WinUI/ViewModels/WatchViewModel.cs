@@ -124,7 +124,7 @@ public class WatchViewModel : NavigatableViewModel
 
         messageBus
             .Listen<WebMessage>()
-            .Where(x => x.MessageType == WebMessageType.Seeked)
+            .Where(x => x.MessageType is WebMessageType.Seeked or WebMessageType.Play)
             .Subscribe(_ => TryDiscordRpcStartWatching())
             .DisposeWith(Garbage);
 
@@ -183,7 +183,7 @@ public class WatchViewModel : NavigatableViewModel
         this.ObservableForProperty(x => x.CurrentEpisode, x => x)
             .Where(x => x > 0)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(FetchUrlForEp)
+            .SelectMany(FetchEpUrl)
             .ToProperty(this, nameof(Url), out _url, () => string.Empty);
     }
 
@@ -198,13 +198,13 @@ public class WatchViewModel : NavigatableViewModel
     [Reactive] public SearchResult SelectedAudio { get; set; }
     public IProvider Provider => _provider.Value;
     public bool HasSubAndDub => _hasSubAndDub.Value;
-    public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public string Url => _url.Value;
     public double CurrentPlayerTime => _currentPlayerTime.Value;
     public double CurrentMediaDuration => _currentMediaDuration.Value;
     public AnimeModel Anime { get; set; }
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ICommand SearchResultPicked { get; }
+    public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public ReadOnlyObservableCollection<SearchResult> SearchResult => _searchResults;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
 
@@ -271,11 +271,13 @@ public class WatchViewModel : NavigatableViewModel
         return results;
     }
 
-    private async Task<string> FetchUrlForEp(int? episode)
+    private IObservable<string> FetchEpUrl(int? episode)
     {
-        var ep = episode ?? 1;
-        var epStream = await Provider.StreamProvider.GetStreams(SelectedAudio.Url, ep..ep).ToListAsync();
-        return epStream[0].Qualities.Values.ElementAt(0).Url;
+        return Provider.StreamProvider
+                       .GetStreams(SelectedAudio.Url, episode.Value..episode.Value)
+                       .ToListAsync().AsTask()
+                       .ToObservable()
+                       .Select(x => x[0].Qualities.Values.ElementAt(0).Url);
     }
 
     private void UpdateTracking()

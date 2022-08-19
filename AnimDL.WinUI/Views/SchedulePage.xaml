@@ -9,6 +9,7 @@
     xmlns:model="using:AnimDL.WinUI.Models"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
     xmlns:views="using:AnimDL.WinUI.Views"
+    Margin="{StaticResource MediumLeftRightMargin}"
     mc:Ignorable="d">
 
     <Grid Margin="0,10">
