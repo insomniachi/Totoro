@@ -5,8 +5,6 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimDL.WinUI", "AnimDL.WinUI.csproj", "{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimDL.UI.Core", "..\AnimDL.WinUI.Core\AnimDL.UI.Core.csproj", "{7122F5B4-2F50-4958-A3F0-F94535166E92}"
-EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "AnimDL.Installer", "..\AnimDL.Installer\AnimDL.Installer.wixproj", "{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "AnimDL.Bootstrapper", "..\AnimDL.Installer\AnimDL.Bootstrapper.wixproj", "{0B78252D-1C5D-446A-84DE-D0B17418218A}"
@@ -19,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\nuget.config = ..\nuget.config
 		..\README.md = ..\README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimDL.UI.Core", "..\AnimDL.UI.Core\AnimDL.UI.Core.csproj", "{0DC35921-32A4-42EC-A293-8916797EB358}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,14 +36,6 @@ Global
 		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Release|x64.Build.0 = Release|x64
 		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Release|x86.ActiveCfg = Release|x64
 		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Release|x86.Build.0 = Release|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Debug|x64.ActiveCfg = Debug|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Debug|x64.Build.0 = Debug|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Debug|x86.ActiveCfg = Debug|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Debug|x86.Build.0 = Debug|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Release|x64.ActiveCfg = Release|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Release|x64.Build.0 = Release|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Release|x86.ActiveCfg = Release|x64
-		{7122F5B4-2F50-4958-A3F0-F94535166E92}.Release|x86.Build.0 = Release|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x64.ActiveCfg = Debug|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x86.ActiveCfg = Debug|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x86.Build.0 = Debug|x64
@@ -58,6 +50,14 @@ Global
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x64.Build.0 = Release|x86
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x86.ActiveCfg = Release|x86
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x86.Build.0 = Release|x86
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x64.ActiveCfg = Debug|x64
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x64.Build.0 = Debug|x64
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x86.ActiveCfg = Debug|x64
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x86.Build.0 = Debug|x64
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x64.ActiveCfg = Release|x64
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x64.Build.0 = Release|x64
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x86.ActiveCfg = Release|x64
+		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

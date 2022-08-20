@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Navigation;
 namespace AnimDL.WinUI.Services;
 
 
-public class NavigationService : INavigationService
+public class NavigationService : IWinUINavigationService
 {
     private readonly IVolatileStateStorage _stateStorage;
     private object _lastParameterUsed;

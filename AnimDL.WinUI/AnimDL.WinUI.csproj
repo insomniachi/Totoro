@@ -36,7 +36,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\AnimDL.WinUI.Core\AnimDL.UI.Core.csproj" />
+		<ProjectReference Include="..\AnimDL.UI.Core\AnimDL.UI.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="appsettings.json">

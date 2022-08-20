@@ -1,16 +1,10 @@
 ﻿using System.ComponentModel;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 
-namespace AnimDL.WinUI.Contracts;
+namespace AnimDL.UI.Core.Contracts;
 
 public interface INavigationService
 {
-    IObservable<NavigationEventArgs> Navigated { get; }
-
     bool CanGoBack { get; }
-
-    Frame Frame { get; set; }
 
     bool NavigateTo(Type viewModelType, object viewModel = null, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false);
 

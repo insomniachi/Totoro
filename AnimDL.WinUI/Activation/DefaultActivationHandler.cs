@@ -6,10 +6,10 @@ namespace AnimDL.WinUI.Activation;
 
 public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventArgs>
 {
-    private readonly INavigationService _navigationService;
+    private readonly IWinUINavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
 
-    public DefaultActivationHandler(INavigationService navigationService,
+    public DefaultActivationHandler(IWinUINavigationService navigationService,
                                     ILocalSettingsService localSettingsService)
     {
         _navigationService = navigationService;

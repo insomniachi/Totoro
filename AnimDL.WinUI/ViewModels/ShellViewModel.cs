@@ -9,10 +9,10 @@ public partial class ShellViewModel : ReactiveObject
     [Reactive] public bool IsBackEnabled { get; set; }
     [Reactive] public bool IsAuthenticated { get; set; }
 
-    public INavigationService NavigationService { get; }
+    public IWinUINavigationService NavigationService { get; }
     public INavigationViewService NavigationViewService { get; set; }
 
-    public ShellViewModel(INavigationService navigationService,
+    public ShellViewModel(IWinUINavigationService navigationService,
                           INavigationViewService navigationViewService,
                           IMessageBus messageBus)
     {

@@ -51,13 +51,13 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
     {
         base.OnAttached();
         _current = this;
-        var navigationService = App.GetService<INavigationService>();
+        var navigationService = App.GetService<IWinUINavigationService>();
         navigationService.Navigated.Subscribe(OnNavigated);
     }
 
     private void OnNavigated(NavigationEventArgs e)
     {
-        var frame = App.GetService<INavigationService>().Frame;
+        var frame = App.GetService<IWinUINavigationService>().Frame;
         if (frame.Content is Page page)
         {
             _currentPage = page;

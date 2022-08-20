@@ -37,7 +37,8 @@ public partial class App : Application
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
             services.AddTransient<INavigationViewService, NavigationViewService>();
-            services.AddSingleton<INavigationService, NavigationService>();
+            services.AddSingleton<IWinUINavigationService, NavigationService>();
+            services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
             services.AddSingleton<IActivationService, ActivationService>();
             services.AddTransient<IContentDialogService, ContentDialogService>();
             services.AddTransient<IViewService, ViewService>();
