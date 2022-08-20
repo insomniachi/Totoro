@@ -15,15 +15,15 @@ public sealed partial class SeasonalPage : SeasonalPageBase
             .WhereNotNull()
             .Subscribe(season =>
             {
-                if (season == ViewModel.Current)
+                if (season == SeasonalViewModel.Current)
                 {
                     CurrentFlyoutToggle.IsChecked = true;
                 }
-                else if (season == ViewModel.Next)
+                else if (season == SeasonalViewModel.Next)
                 {
                     NextFlyoutToggle.IsChecked = true;
                 }
-                else if (season == ViewModel.Prev)
+                else if (season == SeasonalViewModel.Prev)
                 {
                     PrevFlyoutToggle.IsChecked = true;
                 }

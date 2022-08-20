@@ -28,13 +28,8 @@ public class MyAnimeListService : IAnimeService
 
     public IObservable<IEnumerable<SeasonalAnimeModel>> GetSeasonalAnime()
     {
-        return Observable.Create<IEnumerable<SeasonalAnimeModel>>(observer =>
+        return Observable.Create<IEnumerable<SeasonalAnimeModel>>(async observer =>
         {
-            void onNext(MalApi.PagedAnime pagedAnime)
-            {
-                observer.OnNext(pagedAnime.Data.Select(malModel => _converter.Convert<SeasonalAnimeModel>(malModel) as SeasonalAnimeModel));
-            }
-
             IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
             {
                 return _client.Anime().OfSeason(season.SeasonName, season.Year)
@@ -47,17 +42,22 @@ public class MyAnimeListService : IAnimeService
             var prev = PrevSeason();
             var next = NextSeason();
 
-            return new CompositeDisposable()
+            try
             {
-                baseRequest(current).Find().ToObservable().LastAsync()
-                       .Subscribe(onNext, observer.OnError),
+                foreach (var season in new[] { current, prev, next })
+                {
+                    var pagedAnime = await baseRequest(season).Find();
+                    observer.OnNext(pagedAnime.Data.Select(malModel => _converter.Convert<SeasonalAnimeModel>(malModel) as SeasonalAnimeModel));
+                }
+                
+                observer.OnCompleted();
+            }
+            catch (Exception ex)
+            {
+                observer.OnError(ex);
+            }
 
-                baseRequest(prev).Find().ToObservable().LastAsync()
-                       .Subscribe(onNext, observer.OnError),
-
-                baseRequest(next).Find().ToObservable().LastAsync()
-                       .Subscribe(onNext, observer.OnError)
-            };
+            return Disposable.Empty;
         });
     }
 

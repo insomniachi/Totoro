@@ -33,10 +33,6 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public Season Season { get; set; }
     [Reactive] public string SeasonFilter { get; set; } = "Current";
-
-    public Season Current => AnimeHelpers.CurrentSeason();
-    public Season Next => AnimeHelpers.NextSeason();
-    public Season Prev => AnimeHelpers.PrevSeason();
     public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }
@@ -45,11 +41,8 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     {
         _animeService.GetSeasonalAnime()
                      .ObserveOn(RxApp.MainThreadScheduler)
-                     .Subscribe(list =>
-                     {
-                         _animeCache.Edit(x => x.AddOrUpdate(list));
-
-                     }).DisposeWith(Garbage);
+                     .Subscribe(list => _animeCache.Edit(x => x.AddOrUpdate(list)))
+                     .DisposeWith(Garbage);
 
         Season = Current;
 
@@ -81,7 +74,9 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     }
 
     private async Task AddToList(AnimeModel a) => await _viewService.UpdateAnimeStatus(a);
-
-    private Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
+    private static Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
+    public static Season Current => AnimeHelpers.CurrentSeason();
+    public static Season Next => AnimeHelpers.NextSeason();
+    public static Season Prev => AnimeHelpers.PrevSeason();
 
 }

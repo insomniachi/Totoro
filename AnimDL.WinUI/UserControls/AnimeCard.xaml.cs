@@ -23,6 +23,7 @@ public sealed partial class AnimeCard : UserControl
     }
 
     private readonly IViewService _viewService = App.GetService<IViewService>();
+    private readonly INavigationService _navigationService = App.GetService<INavigationService>(); 
 
     public AnimeModel Anime
     {
@@ -32,11 +33,16 @@ public sealed partial class AnimeCard : UserControl
 
     public MenuFlyout Flyout { get; set; }
     public ICommand UpdateStatusCommand { get; }
+    public ICommand WatchCommand { get; }
 
     public AnimeCard()
     {
         InitializeComponent();
         UpdateStatusCommand = ReactiveCommand.CreateFromTask<AnimeModel>(_viewService.UpdateAnimeStatus);
+        WatchCommand = ReactiveCommand.Create<AnimeModel>(anime =>
+        {
+            _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = Anime });
+        });
         Loaded += AnimeCard_Loaded;
         Unloaded += AnimeCard_Unloaded;
     }
