@@ -13,8 +13,8 @@ public class WatchViewModel : NavigatableViewModel
     private readonly ObservableAsPropertyHelper<IProvider> _provider;
     private readonly ObservableAsPropertyHelper<bool> _hasSubAndDub;
     private readonly ObservableAsPropertyHelper<string> _url;
-    private readonly ObservableAsPropertyHelper<double> _currentPlayerTime;
-    private readonly ObservableAsPropertyHelper<double> _currentMediaDuration;
+    private ObservableAsPropertyHelper<double> _currentPlayerTime;
+    private ObservableAsPropertyHelper<double> _currentMediaDuration;
     private readonly SourceCache<SearchResult, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
@@ -56,56 +56,59 @@ public class WatchViewModel : NavigatableViewModel
 
         messageBus
             .Listen<WebMessage>()
-            .Where(x => x.MessageType == WebMessageType.TimeUpdate)
-            .Select(x => double.Parse(x.Content))
-            .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0);
+            .GroupBy(message => message.MessageType)
+            .Subscribe(observable =>
+            {
+                switch (observable.Key)
+                {
+                    case WebMessageType.TimeUpdate:
+                        observable.Select(messsage => double.Parse(messsage.Content))
+                                  .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0)
+                                  .DisposeWith(Garbage);
+                        break;
+
+                    case WebMessageType.DurationUpdate:
+                        observable.Select(message => double.Parse(message.Content))
+                                  .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0)
+                                  .DisposeWith(Garbage);
+                        break;
+
+                    // if video finished playing, play the next episode
+                    case WebMessageType.Ended:
+                        observable.Do(_ => _discordRichPresense.Clear())
+                                  .Do(_ => UpdateTracking())
+                                  .ObserveOn(RxApp.MainThreadScheduler)
+                                  .Do(_ => CurrentEpisode++)
+                                  .Subscribe().DisposeWith(Garbage);
+                        break;
+
+                    /// Auto play from last watched location otherwise start from begining
+                    case WebMessageType.CanPlay:
+                        observable.Where(_ => Anime is not null).Select(_ => playbackStateStorage.GetTime(Anime.Id, CurrentEpisode.Value))
+                                  .Select(time => JsonSerializer.Serialize(new { MessageType = "Play", StartTime = time }))
+                                  .Subscribe(message => VideoPlayerRequestMessage = message)
+                                  .DisposeWith(Garbage);
+                        break;
+
+                    // Reset discord RPC
+                    case WebMessageType.Pause:
+                        observable.Where(_ => settings.UseDiscordRichPresense)
+                                  .Do(_ => discordRichPresense.UpdateDetails("Paused"))
+                                  .Do(_ => discordRichPresense.ClearTimer())
+                                  .Subscribe().DisposeWith(Garbage);
+                        break;
+
+                    case WebMessageType.Seeked or WebMessageType.Play:
+                        observable.Do(_ => TryDiscordRpcStartWatching())
+                                  .Subscribe().DisposeWith(Garbage);
+                        break;
+                };
+            });
 
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(x => Anime is not null && x > 10)
-            .Subscribe(time => _playbackStateStorage.Update(Anime.Id, CurrentEpisode.Value, time));
-
-        messageBus
-            .Listen<WebMessage>()
-            .Where(x => x.MessageType == WebMessageType.DurationUpdate)
-            .Select(x => double.Parse(x.Content))
-            .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0);
-
-        // if video finished playing, play the next episode
-        messageBus
-            .Listen<WebMessage>()
-            .Where(x => x.MessageType == WebMessageType.Ended)
-            .Do(_ => _discordRichPresense.Clear())
-            .Do(_ => UpdateTracking())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => CurrentEpisode++)
-            .DisposeWith(Garbage);
-
-        /// Auto play from last watched location otherwise start from begining
-        messageBus
-            .Listen<WebMessage>()
-            .Where(x => x.MessageType == WebMessageType.CanPlay)
-            .Where(_ => Anime is not null)
-            .Select(_ => _playbackStateStorage.GetTime(Anime.Id, CurrentEpisode.Value))
-            .Select(time => JsonSerializer.Serialize(new { MessageType = "Play", StartTime = time }))
-            .Subscribe(message => VideoPlayerRequestMessage = message)
-            .DisposeWith(Garbage);
-
-        // Reset discord RPC
-        messageBus
-            .Listen<WebMessage>()
-            .Where(x => x.MessageType == WebMessageType.Pause)
-            .Where(_ => _settings.UseDiscordRichPresense)
-            .Do(_ => _discordRichPresense.UpdateDetails("Paused"))
-            .Do(_ => _discordRichPresense.ClearTimer())
-            .Subscribe()
-            .DisposeWith(Garbage);
-
-        messageBus
-            .Listen<WebMessage>()
-            .Where(x => x.MessageType is WebMessageType.Seeked or WebMessageType.Play)
-            .Subscribe(_ => TryDiscordRpcStartWatching())
-            .DisposeWith(Garbage);
+            .Subscribe(time => playbackStateStorage.Update(Anime.Id, CurrentEpisode.Value, time));
 
         this.WhenAnyValue(x => x.SelectedProviderType)
             .Select(providerFactory.GetProvider)
@@ -178,8 +181,8 @@ public class WatchViewModel : NavigatableViewModel
     public IProvider Provider => _provider.Value;
     public bool HasSubAndDub => _hasSubAndDub.Value;
     public string Url => _url.Value;
-    public double CurrentPlayerTime => _currentPlayerTime.Value;
-    public double CurrentMediaDuration => _currentMediaDuration.Value;
+    public double CurrentPlayerTime => _currentPlayerTime?.Value ?? 0;
+    public double CurrentMediaDuration => _currentMediaDuration?.Value ?? 0;
     public AnimeModel Anime { get; set; }
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ICommand SearchResultPicked { get; }
