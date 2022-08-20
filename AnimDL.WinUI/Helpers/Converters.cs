@@ -1,7 +1,4 @@
-﻿using System;
-using AnimDL.WinUI.ViewModels;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Data;
+﻿using Microsoft.UI.Xaml;
 
 namespace AnimDL.WinUI.Helpers;
 

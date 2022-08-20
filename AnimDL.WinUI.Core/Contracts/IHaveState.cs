@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace AnimDL.WinUI.Core.Contracts;
+namespace AnimDL.UI.Core.Contracts;
 
 public interface IHaveState
 {

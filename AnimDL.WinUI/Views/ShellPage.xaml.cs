@@ -1,6 +1,4 @@
 ﻿using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;

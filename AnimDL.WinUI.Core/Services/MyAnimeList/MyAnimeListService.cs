@@ -3,7 +3,6 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using AnimDL.UI.Core.Contracts;
 using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Models;
 using MalApi.Interfaces;
 
 namespace AnimDL.UI.Core.Services.MyAnimeList;
@@ -13,7 +12,7 @@ public class MyAnimeListService : IAnimeService
     private readonly IMalClient _client;
     private readonly MalToModelConverter _converter;
 
-    public MyAnimeListService(IMalClient client, 
+    public MyAnimeListService(IMalClient client,
                               MalToModelConverter converter)
     {
         _client = client;
@@ -52,10 +51,10 @@ public class MyAnimeListService : IAnimeService
             {
                 baseRequest(current).Find().ToObservable().LastAsync()
                        .Subscribe(onNext, observer.OnError),
-                
+
                 baseRequest(prev).Find().ToObservable().LastAsync()
                        .Subscribe(onNext, observer.OnError),
-                
+
                 baseRequest(next).Find().ToObservable().LastAsync()
                        .Subscribe(onNext, observer.OnError)
             };

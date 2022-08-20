@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Core.Contracts;
+﻿namespace AnimDL.UI.Core.Contracts;
 
 public interface IPlaybackStateStorage
 {

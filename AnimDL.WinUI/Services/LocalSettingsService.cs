@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Core.Helpers;
-using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.Models;
+﻿using System.IO;
+using AnimDL.UI.Core.Helpers;
 using Microsoft.Extensions.Options;
 using Windows.Storage;
 
@@ -40,7 +34,7 @@ public class LocalSettingsService : ILocalSettingsService
         {
             return;
         }
-        
+
         _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile);
         _isInitialized = true;
     }

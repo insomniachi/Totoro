@@ -1,8 +1,8 @@
-﻿using System.Reactive.Linq;
+﻿using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using AnimDL.UI.Core.Contracts;
 using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Models;
 using MalApi.Interfaces;
 
 namespace AnimDL.UI.Core.Services.MyAnimeList;
@@ -21,57 +21,62 @@ public class MyAnimeListTrackingService : ITrackingService
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
-        return Observable.Create<IEnumerable<AnimeModel>>(observer =>
+        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
         {
-            return _client.Anime()
-                .OfUser()
-                .WithField(x => x.UserStatus)
-                .WithField(x => x.TotalEpisodes)
-                .WithField(x => x.Broadcast)
-                .WithField(x => x.MeanScore)
-                .Find()
-                .ToObservable()
-                .Subscribe(async pagedAnime =>
-                {
-                    observer.OnNext(ConvertToAnimeModel(pagedAnime.Data));
+            try
+            {
+                var watching = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching)
+                                     .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
+                                     .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
+                                     .Find();
 
-                    while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
-                    {
-                        pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                        observer.OnNext(ConvertToAnimeModel(pagedAnime.Data));
-                    }
+                observer.OnNext(ConvertToAnimeModel(watching.Data));
 
-                    observer.OnCompleted();
+                var all = await _client.Anime().OfUser()
+                                       .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
+                                       .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
+                                       .Find();
 
-                }, observer.OnError);
+                observer.OnNext(ConvertToAnimeModel(all.Data));
+                observer.OnCompleted();
+            }
+            catch (Exception ex)
+            {
+                observer.OnError(ex);
+            }
+
+            return Disposable.Empty;
         });
     }
 
-    public IObservable<IEnumerable<ScheduledAnimeModel>> GetAiringAnime()
+    public IObservable<IEnumerable<ScheduledAnimeModel>> GetCurrentlyAiringTrackedAnime()
     {
-        return Observable.Create<IEnumerable<ScheduledAnimeModel>>(observer =>
+        return Observable.Create<IEnumerable<ScheduledAnimeModel>>(async observer =>
         {
-            return _client.Anime()
-                .OfUser()
-                .WithStatus(MalApi.AnimeStatus.Watching)
-                .WithField(x => x.UserStatus)
-                .WithField(x => x.TotalEpisodes)
-                .WithField(x => x.Broadcast)
-                .WithField(x => x.Status)
-                .Find()
-                .ToObservable()
-                .Subscribe(async pagedAnime =>
+            try
+            {
+                var pagedAnime = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching)
+                                 .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
+                                 .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
+                                 .WithField(x => x.Status)
+                                 .Find();
+
+                observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
+
+                while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
                 {
+                    pagedAnime = await _client.GetNextAnimePage(pagedAnime);
                     observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
+                }
 
-                    while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
-                    {
-                        pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                        observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
-                    }
+                observer.OnCompleted();
+            }
+            catch (Exception ex)
+            {
+                observer.OnError(ex);
+            }
 
-                    observer.OnCompleted();
-                });
+            return Disposable.Empty;
         });
     }
 

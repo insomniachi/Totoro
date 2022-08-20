@@ -1,9 +1,8 @@
-﻿using System.IO;
-using System.Text;
-using AnimDL.WinUI.Core.Contracts;
+﻿using System.Text;
+using AnimDL.UI.Core.Contracts;
 using Newtonsoft.Json;
 
-namespace AnimDL.WinUI.Core.Services;
+namespace AnimDL.UI.Core.Services;
 
 public class FileService : IFileService
 {

@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Input;
-using Microsoft.UI.Xaml;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using System.Reactive.Linq;
+﻿using AnimDL.Api;
 using AnimDL.WinUI.Contracts;
-using AnimDL.Api;
-using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 
 namespace AnimDL.WinUI.ViewModels;
 
@@ -23,7 +15,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     public List<ProviderType> ProviderTypes { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ICommand AuthenticateCommand { get; }
 
-    public SettingsViewModel(IThemeSelectorService themeSelectorService, 
+    public SettingsViewModel(IThemeSelectorService themeSelectorService,
                              ILocalSettingsService localSettingsService,
                              IViewService viewService,
                              IDiscordRichPresense dRpc)
@@ -32,10 +24,10 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
         DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.AnimixPlay);
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
-        
+
         AuthenticateCommand = ReactiveCommand.CreateFromTask(viewService.AuthenticateMal);
 
-        if(UseDiscordRichPresense && !dRpc.IsInitialized)
+        if (UseDiscordRichPresense && !dRpc.IsInitialized)
         {
             dRpc.Initialize();
         }
@@ -47,10 +39,10 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         this.ObservableForProperty(x => x.DefaultProviderType, x => x)
             .Subscribe(value => localSettingsService.SaveSetting(nameof(DefaultProviderType), value));
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
-            .Subscribe(value => 
+            .Subscribe(value =>
             {
                 localSettingsService.SaveSetting(nameof(UseDiscordRichPresense), value);
-                if(value && !dRpc.IsInitialized)
+                if (value && !dRpc.IsInitialized)
                 {
                     dRpc.Initialize();
                 }
@@ -59,7 +51,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if(parameters.ContainsKey("IsAuthenticated"))
+        if (parameters.ContainsKey("IsAuthenticated"))
         {
             IsAuthenticated = false;
         }
@@ -68,5 +60,5 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     }
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();
-    
+
 }

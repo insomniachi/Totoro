@@ -1,12 +1,7 @@
 ﻿using System.ComponentModel;
-using AnimDL.UI.Core.Contracts;
 using AnimDL.UI.Core.Services.MyAnimeList;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Services;
-using AnimDL.WinUI.ViewModels;
 using AnimDL.WinUI.Views;
-using Microsoft.Extensions.DependencyInjection;
-using ReactiveUI;
 
 namespace AnimDL.WinUI.Helpers;
 

@@ -1,8 +1,5 @@
-﻿using System;
-using AnimDL.WinUI.ViewModels;
-using MalApi;
+﻿using MalApi;
 using Microsoft.UI.Xaml;
-using ReactiveUI;
 
 namespace AnimDL.WinUI.Views;
 

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
-using AnimDL.WinUI.Core.Contracts;
+using AnimDL.UI.Core.Contracts;
 
-namespace AnimDL.WinUI.Core;
+namespace AnimDL.UI.Core;
 
 internal class State : IState
 {

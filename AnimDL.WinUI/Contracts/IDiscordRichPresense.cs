@@ -1,7 +1,4 @@
-﻿using System;
-using AnimDL.UI.Core.Models;
-
-namespace AnimDL.WinUI.Contracts;
+﻿namespace AnimDL.WinUI.Contracts;
 
 public interface IDiscordRichPresense
 {

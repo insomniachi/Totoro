@@ -1,14 +1,7 @@
-﻿using System;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Web;
+﻿using System.Web;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.ViewModels;
 using MalApi;
 using MalApi.Interfaces;
-using Microsoft.Extensions.Configuration;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.Dialogs.ViewModels;
 

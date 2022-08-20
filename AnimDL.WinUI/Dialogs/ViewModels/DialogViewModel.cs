@@ -1,8 +1,4 @@
-﻿using System;
-using System.Reactive;
-using ReactiveUI;
-
-namespace AnimDL.WinUI.Dialogs.ViewModels;
+﻿namespace AnimDL.WinUI.Dialogs.ViewModels;
 
 public abstract class DialogViewModel : ReactiveObject, IClosable
 {

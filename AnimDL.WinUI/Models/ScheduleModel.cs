@@ -1,7 +1,4 @@
-﻿using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-
-namespace AnimDL.WinUI.Models;
+﻿namespace AnimDL.WinUI.Models;
 
 public class ScheduleModel : ReactiveObject
 {

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Linq;
-using AnimDL.UI.Core.Models;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-
-namespace AnimDL.WinUI.Dialogs.ViewModels;
+﻿namespace AnimDL.WinUI.Dialogs.ViewModels;
 
 public class UpdateAnimeStatusViewModel : ReactiveObject
 {
@@ -39,5 +32,5 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
     [Reactive] public int Score { get; set; }
     [Reactive] public string Tags { get; set; }
     [Reactive] public int? RewatchCount { get; set; }
-    [Reactive] public double TotalEpisodes { get; set; } 
+    [Reactive] public double TotalEpisodes { get; set; }
 }

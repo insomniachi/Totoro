@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Helpers;
+﻿using AnimDL.WinUI.Contracts;
 
 using Microsoft.UI.Xaml;
 
@@ -39,7 +36,7 @@ public class ThemeSelectorService : IThemeSelectorService
         {
             return;
         }
-        
+
         rootElement.RequestedTheme = Theme;
         TitleBarHelper.UpdateTitleBar(Theme);
     }

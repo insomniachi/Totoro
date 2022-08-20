@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.ViewModels;
-using ReactiveUI;
-
-namespace AnimDL.WinUI.Views;
+﻿namespace AnimDL.WinUI.Views;
 
 public class UserListPageBase : ReactivePage<UserListViewModel> { }
 public sealed partial class UserListPage : UserListPageBase

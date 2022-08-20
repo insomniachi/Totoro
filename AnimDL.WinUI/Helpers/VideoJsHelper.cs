@@ -1,6 +1,4 @@
-﻿using AnimDL.WinUI.Core.Helpers;
-
-namespace AnimDL.WinUI.Helpers;
+﻿namespace AnimDL.WinUI.Helpers;
 
 public class VideoJsHelper
 {

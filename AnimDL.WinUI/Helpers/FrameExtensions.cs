@@ -1,5 +1,4 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-using ReactiveUI;
 
 namespace AnimDL.WinUI.Helpers;
 

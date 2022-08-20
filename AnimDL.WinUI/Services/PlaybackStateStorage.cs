@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Core.Contracts;
-
-namespace AnimDL.WinUI.Core.Services;
+﻿namespace AnimDL.WinUI.Services;
 
 public class PlaybackStateStorage : IPlaybackStateStorage
 {
@@ -17,7 +13,7 @@ public class PlaybackStateStorage : IPlaybackStateStorage
 
     public double GetTime(long id, int episode)
     {
-        if(!_recents.ContainsKey(id))
+        if (!_recents.ContainsKey(id))
         {
             return 0;
         }

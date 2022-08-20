@@ -1,10 +1,5 @@
-﻿using System;
-using System.Reactive.Linq;
-using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Helpers;
+﻿using AnimDL.WinUI.Contracts;
 using Microsoft.UI.Xaml.Navigation;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 
@@ -34,7 +29,7 @@ public partial class ShellViewModel : ReactiveObject
     {
         IsBackEnabled = NavigationService.CanGoBack;
         var vmType = NavigationService.Frame.GetPageViewModel().GetType();
-        
+
         if (vmType == typeof(SettingsViewModel))
         {
             Selected = NavigationViewService.SettingsItem;

@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using AnimDL.Api;
-using AnimDL.Core.Models;
-using DynamicData;
-using DynamicData.Binding;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+﻿using AnimDL.Api;
 
 namespace AnimDL.WinUI.Dialogs.ViewModels;
 

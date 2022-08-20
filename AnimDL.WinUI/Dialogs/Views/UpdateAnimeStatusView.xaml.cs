@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Dialogs.ViewModels;
-using ReactiveUI;
+﻿using AnimDL.WinUI.Dialogs.ViewModels;
 
 namespace AnimDL.WinUI.Dialogs.Views;
 

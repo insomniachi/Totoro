@@ -1,7 +1,4 @@
 ﻿using AnimDL.WinUI.Dialogs.ViewModels;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using ReactiveUI;
 
 
 namespace AnimDL.WinUI.Dialogs.Views;

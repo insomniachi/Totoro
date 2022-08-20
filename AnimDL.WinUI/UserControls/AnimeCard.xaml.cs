@@ -1,12 +1,6 @@
-﻿using System;
-using System.Reactive.Linq;
-using System.Text;
-using System.Windows.Input;
-using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Contracts;
+﻿using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ReactiveUI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -22,7 +16,7 @@ public sealed partial class AnimeCard : UserControl
     private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var card = d as AnimeCard;
-        if(e.NewValue is ScheduledAnimeModel)
+        if (e.NewValue is ScheduledAnimeModel)
         {
             card.Update();
         }
@@ -38,7 +32,7 @@ public sealed partial class AnimeCard : UserControl
 
     public MenuFlyout Flyout { get; set; }
     public ICommand UpdateStatusCommand { get; }
-    
+
     public AnimeCard()
     {
         InitializeComponent();
@@ -69,7 +63,7 @@ public sealed partial class AnimeCard : UserControl
 
     public Visibility AddToListButtonVisibility(AnimeModel a)
     {
-        if(a is null)
+        if (a is null)
         {
             return Visibility.Collapsed;
         }
@@ -101,15 +95,15 @@ public sealed partial class AnimeCard : UserControl
     {
         var sb = new StringBuilder();
 
-        if(ts.Days > 0)
+        if (ts.Days > 0)
         {
             sb.Append($"{ts.Days}d ");
         }
-        if(ts.Hours > 0)
+        if (ts.Hours > 0)
         {
             sb.Append($"{ts.Hours}h ");
         }
-        if(ts.Minutes > 0)
+        if (ts.Minutes > 0)
         {
             sb.Append($"{ts.Minutes}m");
         }

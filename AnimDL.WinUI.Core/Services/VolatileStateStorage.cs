@@ -1,6 +1,6 @@
-﻿using AnimDL.WinUI.Core.Contracts;
+﻿using AnimDL.UI.Core.Contracts;
 
-namespace AnimDL.WinUI.Core.Services;
+namespace AnimDL.UI.Core.Services;
 
 public class VolatileStateStorage : IVolatileStateStorage
 {
@@ -8,7 +8,7 @@ public class VolatileStateStorage : IVolatileStateStorage
 
     public IState GetState(Type vmType)
     {
-        if(_states.ContainsKey(vmType) == false)
+        if (_states.ContainsKey(vmType) == false)
         {
             var state = new State();
             _states.Add(vmType, state);

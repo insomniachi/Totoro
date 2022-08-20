@@ -1,22 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using AnimDL.UI.Core.Contracts;
-using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Helpers;
-using DynamicData;
-using DynamicData.Binding;
-using MalApi.Interfaces;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-
-namespace AnimDL.WinUI.ViewModels;
+﻿namespace AnimDL.WinUI.ViewModels;
 
 public class SeasonalViewModel : NavigatableViewModel, IHaveState
 {

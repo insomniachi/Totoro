@@ -1,6 +1,4 @@
-﻿using System;
-using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Contracts;
+﻿using AnimDL.WinUI.Contracts;
 using DiscordRPC;
 
 namespace AnimDL.WinUI.Services;

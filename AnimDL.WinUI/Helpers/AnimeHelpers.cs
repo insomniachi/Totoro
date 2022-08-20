@@ -1,7 +1,4 @@
-﻿using System;
-using AnimDL.UI.Core.Models;
-
-namespace AnimDL.WinUI.Helpers;
+﻿namespace AnimDL.WinUI.Helpers;
 
 public class AnimeHelpers
 {

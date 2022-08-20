@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace AnimDL.WinUI.Core.Helpers;
+namespace AnimDL.UI.Core.Helpers;
 
 public static class Json
 {

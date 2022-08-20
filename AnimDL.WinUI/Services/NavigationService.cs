@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Reactive.Subjects;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Helpers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using ReactiveUI;
 
 namespace AnimDL.WinUI.Services;
 
@@ -70,9 +65,9 @@ public class NavigationService : INavigationService
         if (CanGoBack)
         {
             var vmBeforeNavigation = _frame.GetPageViewModel();
-            
+
             _frame.GoBack();
-            
+
             if (vmBeforeNavigation is INavigationAware navigationAware)
             {
                 navigationAware.OnNavigatedFrom();
@@ -90,7 +85,7 @@ public class NavigationService : INavigationService
         return NavigateTo(typeof(TViewModel), viewModel, parameter, clearNavigation);
     }
 
-    public bool NavigateTo(Type viewModelType, object viewModel, IReadOnlyDictionary<string,object> parameter = null, bool clearNavigation = false)
+    public bool NavigateTo(Type viewModelType, object viewModel, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false)
     {
         var viewKey = typeof(ViewType<>).MakeGenericType(viewModelType);
         var pageType = ((ViewType)App.GetService(viewKey)).Type;
@@ -100,7 +95,7 @@ public class NavigationService : INavigationService
             var @params = parameter is not null
                 ? new Dictionary<string, object>(parameter)
                 : new Dictionary<string, object>();
-           
+
             @params.Add("ViewModel", viewModel);
 
             parameter = @params;
@@ -111,7 +106,7 @@ public class NavigationService : INavigationService
         {
             return false;
         }
-        
+
         _frame.Tag = clearNavigation;
         var vmBeforeNavigation = _frame.GetPageViewModel();
         var navigated = _frame.Navigate(pageType, parameter);
@@ -185,7 +180,7 @@ public class NavigationService : INavigationService
 }
 
 public class ViewType<TViewModel> : ViewType
-    where TViewModel: class, INotifyPropertyChanged
+    where TViewModel : class, INotifyPropertyChanged
 {
     public ViewType(Type type)
     {

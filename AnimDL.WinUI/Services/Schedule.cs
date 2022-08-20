@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Reactive.Linq;
+﻿using System.Net.Http;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
-using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Core.Contracts;
 using CommunityToolkit.WinUI.Notifications;
 using MalApi.Interfaces;
-using System.Linq;
-using ReactiveUI;
 
-namespace AnimDL.WinUI.Core;
+namespace AnimDL.WinUI.Services;
 
 public class Schedule : ISchedule
 {
@@ -91,7 +83,7 @@ public class Schedule : ISchedule
     private static TimeSpan Convert(long now, long time)
     {
         double i;
-        
+
         for (i = 1e3 * (time + 7200) - now; i < -216e5; i += 6048e5)
         {
             // TODO : check if there is a inbuilt way of doing this

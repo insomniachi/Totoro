@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
-using System.Threading.Tasks;
-using AnimDL.WinUI.Contracts;
-using ReactiveUI;
-
-namespace AnimDL.WinUI.ViewModels;
+﻿namespace AnimDL.WinUI.ViewModels;
 
 public abstract class NavigatableViewModel : ReactiveObject, INavigationAware, IDisposable
 {

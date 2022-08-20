@@ -1,10 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using AnimDL.WinUI.Contracts;
+﻿using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Dialogs.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using ReactiveUI;
 
 namespace AnimDL.WinUI.Services;
 
@@ -31,14 +28,14 @@ public class ContentDialogService : IContentDialogService
         };
 
         IDisposable disposable = null;
-        if(viewModel is IClosable closeable)
+        if (viewModel is IClosable closeable)
         {
             disposable = closeable.Close.Subscribe(x => dialog.Hide());
         }
 
         configure(dialog);
         var result = await dialog.ShowAsync();
-        if(disposable is not null)
+        if (disposable is not null)
         {
             disposable.Dispose();
         }

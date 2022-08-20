@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace AnimDL.WinUI.Helpers;
 
 internal class EqualityExpressionComparer<T> : IEqualityComparer<T>
-    where T: notnull
+    where T : notnull
 {
     private readonly Func<T, int> _getHashCode;
     private readonly Func<T, T, bool> _compare;
@@ -21,11 +19,11 @@ internal class EqualityExpressionComparer<T> : IEqualityComparer<T>
         return new EqualityExpressionComparer<T>(areEqual, getHashCode);
     }
 
-    public bool Equals(T x, T y) => _compare(x,y);
+    public bool Equals(T x, T y) => _compare(x, y);
 
     public int GetHashCode([DisallowNull] T obj)
     {
-        if(_getHashCode is null)
+        if (_getHashCode is null)
         {
             return EqualityComparer<T>.Default.GetHashCode(obj);
         }

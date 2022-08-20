@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace AnimDL.WinUI.Activation;
+﻿namespace AnimDL.WinUI.Activation;
 
 public interface IActivationHandler
 {

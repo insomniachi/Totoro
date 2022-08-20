@@ -1,15 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using AnimDL.Core.Models;
-using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.ViewModels;
-using Microsoft.UI.Xaml.Navigation;
+﻿using Microsoft.UI.Xaml.Navigation;
 using ReactiveMarbles.ObservableEvents;
-using ReactiveUI;
 
 namespace AnimDL.WinUI.Views;
 
@@ -36,7 +26,7 @@ public sealed partial class WatchPage : WatchPageBase
             .Select(@event => JsonSerializer.Deserialize<WebMessage>(@event.args.WebMessageAsJson))
             .Subscribe(@event => MessageBus.Current.SendMessage(@event))
             .DisposeWith(ViewModel.Garbage);
-            
+
             WebView
             .Events()
             .NavigationCompleted
@@ -72,24 +62,4 @@ public sealed partial class WatchPage : WatchPageBase
         WebView.NavigateToString("");
     }
 
-}
-
-
-public enum WebMessageType
-{
-    Ready,
-    TimeUpdate,
-    DurationUpdate,
-    Ended,
-    CanPlay,
-    Play,
-    Pause,
-    Seeked
-}
-
-public class WebMessage
-{
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public WebMessageType MessageType { get; set; }
-    public string Content { get; set; }
 }

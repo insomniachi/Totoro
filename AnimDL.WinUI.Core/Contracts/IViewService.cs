@@ -1,9 +1,8 @@
 ﻿using AnimDL.Api;
 using AnimDL.Core.Models;
 using AnimDL.UI.Core.Models;
-using MalApi;
 
-namespace AnimDL.WinUI.Contracts;
+namespace AnimDL.UI.Core.Contracts;
 
 public interface IViewService
 {

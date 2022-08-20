@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace AnimDL.WinUI.Contracts;
+﻿namespace AnimDL.UI.Core.Contracts;
 
 public interface IActivationService
 {

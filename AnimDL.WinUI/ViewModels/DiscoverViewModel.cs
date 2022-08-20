@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using AnimDL.WinUI.Core.Contracts;
-using MalApi;
+﻿using MalApi;
 using MalApi.Interfaces;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 

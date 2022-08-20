@@ -1,6 +1,6 @@
 ﻿using AnimDL.UI.Core.Models;
 
-namespace AnimDL.WinUI.Core.Contracts;
+namespace AnimDL.UI.Core.Contracts;
 
 public interface ISchedule
 {

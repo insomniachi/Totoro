@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AnimDL.Api;
-using AnimDL.Core.Models;
-using AnimDL.UI.Core.Contracts;
-using AnimDL.UI.Core.Models;
+﻿using AnimDL.Api;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Dialogs.ViewModels;
-using MalApi.Interfaces;
 using Microsoft.UI.Xaml.Controls;
 
 namespace AnimDL.WinUI.Services;
@@ -38,15 +30,15 @@ public class ViewService : IViewService
             d.CloseButtonText = "Cancel";
         });
 
-        if(result == ContentDialogResult.Primary)
+        if (result == ContentDialogResult.Primary)
         {
             var tracking = new Tracking() { Status = vm.Status };
 
-            if(vm.Score is { } s)
+            if (vm.Score is { } s)
             {
                 tracking.Score = s;
             }
-            if(vm.EpisodesWatched > 0)
+            if (vm.EpisodesWatched > 0)
             {
                 tracking.WatchedEpisodes = (int)vm.EpisodesWatched;
             }

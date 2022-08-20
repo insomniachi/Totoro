@@ -1,10 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using System.Linq;
-
-namespace AnimDL.WinUI.Models;
+﻿namespace AnimDL.WinUI.Models;
 
 public class WeeklyScheduleModel
 {

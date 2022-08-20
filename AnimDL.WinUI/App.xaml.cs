@@ -1,24 +1,14 @@
-﻿using System.Reactive.Linq;
-using AnimDL.Core;
+﻿using AnimDL.Core;
+using AnimDL.UI.Core.Services;
 using AnimDL.WinUI.Activation;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Core;
-using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Core.Services;
 using AnimDL.WinUI.Dialogs.ViewModels;
 using AnimDL.WinUI.Dialogs.Views;
-using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.Models;
-using AnimDL.WinUI.Services;
-using AnimDL.WinUI.ViewModels;
 using AnimDL.WinUI.Views;
 using MalApi;
 using MalApi.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-using ReactiveUI;
 using Windows.ApplicationModel;
 
 namespace AnimDL.WinUI;
@@ -27,9 +17,9 @@ public partial class App : Application
 {
     private static readonly IHost _host = Host
         .CreateDefaultBuilder()
-        .ConfigureAppConfiguration(config => 
+        .ConfigureAppConfiguration(config =>
         {
-            if(RuntimeHelper.IsMSIX)
+            if (RuntimeHelper.IsMSIX)
             {
                 config.SetBasePath(Package.Current.InstalledLocation.Path)
                       .AddJsonFile("appsettings.json");
@@ -40,7 +30,7 @@ public partial class App : Application
             // Default Activation Handler
             services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
 
-            MessageBus.Current.RegisterMessageSource(Observable.Timer(System.TimeSpan.FromMinutes(1), System.TimeSpan.FromMinutes(1)).Select(_ => new MinuteTick()));
+            MessageBus.Current.RegisterMessageSource(Observable.Timer(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).Select(_ => new MinuteTick()));
 
             // Services
             services.AddSingleton(MessageBus.Current);
@@ -77,16 +67,16 @@ public partial class App : Application
             services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
 
             // Mal client
-            services.AddSingleton<IMalClient, MalClient>(x => 
+            services.AddSingleton<IMalClient, MalClient>(x =>
             {
                 var token = x.GetRequiredService<ILocalSettingsService>().ReadSetting<OAuthToken>("MalToken");
                 var clientId = context.Configuration["ClientId"];
-                if (token is { IsExpired : true })
+                if (token is { IsExpired: true })
                 {
                     token = MalAuthHelper.RefreshToken(token.RefreshToken, clientId).Result;
                 }
                 var client = new MalClient();
-                if(token is not null && !string.IsNullOrEmpty(token.AccessToken))
+                if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
                 {
                     client.SetAccessToken(token.AccessToken);
                 }
@@ -116,7 +106,7 @@ public partial class App : Application
     }
 
 
-    private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e) { }
+    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e) { }
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {

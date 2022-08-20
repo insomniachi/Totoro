@@ -1,26 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using AnimDL.Api;
-using AnimDL.Core.Api;
-using AnimDL.Core.Models;
-using AnimDL.UI.Core.Contracts;
-using AnimDL.UI.Core.Models;
+﻿using AnimDL.Api;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Views;
-using DynamicData;
-using DynamicData.Binding;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 
 namespace AnimDL.WinUI.ViewModels;
 

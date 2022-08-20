@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AnimDL.WinUI.Activation;
+﻿using AnimDL.WinUI.Activation;
 using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Core.Contracts;
 using AnimDL.WinUI.Views;
 using MalApi.Interfaces;
 using Microsoft.UI;
@@ -26,7 +22,7 @@ public class ActivationService : IActivationService
 
     public bool IsAuthenticated { get; set; } = true;
 
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, 
+    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
                              IEnumerable<IActivationHandler> activationHandlers,
                              IThemeSelectorService themeSelectorService,
                              IPlaybackStateStorage playbackStateStorage,

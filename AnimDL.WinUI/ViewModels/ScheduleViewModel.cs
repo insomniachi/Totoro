@@ -1,21 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using AnimDL.UI.Core.Contracts;
-using AnimDL.UI.Core.Models;
-using AnimDL.WinUI.Core.Contracts;
-using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.Models;
-using DynamicData;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-
-namespace AnimDL.WinUI.ViewModels;
+﻿namespace AnimDL.WinUI.ViewModels;
 
 public class ScheduleViewModel : NavigatableViewModel, IHaveState
 {
@@ -60,10 +43,10 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     {
         var current = AnimeHelpers.CurrentSeason();
 
-        _trackingService.GetAiringAnime()
+        _trackingService.GetCurrentlyAiringTrackedAnime()
                         .Do(list => InitSchedule(list))
                         .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(list => 
+                        .Subscribe(list =>
                         {
                             this.RaisePropertyChanged(nameof(Schedule));
                             var schedule = Schedule.ToList();

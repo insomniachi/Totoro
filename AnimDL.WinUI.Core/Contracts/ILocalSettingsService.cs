@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Contracts;
+﻿namespace AnimDL.UI.Core.Contracts;
 
 public interface ILocalSettingsService
 {
