@@ -40,24 +40,24 @@
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.DiscoverViewModel"
+                    helpers:NavigationHelper.NavigateTo="AnimDL.UI.Core.ViewModels.DiscoverViewModel"
                     Content="Discover"
                     Icon="Map" />
                 <NavigationViewItem
                     x:Uid="Shell_UserList"
-                    helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.UserListViewModel"
+                    helpers:NavigationHelper.NavigateTo="AnimDL.UI.Core.ViewModels.UserListViewModel"
                     Icon="Library"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.WatchViewModel"
+                    helpers:NavigationHelper.NavigateTo="AnimDL.UI.Core.ViewModels.WatchViewModel"
                     Content="Watch"
                     Icon="Play" />
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.SeasonalViewModel"
+                    helpers:NavigationHelper.NavigateTo="AnimDL.UI.Core.ViewModels.SeasonalViewModel"
                     Content="Seasonal"
                     Icon="Calendar" />
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="AnimDL.WinUI.ViewModels.ScheduleViewModel"
+                    helpers:NavigationHelper.NavigateTo="AnimDL.UI.Core.ViewModels.ScheduleViewModel"
                     Content="Schedule"
                     Icon="Clock"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />

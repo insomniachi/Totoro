@@ -1,7 +1,4 @@
-﻿using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Views;
-
-namespace AnimDL.WinUI.ViewModels;
+﻿namespace AnimDL.UI.Core.ViewModels;
 
 
 public class UserListViewModel : NavigatableViewModel, IHaveState

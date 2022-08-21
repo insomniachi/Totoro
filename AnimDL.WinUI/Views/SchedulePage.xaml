@@ -6,7 +6,7 @@
     xmlns:cm="using:AnimDL.UI.Core.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="using:AnimDL.WinUI.Models"
+    xmlns:model="using:AnimDL.UI.Core.Models"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
     xmlns:views="using:AnimDL.WinUI.Views"
     Margin="{StaticResource MediumLeftRightMargin}"

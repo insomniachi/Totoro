@@ -1,8 +1,4 @@
-﻿using AnimDL.WinUI.Contracts;
-
-using Microsoft.UI.Xaml;
-
-namespace AnimDL.WinUI.Services;
+﻿namespace AnimDL.WinUI.Services;
 
 public class ThemeSelectorService : IThemeSelectorService
 {
@@ -32,13 +28,13 @@ public class ThemeSelectorService : IThemeSelectorService
 
     public void SetRequestedTheme()
     {
-        if (App.MainWindow.Content is not FrameworkElement rootElement)
+        if (App.MainWindow.Content is not Microsoft.UI.Xaml.FrameworkElement rootElement)
         {
             return;
         }
 
-        rootElement.RequestedTheme = Theme;
-        TitleBarHelper.UpdateTitleBar(Theme);
+        rootElement.RequestedTheme = Convert(Theme);
+        TitleBarHelper.UpdateTitleBar(rootElement.RequestedTheme);
     }
 
     private ElementTheme LoadThemeFromSettings()
@@ -52,6 +48,14 @@ public class ThemeSelectorService : IThemeSelectorService
 
         return ElementTheme.Default;
     }
+
+    private static Microsoft.UI.Xaml.ElementTheme Convert(ElementTheme theme) => theme switch
+    {
+        ElementTheme.Default => Microsoft.UI.Xaml.ElementTheme.Default,
+        ElementTheme.Dark => Microsoft.UI.Xaml.ElementTheme.Dark,
+        ElementTheme.Light => Microsoft.UI.Xaml.ElementTheme.Light,
+        _ => throw new ArgumentException("invalid value", nameof(theme))
+    };
 
     private void SaveThemeInSettingsAsync(ElementTheme theme)
     {

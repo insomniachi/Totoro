@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Helpers;
+﻿namespace AnimDL.UI.Core.Helpers;
 
 public class AnimeHelpers
 {

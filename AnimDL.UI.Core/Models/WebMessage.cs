@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AnimDL.WinUI.Models;
+namespace AnimDL.UI.Core.Models;
 
 public class WebMessage
 {

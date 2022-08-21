@@ -1,7 +1,6 @@
 ﻿using AnimDL.Api;
-using Microsoft.UI.Xaml;
 
-namespace AnimDL.WinUI.Contracts;
+namespace AnimDL.UI.Core.Contracts;
 
 public interface ISettings
 {

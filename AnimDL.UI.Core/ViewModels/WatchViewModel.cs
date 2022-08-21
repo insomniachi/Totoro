@@ -1,7 +1,6 @@
 ﻿using AnimDL.Api;
-using AnimDL.WinUI.Contracts;
 
-namespace AnimDL.WinUI.ViewModels;
+namespace AnimDL.UI.Core.ViewModels;
 
 public class WatchViewModel : NavigatableViewModel
 {

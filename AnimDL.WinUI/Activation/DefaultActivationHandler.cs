@@ -1,4 +1,5 @@
-﻿using AnimDL.WinUI.Contracts;
+﻿using AnimDL.UI.Core.ViewModels;
+using AnimDL.WinUI.Contracts;
 using MalApi;
 using Microsoft.UI.Xaml;
 

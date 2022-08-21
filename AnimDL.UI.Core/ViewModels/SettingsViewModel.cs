@@ -1,8 +1,6 @@
 ﻿using AnimDL.Api;
-using AnimDL.WinUI.Contracts;
-using Microsoft.UI.Xaml;
 
-namespace AnimDL.WinUI.ViewModels;
+namespace AnimDL.UI.Core.ViewModels;
 
 public class SettingsViewModel : NavigatableViewModel, ISettings
 {

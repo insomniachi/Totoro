@@ -1,9 +1,4 @@
-﻿using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using AnimDL.UI.Core.Contracts;
-using AnimDL.UI.Core.Models;
-using MalApi.Interfaces;
+﻿using MalApi.Interfaces;
 
 namespace AnimDL.UI.Core.Services.MyAnimeList;
 

@@ -1,9 +1,4 @@
-﻿using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using AnimDL.UI.Core.Contracts;
-using AnimDL.UI.Core.Models;
-using MalApi.Interfaces;
+﻿using MalApi.Interfaces;
 
 namespace AnimDL.UI.Core.Services.MyAnimeList;
 
@@ -49,7 +44,7 @@ public class MyAnimeListService : IAnimeService
                     var pagedAnime = await baseRequest(season).Find();
                     observer.OnNext(pagedAnime.Data.Select(malModel => _converter.Convert<SeasonalAnimeModel>(malModel) as SeasonalAnimeModel));
                 }
-                
+
                 observer.OnCompleted();
             }
             catch (Exception ex)

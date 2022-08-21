@@ -1,6 +1,4 @@
 ﻿using AnimDL.Api;
-using AnimDL.Core.Models;
-using AnimDL.UI.Core.Models;
 
 namespace AnimDL.UI.Core.Contracts;
 

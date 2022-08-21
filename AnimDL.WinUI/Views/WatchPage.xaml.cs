@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Navigation;
+﻿using AnimDL.UI.Core.ViewModels;
+using Microsoft.UI.Xaml.Navigation;
 using ReactiveMarbles.ObservableEvents;
 
 namespace AnimDL.WinUI.Views;

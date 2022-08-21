@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.ViewModels;
+﻿namespace AnimDL.UI.Core.ViewModels;
 
 public abstract class NavigatableViewModel : ReactiveObject, INavigationAware, IDisposable
 {

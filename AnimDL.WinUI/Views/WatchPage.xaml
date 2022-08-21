@@ -8,7 +8,7 @@
     xmlns:help="using:AnimDL.WinUI.Helpers"
     xmlns:local="using:AnimDL.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:AnimDL.WinUI.ViewModels"
+    xmlns:viewmodels="using:AnimDL.UI.Core.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
 

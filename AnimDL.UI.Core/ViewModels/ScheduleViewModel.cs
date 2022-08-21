@@ -1,4 +1,6 @@
-﻿namespace AnimDL.WinUI.ViewModels;
+﻿using AnimDL.UI.Core.Helpers;
+
+namespace AnimDL.UI.Core.ViewModels;
 
 public class ScheduleViewModel : NavigatableViewModel, IHaveState
 {

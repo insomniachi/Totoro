@@ -1,4 +1,6 @@
-﻿namespace AnimDL.WinUI.Views;
+﻿using AnimDL.UI.Core.ViewModels;
+
+namespace AnimDL.WinUI.Views;
 
 public class DiscoverPageBase : ReactivePage<DiscoverViewModel> { }
 public sealed partial class DiscoverPage : DiscoverPageBase

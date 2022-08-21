@@ -1,5 +1,5 @@
 ﻿using System.Web;
-using AnimDL.WinUI.Contracts;
+using AnimDL.UI.Core.ViewModels;
 using MalApi;
 using MalApi.Interfaces;
 

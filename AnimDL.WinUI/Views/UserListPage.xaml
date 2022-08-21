@@ -6,12 +6,12 @@
     xmlns:cm="using:AnimDL.UI.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:help="using:AnimDL.WinUI.Helpers"
+    xmlns:help="using:AnimDL.UI.Core.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="using:AnimDL.WinUI.UserControls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:v="using:AnimDL.WinUI.Views"
-    xmlns:viewmodels="using:AnimDL.WinUI.ViewModels"
+    xmlns:viewmodels="using:AnimDL.UI.Core.ViewModels"
     xmlns:views="using:AnimDL.WinUI.Views"
     Name="Page"
     Margin="{StaticResource MediumLeftRightMargin}"
@@ -54,7 +54,7 @@
         </ListBox>
 
         <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
-            <ctk:Case Value="{x:Bind views:DisplayMode.Grid}">
+            <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
                 <GridView
                     x:Name="AnimeListView"
                     animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
@@ -86,7 +86,7 @@
                     </GridView.ItemContainerStyle>
                 </GridView>
             </ctk:Case>
-            <ctk:Case Value="{x:Bind views:DisplayMode.List}">
+            <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
                 <ctk:DataGrid
                     AutoGenerateColumns="False"
                     IsReadOnly="True"
@@ -140,7 +140,7 @@
                     <MenuFlyout>
                         <MenuFlyoutItem
                             Command="{x:Bind ViewModel.SetDisplayMode}"
-                            CommandParameter="{x:Bind views:DisplayMode.Grid}"
+                            CommandParameter="{x:Bind cm:DisplayMode.Grid}"
                             Text="Grid view">
                             <MenuFlyoutItem.Icon>
                                 <FontIcon Glyph="&#xf0e2;" />
@@ -148,7 +148,7 @@
                         </MenuFlyoutItem>
                         <MenuFlyoutItem
                             Command="{x:Bind ViewModel.SetDisplayMode}"
-                            CommandParameter="{x:Bind views:DisplayMode.List}"
+                            CommandParameter="{x:Bind cm:DisplayMode.List}"
                             Text="List view">
                             <MenuFlyoutItem.Icon>
                                 <FontIcon Glyph="&#xf0e4;" />

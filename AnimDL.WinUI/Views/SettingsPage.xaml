@@ -6,8 +6,9 @@
     xmlns:help="using:AnimDL.WinUI.Helpers"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:AnimDL.UI.Core.Models"
     xmlns:views="using:AnimDL.WinUI.Views"
-    xmlns:vm="using:AnimDL.WinUI.ViewModels"
+    xmlns:vm="using:AnimDL.UI.Core.ViewModels"
     Name="Page"
     Margin="24"
     mc:Ignorable="d">
@@ -37,8 +38,8 @@
                     ItemsSource="{x:Bind ViewModel.Themes}"
                     SelectedItem="{x:Bind ViewModel.ElementTheme, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="ElementTheme">
-                            <TextBlock Text="{x:Bind vm:SettingsViewModel.ElementThemeToString((ElementTheme))}" />
+                        <DataTemplate x:DataType="models:ElementTheme">
+                            <TextBlock Text="{x:Bind vm:SettingsViewModel.ElementThemeToString((models:ElementTheme))}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

@@ -1,5 +1,4 @@
 ﻿using AnimDL.WinUI.Activation;
-using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Views;
 using MalApi.Interfaces;
 using Microsoft.UI;

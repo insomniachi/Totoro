@@ -1,5 +1,6 @@
 ﻿using AnimDL.Core;
 using AnimDL.UI.Core.Services;
+using AnimDL.UI.Core.ViewModels;
 using AnimDL.WinUI.Activation;
 using AnimDL.WinUI.Contracts;
 using AnimDL.WinUI.Dialogs.ViewModels;

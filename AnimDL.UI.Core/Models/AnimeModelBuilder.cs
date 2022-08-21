@@ -1,6 +1,4 @@
-﻿using AnimDL.UI.Core.Contracts;
-
-namespace AnimDL.UI.Core.Models;
+﻿namespace AnimDL.UI.Core.Models;
 
 public class MalToModelConverter
 {

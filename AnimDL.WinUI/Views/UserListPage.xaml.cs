@@ -1,4 +1,6 @@
-﻿namespace AnimDL.WinUI.Views;
+﻿using AnimDL.UI.Core.ViewModels;
+
+namespace AnimDL.WinUI.Views;
 
 public class UserListPageBase : ReactivePage<UserListViewModel> { }
 public sealed partial class UserListPage : UserListPageBase
@@ -52,10 +54,4 @@ public sealed partial class UserListPage : UserListPageBase
                 }
             });
     }
-}
-
-public enum DisplayMode
-{
-    Grid,
-    List
 }

@@ -1,4 +1,5 @@
-﻿using MalApi;
+﻿using AnimDL.UI.Core.ViewModels;
+using MalApi;
 using Microsoft.UI.Xaml;
 
 namespace AnimDL.WinUI.Views;

@@ -1,5 +1,4 @@
-﻿using AnimDL.WinUI.Contracts;
-using DiscordRPC;
+﻿using DiscordRPC;
 
 namespace AnimDL.WinUI.Services;
 

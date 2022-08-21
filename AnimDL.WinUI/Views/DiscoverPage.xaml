@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:malapi="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:AnimDL.WinUI.ViewModels"
+    xmlns:viewmodels="using:AnimDL.UI.Core.ViewModels"
     xmlns:views="using:AnimDL.WinUI.Views"
     Margin="{StaticResource MediumLeftRightMargin}"
     d:DataContext="{d:DesignInstance Type=viewmodels:DiscoverViewModel}"

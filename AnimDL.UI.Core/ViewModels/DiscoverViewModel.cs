@@ -1,7 +1,7 @@
 ﻿using MalApi;
 using MalApi.Interfaces;
 
-namespace AnimDL.WinUI.ViewModels;
+namespace AnimDL.UI.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {

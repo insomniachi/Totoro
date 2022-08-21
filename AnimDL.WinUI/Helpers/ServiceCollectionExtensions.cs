@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using AnimDL.UI.Core.Services.MyAnimeList;
-using AnimDL.WinUI.Contracts;
+using AnimDL.UI.Core.ViewModels;
 using AnimDL.WinUI.Views;
 
 namespace AnimDL.WinUI.Helpers;

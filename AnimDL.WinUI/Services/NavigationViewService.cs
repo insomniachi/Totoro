@@ -1,4 +1,5 @@
-﻿using AnimDL.WinUI.Contracts;
+﻿using AnimDL.UI.Core.ViewModels;
+using AnimDL.WinUI.Contracts;
 using Microsoft.UI.Xaml.Controls;
 
 namespace AnimDL.WinUI.Services;
@@ -46,7 +47,7 @@ public class NavigationViewService : INavigationViewService
 
             if (selectedItem.GetValue(NavigationHelper.NavigateToProperty) is string typeKey)
             {
-                _navigationService.NavigateTo(Type.GetType(typeKey));
+                _navigationService.NavigateTo(Type.GetType($"{typeKey},AnimDL.UI.Core"));
             }
         }
     }

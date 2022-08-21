@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Models;
+﻿namespace AnimDL.UI.Core.Models;
 
 public class ScheduleModel : ReactiveObject
 {

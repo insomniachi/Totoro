@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using AnimDL.UI.Core.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -23,7 +24,7 @@ public sealed partial class AnimeCard : UserControl
     }
 
     private readonly IViewService _viewService = App.GetService<IViewService>();
-    private readonly INavigationService _navigationService = App.GetService<INavigationService>(); 
+    private readonly INavigationService _navigationService = App.GetService<INavigationService>();
 
     public AnimeModel Anime
     {

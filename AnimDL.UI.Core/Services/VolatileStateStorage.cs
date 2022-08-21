@@ -1,6 +1,4 @@
-﻿using AnimDL.UI.Core.Contracts;
-
-namespace AnimDL.UI.Core.Services;
+﻿namespace AnimDL.UI.Core.Services;
 
 public class VolatileStateStorage : IVolatileStateStorage
 {

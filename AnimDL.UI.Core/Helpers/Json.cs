@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace AnimDL.UI.Core.Helpers;
+﻿namespace AnimDL.UI.Core.Helpers;
 
 public static class Json
 {
