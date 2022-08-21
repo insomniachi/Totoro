@@ -157,8 +157,10 @@ public class WatchViewModel : NavigatableViewModel
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
             .Where(_ => Anime is not null)
+            .Select(_ => Anime.Tracking?.WatchedEpisodes ?? 0)
+            .Where(ep => ep < Anime.TotalEpisodes)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => CurrentEpisode = (Anime.Tracking?.WatchedEpisodes ?? 0) + 1);
+            .Subscribe(ep => CurrentEpisode = ep + 1);
 
         /// Scrape url for <see cref="CurrentEpisode"/> and set to <see cref="Url"/>
         this.ObservableForProperty(x => x.CurrentEpisode, x => x)
@@ -166,6 +168,15 @@ public class WatchViewModel : NavigatableViewModel
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(FetchEpUrl)
             .ToProperty(this, nameof(Url), out _url, () => string.Empty);
+
+        this.ObservableForProperty(x => x.CurrentEpisode, x => x)
+            .Where(x => x > 0)
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .SelectMany(FetchEpUrl)
+            .Subscribe(x =>
+            {
+                ;
+            });
     }
 
     [Reactive] public string Query { get; set; }

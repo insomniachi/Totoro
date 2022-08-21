@@ -20,44 +20,32 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimDL.UI.Core", "..\AnimDL.UI.Core\AnimDL.UI.Core.csproj", "{0DC35921-32A4-42EC-A293-8916797EB358}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimDL.UI.Tests", "..\AnimDL.UI.Tests\AnimDL.UI.Tests.csproj", "{53A39CBF-704F-4940-B008-83B83972B250}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Debug|x64.ActiveCfg = Debug|x64
 		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Debug|x64.Build.0 = Debug|x64
-		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Debug|x86.ActiveCfg = Debug|x64
-		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Debug|x86.Build.0 = Debug|x64
 		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Release|x64.ActiveCfg = Release|x64
 		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Release|x64.Build.0 = Release|x64
-		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Release|x86.ActiveCfg = Release|x64
-		{346FD672-F5D5-4226-A467-EFEBDBAB4BDA}.Release|x86.Build.0 = Release|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x64.ActiveCfg = Debug|x64
-		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x86.ActiveCfg = Debug|x64
-		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Debug|x86.Build.0 = Debug|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Release|x64.ActiveCfg = Release|x64
 		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Release|x64.Build.0 = Release|x64
-		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Release|x86.ActiveCfg = Release|x64
-		{39FA00D8-59A7-4167-9015-BFEE0EEB6E14}.Release|x86.Build.0 = Release|x64
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Debug|x64.ActiveCfg = Debug|x86
-		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Debug|x86.ActiveCfg = Debug|x86
-		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Debug|x86.Build.0 = Debug|x86
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x64.ActiveCfg = Release|x86
 		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x64.Build.0 = Release|x86
-		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x86.ActiveCfg = Release|x86
-		{0B78252D-1C5D-446A-84DE-D0B17418218A}.Release|x86.Build.0 = Release|x86
 		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x64.ActiveCfg = Debug|x64
 		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x64.Build.0 = Debug|x64
-		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x86.ActiveCfg = Debug|x64
-		{0DC35921-32A4-42EC-A293-8916797EB358}.Debug|x86.Build.0 = Debug|x64
 		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x64.ActiveCfg = Release|x64
 		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x64.Build.0 = Release|x64
-		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x86.ActiveCfg = Release|x64
-		{0DC35921-32A4-42EC-A293-8916797EB358}.Release|x86.Build.0 = Release|x64
+		{53A39CBF-704F-4940-B008-83B83972B250}.Debug|x64.ActiveCfg = Debug|x64
+		{53A39CBF-704F-4940-B008-83B83972B250}.Debug|x64.Build.0 = Debug|x64
+		{53A39CBF-704F-4940-B008-83B83972B250}.Release|x64.ActiveCfg = Release|Any CPU
+		{53A39CBF-704F-4940-B008-83B83972B250}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
