@@ -62,13 +62,13 @@ public class WatchViewModel : NavigatableViewModel
                 {
                     case WebMessageType.TimeUpdate:
                         observable.Select(messsage => double.Parse(messsage.Content))
-                                  .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0)
+                                  .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0, deferSubscription: true)
                                   .DisposeWith(Garbage);
                         break;
 
                     case WebMessageType.DurationUpdate:
                         observable.Select(message => double.Parse(message.Content))
-                                  .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0)
+                                  .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0, deferSubscription: true)
                                   .DisposeWith(Garbage);
                         break;
 
@@ -140,14 +140,14 @@ public class WatchViewModel : NavigatableViewModel
             .Where(_ => HasSubAndDub)
             .Select(useDub => useDub ? SelectedAnimeResult.Dub : SelectedAnimeResult.Sub)
             .Do(_ => CurrentEpisode = null)
-            .Subscribe(audio => SelectedAudio = audio);
+            .InvokeCommand(SearchResultPicked);
 
         /// 1. Select Sub/Dub based in <see cref="UseDub"/> if Dub is not present select Sub
         /// 2. Set <see cref="SelectedAudio"/>
         this.ObservableForProperty(x => x.SelectedAnimeResult, x => x)
             .Select(x => UseDub ? x.Dub ?? x.Sub : x.Sub)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(audio => SelectedAudio = audio);
+            .InvokeCommand(SearchResultPicked);
 
         /// 1. Get the number of Episodes
         /// 2. Populate Episodes list
@@ -168,15 +168,6 @@ public class WatchViewModel : NavigatableViewModel
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(FetchEpUrl)
             .ToProperty(this, nameof(Url), out _url, () => string.Empty);
-
-        this.ObservableForProperty(x => x.CurrentEpisode, x => x)
-            .Where(x => x > 0)
-            .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(FetchEpUrl)
-            .Subscribe(x =>
-            {
-                ;
-            });
     }
 
     [Reactive] public string Query { get; set; }
