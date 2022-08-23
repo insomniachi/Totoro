@@ -74,7 +74,7 @@ public class WatchViewModel : NavigatableViewModel
 
                     // if video finished playing, play the next episode
                     case WebMessageType.Ended:
-                        observable.Do(_ => _discordRichPresense.Clear())
+                        observable.Do(_ => discordRichPresense.Clear())
                                   .Do(_ => UpdateTracking())
                                   .ObserveOn(RxApp.MainThreadScheduler)
                                   .Do(_ => CurrentEpisode++)
@@ -97,8 +97,12 @@ public class WatchViewModel : NavigatableViewModel
                                   .Subscribe().DisposeWith(Garbage);
                         break;
 
+                    // update time remaining
                     case WebMessageType.Seeked or WebMessageType.Play:
-                        observable.Do(_ => TryDiscordRpcStartWatching())
+                        observable.Where(_ => settings.UseDiscordRichPresense)
+                                  .Do(_ => discordRichPresense.UpdateDetails(SelectedAudio.Title))
+                                  .Do(_ => discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
+                                  .Do(_ => discordRichPresense.UpdateTimer(TimeRemaining))
                                   .Subscribe().DisposeWith(Garbage);
                         break;
                 };
@@ -153,6 +157,7 @@ public class WatchViewModel : NavigatableViewModel
         /// 2. Populate Episodes list
         /// 3. If we can connect this to a Mal Id, set <see cref="CurrentEpisode"/> to last unwatched ep
         this.ObservableForProperty(x => x.SelectedAudio, x => x)
+            .Do(result => discordRichPresense.UpdateDetails(result.Title))
             .SelectMany(result => Provider.StreamProvider.GetNumberOfStreams(result.Url))
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
@@ -165,6 +170,7 @@ public class WatchViewModel : NavigatableViewModel
         /// Scrape url for <see cref="CurrentEpisode"/> and set to <see cref="Url"/>
         this.ObservableForProperty(x => x.CurrentEpisode, x => x)
             .Where(x => x > 0)
+            .Do(x => discordRichPresense.UpdateState($"Episode {x}"))
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(FetchEpUrl)
             .ToProperty(this, nameof(Url), out _url, () => string.Empty);
@@ -277,16 +283,6 @@ public class WatchViewModel : NavigatableViewModel
         _trackingService.Update(Anime.Id, tracking)
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(x => Anime.Tracking = x);
-    }
-
-    private void TryDiscordRpcStartWatching()
-    {
-        if (_settings.UseDiscordRichPresense == false)
-        {
-            return;
-        }
-
-        _discordRichPresense.SetPresense(SelectedAudio.Title, CurrentEpisode.Value, TimeRemaining);
     }
 
 }

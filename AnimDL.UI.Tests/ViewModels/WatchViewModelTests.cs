@@ -234,7 +234,9 @@ public class WatchViewModelTests
 
         vmBuilder.Verify(x =>
         {
-            x.Verify(x => x.SetPresense(anime, 11, TimeSpan.FromMinutes(24)), Times.Once);
+            x.Verify(x => x.UpdateDetails(anime.Title));
+            x.Verify(x => x.UpdateState("Episode 11"));
+            x.Verify(x => x.UpdateTimer(TimeSpan.FromMinutes(24)));
         });
 
         MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.TimeUpdate, Content = "60" });
@@ -251,7 +253,9 @@ public class WatchViewModelTests
 
         vmBuilder.Verify(x =>
         {
-            x.Verify(x => x.SetPresense(anime, 11, TimeSpan.FromMinutes(23)), Times.Once);
+            x.Verify(x => x.UpdateDetails(anime.Title));
+            x.Verify(x => x.UpdateState("Episode 11"));
+            x.Verify(x => x.UpdateTimer(TimeSpan.FromMinutes(23)));
         });
     }
 

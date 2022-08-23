@@ -28,6 +28,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         if (UseDiscordRichPresense && !dRpc.IsInitialized)
         {
             dRpc.Initialize();
+            dRpc.SetPresence();
         }
 
         this.ObservableForProperty(x => x.ElementTheme, x => x)
@@ -43,6 +44,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
                 if (value && !dRpc.IsInitialized)
                 {
                     dRpc.Initialize();
+                    dRpc.SetPresence();
                 }
             });
     }
