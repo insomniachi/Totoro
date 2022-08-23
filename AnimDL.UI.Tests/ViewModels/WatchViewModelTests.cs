@@ -1,5 +1,7 @@
-﻿using AnimDL.Api;
-using AnimDL.UI.Core.ViewModels;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using AnimDL.Api;
 using AnimDL.UI.Tests.Helpers;
 using AnimDL.WinUI.Tests.Builders;
 
@@ -17,7 +19,7 @@ public class WatchViewModelTests
         var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
         var provider = GetProvider(result, totalEpisodes);
 
-        var vm = BaseViewModel(provider);
+        var vm = BaseViewModel(provider).Bulid();
         var anime = new AnimeModel
         {
             Title = "Hyouka",
@@ -52,7 +54,7 @@ public class WatchViewModelTests
         var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
         var provider = GetProvider(result, ep);
 
-        var vm = BaseViewModel(provider);
+        var vm = BaseViewModel(provider).Bulid();
         var anime = new AnimeModel
         {
             Title = "Hyouka",
@@ -64,7 +66,7 @@ public class WatchViewModelTests
                 Status = AnimeStatus.Watching
             }
         };
-        
+
         // act
         await vm.OnNavigatedTo(new Dictionary<string, object>
         {
@@ -87,7 +89,7 @@ public class WatchViewModelTests
         var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
         var provider = GetProvider(result, ep);
 
-        var vm = BaseViewModel(provider);
+        var vm = BaseViewModel(provider).Bulid();
         var anime = new AnimeModel
         {
             Title = "Hyouka",
@@ -117,13 +119,13 @@ public class WatchViewModelTests
         var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
         var provider = GetProvider(result, ep);
 
-        var vm = BaseViewModel(provider);
+        var vm = BaseViewModel(provider).Bulid();
 
         // act
         vm.SearchResultPicked.Execute(result);
-
+        
         await Task.Delay(10);
-
+        
         // assert
         Assert.Equal(ep, vm.Episodes.Count);
         Assert.Null(vm.CurrentEpisode);
@@ -137,20 +139,124 @@ public class WatchViewModelTests
         var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
         var provider = GetProvider(result, ep);
 
-        var vm = BaseViewModel(provider);
+        var vm = BaseViewModel(provider).Bulid();
 
         // act
         vm.SearchResultPicked.Execute(result);
         await Task.Delay(10);
         vm.CurrentEpisode = 10;
-        await Task.Delay(5);
+        await Task.Delay(10);
 
         // assert
         Assert.Equal($"{result.Url}_stream_{vm.CurrentEpisode}", vm.Url);
     }
 
+    [Fact]
+    public async Task WatchViewModel_SendsCommandToPlayVideoFromLastPostionWhenVideoLoaded()
+    {
+        // arrange
+        var ep = 24;
+        var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
+        var provider = GetProvider(result, ep);
 
-    private static WatchViewModel BaseViewModel(IProvider provider) => new WatchViewModelBuilder()
+        var time = 100.0;
+        var vm = BaseViewModel(provider).WithPlaybackStateStorage(x =>
+                    {
+                        x.Setup(x => x.GetTime(It.IsAny<long>(), It.IsAny<int>())).Returns(time);
+                    })
+                    .Bulid();
+
+        // act
+        vm.SearchResultPicked.Execute(result);
+        await Task.Delay(10);
+        vm.CurrentEpisode = 10;
+        await Task.Delay(10);
+
+        Assert.True(string.IsNullOrEmpty(vm.VideoPlayerRequestMessage));
+        // video player is loaded and can start playing
+        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.CanPlay });
+
+        Assert.False(string.IsNullOrEmpty(vm.VideoPlayerRequestMessage));
+        var message = JsonNode.Parse(vm.VideoPlayerRequestMessage);
+        Assert.Equal(WebMessageType.Play.ToString(), message["MessageType"].ToString());
+        Assert.Equal(time.ToString(), message["StartTime"].ToString());
+    }
+
+    [Fact]
+    public async Task WatchViewModel_DiscordRpcWorks()
+    {
+        // arrange
+        var ep = 24;
+        var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
+        var provider = GetProvider(result, ep);
+
+        var vmBuilder = BaseViewModel(provider)
+            .WithDiscordRpc(x => { })
+            .WithSettings(x => 
+            {
+                x.Setup(x => x.UseDiscordRichPresense).Returns(true);
+            });
+        var vm = vmBuilder.Bulid();
+
+        var anime = new AnimeModel
+        {
+            Title = "Hyouka",
+            Id = 10000,
+            TotalEpisodes = ep,
+            Tracking = new Tracking
+            {
+                WatchedEpisodes = 10,
+                Status = AnimeStatus.Watching
+            }
+        };
+
+        await vm.OnNavigatedTo(new Dictionary<string, object>
+        {
+            ["Anime"] = anime
+        });
+
+        await Task.Delay(10);
+
+        MessageBus.Current.SendMessage(new WebMessage
+        {
+            MessageType = WebMessageType.DurationUpdate, 
+            Content = TimeSpan.FromMinutes(24).TotalSeconds.ToString() 
+        });
+        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.TimeUpdate, Content = "0" });
+
+        await Task.Delay(10);
+
+        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.CanPlay });
+
+        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Play });
+
+        await Task.Delay(10);
+
+        vmBuilder.Verify(x =>
+        {
+            x.Verify(x => x.SetPresense(anime, 11, TimeSpan.FromMinutes(24)), Times.Once);
+        });
+
+        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.TimeUpdate, Content = "60" });
+        
+        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Pause });
+
+        vmBuilder.Verify(x =>
+        {
+            x.Verify(x => x.UpdateDetails("Paused"), Times.Once);
+            x.Verify(x => x.ClearTimer(), Times.Once);
+        });
+
+        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Play });
+
+        vmBuilder.Verify(x =>
+        {
+            x.Verify(x => x.SetPresense(anime, 11, TimeSpan.FromMinutes(23)), Times.Once);
+        });
+    }
+
+
+    private static WatchViewModelBuilder BaseViewModel(IProvider provider) => new WatchViewModelBuilder()
             .WithProviderFactory(factory =>
             {
                 factory.Setup(x => x.GetProvider(It.IsAny<ProviderType>())).Returns(provider);
@@ -161,8 +267,7 @@ public class WatchViewModelTests
                 settings.Setup(x => x.UseDiscordRichPresense).Returns(false);
                 settings.Setup(x => x.PreferSubs).Returns(false);
                 settings.Setup(x => x.ElementTheme).Returns(ElementTheme.Dark);
-            })
-            .Bulid();
+            });
 
     private static IProvider GetProvider(SearchResult result, int numberOfEps)
     {

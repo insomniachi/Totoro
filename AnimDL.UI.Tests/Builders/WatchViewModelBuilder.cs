@@ -11,6 +11,7 @@ public class WatchViewModelBuilder
     private ISettings _settings = Mock.Of<ISettings>();
     private IPlaybackStateStorage _playbackStateStorage = Mock.Of<IPlaybackStateStorage>();
     private IDiscordRichPresense _discordRpc = Mock.Of<IDiscordRichPresense>();
+    private Mock<IDiscordRichPresense> _discordRpcMock;
     
     public WatchViewModel Bulid()
     {
@@ -65,10 +66,12 @@ public class WatchViewModelBuilder
 
     public WatchViewModelBuilder WithDiscordRpc(Action<Mock<IDiscordRichPresense>> configure)
     {
-        var mock = new Mock<IDiscordRichPresense>();
-        configure(mock);
-        _discordRpc = mock.Object;
+        _discordRpcMock = new Mock<IDiscordRichPresense>();
+        configure(_discordRpcMock);
+        _discordRpc = _discordRpcMock.Object;
         return this;
     }
+
+    public void Verify(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
 
 }

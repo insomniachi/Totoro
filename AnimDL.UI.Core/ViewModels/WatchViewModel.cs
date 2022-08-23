@@ -62,13 +62,13 @@ public class WatchViewModel : NavigatableViewModel
                 {
                     case WebMessageType.TimeUpdate:
                         observable.Select(messsage => double.Parse(messsage.Content))
-                                  .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0, deferSubscription: true)
+                                  .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0)
                                   .DisposeWith(Garbage);
                         break;
 
                     case WebMessageType.DurationUpdate:
                         observable.Select(message => double.Parse(message.Content))
-                                  .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0, deferSubscription: true)
+                                  .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0)
                                   .DisposeWith(Garbage);
                         break;
 
@@ -83,7 +83,7 @@ public class WatchViewModel : NavigatableViewModel
 
                     /// Auto play from last watched location otherwise start from begining
                     case WebMessageType.CanPlay:
-                        observable.Where(_ => Anime is not null).Select(_ => playbackStateStorage.GetTime(Anime.Id, CurrentEpisode.Value))
+                        observable.Select(_ => playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0))
                                   .Select(time => JsonSerializer.Serialize(new { MessageType = "Play", StartTime = time }))
                                   .Subscribe(message => VideoPlayerRequestMessage = message)
                                   .DisposeWith(Garbage);
