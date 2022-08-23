@@ -286,14 +286,7 @@ public class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        if (Anime is null)
-        {
-            _discordRichPresense.SetPresense(SelectedAudio.Title, CurrentEpisode.Value, TimeRemaining);
-        }
-        else
-        {
-            _discordRichPresense.SetPresense(Anime, CurrentEpisode.Value, TimeRemaining);
-        }
+        _discordRichPresense.SetPresense(SelectedAudio.Title, CurrentEpisode.Value, TimeRemaining);
     }
 
 }
