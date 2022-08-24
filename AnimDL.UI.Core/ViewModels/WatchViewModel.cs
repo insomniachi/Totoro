@@ -35,6 +35,7 @@ public class WatchViewModel : NavigatableViewModel
 
         SelectedProviderType = _settings.DefaultProviderType;
         SearchResultPicked = ReactiveCommand.Create<SearchResult>(x => SelectedAudio = x);
+        UseDub = !settings.PreferSubs;
 
         _searchResultCache
             .Connect()
@@ -178,7 +179,6 @@ public class WatchViewModel : NavigatableViewModel
 
     [Reactive] public string Query { get; set; }
     [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
-    [Reactive] public bool IsSuggestionListOpen { get; set; }
     [Reactive] public int? CurrentEpisode { get; set; }
     [Reactive] public bool HideControls { get; set; }
     [Reactive] public string VideoPlayerRequestMessage { get; set; }
