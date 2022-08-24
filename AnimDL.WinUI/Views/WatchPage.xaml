@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:adlm="using:AnimDL.Core.Models"
     xmlns:api="using:AnimDL.Api"
+    xmlns:cm="using:AnimDL.UI.Core.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:AnimDL.WinUI.Helpers"
     xmlns:local="using:AnimDL.WinUI.Views"
@@ -38,7 +39,7 @@
                 QueryIcon="Find"
                 Text="{x:Bind ViewModel.Query, Mode=TwoWay}">
                 <AutoSuggestBox.ItemTemplate>
-                    <DataTemplate x:DataType="adlm:SearchResult">
+                    <DataTemplate x:DataType="cm:SearchResultModel">
                         <TextBlock Text="{x:Bind Title}" />
                     </DataTemplate>
                 </AutoSuggestBox.ItemTemplate>

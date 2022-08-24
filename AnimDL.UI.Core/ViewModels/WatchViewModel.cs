@@ -14,9 +14,9 @@ public class WatchViewModel : NavigatableViewModel
     private readonly ObservableAsPropertyHelper<string> _url;
     private ObservableAsPropertyHelper<double> _currentPlayerTime;
     private ObservableAsPropertyHelper<double> _currentMediaDuration;
-    private readonly SourceCache<SearchResult, string> _searchResultCache = new(x => x.Title);
+    private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
-    private readonly ReadOnlyObservableCollection<SearchResult> _searchResults;
+    private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
     private readonly ReadOnlyObservableCollection<int> _episodes;
 
     public WatchViewModel(IProviderFactory providerFactory,
@@ -25,7 +25,8 @@ public class WatchViewModel : NavigatableViewModel
                           ISettings settings,
                           IPlaybackStateStorage playbackStateStorage,
                           IDiscordRichPresense discordRichPresense,
-                          IMessageBus messageBus)
+                          IMessageBus messageBus,
+                          IAnimeService animeService)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -34,13 +35,11 @@ public class WatchViewModel : NavigatableViewModel
         _discordRichPresense = discordRichPresense;
 
         SelectedProviderType = _settings.DefaultProviderType;
-        SearchResultPicked = ReactiveCommand.Create<SearchResult>(x => SelectedAudio = x);
         UseDub = !settings.PreferSubs;
 
         _searchResultCache
             .Connect()
             .RefCount()
-            .Sort(SortExpressionComparer<SearchResult>.Ascending(x => x.Title))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _searchResults)
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
@@ -124,10 +123,10 @@ public class WatchViewModel : NavigatableViewModel
 
         /// populate searchbox suggestions
         this.WhenAnyValue(x => x.Query)
+            .Where(q => q is { Length: > 3})
             .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
-            .SelectMany(x => Provider.Catalog.Search(x).ToListAsync().AsTask())
+            .SelectMany(x => animeService.GetAnime(x))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Select(FilterDubsIfEnabled)
             .Subscribe(x => _searchResultCache.EditDiff(x, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
 
         /// if we have less than 135 seconds left and we have not completed this episode
@@ -145,14 +144,14 @@ public class WatchViewModel : NavigatableViewModel
             .Where(_ => HasSubAndDub)
             .Select(useDub => useDub ? SelectedAnimeResult.Dub : SelectedAnimeResult.Sub)
             .Do(_ => CurrentEpisode = null)
-            .InvokeCommand(SearchResultPicked);
+            .Subscribe(x => SelectedAudio = x);
 
         /// 1. Select Sub/Dub based in <see cref="UseDub"/> if Dub is not present select Sub
         /// 2. Set <see cref="SelectedAudio"/>
         this.ObservableForProperty(x => x.SelectedAnimeResult, x => x)
             .Select(x => UseDub ? x.Dub ?? x.Sub : x.Sub)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .InvokeCommand(SearchResultPicked);
+            .Subscribe(x => SelectedAudio = x);
 
         /// 1. Get the number of Episodes
         /// 2. Populate Episodes list
@@ -190,11 +189,10 @@ public class WatchViewModel : NavigatableViewModel
     public string Url => _url.Value;
     public double CurrentPlayerTime => _currentPlayerTime?.Value ?? 0;
     public double CurrentMediaDuration => _currentMediaDuration?.Value ?? 0;
-    public AnimeModel Anime { get; set; }
+    public IAnimeModel Anime { get; set; }
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
-    public ICommand SearchResultPicked { get; }
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
-    public ReadOnlyObservableCollection<SearchResult> SearchResult => _searchResults;
+    public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
@@ -205,9 +203,9 @@ public class WatchViewModel : NavigatableViewModel
         }
 
         HideControls = true;
-        Anime = parameters["Anime"] as AnimeModel;
+        Anime = parameters["Anime"] as IAnimeModel;
 
-        Find(Anime)
+        Find(Anime.Id, Anime.Title)
             .ToObservable()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => SelectedAnimeResult = x);
@@ -224,15 +222,15 @@ public class WatchViewModel : NavigatableViewModel
         return Task.CompletedTask;
     }
 
-    private async Task<(SearchResult Sub, SearchResult Dub)> Find(AnimeModel anime)
+    public async Task<(SearchResult Sub, SearchResult Dub)> Find(long id, string title)
     {
         if (Provider.Catalog is IMalCatalog malCatalog)
         {
-            return await malCatalog.SearchByMalId(anime.Id);
+            return await malCatalog.SearchByMalId(id);
         }
         else
         {
-            var results = await Provider.Catalog.Search(Anime.Title).ToListAsync();
+            var results = await Provider.Catalog.Search(title).ToListAsync();
 
             if (results.Count == 1)
             {
@@ -247,17 +245,6 @@ public class WatchViewModel : NavigatableViewModel
                 return (await _viewService.ChoooseSearchResult(results, SelectedProviderType), null);
             }
         }
-    }
-
-    private List<SearchResult> FilterDubsIfEnabled(List<SearchResult> results)
-    {
-        if (_settings.PreferSubs)
-        {
-            results.RemoveAll(x => x.Title.Contains("(DUB)", StringComparison.OrdinalIgnoreCase)
-            || x.Title.Contains("[DUB]", StringComparison.OrdinalIgnoreCase));
-        }
-
-        return results;
     }
 
     private IObservable<string> FetchEpUrl(int? episode)

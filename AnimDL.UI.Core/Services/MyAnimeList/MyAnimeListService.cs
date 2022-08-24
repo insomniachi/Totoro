@@ -21,6 +21,13 @@ public class MyAnimeListService : IAnimeService
                       .Select(malModel => _converter.Convert<AnimeModel>(malModel));
     }
 
+    public IObservable<IEnumerable<SearchResultModel>> GetAnime(string name)
+    {
+        return _client.Anime().WithName(name).WithLimit(5).Find()
+                      .ToObservable()
+                      .Select(x => x.Data.Select(x => _converter.ToSearchResult(x)));
+    }
+
     public IObservable<IEnumerable<SeasonalAnimeModel>> GetSeasonalAnime()
     {
         return Observable.Create<IEnumerable<SeasonalAnimeModel>>(async observer =>

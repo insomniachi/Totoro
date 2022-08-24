@@ -17,9 +17,11 @@ public sealed partial class WatchPage : WatchPageBase
             SearchBox
             .Events()
             .SuggestionChosen
-            .Select(@event => @event.args.SelectedItem as SearchResult)
-            .InvokeCommand(ViewModel.SearchResultPicked)
-            .DisposeWith(ViewModel.Garbage);
+            .Select(@event => @event.args.SelectedItem as SearchResultModel)
+            .Do(result => ViewModel.Anime = result)
+            .SelectMany(result => ViewModel.Find(result.Id, result.Title))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => ViewModel.SelectedAnimeResult = x);
 
             WebView
             .Events()

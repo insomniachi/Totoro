@@ -22,6 +22,11 @@ public class MalToModelConverter
         };
     }
 
+    public SearchResultModel ToSearchResult(MalApi.Anime a)
+    {
+        return new SearchResultModel { Title = a.Title, Id = a.Id };
+    }
+
     private static AnimeModel Populate(AnimeModel model, MalApi.Anime malModel)
     {
         model.Id = malModel.Id;

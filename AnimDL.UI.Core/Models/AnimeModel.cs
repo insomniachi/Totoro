@@ -8,7 +8,15 @@ public class Inpc : INotifyPropertyChanged
     public void RaisePropertyChanged(string property) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
 }
 
-public class AnimeModel : Inpc
+public interface IAnimeModel
+{
+    public string Title { get; set; }
+    public long Id { get; set; }
+    public int? TotalEpisodes { get; set; }
+    public Tracking Tracking { get; set; }
+}
+
+public class AnimeModel : Inpc, IAnimeModel
 {
     public long Id { get; set; }
     public string Image { get; set; }
@@ -18,6 +26,15 @@ public class AnimeModel : Inpc
     public AiringStatus AiringStatus { get; set; }
     public float? MeanScore { get; set; }
     public int Popularity { get; set; }
+}
+
+public class SearchResultModel : IAnimeModel
+{
+    public string Title { get; set; }
+    public long Id { get; set; }
+    public Tracking Tracking { get; set; }
+    public int? TotalEpisodes { get; set; }
+    public override string ToString() => Title;
 }
 
 public class ScheduledAnimeModel : AnimeModel
