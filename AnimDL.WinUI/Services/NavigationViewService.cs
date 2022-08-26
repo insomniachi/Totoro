@@ -75,7 +75,7 @@ public class NavigationViewService : INavigationViewService
     {
         if (menuItem.GetValue(NavigationHelper.NavigateToProperty) is string typeKey)
         {
-            return Type.GetType(typeKey) == vmType;
+            return Type.GetType($"{typeKey},AnimDL.UI.Core") == vmType;
         }
 
         return false;
