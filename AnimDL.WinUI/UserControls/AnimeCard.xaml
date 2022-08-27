@@ -33,7 +33,10 @@
             <Grid.Background>
                 <SolidColorBrush Opacity="0.5" Color="Black" />
             </Grid.Background>
-            <TextBlock x:Name="NextEpisodeInText" FontSize="20" />
+            <TextBlock
+                x:Name="NextEpisodeInText"
+                FontSize="20"
+                Foreground="White" />
         </Grid>
 
         <Border

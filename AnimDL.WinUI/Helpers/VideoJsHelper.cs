@@ -13,7 +13,7 @@ public class VideoJsHelper
     </head>
 
     <body>
-        <video id = ""my_video_1"" class=""video-js vjs-fluid vjs-default-skin vjs-fill vjs-big-play-centered"" controls autoplay preload=""auto"">
+        <video id = ""my_video_1"" class=""video-js vjs-default-skin vjs-fill vjs-big-play-centered"" controls autoplay preload=""auto"">
             <source src = ""{0}"" type=""application/x-mpegURL"">
         </video>
 

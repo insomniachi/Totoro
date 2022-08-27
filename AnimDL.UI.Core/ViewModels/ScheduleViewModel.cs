@@ -29,6 +29,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     }
 
     [Reactive] public ScheduleModel SelectedDay { get; set; }
+    [Reactive] public List<ScheduleModel> WeeklySchedule { get; set; } = new();
     public ReadOnlyObservableCollection<ScheduledAnimeModel> Anime => _anime;
     public WeeklyScheduleModel Schedule { get; } = new();
     public DayOfWeek Filter => _filter.Value;
@@ -50,9 +51,9 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(list =>
                         {
+                            WeeklySchedule = Schedule.ToList();
                             this.RaisePropertyChanged(nameof(Schedule));
-                            var schedule = Schedule.ToList();
-                            SelectedDay = schedule.FirstOrDefault(x => x.Day == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? schedule.FirstOrDefault();
+                            SelectedDay = WeeklySchedule.FirstOrDefault(x => x.Day == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? WeeklySchedule.FirstOrDefault();
                             _animeCache.Edit(x => x.AddOrUpdate(list));
                         });
 

@@ -65,16 +65,15 @@
                     OffContent=""
                     OnContent="" />
             </labs:SettingsCard>
-            <labs:SettingsCard
+            <!--<labs:SettingsCard
                 Description="Default provider used to stream."
                 Header="Default Stream Provider"
-                Icon="&#xe93e;"
-                IsEnabled="False">
+                Icon="&#xe93e;">
                 <ComboBox
                     Width="150"
                     ItemsSource="{x:Bind ViewModel.ProviderTypes}"
                     SelectedItem="{x:Bind ViewModel.DefaultProviderType, Mode=TwoWay}" />
-            </labs:SettingsCard>
+            </labs:SettingsCard>-->
             <labs:SettingsCard
                 Description="Let discord know what anime you're watching."
                 Header="Use discord rich presense"

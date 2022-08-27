@@ -25,6 +25,6 @@ public class WeeklyScheduleModel
         };
     }
 
-    public IEnumerable<ScheduleModel> ToList() =>
-        new List<ScheduleModel> { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday }.Where(x => x.Count > 0);
+    public List<ScheduleModel> ToList() =>
+        new List<ScheduleModel> { Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday }.Where(x => x.Count > 0).ToList();
 }

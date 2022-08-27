@@ -21,7 +21,7 @@
 
         <ListBox
             HorizontalAlignment="Center"
-            ItemsSource="{x:Bind ViewModel.Schedule.ToList(), Mode=OneWay}"
+            ItemsSource="{x:Bind ViewModel.WeeklySchedule, Mode=OneWay}"
             SelectedItem="{x:Bind ViewModel.SelectedDay, Mode=TwoWay}">
             <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="model:ScheduleModel">

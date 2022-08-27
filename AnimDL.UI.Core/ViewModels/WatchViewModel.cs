@@ -93,6 +93,7 @@ public class WatchViewModel : NavigatableViewModel
                     case WebMessageType.Pause:
                         observable.Where(_ => settings.UseDiscordRichPresense)
                                   .Do(_ => discordRichPresense.UpdateDetails("Paused"))
+                                  .Do(_ => discordRichPresense.UpdateState(""))
                                   .Do(_ => discordRichPresense.ClearTimer())
                                   .Subscribe().DisposeWith(Garbage);
                         break;
