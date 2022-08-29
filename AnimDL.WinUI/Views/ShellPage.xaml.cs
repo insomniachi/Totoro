@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Diagnostics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -73,5 +74,13 @@ public sealed partial class ShellPage : Page
         var result = navigationService.GoBack();
 
         args.Handled = result;
+    }
+
+    private void Feedback_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo(@"https://github.com/athulrajts/AnimDL.GUI/issues")
+        {
+            UseShellExecute = true
+        });
     }
 }

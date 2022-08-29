@@ -62,6 +62,13 @@
                     Icon="Clock"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
             </NavigationView.MenuItems>
+            <NavigationView.PaneFooter>
+                <NavigationViewItem Content="Give Feedback" Tapped="Feedback_Tapped">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xed15;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.PaneFooter>
             <NavigationView.HeaderTemplate>
                 <DataTemplate>
                     <Grid Visibility="Collapsed">

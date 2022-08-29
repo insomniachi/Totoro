@@ -1,4 +1,8 @@
-﻿using AnimDL.WinUI.Activation;
+﻿using System.Diagnostics;
+using System.Net.Http;
+using System.Reflection;
+using System.Text.Json.Nodes;
+using AnimDL.WinUI.Activation;
 using AnimDL.WinUI.Views;
 using MalApi.Interfaces;
 using Microsoft.UI;
@@ -66,7 +70,7 @@ public class ActivationService : IActivationService
     {
         if (!string.IsNullOrEmpty(prevWebviewFolder) && prevWebviewFolder != tempPath)
         {
-            System.Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", prevWebviewFolder);
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", prevWebviewFolder);
         }
         _playbackStateStorage.StoreState();
         App.MainWindow.Closed -= MainWindow_Closed;
@@ -93,11 +97,45 @@ public class ActivationService : IActivationService
         await Task.CompletedTask;
     }
 
-    private Task StartupAsync()
+    private async Task StartupAsync()
     {
         _themeSelectorService.SetRequestedTheme();
-        //await RequestFullscreen();
-        return Task.CompletedTask;
+
+        try
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36 Edg/104.0.1293.70");
+            var response = await client.GetStringAsync("https://api.github.com/repos/athulrajts/AnimDL.GUI/releases/latest");
+            if(!string.IsNullOrEmpty(response))
+            {
+                var jObject = JsonNode.Parse(response);
+                var latestVersion = new Version(jObject["tag_name"].ToString());
+                var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+                if(latestVersion > appVersion)
+                {
+                    var dialog = new ContentDialog()
+                    {
+                        Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                        XamlRoot = App.MainWindow.Content.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary,
+                        Content = $"A new version {latestVersion} is available for download",
+                        PrimaryButtonText = "Download now",
+                        CloseButtonText = "Maybe later",
+                        PrimaryButtonCommand = ReactiveCommand.Create(() =>
+                        {
+                            Process.Start(new ProcessStartInfo(jObject["html_url"].ToString())
+                            {
+                                UseShellExecute = true
+                            });
+                        })
+                    };
+
+                    await dialog.ShowAsync();
+                }
+            }
+        }
+        catch { }
     }
 
     private static async Task RequestFullscreen()
