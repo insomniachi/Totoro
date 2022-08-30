@@ -20,8 +20,8 @@ public class ActivationService : IActivationService
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private UIElement _shell = null;
-    private readonly string prevWebviewFolder;
-    private readonly string tempPath = System.IO.Path.GetTempPath();
+    private readonly string _prevWebviewFolder;
+    private readonly string _tempPath = System.IO.Path.GetTempPath();
 
     public bool IsAuthenticated { get; set; } = true;
 
@@ -36,8 +36,8 @@ public class ActivationService : IActivationService
         _themeSelectorService = themeSelectorService;
         _playbackStateStorage = playbackStateStorage;
         IsAuthenticated = malClient.IsAuthenticated;
-        prevWebviewFolder = System.Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
-        System.Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", tempPath);
+        _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
+        Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -68,9 +68,9 @@ public class ActivationService : IActivationService
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
-        if (!string.IsNullOrEmpty(prevWebviewFolder) && prevWebviewFolder != tempPath)
+        if (!string.IsNullOrEmpty(_prevWebviewFolder) && _prevWebviewFolder != _tempPath)
         {
-            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", prevWebviewFolder);
+            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _prevWebviewFolder);
         }
         _playbackStateStorage.StoreState();
         App.MainWindow.Closed -= MainWindow_Closed;

@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using AnimDL.UI.Core.ViewModels;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -116,6 +118,17 @@ public sealed partial class AnimeCard : UserControl
         }
 
         return sb.ToString();
+    }
+
+    public Brush GetBorderBrush(AiringStatus status)
+    {
+        return status switch
+        {
+            AiringStatus.CurrentlyAiring => new SolidColorBrush(Colors.LimeGreen),
+            AiringStatus.FinishedAiring => new SolidColorBrush(Colors.MediumSlateBlue),
+            AiringStatus.NotYetAired => new SolidColorBrush(Colors.LightSlateGray),
+            _ => new SolidColorBrush(Colors.Navy),
+        };
     }
 
 }

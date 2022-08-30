@@ -2,8 +2,11 @@
     x:Class="AnimDL.WinUI.UserControls.AnimeCard"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cm="using:AnimDL.UI.Core.Models"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -40,12 +43,13 @@
         </Grid>
 
         <Border
+            x:Name="Border"
             Grid.Row="1"
             Height="60"
             Padding="3"
             Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
-            BorderBrush="{ThemeResource SystemControlBackgroundAccentBrush}"
-            BorderThickness="0,3,0,0">
+            BorderBrush="{x:Bind GetBorderBrush(Anime.AiringStatus), Mode=OneWay}"
+            BorderThickness="0,4,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
