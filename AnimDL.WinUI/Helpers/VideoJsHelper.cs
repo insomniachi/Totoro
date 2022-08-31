@@ -20,6 +20,7 @@ public class VideoJsHelper
         <script>
             var player = videojs('my_video_1');
             player.ready(function () {{
+                this.responsive(true);
                 var obj = new Object();
                 obj.MessageType = ""Ready"";
                 window.chrome.webview.postMessage(obj);
