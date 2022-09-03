@@ -2,7 +2,7 @@
 
 namespace AnimDL.UI.Core.ViewModels;
 
-public class WatchViewModel : NavigatableViewModel
+public class WatchViewModel : NavigatableViewModel, IHaveState
 {
     private readonly ITrackingService _trackingService;
     private readonly IViewService _viewService;
@@ -175,6 +175,12 @@ public class WatchViewModel : NavigatableViewModel
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(FetchEpUrl)
             .ToProperty(this, nameof(Url), out _url, () => string.Empty);
+
+        this.ObservableForProperty(x => x.Anime, x => x)
+            .WhereNotNull()
+            .SelectMany(model => Find(model.Id, model.Title))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => SelectedAnimeResult = x);
     }
 
     [Reactive] public string Query { get; set; }
@@ -185,12 +191,12 @@ public class WatchViewModel : NavigatableViewModel
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public (SearchResult Sub, SearchResult Dub) SelectedAnimeResult { get; set; }
     [Reactive] public SearchResult SelectedAudio { get; set; }
+    [Reactive] public IAnimeModel Anime { get; set; }
     public IProvider Provider => _provider.Value;
     public bool HasSubAndDub => _hasSubAndDub.Value;
     public string Url => _url.Value;
     public double CurrentPlayerTime => _currentPlayerTime?.Value ?? 0;
     public double CurrentMediaDuration => _currentMediaDuration?.Value ?? 0;
-    public IAnimeModel Anime { get; set; }
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
@@ -205,11 +211,6 @@ public class WatchViewModel : NavigatableViewModel
 
         HideControls = true;
         Anime = parameters["Anime"] as IAnimeModel;
-
-        Find(Anime.Id, Anime.Title)
-            .ToObservable()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => SelectedAnimeResult = x);
 
         return Task.CompletedTask;
     }
@@ -281,5 +282,26 @@ public class WatchViewModel : NavigatableViewModel
         }
 
         action();
+    }
+
+    public Task SetInitialState() => Task.CompletedTask;
+
+    public void StoreState(IState state)
+    {
+        state.AddOrUpdate(HideControls);
+        
+        if (Anime is not null)
+        {
+            state.AddOrUpdate(Anime); 
+        }
+    }
+
+    public void RestoreState(IState state)
+    {
+        HideControls = state.GetValue<bool>(nameof(HideControls));
+        if (state.GetValue<IAnimeModel>(nameof(Anime)) is IAnimeModel model)
+        {
+            Anime ??= model;
+        }
     }
 }
