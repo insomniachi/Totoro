@@ -6,9 +6,9 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
     {
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
-            .Subscribe(x => TotalEpisodes = x.TotalEpisodes ?? 0);
+            .Subscribe(x => TotalEpisodes = x.TotalEpisodes == 0 ? double.MaxValue : x.TotalEpisodes.Value);
 
-        this.WhenAnyValue(x => x.Anime)
+        this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
             .Select(x => x.Tracking)
             .WhereNotNull()
