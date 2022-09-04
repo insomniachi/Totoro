@@ -1,17 +1,17 @@
-﻿using System.Text.Json.Serialization;
-using MalApi;
-using MalApi.Interfaces;
-
-namespace AnimDL.UI.Core.ViewModels;
+﻿namespace AnimDL.UI.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
-    public DiscoverViewModel()
-    {
+    private readonly IRecentEpisodesProvider _recentEpisodesProvider;
+    private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
 
+    public DiscoverViewModel(IRecentEpisodesProvider recentEpisodesProvider,
+                             IFeaturedAnimeProvider featuredAnimeProvider)
+    {
         Observable
             .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Where(_ => Featured is not null)
             .Subscribe(_ =>
             {
                 if (Featured.Count == 0)
@@ -28,47 +28,37 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
                 SelectedIndex++;
             });
+
+        _recentEpisodesProvider = recentEpisodesProvider;
+        _featuredAnimeProvider = featuredAnimeProvider;
     }
 
-    [Reactive] public ObservableCollection<FeaturedAnime> Featured { get; set; }
+    [Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
+    [Reactive] public IList<AiredEpisode> Episodes { get; set; } = new List<AiredEpisode>();
     [Reactive] public int SelectedIndex { get; set; }
 
     public void RestoreState(IState state)
     {
-        Featured = state.GetValue<ObservableCollection<FeaturedAnime>>(nameof(Featured));
+        Featured = state.GetValue<IList<FeaturedAnime>>(nameof(Featured));
+        Episodes = state.GetValue<IList<AiredEpisode>>(nameof(Episodes));
     }
 
-    public async Task SetInitialState()
+    public Task SetInitialState()
     {
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.54");
-        var stream = await client.GetStreamAsync("https://animixplay.to/assets/s/featured.json");
-        Featured = await JsonSerializer.DeserializeAsync<ObservableCollection<FeaturedAnime>>(stream);
+        _featuredAnimeProvider.GetFeaturedAnime()
+                              .ObserveOn(RxApp.MainThreadScheduler)
+                              .Subscribe(featured => Featured = featured.ToList());
+
+        _recentEpisodesProvider.GetRecentlyAiredEpisodes()
+                               .ObserveOn(RxApp.MainThreadScheduler)
+                               .Subscribe(eps => Episodes = eps.ToList());
+
+        return Task.CompletedTask;
     }
 
     public void StoreState(IState state)
     {
         state.AddOrUpdate(Featured);
+        state.AddOrUpdate(Episodes);
     }
-}
-
-public class FeaturedAnime
-{
-    public string Id => Url?.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Skip(1).Take(1).FirstOrDefault();
-    public string[] GenresArray => Genres?.Split(",");
-
-    [JsonPropertyName("title")]
-    public string Title { get; set; }
-
-    [JsonPropertyName("url")]
-    public string Url { get; set; }
-
-    [JsonPropertyName("img")]
-    public string Image { get; set; }
-
-    [JsonPropertyName("genre")]
-    public string Genres { get; set; }
-
-    [JsonPropertyName("desc")]
-    public string Description { get; set; }
 }

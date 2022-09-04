@@ -97,6 +97,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
         services.AddSingleton<ISchedule, Schedule>();
         services.AddMemoryCache();
+        services.AddHttpClient();
+        services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
+        services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
 
         return services;
     }
