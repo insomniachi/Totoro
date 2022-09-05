@@ -1,4 +1,5 @@
-﻿using AnimDL.Api;
+﻿using System.Text.RegularExpressions;
+using AnimDL.Api;
 
 namespace AnimDL.UI.Core.ViewModels;
 
@@ -18,6 +19,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
     private readonly ReadOnlyObservableCollection<int> _episodes;
+
+    private int _episodeRequest;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           ITrackingService trackingService,
@@ -162,11 +165,9 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .SelectMany(result => Provider.StreamProvider.GetNumberOfStreams(result.Url))
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
-            .Where(_ => Anime is not null)
-            .Select(_ => Anime.Tracking?.WatchedEpisodes ?? 0)
-            .Where(ep => ep < Anime.TotalEpisodes)
+            .Select(_ => (Anime?.Tracking?.WatchedEpisodes + 1) ?? _episodeRequest)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(ep => CurrentEpisode = ep + 1);
+            .Subscribe(ep => CurrentEpisode = ep);
 
         /// Scrape url for <see cref="CurrentEpisode"/> and set to <see cref="Url"/>
         this.ObservableForProperty(x => x.CurrentEpisode, x => x)
@@ -204,13 +205,18 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if (!parameters.ContainsKey("Anime"))
+        if (parameters.ContainsKey("Anime"))
         {
-            return Task.CompletedTask;
+            HideControls = true;
+            Anime = parameters["Anime"] as IAnimeModel;
         }
-
-        HideControls = true;
-        Anime = parameters["Anime"] as IAnimeModel;
+        else if(parameters.ContainsKey("EpisodeInfo"))
+        {
+            var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
+            var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
+            _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
+            SelectedAudio = new SearchResult { Title = epInfo.Anime, Url = epInfo.EpisodeUrl };
+        }
 
         return Task.CompletedTask;
     }

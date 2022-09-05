@@ -8,8 +8,8 @@ public class VideoJsHelper
         <meta charset=utf-8 />
         <title>Your title</title>
         <link href=""https://unpkg.com/video.js/dist/video-js.css"" rel=""stylesheet"">
-        <script src=""https://unpkg.com/video.js/dist/video.js""></script >
-        <script src=""https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js""></script>
+        <script src=""https://unpkg.com/video.js/dist/video.js""></script>
+        <script src=""https://unpkg.com/@videojs/http-streaming/dist/videojs-http-streaming.js""></script>
     </head>
 
     <body>
@@ -77,6 +77,7 @@ public class VideoJsHelper
 
     public static string GetPlayerHtml(string url)
     {
+        var result = string.Format(PlayerFormat, url);
         return string.Format(PlayerFormat, url);
     }
 }

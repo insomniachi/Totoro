@@ -12,7 +12,6 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:v="using:AnimDL.WinUI.Views"
     xmlns:viewmodels="using:AnimDL.UI.Core.ViewModels"
-    xmlns:views="using:AnimDL.WinUI.Views"
     Name="Page"
     Margin="{StaticResource MediumLeftRightMargin}"
     d:DataContext="{d:DesignInstance Type=viewmodels:UserListViewModel}"

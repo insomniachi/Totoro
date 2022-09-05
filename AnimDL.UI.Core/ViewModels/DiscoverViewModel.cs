@@ -4,10 +4,18 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IRecentEpisodesProvider _recentEpisodesProvider;
     private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
+    private readonly INavigationService _navigationService;
 
     public DiscoverViewModel(IRecentEpisodesProvider recentEpisodesProvider,
-                             IFeaturedAnimeProvider featuredAnimeProvider)
+                             IFeaturedAnimeProvider featuredAnimeProvider,
+                             INavigationService navigationService)
     {
+        _recentEpisodesProvider = recentEpisodesProvider;
+        _featuredAnimeProvider = featuredAnimeProvider;
+        _navigationService = navigationService;
+
+        SelectEpisode = ReactiveCommand.Create<AiredEpisode>(OnEpisodeSelected);
+
         Observable
             .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -28,14 +36,13 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
                 SelectedIndex++;
             });
-
-        _recentEpisodesProvider = recentEpisodesProvider;
-        _featuredAnimeProvider = featuredAnimeProvider;
     }
 
     [Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
     [Reactive] public IList<AiredEpisode> Episodes { get; set; } = new List<AiredEpisode>();
     [Reactive] public int SelectedIndex { get; set; }
+
+    public ICommand SelectEpisode { get; }
 
     public void RestoreState(IState state)
     {
@@ -60,5 +67,15 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     {
         state.AddOrUpdate(Featured);
         state.AddOrUpdate(Episodes);
+    }
+
+    private void OnEpisodeSelected(AiredEpisode episode)
+    {
+        var navigationParameters = new Dictionary<string, object>
+        {
+            ["EpisodeInfo"] = episode
+        };
+
+        _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
     }
 }

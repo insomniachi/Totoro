@@ -10,11 +10,16 @@ public class Schedule : ISchedule
     public Dictionary<long, TimeRemaining> Dictionary { get; set; } = new();
     private DateTime _lastUpdatedAt;
     private bool _isRefreshing;
-    private readonly HttpClient _client = new();
+    private readonly HttpClient _httpClient;
     private readonly IMalClient _malClient;
 
-    public Schedule(IMessageBus messageBus, IMalClient client)
+    public Schedule(IMessageBus messageBus,
+                    IMalClient client,
+                    HttpClient httpClient)
     {
+        _httpClient = httpClient;
+        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(UI.Core.Constants.UserAgent);
+
         Observable.StartAsync(() => FetchSchedule());
 
         messageBus.Listen<MinuteTick>()
@@ -62,14 +67,13 @@ public class Schedule : ISchedule
         _isRefreshing = true;
 
         Dictionary.Clear();
-        using var message = new HttpRequestMessage(HttpMethod.Get, "https://animixplay.to/assets/s/schedule.json");
-        message.Headers.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.54");
-
-        var response = _client.Send(message);
+        var response = await _httpClient.GetAsync("https://animixplay.to/assets/s/schedule.json");
         var json = await response.Content.ReadAsStringAsync();
         var node = JsonNode.Parse(json).AsArray();
         var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        
         _lastUpdatedAt = DateTime.Now;
+        
         foreach (var item in node)
         {
             var time = long.Parse(item["time"].ToString());

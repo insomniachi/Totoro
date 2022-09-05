@@ -7,6 +7,7 @@
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:viewmodels="using:AnimDL.UI.Core.ViewModels"
     xmlns:views="using:AnimDL.WinUI.Views"
     Margin="{StaticResource MediumLeftRightMargin}"
@@ -78,6 +79,7 @@
                 x:Name="AnimeListView"
                 Grid.Row="1"
                 animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+                ui:ListViewExtensions.Command="{x:Bind ViewModel.SelectEpisode}"
                 IsItemClickEnabled="True"
                 ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}">
                 <GridView.ItemTemplate>
@@ -125,11 +127,11 @@
                                         Padding="3"
                                         VerticalAlignment="Center"
                                         FontSize="15"
-                                        Text="{x:Bind Anime, Mode=TwoWay}"
+                                        Text="{x:Bind Anime}"
                                         TextAlignment="Center"
                                         TextTrimming="WordEllipsis"
                                         TextWrapping="NoWrap"
-                                        ToolTipService.ToolTip="{x:Bind Anime, Mode=OneWay}" />
+                                        ToolTipService.ToolTip="{x:Bind Anime}" />
                                     <TextBlock HorizontalAlignment="Center" Text="{x:Bind InfoText}" />
                                 </StackPanel>
                             </Border>
