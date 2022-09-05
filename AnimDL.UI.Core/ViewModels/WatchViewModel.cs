@@ -212,6 +212,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         }
         else if(parameters.ContainsKey("EpisodeInfo"))
         {
+            HideControls = true;
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
