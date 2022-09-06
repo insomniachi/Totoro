@@ -19,6 +19,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
             .Connect()
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason))
+            .Filter(this.WhenAnyValue(x => x.SearchText).Select(x => x?.ToLower()).Select(FilterByTitle))
             .Sort(SortExpressionComparer<SeasonalAnimeModel>.Ascending(x => x.Popularity))
             .Bind(out _anime)
             .DisposeMany()
@@ -35,6 +36,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public Season Season { get; set; }
     [Reactive] public string SeasonFilter { get; set; } = "Current";
+    [Reactive] public string SearchText { get; set; }
     public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }
@@ -77,6 +79,9 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
 
     private async Task AddToList(AnimeModel a) => await _viewService.UpdateAnimeStatus(a);
     private static Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
+    private static Func<SeasonalAnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
+                                                                                      x.Title.ToLower().Contains(title) ||
+                                                                                      (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true);
     public static Season Current => AnimeHelpers.CurrentSeason();
     public static Season Next => AnimeHelpers.NextSeason();
     public static Season Prev => AnimeHelpers.PrevSeason();

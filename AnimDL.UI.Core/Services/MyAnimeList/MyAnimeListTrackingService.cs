@@ -23,7 +23,7 @@ public class MyAnimeListTrackingService : ITrackingService
                 var watching = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching)
                                      .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
                                      .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
-                                     .WithField(x => x.Status)
+                                     .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
                                      .Find();
 
                 observer.OnNext(ConvertToAnimeModel(watching.Data));
@@ -31,7 +31,7 @@ public class MyAnimeListTrackingService : ITrackingService
                 var all = await _client.Anime().OfUser()
                                        .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
                                        .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
-                                       .WithField(x => x.Status)
+                                       .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
                                        .Find();
 
                 observer.OnNext(ConvertToAnimeModel(all.Data));

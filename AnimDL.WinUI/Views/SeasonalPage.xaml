@@ -29,28 +29,49 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ListBox
-            x:Name="SeasonsStrip"
-            Margin="{StaticResource SmallTopBottomMargin}"
+        <StackPanel
             HorizontalAlignment="Center"
-            SelectedItem="{x:Bind ViewModel.SeasonFilter, Mode=TwoWay}">
-            <x:String>Previous</x:String>
-            <x:String>Current</x:String>
-            <x:String>Next</x:String>
-            <ListBox.ItemTemplate>
-                <DataTemplate x:DataType="mal:AnimeStatus">
-                    <TextBlock
-                        Width="200"
-                        Text="{Binding}"
-                        TextAlignment="Center" />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-        </ListBox>
+            Orientation="Horizontal"
+            Spacing="10">
+            <ListBox
+                x:Name="SeasonsStrip"
+                Margin="{StaticResource SmallTopBottomMargin}"
+                HorizontalAlignment="Center"
+                SelectedItem="{x:Bind ViewModel.SeasonFilter, Mode=TwoWay}">
+                <x:String>Previous</x:String>
+                <x:String>Current</x:String>
+                <x:String>Next</x:String>
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="mal:AnimeStatus">
+                        <TextBlock
+                            Width="200"
+                            Text="{Binding}"
+                            TextAlignment="Center" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Height" Value="35" />
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+
+            <AutoSuggestBox
+                Width="300"
+                Height="35"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
+                PlaceholderText="Search"
+                QueryIcon="Find"
+                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        </StackPanel>
+
 
         <GridView
             x:Name="AnimeListView"

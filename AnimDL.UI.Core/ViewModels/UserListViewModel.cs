@@ -22,6 +22,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Connect()
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.CurrentView).Select(FilterByStatusPredicate))
+            .Filter(this.WhenAnyValue(x => x.SearchText).Select(x => x?.ToLower()).Select(FilterByTitle))
             .Sort(SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore))
             .Bind(out _anime)
             .DisposeMany()
@@ -32,6 +33,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public AnimeStatus CurrentView { get; set; } = AnimeStatus.Watching;
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
+    [Reactive] public string SearchText { get; set; }
 
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ItemClickedCommand { get; }
@@ -45,6 +47,9 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     }
 
     private Func<AnimeModel, bool> FilterByStatusPredicate(AnimeStatus status) => x => x.Tracking.Status == status;
+    private static Func<AnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
+                                                                                  x.Title.ToLower().Contains(title) ||
+                                                                                  (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true);
 
     public Task SetInitialState()
     {

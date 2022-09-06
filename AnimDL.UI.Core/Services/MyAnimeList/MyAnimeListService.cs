@@ -38,7 +38,7 @@ public class MyAnimeListService : IAnimeService
                               .WithField(x => x.UserStatus).WithField(x => x.Broadcast)
                               .WithField(x => x.StartSeason).WithField(x => x.TotalEpisodes)
                               .WithField(x => x.MeanScore).WithField(x => x.Popularity)
-                              .WithField(x => x.Status);
+                              .WithField(x => x.Status).WithField(x => x.AlternativeTitles);
             }
 
             var current = CurrentSeason();
