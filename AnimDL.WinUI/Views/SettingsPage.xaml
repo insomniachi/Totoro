@@ -84,6 +84,16 @@
                     OffContent=""
                     OnContent="" />
             </labs:SettingsCard>
+            <labs:SettingsCard
+                Description="Auto update tracking when configured number of seconds is remaining"
+                Header="Auto update tracking"
+                Icon="&#xe930;">
+                <NumberBox
+                    LargeChange="5"
+                    SmallChange="1"
+                    SpinButtonPlacementMode="Inline"
+                    Value="{x:Bind ViewModel.TimeRemainingWhenEpisodeCompletes, Mode=TwoWay}" />
+            </labs:SettingsCard>
         </StackPanel>
 
         <TeachingTip

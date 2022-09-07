@@ -38,6 +38,7 @@
             </Grid.Background>
             <TextBlock
                 x:Name="NextEpisodeInText"
+                Padding="5,0"
                 FontSize="20"
                 Foreground="White" />
         </Grid>

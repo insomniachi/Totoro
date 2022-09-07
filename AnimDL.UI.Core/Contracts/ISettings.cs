@@ -8,4 +8,5 @@ public interface ISettings
     bool PreferSubs { get; set; }
     ProviderType DefaultProviderType { get; set; }
     bool UseDiscordRichPresense { get; set; }
+    int TimeRemainingWhenEpisodeCompletes { get; set; }
 }

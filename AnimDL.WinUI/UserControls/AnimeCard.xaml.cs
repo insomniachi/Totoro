@@ -1,5 +1,5 @@
-﻿using System.Text;
-using AnimDL.UI.Core.ViewModels;
+﻿using AnimDL.UI.Core.ViewModels;
+using Humanizer;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -100,25 +100,7 @@ public sealed partial class AnimeCard : UserControl
         return m.TimeRemaining is TimeRemaining tr ? ToString(tr.TimeSpan) : string.Empty;
     }
 
-    private static string ToString(TimeSpan ts)
-    {
-        var sb = new StringBuilder();
-
-        if (ts.Days > 0)
-        {
-            sb.Append($"{ts.Days}d ");
-        }
-        if (ts.Hours > 0)
-        {
-            sb.Append($"{ts.Hours}h ");
-        }
-        if (ts.Minutes > 0)
-        {
-            sb.Append($"{ts.Minutes}m");
-        }
-
-        return sb.ToString();
-    }
+    private static string ToString(TimeSpan ts) => ts.Humanize(2);
 
     public Brush GetBorderBrush(AiringStatus status)
     {

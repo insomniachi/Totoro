@@ -9,6 +9,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public ProviderType DefaultProviderType { get; set; }
     [Reactive] public bool IsAuthenticated { get; set; } = true;
     [Reactive] public bool UseDiscordRichPresense { get; set; }
+    [Reactive] public int TimeRemainingWhenEpisodeCompletes { get; set; }
     public List<ElementTheme> Themes { get; set; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ICommand AuthenticateCommand { get; }
@@ -22,6 +23,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
         DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.AnimixPlay);
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
+        TimeRemainingWhenEpisodeCompletes = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletes), 120);
 
         AuthenticateCommand = ReactiveCommand.CreateFromTask(viewService.AuthenticateMal);
 
@@ -37,6 +39,8 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
             .Subscribe(value => localSettingsService.SaveSetting(nameof(PreferSubs), value));
         this.ObservableForProperty(x => x.DefaultProviderType, x => x)
             .Subscribe(value => localSettingsService.SaveSetting(nameof(DefaultProviderType), value));
+        this.ObservableForProperty(x => x.TimeRemainingWhenEpisodeCompletes, x => x)
+            .Subscribe(value => localSettingsService.SaveSetting(nameof(TimeRemainingWhenEpisodeCompletes), value));
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
             .Subscribe(value =>
             {

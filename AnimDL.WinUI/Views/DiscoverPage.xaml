@@ -17,6 +17,7 @@
     <Grid Margin="0,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="300" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
@@ -74,7 +75,13 @@
                 SelectedPageIndex="{x:Bind Gallery.SelectedIndex, Mode=TwoWay}" />
         </Grid>
 
-        <Grid Grid.Row="1">
+        <ToggleSwitch
+            Grid.Row="1"
+            IsOn="{x:Bind ViewModel.ShowOnlyWatchingAnime, Mode=TwoWay}"
+            OffContent="Show only anime that you are watching"
+            OnContent="Show only anime that you are watching" />
+
+        <Grid Grid.Row="2">
             <GridView
                 x:Name="AnimeListView"
                 Grid.Row="1"
@@ -100,7 +107,7 @@
                                 Stretch="UniformToFill" />
 
                             <Grid
-                                x:Name="NextEpisodeInContainer"
+                                x:Name="Time"
                                 Grid.Row="0"
                                 Height="30"
                                 HorizontalAlignment="Right"
@@ -109,9 +116,9 @@
                                     <SolidColorBrush Opacity="0.5" Color="Black" />
                                 </Grid.Background>
                                 <TextBlock
-                                    x:Name="NextEpisodeInText"
                                     FontSize="20"
-                                    Foreground="White" />
+                                    Foreground="White"
+                                    Text="{x:Bind HumanizedTimeOfAiring}" />
                             </Grid>
 
                             <Border

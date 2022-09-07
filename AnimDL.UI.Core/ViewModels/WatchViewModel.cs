@@ -20,7 +20,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
     private readonly ReadOnlyObservableCollection<int> _episodes;
 
-    private int _episodeRequest;
+    private int? _episodeRequest;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           ITrackingService trackingService,
@@ -127,18 +127,18 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         /// populate searchbox suggestions
         this.WhenAnyValue(x => x.Query)
-            .Where(q => q is { Length: > 3})
+            .Where(query => query is { Length: > 3})
             .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
-            .SelectMany(x => animeService.GetAnime(x))
+            .SelectMany(query => animeService.GetAnime(query))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => _searchResultCache.EditDiff(x, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
+            .Subscribe(list => _searchResultCache.EditDiff(list, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
 
-        /// if we have less than 135 seconds left and we have not completed this episode
+        /// if we have less than configured seconds left and we have not completed this episode
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(_ => Anime is not null)
             .Where(_ => Anime.Tracking.WatchedEpisodes <= CurrentEpisode)
-            .Where(x => CurrentMediaDuration - x <= 135)
+            .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletes)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Subscribe(_ => UpdateTracking());
 
@@ -165,7 +165,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .SelectMany(result => Provider.StreamProvider.GetNumberOfStreams(result.Url))
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
-            .Select(_ => (Anime?.Tracking?.WatchedEpisodes + 1) ?? _episodeRequest)
+            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes + 1) ?? 1)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
 
@@ -216,7 +216,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
-            SelectedAudio = new SearchResult { Title = epInfo.Anime, Url = epInfo.EpisodeUrl };
+            Anime = epInfo.Model;
         }
 
         return Task.CompletedTask;

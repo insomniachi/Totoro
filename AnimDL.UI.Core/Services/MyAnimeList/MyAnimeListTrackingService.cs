@@ -55,7 +55,7 @@ public class MyAnimeListTrackingService : ITrackingService
                 var pagedAnime = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching)
                                  .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
                                  .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
-                                 .WithField(x => x.Status)
+                                 .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
                                  .Find();
 
                 observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));

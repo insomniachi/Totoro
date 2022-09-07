@@ -1,4 +1,6 @@
-﻿namespace AnimDL.UI.Core.Models;
+﻿using Humanizer;
+
+namespace AnimDL.UI.Core.Models;
 
 public class AiredEpisode
 {
@@ -7,4 +9,6 @@ public class AiredEpisode
     public string EpisodeUrl { get; set; }
     public string Image { get; set; }
     public DateTime TimeOfAiring { get; set; }
+    public string HumanizedTimeOfAiring => TimeOfAiring.Humanize();
+    public IAnimeModel Model { get; set; }
 }

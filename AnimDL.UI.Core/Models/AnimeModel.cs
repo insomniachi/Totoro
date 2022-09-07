@@ -26,7 +26,7 @@ public class AnimeModel : Inpc, IAnimeModel
     public AiringStatus AiringStatus { get; set; }
     public float? MeanScore { get; set; }
     public int Popularity { get; set; }
-    public string[] AlternativeTitles { get; set; }
+    public List<string> AlternativeTitles { get; set; }
 }
 
 public class SearchResultModel : IAnimeModel

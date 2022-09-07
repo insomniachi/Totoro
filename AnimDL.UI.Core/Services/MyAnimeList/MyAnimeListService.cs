@@ -64,6 +64,19 @@ public class MyAnimeListService : IAnimeService
         });
     }
 
+
+    public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
+    {
+        return _client.Anime().Top(MalApi.AnimeRankingType.Airing)
+                              .WithField(x => x.UserStatus).WithField(x => x.Broadcast)
+                              .WithField(x => x.StartSeason).WithField(x => x.TotalEpisodes)
+                              .WithField(x => x.MeanScore).WithField(x => x.Popularity)
+                              .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
+                              .Find().ToObservable()
+                              .Select(x => x.Data.Select(x => _converter.Convert<ScheduledAnimeModel>(x.Anime)));
+
+    }
+
     private static MalApi.Season PrevSeason()
     {
         var date = DateTime.Now;
@@ -127,7 +140,6 @@ public class MyAnimeListService : IAnimeService
 
         return new(current, year);
     }
-
 
     private readonly string[] _fields = new string[]
     {

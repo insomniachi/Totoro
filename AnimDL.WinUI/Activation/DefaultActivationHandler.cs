@@ -32,7 +32,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
         }
         else
         {
-            _navigationService.NavigateTo<UserListViewModel>();
+            _navigationService.NavigateTo<DiscoverViewModel>();
         }
 
         await Task.CompletedTask;

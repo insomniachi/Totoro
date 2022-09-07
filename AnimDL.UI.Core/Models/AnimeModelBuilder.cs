@@ -51,7 +51,8 @@ public class MalToModelConverter
 
         if(malModel.AlternativeTitles is { } alt)
         {
-            model.AlternativeTitles = alt.Aliases.ToArray();
+            model.AlternativeTitles = alt.Aliases.ToList();
+            model.AlternativeTitles.Add(alt.English);
         }
 
         return model;
