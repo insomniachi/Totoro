@@ -21,7 +21,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid>
+        <Grid Margin="10">
             <FlipView
                 x:Name="Gallery"
                 ItemsSource="{x:Bind ViewModel.Featured, Mode=OneWay}"
@@ -77,6 +77,7 @@
 
         <ToggleSwitch
             Grid.Row="1"
+            Margin="10,5"
             IsOn="{x:Bind ViewModel.ShowOnlyWatchingAnime, Mode=TwoWay}"
             OffContent="Show only anime that you are watching"
             OnContent="Show only anime that you are watching" />

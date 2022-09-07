@@ -150,5 +150,8 @@ public class MyAnimeListService : IAnimeService
         MalApi.AnimeFieldNames.NumberOfUsers,
         MalApi.AnimeFieldNames.Rank,
         MalApi.AnimeFieldNames.Mean,
+        MalApi.AnimeFieldNames.AlternativeTitles,
+        MalApi.AnimeFieldNames.Popularity,
+        MalApi.AnimeFieldNames.StartSeason
     };
 }

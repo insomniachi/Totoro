@@ -1,13 +1,11 @@
-﻿using MalApi;
-
-namespace AnimDL.UI.Core.ViewModels;
+﻿namespace AnimDL.UI.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
     private readonly IRecentEpisodesProvider _recentEpisodesProvider;
     private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
     private readonly INavigationService _navigationService;
-    private readonly SourceCache<AiredEpisode, string> _episodesCache = new SourceCache<AiredEpisode, string>(x => x.Anime);
+    private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Anime);
     private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
 
     public DiscoverViewModel(IRecentEpisodesProvider recentEpisodesProvider,
@@ -28,6 +26,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             .DisposeWith(Garbage);
 
         SelectEpisode = ReactiveCommand.Create<AiredEpisode>(OnEpisodeSelected);
+        SelectFeaturedAnime = ReactiveCommand.Create<FeaturedAnime>(OnFeaturedAnimeSelected);
 
         Observable
             .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
@@ -57,14 +56,12 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     [Reactive] public bool ShowOnlyWatchingAnime { get; set; } = true;
     public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
     public ICommand SelectEpisode { get; }
+    public ICommand SelectFeaturedAnime { get; }
 
     public void RestoreState(IState state)
     {
         Featured = state.GetValue<IList<FeaturedAnime>>(nameof(Featured));
         ShowOnlyWatchingAnime = state.GetValue<bool>(nameof(ShowOnlyWatchingAnime));
-        
-        var eps = state.GetValue<ReadOnlyObservableCollection<AiredEpisode>>(nameof(Episodes));
-        _episodesCache.AddOrUpdate(eps);
     }
 
     public Task SetInitialState()
@@ -72,19 +69,23 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _featuredAnimeProvider.GetFeaturedAnime()
                               .ObserveOn(RxApp.MainThreadScheduler)
                               .Subscribe(featured => Featured = featured.ToList());
-
-        _recentEpisodesProvider.GetRecentlyAiredEpisodes()
-                               .ObserveOn(RxApp.MainThreadScheduler)
-                               .Subscribe(eps => _episodesCache.AddOrUpdate(eps));
-
         return Task.CompletedTask;
     }
 
     public void StoreState(IState state)
     {
         state.AddOrUpdate(Featured);
-        state.AddOrUpdate(Episodes);
         state.AddOrUpdate(ShowOnlyWatchingAnime);
+    }
+
+    public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
+    {
+
+        _recentEpisodesProvider.GetRecentlyAiredEpisodes()
+                               .ObserveOn(RxApp.MainThreadScheduler)
+                               .Subscribe(eps => _episodesCache.AddOrUpdate(eps));
+
+        return Task.CompletedTask;
     }
 
     private void OnEpisodeSelected(AiredEpisode episode)
@@ -97,5 +98,15 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
     }
 
-    private static Func<AiredEpisode, bool> Filter(bool value) => x => !value || x.Model is { Tracking.Status: Models.AnimeStatus.Watching };
+    private void OnFeaturedAnimeSelected(FeaturedAnime anime)
+    {
+        var navigationParameters = new Dictionary<string, object>
+        {
+            ["Id"] = long.Parse(anime.Id)
+        };
+
+        _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
+    }
+
+    private static Func<AiredEpisode, bool> Filter(bool value) => x => !value || x.Model is { Tracking.Status: AnimeStatus.Watching };
 }

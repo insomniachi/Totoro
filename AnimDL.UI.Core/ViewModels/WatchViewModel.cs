@@ -10,6 +10,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly ISettings _settings;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IDiscordRichPresense _discordRichPresense;
+    private readonly IAnimeService _animeService;
     private readonly ObservableAsPropertyHelper<IProvider> _provider;
     private readonly ObservableAsPropertyHelper<bool> _hasSubAndDub;
     private readonly ObservableAsPropertyHelper<string> _url;
@@ -36,7 +37,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         _settings = settings;
         _playbackStateStorage = playbackStateStorage;
         _discordRichPresense = discordRichPresense;
-
+        _animeService = animeService;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
@@ -137,7 +138,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(_ => Anime is not null)
-            .Where(_ => Anime.Tracking.WatchedEpisodes <= CurrentEpisode)
+            .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 1) <= CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletes)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Subscribe(_ => UpdateTracking());
@@ -203,7 +204,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
 
-    public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
+    public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         if (parameters.ContainsKey("Anime"))
         {
@@ -218,9 +219,13 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
             Anime = epInfo.Model;
         }
-
-        return Task.CompletedTask;
+        else if(parameters.ContainsKey("Id"))
+        {
+            var id = (long)parameters["Id"];
+            Anime = await _animeService.GetInformation(id);
+        }
     }
+
     public override Task OnNavigatedFrom()
     {
         if (_settings.UseDiscordRichPresense)
