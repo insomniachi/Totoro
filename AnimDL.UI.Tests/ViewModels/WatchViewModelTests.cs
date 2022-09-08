@@ -1,7 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using AnimDL.Api;
+﻿using AnimDL.Api;
 using AnimDL.UI.Tests.Helpers;
 using AnimDL.WinUI.Tests.Builders;
 
@@ -111,76 +108,7 @@ public class WatchViewModelTests
         Assert.Equal($"{result.Url}_stream_{vm.CurrentEpisode}", vm.Url);
     }
 
-    [Fact]
-    public async Task WatchViewModel_Search_SelectingSuggestionPopulatesEpisodes()
-    {
-        // arrange
-        var ep = 24;
-        var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
-        var provider = GetProvider(result, ep);
 
-        var vm = BaseViewModel(provider).Bulid();
-
-        // act
-        vm.SearchResultPicked.Execute(result);
-        
-        await Task.Delay(10);
-        
-        // assert
-        Assert.Equal(ep, vm.Episodes.Count);
-        Assert.Null(vm.CurrentEpisode);
-    }
-
-    [Fact]
-    public async Task WatchViewModel_ChoosingEpisode_PlaysThatEpisode()
-    {
-        // arrange
-        var ep = 24;
-        var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
-        var provider = GetProvider(result, ep);
-
-        var vm = BaseViewModel(provider).Bulid();
-
-        // act
-        vm.SearchResultPicked.Execute(result);
-        await Task.Delay(10);
-        vm.CurrentEpisode = 10;
-        await Task.Delay(10);
-
-        // assert
-        Assert.Equal($"{result.Url}_stream_{vm.CurrentEpisode}", vm.Url);
-    }
-
-    [Fact]
-    public async Task WatchViewModel_SendsCommandToPlayVideoFromLastPostionWhenVideoLoaded()
-    {
-        // arrange
-        var ep = 24;
-        var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
-        var provider = GetProvider(result, ep);
-
-        var time = 100.0;
-        var vm = BaseViewModel(provider).WithPlaybackStateStorage(x =>
-                    {
-                        x.Setup(x => x.GetTime(It.IsAny<long>(), It.IsAny<int>())).Returns(time);
-                    })
-                    .Bulid();
-
-        // act
-        vm.SearchResultPicked.Execute(result);
-        await Task.Delay(10);
-        vm.CurrentEpisode = 10;
-        await Task.Delay(10);
-
-        Assert.True(string.IsNullOrEmpty(vm.VideoPlayerRequestMessage));
-        // video player is loaded and can start playing
-        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.CanPlay });
-
-        Assert.False(string.IsNullOrEmpty(vm.VideoPlayerRequestMessage));
-        var message = JsonNode.Parse(vm.VideoPlayerRequestMessage);
-        Assert.Equal(WebMessageType.Play.ToString(), message["MessageType"].ToString());
-        Assert.Equal(time.ToString(), message["StartTime"].ToString());
-    }
 
     [Fact]
     public async Task WatchViewModel_DiscordRpcWorks()

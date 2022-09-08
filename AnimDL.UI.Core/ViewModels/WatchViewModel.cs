@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using AnimDL.Api;
-using AnimDL.UI.Core.Contracts;
 
 namespace AnimDL.UI.Core.ViewModels;
 

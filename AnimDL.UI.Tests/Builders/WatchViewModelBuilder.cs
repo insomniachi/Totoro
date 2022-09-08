@@ -11,6 +11,8 @@ public class WatchViewModelBuilder
     private ISettings _settings = Mock.Of<ISettings>();
     private IPlaybackStateStorage _playbackStateStorage = Mock.Of<IPlaybackStateStorage>();
     private IDiscordRichPresense _discordRpc = Mock.Of<IDiscordRichPresense>();
+    private IAnimeService _animeService = Mock.Of<IAnimeService>();
+    private IMediaPlayer _mediaPlayer = Mock.Of<IMediaPlayer>();
     private Mock<IDiscordRichPresense> _discordRpcMock;
     
     public WatchViewModel Bulid()
@@ -21,7 +23,8 @@ public class WatchViewModelBuilder
                                   _settings,
                                   _playbackStateStorage,
                                   _discordRpc,
-                                  MessageBus.Current);
+                                  _animeService,
+                                  _mediaPlayer);
     }
 
     public WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
@@ -69,6 +72,22 @@ public class WatchViewModelBuilder
         _discordRpcMock = new Mock<IDiscordRichPresense>();
         configure(_discordRpcMock);
         _discordRpc = _discordRpcMock.Object;
+        return this;
+    }
+
+    public WatchViewModelBuilder WithAnimeService(Action<Mock<IAnimeService>> configure)
+    {
+        var mock = new Mock<IAnimeService>();
+        configure(mock);
+        _animeService = mock.Object;
+        return this;
+    }
+
+    public WatchViewModelBuilder WithMediaPlayer(Action<Mock<IMediaPlayer>> configure)
+    {
+        var mock = new Mock<IMediaPlayer>();
+        configure(mock);
+        _mediaPlayer = mock.Object;
         return this;
     }
 
