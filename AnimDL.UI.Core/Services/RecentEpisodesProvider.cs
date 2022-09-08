@@ -89,10 +89,7 @@ public class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
 
                 hasMore = (bool)jObject["more"].AsValue();
                 time = DateTime.ParseExact((string)jObject["last"].AsValue(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-
                 observer.OnNext(models);
-
-                var days = (now - time).TotalDays;
 
             } while (hasMore && (now - time).TotalDays <= 7);
 

@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using AnimDL.Api;
+using AnimDL.UI.Core.Contracts;
 
 namespace AnimDL.UI.Core.ViewModels;
 
@@ -29,8 +30,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
                           ISettings settings,
                           IPlaybackStateStorage playbackStateStorage,
                           IDiscordRichPresense discordRichPresense,
-                          IMessageBus messageBus,
-                          IAnimeService animeService)
+                          IAnimeService animeService,
+                          IMediaPlayer mediaPlayer)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -38,6 +39,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         _playbackStateStorage = playbackStateStorage;
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
+        MediaPlayer = mediaPlayer;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
@@ -57,61 +59,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
-        messageBus
-            .Listen<WebMessage>()
-            .GroupBy(message => message.MessageType)
-            .Subscribe(observable =>
-            {
-                switch (observable.Key)
-                {
-                    case WebMessageType.TimeUpdate:
-                        observable.Select(messsage => double.Parse(messsage.Content))
-                                  .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0)
-                                  .DisposeWith(Garbage);
-                        break;
-
-                    case WebMessageType.DurationUpdate:
-                        observable.Select(message => double.Parse(message.Content))
-                                  .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0)
-                                  .DisposeWith(Garbage);
-                        break;
-
-                    // if video finished playing, play the next episode
-                    case WebMessageType.Ended:
-                        observable.Do(_ => DoIfRpcEnabled(() => discordRichPresense.Clear()))
-                                  .Do(_ => UpdateTracking())
-                                  .ObserveOn(RxApp.MainThreadScheduler)
-                                  .Do(_ => CurrentEpisode++)
-                                  .Subscribe().DisposeWith(Garbage);
-                        break;
-
-                    /// Auto play from last watched location otherwise start from begining
-                    case WebMessageType.CanPlay:
-                        observable.Select(_ => playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0))
-                                  .Select(time => JsonSerializer.Serialize(new { MessageType = "Play", StartTime = time }))
-                                  .Subscribe(message => VideoPlayerRequestMessage = message)
-                                  .DisposeWith(Garbage);
-                        break;
-
-                    // Reset discord RPC
-                    case WebMessageType.Pause:
-                        observable.Where(_ => settings.UseDiscordRichPresense)
-                                  .Do(_ => discordRichPresense.UpdateDetails("Paused"))
-                                  .Do(_ => discordRichPresense.UpdateState(""))
-                                  .Do(_ => discordRichPresense.ClearTimer())
-                                  .Subscribe().DisposeWith(Garbage);
-                        break;
-
-                    // update time remaining
-                    case WebMessageType.Seeked or WebMessageType.Play:
-                        observable.Where(_ => settings.UseDiscordRichPresense)
-                                  .Do(_ => discordRichPresense.UpdateDetails(SelectedAudio.Title))
-                                  .Do(_ => discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
-                                  .Do(_ => discordRichPresense.UpdateTimer(TimeRemaining))
-                                  .Subscribe().DisposeWith(Garbage);
-                        break;
-                };
-            });
+        SubscribeToMediaPlayerEvents();
 
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
@@ -178,6 +126,12 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .SelectMany(FetchEpUrl)
             .ToProperty(this, nameof(Url), out _url, () => string.Empty);
 
+        this.ObservableForProperty(x => x.Url, x => x)
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Do(url => MediaPlayer.SetMediaFromUrl(url))
+            .Do(_ => MediaPlayer.Play(_playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
+            .Subscribe();
+
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
             .SelectMany(model => Find(model.Id, model.Title))
@@ -188,7 +142,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     [Reactive] public string Query { get; set; }
     [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
     [Reactive] public int? CurrentEpisode { get; set; }
-    [Reactive] public bool HideControls { get; set; }
+    [Reactive] public bool HideControls { get; set; } = true;
     [Reactive] public string VideoPlayerRequestMessage { get; set; }
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public (SearchResult Sub, SearchResult Dub) SelectedAnimeResult { get; set; }
@@ -203,17 +157,16 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
+    public IMediaPlayer MediaPlayer { get; }
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         if (parameters.ContainsKey("Anime"))
         {
-            HideControls = true;
             Anime = parameters["Anime"] as IAnimeModel;
         }
         else if(parameters.ContainsKey("EpisodeInfo"))
         {
-            HideControls = true;
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
@@ -223,6 +176,10 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         {
             var id = (long)parameters["Id"];
             Anime = await _animeService.GetInformation(id);
+        }
+        else
+        {
+            HideControls = false;
         }
     }
 
@@ -261,6 +218,73 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         }
     }
 
+    public Task SetInitialState()
+    {
+        HideControls = true;
+        return Task.CompletedTask;
+    }
+
+    public void StoreState(IState state)
+    {
+        state.AddOrUpdate(HideControls);
+
+        if (Anime is not null)
+        {
+            state.AddOrUpdate(Anime);
+        }
+    }
+
+    public void RestoreState(IState state)
+    {
+        HideControls = state.GetValue<bool>(nameof(HideControls));
+        if (state.GetValue<IAnimeModel>(nameof(Anime)) is IAnimeModel model)
+        {
+            Anime ??= model;
+            HideControls = true;
+        }
+    }
+
+    private void SubscribeToMediaPlayerEvents()
+    {
+        MediaPlayer.DisposeWith(Garbage);
+
+        MediaPlayer
+            .PositionChanged
+            .Select(ts => ts.TotalSeconds)
+            .ToProperty(this, nameof(CurrentPlayerTime), out _currentPlayerTime, () => 0.0)
+            .DisposeWith(Garbage);
+
+        MediaPlayer
+            .DurationChanged
+            .Select(ts => ts.TotalSeconds)
+            .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration, () => 0.0)
+            .DisposeWith(Garbage);
+
+        MediaPlayer
+            .PlaybackEnded
+            .Do(_ => DoIfRpcEnabled(() => _discordRichPresense.Clear()))
+            .Do(_ => UpdateTracking())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(_ => CurrentEpisode++)
+            .Subscribe().DisposeWith(Garbage);
+
+        MediaPlayer
+            .Paused
+            .Where(_ => _settings.UseDiscordRichPresense)
+            .Do(_ => _discordRichPresense.UpdateDetails("Paused"))
+            .Do(_ => _discordRichPresense.UpdateState(""))
+            .Do(_ => _discordRichPresense.ClearTimer())
+            .Subscribe().DisposeWith(Garbage);
+
+        MediaPlayer
+            .Playing
+            .Where(_ => _settings.UseDiscordRichPresense)
+            .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio.Title))
+            .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
+            .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))
+            .Subscribe().DisposeWith(Garbage);
+    }
+
     private IObservable<string> FetchEpUrl(int? episode)
     {
         return Provider.StreamProvider
@@ -294,26 +318,5 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         }
 
         action();
-    }
-
-    public Task SetInitialState() => Task.CompletedTask;
-
-    public void StoreState(IState state)
-    {
-        state.AddOrUpdate(HideControls);
-        
-        if (Anime is not null)
-        {
-            state.AddOrUpdate(Anime); 
-        }
-    }
-
-    public void RestoreState(IState state)
-    {
-        HideControls = state.GetValue<bool>(nameof(HideControls));
-        if (state.GetValue<IAnimeModel>(nameof(Anime)) is IAnimeModel model)
-        {
-            Anime ??= model;
-        }
     }
 }

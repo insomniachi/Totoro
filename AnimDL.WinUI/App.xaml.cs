@@ -1,5 +1,4 @@
 ﻿using AnimDL.Core;
-using AnimDL.UI.Core.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel;
@@ -30,6 +29,7 @@ public partial class App : Application
                     .AddDialogPages();
             
             services.AddSingleton(MessageBus.Current);
+            services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

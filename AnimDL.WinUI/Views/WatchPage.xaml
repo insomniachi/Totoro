@@ -114,7 +114,10 @@
                 </Grid>
             </Expander>
 
-            <WebView2 x:Name="WebView" Grid.Row="0" />
+            <MediaPlayerElement
+                x:Name="MediaPlayerElement"
+                Grid.Row="0"
+                AreTransportControlsEnabled="True" />
         </Grid>
     </Grid>
 </local:WatchPageBase>

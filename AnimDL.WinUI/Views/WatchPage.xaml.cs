@@ -1,5 +1,4 @@
 ﻿using AnimDL.UI.Core.ViewModels;
-using Microsoft.UI.Xaml.Navigation;
 using ReactiveMarbles.ObservableEvents;
 
 namespace AnimDL.WinUI.Views;
@@ -11,9 +10,16 @@ public sealed partial class WatchPage : WatchPageBase
     public WatchPage()
     {
         InitializeComponent();
-
+       
         this.WhenActivated(d =>
         {
+            this.WhenAnyValue(x => x.ViewModel.MediaPlayer)
+                .Where(mediaPlayer => mediaPlayer is WinUIMediaPlayerWrapper)
+                .Select(mediaPlayer => mediaPlayer as WinUIMediaPlayerWrapper)
+                .Do(wrapper => MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer()))
+                .Subscribe()
+                .DisposeWith(ViewModel.Garbage);
+
             SearchBox
             .Events()
             .SuggestionChosen
@@ -22,47 +28,6 @@ public sealed partial class WatchPage : WatchPageBase
             .SelectMany(result => ViewModel.Find(result.Id, result.Title))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => ViewModel.SelectedAnimeResult = x);
-
-            WebView
-            .Events()
-            .WebMessageReceived
-            .Select(@event => JsonSerializer.Deserialize<WebMessage>(@event.args.WebMessageAsJson))
-            .Subscribe(@event => MessageBus.Current.SendMessage(@event))
-            .DisposeWith(ViewModel.Garbage);
-
-            WebView
-            .Events()
-            .NavigationCompleted
-            .Where(@event => @event.args.IsSuccess)
-            .SelectMany(@event => @event.sender.ExecuteScriptAsync("document.querySelector('body').style.overflow='hidden'"))
-            .Subscribe()
-            .DisposeWith(ViewModel.Garbage);
-
         });
     }
-
-    protected override async void OnNavigatedTo(NavigationEventArgs e)
-    {
-        await WebView.EnsureCoreWebView2Async();
-
-        // Load video html
-        this.ObservableForProperty(x => x.ViewModel.Url, x => x)
-            .Select(VideoJsHelper.GetPlayerHtml)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(WebView.NavigateToString)
-            .DisposeWith(ViewModel.Garbage);
-
-        // Send message to webview
-        this.ObservableForProperty(x => x.ViewModel.VideoPlayerRequestMessage, x => x)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(WebView.CoreWebView2.PostWebMessageAsJson)
-            .DisposeWith(ViewModel.Garbage);
-    }
-
-    protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
-    {
-        await WebView.EnsureCoreWebView2Async();
-        WebView.NavigateToString("");
-    }
-
 }
