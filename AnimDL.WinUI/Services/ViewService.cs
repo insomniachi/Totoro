@@ -32,11 +32,15 @@ public class ViewService : IViewService
 
         if (result == ContentDialogResult.Primary)
         {
-            var tracking = new Tracking() { Status = vm.Status };
+            var tracking = new Tracking();
 
-            if (vm.Score is { } s)
+            if(a.Tracking?.Status != vm.Status)
             {
-                tracking.Score = s;
+                tracking.Status = vm.Status;
+            }
+            if (vm.Score is int score && score != (a.Tracking?.Score ?? 0))
+            {
+                tracking.Score = score;
             }
             if (vm.EpisodesWatched > 0)
             {

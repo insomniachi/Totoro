@@ -91,12 +91,18 @@ public class MyAnimeListTrackingService : ITrackingService
             request.WithStatus((MalApi.AnimeStatus)(int)status);
         }
 
+        if (tracking.Score is { } score)
+        {
+            request.WithScore((MalApi.Score)score);
+        }
+
         return request.Publish().ToObservable().Select(x => new Tracking
         {
             WatchedEpisodes = x.WatchedEpisodes,
             Status = (AnimeStatus)(int)x.Status,
+            Score = (int)x.Score,
             UpdatedAt = x.UpdatedAt
-        });
+        }); ;
     }
 
     private IEnumerable<AnimeModel> ConvertToAnimeModel(List<MalApi.Anime> anime)
