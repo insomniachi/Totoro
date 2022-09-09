@@ -1,4 +1,5 @@
 ﻿using AnimDL.Core;
+using AnimDL.WinUI.Media;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel;

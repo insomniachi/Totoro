@@ -43,6 +43,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Styles\MediaTransportControls.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Views\DiscoverPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

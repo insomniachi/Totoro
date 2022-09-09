@@ -92,7 +92,17 @@
                     LargeChange="5"
                     SmallChange="1"
                     SpinButtonPlacementMode="Inline"
-                    Value="{x:Bind ViewModel.TimeRemainingWhenEpisodeCompletes, Mode=TwoWay}" />
+                    Value="{x:Bind ViewModel.TimeRemainingWhenEpisodeCompletesInSeconds, Mode=TwoWay}" />
+            </labs:SettingsCard>
+            <labs:SettingsCard
+                Description="Amount to seconds to skip when skip opening button is clicked during media playback"
+                Header="Opening duration"
+                Icon="&#xe916;">
+                <NumberBox
+                    LargeChange="5"
+                    SmallChange="1"
+                    SpinButtonPlacementMode="Inline"
+                    Value="{x:Bind ViewModel.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
             </labs:SettingsCard>
         </StackPanel>
 

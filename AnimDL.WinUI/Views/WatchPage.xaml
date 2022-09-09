@@ -9,6 +9,7 @@
     xmlns:help="using:AnimDL.WinUI.Helpers"
     xmlns:local="using:AnimDL.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:AnimDL.WinUI.Media"
     xmlns:viewmodels="using:AnimDL.UI.Core.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
@@ -117,7 +118,19 @@
             <MediaPlayerElement
                 x:Name="MediaPlayerElement"
                 Grid.Row="0"
-                AreTransportControlsEnabled="True" />
+                AreTransportControlsEnabled="True">
+                <MediaPlayerElement.TransportControls>
+                    <media:CustomMediaTransportControls
+                        x:Name="TransportControls"
+                        IsCompact="false"
+                        IsNextTrackButtonVisible="True"
+                        IsPreviousTrackButtonVisible="True"
+                        IsSkipBackwardButtonVisible="True"
+                        IsSkipBackwardEnabled="True"
+                        IsSkipForwardButtonVisible="True"
+                        IsSkipForwardEnabled="True" />
+                </MediaPlayerElement.TransportControls>
+            </MediaPlayerElement>
         </Grid>
     </Grid>
 </local:WatchPageBase>

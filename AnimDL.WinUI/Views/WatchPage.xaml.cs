@@ -1,4 +1,5 @@
 ﻿using AnimDL.UI.Core.ViewModels;
+using AnimDL.WinUI.Media;
 using ReactiveMarbles.ObservableEvents;
 
 namespace AnimDL.WinUI.Views;
@@ -18,7 +19,7 @@ public sealed partial class WatchPage : WatchPageBase
                 .Select(mediaPlayer => mediaPlayer as WinUIMediaPlayerWrapper)
                 .Do(wrapper => MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer()))
                 .Subscribe()
-                .DisposeWith(ViewModel.Garbage);
+                .DisposeWith(d);
 
             SearchBox
             .Events()
@@ -27,7 +28,22 @@ public sealed partial class WatchPage : WatchPageBase
             .Do(result => ViewModel.Anime = result)
             .SelectMany(result => ViewModel.Find(result.Id, result.Title))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => ViewModel.SelectedAnimeResult = x);
+            .Subscribe(x => ViewModel.SelectedAnimeResult = x)
+            .DisposeWith(d);
+
+            TransportControls
+            .OnNextTrack
+            .InvokeCommand(ViewModel.NextEpisode)
+            .DisposeWith(d);
+
+            TransportControls
+            .OnPrevTrack
+            .InvokeCommand(ViewModel.PrevEpisode);
+
+            TransportControls
+            .OnSkipIntro
+            .InvokeCommand(ViewModel.SkipOpening);
+
         });
     }
 }

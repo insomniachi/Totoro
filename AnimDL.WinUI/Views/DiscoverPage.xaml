@@ -104,7 +104,7 @@
                                 Grid.Row="0"
                                 CacheMode="BitmapCache"
                                 IsCacheEnabled="True"
-                                Source="{x:Bind Image, Mode=OneWay}"
+                                Source="{x:Bind Image}"
                                 Stretch="UniformToFill" />
 
                             <Grid

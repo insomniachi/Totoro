@@ -58,6 +58,10 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
+        NextEpisode = ReactiveCommand.Create(() => CurrentEpisode++, HasNextEpisode, RxApp.MainThreadScheduler);
+        PrevEpisode = ReactiveCommand.Create(() => CurrentEpisode--, HasPrevEpisode, RxApp.MainThreadScheduler);
+        SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
+
         SubscribeToMediaPlayerEvents();
 
         // periodically save the current timestamp so that we can resume later
@@ -86,7 +90,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(_ => Anime is not null)
             .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 1) <= CurrentEpisode)
-            .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletes)
+            .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletesInSeconds)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Subscribe(_ => UpdateTracking());
 
@@ -157,6 +161,9 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
+    public ICommand NextEpisode { get; }
+    public ICommand PrevEpisode { get; }
+    public ICommand SkipOpening { get; }
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
@@ -263,9 +270,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .PlaybackEnded
             .Do(_ => DoIfRpcEnabled(() => _discordRichPresense.Clear()))
             .Do(_ => UpdateTracking())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(_ => CurrentEpisode++)
-            .Subscribe().DisposeWith(Garbage);
+            .InvokeCommand(NextEpisode)
+            .DisposeWith(Garbage);
 
         MediaPlayer
             .Paused
@@ -318,4 +324,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         action();
     }
+
+    public IObservable<bool> HasNextEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.LastOrDefault());
+    public IObservable<bool> HasPrevEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.FirstOrDefault());
 }

@@ -14,6 +14,7 @@
                         </ResourceDictionary>
                     </controls:XamlControlsResources.MergedDictionaries>
                 </XamlControlsResources>
+                <ResourceDictionary Source="/Styles/MediaTransportControls.xaml" />
                 <ResourceDictionary Source="/Styles/FontSizes.xaml" />
                 <ResourceDictionary Source="/Styles/Thickness.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
