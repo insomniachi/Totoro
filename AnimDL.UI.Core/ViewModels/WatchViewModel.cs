@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using AnimDL.Api;
+using AnimDL.UI.Core.Helpers;
 
 namespace AnimDL.UI.Core.ViewModels;
 
@@ -71,7 +72,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         this.WhenAnyValue(x => x.SelectedProviderType)
             .Select(providerFactory.GetProvider)
-            .ToProperty(this, nameof(Provider), out _provider, () => providerFactory.GetProvider(ProviderType.AnimixPlay));
+            .ToProperty(this, nameof(Provider), out _provider, () => providerFactory.GetProvider(SelectedProviderType));
 
         this.WhenAnyValue(x => x.SelectedAnimeResult)
             .Select(x => x is { Dub: { }, Sub: { } })
@@ -196,6 +197,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             _discordRichPresense.Clear();
         }
 
+        NativeMethods.AllowSleep();
+
         return Task.CompletedTask;
     }
 
@@ -226,7 +229,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     public Task SetInitialState()
     {
-        HideControls = true;
         return Task.CompletedTask;
     }
 
@@ -242,7 +244,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     public void RestoreState(IState state)
     {
-        HideControls = state.GetValue<bool>(nameof(HideControls));
         if (state.GetValue<IAnimeModel>(nameof(Anime)) is IAnimeModel model)
         {
             Anime ??= model;
@@ -270,6 +271,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .PlaybackEnded
             .Do(_ => DoIfRpcEnabled(() => _discordRichPresense.Clear()))
             .Do(_ => UpdateTracking())
+            .Do(_ => NativeMethods.AllowSleep())
             .InvokeCommand(NextEpisode)
             .DisposeWith(Garbage);
 
@@ -279,6 +281,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Do(_ => _discordRichPresense.UpdateDetails("Paused"))
             .Do(_ => _discordRichPresense.UpdateState(""))
             .Do(_ => _discordRichPresense.ClearTimer())
+            .Do(_ => NativeMethods.AllowSleep())
             .Subscribe().DisposeWith(Garbage);
 
         MediaPlayer
@@ -287,6 +290,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio.Title))
             .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
             .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))
+            .Do(_ => NativeMethods.PreventSleep())
             .Subscribe().DisposeWith(Garbage);
     }
 
