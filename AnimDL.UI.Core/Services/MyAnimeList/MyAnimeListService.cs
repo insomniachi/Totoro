@@ -23,7 +23,7 @@ public class MyAnimeListService : IAnimeService
 
     public IObservable<IEnumerable<SearchResultModel>> GetAnime(string name)
     {
-        return _client.Anime().WithName(name).WithLimit(5).Find()
+        return _client.Anime().WithName(name).WithLimit(5).IncludeNsfw().Find()
                       .ToObservable()
                       .Select(x => x.Data.Select(x => _converter.ToSearchResult(x)));
     }
@@ -34,7 +34,7 @@ public class MyAnimeListService : IAnimeService
         {
             IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
             {
-                return _client.Anime().OfSeason(season.SeasonName, season.Year)
+                return _client.Anime().OfSeason(season.SeasonName, season.Year).IncludeNsfw()
                               .WithField(x => x.UserStatus).WithField(x => x.Broadcast)
                               .WithField(x => x.StartSeason).WithField(x => x.TotalEpisodes)
                               .WithField(x => x.MeanScore).WithField(x => x.Popularity)
@@ -68,6 +68,7 @@ public class MyAnimeListService : IAnimeService
     public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
     {
         return _client.Anime().Top(MalApi.AnimeRankingType.Airing)
+                              .IncludeNsfw()
                               .WithField(x => x.UserStatus).WithField(x => x.Broadcast)
                               .WithField(x => x.StartSeason).WithField(x => x.TotalEpisodes)
                               .WithField(x => x.MeanScore).WithField(x => x.Popularity)

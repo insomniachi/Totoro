@@ -20,7 +20,7 @@ public class MyAnimeListTrackingService : ITrackingService
         {
             try
             {
-                var watching = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching)
+                var watching = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching).IncludeNsfw()
                                      .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
                                      .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
                                      .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
@@ -28,7 +28,7 @@ public class MyAnimeListTrackingService : ITrackingService
 
                 observer.OnNext(ConvertToAnimeModel(watching.Data));
 
-                var all = await _client.Anime().OfUser()
+                var all = await _client.Anime().OfUser().IncludeNsfw()
                                        .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
                                        .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
                                        .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
@@ -52,7 +52,7 @@ public class MyAnimeListTrackingService : ITrackingService
         {
             try
             {
-                var pagedAnime = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching)
+                var pagedAnime = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching).IncludeNsfw()
                                  .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
                                  .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
                                  .WithField(x => x.Status).WithField(x => x.AlternativeTitles)

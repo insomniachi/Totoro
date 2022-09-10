@@ -110,82 +110,82 @@ public class WatchViewModelTests
 
 
 
-    [Fact]
-    public async Task WatchViewModel_DiscordRpcWorks()
-    {
-        // arrange
-        var ep = 24;
-        var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
-        var provider = GetProvider(result, ep);
+    //[Fact]
+    //public async Task WatchViewModel_DiscordRpcWorks()
+    //{
+    //    // arrange
+    //    var ep = 24;
+    //    var result = new SearchResult { Title = "Hyouka", Url = "hyoukapageurl" };
+    //    var provider = GetProvider(result, ep);
 
-        var vmBuilder = BaseViewModel(provider)
-            .WithDiscordRpc(x => { })
-            .WithSettings(x => 
-            {
-                x.Setup(x => x.UseDiscordRichPresense).Returns(true);
-            });
-        var vm = vmBuilder.Bulid();
+    //    var vmBuilder = BaseViewModel(provider)
+    //        .WithDiscordRpc(x => { })
+    //        .WithSettings(x => 
+    //        {
+    //            x.Setup(x => x.UseDiscordRichPresense).Returns(true);
+    //        });
+    //    var vm = vmBuilder.Bulid();
 
-        var anime = new AnimeModel
-        {
-            Title = "Hyouka",
-            Id = 10000,
-            TotalEpisodes = ep,
-            Tracking = new Tracking
-            {
-                WatchedEpisodes = 10,
-                Status = AnimeStatus.Watching
-            }
-        };
+    //    var anime = new AnimeModel
+    //    {
+    //        Title = "Hyouka",
+    //        Id = 10000,
+    //        TotalEpisodes = ep,
+    //        Tracking = new Tracking
+    //        {
+    //            WatchedEpisodes = 10,
+    //            Status = AnimeStatus.Watching
+    //        }
+    //    };
 
-        await vm.OnNavigatedTo(new Dictionary<string, object>
-        {
-            ["Anime"] = anime
-        });
+    //    await vm.OnNavigatedTo(new Dictionary<string, object>
+    //    {
+    //        ["Anime"] = anime
+    //    });
 
-        await Task.Delay(10);
+    //    await Task.Delay(10);
 
-        MessageBus.Current.SendMessage(new WebMessage
-        {
-            MessageType = WebMessageType.DurationUpdate, 
-            Content = TimeSpan.FromMinutes(24).TotalSeconds.ToString() 
-        });
-        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.TimeUpdate, Content = "0" });
+    //    MessageBus.Current.SendMessage(new WebMessage
+    //    {
+    //        MessageType = WebMessageType.DurationUpdate, 
+    //        Content = TimeSpan.FromMinutes(24).TotalSeconds.ToString() 
+    //    });
+    //    MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.TimeUpdate, Content = "0" });
 
-        await Task.Delay(10);
+    //    await Task.Delay(10);
 
-        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.CanPlay });
+    //    MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.CanPlay });
 
-        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Play });
+    //    MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Play });
 
-        await Task.Delay(10);
+    //    await Task.Delay(10);
 
-        vmBuilder.Verify(x =>
-        {
-            x.Verify(x => x.UpdateDetails(anime.Title));
-            x.Verify(x => x.UpdateState("Episode 11"));
-            x.Verify(x => x.UpdateTimer(TimeSpan.FromMinutes(24)));
-        });
+    //    vmBuilder.Verify(x =>
+    //    {
+    //        x.Verify(x => x.UpdateDetails(anime.Title));
+    //        x.Verify(x => x.UpdateState("Episode 11"));
+    //        x.Verify(x => x.UpdateTimer(TimeSpan.FromMinutes(24)));
+    //    });
 
-        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.TimeUpdate, Content = "60" });
+    //    MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.TimeUpdate, Content = "60" });
         
-        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Pause });
+    //    MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Pause });
 
-        vmBuilder.Verify(x =>
-        {
-            x.Verify(x => x.UpdateDetails("Paused"), Times.Once);
-            x.Verify(x => x.ClearTimer(), Times.Once);
-        });
+    //    vmBuilder.Verify(x =>
+    //    {
+    //        x.Verify(x => x.UpdateDetails("Paused"), Times.Once);
+    //        x.Verify(x => x.ClearTimer(), Times.Once);
+    //    });
 
-        MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Play });
+    //    MessageBus.Current.SendMessage(new WebMessage { MessageType = WebMessageType.Play });
 
-        vmBuilder.Verify(x =>
-        {
-            x.Verify(x => x.UpdateDetails(anime.Title));
-            x.Verify(x => x.UpdateState("Episode 11"));
-            x.Verify(x => x.UpdateTimer(TimeSpan.FromMinutes(23)));
-        });
-    }
+    //    vmBuilder.Verify(x =>
+    //    {
+    //        x.Verify(x => x.UpdateDetails(anime.Title));
+    //        x.Verify(x => x.UpdateState("Episode 11"));
+    //        x.Verify(x => x.UpdateTimer(TimeSpan.FromMinutes(23)));
+    //    });
+    //}
 
 
     private static WatchViewModelBuilder BaseViewModel(IProvider provider) => new WatchViewModelBuilder()
