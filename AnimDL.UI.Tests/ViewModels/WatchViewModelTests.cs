@@ -40,7 +40,6 @@ public class WatchViewModelTests
         // assert
         Assert.Equal(totalEpisodes, vm.Episodes.Last());
         Assert.Equal(anime.Tracking.WatchedEpisodes + 1, vm.CurrentEpisode);
-        Assert.Equal($"{result.Url}_stream_{vm.CurrentEpisode}", vm.Url);
     }
 
     [Fact]
@@ -75,7 +74,6 @@ public class WatchViewModelTests
         // assert
         Assert.Equal(ep, vm.Episodes.Last());
         Assert.Null(vm.CurrentEpisode);
-        Assert.True(string.IsNullOrEmpty(vm.Url));
     }
 
     [Fact]
@@ -105,7 +103,6 @@ public class WatchViewModelTests
         // assert
         Assert.Equal(ep, vm.Episodes.Last());
         Assert.Equal(1, vm.CurrentEpisode);
-        Assert.Equal($"{result.Url}_stream_{vm.CurrentEpisode}", vm.Url);
     }
 
 
