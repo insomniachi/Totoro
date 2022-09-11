@@ -44,6 +44,10 @@ public sealed partial class WatchPage : WatchPageBase
             .OnSkipIntro
             .InvokeCommand(ViewModel.SkipOpening);
 
+            TransportControls
+            .OnQualityChanged
+            .InvokeCommand(ViewModel.ChangeQuality);
+
         });
     }
 }

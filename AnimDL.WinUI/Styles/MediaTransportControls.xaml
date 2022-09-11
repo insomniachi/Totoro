@@ -340,6 +340,16 @@
                                                 </AppBarToggleButton.Icon>
                                             </AppBarToggleButton>
                                             <AppBarButton
+                                                x:Name="QualitiesButton"
+                                                IsEnabled="False"
+                                                Style="{StaticResource AppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Quality"
+                                                Visibility="Collapsed">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xED1F;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                            <AppBarButton
                                                 x:Name="SkipIntroButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 ToolTipService.ToolTip="Skip opening">

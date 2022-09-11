@@ -1,13 +1,13 @@
-﻿using Windows.Media.Playback;
-using ReactiveMarbles.ObservableEvents;
+﻿using ReactiveMarbles.ObservableEvents;
 using Windows.Media.Core;
+using Windows.Media.Playback;
 
 namespace AnimDL.WinUI.Media;
 
 public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {
     private readonly MediaPlayer _player = new();
-
+    
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
 
@@ -33,7 +33,17 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         _player.Play();
     }
 
-    public void SetMediaFromUrl(string url) => _player.Source = MediaSource.CreateFromUri(new Uri(url));
+    public void SetMedia(VideoStream stream)
+    {
+        if (stream.Headers is { Count: > 0 } headers)
+        {
+            // TODO : add request headers
+        }
+        else
+        {
+            _player.Source = MediaSource.CreateFromUri(new Uri(stream.Url));
+        }
+    }
 
     public MediaPlayer GetMediaPlayer() => _player;
 }

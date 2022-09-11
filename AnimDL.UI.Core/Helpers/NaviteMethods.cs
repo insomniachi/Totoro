@@ -7,7 +7,7 @@ internal static class NativeMethods
 
     public static void PreventSleep()
     {
-        SetThreadExecutionState(ExecutionState.EsContinuous | ExecutionState.EsSystemRequired);
+        SetThreadExecutionState(ExecutionState.EsContinuous | ExecutionState.EsDisplayRequired);
     }
 
     public static void AllowSleep()

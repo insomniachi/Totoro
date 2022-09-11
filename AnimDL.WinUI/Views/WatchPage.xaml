@@ -128,7 +128,8 @@
                         IsSkipBackwardButtonVisible="True"
                         IsSkipBackwardEnabled="True"
                         IsSkipForwardButtonVisible="True"
-                        IsSkipForwardEnabled="True" />
+                        IsSkipForwardEnabled="True"
+                        Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}" />
                 </MediaPlayerElement.TransportControls>
             </MediaPlayerElement>
         </Grid>

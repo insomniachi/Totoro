@@ -11,5 +11,5 @@ public interface IMediaPlayer : IDisposable
     IObservable<Unit> PlaybackEnded { get; }
     IObservable<TimeSpan> PositionChanged { get; }
     IObservable<TimeSpan> DurationChanged { get; }
-    void SetMediaFromUrl(string url);
+    void SetMedia(VideoStream stream);
 }
