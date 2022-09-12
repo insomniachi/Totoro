@@ -11,6 +11,8 @@ using MalApi.Interfaces;
 using MalApi;
 using Microsoft.UI.Xaml;
 using Microsoft.Extensions.Hosting;
+using AnimDL.UI.Core.Services.AnimixPlay;
+using AnimDL.WinUI.Media;
 
 namespace AnimDL.WinUI.Helpers;
 
@@ -100,6 +102,8 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient();
         services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
         services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
+        services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
+        services.AddTransient<ITimestampsService, TimestampsService>();
 
         return services;
     }

@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.Json.Nodes;
 
-namespace AnimDL.UI.Core.Services;
+namespace AnimDL.UI.Core.Services.AnimixPlay;
 
 public class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
 {

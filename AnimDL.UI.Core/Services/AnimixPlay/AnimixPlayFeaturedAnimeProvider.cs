@@ -1,4 +1,4 @@
-﻿namespace AnimDL.UI.Core.Services;
+﻿namespace AnimDL.UI.Core.Services.AnimixPlay;
 
 public class AnimixPlayFeaturedAnimeProvider : IFeaturedAnimeProvider
 {
@@ -16,7 +16,7 @@ public class AnimixPlayFeaturedAnimeProvider : IFeaturedAnimeProvider
         {
             var response = await _httpClient.GetAsync("https://animixplay.to/assets/s/featured.json");
 
-            if(!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
                 observer.OnError(new Exception("response does not contain success code"));
             }
