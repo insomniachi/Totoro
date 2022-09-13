@@ -36,11 +36,21 @@ public class TimestampsService : ITimestampsService
         var showResponse = await _animeSkipClient.SendQueryAsync<ShowResponse>(animeSkipRequest);
 
         var animeTimeStamps = new AnimeTimeStamps();
+
+        if(showResponse.Data is null || showResponse.Data.Shows is null || showResponse.Data.Shows.Length == 0)
+        {
+            return animeTimeStamps;
+        }
+
         foreach (var item in showResponse.Data.Shows[0].Episodes)
         {
-            var intro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("intro"))?.Time ?? -1.0;
-            var outro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("outro"))?.Time ?? -1.0;
-            animeTimeStamps.EpisodeTimeStamps.Add(item.EpisodeNumber, new EpisodeTimeStamp { Intro = intro, Outro = outro });
+            try
+            {
+                var intro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("intro"))?.Time ?? -1.0;
+                var outro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("outro"))?.Time ?? -1.0;
+                animeTimeStamps.EpisodeTimeStamps.Add(item.EpisodeNumber, new EpisodeTimeStamp { Intro = intro, Outro = outro });
+            }
+            catch { }
         }
 
         return animeTimeStamps;
@@ -50,6 +60,31 @@ public class TimestampsService : ITimestampsService
 public class AnimeTimeStamps
 {
     public Dictionary<string, EpisodeTimeStamp> EpisodeTimeStamps { get; set; } = new();
+
+    public double GetIntroStartPosition(string episode)
+    {
+        if(EpisodeTimeStamps.ContainsKey(episode))
+        {
+            return EpisodeTimeStamps[episode].Intro;
+        }
+
+        return -1.0;
+    }
+
+    public TimeSpan GetIntroEndPosition(string episode)
+    {
+        return TimeSpan.FromSeconds(GetIntroStartPosition(episode)) + TimeSpan.FromSeconds(89);
+    }
+
+    public double GetOutroStartPosition(string episode)
+    {
+        if (EpisodeTimeStamps.ContainsKey(episode))
+        {
+            return EpisodeTimeStamps[episode].Outro;
+        }
+
+        return -1.0;
+    }
 }
 
 public class EpisodeTimeStamp

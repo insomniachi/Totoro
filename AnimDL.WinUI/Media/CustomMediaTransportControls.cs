@@ -10,11 +10,25 @@ public class CustomMediaTransportControls : MediaTransportControls
     private readonly Subject<Unit> _onPrevTrack = new();
     private readonly Subject<Unit> _onSkipIntro = new();
     private readonly Subject<string> _onQualityChanged = new();
+    private readonly Subject<Unit> _onDynamicSkipIntro = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
+    private Button _dynamicSkipIntroButton;
 
     public static readonly DependencyProperty QualitiesProperty =
         DependencyProperty.Register("Qualities", typeof(IEnumerable<string>), typeof(CustomMediaTransportControls), new PropertyMetadata(null, OnQualitiesChanged));
+
+    public static readonly DependencyProperty IsSkipIntroButtonVisibleProperty =
+        DependencyProperty.Register("IsSkipIntroButtonVisible", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false, OnSkipIntroVisibleChanged));
+
+    private static void OnSkipIntroVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var mtc = d as CustomMediaTransportControls;
+        if(mtc._dynamicSkipIntroButton is Button btn && e.NewValue is bool b)
+        {
+            btn.Visibility = b ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
 
     private static void OnQualitiesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -51,10 +65,17 @@ public class CustomMediaTransportControls : MediaTransportControls
         set { SetValue(QualitiesProperty, value); }
     }
 
+    public bool IsSkipIntroButtonVisible
+    {
+        get { return (bool)GetValue(IsSkipIntroButtonVisibleProperty); }
+        set { SetValue(IsSkipIntroButtonVisibleProperty, value); }
+    }
+
     public IObservable<Unit> OnNextTrack => _onNextTrack;
     public IObservable<Unit> OnPrevTrack => _onPrevTrack;
     public IObservable<Unit> OnSkipIntro => _onSkipIntro;
     public IObservable<string> OnQualityChanged => _onQualityChanged;
+    public IObservable<Unit> OnDynamicSkipIntro => _onDynamicSkipIntro;
 
     public CustomMediaTransportControls()
     {
@@ -68,11 +89,13 @@ public class CustomMediaTransportControls : MediaTransportControls
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;
+        _dynamicSkipIntroButton = GetTemplateChild("DynamicSkipIntroButton") as Button;
 
 
         prevTrackButton.Click += (_, __) => _onPrevTrack.OnNext(Unit.Default);
         nextTrackButton.Click += (_, __) => _onNextTrack.OnNext(Unit.Default);
         skipIntroButton.Click += (_, __) => _onSkipIntro.OnNext(Unit.Default);
+        _dynamicSkipIntroButton.Click += (_, __) => _onDynamicSkipIntro.OnNext(Unit.Default);
 
         base.OnApplyTemplate();
     }
