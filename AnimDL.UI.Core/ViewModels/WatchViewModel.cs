@@ -13,7 +13,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly IAnimeService _animeService;
-    private readonly ITimestampsService _timestampsService;
     private readonly ObservableAsPropertyHelper<IProvider> _provider;
     private readonly ObservableAsPropertyHelper<bool> _hasSubAndDub;
     private readonly ObservableAsPropertyHelper<VideoStreamsForEpisode> _streams;
@@ -23,8 +22,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly ObservableAsPropertyHelper<TimeSpan> _introEndPosition;
     private readonly ObservableAsPropertyHelper<bool> _isSkipIntroButtonVisible;
     private readonly ObservableAsPropertyHelper<AnimeTimeStamps> _timeStamps;
-    private ObservableAsPropertyHelper<double> _currentPlayerTime;
-    private ObservableAsPropertyHelper<double> _currentMediaDuration;
+    private readonly ObservableAsPropertyHelper<double> _currentPlayerTime;
+    private readonly ObservableAsPropertyHelper<double> _currentMediaDuration;
     private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
@@ -50,7 +49,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         _animeService = animeService;
        
         MediaPlayer = mediaPlayer;
-        _timestampsService = timestampsService;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
@@ -109,7 +107,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         /// if we have less than configured seconds left and we have not completed this episode
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(_ => Anime is not null)
+            .Where(_ => Anime is not null && OutroPosition <= 0)
             .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 1) <= CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletesInSeconds)
             .ObserveOn(RxApp.TaskpoolScheduler)
