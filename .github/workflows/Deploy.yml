@@ -6,8 +6,8 @@ on:
     - 'v*'
 
 env:
-  INSTALLER_PATH: 'AnimDL.Installer/AnimDL.Installer.wixproj'
-  BOOTSTRAPPER_PATH: 'AnimDL.Installer/AnimDL.Bootstrapper.wixproj'
+  INSTALLER_PATH: 'Totoro.Installer/Totoro.Installer.wixproj'
+  BOOTSTRAPPER_PATH: 'Totoro.Installer/Totoro.Bootstrapper.wixproj'
 
 jobs:
     deploy:
@@ -48,5 +48,5 @@ jobs:
             uses: csexton/release-asset-action@v2
             with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
-                pattern: AnimDL.Installer/bin/Release/AnimDL.exe
+                pattern: Totoro.Installer/bin/Release/Totoro.exe
                 release-url: ${{ steps.create_release.outputs.upload_url }}

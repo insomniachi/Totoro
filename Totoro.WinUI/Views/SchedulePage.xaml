@@ -1,0 +1,92 @@
+﻿<views:SchedulePageBase
+    x:Class="Totoro.WinUI.Views.SchedulePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:cm="using:Totoro.Core.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:Totoro.Core.Models"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
+    xmlns:views="using:Totoro.WinUI.Views"
+    Margin="{StaticResource MediumLeftRightMargin}"
+    mc:Ignorable="d">
+
+    <Grid Margin="0,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ListBox
+            HorizontalAlignment="Center"
+            ItemsSource="{x:Bind ViewModel.WeeklySchedule, Mode=OneWay}"
+            SelectedItem="{x:Bind ViewModel.SelectedDay, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="model:ScheduleModel">
+                    <TextBlock TextAlignment="Center">
+                        <Run
+                            FontSize="20"
+                            FontWeight="Bold"
+                            Text="{x:Bind DisplayText}" />
+                        <LineBreak />
+                        <Run FontSize="15" Text="{x:Bind Count}" />
+                    </TextBlock>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Width" Value="100" />
+                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+
+        <GridView
+            x:Name="AnimeListView"
+            Grid.Row="1"
+            animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+            IsItemClickEnabled="True"
+            ItemsSource="{x:Bind ViewModel.Anime}">
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="cm:ScheduledAnimeModel">
+                    <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
+                        <uc:AnimeCard.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    Command="{Binding ElementName=Card, Path=UpdateStatusCommand}"
+                                    CommandParameter="{x:Bind}"
+                                    Text="Update">
+                                    <MenuFlyoutItem.Icon>
+                                        <SymbolIcon Symbol="PostUpdate" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Command="{Binding ElementName=Card, Path=WatchCommand}"
+                                    CommandParameter="{x:Bind}"
+                                    Text="Watch">
+                                    <MenuFlyoutItem.Icon>
+                                        <SymbolIcon Symbol="Video" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </uc:AnimeCard.Flyout>
+                    </uc:AnimeCard>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+            <GridView.ItemContainerStyle>
+                <Style TargetType="GridViewItem">
+                    <Setter Property="Margin" Value="10" />
+                </Style>
+            </GridView.ItemContainerStyle>
+        </GridView>
+
+
+    </Grid>
+</views:SchedulePageBase>

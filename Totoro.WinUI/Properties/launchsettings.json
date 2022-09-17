@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "Totoro.WinUI (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "Totoro.WinUI (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}
