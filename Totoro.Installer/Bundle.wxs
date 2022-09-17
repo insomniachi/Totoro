@@ -25,7 +25,7 @@
 				 PerMachine="yes"
 				 UninstallCommand="/silent /uninstall">
 			</ExePackage>
-			<MsiPackage SourceFile="bin\$(var.Configuration)\en-us\AnimDL-$(var.Configuration).msi"
+			<MsiPackage SourceFile="bin\$(var.Configuration)\en-us\Totoro-$(var.Configuration).msi"
 						Compressed="yes"
 						DisplayInternalUI="no">
 			</MsiPackage>
