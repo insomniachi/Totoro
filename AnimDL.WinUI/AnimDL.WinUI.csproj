@@ -5,16 +5,15 @@
 		<RootNamespace>AnimDL.WinUI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x64</Platforms>
-		<Platform>x64</Platform>
 		<RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
 		<UseWinUI>true</UseWinUI>
 		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<EnableMsixTooling>true</EnableMsixTooling>
-		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
 		<Version Condition=" '$(BuildVersion)' == '' ">1.0.0.0</Version>
 		<Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>
 		<PackageIcon>WindowIcon.png</PackageIcon>
+		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -40,13 +39,18 @@
 	<ItemGroup>
 		<ProjectReference Include="..\AnimDL.UI.Core\AnimDL.UI.Core.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="Assets\WindowIcon.ico">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="Assets\WindowIcon.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
 	<ItemGroup>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="Assets\WindowIcon.png">
-		  <Pack>True</Pack>
-		  <PackagePath>\</PackagePath>
 		</None>
 		<Page Update="Styles\MediaTransportControls.xaml">
 		  <Generator>MSBuild:Compile</Generator>
