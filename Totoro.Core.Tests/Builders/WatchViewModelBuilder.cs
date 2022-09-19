@@ -1,29 +1,41 @@
 ﻿using AnimDL.Api;
+using Totoro.Core.Contracts;
+using Totoro.Core.Tests.Helpers;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Tests.Builders;
 
-public class WatchViewModelBuilder
+internal class WatchViewModelBuilder
 {
     private IProviderFactory _providerFactory = Mock.Of<IProviderFactory>();
-    private ITrackingService _trackingService = Mock.Of<ITrackingService>();
+    private ITrackingService GetTrackingServce() => _trackingServiceMock.Object;
     private IViewService _viewService = Mock.Of<IViewService>();
     private ISettings _settings = Mock.Of<ISettings>();
-    private IPlaybackStateStorage _playbackStateStorage = Mock.Of<IPlaybackStateStorage>();
-    private IDiscordRichPresense _discordRpc = Mock.Of<IDiscordRichPresense>();
+    private IPlaybackStateStorage GetPlaybackStateStorate() => _playbackStateStorageMock.Object;
+    private IDiscordRichPresense GetDiscordRpc() => _discordRpcMock.Object;
     private IAnimeService _animeService = Mock.Of<IAnimeService>();
-    private IMediaPlayer _mediaPlayer = Mock.Of<IMediaPlayer>();
-    private Mock<IDiscordRichPresense> _discordRpcMock;
+    private IMediaPlayer _mediaPlayer;
     private ITimestampsService _timestampsService = Mock.Of<ITimestampsService>();
+    
+    private readonly Mock<IDiscordRichPresense> _discordRpcMock = new();
+    private readonly Mock<IPlaybackStateStorage> _playbackStateStorageMock = new();
+    private readonly Mock<ITrackingService> _trackingServiceMock = new();
+    
+    public MockMediaPlayer MediaPlayer { get; } = new();
+
+    public WatchViewModelBuilder()
+    {
+        _mediaPlayer = MediaPlayer;
+    }
 
     public WatchViewModel Bulid()
     {
         return new WatchViewModel(_providerFactory,
-                                  _trackingService,
+                                  GetTrackingServce(),
                                   _viewService,
                                   _settings,
-                                  _playbackStateStorage,
-                                  _discordRpc,
+                                  GetPlaybackStateStorate(),
+                                  GetDiscordRpc(),
                                   _animeService,
                                   _mediaPlayer,
                                   _timestampsService);
@@ -39,9 +51,7 @@ public class WatchViewModelBuilder
 
     public WatchViewModelBuilder WithTrackingService(Action<Mock<ITrackingService>> configure)
     {
-        var mock = new Mock<ITrackingService>();
-        configure(mock);
-        _trackingService = mock.Object;
+        configure(_trackingServiceMock);
         return this;
     }
 
@@ -63,17 +73,13 @@ public class WatchViewModelBuilder
 
     public WatchViewModelBuilder WithPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> configure)
     {
-        var mock = new Mock<IPlaybackStateStorage>();
-        configure(mock);
-        _playbackStateStorage = mock.Object;
+        configure(_playbackStateStorageMock);
         return this;
     }
 
     public WatchViewModelBuilder WithDiscordRpc(Action<Mock<IDiscordRichPresense>> configure)
     {
-        _discordRpcMock = new Mock<IDiscordRichPresense>();
         configure(_discordRpcMock);
-        _discordRpc = _discordRpcMock.Object;
         return this;
     }
 
@@ -101,6 +107,8 @@ public class WatchViewModelBuilder
         return this;
     }
 
-    public void Verify(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
+    public void VerifyDiscordRpc(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
+    public void VerifyPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> verify) => verify(_playbackStateStorageMock);
+    public void VerifyTrackingService(Action<Mock<ITrackingService>> verify) => verify(_trackingServiceMock);
 
 }

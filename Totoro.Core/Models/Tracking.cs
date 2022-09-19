@@ -1,6 +1,6 @@
 ﻿namespace Totoro.Core.Models;
 
-public class Tracking
+public record Tracking
 {
     public AnimeStatus? Status { get; set; }
     public int? Score { get; set; }

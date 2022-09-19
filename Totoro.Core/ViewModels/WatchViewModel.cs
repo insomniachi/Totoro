@@ -2,7 +2,6 @@
 using AnimDL.Api;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services;
-using Totoro.Core.Contracts;
 
 namespace Totoro.Core.ViewModels;
 
@@ -53,6 +52,17 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
+        NextEpisode = ReactiveCommand.Create(() => CurrentEpisode++, HasNextEpisode, RxApp.MainThreadScheduler);
+        PrevEpisode = ReactiveCommand.Create(() => CurrentEpisode--, HasPrevEpisode, RxApp.MainThreadScheduler);
+        SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
+        ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
+        SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);
+
+        var episodeChanged = this.ObservableForProperty(x => x.CurrentEpisode, x => x)
+            .Where(ep => ep > 0);
+
+        SubscribeToMediaPlayerEvents();
+
         _searchResultCache
             .Connect()
             .RefCount()
@@ -69,13 +79,14 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
-        NextEpisode = ReactiveCommand.Create(() => CurrentEpisode++, HasNextEpisode, RxApp.MainThreadScheduler);
-        PrevEpisode = ReactiveCommand.Create(() => CurrentEpisode--, HasPrevEpisode, RxApp.MainThreadScheduler);
-        SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
-        ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
-        SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);
 
-        SubscribeToMediaPlayerEvents();
+        this.WhenAnyValue(x => x.SelectedProviderType)
+            .Select(providerFactory.GetProvider)
+            .ToProperty(this, nameof(Provider), out _provider, () => providerFactory.GetProvider(SelectedProviderType));
+
+        this.WhenAnyValue(x => x.SelectedAnimeResult)
+            .Select(x => x is { Dub: { }, Sub: { } })
+            .ToProperty(this, nameof(HasSubAndDub), out _hasSubAndDub, () => false);
 
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
@@ -89,22 +100,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Do(_ => UpdateTracking())
             .Subscribe();
 
-        this.WhenAnyValue(x => x.SelectedProviderType)
-            .Select(providerFactory.GetProvider)
-            .ToProperty(this, nameof(Provider), out _provider, () => providerFactory.GetProvider(SelectedProviderType));
-
-        this.WhenAnyValue(x => x.SelectedAnimeResult)
-            .Select(x => x is { Dub: { }, Sub: { } })
-            .ToProperty(this, nameof(HasSubAndDub), out _hasSubAndDub, () => false);
-
-        /// populate searchbox suggestions
-        this.WhenAnyValue(x => x.Query)
-            .Where(query => query is { Length: > 3})
-            .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
-            .SelectMany(query => animeService.GetAnime(query))
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(list => _searchResultCache.EditDiff(list, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
-
         /// if we have less than configured seconds left and we have not completed this episode
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
@@ -115,19 +110,34 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Do(_ => UpdateTracking())
             .Subscribe();
 
-        /// if we have both sub and dub and switch from sub to dub or vice versa
-        /// reset <see cref="CurrentEpisode"/> to null, outherwise it won't trigger changed event.
-        this.ObservableForProperty(x => x.UseDub, x => x)
-            .Where(_ => HasSubAndDub)
-            .Select(useDub => useDub ? SelectedAnimeResult.Dub : SelectedAnimeResult.Sub)
-            .Do(_ => CurrentEpisode = null)
-            .Subscribe(x => SelectedAudio = x);
+        /// populate searchbox suggestions
+        this.WhenAnyValue(x => x.Query)
+            .Where(query => query is { Length: > 3})
+            .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
+            .SelectMany(query => animeService.GetAnime(query))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(list => _searchResultCache.EditDiff(list, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
+
+        // Triggers the first step to scrape stream urls
+        this.ObservableForProperty(x => x.Anime, x => x)
+            .WhereNotNull()
+            .SelectMany(model => Find(model.Id, model.Title))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => SelectedAnimeResult = x);
 
         /// 1. Select Sub/Dub based in <see cref="UseDub"/> if Dub is not present select Sub
         /// 2. Set <see cref="SelectedAudio"/>
         this.ObservableForProperty(x => x.SelectedAnimeResult, x => x)
             .Select(x => UseDub ? x.Dub ?? x.Sub : x.Sub)
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => SelectedAudio = x);
+
+        /// if we have both sub and dub and switch from sub to dub or vice versa
+        /// reset <see cref="CurrentEpisode"/> to null, outherwise it won't trigger changed event.
+        this.ObservableForProperty(x => x.UseDub, x => x)
+            .Where(_ => HasSubAndDub)
+            .Select(useDub => useDub ? SelectedAnimeResult.Dub : SelectedAnimeResult.Sub)
+            .Do(_ => CurrentEpisode = null)
             .Subscribe(x => SelectedAudio = x);
 
         /// 1. Get the number of Episodes
@@ -139,12 +149,9 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
             .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes + 1) ?? 1)
+            .Where(ep => ep <= Anime?.TotalEpisodes)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
-
-
-        var episodeChanged = this.ObservableForProperty(x => x.CurrentEpisode, x => x)
-            .Where(ep => ep > 0);
 
         /// Scrape url for <see cref="CurrentEpisode"/> and set to <see cref="Url"/>
         episodeChanged
@@ -154,6 +161,21 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Select(list => list.FirstOrDefault())
             .WhereNotNull()
             .ToProperty(this, nameof(Streams), out _streams);
+
+        // Update qualities selection
+        this.ObservableForProperty(x => x.Streams, x => x)
+            .WhereNotNull()
+            .Select(x => x.Qualities.Keys)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToProperty(this, nameof(Qualities), out _qualities, () => Enumerable.Empty<string>());
+
+        // Start playing when we can and start from the previous session if exists
+        this.ObservableForProperty(x => x.SelectedStream, x => x)
+            .WhereNotNull()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(stream => MediaPlayer.SetMedia(stream))
+            .Do(_ => MediaPlayer.Play(_playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
+            .Subscribe();
 
         // get start position of intro if available
         episodeChanged
@@ -172,28 +194,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Select(ep => ep.ToString())
             .Select(ep => TimeStamps?.GetOutroStartPosition(ep) ?? 0)
             .ToProperty(this, nameof(OutroPosition), out _outroPosition);
-
-        // Triggers the first step to scrape stream urls
-        this.ObservableForProperty(x => x.Anime, x => x)
-            .WhereNotNull()
-            .SelectMany(model => Find(model.Id, model.Title))
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => SelectedAnimeResult = x);
-
-        // Update qualities selection
-        this.ObservableForProperty(x => x.Streams, x => x)
-            .WhereNotNull()
-            .Select(x => x.Qualities.Keys)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .ToProperty(this, nameof(Qualities), out _qualities, () => Enumerable.Empty<string>());
-
-        // Start playing when we can and start from the previous session if exists
-        this.ObservableForProperty(x => x.SelectedStream, x => x)
-            .WhereNotNull()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(stream => MediaPlayer.SetMedia(stream))
-            .Do(_ => MediaPlayer.Play(_playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
-            .Subscribe();
 
         Observable
             .Merge(SkipButtonVisibleTrigger(), SkipButtonHideTrigger())
@@ -371,15 +371,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))
             .Do(_ => NativeMethods.PreventSleep())
             .Subscribe().DisposeWith(Garbage);
-    }
-
-    private IObservable<string> FetchEpUrl(int? episode)
-    {
-        return Provider.StreamProvider
-                       .GetStreams(SelectedAudio.Url, episode.Value..episode.Value)
-                       .ToListAsync().AsTask()
-                       .ToObservable()
-                       .Select(x => x[0].Qualities.Values.ElementAt(0).Url);
     }
 
     private void UpdateTracking()
