@@ -245,7 +245,6 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
     public VideoStreamsForEpisode Streams => _streams.Value;
     public IEnumerable<string> Qualities => _qualities.Value;
-    
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
     

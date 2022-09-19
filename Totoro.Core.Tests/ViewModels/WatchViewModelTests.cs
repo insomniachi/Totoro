@@ -289,6 +289,30 @@ public class WatchViewModelTests
         Assert.Equal(12, vm.CurrentEpisode);
     }
 
+    [Fact]
+    public void WatchViewModel_PopulatesEpisodes()
+    {
+        // arrange
+        var ep = 24;
+        var result = new SearchResult()
+        {
+            Title = "Hyouka",
+            Url = "https://animixplay.to/v1/hyouka"
+        };
+        IAnimeModel animeModel = new AnimeModel()
+        {
+            Title = "Hyouka",
+            TotalEpisodes = ep,
+        };
+        var provider = GetProvider(result, ep);
+        var vmBuilder = BaseViewModel(provider);
+        var vm = vmBuilder.Bulid();
+        vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
+
+        // assert
+        Assert.Equal(24, vm.Episodes.Count);
+    }
+
 
 
     [Fact]
@@ -358,6 +382,92 @@ public class WatchViewModelTests
             x.Verify(x => x.UpdateState($"Episode {animeModel.Tracking.WatchedEpisodes + 1}"));
             x.Verify(x => x.UpdateTimer(TimeSpan.FromMinutes(23)));
         });
+    }
+
+    [Fact]
+    public void WatchViewModel_QueryPopulatesList()
+    {
+        var result = new SearchResultModel()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+        };
+
+        var vm = BaseViewModel(Mock.Of<IProvider>())
+            .WithAnimeService(x =>
+            {
+                x.Setup(x => x.GetAnime("Hyouka")).Returns(Observable.Start(() =>
+                {
+                    return new SearchResultModel[]
+                    {
+                        result
+                    };
+                }));
+            })
+            .Bulid();
+        
+        vm.Query = "Hyouka";
+
+        Thread.Sleep(300);
+        
+        Assert.Single(vm.SearchResult);
+        Assert.Equal(result, vm.SearchResult[0]);
+    }
+
+    [Fact]
+    public void WatchViewModel_HasSearchBoxWhenNavigatedWithoutAnime()
+    {
+        // arrange
+        var vm = BaseViewModel(Mock.Of<IProvider>()).Bulid();
+
+        // act
+        vm.OnNavigatedTo(new Dictionary<string, object>()).Wait();
+
+        Assert.False(vm.HideControls);
+    }
+
+    [Fact]
+    public void WatchViewModel_HidesSearchBoxWhenNavigatedWithAnime()
+    {
+        // arrange
+        AnimeModel animeModel = new()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+            Tracking = new Tracking
+            {
+                WatchedEpisodes = 10
+            }
+        };
+        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
+        var vm1 = BaseViewModel(provider).Bulid();
+        var vm2 = BaseViewModel(provider).Bulid();
+        var vm3 = BaseViewModel(provider)
+            .WithAnimeService(x =>
+            {
+                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Start(() => animeModel));
+            })
+            .Bulid();
+
+        // act
+        vm1.OnNavigatedTo(new Dictionary<string, object> { ["Anime"] = animeModel }).Wait();
+        vm2.OnNavigatedTo(new Dictionary<string, object>
+        {
+            ["EpisodeInfo"] = new AiredEpisode
+            {
+                Model = animeModel,
+                Anime = animeModel.Title,
+                EpisodeUrl = "https://animixplay.to/v1/hyouka"
+            }
+        }).Wait();
+        vm3.OnNavigatedTo(new Dictionary<string, object> { ["Id"] = animeModel.Id }).Wait();
+
+        // assert
+        Assert.True(vm1.HideControls);
+        Assert.True(vm2.HideControls);
+        Assert.True(vm3.HideControls);
     }
 
 
