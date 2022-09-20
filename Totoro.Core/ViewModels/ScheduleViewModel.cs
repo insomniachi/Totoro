@@ -15,7 +15,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
 
         this.WhenAnyValue(x => x.SelectedDay)
             .WhereNotNull()
-            .Select(schedule => Enum.Parse<DayOfWeek>($"{schedule.Day[..1].ToUpper()}{schedule.Day[1..]}"))
+            .Select(dailySchedule => dailySchedule.DayOfWeek)
             .ToProperty(this, x => x.Filter, out _filter, DayOfWeek.Sunday);
 
         _animeCache
@@ -53,7 +53,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
                         {
                             WeeklySchedule = Schedule.ToList();
                             this.RaisePropertyChanged(nameof(Schedule));
-                            SelectedDay = WeeklySchedule.FirstOrDefault(x => x.Day == DateTime.Today.DayOfWeek.ToString().ToLower()) ?? WeeklySchedule.FirstOrDefault();
+                            SelectedDay = WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == DateTime.Today.DayOfWeek) ?? GetNextDayWithAiringAnime();
                             _animeCache.Edit(x => x.AddOrUpdate(list));
                         });
 
@@ -74,6 +74,12 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         {
             Schedule[item.Key.Value].Count = item.Count();
         }
+    }
+
+    private ScheduleModel GetNextDayWithAiringAnime()
+    {
+        return WeeklySchedule.FirstOrDefault(x => x.DayOfWeek > DateTime.Today.DayOfWeek)
+            ?? WeeklySchedule.LastOrDefault(x => x.DayOfWeek < DateTime.Today.DayOfWeek); 
     }
 
     private static Func<ScheduledAnimeModel, bool> FilterByDay(DayOfWeek day) => a => a.BroadcastDay == day;

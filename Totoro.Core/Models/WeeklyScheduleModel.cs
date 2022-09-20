@@ -2,13 +2,13 @@
 
 public class WeeklyScheduleModel
 {
-    public ScheduleModel Monday { get; } = new ScheduleModel { DisplayText = "Mon", Day = "monday" };
-    public ScheduleModel Tuesday { get; } = new ScheduleModel { DisplayText = "Tue", Day = "tuesday" };
-    public ScheduleModel Wednesday { get; } = new ScheduleModel { DisplayText = "Wed", Day = "wednesday" };
-    public ScheduleModel Thursday { get; } = new ScheduleModel { DisplayText = "Thu", Day = "thursday" };
-    public ScheduleModel Friday { get; } = new ScheduleModel { DisplayText = "Fri", Day = "friday" };
-    public ScheduleModel Saturday { get; } = new ScheduleModel { DisplayText = "Sat", Day = "saturday" };
-    public ScheduleModel Sunday { get; } = new ScheduleModel { DisplayText = "Sun", Day = "wednesday" };
+    public ScheduleModel Monday { get; } = new ScheduleModel { DisplayText = "Mon", DayOfWeek = DayOfWeek.Monday };
+    public ScheduleModel Tuesday { get; } = new ScheduleModel { DisplayText = "Tue", DayOfWeek = DayOfWeek.Tuesday };
+    public ScheduleModel Wednesday { get; } = new ScheduleModel { DisplayText = "Wed", DayOfWeek = DayOfWeek.Wednesday };
+    public ScheduleModel Thursday { get; } = new ScheduleModel { DisplayText = "Thu", DayOfWeek = DayOfWeek.Thursday };
+    public ScheduleModel Friday { get; } = new ScheduleModel { DisplayText = "Fri", DayOfWeek = DayOfWeek.Friday};
+    public ScheduleModel Saturday { get; } = new ScheduleModel { DisplayText = "Sat", DayOfWeek = DayOfWeek.Saturday };
+    public ScheduleModel Sunday { get; } = new ScheduleModel { DisplayText = "Sun", DayOfWeek = DayOfWeek.Sunday };
 
     public ScheduleModel this[DayOfWeek day]
     {
