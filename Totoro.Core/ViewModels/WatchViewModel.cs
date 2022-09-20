@@ -284,7 +284,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         {
             _discordRichPresense.Clear();
         }
-
+        
         NativeMethods.AllowSleep();
 
         return Task.CompletedTask;

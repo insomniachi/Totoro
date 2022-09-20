@@ -100,12 +100,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IFileService, FileService>();
         services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
         services.AddSingleton<ISchedule, Schedule>();
-        services.AddMemoryCache();
-        services.AddHttpClient();
         services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
         services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
-        services.AddTransient<ITimestampsService, TimestampsService>();
+        services.AddSingleton<ITimestampsService, TimestampsService>();
+        services.AddTransient<IAnimeIdService, AnimeIdService>();
+        services.AddMemoryCache();
+        services.AddHttpClient();
 
         return services;
     }

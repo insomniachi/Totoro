@@ -17,4 +17,10 @@
 	<PackageReference Include="AnimDL.Core" Version="0.3.6" />
 	<PackageReference Include="ReactiveUI.Fody" Version="18.3.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="timestamps_generated.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
