@@ -53,6 +53,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Dialogs\Views\VideoView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Styles\MediaTransportControls.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

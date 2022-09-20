@@ -1,9 +1,10 @@
-﻿using Totoro.WinUI.Contracts;
-using Totoro.WinUI.Dialogs.ViewModels;
+﻿using AnimDL.WinUI.Contracts;
+using AnimDL.WinUI.Dialogs.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.WinUI;
 
-namespace Totoro.WinUI.Services;
+namespace AnimDL.WinUI.Services;
 
 public class ContentDialogService : IContentDialogService
 {
@@ -39,6 +40,18 @@ public class ContentDialogService : IContentDialogService
         {
             disposable.Dispose();
         }
+        if (viewModel is IDisposable d)
+        {
+            d.Dispose();
+        }
+
         return result;
+    }
+
+    public Task<ContentDialogResult> ShowDialog<TViewModel>(Action<ContentDialog> configure, Action<TViewModel> configureVm) where TViewModel : class
+    {
+        var vm = App.GetService<TViewModel>();
+        configureVm(vm);
+        return ShowDialog(vm, configure);
     }
 }

@@ -47,7 +47,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         _playbackStateStorage = playbackStateStorage;
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
-       
+
         MediaPlayer = mediaPlayer;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
@@ -112,7 +112,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         /// populate searchbox suggestions
         this.WhenAnyValue(x => x.Query)
-            .Where(query => query is { Length: > 3})
+            .Where(query => query is { Length: > 3 })
             .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
             .SelectMany(query => animeService.GetAnime(query))
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -230,7 +230,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     [Reactive] public SearchResult SelectedAudio { get; set; }
     [Reactive] public IAnimeModel Anime { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
-    
+
     public bool IsSkipIntroButtonVisible => _isSkipIntroButtonVisible?.Value ?? false;
     public IProvider Provider => _provider.Value;
     public bool HasSubAndDub => _hasSubAndDub.Value;
@@ -247,7 +247,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     public IEnumerable<string> Qualities => _qualities.Value;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
-    
+
     public ICommand NextEpisode { get; }
     public ICommand PrevEpisode { get; }
     public ICommand SkipOpening { get; }
@@ -260,14 +260,14 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         {
             Anime = parameters["Anime"] as IAnimeModel;
         }
-        else if(parameters.ContainsKey("EpisodeInfo"))
+        else if (parameters.ContainsKey("EpisodeInfo"))
         {
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
             Anime = epInfo.Model;
         }
-        else if(parameters.ContainsKey("Id"))
+        else if (parameters.ContainsKey("Id"))
         {
             var id = (long)parameters["Id"];
             Anime = await _animeService.GetInformation(id);
@@ -284,7 +284,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         {
             _discordRichPresense.Clear();
         }
-        
+
         NativeMethods.AllowSleep();
 
         return Task.CompletedTask;

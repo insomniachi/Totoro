@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
 using System.Reactive.Subjects;
-using Totoro.WinUI.Contracts;
+using AnimDL.WinUI.Contracts;
+using AnimDL.WinUI.Helpers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Totoro.WinUI;
 
-namespace Totoro.WinUI.Services;
+namespace AnimDL.WinUI.Services;
 
 
 public class NavigationService : IWinUINavigationService

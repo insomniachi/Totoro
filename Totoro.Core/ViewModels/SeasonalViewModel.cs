@@ -1,5 +1,4 @@
 ﻿using Totoro.Core.Helpers;
-using Totoro.Core.Contracts;
 
 namespace Totoro.Core.ViewModels;
 

@@ -1,5 +1,5 @@
-﻿using Totoro.Core.ViewModels;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
 

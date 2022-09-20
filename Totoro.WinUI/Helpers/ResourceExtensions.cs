@@ -1,6 +1,6 @@
 ﻿using Microsoft.Windows.ApplicationModel.Resources;
 
-namespace Totoro.WinUI.Helpers;
+namespace AnimDL.WinUI.Helpers;
 
 internal static class ResourceExtensions
 {

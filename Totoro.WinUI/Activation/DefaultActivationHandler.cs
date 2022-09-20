@@ -1,9 +1,9 @@
-﻿using Totoro.Core.ViewModels;
-using Totoro.WinUI.Contracts;
+﻿using AnimDL.WinUI.Contracts;
 using MalApi;
 using Microsoft.UI.Xaml;
+using Totoro.Core.ViewModels;
 
-namespace Totoro.WinUI.Activation;
+namespace AnimDL.WinUI.Activation;
 
 public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventArgs>
 {

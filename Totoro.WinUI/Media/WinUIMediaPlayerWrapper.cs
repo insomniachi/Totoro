@@ -2,12 +2,12 @@
 using Windows.Media.Core;
 using Windows.Media.Playback;
 
-namespace Totoro.WinUI.Media;
+namespace AnimDL.WinUI.Media;
 
 public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {
     private readonly MediaPlayer _player = new();
-    
+
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
 

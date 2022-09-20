@@ -24,6 +24,6 @@ namespace Totoro.Core.Tests.Helpers
         public void Seek(TimeSpan ts) { }
         public void SetMedia(VideoStream stream) { }
 
-        
+
     }
 }

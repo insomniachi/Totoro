@@ -1,9 +1,11 @@
 ﻿using System.IO;
-using Totoro.Core.Helpers;
+using AnimDL.WinUI.Helpers;
+using AnimDL.WinUI.Models;
 using Microsoft.Extensions.Options;
+using Totoro.Core.Helpers;
 using Windows.Storage;
 
-namespace Totoro.WinUI.Services;
+namespace AnimDL.WinUI.Services;
 
 public class LocalSettingsService : ILocalSettingsService
 {
@@ -25,7 +27,7 @@ public class LocalSettingsService : ILocalSettingsService
         _applicationDataFolder = Path.Combine(_localApplicationData, _options.ApplicationDataFolder ?? _defaultApplicationDataFolder);
         _localsettingsFile = _options.LocalSettingsFile ?? _defaultLocalSettingsFile;
 
-        if(!Directory.Exists(_applicationDataFolder))
+        if (!Directory.Exists(_applicationDataFolder))
         {
             Directory.CreateDirectory(_applicationDataFolder);
         }
@@ -41,7 +43,7 @@ public class LocalSettingsService : ILocalSettingsService
             return;
         }
 
-        _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? new Dictionary<string,object>();
+        _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? new Dictionary<string, object>();
         _isInitialized = true;
     }
 

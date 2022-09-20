@@ -1,4 +1,4 @@
-﻿namespace Totoro.WinUI.Dialogs.ViewModels;
+﻿namespace AnimDL.WinUI.Dialogs.ViewModels;
 
 public class UpdateAnimeStatusViewModel : ReactiveObject
 {

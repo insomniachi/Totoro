@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using CommunityToolkit.WinUI.Notifications;
 using MalApi.Interfaces;
 
-namespace Totoro.WinUI.Services;
+namespace AnimDL.WinUI.Services;
 
 public class Schedule : ISchedule
 {
@@ -71,9 +71,9 @@ public class Schedule : ISchedule
         var json = await response.Content.ReadAsStringAsync();
         var node = JsonNode.Parse(json).AsArray();
         var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-        
+
         _lastUpdatedAt = DateTime.Now;
-        
+
         foreach (var item in node)
         {
             var time = long.Parse(item["time"].ToString());

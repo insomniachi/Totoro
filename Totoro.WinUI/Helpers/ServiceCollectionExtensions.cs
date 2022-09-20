@@ -1,22 +1,23 @@
 ﻿using System.ComponentModel;
+using AnimDL.WinUI.Activation;
+using AnimDL.WinUI.Contracts;
+using AnimDL.WinUI.Dialogs.ViewModels;
+using AnimDL.WinUI.Dialogs.Views;
+using AnimDL.WinUI.Media;
+using AnimDL.WinUI.Services;
+using AnimDL.WinUI.ViewModels;
+using MalApi;
+using MalApi.Interfaces;
+using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Xaml;
 using Totoro.Core.Services;
+using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.ViewModels;
-using Totoro.WinUI.Activation;
-using Totoro.WinUI.Contracts;
-using Totoro.WinUI.Dialogs.ViewModels;
 using Totoro.WinUI.Dialogs.Views;
 using Totoro.WinUI.Views;
-using MalApi.Interfaces;
-using MalApi;
-using Microsoft.UI.Xaml;
-using Microsoft.Extensions.Hosting;
-using Totoro.Core.Services.AnimixPlay;
-using Totoro.WinUI.Media;
-using Totoro.Core.Contracts;
-using Totoro.UI.Core.Contracts;
 
-namespace Totoro.WinUI.Helpers;
+namespace AnimDL.WinUI.Helpers;
 
 public static class ServiceCollectionExtensions
 {
@@ -41,14 +42,14 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddCommonPages(this IServiceCollection services)
     {
-        services.AddSingleton<SettingsViewModel>(); 
+        services.AddSingleton<SettingsViewModel>();
         services.AddTransient<SettingsPage>();
         services.AddTransient<ViewType<SettingsViewModel>>(x => new(typeof(SettingsPage)));
         services.AddTransient<ViewType>(x => x.GetService<ViewType<SettingsViewModel>>());
         services.AddTransient<ISettings>(x => x.GetRequiredService<SettingsViewModel>());
         services.AddTransient<ShellPage>();
         services.AddSingleton<ShellViewModel>();
-        
+
         return services;
     }
 
@@ -86,7 +87,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
         services.AddSingleton<IActivationService, ActivationService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
-        
+
         return services;
     }
 
@@ -105,6 +106,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddSingleton<ITimestampsService, TimestampsService>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();
+        services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddMemoryCache();
         services.AddHttpClient();
 
@@ -119,7 +121,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<SeasonalViewModel, SeasonalPage>();
         services.AddPageForNavigation<ScheduleViewModel, SchedulePage>();
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
-       
+
         return services;
     }
 
@@ -128,7 +130,7 @@ public static class ServiceCollectionExtensions
         services.AddPage<UpdateAnimeStatusViewModel, UpdateAnimeStatusView>();
         services.AddPage<ChooseSearchResultViewModel, ChooseSearchResultView>();
         services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
-        
+        services.AddPage<PlayVideoDialogViewModel, VideoView>();
         return services;
     }
 }

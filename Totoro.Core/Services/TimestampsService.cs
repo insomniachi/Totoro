@@ -1,8 +1,8 @@
-﻿using Totoro.Core.Helpers;
+﻿using System.Text.Json.Serialization;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
-using System.Text.Json.Serialization;
+using Totoro.Core.Helpers;
 
 namespace Totoro.Core.Services;
 
@@ -24,7 +24,7 @@ public class TimestampsService : ITimestampsService
     public async Task<AnimeTimeStamps> GetTimeStamps(long malId)
     {
         var animeTimeStamps = new AnimeTimeStamps();
-        
+
         var id = await _animeIdService.GetId(AnimeTrackerType.MyAnimeList, malId);
         if (_offlineTimestamps.ContainsKey(id.AniDb))
         {
@@ -73,7 +73,7 @@ public class AnimeTimeStamps
 
     public double GetIntroStartPosition(string episode)
     {
-        if(EpisodeTimeStamps.ContainsKey(episode))
+        if (EpisodeTimeStamps.ContainsKey(episode))
         {
             return EpisodeTimeStamps[episode].Intro;
         }

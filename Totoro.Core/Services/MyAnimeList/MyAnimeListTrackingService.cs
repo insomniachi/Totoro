@@ -102,7 +102,8 @@ public class MyAnimeListTrackingService : ITrackingService
             Status = (AnimeStatus)(int)x.Status,
             Score = (int)x.Score,
             UpdatedAt = x.UpdatedAt
-        }); ;
+        });
+        ;
     }
 
     private IEnumerable<AnimeModel> ConvertToAnimeModel(List<MalApi.Anime> anime)

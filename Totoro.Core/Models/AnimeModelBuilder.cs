@@ -49,7 +49,7 @@ public class MalToModelConverter
         model.MeanScore = malModel.MeanScore;
         model.Popularity = malModel.Popularity ?? 0;
 
-        if(malModel.AlternativeTitles is { } alt)
+        if (malModel.AlternativeTitles is { } alt)
         {
             model.AlternativeTitles = alt.Aliases.ToList();
             model.AlternativeTitles.Add(alt.English);

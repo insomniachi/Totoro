@@ -2,10 +2,11 @@
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
+using Totoro.WinUI;
 using Windows.UI;
 using ElementTheme = Microsoft.UI.Xaml.ElementTheme;
 
-namespace Totoro.WinUI.Helpers;
+namespace AnimDL.WinUI.Helpers;
 
 internal class TitleBarHelper
 {

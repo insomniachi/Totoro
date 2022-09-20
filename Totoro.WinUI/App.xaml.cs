@@ -1,9 +1,9 @@
 ﻿using AnimDL.Core;
-using Totoro.WinUI.Media;
+using AnimDL.WinUI.Helpers;
+using AnimDL.WinUI.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel;
-using Totoro.UI.Core.Contracts;
 
 namespace Totoro.WinUI;
 
@@ -29,7 +29,7 @@ public partial class App : Application
                     .AddMyAnimeList(context)
                     .AddTopLevelPages()
                     .AddDialogPages();
-            
+
             services.AddSingleton(MessageBus.Current);
 
             // Configuration

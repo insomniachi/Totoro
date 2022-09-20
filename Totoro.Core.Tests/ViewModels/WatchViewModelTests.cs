@@ -2,9 +2,9 @@
 using System.Reactive.Linq;
 using AnimDL.Api;
 using Totoro.Core.Tests.Builders;
-using Totoro.Tests.Helpers;
+using Totoro.Core.Tests.Helpers;
 
-namespace Totoro.WinUI.Tests.ViewModels;
+namespace Totoro.Core.Tests.ViewModels;
 
 public class WatchViewModelTests
 {
@@ -23,7 +23,7 @@ public class WatchViewModelTests
                 WatchedEpisodes = lastEpisodeCompleted
             }
         };
-        
+
         var result = new SearchResult()
         {
             Title = "Hyouka",
@@ -111,16 +111,16 @@ public class WatchViewModelTests
         var provider = GetProvider(result, ep);
         var vm = BaseViewModel(provider).Bulid();
         vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
-        
+
         // act
         vm.UseDub = true;
-        
+
         // assert
         Assert.Equal("Hyouka Dub", vm.SelectedAudio.Title);
 
         // act
         vm.UseDub = false;
-        
+
         // assert
         Assert.Equal("Hyouka", vm.SelectedAudio.Title);
     }
@@ -345,8 +345,8 @@ public class WatchViewModelTests
             }
         };
 
-        vm.OnNavigatedTo(new Dictionary<string, object>{["Anime"] = animeModel }).Wait();
-        
+        vm.OnNavigatedTo(new Dictionary<string, object> { ["Anime"] = animeModel }).Wait();
+
         // act
         vm.ChangeQuality.Execute("default");
         vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
@@ -363,7 +363,7 @@ public class WatchViewModelTests
 
         // act
         vmBuilder.MediaPlayer.PausedSubject.OnNext(Unit.Default);
-        
+
         // assert
         vmBuilder.VerifyDiscordRpc(x =>
         {
@@ -406,11 +406,11 @@ public class WatchViewModelTests
                 }));
             })
             .Bulid();
-        
+
         vm.Query = "Hyouka";
 
         Thread.Sleep(300);
-        
+
         Assert.Single(vm.SearchResult);
         Assert.Equal(result, vm.SearchResult[0]);
     }

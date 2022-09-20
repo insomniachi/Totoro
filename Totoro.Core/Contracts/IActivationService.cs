@@ -1,4 +1,4 @@
-﻿namespace Totoro.UI.Core.Contracts;
+﻿namespace Totoro.Core.Contracts;
 
 public interface IActivationService
 {

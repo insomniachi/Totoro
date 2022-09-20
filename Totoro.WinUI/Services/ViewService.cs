@@ -1,9 +1,10 @@
 ﻿using AnimDL.Api;
-using Totoro.WinUI.Contracts;
-using Totoro.WinUI.Dialogs.ViewModels;
+using AnimDL.WinUI.Contracts;
+using AnimDL.WinUI.Dialogs.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.WinUI;
 
-namespace Totoro.WinUI.Services;
+namespace AnimDL.WinUI.Services;
 
 public class ViewService : IViewService
 {
@@ -34,7 +35,7 @@ public class ViewService : IViewService
         {
             var tracking = new Tracking();
 
-            if(a.Tracking?.Status != vm.Status)
+            if (a.Tracking?.Status != vm.Status)
             {
                 tracking.Status = vm.Status;
             }
@@ -80,5 +81,16 @@ public class ViewService : IViewService
             d.CloseButtonText = "Ok";
             d.Width = App.MainWindow.Bounds.Width;
         });
+    }
+
+    public async Task PlayVideo(string title, string url)
+    {
+        await _contentDialogService.ShowDialog<PlayVideoDialogViewModel>(d =>
+        {
+            d.Title = title;
+            d.IsPrimaryButtonEnabled = false;
+            d.IsSecondaryButtonEnabled = false;
+            d.CloseButtonText = "Close";
+        }, vm => vm.Url = url);
     }
 }

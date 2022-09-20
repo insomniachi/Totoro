@@ -1,6 +1,6 @@
-﻿using Totoro.Core.ViewModels;
-using Totoro.WinUI.Media;
+﻿using AnimDL.WinUI.Media;
 using ReactiveMarbles.ObservableEvents;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
 
@@ -11,7 +11,7 @@ public sealed partial class WatchPage : WatchPageBase
     public WatchPage()
     {
         InitializeComponent();
-       
+
         this.WhenActivated(d =>
         {
             this.WhenAnyValue(x => x.ViewModel.MediaPlayer)

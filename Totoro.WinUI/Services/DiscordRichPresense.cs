@@ -1,7 +1,6 @@
 ﻿using DiscordRPC;
-using Totoro.Core.Contracts;
 
-namespace Totoro.WinUI.Services;
+namespace AnimDL.WinUI.Services;
 
 public class DiscordRichPresense : IDiscordRichPresense
 {

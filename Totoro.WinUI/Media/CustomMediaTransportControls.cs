@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Totoro.WinUI.Media;
+namespace AnimDL.WinUI.Media;
 
 public class CustomMediaTransportControls : MediaTransportControls
 {
@@ -24,7 +24,7 @@ public class CustomMediaTransportControls : MediaTransportControls
     private static void OnSkipIntroVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var mtc = d as CustomMediaTransportControls;
-        if(mtc._dynamicSkipIntroButton is Button btn && e.NewValue is bool b)
+        if (mtc._dynamicSkipIntroButton is Button btn && e.NewValue is bool b)
         {
             btn.Visibility = b ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -39,11 +39,11 @@ public class CustomMediaTransportControls : MediaTransportControls
             item.Click -= mtc.FlyoutItem_Click;
         }
         flyout.Items.Clear();
-        
+
         if (e.NewValue is IEnumerable<string> values)
         {
             var qualities = values.ToList();
-            if(qualities.Count <= 1)
+            if (qualities.Count <= 1)
             {
                 mtc._onQualityChanged.OnNext("default");
                 return;
@@ -55,7 +55,7 @@ public class CustomMediaTransportControls : MediaTransportControls
                 var flyoutItem = new MenuFlyoutItem { Text = item };
                 flyoutItem.Click += mtc.FlyoutItem_Click;
                 flyout.Items.Add(flyoutItem);
-            } 
+            }
         }
     }
 

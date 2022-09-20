@@ -1,5 +1,4 @@
 ﻿using AnimDL.Api;
-using Totoro.Core.Contracts;
 using Totoro.Core.Tests.Helpers;
 using Totoro.Core.ViewModels;
 
@@ -16,11 +15,11 @@ internal class WatchViewModelBuilder
     private IAnimeService _animeService = Mock.Of<IAnimeService>();
     private IMediaPlayer _mediaPlayer;
     private ITimestampsService _timestampsService = Mock.Of<ITimestampsService>();
-    
+
     private readonly Mock<IDiscordRichPresense> _discordRpcMock = new();
     private readonly Mock<IPlaybackStateStorage> _playbackStateStorageMock = new();
     private readonly Mock<ITrackingService> _trackingServiceMock = new();
-    
+
     public MockMediaPlayer MediaPlayer { get; } = new();
 
     public WatchViewModelBuilder()

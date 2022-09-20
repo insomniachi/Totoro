@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
-namespace Totoro.WinUI.Contracts;
+namespace AnimDL.WinUI.Contracts;
 
 public interface IWinUINavigationService : INavigationService
 {

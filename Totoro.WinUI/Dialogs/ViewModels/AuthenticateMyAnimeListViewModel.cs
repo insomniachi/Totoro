@@ -1,9 +1,9 @@
 ﻿using System.Web;
-using Totoro.Core.ViewModels;
 using MalApi;
 using MalApi.Interfaces;
+using Totoro.Core.ViewModels;
 
-namespace Totoro.WinUI.Dialogs.ViewModels;
+namespace AnimDL.WinUI.Dialogs.ViewModels;
 
 public class AuthenticateMyAnimeListViewModel : DialogViewModel
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 
-namespace Totoro.WinUI.Helpers;
+namespace AnimDL.WinUI.Helpers;
 
 public static class Converters
 {

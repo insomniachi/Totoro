@@ -1,4 +1,4 @@
-﻿namespace Totoro.WinUI.Behaviors;
+﻿namespace AnimDL.WinUI.Behaviors;
 
 public enum NavigationViewHeaderMode
 {

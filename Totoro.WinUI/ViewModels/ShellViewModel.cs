@@ -1,8 +1,9 @@
-﻿using Totoro.Core.ViewModels;
-using Totoro.WinUI.Contracts;
+﻿using AnimDL.WinUI.Contracts;
+using AnimDL.WinUI.Helpers;
 using Microsoft.UI.Xaml.Navigation;
+using Totoro.Core.ViewModels;
 
-namespace Totoro.WinUI.ViewModels;
+namespace AnimDL.WinUI.ViewModels;
 
 public partial class ShellViewModel : ReactiveObject
 {

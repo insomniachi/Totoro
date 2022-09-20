@@ -1,5 +1,4 @@
 ﻿using MalApi.Interfaces;
-using Totoro.Core.Contracts;
 
 namespace Totoro.Core.Services.MyAnimeList;
 

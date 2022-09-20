@@ -1,6 +1,6 @@
-﻿using Totoro.Core.ViewModels;
-using MalApi;
+﻿using MalApi;
 using Microsoft.UI.Xaml;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
 

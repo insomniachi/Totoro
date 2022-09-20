@@ -1,6 +1,6 @@
 ﻿using AnimDL.Api;
 
-namespace Totoro.WinUI.Dialogs.ViewModels;
+namespace AnimDL.WinUI.Dialogs.ViewModels;
 
 public sealed class ChooseSearchResultViewModel : ReactiveObject
 {

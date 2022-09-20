@@ -1,10 +1,9 @@
-﻿using System.Diagnostics;
-using System.Security.Policy;
-using Totoro.Core.ViewModels;
-using Totoro.WinUI.Contracts;
+﻿using AnimDL.WinUI.Contracts;
+using AnimDL.WinUI.Helpers;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Core.ViewModels;
 
-namespace Totoro.WinUI.Services;
+namespace AnimDL.WinUI.Services;
 
 public class NavigationViewService : INavigationViewService
 {

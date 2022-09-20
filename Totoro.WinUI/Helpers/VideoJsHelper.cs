@@ -1,4 +1,4 @@
-﻿namespace Totoro.WinUI.Helpers;
+﻿namespace AnimDL.WinUI.Helpers;
 
 [Obsolete("This was used for a webview based video player, use Native MediaPlayerElement instead")]
 public class VideoJsHelper

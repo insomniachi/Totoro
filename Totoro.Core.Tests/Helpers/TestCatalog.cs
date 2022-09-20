@@ -1,4 +1,4 @@
-﻿namespace Totoro.Tests.Helpers;
+﻿namespace Totoro.Core.Tests.Helpers;
 
 public abstract class TestCatalog : ICatalog, IMalCatalog
 {

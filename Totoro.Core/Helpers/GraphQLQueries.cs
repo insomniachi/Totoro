@@ -1,25 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Totoro.Core.Helpers
+﻿namespace Totoro.Core.Helpers
 {
     internal static class GraphQLQueries
     {
-        public static string GetAniListIdFromMal()
-        {
-            return @"
-                    query Media($idMal: Int)
-                    {
-                        Media(idMal: $idMal)
-                        {
-                            id
-                        }
-                    }
-                    ".Trim();
-        }
 
         public static string GetTimeStamps()
         {
