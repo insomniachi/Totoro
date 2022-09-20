@@ -1,11 +1,4 @@
 ﻿using System.ComponentModel;
-using AnimDL.WinUI.Activation;
-using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Dialogs.ViewModels;
-using AnimDL.WinUI.Dialogs.Views;
-using AnimDL.WinUI.Media;
-using AnimDL.WinUI.Services;
-using AnimDL.WinUI.ViewModels;
 using MalApi;
 using MalApi.Interfaces;
 using Microsoft.Extensions.Hosting;
@@ -14,10 +7,16 @@ using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.ViewModels;
+using Totoro.WinUI.Activation;
+using Totoro.WinUI.Contracts;
+using Totoro.WinUI.Dialogs.ViewModels;
 using Totoro.WinUI.Dialogs.Views;
+using Totoro.WinUI.Media;
+using Totoro.WinUI.Services;
+using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;
 
-namespace AnimDL.WinUI.Helpers;
+namespace Totoro.WinUI.Helpers;
 
 public static class ServiceCollectionExtensions
 {

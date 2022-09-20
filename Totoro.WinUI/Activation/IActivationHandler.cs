@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Activation;
+﻿namespace Totoro.WinUI.Activation;
 
 public interface IActivationHandler
 {

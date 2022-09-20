@@ -1,8 +1,8 @@
 ﻿using AnimDL.Core;
-using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Totoro.WinUI.Helpers;
+using Totoro.WinUI.Models;
 using Windows.ApplicationModel;
 
 namespace Totoro.WinUI;

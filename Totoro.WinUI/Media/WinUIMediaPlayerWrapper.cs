@@ -2,7 +2,7 @@
 using Windows.Media.Core;
 using Windows.Media.Playback;
 
-namespace AnimDL.WinUI.Media;
+namespace Totoro.WinUI.Media;
 
 public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {

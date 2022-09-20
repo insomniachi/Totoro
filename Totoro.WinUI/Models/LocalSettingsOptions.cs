@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Models;
+﻿namespace Totoro.WinUI.Models;
 
 public class LocalSettingsOptions
 {

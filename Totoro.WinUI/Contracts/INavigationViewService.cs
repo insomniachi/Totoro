@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 
-namespace AnimDL.WinUI.Contracts;
+namespace Totoro.WinUI.Contracts;
 
 public interface INavigationViewService
 {

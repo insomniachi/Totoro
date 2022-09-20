@@ -1,10 +1,9 @@
-﻿using AnimDL.WinUI.Contracts;
-using AnimDL.WinUI.Dialogs.ViewModels;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Totoro.WinUI;
+using Totoro.WinUI.Contracts;
+using Totoro.WinUI.Dialogs.ViewModels;
 
-namespace AnimDL.WinUI.Services;
+namespace Totoro.WinUI.Services;
 
 public class ContentDialogService : IContentDialogService
 {

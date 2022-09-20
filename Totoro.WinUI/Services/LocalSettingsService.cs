@@ -1,11 +1,11 @@
 ﻿using System.IO;
-using AnimDL.WinUI.Helpers;
-using AnimDL.WinUI.Models;
 using Microsoft.Extensions.Options;
 using Totoro.Core.Helpers;
+using Totoro.WinUI.Helpers;
+using Totoro.WinUI.Models;
 using Windows.Storage;
 
-namespace AnimDL.WinUI.Services;
+namespace Totoro.WinUI.Services;
 
 public class LocalSettingsService : ILocalSettingsService
 {

@@ -3,7 +3,7 @@ using MalApi;
 using MalApi.Interfaces;
 using Totoro.Core.ViewModels;
 
-namespace AnimDL.WinUI.Dialogs.ViewModels;
+namespace Totoro.WinUI.Dialogs.ViewModels;
 
 public class AuthenticateMyAnimeListViewModel : DialogViewModel
 {

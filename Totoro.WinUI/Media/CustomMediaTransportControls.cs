@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace AnimDL.WinUI.Media;
+namespace Totoro.WinUI.Media;
 
 public class CustomMediaTransportControls : MediaTransportControls
 {

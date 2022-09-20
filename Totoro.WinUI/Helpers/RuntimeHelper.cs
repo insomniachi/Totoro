@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 
-namespace AnimDL.WinUI.Helpers;
+namespace Totoro.WinUI.Helpers;
 
 public class RuntimeHelper
 {

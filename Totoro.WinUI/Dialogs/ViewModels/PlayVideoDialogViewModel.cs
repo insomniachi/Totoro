@@ -1,4 +1,4 @@
-﻿namespace AnimDL.WinUI.Dialogs.ViewModels
+﻿namespace Totoro.WinUI.Dialogs.ViewModels
 {
     public sealed class PlayVideoDialogViewModel : DialogViewModel, IDisposable
     {

@@ -1,7 +1,7 @@
-﻿using AnimDL.WinUI.Dialogs.ViewModels;
+﻿using Totoro.WinUI.Dialogs.ViewModels;
 using Windows.Media.Core;
 
-namespace AnimDL.WinUI.Dialogs.Views;
+namespace Totoro.WinUI.Dialogs.Views;
 
 public class VideoViewBase : ReactivePage<PlayVideoDialogViewModel> { }
 

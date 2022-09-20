@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace AnimDL.WinUI.Helpers;
+namespace Totoro.WinUI.Helpers;
 
 public class NavigationHelper
 {

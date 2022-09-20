@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace AnimDL.WinUI.Helpers;
+namespace Totoro.WinUI.Helpers;
 
 internal class EqualityExpressionComparer<T> : IEqualityComparer<T>
     where T : notnull

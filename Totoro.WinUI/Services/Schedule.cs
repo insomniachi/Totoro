@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using CommunityToolkit.WinUI.Notifications;
 using MalApi.Interfaces;
 
-namespace AnimDL.WinUI.Services;
+namespace Totoro.WinUI.Services;
 
 public class Schedule : ISchedule
 {

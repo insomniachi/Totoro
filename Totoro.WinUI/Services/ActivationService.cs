@@ -2,17 +2,16 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json.Nodes;
-using AnimDL.WinUI.Activation;
 using MalApi.Interfaces;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Totoro.WinUI;
+using Totoro.WinUI.Activation;
 using Totoro.WinUI.Views;
 using WinRT.Interop;
 
-namespace AnimDL.WinUI.Services;
+namespace Totoro.WinUI.Services;
 
 public class ActivationService : IActivationService
 {

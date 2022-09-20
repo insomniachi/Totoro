@@ -1,7 +1,6 @@
-﻿using AnimDL.WinUI.Helpers;
-using Totoro.WinUI;
+﻿using Totoro.WinUI.Helpers;
 
-namespace AnimDL.WinUI.Services;
+namespace Totoro.WinUI.Services;
 
 public class ThemeSelectorService : IThemeSelectorService
 {

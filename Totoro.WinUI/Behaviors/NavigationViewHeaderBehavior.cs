@@ -1,11 +1,10 @@
-﻿using AnimDL.WinUI.Contracts;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Xaml.Interactivity;
-using Totoro.WinUI;
+using Totoro.WinUI.Contracts;
 
-namespace AnimDL.WinUI.Behaviors;
+namespace Totoro.WinUI.Behaviors;
 
 public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 {

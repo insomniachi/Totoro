@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace AnimDL.WinUI.Helpers;
+namespace Totoro.WinUI.Helpers;
 
 internal static class NativeMethods
 {
