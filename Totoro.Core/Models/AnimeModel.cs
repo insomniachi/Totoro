@@ -27,6 +27,11 @@ public class AnimeModel : Inpc, IAnimeModel
     public float? MeanScore { get; set; }
     public int Popularity { get; set; }
     public List<string> AlternativeTitles { get; set; }
+
+    public override string ToString()
+    {
+        return Title;
+    }
 }
 
 public class SearchResultModel : IAnimeModel

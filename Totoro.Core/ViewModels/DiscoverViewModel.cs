@@ -108,5 +108,28 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
     }
 
-    private static Func<AiredEpisode, bool> Filter(bool value) => x => !value || x.Model is { Tracking.Status: AnimeStatus.Watching };
+    private static Func<AiredEpisode, bool> Filter(bool value) => x =>
+    {
+        if (!value)
+        {
+            return true;
+        }
+
+        if (x.Model.Tracking is not Tracking tracking)
+        {
+            return false;
+        }
+
+        if(tracking.Status == AnimeStatus.Watching)
+        {
+            return true;
+        }
+
+        if(tracking.UpdatedAt is DateTime updated)
+        {
+            return (DateTime.Now - x.Model.Tracking.UpdatedAt.Value).TotalDays <= 7;
+        }
+
+        return true;
+    };
 }

@@ -145,7 +145,7 @@ public class MyAnimeListService : IAnimeService
     private readonly string[] _fields = new string[]
     {
         MalApi.AnimeFieldNames.Synopsis,
-        MalApi.AnimeFieldNames.TotalEpisdoes,
+        MalApi.AnimeFieldNames.TotalEpisodes,
         MalApi.AnimeFieldNames.Broadcast,
         MalApi.AnimeFieldNames.UserStatus,
         MalApi.AnimeFieldNames.NumberOfUsers,
