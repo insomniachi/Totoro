@@ -457,7 +457,6 @@ public class WatchViewModelTests
         {
             ["EpisodeInfo"] = new AiredEpisode
             {
-                Model = animeModel,
                 Anime = animeModel.Title,
                 EpisodeUrl = "https://animixplay.to/v1/hyouka"
             }

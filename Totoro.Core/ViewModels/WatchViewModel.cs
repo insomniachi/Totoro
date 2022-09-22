@@ -13,6 +13,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly IAnimeService _animeService;
+    private readonly IRecentEpisodesProvider _recentEpisodesProvider;
     private readonly ObservableAsPropertyHelper<IProvider> _provider;
     private readonly ObservableAsPropertyHelper<bool> _hasSubAndDub;
     private readonly ObservableAsPropertyHelper<VideoStreamsForEpisode> _streams;
@@ -39,7 +40,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
                           IDiscordRichPresense discordRichPresense,
                           IAnimeService animeService,
                           IMediaPlayer mediaPlayer,
-                          ITimestampsService timestampsService)
+                          ITimestampsService timestampsService,
+                          IRecentEpisodesProvider recentEpisodesProvider)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -49,6 +51,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         _animeService = animeService;
 
         MediaPlayer = mediaPlayer;
+        _recentEpisodesProvider = recentEpisodesProvider;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
@@ -265,7 +268,13 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
-            Anime = epInfo.Model;
+
+            _recentEpisodesProvider
+                .GetMalId(epInfo)
+                .Where(id => id > 0)
+                .SelectMany(_animeService.GetInformation)
+                .Subscribe(x => Anime = x)
+                .DisposeWith(Garbage);
         }
         else if (parameters.ContainsKey("Id"))
         {
@@ -332,11 +341,11 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     public void RestoreState(IState state)
     {
-        if (state.GetValue<IAnimeModel>(nameof(Anime)) is IAnimeModel model)
-        {
-            Anime ??= model;
-            HideControls = true;
-        }
+        //if (state.GetValue<IAnimeModel>(nameof(Anime)) is IAnimeModel model)
+        //{
+        //    Anime ??= model;
+        //    HideControls = true;
+        //}
     }
 
     private void SubscribeToMediaPlayerEvents()

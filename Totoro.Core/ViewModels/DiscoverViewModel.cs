@@ -5,17 +5,20 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     private readonly IRecentEpisodesProvider _recentEpisodesProvider;
     private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
     private readonly INavigationService _navigationService;
+    private readonly ITrackingService _trackingService;
     private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Anime);
     private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
+    private List<AnimeModel> _userAnime = new();
 
     public DiscoverViewModel(IRecentEpisodesProvider recentEpisodesProvider,
                              IFeaturedAnimeProvider featuredAnimeProvider,
-                             INavigationService navigationService)
+                             INavigationService navigationService,
+                             ITrackingService trackingService)
     {
         _recentEpisodesProvider = recentEpisodesProvider;
         _featuredAnimeProvider = featuredAnimeProvider;
         _navigationService = navigationService;
-
+        _trackingService = trackingService;
         _episodesCache
             .Connect()
             .RefCount()
@@ -62,13 +65,25 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     {
         Featured = state.GetValue<IList<FeaturedAnime>>(nameof(Featured));
         ShowOnlyWatchingAnime = state.GetValue<bool>(nameof(ShowOnlyWatchingAnime));
+        _userAnime = state.GetValue<List<AnimeModel>>("UserAnime");
     }
 
     public Task SetInitialState()
     {
-        _featuredAnimeProvider.GetFeaturedAnime()
-                              .ObserveOn(RxApp.MainThreadScheduler)
-                              .Subscribe(featured => Featured = featured.ToList());
+        _featuredAnimeProvider
+            .GetFeaturedAnime()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(featured => Featured = featured.ToList())
+            .DisposeWith(Garbage);
+
+        _trackingService
+            .GetWatchingAnime()
+            .Do(x => _userAnime.AddRange(x))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(_ => _episodesCache.Refresh())
+            .Subscribe()
+            .DisposeWith(Garbage);
+
         return Task.CompletedTask;
     }
 
@@ -76,6 +91,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     {
         state.AddOrUpdate(Featured);
         state.AddOrUpdate(ShowOnlyWatchingAnime);
+        state.AddOrUpdate(_userAnime, "UserAnime");
     }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
@@ -108,28 +124,14 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
     }
 
-    private static Func<AiredEpisode, bool> Filter(bool value) => x =>
+    private Func<AiredEpisode, bool> Filter(bool showOnlyUserAnime) => (ep) =>
     {
-        if (!value)
+        if (!showOnlyUserAnime)
         {
             return true;
         }
 
-        if (x.Model.Tracking is not Tracking tracking)
-        {
-            return false;
-        }
-
-        if(tracking.Status == AnimeStatus.Watching)
-        {
-            return true;
-        }
-
-        if(tracking.UpdatedAt is DateTime updated)
-        {
-            return (DateTime.Now - x.Model.Tracking.UpdatedAt.Value).TotalDays <= 7;
-        }
-
-        return true;
+        var result = _userAnime.FirstOrDefault(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x.Title) > 80 || x.AlternativeTitles.Any(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x) > 80)) is { };
+        return result;
     };
 }

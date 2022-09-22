@@ -1,26 +1,32 @@
 ﻿using System.Globalization;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 namespace Totoro.Core.Services.AnimixPlay;
 
 public class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
 {
     private readonly HttpClient _httpClient;
-    private readonly IAnimeService _animeService;
 
-    public AnimixPlayEpisodesProvider(HttpClient httpClient,
-                                      IAnimeService animeService)
+    public AnimixPlayEpisodesProvider(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _animeService = animeService;
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.UserAgent);
+    }
+
+    public IObservable<long> GetMalId(AiredEpisode ep)
+    {
+        return _httpClient
+             .GetStringAsync(ep.EpisodeUrl)
+             .ToObservable()
+             .Select(content => Regex.Match(content, @"var malid = '(\d+)'"))
+             .Select(match => match.Success ? long.Parse(match.Groups[1].Value) : 0);
     }
 
     public IObservable<IEnumerable<AiredEpisode>> GetRecentlyAiredEpisodes()
     {
         return Observable.Create<IEnumerable<AiredEpisode>>(async observer =>
         {
-            var anime = await _animeService.GetAiringAnime();
             var hasMore = false;
             var now = DateTime.UtcNow;
             var time = now;
@@ -68,21 +74,16 @@ public class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
                     {
                         var title = (string)item["title"].AsValue();
 
-                        if (anime.FirstOrDefault(x => FuzzySharp.Fuzz.PartialRatio(title, x.Title) > 80 ||
-                                                     x.AlternativeTitles.Any(x => FuzzySharp.Fuzz.PartialRatio(title, x) > 80)) is { } animeModel)
+                        var model = new AiredEpisode
                         {
-                            var model = new AiredEpisode
-                            {
-                                Anime = title,
-                                EpisodeUrl = $"https://animixplay.to{(string)item["url"].AsValue()}",
-                                InfoText = (string)item["infotext"].AsValue(),
-                                TimeOfAiring = DateTime.ParseExact((string)item["timetop"].AsValue(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLocalTime(),
-                                Image = (string)item["picture"].AsValue(),
-                                Model = animeModel
-                            };
+                            Anime = title,
+                            EpisodeUrl = $"https://animixplay.to{(string)item["url"].AsValue()}",
+                            InfoText = (string)item["infotext"].AsValue(),
+                            TimeOfAiring = DateTime.ParseExact((string)item["timetop"].AsValue(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLocalTime(),
+                            Image = (string)item["picture"].AsValue(),
+                        };
 
-                            models.Add(model);
-                        }
+                        models.Add(model);
                     }
                     catch { }
                 }

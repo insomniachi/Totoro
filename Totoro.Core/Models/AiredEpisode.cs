@@ -10,5 +10,4 @@ public class AiredEpisode
     public string Image { get; set; }
     public DateTime TimeOfAiring { get; set; }
     public string HumanizedTimeOfAiring => TimeOfAiring.Humanize();
-    public IAnimeModel Model { get; set; }
 }

@@ -6,12 +6,34 @@ public class MyAnimeListTrackingService : ITrackingService
 {
     private readonly IMalClient _client;
     private readonly MalToModelConverter _converter;
+    private static readonly string[] FieldNames = new[]
+    {
+        MalApi.AnimeFieldNames.UserStatus,
+        MalApi.AnimeFieldNames.TotalEpisodes,
+        MalApi.AnimeFieldNames.Broadcast,
+        MalApi.AnimeFieldNames.Mean,
+        MalApi.AnimeFieldNames.Status,
+        MalApi.AnimeFieldNames.AlternativeTitles
+    };
 
     public MyAnimeListTrackingService(IMalClient client,
                                       MalToModelConverter converter)
     {
         _client = client;
         _converter = converter;
+    }
+
+    public IObservable<IEnumerable<AnimeModel>> GetWatchingAnime()
+    {
+        return _client
+            .Anime()
+            .OfUser()
+            .WithStatus(MalApi.AnimeStatus.Watching)
+            .IncludeNsfw()
+            .WithFields(FieldNames)
+            .Find().ToObservable()
+            .Select(paged => paged.Data)
+            .Select(ConvertToAnimeModel);
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()

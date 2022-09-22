@@ -3,6 +3,7 @@
 public interface IRecentEpisodesProvider
 {
     IObservable<IEnumerable<AiredEpisode>> GetRecentlyAiredEpisodes();
+    IObservable<long> GetMalId(AiredEpisode ep);
 }
 
 
