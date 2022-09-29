@@ -1,4 +1,7 @@
-﻿namespace Totoro.Core.ViewModels;
+﻿using DynamicData;
+using HtmlAgilityPack;
+
+namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
@@ -22,6 +25,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _episodesCache
             .Connect()
             .RefCount()
+            .Sort(SortExpressionComparer<AiredEpisode>.Descending(x => x.TimeOfAiring))
             .Filter(this.WhenAnyValue(x => x.ShowOnlyWatchingAnime).Select(Filter))
             .Bind(out _episodes)
             .DisposeMany()
@@ -77,7 +81,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             .DisposeWith(Garbage);
 
         _trackingService
-            .GetWatchingAnime()
+            .GetAnime()
             .Do(x => _userAnime.AddRange(x))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Do(_ => _episodesCache.Refresh())
@@ -131,7 +135,15 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             return true;
         }
 
-        var result = _userAnime.FirstOrDefault(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x.Title) > 80 || x.AlternativeTitles.Any(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x) > 80)) is { };
-        return result;
+        var model = _userAnime.FirstOrDefault(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x.Title) > 80 || x.AlternativeTitles.Any(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x) > 80));
+
+        if (model is null)
+        {
+            return false;
+        }
+        else
+        {
+            return model.Tracking.UpdatedAt.HasValue && (DateTime.Today - model.Tracking.UpdatedAt.Value).TotalDays <= 7;
+        }
     };
 }
