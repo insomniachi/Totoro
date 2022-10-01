@@ -47,5 +47,17 @@
                 SpinButtonPlacementMode="Inline"
                 Value="{x:Bind ViewModel.Score, Mode=TwoWay}" />
         </StackPanel>
+
+        <StackPanel>
+            <TextBlock Text="Start Date" />
+            <DatePicker x:Name="StartDate" />
+        </StackPanel>
+
+        <StackPanel>
+            <TextBlock Text="Finish Date" />
+            <DatePicker x:Name="FinishDate" />
+        </StackPanel>
+
+
     </StackPanel>
 </views:UpdateAnimeStatusViewBase>

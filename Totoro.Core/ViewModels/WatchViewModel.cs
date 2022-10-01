@@ -390,6 +390,12 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         if (CurrentEpisode == Anime.TotalEpisodes)
         {
             tracking.Status = AnimeStatus.Completed;
+            tracking.FinishDate = DateTime.Today;
+        }
+        else if(CurrentEpisode == 1)
+        {
+            tracking.Status = AnimeStatus.Watching;
+            tracking.StartDate = DateTime.Today;
         }
 
         _trackingService.Update(Anime.Id, tracking)

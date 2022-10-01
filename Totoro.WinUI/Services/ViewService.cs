@@ -46,6 +46,14 @@ public class ViewService : IViewService
             {
                 tracking.WatchedEpisodes = (int)vm.EpisodesWatched;
             }
+            if (vm.StartDate is { } sd)
+            {
+                tracking.StartDate = sd.Date;
+            }
+            if(vm.FinishDate is { } fd)
+            {
+                tracking.FinishDate = fd.Date;
+            }
 
             _trackingService.Update(a.Id, tracking).Subscribe(x => a.Tracking = x);
         }

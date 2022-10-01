@@ -101,7 +101,7 @@ public class MyAnimeListTrackingService : ITrackingService
 
     public IObservable<Tracking> Update(long id, Tracking tracking)
     {
-        var request = _client.Anime().WithId(id).UpdateStatus();
+        var request = _client.Anime().WithId(id).UpdateStatus().WithTags("Totoro");
 
         if (tracking.WatchedEpisodes is { } ep)
         {
@@ -118,6 +118,16 @@ public class MyAnimeListTrackingService : ITrackingService
             request.WithScore((MalApi.Score)score);
         }
 
+        if(tracking.StartDate is { } sd)
+        {
+            request.WithStartDate(sd);
+        }
+
+        if(tracking.FinishDate is { } fd)
+        {
+            request.WithFinishDate(fd);
+        }
+
         return request.Publish().ToObservable().Select(x => new Tracking
         {
             WatchedEpisodes = x.WatchedEpisodes,
@@ -125,7 +135,6 @@ public class MyAnimeListTrackingService : ITrackingService
             Score = (int)x.Score,
             UpdatedAt = x.UpdatedAt
         });
-        ;
     }
 
     private IEnumerable<AnimeModel> ConvertToAnimeModel(List<MalApi.Anime> anime)

@@ -14,6 +14,6 @@ public enum AnimeStatus
     PlanToWatch,
     [Description("Dropped")]
     Dropped,
-    [Description("Selected status")]
+    [Description("Select status")]
     None
 }

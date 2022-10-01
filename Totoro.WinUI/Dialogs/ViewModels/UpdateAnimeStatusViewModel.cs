@@ -17,6 +17,17 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
                 Status = x.Status ?? AnimeStatus.None;
                 EpisodesWatched = x.WatchedEpisodes ?? 0;
                 Score = x.Score ?? 0;
+
+                if(x.StartDate != new DateTime())
+                {
+                    StartDate = x.StartDate;
+                }
+
+                if(x.FinishDate != new DateTime())
+                {
+                    FinishDate = x.FinishDate;
+                }
+
             });
 
         this.ObservableForProperty(x => x.EpisodesWatched, x => x)
@@ -33,4 +44,6 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
     [Reactive] public string Tags { get; set; }
     [Reactive] public int? RewatchCount { get; set; }
     [Reactive] public double TotalEpisodes { get; set; }
+    [Reactive] public DateTimeOffset? StartDate { get; set; }
+    [Reactive] public DateTimeOffset? FinishDate { get; set; }
 }
