@@ -15,6 +15,7 @@ internal class WatchViewModelBuilder
     private IAnimeService _animeService = Mock.Of<IAnimeService>();
     private IMediaPlayer _mediaPlayer;
     private ITimestampsService _timestampsService = Mock.Of<ITimestampsService>();
+    private IRecentEpisodesProvider _recentEpisodesProvider = Mock.Of<IRecentEpisodesProvider>();
 
     private readonly Mock<IDiscordRichPresense> _discordRpcMock = new();
     private readonly Mock<IPlaybackStateStorage> _playbackStateStorageMock = new();
@@ -37,7 +38,8 @@ internal class WatchViewModelBuilder
                                   GetDiscordRpc(),
                                   _animeService,
                                   _mediaPlayer,
-                                  _timestampsService);
+                                  _timestampsService,
+                                  _recentEpisodesProvider);
     }
 
     public WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
@@ -103,6 +105,14 @@ internal class WatchViewModelBuilder
         var mock = new Mock<ITimestampsService>();
         configure(mock);
         _timestampsService = mock.Object;
+        return this;
+    }
+
+    public WatchViewModelBuilder WithRecentEpisodesProvider(Action<Mock<IRecentEpisodesProvider>> configure)
+    {
+        var mock = new Mock<IRecentEpisodesProvider>();
+        configure(mock);
+        _recentEpisodesProvider = mock.Object;
         return this;
     }
 
