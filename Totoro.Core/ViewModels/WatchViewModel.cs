@@ -381,7 +381,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Subscribe().DisposeWith(Garbage);
     }
 
-    private void UpdateTracking()
+    public void UpdateTracking()
     {
         _playbackStateStorage.Reset(Anime.Id, CurrentEpisode.Value);
 

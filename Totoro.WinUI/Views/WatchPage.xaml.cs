@@ -33,6 +33,7 @@ public sealed partial class WatchPage : WatchPageBase
 
             TransportControls
             .OnNextTrack
+            .Do(_ => ViewModel.UpdateTracking())
             .InvokeCommand(ViewModel.NextEpisode)
             .DisposeWith(d);
 
