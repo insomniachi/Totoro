@@ -12,4 +12,5 @@ An app for watching and tracking anime!
     - [ ] AniList
     - [ ] Kitsu
 - [X] Skip openings. 
+- [X] Discord Rich Presense.
 - [ ] Show notifications when anime you're watching airs a new episode.
