@@ -31,6 +31,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly ReadOnlyObservableCollection<int> _episodes;
 
     private int? _episodeRequest;
+    private bool canUpdateTime = false;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           ITrackingService trackingService,
@@ -55,8 +56,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
-        NextEpisode = ReactiveCommand.Create(() => CurrentEpisode++, HasNextEpisode, RxApp.MainThreadScheduler);
-        PrevEpisode = ReactiveCommand.Create(() => CurrentEpisode--, HasPrevEpisode, RxApp.MainThreadScheduler);
+        NextEpisode = ReactiveCommand.Create(() => { CurrentEpisode++; canUpdateTime = false; }, HasNextEpisode, RxApp.MainThreadScheduler);
+        PrevEpisode = ReactiveCommand.Create(() => { CurrentEpisode--; canUpdateTime = false; }, HasPrevEpisode, RxApp.MainThreadScheduler);
         SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
         SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);
@@ -94,6 +95,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(x => Anime is not null && x > 10)
+            .Where(x => canUpdateTime)
             .Subscribe(time => playbackStateStorage.Update(Anime.Id, CurrentEpisode.Value, time));
 
         // if we actualy know when episode ends, update tracking then.
@@ -355,6 +357,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         MediaPlayer
             .PlaybackEnded
+            .Do(_ => canUpdateTime = false)
             .Do(_ => DoIfRpcEnabled(() => _discordRichPresense.Clear()))
             .Do(_ => UpdateTracking())
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -374,6 +377,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         MediaPlayer
             .Playing
             .Where(_ => _settings.UseDiscordRichPresense)
+            .Do(_ => canUpdateTime = true)
             .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio.Title))
             .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
             .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))

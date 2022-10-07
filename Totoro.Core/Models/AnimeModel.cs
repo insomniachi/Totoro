@@ -49,6 +49,15 @@ public class ScheduledAnimeModel : AnimeModel
     public TimeRemaining TimeRemaining { get; set; }
 }
 
+public class FullAnimeModel : SeasonalAnimeModel
+{
+    public string Description { get; set; }
+
+    public string[] Genres { get; set; }
+
+    public AnimeModel[] Related { get; set; }
+}
+
 public class SeasonalAnimeModel : ScheduledAnimeModel
 {
     public Season Season { get; set; }

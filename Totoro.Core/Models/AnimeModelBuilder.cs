@@ -15,6 +15,7 @@ public class MalToModelConverter
         var model = new T();
         return model switch
         {
+            FullAnimeModel m => PopulateAll(m, anime),
             SeasonalAnimeModel m => PopulateSeason(m, anime),
             ScheduledAnimeModel m => PopulateSchedule(m, anime),
             AnimeModel m => Populate(m, anime),
@@ -87,6 +88,24 @@ public class MalToModelConverter
         {
             PopulateSchedule(model, malModel);
         }
+
+        return model;
+    }
+
+    private FullAnimeModel PopulateAll(FullAnimeModel model, MalApi.Anime malModel)
+    {
+        PopulateSeason(model, malModel);
+
+        if(malModel.Genres is { } g)
+        {
+            model.Genres = g.Select(x => x.Name).ToArray();
+        }
+
+        if(malModel.RelatedAnime is { } ra)
+        {
+            model.Related = ra.Select(x => Convert<AnimeModel>(x.Anime)).ToArray();
+        }
+
 
         return model;
     }

@@ -14,18 +14,28 @@ public class MyAnimeListService : IAnimeService
         _converter = converter;
     }
 
-    public IObservable<AnimeModel> GetInformation(long id)
+    public IObservable<FullAnimeModel> GetInformation(long id)
     {
-        return _client.Anime().WithId(id).WithFields(_fields).Find()
-                      .ToObservable()
-                      .Select(malModel => _converter.Convert<AnimeModel>(malModel));
+        return _client
+            .Anime()
+            .WithId(id)
+            .WithFields(_commonFields)
+            .WithField(x => x.Genres).WithField(x => x.RelatedAnime)
+            .Find()
+            .ToObservable()
+            .Select(malModel => _converter.Convert<FullAnimeModel>(malModel) as FullAnimeModel);
     }
 
     public IObservable<IEnumerable<SearchResultModel>> GetAnime(string name)
     {
-        return _client.Anime().WithName(name).WithLimit(5).IncludeNsfw().Find()
-                      .ToObservable()
-                      .Select(x => x.Data.Select(x => _converter.ToSearchResult(x)));
+        return _client
+            .Anime()
+            .WithName(name)
+            .WithLimit(5)
+            .IncludeNsfw()
+            .Find()
+            .ToObservable()
+            .Select(x => x.Data.Select(x => _converter.ToSearchResult(x)));
     }
 
     public IObservable<IEnumerable<SeasonalAnimeModel>> GetSeasonalAnime()
@@ -34,11 +44,11 @@ public class MyAnimeListService : IAnimeService
         {
             IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
             {
-                return _client.Anime().OfSeason(season.SeasonName, season.Year).IncludeNsfw()
-                              .WithField(x => x.UserStatus).WithField(x => x.Broadcast)
-                              .WithField(x => x.StartSeason).WithField(x => x.TotalEpisodes)
-                              .WithField(x => x.MeanScore).WithField(x => x.Popularity)
-                              .WithField(x => x.Status).WithField(x => x.AlternativeTitles);
+                return _client
+                .Anime()
+                .OfSeason(season.SeasonName, season.Year)
+                .IncludeNsfw()
+                .WithFields(_commonFields);
             }
 
             var current = CurrentSeason();
@@ -67,15 +77,14 @@ public class MyAnimeListService : IAnimeService
 
     public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
     {
-        return _client.Anime().Top(MalApi.AnimeRankingType.Airing)
-                              .IncludeNsfw()
-                              .WithField(x => x.UserStatus).WithField(x => x.Broadcast)
-                              .WithField(x => x.StartSeason).WithField(x => x.TotalEpisodes)
-                              .WithField(x => x.MeanScore).WithField(x => x.Popularity)
-                              .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
-                              .Find().ToObservable()
-                              .Select(x => x.Data.Select(x => _converter.Convert<ScheduledAnimeModel>(x.Anime)));
-
+        return _client
+            .Anime()
+            .Top(MalApi.AnimeRankingType.Airing)
+            .IncludeNsfw()
+            .WithFields(_commonFields)
+            .Find()
+            .ToObservable()
+            .Select(x => x.Data.Select(x => _converter.Convert<ScheduledAnimeModel>(x.Anime)));
     }
 
     private static MalApi.Season PrevSeason()
@@ -142,7 +151,7 @@ public class MyAnimeListService : IAnimeService
         return new(current, year);
     }
 
-    private readonly string[] _fields = new string[]
+    private readonly string[] _commonFields = new string[]
     {
         MalApi.AnimeFieldNames.Synopsis,
         MalApi.AnimeFieldNames.TotalEpisodes,
@@ -153,6 +162,8 @@ public class MyAnimeListService : IAnimeService
         MalApi.AnimeFieldNames.Mean,
         MalApi.AnimeFieldNames.AlternativeTitles,
         MalApi.AnimeFieldNames.Popularity,
-        MalApi.AnimeFieldNames.StartSeason
+        MalApi.AnimeFieldNames.StartSeason,
+        MalApi.AnimeFieldNames.Genres,
+        MalApi.AnimeFieldNames.Status
     };
 }

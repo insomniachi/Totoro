@@ -8,12 +8,18 @@ public class MyAnimeListTrackingService : ITrackingService
     private readonly MalToModelConverter _converter;
     private static readonly string[] FieldNames = new[]
     {
-        MalApi.AnimeFieldNames.UserStatus,
+        MalApi.AnimeFieldNames.Synopsis,
         MalApi.AnimeFieldNames.TotalEpisodes,
         MalApi.AnimeFieldNames.Broadcast,
+        MalApi.AnimeFieldNames.UserStatus,
+        MalApi.AnimeFieldNames.NumberOfUsers,
+        MalApi.AnimeFieldNames.Rank,
         MalApi.AnimeFieldNames.Mean,
-        MalApi.AnimeFieldNames.Status,
-        MalApi.AnimeFieldNames.AlternativeTitles
+        MalApi.AnimeFieldNames.AlternativeTitles,
+        MalApi.AnimeFieldNames.Popularity,
+        MalApi.AnimeFieldNames.StartSeason,
+        MalApi.AnimeFieldNames.Genres,
+        MalApi.AnimeFieldNames.Status
     };
 
     public MyAnimeListTrackingService(IMalClient client,
@@ -42,18 +48,19 @@ public class MyAnimeListTrackingService : ITrackingService
         {
             try
             {
-                var watching = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching).IncludeNsfw()
-                                     .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
-                                     .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
-                                     .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
-                                     .Find();
+                var watching = await _client.Anime()
+                                            .OfUser()
+                                            .WithStatus(MalApi.AnimeStatus.Watching)
+                                            .IncludeNsfw()
+                                            .WithFields(FieldNames)
+                                            .Find();
 
                 observer.OnNext(ConvertToAnimeModel(watching.Data));
 
-                var all = await _client.Anime().OfUser().IncludeNsfw()
-                                       .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
-                                       .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
-                                       .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
+                var all = await _client.Anime()
+                                       .OfUser()
+                                       .IncludeNsfw()
+                                       .WithFields(FieldNames)
                                        .Find();
 
                 observer.OnNext(ConvertToAnimeModel(all.Data));
@@ -74,11 +81,12 @@ public class MyAnimeListTrackingService : ITrackingService
         {
             try
             {
-                var pagedAnime = await _client.Anime().OfUser().WithStatus(MalApi.AnimeStatus.Watching).IncludeNsfw()
-                                 .WithField(x => x.UserStatus).WithField(x => x.TotalEpisodes)
-                                 .WithField(x => x.Broadcast).WithField(x => x.MeanScore)
-                                 .WithField(x => x.Status).WithField(x => x.AlternativeTitles)
-                                 .Find();
+                var pagedAnime = await _client.Anime()
+                                              .OfUser()
+                                              .WithStatus(MalApi.AnimeStatus.Watching)
+                                              .IncludeNsfw()
+                                              .WithFields(FieldNames)
+                                              .Find();
 
                 observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
 

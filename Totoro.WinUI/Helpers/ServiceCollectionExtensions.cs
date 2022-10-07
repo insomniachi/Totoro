@@ -120,6 +120,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<SeasonalViewModel, SeasonalPage>();
         services.AddPageForNavigation<ScheduleViewModel, SchedulePage>();
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
+        services.AddPageForNavigation<AboutAnimeViewModel, AboutAnimePage>();
 
         return services;
     }
