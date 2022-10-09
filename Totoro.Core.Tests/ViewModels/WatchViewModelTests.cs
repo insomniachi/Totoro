@@ -160,6 +160,7 @@ public class WatchViewModelTests
         vm.OnNavigatedTo(new Dictionary<string, object> { ["Anime"] = animeModel }).Wait();
 
         // act
+        vmBuilder.MediaPlayer.PlayingSubject.OnNext(Unit.Default);
         vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromSeconds(time));
 
         var count = time > 10 ? Times.Once() : Times.Never();
@@ -431,7 +432,7 @@ public class WatchViewModelTests
     public void WatchViewModel_HidesSearchBoxWhenNavigatedWithAnime()
     {
         // arrange
-        AnimeModel animeModel = new()
+        FullAnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
