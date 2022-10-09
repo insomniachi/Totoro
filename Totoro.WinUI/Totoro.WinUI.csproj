@@ -25,9 +25,9 @@
 		<PackageReference Include="DiscordRichPresence" Version="1.0.175" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.220902.1-preview1" />
-		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.8" />
-		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.1.4">
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.220930.4-preview2" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.2.3">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

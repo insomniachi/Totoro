@@ -1,12 +1,16 @@
-﻿using ReactiveMarbles.ObservableEvents;
+﻿using System.Reactive.Windows.Foundation;
+using ReactiveMarbles.ObservableEvents;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.Media.Streaming.Adaptive;
+using Windows.Web.Http;
 
 namespace Totoro.WinUI.Media;
 
 public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {
     private readonly MediaPlayer _player = new();
+    private readonly HttpClient _httpClient = new();
 
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -37,7 +41,25 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     {
         if (stream.Headers is { Count: > 0 } headers)
         {
-            // TODO : add request headers
+            _httpClient.DefaultRequestHeaders.Clear();
+            foreach (var item in stream.Headers)
+            {
+                _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
+            }
+
+            AdaptiveMediaSource.CreateFromUriAsync(new Uri(stream.Url), _httpClient)
+                .ToObservable()
+                .Subscribe(amsr =>
+                {
+                    if (amsr.Status == AdaptiveMediaSourceCreationStatus.Success)
+                    {
+                        _player.Source = MediaSource.CreateFromAdaptiveMediaSource(amsr.MediaSource);
+                    }
+                    else
+                    {
+                        _player.Source = MediaSource.CreateFromUri(new Uri(stream.Url));
+                    }
+                });
         }
         else
         {
