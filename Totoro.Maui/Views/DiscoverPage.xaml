@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rx:ReactiveContentPage
+    x:Class="Totoro.Maui.Views.DiscoverPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:core="clr-namespace:Totoro.Core.ViewModels;assembly=Totoro.Core"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:Totoro.Core.Models;assembly=Totoro.Core"
+    xmlns:mx="http://compiledbindings.com/x"
+    xmlns:rx="clr-namespace:ReactiveUI.Maui;assembly=ReactiveUI.Maui"
+    Title="DiscoverPage"
+    mx:DataType="ore:DiscoverViewModel"
+    x:TypeArguments="core:DiscoverViewModel"
+    mc:Ignorable="mx">
+    <VerticalStackLayout Spacing="10">
+        <CarouselView ItemsSource="{Binding Featured}">
+            <CarouselView.ItemTemplate>
+                <DataTemplate x:DataType="models:FeaturedAnime">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Image Aspect="AspectFill" Source="{Binding Image}" />
+                        <VerticalStackLayout Grid.Column="1" Padding="10">
+                            <Label
+                                FontAttributes="Bold"
+                                FontSize="30"
+                                LineBreakMode="WordWrap"
+                                Text="{Binding Title}" />
+
+                            <CollectionView Margin="0,10" ItemsSource="{Binding GenresArray}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Border Padding="5">
+                                            <Label Text="{Binding}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Horizontal" />
+                                </CollectionView.ItemsLayout>
+                            </CollectionView>
+
+                            <Label
+                                Padding="10"
+                                FontSize="20"
+                                LineBreakMode="CharacterWrap"
+                                Text="{Binding Description}" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+    </VerticalStackLayout>
+</rx:ReactiveContentPage>
