@@ -1,4 +1,5 @@
-﻿using ReactiveMarbles.ObservableEvents;
+﻿using MalApi;
+using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Media;
 
@@ -33,7 +34,9 @@ public sealed partial class WatchPage : WatchPageBase
 
             TransportControls
             .OnNextTrack
-            .Do(_ => ViewModel.UpdateTracking())
+            .Where(_ => ViewModel.Anime is not null && (ViewModel.Anime.Tracking?.WatchedEpisodes ?? 1) < ViewModel.CurrentEpisode)
+            .SelectMany(_ => ViewModel.UpdateTracking())
+            .ObserveOn(RxApp.MainThreadScheduler)
             .InvokeCommand(ViewModel.NextEpisode)
             .DisposeWith(d);
 

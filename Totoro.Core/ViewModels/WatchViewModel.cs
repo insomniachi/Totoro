@@ -100,19 +100,19 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         // if we actualy know when episode ends, update tracking then.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(x => OutroPosition > 0 && x >= OutroPosition && Anime is not null && (Anime.Tracking?.WatchedEpisodes ?? 1) <= CurrentEpisode)
+            .Where(x => OutroPosition > 0 && x >= OutroPosition && Anime is not null && (Anime.Tracking?.WatchedEpisodes ?? 1) < CurrentEpisode)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .Do(_ => UpdateTracking())
+            .SelectMany(_ => UpdateTracking())
             .Subscribe();
 
         /// if we have less than configured seconds left and we have not completed this episode
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(_ => Anime is not null && OutroPosition <= 0)
-            .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 1) <= CurrentEpisode)
+            .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 1) < CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletesInSeconds)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .Do(_ => UpdateTracking())
+            .SelectMany(_ => UpdateTracking())
             .Subscribe();
 
         /// populate searchbox suggestions
@@ -359,7 +359,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .PlaybackEnded
             .Do(_ => canUpdateTime = false)
             .Do(_ => DoIfRpcEnabled(() => _discordRichPresense.Clear()))
-            .Do(_ => UpdateTracking())
+            .SelectMany(_ => UpdateTracking())
             .ObserveOn(RxApp.MainThreadScheduler)
             .Do(_ => NativeMethods.AllowSleep())
             .InvokeCommand(NextEpisode)
@@ -385,7 +385,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Subscribe().DisposeWith(Garbage);
     }
 
-    public void UpdateTracking()
+    public async Task<Unit> UpdateTracking()
     {
         _playbackStateStorage.Reset(Anime.Id, CurrentEpisode.Value);
 
@@ -402,9 +402,9 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             tracking.StartDate = DateTime.Today;
         }
 
-        _trackingService.Update(Anime.Id, tracking)
-                        .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(x => Anime.Tracking = x);
+        Anime.Tracking = await _trackingService.Update(Anime.Id, tracking);
+
+        return Unit.Default;
     }
 
     private void DoIfRpcEnabled(Action action)
