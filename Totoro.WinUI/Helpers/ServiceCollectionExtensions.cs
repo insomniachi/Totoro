@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.MyAnimeList;
+using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Activation;
 using Totoro.WinUI.Contracts;
@@ -108,6 +109,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddMemoryCache();
         services.AddHttpClient();
+
+        services.AddTransient<IShanaProjectService, ShanaProjectService>();
 
         return services;
     }
