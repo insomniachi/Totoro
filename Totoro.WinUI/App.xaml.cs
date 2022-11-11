@@ -43,7 +43,7 @@ public partial class App : Application
         return _host.Services.GetService(typeof(T)) as T;
     }
 
-    public static object GetService(System.Type t) => _host.Services.GetService(t);
+    public static object GetService(Type t) => _host.Services.GetService(t);
 
     public static Window MainWindow { get; set; } = new Window() { Title = "AppDisplayName".GetLocalized() };
 

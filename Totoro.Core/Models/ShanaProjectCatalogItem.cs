@@ -6,11 +6,9 @@ namespace Totoro.Core.Models
     [DebuggerDisplay("{Title}")]
     public class ShanaProjectCatalogItem
     {
-        [JsonPropertyName("value")]
-        public string Title { get; set; }
-
-        [JsonPropertyName("id")]
-        public long Id { get; set; }
+        [JsonPropertyName("value")] public string Title { get; set; }
+        [JsonPropertyName("id")] public long Id { get; set; }
+        public override string ToString() => Title;
     }
 
 
@@ -22,5 +20,7 @@ namespace Totoro.Core.Models
         public string Quality { get; set; }
         public string Size { get; set; }
         public string Url { get; set; }
+        public string Subber { get; set; }
+        public ReactiveCommand<Unit,Unit> Download { get; } = ReactiveCommand.Create<Unit, Unit>(_ => Unit.Default);
     }
 }

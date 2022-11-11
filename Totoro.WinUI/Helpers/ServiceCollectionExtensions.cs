@@ -87,6 +87,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
         services.AddSingleton<IActivationService, ActivationService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
+        services.AddTransient<IToastService, ToastService>();
 
         return services;
     }
@@ -107,6 +108,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITimestampsService, TimestampsService>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
+        services.AddSingleton<ITorrentsService, TorrentsService>();
         services.AddMemoryCache();
         services.AddHttpClient();
 
@@ -124,7 +126,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<ScheduleViewModel, SchedulePage>();
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
         services.AddPageForNavigation<AboutAnimeViewModel, AboutAnimePage>();
-
+        services.AddPageForNavigation<DownloadViewModel, DownloadPage>();
         return services;
     }
 

@@ -61,6 +61,10 @@
                     Content="Schedule"
                     Icon="Clock"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
+                <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DownloadViewModel"
+                    Content="Download"
+                    Icon="Download" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <NavigationViewItem Content="Give Feedback" Tapped="Feedback_Tapped">

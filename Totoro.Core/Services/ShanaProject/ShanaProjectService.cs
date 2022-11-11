@@ -47,6 +47,7 @@ namespace Totoro.Core.Services.ShanaProject
                 var quality = releaseItem.SelectSingleNode("div[1]/div[4]/div[1]/span")?.InnerText;
                 var ep = releaseItem.SelectSingleNode("div[1]/div[3]").InnerText;
                 var size = releaseItem.SelectSingleNode("div[1]/div[6]").InnerText;
+                var subber = releaseItem.SelectSingleNode("div[1]/div[5]/div/a[1]").InnerText;
 
                 yield return new ShanaProjectDownloadableContent
                 {
@@ -54,6 +55,7 @@ namespace Totoro.Core.Services.ShanaProject
                     Episode = ep,
                     Quality = quality,
                     Size = size,
+                    Subber = subber,
                     Url = $"https://www.shanaproject.com/download/{contentId}/"
                 };
             }
