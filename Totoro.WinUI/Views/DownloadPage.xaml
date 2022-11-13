@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Totoro.Core.Models"
@@ -62,7 +63,6 @@
             x:Name="DownloadsPopup"
             Grid.Row="1"
             Width="400"
-            Height="600"
             IsOpen="{x:Bind ViewModel.ShowDownloads, Mode=TwoWay}"
             Target="{x:Bind DownloadBtn}">
             <TeachingTip.Content>
@@ -84,13 +84,19 @@
 
                                 <Grid Grid.Row="1">
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="70" />
                                     </Grid.ColumnDefinitions>
                                     <ProgressBar IsIndeterminate="{x:Bind IsCompleted, Mode=OneWay}" Value="{x:Bind Progress, Mode=OneWay}" />
-                                    <TextBlock Grid.Column="1" Margin="{StaticResource XSmallLeftMargin}">
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="{StaticResource XSmallLeftMargin}"
+                                        Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(IsCompleted), Mode=OneWay}">
                                         <Run Text="{x:Bind Progress, Mode=OneWay}" />
                                         <Run Text="%" />
+                                        <Run Text="( " />
+                                        <Run Text="{x:Bind DownloadSpeed, Mode=OneWay}" />
+                                        <Run Text=")" />
                                     </TextBlock>
                                 </Grid>
                             </Grid>
