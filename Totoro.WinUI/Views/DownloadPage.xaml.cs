@@ -19,6 +19,22 @@ public sealed partial class DownloadPage : DownloadPageBase
             .Select(@event => @event.args.SelectedItem as ShanaProjectCatalogItem)
             .Subscribe(x => ViewModel.SelectedSeries = x)
             .DisposeWith(d);
+
+            DownloadBtn
+            .Events()
+            .Click
+            .Subscribe(_ =>
+            {
+                if(ViewModel.ShowDownloads)
+                {
+                    ViewModel.ShowDownloads = false;
+                }
+                else if(ViewModel.TorrentsSerivce.ActiveDownlaods.Any())
+                {
+                    ViewModel.ShowDownloads = true;
+                }
+            })
+            .DisposeWith(d);
         });
     }
 }

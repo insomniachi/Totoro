@@ -1,4 +1,5 @@
-﻿using MonoTorrent;
+﻿using System.Reactive.Concurrency;
+using MonoTorrent;
 using MonoTorrent.Client;
 
 namespace Totoro.Core.Services;
@@ -18,6 +19,7 @@ public class TorrentsService : ITorrentsService
         var manager = await _engine.AddAsync(torrent, saveDirectory);
         await manager.StartAsync();
         manager.TorrentStateChanged += Manager_TorrentStateChanged;
+        ActiveDownlaods.Add(new TorrentModel(manager));
     }
 
     private async void Manager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
@@ -27,13 +29,15 @@ public class TorrentsService : ITorrentsService
             return;
         }
 
-        if (e.NewState == TorrentState.Seeding && manager.Complete)
+        if (e.NewState == TorrentState.Seeding)
         {
             manager.TorrentStateChanged -= Manager_TorrentStateChanged;
             await manager.StopAsync();
+            RxApp.MainThreadScheduler.Schedule(() => ActiveDownlaods.Remove(ActiveDownlaods.FirstOrDefault(x => x.Downloader == manager)));
+            await _engine.RemoveAsync(manager);
             _toastService.DownloadCompleted(manager.Torrent.Name);
         }
     }
 
-    public IList<TorrentManager> ActiveDownlaods => _engine.Torrents;
+    public ObservableCollection<TorrentModel> ActiveDownlaods { get; } = new();
 }

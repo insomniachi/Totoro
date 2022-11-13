@@ -13,6 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Border Margin="0,20" HorizontalAlignment="Center">
@@ -47,6 +48,57 @@
                 </ctk:DataGridTemplateColumn>
             </ctk:DataGrid.Columns>
         </ctk:DataGrid>
+
+        <CommandBar
+            Grid.Row="2"
+            Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
+            DefaultLabelPosition="Bottom">
+
+            <AppBarButton x:Name="DownloadBtn" Icon="Download" />
+
+        </CommandBar>
+
+        <TeachingTip
+            x:Name="DownloadsPopup"
+            Grid.Row="1"
+            Width="400"
+            Height="600"
+            IsOpen="{x:Bind ViewModel.ShowDownloads, Mode=TwoWay}"
+            Target="{x:Bind DownloadBtn}">
+            <TeachingTip.Content>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.TorrentsSerivce.ActiveDownlaods, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:TorrentModel">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock
+                                    Margin="{StaticResource SmallTopBottomMargin}"
+                                    FontWeight="Bold"
+                                    Text="{x:Bind Name}"
+                                    TextTrimming="WordEllipsis"
+                                    ToolTipService.ToolTip="{x:Bind Name}" />
+
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="70" />
+                                    </Grid.ColumnDefinitions>
+                                    <ProgressBar IsIndeterminate="{x:Bind IsCompleted, Mode=OneWay}" Value="{x:Bind Progress, Mode=OneWay}" />
+                                    <TextBlock Grid.Column="1" Margin="{StaticResource XSmallLeftMargin}">
+                                        <Run Text="{x:Bind Progress, Mode=OneWay}" />
+                                        <Run Text="%" />
+                                    </TextBlock>
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </TeachingTip.Content>
+        </TeachingTip>
 
     </Grid>
 </local:DownloadPageBase>
