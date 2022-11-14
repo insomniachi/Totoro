@@ -48,8 +48,7 @@ namespace Totoro.Core.ViewModels
 
         private async Task Download(ShanaProjectDownloadableContent content)
         {
-            Torrent torrent = Torrent.Load(new Uri(content.Url), "temp.torrent");
-            await TorrentsSerivce.Download(torrent, Path.Combine("Downloads", content.Title));
+            await TorrentsSerivce.Download(content);
             ShowDownloads = true;
         }
 

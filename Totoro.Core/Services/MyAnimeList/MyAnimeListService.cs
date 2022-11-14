@@ -31,6 +31,7 @@ public class MyAnimeListService : IAnimeService
         return _client
             .Anime()
             .WithName(name)
+            .WithField(x => x.AlternativeTitles)
             .WithLimit(5)
             .IncludeNsfw()
             .Find()

@@ -109,6 +109,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IAnimeIdService, AnimeIdService>();
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<ITorrentsService, TorrentsService>();
+        services.AddSingleton<ILocalMediaService, LocalMediaService>();
         services.AddMemoryCache();
         services.AddHttpClient();
 
@@ -136,6 +137,7 @@ public static class ServiceCollectionExtensions
         services.AddPage<ChooseSearchResultViewModel, ChooseSearchResultView>();
         services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
         services.AddPage<PlayVideoDialogViewModel, VideoView>();
+        services.AddPage<SelectModelViewModel, SelectModelView>();
         return services;
     }
 }

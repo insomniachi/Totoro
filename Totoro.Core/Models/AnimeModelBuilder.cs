@@ -23,9 +23,21 @@ public class MalToModelConverter
         };
     }
 
-    public SearchResultModel ToSearchResult(MalApi.Anime a)
+    public SearchResultModel ToSearchResult(MalApi.Anime malModel)
     {
-        return new SearchResultModel { Title = a.Title, Id = a.Id };
+        var model =  new SearchResultModel 
+        {
+            Title = malModel.Title, 
+            Id = malModel.Id,
+        };
+
+        if (malModel.AlternativeTitles is { } alt)
+        {
+            model.AlternativeTitles = alt.Aliases.ToList();
+            model.AlternativeTitles.Add(alt.English);
+        }
+
+        return model;
     }
 
     private static AnimeModel Populate(AnimeModel model, MalApi.Anime malModel)

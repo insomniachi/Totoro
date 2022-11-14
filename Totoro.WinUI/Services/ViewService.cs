@@ -100,4 +100,23 @@ public class ViewService : IViewService
             d.CloseButtonText = "Close";
         }, vm => vm.Url = url);
     }
+
+    public async Task<T> SelectModel<T>(IEnumerable<object> models)
+        where T: class
+    {
+        var vm = new SelectModelViewModel()
+        {
+            Models = models,
+        };
+
+        await _contentDialogService.ShowDialog(vm, d =>
+        {
+            d.Title = "Select";
+            d.IsPrimaryButtonEnabled = false;
+            d.IsSecondaryButtonEnabled = false;
+            d.CloseButtonText = "Ok";
+        });
+
+        return vm.SelectedModel as T;
+    }
 }

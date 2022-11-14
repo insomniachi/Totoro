@@ -6,6 +6,6 @@ namespace Totoro.Core.Contracts
     {
         ObservableCollection<TorrentModel> ActiveDownlaods { get; }
 
-        Task Download(Torrent torrent, string saveDirectory);
+        Task Download(IDownloadableContent content);
     }
 }

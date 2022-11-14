@@ -2,6 +2,6 @@
 {
     public interface IToastService
     {
-        void DownloadCompleted(string name);
+        void DownloadCompleted(string directory, string name);
     }
 }

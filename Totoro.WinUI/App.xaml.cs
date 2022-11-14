@@ -1,8 +1,11 @@
-﻿using AnimDL.Core;
+﻿using System.Diagnostics;
+using AnimDL.Core;
+using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
+using Totoro.WinUI.Services;
 using Windows.ApplicationModel;
 
 namespace Totoro.WinUI;
@@ -50,7 +53,31 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+        AppDomain.CurrentDomain.ProcessExit += OnExit;
         UnhandledException += App_UnhandledException;
+    }
+
+    private void OnExit(object sender, EventArgs e)
+    {
+        ToastNotificationManagerCompat.Uninstall();
+    }
+
+    private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
+    {
+        var args = ToastArguments.Parse(e.Argument);
+
+        switch (args.GetEnum<ToastType>("Type"))
+        {
+            case ToastType.DownloadComplete:
+                Process.Start(new ProcessStartInfo { FileName = args.Get("File"), UseShellExecute = true });
+                break;
+        }
+
+        if (args.GetBool("NeedUI"))
+        {
+            MainWindow.Activate();
+        }
     }
 
 

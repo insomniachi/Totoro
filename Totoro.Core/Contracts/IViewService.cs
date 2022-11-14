@@ -8,4 +8,5 @@ public interface IViewService
     Task<SearchResult> ChoooseSearchResult(List<SearchResult> searchResults, ProviderType providerType);
     Task AuthenticateMal();
     Task PlayVideo(string title, string url);
+    Task<T> SelectModel<T>(IEnumerable<object> models) where T : class;
 }

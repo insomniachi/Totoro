@@ -41,6 +41,7 @@ public class SearchResultModel : IAnimeModel
     public Tracking Tracking { get; set; }
     public int? TotalEpisodes { get; set; }
     public override string ToString() => Title;
+    public List<string> AlternativeTitles { get; set; }
 }
 
 public class ScheduledAnimeModel : AnimeModel
