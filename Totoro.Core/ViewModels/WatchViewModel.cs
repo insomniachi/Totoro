@@ -14,6 +14,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly IAnimeService _animeService;
     private readonly IRecentEpisodesProvider _recentEpisodesProvider;
+    private readonly ILocalMediaService _localMediaService;
     private readonly ObservableAsPropertyHelper<IProvider> _provider;
     private readonly ObservableAsPropertyHelper<bool> _hasSubAndDub;
     private readonly ObservableAsPropertyHelper<VideoStreamsForEpisode> _streams;
@@ -42,7 +43,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
                           IAnimeService animeService,
                           IMediaPlayer mediaPlayer,
                           ITimestampsService timestampsService,
-                          IRecentEpisodesProvider recentEpisodesProvider)
+                          IRecentEpisodesProvider recentEpisodesProvider,
+                          ILocalMediaService localMediaService)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -53,6 +55,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         MediaPlayer = mediaPlayer;
         _recentEpisodesProvider = recentEpisodesProvider;
+        _localMediaService = localMediaService;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
@@ -125,10 +128,21 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         // Triggers the first step to scrape stream urls
         this.ObservableForProperty(x => x.Anime, x => x)
+            .Where(_ => !UseLocalMedia)
             .WhereNotNull()
             .SelectMany(model => Find(model.Id, model.Title))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => SelectedAnimeResult = x);
+
+        this.ObservableForProperty(x => x.Anime, x => x)
+            .Where(_ => UseLocalMedia)
+            .WhereNotNull()
+            .Select(model => localMediaService.GetEpisodes(model.Id))
+            .Do(eps => _episodesCache.EditDiff(eps))
+            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes + 1) ?? 1)
+            .Where(ep => ep <= Anime?.TotalEpisodes)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(ep => CurrentEpisode = ep);
 
         /// 1. Select Sub/Dub based in <see cref="UseDub"/> if Dub is not present select Sub
         /// 2. Set <see cref="SelectedAudio"/>
@@ -160,12 +174,24 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         /// Scrape url for <see cref="CurrentEpisode"/> and set to <see cref="Url"/>
         episodeChanged
+            .Where(_ => !UseLocalMedia)
             .Do(x => DoIfRpcEnabled(() => discordRichPresense.UpdateState($"Episode {x}")))
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(ep => Provider.StreamProvider.GetStreams(SelectedAudio.Url, ep.Value..ep.Value).ToListAsync().AsTask())
             .Select(list => list.FirstOrDefault())
             .WhereNotNull()
             .ToProperty(this, nameof(Streams), out _streams);
+
+        episodeChanged
+            .Where(_ => UseLocalMedia)
+            .Do(x => DoIfRpcEnabled(() => discordRichPresense.UpdateState($"Episode {x}")))
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .Select(ep => localMediaService.GetMedia(Anime.Id, ep.Value))
+            .Where(file => !string.IsNullOrEmpty(file))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(async file => await mediaPlayer.SetMedia(file))
+            .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
+            .Subscribe();
 
         // Update qualities selection
         this.ObservableForProperty(x => x.Streams, x => x)
@@ -178,8 +204,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         this.ObservableForProperty(x => x.SelectedStream, x => x)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(stream => MediaPlayer.SetMedia(stream))
-            .Do(_ => MediaPlayer.Play(_playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
+            .Do(stream => mediaPlayer.SetMedia(stream))
+            .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
             .Subscribe();
 
         // get start position of intro if available
@@ -235,6 +261,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     [Reactive] public SearchResult SelectedAudio { get; set; }
     [Reactive] public IAnimeModel Anime { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
+    [Reactive] public bool UseLocalMedia { get; set; }
 
     public bool IsSkipIntroButtonVisible => _isSkipIntroButtonVisible?.Value ?? false;
     public IProvider Provider => _provider.Value;
@@ -261,6 +288,11 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        if(parameters.ContainsKey("UseLocalMedia"))
+        {
+            UseLocalMedia = (bool)parameters["UseLocalMedia"];
+        }
+
         if (parameters.ContainsKey("Anime"))
         {
             Anime = parameters["Anime"] as IAnimeModel;
@@ -378,7 +410,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Playing
             .Where(_ => _settings.UseDiscordRichPresense)
             .Do(_ => canUpdateTime = true)
-            .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio.Title))
+            .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio?.Title ?? Anime.Title))
             .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
             .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))
             .Do(_ => NativeMethods.PreventSleep())

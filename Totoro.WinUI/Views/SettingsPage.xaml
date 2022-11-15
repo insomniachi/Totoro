@@ -29,10 +29,10 @@
             Width="700"
             HorizontalAlignment="Left"
             Spacing="10">
-            <labs:SettingsCard
-                Description="Change the colors that appear"
-                Header="Choose your mode"
-                Icon="&#xe790;">
+            <labs:SettingsCard Description="Change the colors that appear" Header="Choose your mode">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe790;" />
+                </labs:SettingsCard.HeaderIcon>
                 <ComboBox
                     Width="150"
                     ItemsSource="{x:Bind ViewModel.Themes}"
@@ -44,10 +44,10 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </labs:SettingsCard>
-            <labs:SettingsCard
-                Description="Authenticate your account to use MyAnimeList public apis."
-                Header="Link MyAnimeList"
-                Icon="&#xe71b;">
+            <labs:SettingsCard Description="Authenticate your account to use MyAnimeList public apis." Header="Link MyAnimeList">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe71b;" />
+                </labs:SettingsCard.HeaderIcon>
                 <Button
                     Name="AuthenticateButton"
                     Width="150"
@@ -55,10 +55,10 @@
                     Content="Authenticate"
                     Style="{StaticResource AccentButtonStyle}" />
             </labs:SettingsCard>
-            <labs:SettingsCard
-                Description="Prefer subs for search result, excludes dubs from the result."
-                Header="Prefer Subs over Dubs"
-                Icon="&#xe986;">
+            <labs:SettingsCard Description="Prefer subs for search result, excludes dubs from the result." Header="Prefer Subs over Dubs">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe986;" />
+                </labs:SettingsCard.HeaderIcon>
                 <ToggleSwitch
                     FlowDirection="RightToLeft"
                     IsOn="{x:Bind ViewModel.PreferSubs, Mode=TwoWay}"
@@ -74,30 +74,30 @@
                     ItemsSource="{x:Bind ViewModel.ProviderTypes}"
                     SelectedItem="{x:Bind ViewModel.DefaultProviderType, Mode=TwoWay}" />
             </labs:SettingsCard>-->
-            <labs:SettingsCard
-                Description="Let discord know what anime you're watching."
-                Header="Use discord rich presense"
-                Icon="&#xe7fc;">
+            <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe7fc;" />
+                </labs:SettingsCard.HeaderIcon>
                 <ToggleSwitch
                     FlowDirection="RightToLeft"
                     IsOn="{x:Bind ViewModel.UseDiscordRichPresense, Mode=TwoWay}"
                     OffContent=""
                     OnContent="" />
             </labs:SettingsCard>
-            <labs:SettingsCard
-                Description="Auto update tracking when configured number of seconds is remaining"
-                Header="Auto update tracking"
-                Icon="&#xe930;">
+            <labs:SettingsCard Description="Auto update tracking when configured number of seconds is remaining" Header="Auto update tracking">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe930;" />
+                </labs:SettingsCard.HeaderIcon>
                 <NumberBox
                     LargeChange="5"
                     SmallChange="1"
                     SpinButtonPlacementMode="Inline"
                     Value="{x:Bind ViewModel.TimeRemainingWhenEpisodeCompletesInSeconds, Mode=TwoWay}" />
             </labs:SettingsCard>
-            <labs:SettingsCard
-                Description="Amount to seconds to skip when skip opening button is clicked during media playback"
-                Header="Opening duration"
-                Icon="&#xe916;">
+            <labs:SettingsCard Description="Amount to seconds to skip when skip opening button is clicked during media playback" Header="Opening duration">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe916;" />
+                </labs:SettingsCard.HeaderIcon>
                 <NumberBox
                     LargeChange="5"
                     SmallChange="1"
