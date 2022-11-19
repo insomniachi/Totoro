@@ -1,4 +1,5 @@
-﻿using Totoro.Core.Helpers;
+﻿using System.Security.Cryptography;
+using Totoro.Core.Helpers;
 
 namespace Totoro.Core.ViewModels;
 
@@ -21,13 +22,15 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
             .Filter(this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason))
             .Filter(this.WhenAnyValue(x => x.SearchText).Select(x => x?.ToLower()).Select(FilterByTitle))
             .Sort(SortExpressionComparer<SeasonalAnimeModel>.Ascending(x => x.Popularity))
+            .Page(PagerViewModel.AsPager())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(changes => PagerViewModel.Update(changes.Response))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
         this.WhenAnyValue(x => x.SeasonFilter).Subscribe(SwitchSeasonFilter);
-
 
         SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
         AddToListCommand = ReactiveCommand.CreateFromTask<AnimeModel>(AddToList);
@@ -37,6 +40,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     [Reactive] public Season Season { get; set; }
     [Reactive] public string SeasonFilter { get; set; } = "Current";
     [Reactive] public string SearchText { get; set; }
+    public PagerViewModel PagerViewModel { get; } = new PagerViewModel(0, 15);
     public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }

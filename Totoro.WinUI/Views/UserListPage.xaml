@@ -152,6 +152,10 @@
             Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
             DefaultLabelPosition="Bottom">
             <AppBarButton
+                x:Name="QuickAdd"
+                Icon="Add"
+                Label="Quick Add" />
+            <AppBarButton
                 Command="{x:Bind ViewModel.RefreshCommand}"
                 Icon="Refresh"
                 Label="Refresh" />
@@ -209,5 +213,33 @@
                 </AppBarButton.Flyout>
             </AppBarButton>
         </CommandBar>
+
+        <TeachingTip
+            x:Name="QuickAddPopup"
+            Title="Quick Add"
+            Grid.Row="1"
+            Target="{x:Bind QuickAdd}">
+            <Grid Padding="3,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <AutoSuggestBox
+                    PlaceholderText="Search"
+                    QueryIcon="Find"
+                    Text="{x:Bind ViewModel.QuickAddSearchText, Mode=TwoWay}" />
+
+                <ListView
+                    x:Name="QuickAddResult"
+                    Grid.Row="1"
+                    Height="150"
+                    Margin="{StaticResource SmallTopMargin}"
+                    IsItemClickEnabled="True"
+                    ItemsSource="{x:Bind ViewModel.QuickSearchResults, Mode=OneWay}"
+                    SelectionMode="None" />
+            </Grid>
+        </TeachingTip>
+
     </Grid>
 </v:UserListPageBase>

@@ -4,7 +4,7 @@ namespace Totoro.Core.Contracts;
 
 public interface IViewService
 {
-    Task UpdateAnimeStatus(AnimeModel anime);
+    Task<Unit> UpdateAnimeStatus(IAnimeModel anime);
     Task<SearchResult> ChoooseSearchResult(List<SearchResult> searchResults, ProviderType providerType);
     Task AuthenticateMal();
     Task PlayVideo(string title, string url);

@@ -25,7 +25,8 @@
     <Grid x:Name="ContentArea">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -72,16 +73,28 @@
 
         </StackPanel>
 
+        <PipsPager
+            Grid.Row="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            NextButtonVisibility="Visible"
+            NumberOfPages="{x:Bind ViewModel.PagerViewModel.PageCount, Mode=OneWay}"
+            PreviousButtonVisibility="Visible"
+            SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />
+
 
         <GridView
             x:Name="AnimeListView"
-            Grid.Row="1"
+            Grid.Row="2"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
             IsItemClickEnabled="True"
             ItemsSource="{x:Bind ViewModel.Anime}">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="cm:AnimeModel">
-                    <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
+                    <uc:AnimeCard
+                        x:Name="Card"
+                        Anime="{x:Bind}"
+                        DisplayMode="DetailedGrid">
                         <uc:AnimeCard.Flyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem
@@ -124,9 +137,10 @@
 
 
         <CommandBar
-            Grid.Row="2"
+            Grid.Row="3"
             Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
             DefaultLabelPosition="Bottom">
+            <AppBarElementContainer />
             <AppBarButton Icon="Refresh" Label="Refresh" />
             <AppBarButton Icon="View" Label="Display mode">
                 <AppBarButton.Flyout>

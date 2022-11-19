@@ -5,9 +5,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Totoro.Core.ViewModels;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
-
 namespace Totoro.WinUI.UserControls;
 
 public sealed partial class AnimeCard : UserControl
@@ -37,6 +34,7 @@ public sealed partial class AnimeCard : UserControl
     public MenuFlyout Flyout { get; set; }
     public ICommand UpdateStatusCommand { get; }
     public ICommand WatchCommand { get; }
+    public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
 
     public AnimeCard()
     {
@@ -110,6 +108,22 @@ public sealed partial class AnimeCard : UserControl
             AiringStatus.FinishedAiring => new SolidColorBrush(Colors.MediumSlateBlue),
             AiringStatus.NotYetAired => new SolidColorBrush(Colors.LightSlateGray),
             _ => new SolidColorBrush(Colors.Navy),
+        };
+    }
+
+    public Dictionary<string,string> GetAdditionalInformation(AnimeModel anime)
+    {
+        if(anime is not FullAnimeModel fa)
+        {
+            return new();
+        }
+
+        return new Dictionary<string, string>
+        {
+            ["Episodes"] = $"{(fa.TotalEpisodes is >0 ? fa.TotalEpisodes.ToString() : "Unknown")}",
+            ["Genres"] = $"{string.Join(", ", fa.Genres ?? Enumerable.Empty<string>())}",
+            ["Score"] = $"{fa.MeanScore}",
+            ["Popularity"] = $"#{fa.Popularity}"
         };
     }
 

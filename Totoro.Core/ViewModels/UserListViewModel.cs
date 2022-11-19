@@ -5,14 +5,20 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 {
     private readonly ITrackingService _trackingService;
     private readonly INavigationService _navigationService;
+    private readonly IViewService _viewService;
     private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
+    private readonly SourceCache<SearchResultModel, long> _searchCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
+    private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
 
     public UserListViewModel(ITrackingService trackingService,
-                             INavigationService navigationService)
+                             INavigationService navigationService,
+                             IAnimeService animeService,
+                             IViewService viewService)
     {
         _trackingService = trackingService;
         _navigationService = navigationService;
+        _viewService = viewService;
         ItemClickedCommand = ReactiveCommand.Create<AnimeModel>(OnItemClicked);
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => CurrentView = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
@@ -28,13 +34,29 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
+
+        _searchCache
+            .Connect()
+            .RefCount()
+            .Bind(out _searchResults)
+            .DisposeMany()
+            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
+            .DisposeWith(Garbage);
+
+        this.WhenAnyValue(x => x.QuickAddSearchText)
+            .Where(text => text is { Length: > 3 })
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .SelectMany(text => animeService.GetAnime(text))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(list => _searchCache.EditDiff(list, (first, second) => first.Id == second.Id));
     }
 
     [Reactive] public AnimeStatus CurrentView { get; set; } = AnimeStatus.Watching;
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
     [Reactive] public string SearchText { get; set; }
-
+    [Reactive] public string QuickAddSearchText { get; set; }
+    public ReadOnlyObservableCollection<SearchResultModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ItemClickedCommand { get; }
     public ICommand ChangeCurrentViewCommand { get; }
@@ -73,5 +95,13 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
         CurrentView = state.GetValue<AnimeStatus>(nameof(CurrentView));
+    }
+
+    public async Task<Unit> UpdateAnime(IAnimeModel model) => await _viewService.UpdateAnimeStatus(model);
+
+    public void ClearSearch()
+    {
+        QuickAddSearchText = string.Empty;
+        _searchCache.Clear();
     }
 }

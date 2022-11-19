@@ -59,8 +59,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
-        NextEpisode = ReactiveCommand.Create(() => { CurrentEpisode++; canUpdateTime = false; }, HasNextEpisode, RxApp.MainThreadScheduler);
-        PrevEpisode = ReactiveCommand.Create(() => { CurrentEpisode--; canUpdateTime = false; }, HasPrevEpisode, RxApp.MainThreadScheduler);
+        NextEpisode = ReactiveCommand.Create(() => { ++CurrentEpisode; canUpdateTime = false; }, HasNextEpisode, RxApp.MainThreadScheduler);
+        PrevEpisode = ReactiveCommand.Create(() => { --CurrentEpisode; canUpdateTime = false; }, HasPrevEpisode, RxApp.MainThreadScheduler);
         SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
         SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);

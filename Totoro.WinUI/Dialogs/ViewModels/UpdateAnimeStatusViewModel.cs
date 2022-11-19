@@ -37,8 +37,8 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
 
     }
 
-    [Reactive] public AnimeModel Anime { get; set; }
-    [Reactive] public AnimeStatus Status { get; set; }
+    [Reactive] public IAnimeModel Anime { get; set; }
+    [Reactive] public AnimeStatus Status { get; set; } = AnimeStatus.PlanToWatch;
     [Reactive] public double EpisodesWatched { get; set; }
     [Reactive] public int Score { get; set; }
     [Reactive] public string Tags { get; set; }

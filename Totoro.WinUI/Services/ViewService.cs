@@ -17,7 +17,7 @@ public class ViewService : IViewService
         _trackingService = trackingService;
     }
 
-    public async Task UpdateAnimeStatus(AnimeModel a)
+    public async Task<Unit> UpdateAnimeStatus(IAnimeModel a)
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
         vm.Anime = a;
@@ -57,6 +57,8 @@ public class ViewService : IViewService
 
             _trackingService.Update(a.Id, tracking).Subscribe(x => a.Tracking = x);
         }
+
+        return Unit.Default;
     }
 
     public async Task<SearchResult> ChoooseSearchResult(List<SearchResult> searchResults, ProviderType providerType)

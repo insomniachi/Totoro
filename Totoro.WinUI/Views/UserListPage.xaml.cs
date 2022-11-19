@@ -1,4 +1,5 @@
 ﻿using Totoro.Core.ViewModels;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Totoro.WinUI.Views;
 
@@ -31,27 +32,45 @@ public sealed partial class UserListPage : UserListPageBase
     {
         InitializeComponent();
 
-        this.WhenAnyValue(x => x.ViewModel.CurrentView)
-            .Subscribe(x =>
-            {
-                switch (x)
+        this.WhenActivated(d =>
+        {
+            this.WhenAnyValue(x => x.ViewModel.CurrentView)
+                .Subscribe(x =>
                 {
-                    case AnimeStatus.Watching:
-                        WatchingFlyoutToggle.IsChecked = true;
-                        break;
-                    case AnimeStatus.PlanToWatch:
-                        PtwFlyoutToggle.IsChecked = true;
-                        break;
-                    case AnimeStatus.Completed:
-                        CompletedFlyoutToggle.IsChecked = true;
-                        break;
-                    case AnimeStatus.OnHold:
-                        OnHoldFlyoutToggle.IsChecked = true;
-                        break;
-                    case AnimeStatus.Dropped:
-                        DroppedFlyoutToggle.IsChecked = true;
-                        break;
-                }
-            });
+                    switch (x)
+                    {
+                        case AnimeStatus.Watching:
+                            WatchingFlyoutToggle.IsChecked = true;
+                            break;
+                        case AnimeStatus.PlanToWatch:
+                            PtwFlyoutToggle.IsChecked = true;
+                            break;
+                        case AnimeStatus.Completed:
+                            CompletedFlyoutToggle.IsChecked = true;
+                            break;
+                        case AnimeStatus.OnHold:
+                            OnHoldFlyoutToggle.IsChecked = true;
+                            break;
+                        case AnimeStatus.Dropped:
+                            DroppedFlyoutToggle.IsChecked = true;
+                            break;
+                    }
+                })
+                .DisposeWith(d);
+
+            QuickAdd
+            .Events()
+            .Click
+            .Do(_ => ViewModel.ClearSearch())
+            .Subscribe(_ => QuickAddPopup.IsOpen ^= true);
+
+            QuickAddResult
+            .Events()
+            .ItemClick
+            .Select(args => args.ClickedItem as IAnimeModel)
+            .Do(_ => QuickAddPopup.IsOpen = false)
+            .SelectMany(model => ViewModel.UpdateAnime(model))
+            .Subscribe();
+        });
     }
 }

@@ -1,5 +1,7 @@
 ﻿namespace Totoro.Core.Models;
 
+// TODO: Refactor, every model became the same thing over time.
+
 public class MalToModelConverter
 {
     private readonly ISchedule _schedule;
@@ -29,7 +31,21 @@ public class MalToModelConverter
         {
             Title = malModel.Title, 
             Id = malModel.Id,
+            TotalEpisodes = malModel.TotalEpisodes,
         };
+
+        if (malModel.UserStatus is { } progress)
+        {
+            model.Tracking = new Tracking
+            {
+                WatchedEpisodes = progress.WatchedEpisodes,
+                Status = (AnimeStatus)(int)progress.Status,
+                Score = (int)progress.Score,
+                UpdatedAt = progress.UpdatedAt,
+                StartDate = progress.StartDate,
+                FinishDate = progress.FinishDate
+            };
+        }
 
         if (malModel.AlternativeTitles is { } alt)
         {
@@ -45,6 +61,7 @@ public class MalToModelConverter
         model.Id = malModel.Id;
         model.Title = malModel.Title;
         model.Image = malModel.MainPicture.Large;
+        model.Description = malModel.Synopsis;
         if (malModel.UserStatus is { } progress)
         {
             model.Tracking = new Tracking

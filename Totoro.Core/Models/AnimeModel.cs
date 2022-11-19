@@ -27,6 +27,7 @@ public class AnimeModel : Inpc, IAnimeModel
     public float? MeanScore { get; set; }
     public int Popularity { get; set; }
     public List<string> AlternativeTitles { get; set; }
+    public string Description { get; set; }
 
     public override string ToString()
     {
@@ -52,8 +53,6 @@ public class ScheduledAnimeModel : AnimeModel
 
 public class FullAnimeModel : SeasonalAnimeModel
 {
-    public string Description { get; set; }
-
     public string[] Genres { get; set; }
 
     public AnimeModel[] Related { get; set; }
