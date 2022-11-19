@@ -60,11 +60,13 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IMalClient, MalClient>(x =>
         {
-            var token = x.GetRequiredService<ILocalSettingsService>().ReadSetting<OAuthToken>("MalToken");
+            var settingService = x.GetRequiredService<ILocalSettingsService>();
+            var token = settingService.ReadSetting<OAuthToken>("MalToken");
             var clientId = context.Configuration["ClientId"];
-            if (token is { IsExpired: true })
+            if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
             {
-                token = MalAuthHelper.RefreshToken(token.RefreshToken, clientId).Result;
+                token = MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
+                settingService.SaveSetting("MalToken", token);
             }
             var client = new MalClient();
             if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
