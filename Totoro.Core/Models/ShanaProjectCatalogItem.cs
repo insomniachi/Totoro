@@ -13,7 +13,7 @@ namespace Totoro.Core.Models
 
 
     [DebuggerDisplay("{Title} - Episode {Episode} ({Size})")]
-    public class ShanaProjectDownloadableContent : IDownloadableContent
+    public sealed class ShanaProjectDownloadableContent : IDownloadableContent
     {
         public string Title { get; set; }
         public string Episode { get; set; }
@@ -22,6 +22,13 @@ namespace Totoro.Core.Models
         public string Url { get; set; }
         public string Subber { get; set; }
         public ReactiveCommand<Unit,Unit> Download { get; } = ReactiveCommand.Create<Unit, Unit>(_ => Unit.Default);
+    }
+
+    public class ShanaProjectPage
+    {
+        public bool HasNextPage { get; set; }
+        public bool HasPreviousPage { get; set; }
+        public List<ShanaProjectDownloadableContent> DownloadableContents { get; set; }
     }
 
     public interface IDownloadableContent

@@ -11,11 +11,11 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     private readonly ReadOnlyObservableCollection<SeasonalAnimeModel> _anime;
 
     public SeasonalViewModel(IAnimeService animeService,
-                             IViewService viewService)
+                             IViewService viewService,
+                             INavigationService navigationService)
     {
         _animeService = animeService;
         _viewService = viewService;
-
         _animeCache
             .Connect()
             .RefCount()
@@ -34,6 +34,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
 
         SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
         AddToListCommand = ReactiveCommand.CreateFromTask<AnimeModel>(AddToList);
+        ItemClickedCommand = ReactiveCommand.Create<SeasonalAnimeModel>(m => navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object> { ["Id"] = m.Id }));
     }
 
     [Reactive] public bool IsLoading { get; set; }
@@ -44,6 +45,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }
+    public ICommand ItemClickedCommand { get; }
 
     public Task SetInitialState()
     {

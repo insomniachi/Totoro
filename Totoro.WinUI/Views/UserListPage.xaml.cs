@@ -62,7 +62,8 @@ public sealed partial class UserListPage : UserListPageBase
             .Events()
             .Click
             .Do(_ => ViewModel.ClearSearch())
-            .Subscribe(_ => QuickAddPopup.IsOpen ^= true);
+            .Subscribe(_ => QuickAddPopup.IsOpen ^= true)
+            .DisposeWith(d);
 
             QuickAddResult
             .Events()
@@ -70,7 +71,8 @@ public sealed partial class UserListPage : UserListPageBase
             .Select(args => args.ClickedItem as IAnimeModel)
             .Do(_ => QuickAddPopup.IsOpen = false)
             .SelectMany(model => ViewModel.UpdateAnime(model))
-            .Subscribe();
+            .Subscribe()
+            .DisposeWith(d);
         });
     }
 }

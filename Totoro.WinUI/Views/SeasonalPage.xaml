@@ -9,6 +9,7 @@
     xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="using:Totoro.WinUI.UserControls"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:views="using:Totoro.WinUI.Views"
     x:Name="Page"
     Margin="{ThemeResource MediumLeftRightMargin}"
@@ -87,6 +88,7 @@
             x:Name="AnimeListView"
             Grid.Row="2"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+            ui:ListViewExtensions.Command="{x:Bind ViewModel.ItemClickedCommand}"
             IsItemClickEnabled="True"
             ItemsSource="{x:Bind ViewModel.Anime}">
             <GridView.ItemTemplate>

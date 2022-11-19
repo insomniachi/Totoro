@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Microsoft.AspNetCore.WebUtilities;
@@ -28,12 +26,19 @@ namespace Totoro.Core.Services.ShanaProject
             return jsonArrary.Deserialize<List<ShanaProjectCatalogItem>>();
         }
 
-        public async IAsyncEnumerable<ShanaProjectDownloadableContent> Search(long Id)
+        public async Task<ShanaProjectPage> Search(long id, int page = 1)
         {
             var web = new HtmlWeb();
-            var doc = await web.LoadFromWebAsync($"https://www.shanaproject.com/series/{Id}/");
+            var doc = await web.LoadFromWebAsync($"https://www.shanaproject.com/series/{id}/{page}");
 
             var nodes = doc.QuerySelectorAll(".release_block");
+
+            var result = new ShanaProjectPage
+            {
+                HasNextPage = doc.DocumentNode.InnerHtml.Contains($"/series/{id}/{page+1}"),
+                HasPreviousPage = doc.DocumentNode.InnerHtml.Contains($"/series/{id}/{page - 1}"),
+                DownloadableContents = new List<ShanaProjectDownloadableContent>()
+            };
 
             foreach (var releaseItem in nodes)
             {
@@ -49,7 +54,7 @@ namespace Totoro.Core.Services.ShanaProject
                 var size = releaseItem.SelectSingleNode("div[1]/div[6]").InnerText;
                 var subber = releaseItem.SelectSingleNode("div[1]/div[5]/div/a[1]").InnerText;
 
-                yield return new ShanaProjectDownloadableContent
+                result.DownloadableContents.Add(new ShanaProjectDownloadableContent
                 {
                     Title = title,
                     Episode = ep,
@@ -57,8 +62,10 @@ namespace Totoro.Core.Services.ShanaProject
                     Size = size,
                     Subber = subber,
                     Url = $"https://www.shanaproject.com/download/{contentId}/"
-                };
+                });
             }
+
+            return result;
         }
     }
 }

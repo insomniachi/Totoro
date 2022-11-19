@@ -27,28 +27,60 @@
                 Text="{x:Bind ViewModel.Term, Mode=TwoWay}" />
         </Border>
 
-        <ctk:DataGrid
+        <ctk:Loading
+            x:Name="LoadingControl"
             Grid.Row="1"
-            AutoGenerateColumns="False"
-            IsReadOnly="True"
-            ItemsSource="{x:Bind ViewModel.DownloadableContent, Mode=OneWay}">
-            <ctk:DataGrid.Columns>
-                <ctk:DataGridTextColumn Binding="{Binding Episode}" Header="Episode" />
-                <ctk:DataGridTextColumn Binding="{Binding Title}" Header="Title" />
-                <ctk:DataGridTextColumn Binding="{Binding Quality}" Header="Quality" />
-                <ctk:DataGridTextColumn Binding="{Binding Subber}" Header="Subber" />
-                <ctk:DataGridTextColumn Binding="{Binding Size}" Header="File size" />
-                <ctk:DataGridTemplateColumn>
-                    <ctk:DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="models:ShanaProjectDownloadableContent">
-                            <Button Command="{x:Bind Download}">
-                                <SymbolIcon Symbol="Download" />
-                            </Button>
-                        </DataTemplate>
-                    </ctk:DataGridTemplateColumn.CellTemplate>
-                </ctk:DataGridTemplateColumn>
-            </ctk:DataGrid.Columns>
-        </ctk:DataGrid>
+            IsLoading="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+            <ctk:Loading.Background>
+                <AcrylicBrush TintColor="Black" />
+            </ctk:Loading.Background>
+            <ProgressRing Margin="0,0,12,0" IsActive="True" />
+        </ctk:Loading>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ctk:DataGrid
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                ItemsSource="{x:Bind ViewModel.ShanaProjectPage.DownloadableContents, Mode=OneWay}">
+                <ctk:DataGrid.Columns>
+                    <ctk:DataGridTextColumn Binding="{Binding Episode}" Header="Episode" />
+                    <ctk:DataGridTextColumn Binding="{Binding Title}" Header="Title" />
+                    <ctk:DataGridTextColumn Binding="{Binding Quality}" Header="Quality" />
+                    <ctk:DataGridTextColumn Binding="{Binding Subber}" Header="Subber" />
+                    <ctk:DataGridTextColumn Binding="{Binding Size}" Header="File size" />
+                    <ctk:DataGridTemplateColumn>
+                        <ctk:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="models:ShanaProjectDownloadableContent">
+                                <Button Command="{x:Bind Download}">
+                                    <SymbolIcon Symbol="Download" />
+                                </Button>
+                            </DataTemplate>
+                        </ctk:DataGridTemplateColumn.CellTemplate>
+                    </ctk:DataGridTemplateColumn>
+                </ctk:DataGrid.Columns>
+            </ctk:DataGrid>
+
+            <StackPanel
+                Grid.Row="1"
+                Padding="{StaticResource SmallTopBottomMargin}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Orientation="Horizontal"
+                Spacing="3">
+                <Button Command="{x:Bind ViewModel.PreviousPage}">
+                    <SymbolIcon Symbol="Previous" />
+                </Button>
+                <Button Command="{x:Bind ViewModel.NextPage}">
+                    <SymbolIcon Symbol="Next" />
+                </Button>
+            </StackPanel>
+
+        </Grid>
+
 
         <CommandBar
             Grid.Row="2"

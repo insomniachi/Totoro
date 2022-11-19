@@ -64,7 +64,9 @@
                     FontSize="30"
                     FontWeight="Bold"
                     Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
-                <TextBlock Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}" TextWrapping="Wrap" />
+                <ScrollViewer>
+                    <TextBlock Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}" TextWrapping="Wrap" />
+                </ScrollViewer>
             </StackPanel>
         </Grid>
 
