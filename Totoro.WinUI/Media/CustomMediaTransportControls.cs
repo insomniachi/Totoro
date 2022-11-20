@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Subjects;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Core;
 
 namespace Totoro.WinUI.Media;
 
@@ -11,9 +12,11 @@ public class CustomMediaTransportControls : MediaTransportControls
     private readonly Subject<Unit> _onSkipIntro = new();
     private readonly Subject<string> _onQualityChanged = new();
     private readonly Subject<Unit> _onDynamicSkipIntro = new();
+    private readonly Subject<bool> _onFullWindowRequested = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
     private Button _dynamicSkipIntroButton;
+    private bool _isFullWindow;
 
     public static readonly DependencyProperty QualitiesProperty =
         DependencyProperty.Register("Qualities", typeof(IEnumerable<string>), typeof(CustomMediaTransportControls), new PropertyMetadata(null, OnQualitiesChanged));
@@ -80,6 +83,7 @@ public class CustomMediaTransportControls : MediaTransportControls
     public CustomMediaTransportControls()
     {
         DefaultStyleKey = typeof(CustomMediaTransportControls);
+        MessageBus.Current.RegisterMessageSource(_onFullWindowRequested.Select(x => new RequestFullWindowMessage(x)));
     }
 
     protected override void OnApplyTemplate()
@@ -87,14 +91,21 @@ public class CustomMediaTransportControls : MediaTransportControls
         var nextTrackButton = GetTemplateChild("NextTrackButton") as AppBarButton;
         var prevTrackButton = GetTemplateChild("PreviousTrackButton") as AppBarButton;
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
+        var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
+        var fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;
         _dynamicSkipIntroButton = GetTemplateChild("DynamicSkipIntroButton") as Button;
 
-
-        prevTrackButton.Click += (_, __) => _onPrevTrack.OnNext(Unit.Default);
-        nextTrackButton.Click += (_, __) => _onNextTrack.OnNext(Unit.Default);
-        skipIntroButton.Click += (_, __) => _onSkipIntro.OnNext(Unit.Default);
+        prevTrackButton.Click += (_, _) => _onPrevTrack.OnNext(Unit.Default);
+        nextTrackButton.Click += (_, _) => _onNextTrack.OnNext(Unit.Default);
+        skipIntroButton.Click += (_, _) => _onSkipIntro.OnNext(Unit.Default);
+        fullWindowButton.Click += (_, _) =>
+        {
+            _isFullWindow ^= true;
+            _onFullWindowRequested.OnNext(_isFullWindow);
+            fullWindowSymbol.Symbol = _isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
+        };
         _dynamicSkipIntroButton.Click += (_, __) => _onDynamicSkipIntro.OnNext(Unit.Default);
 
         base.OnApplyTemplate();

@@ -325,9 +325,22 @@
                                                     <FontIcon Glyph="&#xec4f;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <AppBarButton
+                                                x:Name="ZoomButton"
+                                                MediaTransportControlsHelper.DropoutOrder="9"
+                                                Style="{StaticResource AppBarButtonStyle}">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xE799;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                             <AppBarButton x:Name="CastButton" Style="{StaticResource AppBarButtonStyle}">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xEC15;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                            <AppBarButton x:Name="FullWindowButton" Style="{StaticResource AppBarButtonStyle}">
+                                                <AppBarButton.Icon>
+                                                    <SymbolIcon x:Name="FullWindowSymbol" Symbol="FullScreen" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                         </StackPanel>

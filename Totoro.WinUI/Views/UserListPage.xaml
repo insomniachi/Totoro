@@ -24,7 +24,7 @@
         </ResourceDictionary>
     </v:UserListPageBase.Resources>
 
-    <Grid x:Name="ContentArea">
+    <Grid x:Name="ContentArea" Margin="0,25,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />

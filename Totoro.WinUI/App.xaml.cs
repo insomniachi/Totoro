@@ -3,10 +3,12 @@ using AnimDL.Core;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Totoro.Core;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
 using Windows.ApplicationModel;
+using WinUIEx;
 
 namespace Totoro.WinUI;
 
@@ -48,7 +50,7 @@ public partial class App : Application
 
     public static object GetService(Type t) => _host.Services.GetService(t);
 
-    public static Window MainWindow { get; set; } = new Window() { Title = "AppDisplayName".GetLocalized() };
+    public static WindowEx MainWindow { get; set; } = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
 
     public App()
     {

@@ -2,6 +2,7 @@
 using System.Text.Json.Nodes;
 using CommunityToolkit.WinUI.Notifications;
 using MalApi.Interfaces;
+using Totoro.Core;
 
 namespace Totoro.WinUI.Services;
 

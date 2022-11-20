@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Totoro.Core;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.ViewModels;
 using Windows.System;
@@ -14,22 +15,30 @@ public sealed partial class ShellPage : Page
 {
     public ShellViewModel ViewModel { get; }
 
-    public ShellPage(ShellViewModel viewModel)
+    public ShellPage()
     {
-        ViewModel = viewModel;
+        ViewModel = App.GetService<ShellViewModel>();
         InitializeComponent();
 
         ViewModel.NavigationService.Frame = NavigationFrame;
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
 
-        App.MainWindow.ExtendsContentIntoTitleBar = true;
-        App.MainWindow.SetTitleBar(AppTitleBar);
-        App.MainWindow.Activated += MainWindow_Activated;
-        AppTitleBarText.Text = "AppDisplayName".GetLocalized();
+        MessageBus.Current
+            .Listen<RequestFullWindowMessage>()
+            .Subscribe(message =>
+            {
+                App.MainWindow.PresenterKind = message.IsFullWindow ? Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen : Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped;
+                NavigationViewControl.IsPaneVisible = !message.IsFullWindow;
+            });
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        App.MainWindow.ExtendsContentIntoTitleBar = true;
+        App.MainWindow.SetTitleBar(AppTitleBar);
+        App.MainWindow.Activated += MainWindow_Activated;
+        AppTitleBarText.Text = "AppDisplayName".GetLocalized();
+
         TitleBarHelper.UpdateTitleBar(RequestedTheme);
 
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));

@@ -19,7 +19,6 @@ public class ActivationService : IActivationService
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IPlaybackStateStorage _playbackStateStorage;
-    private UIElement _shell = null;
     private readonly string _prevWebviewFolder;
     private readonly string _tempPath = System.IO.Path.GetTempPath();
 
@@ -45,14 +44,6 @@ public class ActivationService : IActivationService
         // Execute tasks before activation.
         await InitializeAsync();
 
-        // Set the MainWindow Content.
-        if (App.MainWindow.Content == null)
-        {
-            var shell = App.GetService<ShellPage>();
-            _shell = shell;
-            shell.ViewModel.IsAuthenticated = IsAuthenticated;
-            App.MainWindow.Content = _shell ?? new Frame();
-        }
 
         // Handle activation via ActivationHandlers.
         await HandleActivationAsync(activationArgs);

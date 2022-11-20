@@ -63,12 +63,34 @@
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
+            <MediaPlayerElement
+                x:Name="MediaPlayerElement"
+                Grid.Row="0"
+                AreTransportControlsEnabled="True"
+                Stretch="UniformToFill">
+                <MediaPlayerElement.TransportControls>
+                    <media:CustomMediaTransportControls
+                        x:Name="TransportControls"
+                        IsCompact="false"
+                        IsNextTrackButtonVisible="True"
+                        IsPreviousTrackButtonVisible="True"
+                        IsSkipBackwardButtonVisible="True"
+                        IsSkipBackwardEnabled="True"
+                        IsSkipForwardButtonVisible="True"
+                        IsSkipForwardEnabled="True"
+                        IsSkipIntroButtonVisible="{x:Bind ViewModel.IsSkipIntroButtonVisible, Mode=OneWay}"
+                        Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}" />
+                </MediaPlayerElement.TransportControls>
+            </MediaPlayerElement>
+
             <Expander
                 Grid.Row="1"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
                 ExpandDirection="Up"
-                IsExpanded="True">
+                IsExpanded="True"
+                Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.IsFullWindow), Mode=OneWay}">
                 <Expander.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock
@@ -113,25 +135,6 @@
                     </ListView>
                 </Grid>
             </Expander>
-
-            <MediaPlayerElement
-                x:Name="MediaPlayerElement"
-                Grid.Row="0"
-                AreTransportControlsEnabled="True">
-                <MediaPlayerElement.TransportControls>
-                    <media:CustomMediaTransportControls
-                        x:Name="TransportControls"
-                        IsCompact="false"
-                        IsNextTrackButtonVisible="True"
-                        IsPreviousTrackButtonVisible="True"
-                        IsSkipBackwardButtonVisible="True"
-                        IsSkipBackwardEnabled="True"
-                        IsSkipForwardButtonVisible="True"
-                        IsSkipForwardEnabled="True"
-                        IsSkipIntroButtonVisible="{x:Bind ViewModel.IsSkipIntroButtonVisible, Mode=OneWay}"
-                        Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}" />
-                </MediaPlayerElement.TransportControls>
-            </MediaPlayerElement>
         </Grid>
     </Grid>
 </local:WatchPageBase>

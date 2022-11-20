@@ -26,6 +26,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly ObservableAsPropertyHelper<AnimeTimeStamps> _timeStamps;
     private readonly ObservableAsPropertyHelper<double> _currentPlayerTime;
     private readonly ObservableAsPropertyHelper<double> _currentMediaDuration;
+    private readonly ObservableAsPropertyHelper<bool> _isFullWindow;
     private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
@@ -86,6 +87,10 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
+        MessageBus.Current
+            .Listen<RequestFullWindowMessage>()
+            .Select(message => message.IsFullWindow)
+            .ToProperty(this, nameof(IsFullWindow), out _isFullWindow, () => false);
 
         this.WhenAnyValue(x => x.SelectedProviderType)
             .Select(providerFactory.GetProvider)
@@ -262,7 +267,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     [Reactive] public IAnimeModel Anime { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
     [Reactive] public bool UseLocalMedia { get; set; }
-
+    public bool IsFullWindow => _isFullWindow?.Value ?? false;
     public bool IsSkipIntroButtonVisible => _isSkipIntroButtonVisible?.Value ?? false;
     public IProvider Provider => _provider.Value;
     public bool HasSubAndDub => _hasSubAndDub.Value;
@@ -285,7 +290,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     public ICommand SkipOpening { get; }
     public ICommand SkipOpeningDynamic { get; }
     public ICommand ChangeQuality { get; }
-
+    
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         if(parameters.ContainsKey("UseLocalMedia"))

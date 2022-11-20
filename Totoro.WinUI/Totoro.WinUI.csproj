@@ -35,6 +35,7 @@
 		<PackageReference Include="ReactiveUI.Fody" Version="18.3.1" />
 		<PackageReference Include="ReactiveUI.WinUI" Version="18.3.1" />
 		<PackageReference Include="System.Reactive" Version="5.0.0" />
+		<PackageReference Include="WinUIEx" Version="1.8.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -53,6 +54,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="MainWindow.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Dialogs\Views\SelectModelView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml.Navigation;
+﻿using MalApi.Interfaces;
+using Microsoft.UI.Xaml.Navigation;
+using Totoro.Core;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
@@ -16,15 +18,16 @@ public partial class ShellViewModel : ReactiveObject
 
     public ShellViewModel(IWinUINavigationService navigationService,
                           INavigationViewService navigationViewService,
-                          IMessageBus messageBus)
+                          IMalClient malClient)
     {
         NavigationService = navigationService;
         NavigationService.Navigated.Subscribe(OnNavigated);
         NavigationViewService = navigationViewService;
-
-        messageBus.Listen<MalAuthenticatedMessage>()
-                  .ObserveOn(RxApp.MainThreadScheduler)
-                  .Subscribe(_ => IsAuthenticated = true);
+        IsAuthenticated = malClient.IsAuthenticated;
+        MessageBus.Current
+            .Listen<MalAuthenticatedMessage>()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => IsAuthenticated = true);
     }
 
     private void OnNavigated(NavigationEventArgs e)

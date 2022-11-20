@@ -10,7 +10,7 @@
     xmlns:models="using:Totoro.Core.Models"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Margin="0,25,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
