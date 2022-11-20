@@ -338,7 +338,13 @@
                                                     <FontIcon Glyph="&#xEC15;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
-                                            <AppBarButton x:Name="FullWindowButton" Style="{StaticResource AppBarButtonStyle}">
+                                            <AppBarButton
+                                                x:Name="FullWindowButton"
+                                                Style="{StaticResource AppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Full screen">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="Enter" Modifiers="Menu" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <SymbolIcon x:Name="FullWindowSymbol" Symbol="FullScreen" />
                                                 </AppBarButton.Icon>
