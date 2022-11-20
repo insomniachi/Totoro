@@ -12,23 +12,42 @@ public sealed partial class SeasonalPage : SeasonalPageBase
     {
         InitializeComponent();
 
-        this.WhenAnyValue(x => x.ViewModel.Season)
-            .WhereNotNull()
-            .Subscribe(season =>
-            {
-                if (season == SeasonalViewModel.Current)
+        this.WhenActivated(d =>
+        {
+            this.WhenAnyValue(x => x.ViewModel.Season)
+                .WhereNotNull()
+                .Subscribe(season =>
                 {
-                    CurrentFlyoutToggle.IsChecked = true;
-                }
-                else if (season == SeasonalViewModel.Next)
+                    if (season == SeasonalViewModel.Current)
+                    {
+                        CurrentFlyoutToggle.IsChecked = true;
+                    }
+                    else if (season == SeasonalViewModel.Next)
+                    {
+                        NextFlyoutToggle.IsChecked = true;
+                    }
+                    else if (season == SeasonalViewModel.Prev)
+                    {
+                        PrevFlyoutToggle.IsChecked = true;
+                    }
+                })
+                .DisposeWith(d);
+
+            this.WhenAnyValue(x => x.ViewModel.Sort)
+                .Subscribe(sort =>
                 {
-                    NextFlyoutToggle.IsChecked = true;
-                }
-                else if (season == SeasonalViewModel.Prev)
-                {
-                    PrevFlyoutToggle.IsChecked = true;
-                }
-            });
+                    if (sort == Sort.Popularity)
+                    {
+                        PopularityRadio.IsChecked = true;
+                    }
+                    else if (sort == Sort.Score)
+                    {
+                        ScoreRadio.IsChecked = true;
+                    }
+                    ViewModel.RefreshData();
+                })
+                .DisposeWith(d);
+        });
     }
 
     public static Visibility AddToListButtonVisibility(Anime a) => a.UserStatus is null ? Visibility.Visible : Visibility.Collapsed;

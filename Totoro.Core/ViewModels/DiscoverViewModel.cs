@@ -61,6 +61,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     [Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
     [Reactive] public int SelectedIndex { get; set; }
     [Reactive] public bool ShowOnlyWatchingAnime { get; set; } = true;
+    [Reactive] public bool IsLoading { get; set; }
     public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
     public ICommand SelectEpisode { get; }
     public ICommand SelectFeaturedAnime { get; }
@@ -100,10 +101,13 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        IsLoading = true;
 
         _recentEpisodesProvider.GetRecentlyAiredEpisodes()
                                .ObserveOn(RxApp.MainThreadScheduler)
-                               .Subscribe(eps => _episodesCache.AddOrUpdate(eps));
+                               .Finally(() => IsLoading = false)
+                               .Subscribe(eps => _episodesCache.AddOrUpdate(eps))
+                               .DisposeWith(Garbage);
 
         return Task.CompletedTask;
     }

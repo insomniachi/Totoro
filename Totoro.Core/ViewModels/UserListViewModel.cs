@@ -75,11 +75,17 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public Task SetInitialState()
     {
-        _animeCache.Clear();
+        IsLoading = true;
 
+        _animeCache.Clear();
         _trackingService.GetAnime()
                         .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(list => _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id));
+                        .Subscribe(list =>
+                        {
+                            _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id);
+                            IsLoading = false;
+                        })
+                        .DisposeWith(Garbage);
 
         return Task.CompletedTask;
     }

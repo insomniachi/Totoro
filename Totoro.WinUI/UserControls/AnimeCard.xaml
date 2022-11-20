@@ -103,7 +103,10 @@
                         <RowDefinition Height="100" />
                     </Grid.RowDefinitions>
 
-                    <Grid Background="{ThemeResource AccentAcrylicBackgroundFillColorDefaultBrush}">
+                    <Grid
+                        Background="{ThemeResource AccentAcrylicBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{x:Bind GetBorderBrush(Anime.AiringStatus), Mode=OneWay}"
+                        BorderThickness="0,0,0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
                             <ColumnDefinition Width="Auto" />

@@ -129,10 +129,10 @@
 
         <ctk:Loading
             x:Name="LoadingControl"
-            Grid.Row="1"
+            Grid.Row="2"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
             <ctk:Loading.Background>
-                <AcrylicBrush TintColor="Black" TintOpacity="0.4" />
+                <AcrylicBrush TintColor="Black" />
             </ctk:Loading.Background>
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
         </ctk:Loading>
@@ -157,6 +157,22 @@
                                 <FontIcon Glyph="&#xf0e4;" />
                             </RadioMenuFlyoutItem.Icon>
                         </RadioMenuFlyoutItem>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+            <AppBarButton Icon="Sort" Label="Sort">
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <RadioMenuFlyoutItem
+                            x:Name="PopularityRadio"
+                            Command="{x:Bind ViewModel.SetSortCommand}"
+                            CommandParameter="{x:Bind cm:Sort.Popularity}"
+                            Text="Popularity" />
+                        <RadioMenuFlyoutItem
+                            x:Name="ScoreRadio"
+                            Command="{x:Bind ViewModel.SetSortCommand}"
+                            CommandParameter="{x:Bind cm:Sort.Score}"
+                            Text="Score" />
                     </MenuFlyout>
                 </AppBarButton.Flyout>
             </AppBarButton>
