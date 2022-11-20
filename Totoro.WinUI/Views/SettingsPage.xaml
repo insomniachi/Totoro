@@ -29,7 +29,7 @@
             Width="700"
             HorizontalAlignment="Left"
             Spacing="10">
-            <labs:SettingsCard Description="Change the colors that appear" Header="Choose your mode">
+            <!--<labs:SettingsCard Description="Change the colors that appear" Header="Choose your mode">
                 <labs:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xe790;" />
                 </labs:SettingsCard.HeaderIcon>
@@ -43,7 +43,7 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-            </labs:SettingsCard>
+            </labs:SettingsCard>-->
             <labs:SettingsCard Description="Authenticate your account to use MyAnimeList public apis." Header="Link MyAnimeList">
                 <labs:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xe71b;" />

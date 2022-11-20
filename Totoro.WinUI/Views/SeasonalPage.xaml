@@ -76,6 +76,7 @@
 
         <PipsPager
             Grid.Row="1"
+            Margin="{StaticResource SmallTopBottomMargin}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             NextButtonVisibility="Visible"
@@ -131,9 +132,6 @@
             x:Name="LoadingControl"
             Grid.Row="2"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ctk:Loading.Background>
-                <AcrylicBrush TintColor="Black" />
-            </ctk:Loading.Background>
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
         </ctk:Loading>
 

@@ -105,8 +105,11 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
         _recentEpisodesProvider.GetRecentlyAiredEpisodes()
                                .ObserveOn(RxApp.MainThreadScheduler)
-                               .Finally(() => IsLoading = false)
-                               .Subscribe(eps => _episodesCache.AddOrUpdate(eps))
+                               .Subscribe(eps =>
+                               {
+                                   _episodesCache.AddOrUpdate(eps);
+                                   IsLoading = false;
+                               })
                                .DisposeWith(Garbage);
 
         return Task.CompletedTask;

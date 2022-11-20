@@ -25,9 +25,6 @@
             x:Name="LoadingControl"
             Grid.Row="1"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ctk:Loading.Background>
-                <AcrylicBrush TintColor="Black" TintOpacity="0.4" />
-            </ctk:Loading.Background>
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
         </ctk:Loading>
     </Grid>
