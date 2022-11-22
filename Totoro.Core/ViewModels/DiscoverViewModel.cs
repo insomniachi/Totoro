@@ -22,6 +22,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _featuredAnimeProvider = featuredAnimeProvider;
         _navigationService = navigationService;
         _trackingService = trackingService;
+
         _episodesCache
             .Connect()
             .RefCount()
@@ -34,6 +35,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
         SelectEpisode = ReactiveCommand.Create<AiredEpisode>(OnEpisodeSelected);
         SelectFeaturedAnime = ReactiveCommand.Create<FeaturedAnime>(OnFeaturedAnimeSelected);
+        ShowOnlyWatchingAnime = IsAuthenticated = trackingService.IsAuthenticated;
 
         Observable
             .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
@@ -60,8 +62,9 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     [Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
     [Reactive] public int SelectedIndex { get; set; }
-    [Reactive] public bool ShowOnlyWatchingAnime { get; set; } = true;
+    [Reactive] public bool ShowOnlyWatchingAnime { get; set; }
     [Reactive] public bool IsLoading { get; set; }
+    public bool IsAuthenticated { get; }
     public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
     public ICommand SelectEpisode { get; }
     public ICommand SelectFeaturedAnime { get; }

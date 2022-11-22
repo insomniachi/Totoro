@@ -78,6 +78,7 @@
         <ToggleSwitch
             Grid.Row="1"
             Margin="10,5"
+            IsEnabled="{x:Bind ViewModel.IsAuthenticated}"
             IsOn="{x:Bind ViewModel.ShowOnlyWatchingAnime, Mode=TwoWay}"
             OffContent="Show only anime that you are watching"
             OnContent="Show only anime that you are watching" />

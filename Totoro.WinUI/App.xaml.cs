@@ -36,6 +36,7 @@ public partial class App : Application
                     .AddDialogPages();
 
             services.AddSingleton(MessageBus.Current);
+            services.AddTransient<DefaultExceptionHandler>();
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
@@ -88,6 +89,7 @@ public partial class App : Application
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
+        RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
     }

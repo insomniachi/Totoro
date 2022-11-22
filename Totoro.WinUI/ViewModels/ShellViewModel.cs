@@ -18,12 +18,12 @@ public partial class ShellViewModel : ReactiveObject
 
     public ShellViewModel(IWinUINavigationService navigationService,
                           INavigationViewService navigationViewService,
-                          IMalClient malClient)
+                          ITrackingService trackingService)
     {
         NavigationService = navigationService;
         NavigationService.Navigated.Subscribe(OnNavigated);
         NavigationViewService = navigationViewService;
-        IsAuthenticated = malClient.IsAuthenticated;
+        IsAuthenticated = trackingService.IsAuthenticated;
         MessageBus.Current
             .Listen<MalAuthenticatedMessage>()
             .ObserveOn(RxApp.MainThreadScheduler)
