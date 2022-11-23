@@ -31,10 +31,11 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel
-            HorizontalAlignment="Center"
-            Orientation="Horizontal"
-            Spacing="10">
+        <Grid HorizontalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <ListBox
                 x:Name="SeasonsStrip"
                 Margin="{StaticResource SmallTopBottomMargin}"
@@ -58,12 +59,13 @@
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <ItemsStackPanel Orientation="Horizontal" />
+                        <ctk:WrapPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
             </ListBox>
 
             <AutoSuggestBox
+                Grid.Row="1"
                 Width="300"
                 Height="35"
                 VerticalAlignment="Center"
@@ -72,7 +74,7 @@
                 QueryIcon="Find"
                 Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-        </StackPanel>
+        </Grid>
 
         <PipsPager
             Grid.Row="1"
