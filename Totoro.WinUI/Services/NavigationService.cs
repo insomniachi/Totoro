@@ -2,13 +2,14 @@
 using System.Reactive.Subjects;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Splat;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Services;
 
 
-public class NavigationService : IWinUINavigationService
+public class NavigationService : IWinUINavigationService, IEnableLogger
 {
     private readonly IVolatileStateStorage _stateStorage;
     private object _lastParameterUsed;
@@ -153,6 +154,8 @@ public class NavigationService : IWinUINavigationService
             return;
         }
 
+
+
         view.ViewModel = !parameter.ContainsKey("ViewModel") || parameter is null
             ? App.GetService(view.GetType().GetProperty("ViewModel").PropertyType)
             : parameter["ViewModel"];
@@ -161,6 +164,8 @@ public class NavigationService : IWinUINavigationService
         {
             await navigationAware.OnNavigatedTo(e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>());
         }
+
+        this.Log().Debug($"Navigated to {view.ViewModel.GetType().Name}");
 
         if (view.ViewModel is IHaveState stateAware)
         {

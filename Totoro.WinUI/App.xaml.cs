@@ -3,12 +3,15 @@ using AnimDL.Core;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Splat;
 using Totoro.Core;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
 using Windows.ApplicationModel;
 using WinUIEx;
+using Splat.Serilog;
+using Serilog;
 
 namespace Totoro.WinUI;
 
@@ -59,6 +62,14 @@ public partial class App : Application
         ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
         AppDomain.CurrentDomain.ProcessExit += OnExit;
         UnhandledException += App_UnhandledException;
+
+        Log.Logger = new LoggerConfiguration()
+                    .Enrich.FromLogContext()
+                    .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
+                    .MinimumLevel.Debug()
+                    .CreateLogger();
+
+        Locator.CurrentMutable.UseSerilogFullLogger();
     }
 
     private void OnExit(object sender, EventArgs e)

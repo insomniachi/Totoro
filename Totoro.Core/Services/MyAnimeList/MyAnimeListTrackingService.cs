@@ -1,8 +1,9 @@
 ﻿using MalApi.Interfaces;
+using Splat;
 
 namespace Totoro.Core.Services.MyAnimeList;
 
-public class MyAnimeListTrackingService : ITrackingService
+public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
     private readonly MalToModelConverter _converter;
@@ -157,13 +158,17 @@ public class MyAnimeListTrackingService : ITrackingService
             request.WithFinishDate(fd);
         }
 
-        return request.Publish().ToObservable().Select(x => new Tracking
-        {
-            WatchedEpisodes = x.WatchedEpisodes,
-            Status = (AnimeStatus)(int)x.Status,
-            Score = (int)x.Score,
-            UpdatedAt = x.UpdatedAt
-        });
+        return request
+            .Publish()
+            .ToObservable()
+            .Do(_ => this.Log().Debug("Tracking Updated."))
+            .Select(x => new Tracking
+            {
+                WatchedEpisodes = x.WatchedEpisodes,
+                Status = (AnimeStatus)(int)x.Status,
+                Score = (int)x.Score,
+                UpdatedAt = x.UpdatedAt
+            });
     }
 
     private IEnumerable<AnimeModel> ConvertToAnimeModel(List<MalApi.Anime> anime)

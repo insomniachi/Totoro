@@ -1,14 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
+using Splat;
 
 namespace Totoro.Core
 {
-    public class DefaultExceptionHandler : IObserver<Exception>
+    public class DefaultExceptionHandler : IObserver<Exception>, IEnableLogger
     {
-        private readonly ILogger<DefaultExceptionHandler> _logger;
 
-        public DefaultExceptionHandler(ILogger<DefaultExceptionHandler> logger)
+        public DefaultExceptionHandler()
         {
-            _logger = logger;
         }
 
         public void OnCompleted()
@@ -17,7 +16,7 @@ namespace Totoro.Core
 
         public void OnError(Exception error)
         {
-            _logger.LogError(error, "Unhandled Exception");
+            this.Log().Error(error, "Unhandled Exception");
         }
 
         public void OnNext(Exception value)

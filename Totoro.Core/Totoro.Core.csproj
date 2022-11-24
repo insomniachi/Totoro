@@ -17,7 +17,9 @@
 	<PackageReference Include="AnimDL.Core" Version="0.3.7" />
 	<PackageReference Include="MonoTorrent" Version="2.0.6" />
 	<PackageReference Include="ReactiveUI.Fody" Version="18.3.1" />
-	<PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+	<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.5.1" />
+	<PackageReference Include="Splat.Serilog" Version="14.5.1" />
   </ItemGroup>
 
   <ItemGroup>
