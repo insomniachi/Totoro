@@ -43,6 +43,23 @@
                         Foreground="White" />
                 </Grid>
 
+                <Grid
+                    Grid.Row="0"
+                    Margin="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+                    <Button
+                        Width="50"
+                        Height="50"
+                        BorderBrush="Transparent"
+                        Flyout="{x:Bind Flyout}">
+                        <Button.Background>
+                            <SolidColorBrush Opacity="0.5" Color="Black" />
+                        </Button.Background>
+                        <SymbolIcon Symbol="More" />
+                    </Button>
+                </Grid>
+
                 <Border
                     x:Name="Border"
                     Grid.Row="1"
@@ -121,8 +138,12 @@
 
                         <StackPanel
                             Grid.Column="1"
+                            Padding="5"
                             Orientation="Horizontal"
                             Spacing="3">
+                            <Button Flyout="{x:Bind Flyout}">
+                                <SymbolIcon Symbol="More" />
+                            </Button>
                             <Button
                                 Command="{x:Bind UpdateStatusCommand}"
                                 CommandParameter="{x:Bind Anime, Mode=OneWay}"

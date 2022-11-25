@@ -33,7 +33,7 @@ public sealed partial class WatchPage : WatchPageBase
 
             TransportControls
             .OnNextTrack
-            .Where(_ => ViewModel.Anime is not null && (ViewModel.Anime.Tracking?.WatchedEpisodes ?? 1) < ViewModel.CurrentEpisode)
+            .Where(_ => ViewModel.Anime is not null)
             .SelectMany(_ => ViewModel.UpdateTracking())
             .ObserveOn(RxApp.MainThreadScheduler)
             .InvokeCommand(ViewModel.NextEpisode)

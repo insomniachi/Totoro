@@ -54,7 +54,7 @@
                 </ListBox.ItemTemplate>
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
-                        <Setter Property="Height" Value="35" />
+                        <Setter Property="Height" Value="40" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemsPanel>

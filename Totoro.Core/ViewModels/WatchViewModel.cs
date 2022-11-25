@@ -424,7 +424,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     public async Task<Unit> UpdateTracking()
     {
-        if(_isUpdatingTracking)
+        if(_isUpdatingTracking || Anime.Tracking.WatchedEpisodes >= CurrentEpisode.Value)
         {
             return Unit.Default;
         }
