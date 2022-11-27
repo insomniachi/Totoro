@@ -83,6 +83,7 @@ public class MalToModelConverter
         {
             model.AlternativeTitles = alt.Aliases.ToList();
             model.AlternativeTitles.Add(alt.English);
+            model.AlternativeTitles.Add(alt.Japanese);
         }
 
         return model;

@@ -4,8 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Totoro.Core.Models"
+    Name="Page"
     mc:Ignorable="d">
 
     <Grid Margin="0,25,0,0">
@@ -18,44 +21,110 @@
             x:Name="Container"
             Margin="20"
             Spacing="10">
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="18" />
+                    <Setter Property="TextWrapping" Value="WrapWholeWords" />
+                </Style>
+            </StackPanel.Resources>
+
             <ctk:ImageEx
-                Width="240"
-                Height="400"
+                Width="260"
                 HorizontalAlignment="Left"
                 Source="{x:Bind ViewModel.Anime.Image, Mode=OneWay}"
                 Stretch="Uniform" />
 
-            <TextBlock FontWeight="Bold" Text="Information" />
-            <Rectangle
+            <Button Width="{Binding ElementName=Container, Path=ActualWidth}" Command="{x:Bind ViewModel.WatchEpidoes}">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <SymbolIcon Symbol="Play" />
+                        <TextBlock Text="Watch Episodes" />
+                    </StackPanel>
+                </Grid>
+            </Button>
+
+            <Button
                 Width="{Binding ElementName=Container, Path=ActualWidth}"
-                Height="1"
-                HorizontalAlignment="Left"
-                Fill="Gray" />
+                Command="{x:Bind ViewModel.UpdateStatus}"
+                CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <SymbolIcon x:Name="EditSymbol" />
+                        <TextBlock x:Name="EditText" />
+                    </StackPanel>
+                </Grid>
+            </Button>
 
-            <TextBlock TextWrapping="Wrap">
-                <Run Text="Episodes : " />
-                <Run Text="{x:Bind ViewModel.Anime.TotalEpisodes, Mode=OneWay}" />
-            </TextBlock>
+            <StackPanel Margin="0,0,0,20" Spacing="10">
+                <TextBlock FontWeight="Bold" Text="Alternative Titles" />
+                <Rectangle
+                    Width="{Binding ElementName=Container, Path=ActualWidth}"
+                    Height="1"
+                    HorizontalAlignment="Left"
+                    Fill="Gray" />
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Anime.AlternativeTitles, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                FontSize="18"
+                                Text="{Binding}"
+                                TextWrapping="WrapWholeWords" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
 
-            <TextBlock>
-                <Run Text="Status : " />
-                <Run Text="{x:Bind ViewModel.Anime.AiringStatus, Mode=OneWay}" />
-            </TextBlock>
+            <StackPanel Margin="0,0,0,20" Spacing="10">
+                <TextBlock FontWeight="Bold" Text="Information" />
+                <Rectangle
+                    Width="{Binding ElementName=Container, Path=ActualWidth}"
+                    Height="1"
+                    HorizontalAlignment="Left"
+                    Fill="Gray" />
 
-            <TextBlock TextWrapping="Wrap">
-                <Run Text="Premiered : " />
-                <Run Text="{x:Bind ViewModel.Anime.Season, Mode=OneWay}" />
-            </TextBlock>
+                <TextBlock TextWrapping="Wrap">
+                    <Run Text="Episodes : " />
+                    <Run Text="{x:Bind ViewModel.Anime.TotalEpisodes, Mode=OneWay}" />
+                </TextBlock>
 
-            <TextBlock>
-                <Run Text="Broadcast : " />
-                <Run Text="{x:Bind ViewModel.Anime.BroadcastDay, Mode=OneWay}" />
-            </TextBlock>
+                <TextBlock>
+                    <Run Text="Status : " />
+                    <Run Text="{x:Bind help:Converters.EnumToDescription(ViewModel.Anime.AiringStatus), Mode=OneWay}" />
+                </TextBlock>
 
-            <TextBlock>
-                <Run Text="Genres : " />
-                <Run Text="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}" />
-            </TextBlock>
+                <TextBlock TextWrapping="Wrap">
+                    <Run Text="Premiered : " />
+                    <Run Text="{x:Bind ViewModel.Anime.Season.SeasonName, Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.Anime.Season.Year, Mode=OneWay}" />
+                </TextBlock>
+
+                <TextBlock>
+                    <Run Text="Broadcast : " />
+                    <Run Text="{x:Bind ViewModel.Anime.BroadcastDay, Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Spacing="10">
+                <TextBlock FontWeight="Bold" Text="Statistics" />
+                <Rectangle
+                    Width="{Binding ElementName=Container, Path=ActualWidth}"
+                    Height="1"
+                    HorizontalAlignment="Left"
+                    Fill="Gray" />
+
+                <TextBlock>
+                    <Run Text="Score : " />
+                    <Run Text="{x:Bind ViewModel.Anime.MeanScore, Mode=OneWay}" />
+                </TextBlock>
+
+                <TextBlock>
+                    <Run Text="Popularity : " />
+                    <Run Text="{x:Bind ViewModel.Anime.Popularity, Mode=OneWay}" />
+                </TextBlock>
+
+            </StackPanel>
+
+
         </StackPanel>
 
         <Grid Grid.Column="1" Margin="20">
@@ -64,10 +133,60 @@
                     FontSize="30"
                     FontWeight="Bold"
                     Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
+
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Margin="3"
+                                Padding="15,5"
+                                Background="{StaticResource CardBackgroundFillColorDefault}"
+                                CornerRadius="5">
+                                <TextBlock FontWeight="Bold" Text="{Binding}" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ctk:WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
                 <ScrollViewer>
-                    <TextBlock Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}" TextWrapping="Wrap" />
+                    <TextBlock
+                        FontSize="20"
+                        Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}"
+                        TextWrapping="Wrap" />
                 </ScrollViewer>
+                <Pivot>
+                    <PivotItem Header="Sounds">
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:AnimeSound">
+                                    <StackPanel
+                                        Margin="5"
+                                        Orientation="Horizontal"
+                                        Spacing="10">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="18"
+                                            Text="{x:Bind SongName}" />
+                                        <Button
+                                            Name="PlayButton"
+                                            Click="PlayButton_Click"
+                                            Tag="{x:Bind}">
+                                            <SymbolIcon Symbol="Play" />
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </PivotItem>
+                </Pivot>
+
             </StackPanel>
+
         </Grid>
 
     </Grid>

@@ -12,6 +12,7 @@ using Windows.ApplicationModel;
 using WinUIEx;
 using Splat.Serilog;
 using Serilog;
+using Microsoft.Extensions.Options;
 
 namespace Totoro.WinUI;
 
@@ -62,14 +63,6 @@ public partial class App : Application
         ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
         AppDomain.CurrentDomain.ProcessExit += OnExit;
         UnhandledException += App_UnhandledException;
-
-        Log.Logger = new LoggerConfiguration()
-                    .Enrich.FromLogContext()
-                    .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
-                    .MinimumLevel.Debug()
-                    .CreateLogger();
-
-        Locator.CurrentMutable.UseSerilogFullLogger();
     }
 
     private void OnExit(object sender, EventArgs e)
@@ -101,6 +94,16 @@ public partial class App : Application
     {
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
+        var appDataFolder = GetService<IOptions<LocalSettingsOptions>>().Value.ApplicationDataFolder;
+        var log = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appDataFolder, "Logs/log.txt");
+        Log.Logger = new LoggerConfiguration()
+                    .Enrich.FromLogContext()
+                    .WriteTo.File(log, rollingInterval: RollingInterval.Day)
+                    .MinimumLevel.Debug()
+                    .CreateLogger();
+
+        Locator.CurrentMutable.UseSerilogFullLogger();
+        
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
     }

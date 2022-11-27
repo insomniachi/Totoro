@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.ComponentModel;
+using System.Reflection;
+using Microsoft.UI.Xaml;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -23,5 +25,22 @@ public static class Converters
         }
         string nextstring = types[index];
         return (TEnum)Enum.Parse(enumType, nextstring);
+    }
+
+    public static string EnumToDescription(object value)
+    {
+        var fi = value.GetType().GetField(value.ToString());
+
+        if (fi.GetCustomAttributes(typeof(DescriptionAttribute), false) is DescriptionAttribute[] attributes && attributes.Any())
+        {
+            return attributes.First().Description;
+        }
+
+        return value.ToString();
+    }
+
+    public static Array EnumToItemSource(Enum value)
+    {
+        return Enum.GetValues(value.GetType());
     }
 }

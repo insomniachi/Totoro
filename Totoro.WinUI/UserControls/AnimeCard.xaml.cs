@@ -35,6 +35,7 @@ public sealed partial class AnimeCard : UserControl
     public MenuFlyout Flyout { get; set; }
     public ICommand UpdateStatusCommand { get; }
     public ICommand WatchCommand { get; }
+    public ICommand MoreCommand { get; }
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
 
     public AnimeCard()
@@ -43,8 +44,13 @@ public sealed partial class AnimeCard : UserControl
         UpdateStatusCommand = ReactiveCommand.CreateFromTask<AnimeModel>(_viewService.UpdateAnimeStatus);
         WatchCommand = ReactiveCommand.Create<AnimeModel>(anime =>
         {
-            _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = Anime });
+            _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });
         });
+        MoreCommand = ReactiveCommand.Create<long>(id =>
+        {
+            _navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
+        });
+
         Loaded += AnimeCard_Loaded;
         Unloaded += AnimeCard_Unloaded;
     }

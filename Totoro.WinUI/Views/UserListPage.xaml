@@ -96,6 +96,14 @@
                                                 <SymbolIcon Symbol="PostUpdate" />
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
+                                        <MenuFlyoutItem
+                                            Command="{Binding ElementName=Card, Path=MoreCommand}"
+                                            CommandParameter="{x:Bind Id}"
+                                            Text="More">
+                                            <MenuFlyoutItem.Icon>
+                                                <SymbolIcon Symbol="More" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
                                     </MenuFlyout>
                                 </uc:AnimeCard.Flyout>
                             </uc:AnimeCard>
