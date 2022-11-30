@@ -39,7 +39,8 @@ internal class WatchViewModelBuilder
                                   _animeService,
                                   _mediaPlayer,
                                   _timestampsService,
-                                  _recentEpisodesProvider);
+                                  _recentEpisodesProvider,
+                                  Mock.Of<ILocalMediaService>());
     }
 
     public WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
