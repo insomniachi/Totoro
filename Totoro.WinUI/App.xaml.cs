@@ -47,6 +47,8 @@ public partial class App : Application
         })
         .Build();
 
+    public static TotoroCommands Commands { get; private set; }
+
     public static T GetService<T>()
         where T : class
     {
@@ -94,6 +96,7 @@ public partial class App : Application
     {
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
+        Commands = GetService<TotoroCommands>();
         var appDataFolder = GetService<IOptions<LocalSettingsOptions>>().Value.ApplicationDataFolder;
         var log = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appDataFolder, "Logs/log.txt");
         Log.Logger = new LoggerConfiguration()

@@ -103,7 +103,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         CurrentView = state.GetValue<AnimeStatus>(nameof(CurrentView));
     }
 
-    public async Task<Unit> UpdateAnime(IAnimeModel model) => await _viewService.UpdateAnimeStatus(model);
+    public async Task<Unit> UpdateAnime(IAnimeModel model) => await _viewService.UpdateTracking(model);
 
     public void ClearSearch()
     {

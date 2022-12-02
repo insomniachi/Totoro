@@ -86,6 +86,17 @@ public class MalToModelConverter
             model.AlternativeTitles.Add(alt.Japanese);
         }
 
+        if(malModel.Videos is { } videos)
+        {
+            model.Videos = malModel.Videos.Select(x => new Video
+            {
+                Id = x.Id,
+                Thumbnail = x.Thumbnail,
+                Title = x.Title,
+                Url = x.Url,
+            }).ToList();
+        }
+
         return model;
     }
 

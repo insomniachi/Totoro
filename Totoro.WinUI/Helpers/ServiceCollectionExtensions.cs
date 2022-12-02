@@ -3,6 +3,7 @@ using MalApi;
 using MalApi.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Totoro.Core;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.MyAnimeList;
@@ -114,6 +115,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILocalMediaService, LocalMediaService>();
         services.AddMemoryCache();
         services.AddHttpClient();
+        services.AddTransient<TotoroCommands>();
 
         services.AddTransient<IShanaProjectService, ShanaProjectService>();
 

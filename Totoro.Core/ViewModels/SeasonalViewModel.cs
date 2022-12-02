@@ -100,7 +100,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         };
     }
 
-    private async Task AddToList(AnimeModel a) => await _viewService.UpdateAnimeStatus(a);
+    private async Task AddToList(AnimeModel a) => await _viewService.UpdateTracking(a);
     private static Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
     private static Func<SeasonalAnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
                                                                                       x.Title.ToLower().Contains(title) ||

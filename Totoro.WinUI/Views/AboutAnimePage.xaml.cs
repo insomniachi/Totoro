@@ -32,19 +32,4 @@ public sealed partial class AboutAnimePage : AboutAnimePageBase
                 .DisposeWith(d);
         });
     }
-
-    private void PlayButton_Click(object sender, RoutedEventArgs e)
-    {
-        if(sender is not ButtonBase b)
-        {
-            return;
-        }
-
-        ViewModel.PlaySound.Execute(b.Tag);
-    }
-
-    private void PauseButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewModel.Pause.Execute(null);
-    }
 }

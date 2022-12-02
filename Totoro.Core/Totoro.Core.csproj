@@ -20,6 +20,7 @@
 	<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.5.1" />
 	<PackageReference Include="Splat.Serilog" Version="14.5.1" />
+	<PackageReference Include="YoutubeExplode" Version="6.2.4" />
   </ItemGroup>
 
   <ItemGroup>

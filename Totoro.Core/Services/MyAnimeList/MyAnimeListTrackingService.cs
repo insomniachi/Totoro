@@ -20,7 +20,8 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         MalApi.AnimeFieldNames.Popularity,
         MalApi.AnimeFieldNames.StartSeason,
         MalApi.AnimeFieldNames.Genres,
-        MalApi.AnimeFieldNames.Status
+        MalApi.AnimeFieldNames.Status,
+        MalApi.AnimeFieldNames.Videos,
     };
 
     public bool IsAuthenticated => _client.IsAuthenticated;

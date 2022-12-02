@@ -41,7 +41,7 @@ public sealed partial class AnimeCard : UserControl
     public AnimeCard()
     {
         InitializeComponent();
-        UpdateStatusCommand = ReactiveCommand.CreateFromTask<AnimeModel>(_viewService.UpdateAnimeStatus);
+        UpdateStatusCommand = ReactiveCommand.CreateFromTask<AnimeModel>(_viewService.UpdateTracking);
         WatchCommand = ReactiveCommand.Create<AnimeModel>(anime =>
         {
             _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });

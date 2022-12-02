@@ -18,7 +18,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
 			["Anime"] = Anime
 		}));
 
-		UpdateStatus = ReactiveCommand.CreateFromTask<IAnimeModel>(viewService.UpdateAnimeStatus);
+		UpdateStatus = ReactiveCommand.CreateFromTask<IAnimeModel>(viewService.UpdateTracking);
 		PlaySound = ReactiveCommand.Create<AnimeSound>(sound => viewService.PlayVideo(sound.SongName, sound.Url));
 		Pause = ReactiveCommand.Create(animeSoundService.Pause);
 

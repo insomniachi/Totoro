@@ -28,6 +28,7 @@ public class AnimeModel : Inpc, IAnimeModel
     public int Popularity { get; set; }
     public List<string> AlternativeTitles { get; set; }
     public string Description { get; set; }
+    public List<Video> Videos { get; set; }
 
     public override string ToString()
     {
@@ -56,6 +57,7 @@ public class FullAnimeModel : SeasonalAnimeModel
     public string[] Genres { get; set; }
 
     public AnimeModel[] Related { get; set; }
+
 }
 
 public class SeasonalAnimeModel : ScheduledAnimeModel

@@ -17,7 +17,7 @@ public class ViewService : IViewService
         _trackingService = trackingService;
     }
 
-    public async Task<Unit> UpdateAnimeStatus(IAnimeModel a)
+    public async Task<Unit> UpdateTracking(IAnimeModel a)
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
         vm.Anime = a;

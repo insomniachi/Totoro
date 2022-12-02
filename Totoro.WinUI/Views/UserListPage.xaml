@@ -8,6 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.Core.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:v="using:Totoro.WinUI.Views"
@@ -89,7 +90,7 @@
                                 <uc:AnimeCard.Flyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem
-                                            Command="{Binding ElementName=Card, Path=UpdateStatusCommand}"
+                                            Command="{x:Bind root:App.Commands.UpdateTracking}"
                                             CommandParameter="{x:Bind}"
                                             Text="Update">
                                             <MenuFlyoutItem.Icon>
@@ -97,7 +98,7 @@
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
                                         <MenuFlyoutItem
-                                            Command="{Binding ElementName=Card, Path=MoreCommand}"
+                                            Command="{x:Bind root:App.Commands.More}"
                                             CommandParameter="{x:Bind Id}"
                                             Text="More">
                                             <MenuFlyoutItem.Icon>
