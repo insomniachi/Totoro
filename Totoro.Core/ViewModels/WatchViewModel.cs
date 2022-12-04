@@ -263,7 +263,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public (SearchResult Sub, SearchResult Dub) SelectedAnimeResult { get; set; }
     [Reactive] public SearchResult SelectedAudio { get; set; }
-    [Reactive] public IAnimeModel Anime { get; set; }
+    [Reactive] public AnimeModel Anime { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
     [Reactive] public bool UseLocalMedia { get; set; }
     public bool IsFullWindow => _isFullWindow?.Value ?? false;
@@ -299,7 +299,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         if (parameters.ContainsKey("Anime"))
         {
-            Anime = parameters["Anime"] as IAnimeModel;
+            Anime = parameters["Anime"] as AnimeModel;
         }
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
@@ -404,8 +404,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         MediaPlayer
             .Paused
             .Where(_ => _settings.UseDiscordRichPresense)
-            .Do(_ => _discordRichPresense.UpdateDetails("Paused"))
-            .Do(_ => _discordRichPresense.UpdateState(""))
+            .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode} (Paused)"))
             .Do(_ => _discordRichPresense.ClearTimer())
             .Do(_ => NativeMethods.AllowSleep())
             .Subscribe().DisposeWith(Garbage);
@@ -415,6 +414,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Where(_ => _settings.UseDiscordRichPresense)
             .Do(_ => _canUpdateTime = true)
             .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio?.Title ?? Anime.Title))
+            .Do(_ => _discordRichPresense.UpdateImage(Anime.Image))
             .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
             .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))
             .Do(_ => NativeMethods.PreventSleep())
