@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Threading;
 using AnimDL.Api;
 using Splat;
 using Totoro.Core.Helpers;
@@ -60,8 +61,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
-        NextEpisode = ReactiveCommand.Create(() => { ++CurrentEpisode; _canUpdateTime = false; }, HasNextEpisode, RxApp.MainThreadScheduler);
-        PrevEpisode = ReactiveCommand.Create(() => { --CurrentEpisode; _canUpdateTime = false; }, HasPrevEpisode, RxApp.MainThreadScheduler);
+        NextEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); ++CurrentEpisode; }, HasNextEpisode, RxApp.MainThreadScheduler);
+        PrevEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); --CurrentEpisode; }, HasPrevEpisode, RxApp.MainThreadScheduler);
         SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
         SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);
@@ -172,8 +173,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .SelectMany(result => Provider.StreamProvider.GetNumberOfStreams(result.Url))
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
-            .Select(_ => _episodeRequest ?? Anime?.Tracking?.WatchedEpisodes + 1 ?? 1)
-            .Where(ep => ep <= Anime?.TotalEpisodes)
+            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1)
+            .Where(ep => ep <= (Anime?.TotalEpisodes ?? int.MaxValue))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
 
@@ -423,24 +424,24 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
     public async Task<Unit> UpdateTracking()
     {
-        if(_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= CurrentEpisode.Value)
+        if(_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= Streams.Episode)
         {
             return Unit.Default;
         }
 
         _isUpdatingTracking = true;
-        this.Log().Debug($"Updating tracking for {Anime.Title} from {Anime.Tracking?.WatchedEpisodes ?? CurrentEpisode - 1} to {CurrentEpisode}");
+        this.Log().Debug($"Updating tracking for {Anime.Title} from {Anime.Tracking?.WatchedEpisodes ?? Streams.Episode - 1} to {Streams.Episode}");
 
-        _playbackStateStorage.Reset(Anime.Id, CurrentEpisode.Value);
+        _playbackStateStorage.Reset(Anime.Id, Streams.Episode);
 
-        var tracking = new Tracking() { WatchedEpisodes = CurrentEpisode };
+        var tracking = new Tracking() { WatchedEpisodes = Streams.Episode };
 
-        if (CurrentEpisode == Anime.TotalEpisodes)
+        if (Streams.Episode == Anime.TotalEpisodes)
         {
             tracking.Status = AnimeStatus.Completed;
             tracking.FinishDate = DateTime.Today;
         }
-        else if(CurrentEpisode == 1)
+        else if(Streams.Episode == 1)
         {
             tracking.Status = AnimeStatus.Watching;
             tracking.StartDate = DateTime.Today;

@@ -1,6 +1,7 @@
 ﻿using System.Reactive;
 using System.Reactive.Linq;
 using AnimDL.Api;
+using Splat;
 using Totoro.Core.Tests.Builders;
 using Totoro.Core.Tests.Helpers;
 
@@ -506,7 +507,7 @@ public class WatchViewModelTests
 
         vmBuilder.VerifyTrackingService(tracking =>
         {
-            tracking.Verify(x => x.Update(animeModel.Id, new Tracking { WatchedEpisodes = 11 }), Times.Once());
+            tracking.Verify(x => x.Update(animeModel.Id, new Tracking { WatchedEpisodes = 11 }), Times.Once);
         });
 
         Assert.Equal(11, vm.Anime.Tracking.WatchedEpisodes);
@@ -519,7 +520,7 @@ public class WatchViewModelTests
         // don't update tracking again
         vmBuilder.VerifyTrackingService(tracking =>
         {
-            tracking.Verify(x => x.Update(animeModel.Id, new Tracking { WatchedEpisodes = 12 }), Times.Never());
+            tracking.Verify(x => x.Update(animeModel.Id, new Tracking { WatchedEpisodes = 12 }), Times.Never);
         });
     }
 
@@ -617,8 +618,48 @@ public class WatchViewModelTests
         // api request was never made.
         vmBuilder.VerifyTrackingService(tracking =>
         {
-            tracking.Verify(x => x.Update(animeModel.Id, It.IsAny<Tracking>()), Times.Never());
+            tracking.Verify(x => x.Update(animeModel.Id, It.IsAny<Tracking>()), Times.Never);
         });
+    }
+
+    [Fact]
+    public async void WatchViewModel_TrackingWillNotUpdateMultipleTimesAfterEnd()
+    {
+        // arrange
+        FullAnimeModel animeModel = new()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+            Tracking = new Tracking
+            {
+                WatchedEpisodes = 10
+            }
+        };
+        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
+        var vmBuilder = BaseViewModel(provider);
+        var vm = vmBuilder.Bulid();
+
+        // act
+        vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
+
+        // started playing
+        vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
+        vmBuilder.MediaPlayer.PlayingSubject.OnNext(Unit.Default);
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.Zero);
+
+        // reached time to update tracking and also clicked next button
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23));
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23) + TimeSpan.FromSeconds(15));
+        vm.NextEpisode.Execute(null);
+
+        await Task.Delay(10);
+
+        vmBuilder.VerifyTrackingService(tracking =>
+        {
+            tracking.Verify(x => x.Update(animeModel.Id, It.IsAny<Tracking>()), Times.Once);
+        });
+
     }
 
 
