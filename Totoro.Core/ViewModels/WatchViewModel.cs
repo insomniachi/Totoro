@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using System.Threading;
 using AnimDL.Api;
 using Splat;
 using Totoro.Core.Helpers;
