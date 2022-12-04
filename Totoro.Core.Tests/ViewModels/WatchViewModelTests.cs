@@ -194,7 +194,7 @@ public class WatchViewModelTests
         var vmBuilder = BaseViewModel(provider)
             .WithTrackingService(x =>
             {
-                x.Setup(x => x.Update(animeModel.Id, It.IsAny<Tracking>())).Returns(Observable.Start(() => newTracking));
+                x.Setup(x => x.Update(animeModel.Id, It.IsAny<Tracking>())).Returns(Observable.Return(newTracking));
             });
 
         var vm = vmBuilder.Bulid();
@@ -233,7 +233,7 @@ public class WatchViewModelTests
         var vmBuilder = BaseViewModel(provider)
             .WithTrackingService(x =>
             {
-                x.Setup(x => x.Update(animeModel.Id, It.IsAny<Tracking>())).Returns(Observable.Start(() => newTracking));
+                x.Setup(x => x.Update(animeModel.Id, It.IsAny<Tracking>())).Returns(Observable.Return(newTracking));
             })
             .WithSettings(settings =>
             {
@@ -277,7 +277,7 @@ public class WatchViewModelTests
         var vmBuilder = BaseViewModel(provider)
             .WithTrackingService(x =>
             {
-                x.Setup(x => x.Update(animeModel.Id, It.IsAny<Tracking>())).Returns(Observable.Start(() => newTracking));
+                x.Setup(x => x.Update(animeModel.Id, It.IsAny<Tracking>())).Returns(Observable.Return(newTracking));
             });
 
         var vm = vmBuilder.Bulid();
@@ -398,13 +398,7 @@ public class WatchViewModelTests
         var vm = BaseViewModel(Mock.Of<IProvider>())
             .WithAnimeService(x =>
             {
-                x.Setup(x => x.GetAnime("Hyouka")).Returns(Observable.Start(() =>
-                {
-                    return new SearchResultModel[]
-                    {
-                        result
-                    };
-                }));
+                x.Setup(x => x.GetAnime("Hyouka")).Returns(Observable.Return(new SearchResultModel[]{ result }));
             })
             .Bulid();
 
@@ -447,17 +441,17 @@ public class WatchViewModelTests
         var vm2 = BaseViewModel(provider)
             .WithRecentEpisodesProvider(x =>
             {
-                x.Setup(x => x.GetMalId(It.IsAny<AiredEpisode>())).Returns(Observable.Start(() => (long)12189));
+                x.Setup(x => x.GetMalId(It.IsAny<AiredEpisode>())).Returns(Observable.Return((long)12189));
             })
             .WithAnimeService(x =>
             {
-                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Start(() => animeModel));
+                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Return(animeModel));
             })
             .Bulid();
         var vm3 = BaseViewModel(provider)
             .WithAnimeService(x =>
             {
-                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Start(() => animeModel));
+                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Return(animeModel));
             })
             .Bulid();
 
@@ -479,6 +473,154 @@ public class WatchViewModelTests
         Assert.True(vm3.HideControls);
     }
 
+    [Fact]
+    public void WatchViewModel_ClickingNext_AfterTrackingAlreadyUpdated()
+    {
+        // arrange
+        FullAnimeModel animeModel = new()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+            Tracking = new Tracking
+            {
+                WatchedEpisodes = 10
+            }
+        };
+        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
+        var vmBuilder = BaseViewModel(provider);
+        var vm = vmBuilder.Bulid();
+
+        // act
+        vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
+
+        // started playing
+        vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
+        vmBuilder.MediaPlayer.PlayingSubject.OnNext(Unit.Default);
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.Zero);
+
+        Assert.Equal(11, vm.CurrentEpisode);
+
+        // reached time to update tracking
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23)); // less than 2 min remaining
+
+        vmBuilder.VerifyTrackingService(tracking =>
+        {
+            tracking.Verify(x => x.Update(animeModel.Id, new Tracking { WatchedEpisodes = 11 }), Times.Once());
+        });
+
+        Assert.Equal(11, vm.Anime.Tracking.WatchedEpisodes);
+
+        // click next button
+        vm.NextEpisode.Execute(null);
+
+        Assert.Equal(12, vm.CurrentEpisode);
+
+        // don't update tracking again
+        vmBuilder.VerifyTrackingService(tracking =>
+        {
+            tracking.Verify(x => x.Update(animeModel.Id, new Tracking { WatchedEpisodes = 12 }), Times.Never());
+        });
+    }
+
+    [Fact]
+    public async void WatchViewModel_MarksAsCompleteWhenFinishingLastEpisode()
+    {
+        // arrange
+        FullAnimeModel animeModel = new()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+            Tracking = new Tracking
+            {
+                WatchedEpisodes = 23
+            }
+        };
+        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
+        var vmBuilder = BaseViewModel(provider);
+        var vm = vmBuilder.Bulid();
+
+        // act
+        vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
+
+        // started playing
+        vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
+        vmBuilder.MediaPlayer.PlayingSubject.OnNext(Unit.Default);
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.Zero);
+
+        // reached time to update tracking
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23));
+
+        await Task.Delay(10);
+
+        Assert.Equal(24, vm.Anime.Tracking.WatchedEpisodes);
+        Assert.Equal(AnimeStatus.Completed, vm.Anime.Tracking.Status);
+        Assert.Equal(DateTime.Today, vm.Anime.Tracking.FinishDate.Value.Date);
+    }
+
+    [Fact]
+    public async void WatchViewModel_AddsTrackingWheningFinishingFirstEpisodeOfUntracked()
+    {
+        // arrange
+        FullAnimeModel animeModel = new()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+        };
+        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
+        var vmBuilder = BaseViewModel(provider);
+        var vm = vmBuilder.Bulid();
+
+        // act
+        vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
+
+        // started playing
+        vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
+        vmBuilder.MediaPlayer.PlayingSubject.OnNext(Unit.Default);
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.Zero);
+
+        // reached time to update tracking
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23));
+
+        await Task.Delay(10);
+
+        Assert.Equal(1, vm.Anime.Tracking.WatchedEpisodes);
+        Assert.Equal(AnimeStatus.Watching, vm.Anime.Tracking.Status);
+        Assert.Equal(DateTime.Today, vm.Anime.Tracking.StartDate.Value.Date);
+    }
+
+    [Fact]
+    public async void WatchViewModel_WillNotUpdateTrackingIfRewatchingPrevEpisode()
+    {
+        // arrange
+        FullAnimeModel animeModel = new()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+            Tracking = new Tracking
+            {
+                WatchedEpisodes = 23
+            }
+        };
+        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
+        var vmBuilder = BaseViewModel(provider);
+        var vm = vmBuilder.Bulid();
+
+        // act
+        vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
+        vm.CurrentEpisode = 12;
+        await vm.UpdateTracking();
+        
+        // api request was never made.
+        vmBuilder.VerifyTrackingService(tracking =>
+        {
+            tracking.Verify(x => x.Update(animeModel.Id, It.IsAny<Tracking>()), Times.Never());
+        });
+    }
+
 
     private static WatchViewModelBuilder BaseViewModel(IProvider provider) => new WatchViewModelBuilder()
             .WithProviderFactory(factory =>
@@ -491,6 +633,12 @@ public class WatchViewModelTests
                 settings.Setup(x => x.UseDiscordRichPresense).Returns(false);
                 settings.Setup(x => x.PreferSubs).Returns(true);
                 settings.Setup(x => x.ElementTheme).Returns(ElementTheme.Dark);
+                settings.Setup(x => x.TimeRemainingWhenEpisodeCompletesInSeconds).Returns(120);
+            })
+            .WithTrackingService(tracking =>
+            {
+                tracking.Setup(x => x.Update(It.IsAny<long>(), It.IsAny<Tracking>()))
+                        .Returns<long, Tracking>((_, tracking) => Observable.Return(tracking));
             });
 
     private static IProvider GetProvider(SearchResult result, int numberOfEps)

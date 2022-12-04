@@ -6,7 +6,7 @@ using Totoro.Core.Services;
 
 namespace Totoro.Core.ViewModels;
 
-public class WatchViewModel : NavigatableViewModel, IHaveState
+public partial class WatchViewModel : NavigatableViewModel, IHaveState
 {
     private readonly ITrackingService _trackingService;
     private readonly IViewService _viewService;
@@ -117,7 +117,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(_ => Anime is not null && OutroPosition <= 0)
-            .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 1) < CurrentEpisode)
+            .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 0) < CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletesInSeconds)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(_ => UpdateTracking())
@@ -144,7 +144,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .WhereNotNull()
             .Select(model => localMediaService.GetEpisodes(model.Id))
             .Do(eps => _episodesCache.EditDiff(eps))
-            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes + 1) ?? 1)
+            .Select(_ => _episodeRequest ?? Anime?.Tracking?.WatchedEpisodes + 1 ?? 1)
             .Where(ep => ep <= Anime?.TotalEpisodes)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
@@ -172,7 +172,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .SelectMany(result => Provider.StreamProvider.GetNumberOfStreams(result.Url))
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
-            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes + 1) ?? 1)
+            .Select(_ => _episodeRequest ?? Anime?.Tracking?.WatchedEpisodes + 1 ?? 1)
             .Where(ep => ep <= Anime?.TotalEpisodes)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
@@ -231,8 +231,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Select(ep => TimeStamps?.GetOutroStartPosition(ep) ?? 0)
             .ToProperty(this, nameof(OutroPosition), out _outroPosition);
 
-        Observable
-            .Merge(SkipButtonVisibleTrigger(), SkipButtonHideTrigger())
+        SkipButtonVisibleTrigger()            .Merge(SkipButtonHideTrigger())
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, nameof(IsSkipIntroButtonVisible), out _isSkipIntroButtonVisible)
             .DisposeWith(Garbage);
@@ -305,7 +304,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
-            var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
+            var epMatch = EpisodeRegex().Match(epInfo.EpisodeUrl);
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
 
             _recentEpisodesProvider
@@ -424,13 +423,13 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     public async Task<Unit> UpdateTracking()
     {
-        if(_isUpdatingTracking || Anime.Tracking.WatchedEpisodes >= CurrentEpisode.Value)
+        if(_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= CurrentEpisode.Value)
         {
             return Unit.Default;
         }
 
         _isUpdatingTracking = true;
-        this.Log().Debug($"Updating tracking for {Anime.Title} from {Anime.Tracking.WatchedEpisodes} to {CurrentEpisode}");
+        this.Log().Debug($"Updating tracking for {Anime.Title} from {Anime.Tracking?.WatchedEpisodes ?? CurrentEpisode - 1} to {CurrentEpisode}");
 
         _playbackStateStorage.Reset(Anime.Id, CurrentEpisode.Value);
 
@@ -482,4 +481,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     private IObservable<bool> HasNextEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.LastOrDefault());
     private IObservable<bool> HasPrevEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.FirstOrDefault());
+
+    [GeneratedRegex("ep(\\d+)")]
+    private static partial Regex EpisodeRegex();
 }
