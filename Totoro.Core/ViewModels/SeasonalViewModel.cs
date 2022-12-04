@@ -79,13 +79,15 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     public void StoreState(IState state)
     {
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
-        state.AddOrUpdate(Season);
+        state.AddOrUpdate(SeasonFilter);
+        state.AddOrUpdate(Sort);
     }
 
     public void RestoreState(IState state)
     {
         var anime = state.GetValue<IEnumerable<SeasonalAnimeModel>>(nameof(Anime));
-        Season = state.GetValue<Season>(nameof(Season));
+        SeasonFilter = state.GetValue<string>(nameof(SeasonFilter));
+        Sort = state.GetValue<Sort>(nameof(Sort));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
     }
 
