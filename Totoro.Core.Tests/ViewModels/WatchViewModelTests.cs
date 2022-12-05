@@ -369,7 +369,7 @@ public class WatchViewModelTests
         // assert
         vmBuilder.VerifyDiscordRpc(x =>
         {
-            x.Verify(x => x.UpdateDetails("Paused"), Times.Once);
+            x.Verify(x => x.UpdateState($"Episode {animeModel.Tracking.WatchedEpisodes + 1} (Paused)"), Times.Once);
             x.Verify(x => x.ClearTimer(), Times.Once);
         });
 
@@ -613,7 +613,10 @@ public class WatchViewModelTests
         // act
         vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel }).Wait();
         vm.CurrentEpisode = 12;
-        await vm.UpdateTracking();
+        await Task.Delay(10);
+
+        vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
+        vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23));
         
         // api request was never made.
         vmBuilder.VerifyTrackingService(tracking =>

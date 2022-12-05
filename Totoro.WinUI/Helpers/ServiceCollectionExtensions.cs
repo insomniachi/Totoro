@@ -97,27 +97,29 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
-        services.AddTransient<IViewService, ViewService>();
-        services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
         services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
-        services.AddTransient<MalToModelConverter>();
-        services.AddSingleton<IFileService, FileService>();
+        services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
         services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
         services.AddSingleton<ISchedule, Schedule>();
-        services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
-        services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
-        services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddSingleton<ITimestampsService, TimestampsService>();
-        services.AddTransient<IAnimeIdService, AnimeIdService>();
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<ITorrentsService, TorrentsService>();
         services.AddSingleton<ILocalMediaService, LocalMediaService>();
+        
+        services.AddTransient<IFileService, FileService>();
+        services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+        services.AddTransient<IViewService, ViewService>();
+        services.AddTransient<MalToModelConverter>();
+        services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
+        services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
+        services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
+        services.AddTransient<IAnimeIdService, AnimeIdService>();
+        services.AddTransient<IShanaProjectService, ShanaProjectService>();
+        services.AddTransient<TotoroCommands>();
+        services.AddTransient<ISystemClock, SystemClock>();
+        
         services.AddMemoryCache();
         services.AddHttpClient();
-        services.AddTransient<TotoroCommands>();
-
-        services.AddTransient<IShanaProjectService, ShanaProjectService>();
 
         return services;
     }

@@ -28,4 +28,9 @@
 	  <ProjectReference Include="..\Totoro.Core\Totoro.Core.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <EmbeddedResource Include="Snapshots\CurrentlyAiringTrackedAnime2.json" />
+	  <EmbeddedResource Include="Snapshots\CurrentlyAiringTrackedAnime.json" />
+	</ItemGroup>
+
 </Project>

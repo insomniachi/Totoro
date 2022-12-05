@@ -16,13 +16,13 @@ internal class WatchViewModelBuilder
     private readonly Mock<ITimestampsService> _timestampsServiceMock = new();
     private readonly Mock<IRecentEpisodesProvider> _recentEpisodesProviderMock = new();
 
-    public MockMediaPlayer MediaPlayer { get; } = new();
+    internal MockMediaPlayer MediaPlayer { get; } = new();
 
-    public WatchViewModelBuilder()
+    internal WatchViewModelBuilder()
     {
     }
 
-    public WatchViewModel Bulid()
+    internal WatchViewModel Bulid()
     {
         return new WatchViewModel(_providerFactoryMock.Object,
                                   _trackingServiceMock.Object,
@@ -37,62 +37,62 @@ internal class WatchViewModelBuilder
                                   Mock.Of<ILocalMediaService>());
     }
 
-    public WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
+    internal WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
     {
         configure(_providerFactoryMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithTrackingService(Action<Mock<ITrackingService>> configure)
+    internal WatchViewModelBuilder WithTrackingService(Action<Mock<ITrackingService>> configure)
     {
         configure(_trackingServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithViewService(Action<Mock<IViewService>> configure)
+    internal WatchViewModelBuilder WithViewService(Action<Mock<IViewService>> configure)
     {
         configure(_viewServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithSettings(Action<Mock<ISettings>> configure)
+    internal WatchViewModelBuilder WithSettings(Action<Mock<ISettings>> configure)
     {
         configure(_settingsMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> configure)
+    internal WatchViewModelBuilder WithPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> configure)
     {
         configure(_playbackStateStorageMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithDiscordRpc(Action<Mock<IDiscordRichPresense>> configure)
+    internal WatchViewModelBuilder WithDiscordRpc(Action<Mock<IDiscordRichPresense>> configure)
     {
         configure(_discordRpcMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithAnimeService(Action<Mock<IAnimeService>> configure)
+    internal WatchViewModelBuilder WithAnimeService(Action<Mock<IAnimeService>> configure)
     {
         configure(_animeServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithTimeStampService(Action<Mock<ITimestampsService>> configure)
+    internal WatchViewModelBuilder WithTimeStampService(Action<Mock<ITimestampsService>> configure)
     {
         configure(_timestampsServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithRecentEpisodesProvider(Action<Mock<IRecentEpisodesProvider>> configure)
+    internal WatchViewModelBuilder WithRecentEpisodesProvider(Action<Mock<IRecentEpisodesProvider>> configure)
     {
         configure(_recentEpisodesProviderMock);
         return this;
     }
 
-    public void VerifyDiscordRpc(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
-    public void VerifyPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> verify) => verify(_playbackStateStorageMock);
-    public void VerifyTrackingService(Action<Mock<ITrackingService>> verify) => verify(_trackingServiceMock);
+    internal void VerifyDiscordRpc(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
+    internal void VerifyPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> verify) => verify(_playbackStateStorageMock);
+    internal void VerifyTrackingService(Action<Mock<ITrackingService>> verify) => verify(_trackingServiceMock);
 
 }
