@@ -32,7 +32,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Sort(SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore))
             .Bind(out _anime)
             .DisposeMany()
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
+            .Subscribe()
             .DisposeWith(Garbage);
 
         _searchCache
@@ -40,13 +40,13 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .RefCount()
             .Bind(out _searchResults)
             .DisposeMany()
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
+            .Subscribe()
             .DisposeWith(Garbage);
 
         this.WhenAnyValue(x => x.QuickAddSearchText)
             .Where(text => text is { Length: > 3 })
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(text => animeService.GetAnime(text))
+            .SelectMany(animeService.GetAnime)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(list => _searchCache.EditDiff(list, (first, second) => first.Id == second.Id));
     }
@@ -82,6 +82,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(list =>
                         {
+                            var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true});
                             _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id);
                             IsLoading = false;
                         })
