@@ -165,7 +165,7 @@
                 <Pivot>
                     <PivotItem Header="Previews">
                         <GridView
-                            ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayPreview}"
+                            ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
                             IsItemClickEnabled="True"
                             ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}">
                             <GridView.ItemTemplate>
@@ -205,7 +205,7 @@
                                         Orientation="Horizontal"
                                         Spacing="10">
                                         <HyperlinkButton
-                                            Command="{x:Bind root:App.Commands.PlayTheme}"
+                                            Command="{x:Bind root:App.Commands.PlayVideo}"
                                             CommandParameter="{x:Bind}"
                                             Content="{x:Bind SongName}"
                                             FontSize="18"

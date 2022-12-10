@@ -4,7 +4,6 @@
 public class UserListViewModel : NavigatableViewModel, IHaveState
 {
     private readonly ITrackingService _trackingService;
-    private readonly INavigationService _navigationService;
     private readonly IViewService _viewService;
     private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
     private readonly SourceCache<SearchResultModel, long> _searchCache = new(x => x.Id);
@@ -12,14 +11,12 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
 
     public UserListViewModel(ITrackingService trackingService,
-                             INavigationService navigationService,
                              IAnimeService animeService,
                              IViewService viewService)
     {
         _trackingService = trackingService;
-        _navigationService = navigationService;
         _viewService = viewService;
-        ItemClickedCommand = ReactiveCommand.Create<AnimeModel>(OnItemClicked);
+
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => CurrentView = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
@@ -58,15 +55,9 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public string QuickAddSearchText { get; set; }
     public ReadOnlyObservableCollection<SearchResultModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
-    public ICommand ItemClickedCommand { get; }
     public ICommand ChangeCurrentViewCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand SetDisplayMode { get; }
-
-    private void OnItemClicked(AnimeModel anime)
-    {
-        _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object> { ["Anime"] = anime });
-    }
 
     private Func<AnimeModel, bool> FilterByStatusPredicate(AnimeStatus status) => x => x.Tracking.Status == status;
     private static Func<AnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
@@ -82,7 +73,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(list =>
                         {
-                            var json = JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true});
                             _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id);
                             IsLoading = false;
                         })

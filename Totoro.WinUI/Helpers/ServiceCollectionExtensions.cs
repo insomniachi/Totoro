@@ -117,6 +117,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IShanaProjectService, ShanaProjectService>();
         services.AddTransient<TotoroCommands>();
         services.AddTransient<ISystemClock, SystemClock>();
+        services.AddTransient<ISchedulerProvider, SchedulerProvider>();
         
         services.AddMemoryCache();
         services.AddHttpClient();

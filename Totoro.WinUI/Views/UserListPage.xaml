@@ -81,7 +81,7 @@
                 <GridView
                     x:Name="AnimeListView"
                     animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                    ui:ListViewExtensions.Command="{x:Bind ViewModel.ItemClickedCommand}"
+                    ui:ListViewExtensions.Command="{x:Bind root:App.Commands.Watch}"
                     IsItemClickEnabled="True"
                     ItemsSource="{x:Bind ViewModel.Anime}">
                     <GridView.ItemTemplate>

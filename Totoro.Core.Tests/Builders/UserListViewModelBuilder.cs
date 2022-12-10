@@ -8,14 +8,12 @@ internal class UserListViewModelBuilder
 {
 
     private readonly Mock<ITrackingService> _trackingServiceMock = new();
-    private readonly Mock<INavigationService> _navigationServiceMock = new();
     private readonly Mock<IAnimeService> _animeServiceMock = new();
     private readonly Mock<IViewService> _viewServiceMock = new();
 
     internal UserListViewModel Build()
     {
         return new UserListViewModel(_trackingServiceMock.Object,
-                                     _navigationServiceMock.Object,
                                      _animeServiceMock.Object,
                                      _viewServiceMock.Object);
     }
@@ -33,6 +31,5 @@ internal class UserListViewModelBuilder
     }
 
     internal Mock<IViewService> GetViewServiceMock() => _viewServiceMock;
-    internal Mock<INavigationService> GetNavigationServiceMock() => _navigationServiceMock;
     internal Mock<IAnimeService> GetAnimeServiceMock() => _animeServiceMock;
 }

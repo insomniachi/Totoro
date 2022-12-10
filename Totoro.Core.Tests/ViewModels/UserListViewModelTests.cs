@@ -75,20 +75,6 @@ public class UserListViewModelTests
     }
 
     [Fact]
-    public void UserListViewModel_ClickingCardWillNavigateToWatch()
-    {
-        // arrage
-        var vmBuilder = new UserListViewModelBuilder();
-        var vm = vmBuilder.Build();
-        
-        // act
-        vm.ItemClickedCommand.Execute(new AnimeModel());
-        
-        // assert
-        vmBuilder.GetNavigationServiceMock().Verify(x => x.NavigateTo(It.IsAny<WatchViewModel>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<bool>()), Times.Once);
-    }
-
-    [Fact]
     public async void UserListViewModel_SearchingInQuickAddGivesResults()
     {
         // arrage

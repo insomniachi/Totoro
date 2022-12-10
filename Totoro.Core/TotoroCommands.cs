@@ -1,4 +1,4 @@
-﻿using Totoro.Core.Contracts;
+﻿using System.Diagnostics.CodeAnalysis;
 using Totoro.Core.ViewModels;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -6,6 +6,7 @@ using Video = Totoro.Core.Models.Video;
 
 namespace Totoro.Core;
 
+[ExcludeFromCodeCoverage]
 public class TotoroCommands
 {
     private readonly YoutubeClient _youtubeClient = new();
@@ -14,17 +15,51 @@ public class TotoroCommands
                           INavigationService navigationService)
 	{
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
-        PlayTheme = ReactiveCommand.CreateFromTask<AnimeSound>(s => viewService.PlayVideo(s.Name, s.Url));
-        PlayPreview = ReactiveCommand.CreateFromTask<Video>(v => PlayYoutubeVideo(v, viewService.PlayVideo));
-        Watch = ReactiveCommand.Create<AnimeModel>(anime => navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime }));
-        More = ReactiveCommand.Create<long>(id => navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id }));
+        
+        Watch = ReactiveCommand.Create<object>(param =>
+        {
+            switch (param)
+            {
+                case AnimeModel anime:
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });
+                    break;
+                case long id:
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
+                    break;
+            }
+        });
+
+        PlayVideo = ReactiveCommand.Create<object>(param =>
+        {
+            switch (param)
+            {
+                case AnimeSound theme:
+                    viewService.PlayVideo(theme.Name, theme.Url);
+                    break;
+                case Video preview:
+                    _ = PlayYoutubeVideo(preview, viewService.PlayVideo);
+                    break;
+            }
+        });
+
+        More = ReactiveCommand.Create<object>(param =>
+        {
+            switch (param)
+            {
+                case AnimeModel anime:
+                    navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = anime.Id });
+                    break;
+                case long id:
+                    navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
+                    break;
+            }
+        });
     }
 
     public ICommand UpdateTracking { get; }
-    public ICommand PlayTheme { get; }
-    public ICommand PlayPreview { get; }
     public ICommand More { get; }
     public ICommand Watch { get; }
+    public ICommand PlayVideo { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string,string,Task> playVideo)
     {
