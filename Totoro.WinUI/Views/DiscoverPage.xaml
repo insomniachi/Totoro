@@ -104,6 +104,8 @@
                             Grid.Row="0"
                             CacheMode="BitmapCache"
                             IsCacheEnabled="True"
+                            PlaceholderSource="/Assets/placeholder.jpg"
+                            PlaceholderStretch="Fill"
                             Source="{x:Bind Image}"
                             Stretch="UniformToFill" />
 

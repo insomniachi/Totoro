@@ -22,7 +22,10 @@
                 <ctk:ImageEx
                     Grid.Row="0"
                     CacheMode="BitmapCache"
+                    EnableLazyLoading="True"
                     IsCacheEnabled="True"
+                    PlaceholderSource="/Assets/placeholder.jpg"
+                    PlaceholderStretch="Fill"
                     Source="{x:Bind Anime.Image, Mode=OneWay}"
                     Stretch="UniformToFill" />
 
@@ -109,7 +112,10 @@
                     Width="240"
                     Height="340"
                     CacheMode="BitmapCache"
+                    EnableLazyLoading="True"
                     IsCacheEnabled="True"
+                    PlaceholderSource="/Assets/placeholder.jpg"
+                    PlaceholderStretch="Fill"
                     Source="{x:Bind Anime.Image, Mode=OneWay}"
                     Stretch="UniformToFill" />
 
