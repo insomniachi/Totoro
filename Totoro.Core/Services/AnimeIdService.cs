@@ -1,4 +1,6 @@
-﻿namespace Totoro.Core.Services;
+﻿using System.Diagnostics;
+
+namespace Totoro.Core.Services;
 
 public class AnimeIdService : IAnimeIdService
 {
@@ -17,10 +19,10 @@ public class AnimeIdService : IAnimeIdService
             AnimeTrackerType.AniList => "anilist",
             AnimeTrackerType.MyAnimeList => "myanimelist",
             AnimeTrackerType.Kitsu => "kitsu",
-            _ => throw new ArgumentException("invalid value", nameof(serviceType))
+            _ => throw new UnreachableException()
         };
 
         var stream = await _httpClient.GetStreamAsync($"https://arm.haglund.dev/api/ids?source={source}&id={id}");
-        return await JsonSerializer.DeserializeAsync<AnimeId>(stream);
+        return await JsonSerializer.DeserializeAsync(stream, AnimeIdSerializerContext.Default.AnimeId);
     }
 }

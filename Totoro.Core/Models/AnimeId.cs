@@ -16,3 +16,9 @@ public record AnimeId
     [JsonPropertyName("kitsu")]
     public long Kitsu { get; set; }
 }
+
+[JsonSerializable(typeof(AnimeId))]
+public partial class AnimeIdSerializerContext : JsonSerializerContext
+{
+
+}
