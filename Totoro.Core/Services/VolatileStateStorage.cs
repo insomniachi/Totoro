@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using Totoro.Core;
 
-namespace Totoro.WinUI.Services;
+namespace Totoro.Core.Services;
 
 public class VolatileStateStorage : IVolatileStateStorage
 {
