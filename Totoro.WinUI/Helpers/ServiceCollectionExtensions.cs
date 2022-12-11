@@ -54,33 +54,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddMyAnimeList(this IServiceCollection services, HostBuilderContext context)
-    {
-        services.AddTransient<ITrackingService, MyAnimeListTrackingService>();
-        services.AddTransient<IAnimeService, MyAnimeListService>();
-
-        services.AddSingleton<IMalClient, MalClient>(x =>
-        {
-            var settingService = x.GetRequiredService<ILocalSettingsService>();
-            var token = settingService.ReadSetting<OAuthToken>("MalToken");
-            var clientId = context.Configuration["ClientId"];
-            if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
-            {
-                token = MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
-                settingService.SaveSetting("MalToken", token);
-            }
-            var client = new MalClient();
-            if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
-            {
-                client.SetAccessToken(token.AccessToken);
-            }
-            client.SetClientId(clientId);
-            return client;
-        });
-
-        return services;
-    }
-
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
         services.AddSingleton<ILocalSettingsService, LocalSettingsService>();

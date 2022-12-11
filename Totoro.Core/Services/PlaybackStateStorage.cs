@@ -1,4 +1,4 @@
-﻿namespace Totoro.WinUI.Services;
+﻿namespace Totoro.Core.Services;
 
 public class PlaybackStateStorage : IPlaybackStateStorage
 {
