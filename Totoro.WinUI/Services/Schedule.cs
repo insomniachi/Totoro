@@ -2,6 +2,7 @@
 using System.Text.Json.Nodes;
 using CommunityToolkit.WinUI.Notifications;
 using MalApi.Interfaces;
+using Totoro.Core;
 
 namespace Totoro.WinUI.Services;
 
@@ -55,10 +56,12 @@ public class Schedule : ISchedule
     private async Task ShowToast(long key)
     {
         var anime = await _malClient.Anime().WithId(key).WithField(x => x.UserStatus).Find();
-        if (anime.UserStatus is null)
+        if (anime.UserStatus is not { Status : MalApi.AnimeStatus.Watching})
+        {
             return;
+        }
 
-        new ToastContentBuilder().SetToastScenario(ToastScenario.Reminder)
+        new ToastContentBuilder().SetToastScenario(ToastScenario.Default)
             .AddText("New episode aired").AddText(anime.Title).Show();
     }
 

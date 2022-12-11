@@ -1,4 +1,6 @@
-﻿namespace Totoro.Core.Models;
+﻿using System.Diagnostics;
+
+namespace Totoro.Core.Models;
 
 public class WeeklyScheduleModel
 {
@@ -21,7 +23,7 @@ public class WeeklyScheduleModel
             DayOfWeek.Friday => Friday,
             DayOfWeek.Saturday => Saturday,
             DayOfWeek.Sunday => Sunday,
-            _ => throw new ArgumentException("invalid", nameof(day))
+            _ => throw new UnreachableException()
         };
     }
 

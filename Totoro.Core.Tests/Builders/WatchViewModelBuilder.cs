@@ -6,118 +6,93 @@ namespace Totoro.Core.Tests.Builders;
 
 internal class WatchViewModelBuilder
 {
-    private IProviderFactory _providerFactory = Mock.Of<IProviderFactory>();
-    private ITrackingService GetTrackingServce() => _trackingServiceMock.Object;
-    private IViewService _viewService = Mock.Of<IViewService>();
-    private ISettings _settings = Mock.Of<ISettings>();
-    private IPlaybackStateStorage GetPlaybackStateStorate() => _playbackStateStorageMock.Object;
-    private IDiscordRichPresense GetDiscordRpc() => _discordRpcMock.Object;
-    private IAnimeService _animeService = Mock.Of<IAnimeService>();
-    private IMediaPlayer _mediaPlayer;
-    private ITimestampsService _timestampsService = Mock.Of<ITimestampsService>();
-    private IRecentEpisodesProvider _recentEpisodesProvider = Mock.Of<IRecentEpisodesProvider>();
-
     private readonly Mock<IDiscordRichPresense> _discordRpcMock = new();
     private readonly Mock<IPlaybackStateStorage> _playbackStateStorageMock = new();
     private readonly Mock<ITrackingService> _trackingServiceMock = new();
+    private readonly Mock<IProviderFactory> _providerFactoryMock = new();
+    private readonly Mock<IViewService> _viewServiceMock = new();
+    private readonly Mock<ISettings> _settingsMock = new();
+    private readonly Mock<IAnimeService> _animeServiceMock = new();
+    private readonly Mock<ITimestampsService> _timestampsServiceMock = new();
+    private readonly Mock<IRecentEpisodesProvider> _recentEpisodesProviderMock = new();
 
-    public MockMediaPlayer MediaPlayer { get; } = new();
+    internal MockMediaPlayer MediaPlayer { get; } = new();
 
-    public WatchViewModelBuilder()
+    internal WatchViewModelBuilder()
     {
-        _mediaPlayer = MediaPlayer;
     }
 
-    public WatchViewModel Bulid()
+    internal WatchViewModel Bulid()
     {
-        return new WatchViewModel(_providerFactory,
-                                  GetTrackingServce(),
-                                  _viewService,
-                                  _settings,
-                                  GetPlaybackStateStorate(),
-                                  GetDiscordRpc(),
-                                  _animeService,
-                                  _mediaPlayer,
-                                  _timestampsService,
-                                  _recentEpisodesProvider);
+        return new WatchViewModel(_providerFactoryMock.Object,
+                                  _trackingServiceMock.Object,
+                                  _viewServiceMock.Object,
+                                  _settingsMock.Object,
+                                  _playbackStateStorageMock.Object,
+                                  _discordRpcMock.Object,
+                                  _animeServiceMock.Object,
+                                  MediaPlayer,
+                                  _timestampsServiceMock.Object,
+                                  _recentEpisodesProviderMock.Object,
+                                  Mock.Of<ILocalMediaService>());
     }
 
-    public WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
+    internal WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
     {
-        var mock = new Mock<IProviderFactory>();
-        configure(mock);
-        _providerFactory = mock.Object;
+        configure(_providerFactoryMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithTrackingService(Action<Mock<ITrackingService>> configure)
+    internal WatchViewModelBuilder WithTrackingService(Action<Mock<ITrackingService>> configure)
     {
         configure(_trackingServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithViewService(Action<Mock<IViewService>> configure)
+    internal WatchViewModelBuilder WithViewService(Action<Mock<IViewService>> configure)
     {
-        var mock = new Mock<IViewService>();
-        configure(mock);
-        _viewService = mock.Object;
+        configure(_viewServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithSettings(Action<Mock<ISettings>> configure)
+    internal WatchViewModelBuilder WithSettings(Action<Mock<ISettings>> configure)
     {
-        var mock = new Mock<ISettings>();
-        configure(mock);
-        _settings = mock.Object;
+        configure(_settingsMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> configure)
+    internal WatchViewModelBuilder WithPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> configure)
     {
         configure(_playbackStateStorageMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithDiscordRpc(Action<Mock<IDiscordRichPresense>> configure)
+    internal WatchViewModelBuilder WithDiscordRpc(Action<Mock<IDiscordRichPresense>> configure)
     {
         configure(_discordRpcMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithAnimeService(Action<Mock<IAnimeService>> configure)
+    internal WatchViewModelBuilder WithAnimeService(Action<Mock<IAnimeService>> configure)
     {
-        var mock = new Mock<IAnimeService>();
-        configure(mock);
-        _animeService = mock.Object;
+        configure(_animeServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithMediaPlayer(Action<Mock<IMediaPlayer>> configure)
+    internal WatchViewModelBuilder WithTimeStampService(Action<Mock<ITimestampsService>> configure)
     {
-        var mock = new Mock<IMediaPlayer>();
-        configure(mock);
-        _mediaPlayer = mock.Object;
+        configure(_timestampsServiceMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithTimeStampService(Action<Mock<ITimestampsService>> configure)
+    internal WatchViewModelBuilder WithRecentEpisodesProvider(Action<Mock<IRecentEpisodesProvider>> configure)
     {
-        var mock = new Mock<ITimestampsService>();
-        configure(mock);
-        _timestampsService = mock.Object;
+        configure(_recentEpisodesProviderMock);
         return this;
     }
 
-    public WatchViewModelBuilder WithRecentEpisodesProvider(Action<Mock<IRecentEpisodesProvider>> configure)
-    {
-        var mock = new Mock<IRecentEpisodesProvider>();
-        configure(mock);
-        _recentEpisodesProvider = mock.Object;
-        return this;
-    }
-
-    public void VerifyDiscordRpc(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
-    public void VerifyPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> verify) => verify(_playbackStateStorageMock);
-    public void VerifyTrackingService(Action<Mock<ITrackingService>> verify) => verify(_trackingServiceMock);
+    internal void VerifyDiscordRpc(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
+    internal void VerifyPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> verify) => verify(_playbackStateStorageMock);
+    internal void VerifyTrackingService(Action<Mock<ITrackingService>> verify) => verify(_trackingServiceMock);
 
 }

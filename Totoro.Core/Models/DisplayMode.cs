@@ -3,5 +3,6 @@
 public enum DisplayMode
 {
     Grid,
-    List
+    List,
+    DetailedGrid
 }

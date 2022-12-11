@@ -1,12 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Totoro.Core.Models;
-
-public class Inpc : INotifyPropertyChanged
-{
-    public event PropertyChangedEventHandler PropertyChanged;
-    public void RaisePropertyChanged(string property) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
-}
+﻿namespace Totoro.Core.Models;
 
 public interface IAnimeModel
 {
@@ -16,7 +8,7 @@ public interface IAnimeModel
     public Tracking Tracking { get; set; }
 }
 
-public class AnimeModel : Inpc, IAnimeModel
+public class AnimeModel : ReactiveObject, IAnimeModel
 {
     public long Id { get; set; }
     public string Image { get; set; }
@@ -27,6 +19,8 @@ public class AnimeModel : Inpc, IAnimeModel
     public float? MeanScore { get; set; }
     public int Popularity { get; set; }
     public List<string> AlternativeTitles { get; set; }
+    public string Description { get; set; }
+    public List<Video> Videos { get; set; }
 
     public override string ToString()
     {
@@ -41,6 +35,7 @@ public class SearchResultModel : IAnimeModel
     public Tracking Tracking { get; set; }
     public int? TotalEpisodes { get; set; }
     public override string ToString() => Title;
+    public List<string> AlternativeTitles { get; set; }
 }
 
 public class ScheduledAnimeModel : AnimeModel
@@ -51,11 +46,10 @@ public class ScheduledAnimeModel : AnimeModel
 
 public class FullAnimeModel : SeasonalAnimeModel
 {
-    public string Description { get; set; }
-
     public string[] Genres { get; set; }
 
     public AnimeModel[] Related { get; set; }
+
 }
 
 public class SeasonalAnimeModel : ScheduledAnimeModel
@@ -63,7 +57,7 @@ public class SeasonalAnimeModel : ScheduledAnimeModel
     public Season Season { get; set; }
 }
 
-public class TimeRemaining : Inpc
+public class TimeRemaining : ReactiveObject
 {
     public TimeSpan TimeSpan { get; set; }
     public DateTime LastUpdatedAt { get; set; }

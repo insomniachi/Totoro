@@ -1,11 +1,12 @@
 ﻿using System.Text.RegularExpressions;
 using AnimDL.Api;
+using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services;
 
 namespace Totoro.Core.ViewModels;
 
-public class WatchViewModel : NavigatableViewModel, IHaveState
+public partial class WatchViewModel : NavigatableViewModel, IHaveState
 {
     private readonly ITrackingService _trackingService;
     private readonly IViewService _viewService;
@@ -25,13 +26,15 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly ObservableAsPropertyHelper<AnimeTimeStamps> _timeStamps;
     private readonly ObservableAsPropertyHelper<double> _currentPlayerTime;
     private readonly ObservableAsPropertyHelper<double> _currentMediaDuration;
+    private readonly ObservableAsPropertyHelper<bool> _isFullWindow;
     private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
     private readonly ReadOnlyObservableCollection<int> _episodes;
 
     private int? _episodeRequest;
-    private bool canUpdateTime = false;
+    private bool _canUpdateTime = false;
+    private bool _isUpdatingTracking = false;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           ITrackingService trackingService,
@@ -42,7 +45,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
                           IAnimeService animeService,
                           IMediaPlayer mediaPlayer,
                           ITimestampsService timestampsService,
-                          IRecentEpisodesProvider recentEpisodesProvider)
+                          IRecentEpisodesProvider recentEpisodesProvider,
+                          ILocalMediaService localMediaService)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -50,14 +54,14 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         _playbackStateStorage = playbackStateStorage;
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
+        _recentEpisodesProvider = recentEpisodesProvider;
 
         MediaPlayer = mediaPlayer;
-        _recentEpisodesProvider = recentEpisodesProvider;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
 
-        NextEpisode = ReactiveCommand.Create(() => { CurrentEpisode++; canUpdateTime = false; }, HasNextEpisode, RxApp.MainThreadScheduler);
-        PrevEpisode = ReactiveCommand.Create(() => { CurrentEpisode--; canUpdateTime = false; }, HasPrevEpisode, RxApp.MainThreadScheduler);
+        NextEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); ++CurrentEpisode; }, HasNextEpisode, RxApp.MainThreadScheduler);
+        PrevEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); --CurrentEpisode; }, HasPrevEpisode, RxApp.MainThreadScheduler);
         SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
         SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);
@@ -72,7 +76,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .RefCount()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _searchResults)
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
+            .Subscribe()
             .DisposeWith(Garbage);
 
         _episodesCache
@@ -80,9 +84,13 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .RefCount()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Bind(out _episodes)
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
+            .Subscribe()
             .DisposeWith(Garbage);
 
+        MessageBus.Current
+            .Listen<RequestFullWindowMessage>()
+            .Select(message => message.IsFullWindow)
+            .ToProperty(this, nameof(IsFullWindow), out _isFullWindow, () => false);
 
         this.WhenAnyValue(x => x.SelectedProviderType)
             .Select(providerFactory.GetProvider)
@@ -95,24 +103,24 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(x => Anime is not null && x > 10)
-            .Where(x => canUpdateTime)
+            .Where(x => _canUpdateTime)
             .Subscribe(time => playbackStateStorage.Update(Anime.Id, CurrentEpisode.Value, time));
 
         // if we actualy know when episode ends, update tracking then.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(x => OutroPosition > 0 && x >= OutroPosition && Anime is not null && (Anime.Tracking?.WatchedEpisodes ?? 1) <= CurrentEpisode)
+            .Where(x => OutroPosition > 0 && x >= OutroPosition && Anime is not null && (Anime.Tracking?.WatchedEpisodes ?? 1) < CurrentEpisode)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .Do(_ => UpdateTracking())
+            .SelectMany(_ => UpdateTracking())
             .Subscribe();
 
         /// if we have less than configured seconds left and we have not completed this episode
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
             .Where(_ => Anime is not null && OutroPosition <= 0)
-            .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 1) <= CurrentEpisode)
+            .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 0) < CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletesInSeconds)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .Do(_ => UpdateTracking())
+            .SelectMany(_ => UpdateTracking())
             .Subscribe();
 
         /// populate searchbox suggestions
@@ -125,10 +133,21 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         // Triggers the first step to scrape stream urls
         this.ObservableForProperty(x => x.Anime, x => x)
+            .Where(_ => !UseLocalMedia)
             .WhereNotNull()
             .SelectMany(model => Find(model.Id, model.Title))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => SelectedAnimeResult = x);
+
+        this.ObservableForProperty(x => x.Anime, x => x)
+            .Where(_ => UseLocalMedia)
+            .WhereNotNull()
+            .Select(model => localMediaService.GetEpisodes(model.Id))
+            .Do(eps => _episodesCache.EditDiff(eps))
+            .Select(_ => _episodeRequest ?? Anime?.Tracking?.WatchedEpisodes + 1 ?? 1)
+            .Where(ep => ep <= Anime?.TotalEpisodes)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(ep => CurrentEpisode = ep);
 
         /// 1. Select Sub/Dub based in <see cref="UseDub"/> if Dub is not present select Sub
         /// 2. Set <see cref="SelectedAudio"/>
@@ -153,19 +172,31 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .SelectMany(result => Provider.StreamProvider.GetNumberOfStreams(result.Url))
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
-            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes + 1) ?? 1)
-            .Where(ep => ep <= Anime?.TotalEpisodes)
+            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1)
+            .Where(ep => ep <= (Anime?.TotalEpisodes ?? int.MaxValue))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
 
         /// Scrape url for <see cref="CurrentEpisode"/> and set to <see cref="Url"/>
         episodeChanged
+            .Where(_ => !UseLocalMedia)
             .Do(x => DoIfRpcEnabled(() => discordRichPresense.UpdateState($"Episode {x}")))
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(ep => Provider.StreamProvider.GetStreams(SelectedAudio.Url, ep.Value..ep.Value).ToListAsync().AsTask())
             .Select(list => list.FirstOrDefault())
             .WhereNotNull()
             .ToProperty(this, nameof(Streams), out _streams);
+
+        episodeChanged
+            .Where(_ => UseLocalMedia)
+            .Do(x => DoIfRpcEnabled(() => discordRichPresense.UpdateState($"Episode {x}")))
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .Select(ep => localMediaService.GetMedia(Anime.Id, ep.Value))
+            .Where(file => !string.IsNullOrEmpty(file))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(async file => await mediaPlayer.SetMedia(file))
+            .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
+            .Subscribe();
 
         // Update qualities selection
         this.ObservableForProperty(x => x.Streams, x => x)
@@ -178,8 +209,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         this.ObservableForProperty(x => x.SelectedStream, x => x)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(stream => MediaPlayer.SetMedia(stream))
-            .Do(_ => MediaPlayer.Play(_playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
+            .Do(stream => mediaPlayer.SetMedia(stream))
+            .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
             .Subscribe();
 
         // get start position of intro if available
@@ -200,8 +231,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
             .Select(ep => TimeStamps?.GetOutroStartPosition(ep) ?? 0)
             .ToProperty(this, nameof(OutroPosition), out _outroPosition);
 
-        Observable
-            .Merge(SkipButtonVisibleTrigger(), SkipButtonHideTrigger())
+        SkipButtonVisibleTrigger()            .Merge(SkipButtonHideTrigger())
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, nameof(IsSkipIntroButtonVisible), out _isSkipIntroButtonVisible)
             .DisposeWith(Garbage);
@@ -235,7 +265,8 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     [Reactive] public SearchResult SelectedAudio { get; set; }
     [Reactive] public IAnimeModel Anime { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
-
+    [Reactive] public bool UseLocalMedia { get; set; }
+    public bool IsFullWindow => _isFullWindow?.Value ?? false;
     public bool IsSkipIntroButtonVisible => _isSkipIntroButtonVisible?.Value ?? false;
     public IProvider Provider => _provider.Value;
     public bool HasSubAndDub => _hasSubAndDub.Value;
@@ -258,9 +289,14 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
     public ICommand SkipOpening { get; }
     public ICommand SkipOpeningDynamic { get; }
     public ICommand ChangeQuality { get; }
-
+    
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        if(parameters.ContainsKey("UseLocalMedia"))
+        {
+            UseLocalMedia = (bool)parameters["UseLocalMedia"];
+        }
+
         if (parameters.ContainsKey("Anime"))
         {
             Anime = parameters["Anime"] as IAnimeModel;
@@ -268,7 +304,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
-            var epMatch = Regex.Match(epInfo.EpisodeUrl, @"ep(\d+)");
+            var epMatch = EpisodeRegex().Match(epInfo.EpisodeUrl);
             _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
 
             _recentEpisodesProvider
@@ -357,9 +393,9 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
         MediaPlayer
             .PlaybackEnded
-            .Do(_ => canUpdateTime = false)
+            .Do(_ => _canUpdateTime = false)
             .Do(_ => DoIfRpcEnabled(() => _discordRichPresense.Clear()))
-            .Do(_ => UpdateTracking())
+            .SelectMany(_ => UpdateTracking())
             .ObserveOn(RxApp.MainThreadScheduler)
             .Do(_ => NativeMethods.AllowSleep())
             .InvokeCommand(NextEpisode)
@@ -368,8 +404,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         MediaPlayer
             .Paused
             .Where(_ => _settings.UseDiscordRichPresense)
-            .Do(_ => _discordRichPresense.UpdateDetails("Paused"))
-            .Do(_ => _discordRichPresense.UpdateState(""))
+            .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode} (Paused)"))
             .Do(_ => _discordRichPresense.ClearTimer())
             .Do(_ => NativeMethods.AllowSleep())
             .Subscribe().DisposeWith(Garbage);
@@ -377,34 +412,44 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
         MediaPlayer
             .Playing
             .Where(_ => _settings.UseDiscordRichPresense)
-            .Do(_ => canUpdateTime = true)
-            .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio.Title))
+            .Do(_ => _canUpdateTime = true)
+            .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio?.Title ?? Anime.Title))
             .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
             .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))
             .Do(_ => NativeMethods.PreventSleep())
             .Subscribe().DisposeWith(Garbage);
     }
 
-    public void UpdateTracking()
+    public async Task<Unit> UpdateTracking()
     {
-        _playbackStateStorage.Reset(Anime.Id, CurrentEpisode.Value);
+        if(_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= Streams.Episode)
+        {
+            return Unit.Default;
+        }
 
-        var tracking = new Tracking() { WatchedEpisodes = CurrentEpisode };
+        _isUpdatingTracking = true;
+        this.Log().Debug($"Updating tracking for {Anime.Title} from {Anime.Tracking?.WatchedEpisodes ?? Streams.Episode - 1} to {Streams.Episode}");
 
-        if (CurrentEpisode == Anime.TotalEpisodes)
+        _playbackStateStorage.Reset(Anime.Id, Streams.Episode);
+
+        var tracking = new Tracking() { WatchedEpisodes = Streams.Episode };
+
+        if (Streams.Episode == Anime.TotalEpisodes)
         {
             tracking.Status = AnimeStatus.Completed;
             tracking.FinishDate = DateTime.Today;
         }
-        else if(CurrentEpisode == 1)
+        else if(Streams.Episode == 1)
         {
             tracking.Status = AnimeStatus.Watching;
             tracking.StartDate = DateTime.Today;
         }
 
-        _trackingService.Update(Anime.Id, tracking)
-                        .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(x => Anime.Tracking = x);
+        Anime.Tracking = await _trackingService.Update(Anime.Id, tracking);
+
+        _isUpdatingTracking = false;
+
+        return Unit.Default;
     }
 
     private void DoIfRpcEnabled(Action action)
@@ -435,4 +480,7 @@ public class WatchViewModel : NavigatableViewModel, IHaveState
 
     private IObservable<bool> HasNextEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.LastOrDefault());
     private IObservable<bool> HasPrevEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.FirstOrDefault());
+
+    [GeneratedRegex("ep(\\d+)")]
+    private static partial Regex EpisodeRegex();
 }

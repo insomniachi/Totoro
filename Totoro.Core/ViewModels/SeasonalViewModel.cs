@@ -10,42 +10,65 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     private readonly ReadOnlyObservableCollection<SeasonalAnimeModel> _anime;
 
     public SeasonalViewModel(IAnimeService animeService,
-                             IViewService viewService)
+                             IViewService viewService,
+                             INavigationService navigationService)
     {
         _animeService = animeService;
         _viewService = viewService;
+
+        SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
+        AddToListCommand = ReactiveCommand.CreateFromTask<AnimeModel>(AddToList);
+        ItemClickedCommand = ReactiveCommand.Create<SeasonalAnimeModel>(m => navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object> { ["Id"] = m.Id }));
+        SetSortCommand = ReactiveCommand.Create<Sort>(s => Sort = s);
+
+        var sort = this.WhenAnyValue(x => x.Sort)
+            .Select(sort => sort switch
+            {
+                Sort.Popularity => SortExpressionComparer<SeasonalAnimeModel>.Ascending(x => x.Popularity),
+                Sort.Score => SortExpressionComparer<SeasonalAnimeModel>.Descending(x => x.MeanScore ?? 0),
+                _ => throw new NotSupportedException(),
+            });
 
         _animeCache
             .Connect()
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason))
             .Filter(this.WhenAnyValue(x => x.SearchText).Select(x => x?.ToLower()).Select(FilterByTitle))
-            .Sort(SortExpressionComparer<SeasonalAnimeModel>.Ascending(x => x.Popularity))
+            .Sort(sort)
+            .Page(PagerViewModel.AsPager())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(changes => PagerViewModel.Update(changes.Response))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
 
         this.WhenAnyValue(x => x.SeasonFilter).Subscribe(SwitchSeasonFilter);
-
-
-        SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
-        AddToListCommand = ReactiveCommand.CreateFromTask<AnimeModel>(AddToList);
     }
 
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public Season Season { get; set; }
     [Reactive] public string SeasonFilter { get; set; } = "Current";
     [Reactive] public string SearchText { get; set; }
+    [Reactive] public Sort Sort { get; set; } = Sort.Popularity;
+    public PagerViewModel PagerViewModel { get; } = new PagerViewModel(0, 15);
     public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }
+    public ICommand ItemClickedCommand { get; }
+    public ICommand SetSortCommand { get; }
 
     public Task SetInitialState()
     {
+        IsLoading = true;
+
         _animeService.GetSeasonalAnime()
                      .ObserveOn(RxApp.MainThreadScheduler)
-                     .Subscribe(list => _animeCache.Edit(x => x.AddOrUpdate(list)))
+                     .Subscribe(list =>
+                     {
+                         _animeCache.Edit(x => x.AddOrUpdate(list));
+                         IsLoading = false;
+                     })
                      .DisposeWith(Garbage);
 
         Season = Current;
@@ -56,13 +79,15 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     public void StoreState(IState state)
     {
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
-        state.AddOrUpdate(Season);
+        state.AddOrUpdate(SeasonFilter);
+        state.AddOrUpdate(Sort);
     }
 
     public void RestoreState(IState state)
     {
         var anime = state.GetValue<IEnumerable<SeasonalAnimeModel>>(nameof(Anime));
-        Season = state.GetValue<Season>(nameof(Season));
+        SeasonFilter = state.GetValue<string>(nameof(SeasonFilter));
+        Sort = state.GetValue<Sort>(nameof(Sort));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
     }
 
@@ -77,7 +102,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         };
     }
 
-    private async Task AddToList(AnimeModel a) => await _viewService.UpdateAnimeStatus(a);
+    private async Task AddToList(AnimeModel a) => await _viewService.UpdateTracking(a);
     private static Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
     private static Func<SeasonalAnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
                                                                                       x.Title.ToLower().Contains(title) ||
@@ -85,5 +110,6 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     public static Season Current => AnimeHelpers.CurrentSeason();
     public static Season Next => AnimeHelpers.NextSeason();
     public static Season Prev => AnimeHelpers.PrevSeason();
+    public void RefreshData() => _animeCache.Refresh();
 
 }

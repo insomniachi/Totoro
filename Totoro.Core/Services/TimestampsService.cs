@@ -1,7 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
+using Microsoft.AspNetCore.WebUtilities;
 using Totoro.Core.Helpers;
 
 namespace Totoro.Core.Services;
@@ -9,61 +11,66 @@ namespace Totoro.Core.Services;
 public class TimestampsService : ITimestampsService
 {
 
-    private readonly GraphQLHttpClient _animeSkipClient = new GraphQLHttpClient("https://api.anime-skip.com/graphql", new SystemTextJsonSerializer());
+    private readonly GraphQLHttpClient _animeSkipClient = new("https://api.anime-skip.com/graphql", new SystemTextJsonSerializer());
     private readonly IAnimeIdService _animeIdService;
     private readonly Dictionary<long, List<OfflineEpisodeTimeStamp>> _offlineTimestamps;
 
-    public TimestampsService(IAnimeIdService animeIdService)
+    public TimestampsService(IAnimeIdService animeIdService,
+                             IFileService fileService)
     {
-        _animeSkipClient.HttpClient.DefaultRequestHeaders.Add("X-Client-ID", "ZGfO0sMF3eCwLYf8yMSCJjlynwNGRXWE");
         _animeIdService = animeIdService;
+        _animeSkipClient.HttpClient.DefaultRequestHeaders.Add("X-Client-ID", "ZGfO0sMF3eCwLYf8yMSCJjlynwNGRXWE");
 
-        _offlineTimestamps = JsonSerializer.Deserialize<Dictionary<long, List<OfflineEpisodeTimeStamp>>>(File.ReadAllText(@"timestamps_generated.json"));
+        _offlineTimestamps = fileService.Read<Dictionary<long, List<OfflineEpisodeTimeStamp>>>("", "timestamps_generated.json");
     }
 
     public async Task<AnimeTimeStamps> GetTimeStamps(long malId)
     {
         var animeTimeStamps = new AnimeTimeStamps();
 
-        var id = await _animeIdService.GetId(AnimeTrackerType.MyAnimeList, malId);
-        if (_offlineTimestamps.ContainsKey(id.AniDb))
+        try
         {
-            foreach (var item in _offlineTimestamps[id.AniDb])
+            var id = await _animeIdService.GetId(AnimeTrackerType.MyAnimeList, malId);
+            if (_offlineTimestamps.TryGetValue(id.AniDb, out List<OfflineEpisodeTimeStamp> value))
             {
-                animeTimeStamps.EpisodeTimeStamps.Add(item.Episode.ToString(), item);
-            }
+                foreach (var item in value)
+                {
+                    animeTimeStamps.EpisodeTimeStamps.Add(item.Episode.ToString(), item);
+                }
 
-            return animeTimeStamps;
-        }
-        else
-        {
-            var animeSkipRequest = new GraphQLRequest
-            {
-                Query = GraphQLQueries.GetTimeStamps(),
-                Variables = new { serviceId = id.AniList.ToString() }
-            };
-
-            var showResponse = await _animeSkipClient.SendQueryAsync<ShowResponse>(animeSkipRequest);
-
-
-            if (showResponse.Data is null || showResponse.Data.Shows is null || showResponse.Data.Shows.Length == 0)
-            {
                 return animeTimeStamps;
             }
-
-            foreach (var item in showResponse.Data.Shows[0].Episodes)
+            else
             {
-                try
+                var animeSkipRequest = new GraphQLRequest
                 {
-                    var intro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("intro"))?.Time ?? -1.0;
-                    var outro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("outro"))?.Time ?? -1.0;
-                    animeTimeStamps.EpisodeTimeStamps.Add(item.EpisodeNumber, new EpisodeTimeStamp { Intro = intro, Outro = outro });
-                }
-                catch { }
-            }
+                    Query = GraphQLQueries.GetTimeStamps(),
+                    Variables = new { serviceId = id.AniList.ToString() }
+                };
 
-            return animeTimeStamps;
+                var showResponse = await _animeSkipClient.SendQueryAsync<ShowResponse>(animeSkipRequest);
+
+                if(showResponse is not { Data.Shows.Length: > 0})
+                {
+                    return animeTimeStamps;
+                }
+
+                foreach (var item in showResponse.Data.Shows[0].Episodes)
+                {
+                    try
+                    {
+                        var intro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("intro"))?.Time ?? -1.0;
+                        var outro = item.TimeStamps.FirstOrDefault(x => x.Type.Description.ToLower().Contains("outro"))?.Time ?? -1.0;
+                        animeTimeStamps.EpisodeTimeStamps.Add(item.EpisodeNumber, new EpisodeTimeStamp { Intro = intro, Outro = outro });
+                    }
+                    catch { }
+                }
+
+                return animeTimeStamps;
+            }
         }
+        catch { }
+        return animeTimeStamps;
     }
 }
 
@@ -73,9 +80,9 @@ public class AnimeTimeStamps
 
     public double GetIntroStartPosition(string episode)
     {
-        if (EpisodeTimeStamps.ContainsKey(episode))
+        if (EpisodeTimeStamps.TryGetValue(episode, out EpisodeTimeStamp value))
         {
-            return EpisodeTimeStamps[episode].Intro;
+            return value.Intro;
         }
 
         return -1.0;
@@ -88,15 +95,16 @@ public class AnimeTimeStamps
 
     public double GetOutroStartPosition(string episode)
     {
-        if (EpisodeTimeStamps.ContainsKey(episode))
+        if (EpisodeTimeStamps.TryGetValue(episode, out EpisodeTimeStamp value))
         {
-            return EpisodeTimeStamps[episode].Outro;
+            return value.Outro;
         }
 
         return -1.0;
     }
 }
 
+[ExcludeFromCodeCoverage]
 public class EpisodeTimeStamp
 {
 
@@ -107,7 +115,8 @@ public class EpisodeTimeStamp
     public double Outro { get; set; }
 }
 
-internal class OfflineEpisodeTimeStamp : EpisodeTimeStamp
+[ExcludeFromCodeCoverage]
+public class OfflineEpisodeTimeStamp : EpisodeTimeStamp
 {
     [JsonPropertyName("episode_number")]
     public int Episode { get; set; }

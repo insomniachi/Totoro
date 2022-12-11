@@ -1,5 +1,7 @@
 ﻿namespace Totoro.Core.Models;
 
+// TODO: Refactor, every model became the same thing over time.
+
 public class MalToModelConverter
 {
     private readonly ISchedule _schedule;
@@ -23,9 +25,35 @@ public class MalToModelConverter
         };
     }
 
-    public SearchResultModel ToSearchResult(MalApi.Anime a)
+    public SearchResultModel ToSearchResult(MalApi.Anime malModel)
     {
-        return new SearchResultModel { Title = a.Title, Id = a.Id };
+        var model =  new SearchResultModel 
+        {
+            Title = malModel.Title, 
+            Id = malModel.Id,
+            TotalEpisodes = malModel.TotalEpisodes,
+        };
+
+        if (malModel.UserStatus is { } progress)
+        {
+            model.Tracking = new Tracking
+            {
+                WatchedEpisodes = progress.WatchedEpisodes,
+                Status = (AnimeStatus)(int)progress.Status,
+                Score = (int)progress.Score,
+                UpdatedAt = progress.UpdatedAt,
+                StartDate = progress.StartDate,
+                FinishDate = progress.FinishDate
+            };
+        }
+
+        if (malModel.AlternativeTitles is { } alt)
+        {
+            model.AlternativeTitles = alt.Aliases.ToList();
+            model.AlternativeTitles.Add(alt.English);
+        }
+
+        return model;
     }
 
     private static AnimeModel Populate(AnimeModel model, MalApi.Anime malModel)
@@ -33,6 +61,7 @@ public class MalToModelConverter
         model.Id = malModel.Id;
         model.Title = malModel.Title;
         model.Image = malModel.MainPicture.Large;
+        model.Description = malModel.Synopsis;
         if (malModel.UserStatus is { } progress)
         {
             model.Tracking = new Tracking
@@ -54,6 +83,18 @@ public class MalToModelConverter
         {
             model.AlternativeTitles = alt.Aliases.ToList();
             model.AlternativeTitles.Add(alt.English);
+            model.AlternativeTitles.Add(alt.Japanese);
+        }
+
+        if(malModel.Videos is { } videos)
+        {
+            model.Videos = malModel.Videos.Select(x => new Video
+            {
+                Id = x.Id,
+                Thumbnail = x.Thumbnail,
+                Title = x.Title,
+                Url = x.Url,
+            }).ToList();
         }
 
         return model;

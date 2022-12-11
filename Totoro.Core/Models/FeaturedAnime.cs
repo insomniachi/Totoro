@@ -22,3 +22,6 @@ public class FeaturedAnime
     [JsonPropertyName("desc")]
     public string Description { get; set; }
 }
+
+[JsonSerializable(typeof(List<FeaturedAnime>))]
+public partial class FeaturedAnimeCollectionSerializerContext : JsonSerializerContext { }

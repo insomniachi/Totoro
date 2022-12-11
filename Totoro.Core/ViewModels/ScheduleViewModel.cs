@@ -8,10 +8,13 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     private readonly ReadOnlyObservableCollection<ScheduledAnimeModel> _anime;
     private readonly ObservableAsPropertyHelper<DayOfWeek> _filter;
     private readonly ITrackingService _trackingService;
+    private readonly ISystemClock _systemClock;
 
-    public ScheduleViewModel(ITrackingService trackingService)
+    public ScheduleViewModel(ITrackingService trackingService,
+                             ISystemClock systemClock)
     {
         _trackingService = trackingService;
+        _systemClock = systemClock;
 
         this.WhenAnyValue(x => x.SelectedDay)
             .WhereNotNull()
@@ -39,7 +42,14 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         var anime = state.GetValue<IEnumerable<ScheduledAnimeModel>>(nameof(Anime));
         InitSchedule(anime);
         _animeCache.Edit(x => x.AddOrUpdate(anime));
-        SelectedDay = state.GetValue<ScheduleModel>(nameof(SelectedDay));
+        WeeklySchedule = Schedule.ToList();
+        SelectedDay = WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == state.GetValue<DayOfWeek>(nameof(SelectedDay)));
+    }
+    
+    public void StoreState(IState state)
+    {
+        state.AddOrUpdate(_animeCache.Items, nameof(Anime));
+        state.AddOrUpdate(SelectedDay.DayOfWeek, nameof(SelectedDay));
     }
 
     public Task SetInitialState()
@@ -47,23 +57,17 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         var current = AnimeHelpers.CurrentSeason();
 
         _trackingService.GetCurrentlyAiringTrackedAnime()
-                        .Do(list => InitSchedule(list))
+                        .Do(InitSchedule)
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(list =>
                         {
                             WeeklySchedule = Schedule.ToList();
                             this.RaisePropertyChanged(nameof(Schedule));
-                            SelectedDay = WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == DateTime.Today.DayOfWeek) ?? GetNextDayWithAiringAnime();
+                            SelectedDay = GetSelectedDay();
                             _animeCache.Edit(x => x.AddOrUpdate(list));
                         });
 
         return Task.CompletedTask;
-    }
-
-    public void StoreState(IState state)
-    {
-        state.AddOrUpdate(_animeCache.Items, nameof(Anime));
-        state.AddOrUpdate(SelectedDay);
     }
 
     private void InitSchedule(IEnumerable<ScheduledAnimeModel> anime)
@@ -76,10 +80,31 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         }
     }
 
+    private ScheduleModel GetSelectedDay() => WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == _systemClock.Today.DayOfWeek) ?? GetNextDayWithAiringAnime();
+
     private ScheduleModel GetNextDayWithAiringAnime()
     {
-        return WeeklySchedule.FirstOrDefault(x => x.DayOfWeek > DateTime.Today.DayOfWeek)
-            ?? WeeklySchedule.LastOrDefault(x => x.DayOfWeek < DateTime.Today.DayOfWeek); 
+        var days = Enum.GetValues<DayOfWeek>();
+        var today = _systemClock.Today.DayOfWeek;
+        var todayIndex = days.IndexOf(today);
+        var index = NextCyclicValue(todayIndex, days);
+
+        while(index != todayIndex)
+        {
+            if (Schedule[days[index]] is { Count: > 0 } day)
+            {
+                return day;
+            }
+
+            index = NextCyclicValue(index, days);
+        }
+
+        return null; // This should only happen when you are watching nothing.
+    }
+
+    private static int NextCyclicValue<T>(int index, T[] values)
+    {
+        return index == values.Length - 1 ? 0 : index + 1;
     }
 
     private static Func<ScheduledAnimeModel, bool> FilterByDay(DayOfWeek day) => a => a.BroadcastDay == day;

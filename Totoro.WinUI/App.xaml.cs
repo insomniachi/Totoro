@@ -1,9 +1,18 @@
-﻿using AnimDL.Core;
+﻿using System.Diagnostics;
+using AnimDL.Core;
+using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Splat;
+using Totoro.Core;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
+using Totoro.WinUI.Services;
 using Windows.ApplicationModel;
+using WinUIEx;
+using Splat.Serilog;
+using Serilog;
+using Microsoft.Extensions.Options;
 
 namespace Totoro.WinUI;
 
@@ -31,11 +40,14 @@ public partial class App : Application
                     .AddDialogPages();
 
             services.AddSingleton(MessageBus.Current);
+            services.AddTransient<DefaultExceptionHandler>();
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
         })
         .Build();
+
+    public static TotoroCommands Commands { get; private set; }
 
     public static T GetService<T>()
         where T : class
@@ -43,14 +55,38 @@ public partial class App : Application
         return _host.Services.GetService(typeof(T)) as T;
     }
 
-    public static object GetService(System.Type t) => _host.Services.GetService(t);
+    public static object GetService(Type t) => _host.Services.GetService(t);
 
-    public static Window MainWindow { get; set; } = new Window() { Title = "AppDisplayName".GetLocalized() };
+    public static WindowEx MainWindow { get; set; } = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
 
     public App()
     {
         InitializeComponent();
+        ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+        AppDomain.CurrentDomain.ProcessExit += OnExit;
         UnhandledException += App_UnhandledException;
+    }
+
+    private void OnExit(object sender, EventArgs e)
+    {
+        ToastNotificationManagerCompat.Uninstall();
+    }
+
+    private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
+    {
+        var args = ToastArguments.Parse(e.Argument);
+
+        switch (args.GetEnum<ToastType>("Type"))
+        {
+            case ToastType.DownloadComplete:
+                Process.Start(new ProcessStartInfo { FileName = args.Get("File"), UseShellExecute = true });
+                break;
+        }
+
+        if (args.GetBool("NeedUI"))
+        {
+            MainWindow.Activate();
+        }
     }
 
 
@@ -59,6 +95,18 @@ public partial class App : Application
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
+        RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
+        Commands = GetService<TotoroCommands>();
+        var appDataFolder = GetService<IOptions<LocalSettingsOptions>>().Value.ApplicationDataFolder;
+        var log = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appDataFolder, "Logs/log.txt");
+        Log.Logger = new LoggerConfiguration()
+                    .Enrich.FromLogContext()
+                    .WriteTo.File(log, rollingInterval: RollingInterval.Day)
+                    .MinimumLevel.Debug()
+                    .CreateLogger();
+
+        Locator.CurrentMutable.UseSerilogFullLogger();
+        
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
     }

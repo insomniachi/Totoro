@@ -3,9 +3,11 @@ using MalApi;
 using MalApi.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Totoro.Core;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.MyAnimeList;
+using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Activation;
 using Totoro.WinUI.Contracts;
@@ -59,11 +61,13 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IMalClient, MalClient>(x =>
         {
-            var token = x.GetRequiredService<ILocalSettingsService>().ReadSetting<OAuthToken>("MalToken");
+            var settingService = x.GetRequiredService<ILocalSettingsService>();
+            var token = settingService.ReadSetting<OAuthToken>("MalToken");
             var clientId = context.Configuration["ClientId"];
-            if (token is { IsExpired: true })
+            if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
             {
-                token = MalAuthHelper.RefreshToken(token.RefreshToken, clientId).Result;
+                token = MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
+                settingService.SaveSetting("MalToken", token);
             }
             var client = new MalClient();
             if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
@@ -86,26 +90,35 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
         services.AddSingleton<IActivationService, ActivationService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
+        services.AddTransient<IToastService, ToastService>();
 
         return services;
     }
 
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
-        services.AddTransient<IViewService, ViewService>();
-        services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
         services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
-        services.AddTransient<MalToModelConverter>();
-        services.AddSingleton<IFileService, FileService>();
+        services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
         services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
         services.AddSingleton<ISchedule, Schedule>();
+        services.AddSingleton<ITimestampsService, TimestampsService>();
+        services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
+        services.AddSingleton<ITorrentsService, TorrentsService>();
+        services.AddSingleton<ILocalMediaService, LocalMediaService>();
+        
+        services.AddTransient<IFileService, FileService>();
+        services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+        services.AddTransient<IViewService, ViewService>();
+        services.AddTransient<MalToModelConverter>();
         services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
         services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
-        services.AddSingleton<ITimestampsService, TimestampsService>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();
-        services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
+        services.AddTransient<IShanaProjectService, ShanaProjectService>();
+        services.AddTransient<TotoroCommands>();
+        services.AddTransient<ISystemClock, SystemClock>();
+        services.AddTransient<ISchedulerProvider, SchedulerProvider>();
+        
         services.AddMemoryCache();
         services.AddHttpClient();
 
@@ -121,7 +134,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<ScheduleViewModel, SchedulePage>();
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
         services.AddPageForNavigation<AboutAnimeViewModel, AboutAnimePage>();
-
+        services.AddPageForNavigation<DownloadViewModel, DownloadPage>();
         return services;
     }
 
@@ -131,6 +144,7 @@ public static class ServiceCollectionExtensions
         services.AddPage<ChooseSearchResultViewModel, ChooseSearchResultView>();
         services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
         services.AddPage<PlayVideoDialogViewModel, VideoView>();
+        services.AddPage<SelectModelViewModel, SelectModelView>();
         return services;
     }
 }

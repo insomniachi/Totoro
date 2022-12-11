@@ -1,6 +1,7 @@
 ﻿using System.Web;
 using MalApi;
 using MalApi.Interfaces;
+using Totoro.Core;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;

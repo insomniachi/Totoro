@@ -32,9 +32,10 @@ public class LocalSettingsService : ILocalSettingsService
             Directory.CreateDirectory(_applicationDataFolder);
         }
 
-        _settings = new Dictionary<string, object>();
         Initialize();
     }
+
+    public string ApplicationDataFolder => _applicationDataFolder;
 
     private void Initialize()
     {

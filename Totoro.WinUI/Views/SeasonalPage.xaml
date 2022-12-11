@@ -8,7 +8,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:views="using:Totoro.WinUI.Views"
     x:Name="Page"
     Margin="{ThemeResource MediumLeftRightMargin}"
@@ -22,17 +24,19 @@
         </ResourceDictionary>
     </views:SeasonalPageBase.Resources>
 
-    <Grid x:Name="ContentArea">
+    <Grid x:Name="ContentArea" Margin="0,25,0,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel
-            HorizontalAlignment="Center"
-            Orientation="Horizontal"
-            Spacing="10">
+        <Grid HorizontalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <ListBox
                 x:Name="SeasonsStrip"
                 Margin="{StaticResource SmallTopBottomMargin}"
@@ -51,17 +55,18 @@
                 </ListBox.ItemTemplate>
                 <ListBox.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
-                        <Setter Property="Height" Value="35" />
+                        <Setter Property="Height" Value="40" />
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <ItemsStackPanel Orientation="Horizontal" />
+                        <ctk:WrapPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
             </ListBox>
 
             <AutoSuggestBox
+                Grid.Row="1"
                 Width="300"
                 Height="35"
                 VerticalAlignment="Center"
@@ -70,22 +75,36 @@
                 QueryIcon="Find"
                 Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-        </StackPanel>
+        </Grid>
+
+        <PipsPager
+            Grid.Row="1"
+            Margin="{StaticResource SmallTopBottomMargin}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            NextButtonVisibility="Visible"
+            NumberOfPages="{x:Bind ViewModel.PagerViewModel.PageCount, Mode=OneWay}"
+            PreviousButtonVisibility="Visible"
+            SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />
 
 
         <GridView
             x:Name="AnimeListView"
-            Grid.Row="1"
+            Grid.Row="2"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+            ui:ListViewExtensions.Command="{x:Bind ViewModel.ItemClickedCommand}"
             IsItemClickEnabled="True"
             ItemsSource="{x:Bind ViewModel.Anime}">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="cm:AnimeModel">
-                    <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
+                    <uc:AnimeCard
+                        x:Name="Card"
+                        Anime="{x:Bind}"
+                        DisplayMode="DetailedGrid">
                         <uc:AnimeCard.Flyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem
-                                    Command="{Binding ElementName=Card, Path=UpdateStatusCommand}"
+                                    Command="{x:Bind root:App.Commands.UpdateTracking}"
                                     CommandParameter="{x:Bind}"
                                     Text="Update">
                                     <MenuFlyoutItem.Icon>
@@ -93,7 +112,7 @@
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem
-                                    Command="{Binding ElementName=Card, Path=WatchCommand}"
+                                    Command="{x:Bind root:App.Commands.Watch}"
                                     CommandParameter="{x:Bind}"
                                     Text="Watch">
                                     <MenuFlyoutItem.Icon>
@@ -114,19 +133,17 @@
 
         <ctk:Loading
             x:Name="LoadingControl"
-            Grid.Row="1"
+            Grid.Row="2"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ctk:Loading.Background>
-                <AcrylicBrush TintColor="Black" TintOpacity="0.4" />
-            </ctk:Loading.Background>
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
         </ctk:Loading>
 
 
         <CommandBar
-            Grid.Row="2"
+            Grid.Row="3"
             Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
             DefaultLabelPosition="Bottom">
+            <AppBarElementContainer />
             <AppBarButton Icon="Refresh" Label="Refresh" />
             <AppBarButton Icon="View" Label="Display mode">
                 <AppBarButton.Flyout>
@@ -141,6 +158,22 @@
                                 <FontIcon Glyph="&#xf0e4;" />
                             </RadioMenuFlyoutItem.Icon>
                         </RadioMenuFlyoutItem>
+                    </MenuFlyout>
+                </AppBarButton.Flyout>
+            </AppBarButton>
+            <AppBarButton Icon="Sort" Label="Sort">
+                <AppBarButton.Flyout>
+                    <MenuFlyout>
+                        <RadioMenuFlyoutItem
+                            x:Name="PopularityRadio"
+                            Command="{x:Bind ViewModel.SetSortCommand}"
+                            CommandParameter="{x:Bind cm:Sort.Popularity}"
+                            Text="Popularity" />
+                        <RadioMenuFlyoutItem
+                            x:Name="ScoreRadio"
+                            Command="{x:Bind ViewModel.SetSortCommand}"
+                            CommandParameter="{x:Bind cm:Sort.Score}"
+                            Text="Score" />
                     </MenuFlyout>
                 </AppBarButton.Flyout>
             </AppBarButton>

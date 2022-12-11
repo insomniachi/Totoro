@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
 		<RootNamespace>Totoro.WinUI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x64</Platforms>
@@ -18,23 +18,24 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.1" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.8" />
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
 		<PackageReference Include="DiscordRichPresence" Version="1.0.175" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.220930.4-preview2" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221116.1" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
 		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.2.3">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="ReactiveUI" Version="18.3.1" />
-		<PackageReference Include="ReactiveUI.Fody" Version="18.3.1" />
-		<PackageReference Include="ReactiveUI.WinUI" Version="18.3.1" />
+		<PackageReference Include="ReactiveUI" Version="18.4.1" />
+		<PackageReference Include="ReactiveUI.Fody" Version="18.4.1" />
+		<PackageReference Include="ReactiveUI.WinUI" Version="18.4.1" />
 		<PackageReference Include="System.Reactive" Version="5.0.0" />
+		<PackageReference Include="WinUIEx" Version="1.8.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -42,6 +43,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="Assets\placeholder.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="Assets\SplashScreen.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Update="Assets\WindowIcon.ico">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -53,6 +60,15 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="MainWindow.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Dialogs\Views\SelectModelView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\DownloadPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Views\AboutAnimePage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

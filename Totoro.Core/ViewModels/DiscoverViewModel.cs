@@ -9,6 +9,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
     private readonly INavigationService _navigationService;
     private readonly ITrackingService _trackingService;
+    private readonly ISchedulerProvider _schedulerProvider;
     private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Anime);
     private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
     private List<AnimeModel> _userAnime = new();
@@ -16,12 +17,14 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     public DiscoverViewModel(IRecentEpisodesProvider recentEpisodesProvider,
                              IFeaturedAnimeProvider featuredAnimeProvider,
                              INavigationService navigationService,
-                             ITrackingService trackingService)
+                             ITrackingService trackingService,
+                             ISchedulerProvider schedulerProvider)
     {
         _recentEpisodesProvider = recentEpisodesProvider;
         _featuredAnimeProvider = featuredAnimeProvider;
         _navigationService = navigationService;
         _trackingService = trackingService;
+        _schedulerProvider = schedulerProvider;
         _episodesCache
             .Connect()
             .RefCount()
@@ -29,15 +32,16 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             .Filter(this.WhenAnyValue(x => x.ShowOnlyWatchingAnime).Select(Filter))
             .Bind(out _episodes)
             .DisposeMany()
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
+            .Subscribe()
             .DisposeWith(Garbage);
 
         SelectEpisode = ReactiveCommand.Create<AiredEpisode>(OnEpisodeSelected);
         SelectFeaturedAnime = ReactiveCommand.Create<FeaturedAnime>(OnFeaturedAnimeSelected);
+        ShowOnlyWatchingAnime = IsAuthenticated = trackingService.IsAuthenticated;
 
         Observable
-            .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10))
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10), scheduler: schedulerProvider.TaskpoolScheduler)
+            .ObserveOn(schedulerProvider.MainThreadScheduler)
             .Where(_ => Featured is not null)
             .Subscribe(_ =>
             {
@@ -60,7 +64,9 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     [Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
     [Reactive] public int SelectedIndex { get; set; }
-    [Reactive] public bool ShowOnlyWatchingAnime { get; set; } = true;
+    [Reactive] public bool ShowOnlyWatchingAnime { get; set; }
+    [Reactive] public bool IsLoading { get; set; }
+    public bool IsAuthenticated { get; }
     public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
     public ICommand SelectEpisode { get; }
     public ICommand SelectFeaturedAnime { get; }
@@ -76,14 +82,14 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     {
         _featuredAnimeProvider
             .GetFeaturedAnime()
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .ObserveOn(_schedulerProvider.MainThreadScheduler)
             .Subscribe(featured => Featured = featured.ToList())
             .DisposeWith(Garbage);
 
         _trackingService
             .GetAnime()
-            .Do(x => _userAnime.AddRange(x))
-            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(_userAnime.AddRange)
+            .ObserveOn(_schedulerProvider.MainThreadScheduler)
             .Do(_ => _episodesCache.Refresh())
             .Subscribe()
             .DisposeWith(Garbage);
@@ -100,10 +106,16 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        IsLoading = true;
 
         _recentEpisodesProvider.GetRecentlyAiredEpisodes()
                                .ObserveOn(RxApp.MainThreadScheduler)
-                               .Subscribe(eps => _episodesCache.AddOrUpdate(eps));
+                               .Subscribe(eps =>
+                               {
+                                   _episodesCache.AddOrUpdate(eps);
+                                   IsLoading = false;
+                               })
+                               .DisposeWith(Garbage);
 
         return Task.CompletedTask;
     }

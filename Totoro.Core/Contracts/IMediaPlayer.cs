@@ -12,4 +12,5 @@ public interface IMediaPlayer : IDisposable
     IObservable<TimeSpan> PositionChanged { get; }
     IObservable<TimeSpan> DurationChanged { get; }
     void SetMedia(VideoStream stream);
+    Task SetMedia(string localFile);
 }

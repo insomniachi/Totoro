@@ -17,7 +17,7 @@ public class ViewService : IViewService
         _trackingService = trackingService;
     }
 
-    public async Task UpdateAnimeStatus(AnimeModel a)
+    public async Task<Unit> UpdateTracking(IAnimeModel a)
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
         vm.Anime = a;
@@ -57,6 +57,8 @@ public class ViewService : IViewService
 
             _trackingService.Update(a.Id, tracking).Subscribe(x => a.Tracking = x);
         }
+
+        return Unit.Default;
     }
 
     public async Task<SearchResult> ChoooseSearchResult(List<SearchResult> searchResults, ProviderType providerType)
@@ -99,5 +101,24 @@ public class ViewService : IViewService
             d.IsSecondaryButtonEnabled = false;
             d.CloseButtonText = "Close";
         }, vm => vm.Url = url);
+    }
+
+    public async Task<T> SelectModel<T>(IEnumerable<object> models)
+        where T: class
+    {
+        var vm = new SelectModelViewModel()
+        {
+            Models = models,
+        };
+
+        await _contentDialogService.ShowDialog(vm, d =>
+        {
+            d.Title = "Select";
+            d.IsPrimaryButtonEnabled = false;
+            d.IsSecondaryButtonEnabled = false;
+            d.CloseButtonText = "Ok";
+        });
+
+        return vm.SelectedModel as T;
     }
 }

@@ -2,7 +2,7 @@
 
 public interface IAnimeService
 {
-    IObservable<IEnumerable<SeasonalAnimeModel>> GetSeasonalAnime();
+    IObservable<IEnumerable<FullAnimeModel>> GetSeasonalAnime();
     IObservable<FullAnimeModel> GetInformation(long id);
     IObservable<IEnumerable<SearchResultModel>> GetAnime(string name);
     IObservable<IEnumerable<AnimeModel>> GetAiringAnime();

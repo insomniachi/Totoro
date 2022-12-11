@@ -31,6 +31,7 @@ public class MyAnimeListService : IAnimeService
         return _client
             .Anime()
             .WithName(name)
+            .WithFields(_commonFields)
             .WithLimit(5)
             .IncludeNsfw()
             .Find()
@@ -38,9 +39,9 @@ public class MyAnimeListService : IAnimeService
             .Select(x => x.Data.Select(x => _converter.ToSearchResult(x)));
     }
 
-    public IObservable<IEnumerable<SeasonalAnimeModel>> GetSeasonalAnime()
+    public IObservable<IEnumerable<FullAnimeModel>> GetSeasonalAnime()
     {
-        return Observable.Create<IEnumerable<SeasonalAnimeModel>>(async observer =>
+        return Observable.Create<IEnumerable<FullAnimeModel>>(async observer =>
         {
             IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
             {
@@ -60,7 +61,7 @@ public class MyAnimeListService : IAnimeService
                 foreach (var season in new[] { current, prev, next })
                 {
                     var pagedAnime = await baseRequest(season).Find();
-                    observer.OnNext(pagedAnime.Data.Select(malModel => _converter.Convert<SeasonalAnimeModel>(malModel) as SeasonalAnimeModel));
+                    observer.OnNext(pagedAnime.Data.Select(malModel => _converter.Convert<FullAnimeModel>(malModel) as FullAnimeModel));
                 }
 
                 observer.OnCompleted();
@@ -164,6 +165,7 @@ public class MyAnimeListService : IAnimeService
         MalApi.AnimeFieldNames.Popularity,
         MalApi.AnimeFieldNames.StartSeason,
         MalApi.AnimeFieldNames.Genres,
-        MalApi.AnimeFieldNames.Status
+        MalApi.AnimeFieldNames.Status,
+        MalApi.AnimeFieldNames.Videos
     };
 }

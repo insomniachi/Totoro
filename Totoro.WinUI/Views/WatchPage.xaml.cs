@@ -33,26 +33,31 @@ public sealed partial class WatchPage : WatchPageBase
 
             TransportControls
             .OnNextTrack
-            .Do(_ => ViewModel.UpdateTracking())
+            .Where(_ => ViewModel.Anime is not null)
+            .SelectMany(_ => ViewModel.UpdateTracking())
+            .ObserveOn(RxApp.MainThreadScheduler)
             .InvokeCommand(ViewModel.NextEpisode)
             .DisposeWith(d);
 
             TransportControls
             .OnPrevTrack
-            .InvokeCommand(ViewModel.PrevEpisode);
+            .InvokeCommand(ViewModel.PrevEpisode)
+            .DisposeWith(d);
 
             TransportControls
             .OnSkipIntro
-            .InvokeCommand(ViewModel.SkipOpening);
+            .InvokeCommand(ViewModel.SkipOpening)
+            .DisposeWith(d);
 
             TransportControls
             .OnQualityChanged
-            .InvokeCommand(ViewModel.ChangeQuality);
+            .InvokeCommand(ViewModel.ChangeQuality)
+            .DisposeWith(d);
 
             TransportControls
             .OnDynamicSkipIntro
-            .InvokeCommand(ViewModel.SkipOpeningDynamic);
-
+            .InvokeCommand(ViewModel.SkipOpeningDynamic)
+            .DisposeWith(d);
         });
     }
 }

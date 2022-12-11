@@ -3,6 +3,7 @@ using ReactiveMarbles.ObservableEvents;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.Streaming.Adaptive;
+using Windows.Storage;
 using Windows.Web.Http;
 
 namespace Totoro.WinUI.Media;
@@ -65,6 +66,11 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         {
             _player.Source = MediaSource.CreateFromUri(new Uri(stream.Url));
         }
+    }
+
+    public async Task SetMedia(string localFile)
+    {
+        _player.Source = MediaSource.CreateFromStorageFile(await StorageFile.GetFileFromPathAsync(localFile));
     }
 
     public MediaPlayer GetMediaPlayer() => _player;

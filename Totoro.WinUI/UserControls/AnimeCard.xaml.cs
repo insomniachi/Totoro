@@ -3,10 +3,8 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Totoro.Core;
 using Totoro.Core.ViewModels;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Totoro.WinUI.UserControls;
 
@@ -37,15 +35,22 @@ public sealed partial class AnimeCard : UserControl
     public MenuFlyout Flyout { get; set; }
     public ICommand UpdateStatusCommand { get; }
     public ICommand WatchCommand { get; }
+    public ICommand MoreCommand { get; }
+    public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
 
     public AnimeCard()
     {
         InitializeComponent();
-        UpdateStatusCommand = ReactiveCommand.CreateFromTask<AnimeModel>(_viewService.UpdateAnimeStatus);
+        UpdateStatusCommand = ReactiveCommand.CreateFromTask<AnimeModel>(_viewService.UpdateTracking);
         WatchCommand = ReactiveCommand.Create<AnimeModel>(anime =>
         {
-            _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = Anime });
+            _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });
         });
+        MoreCommand = ReactiveCommand.Create<long>(id =>
+        {
+            _navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
+        });
+
         Loaded += AnimeCard_Loaded;
         Unloaded += AnimeCard_Unloaded;
     }
@@ -110,6 +115,22 @@ public sealed partial class AnimeCard : UserControl
             AiringStatus.FinishedAiring => new SolidColorBrush(Colors.MediumSlateBlue),
             AiringStatus.NotYetAired => new SolidColorBrush(Colors.LightSlateGray),
             _ => new SolidColorBrush(Colors.Navy),
+        };
+    }
+
+    public Dictionary<string,string> GetAdditionalInformation(AnimeModel anime)
+    {
+        if(anime is not FullAnimeModel fa)
+        {
+            return new();
+        }
+
+        return new Dictionary<string, string>
+        {
+            ["Episodes"] = $"{(fa.TotalEpisodes is >0 ? fa.TotalEpisodes.ToString() : "Unknown")}",
+            ["Genres"] = $"{string.Join(", ", fa.Genres ?? Enumerable.Empty<string>())}",
+            ["Score"] = $"{fa.MeanScore}",
+            ["Popularity"] = $"#{fa.Popularity}"
         };
     }
 

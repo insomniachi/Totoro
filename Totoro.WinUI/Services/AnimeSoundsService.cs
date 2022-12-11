@@ -1,10 +1,14 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Net.Http;
+using System.Text.Json.Nodes;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 
-namespace Totoro.Core.Services;
+namespace Totoro.WinUI.Services;
 
 public class AnimeSoundsService : IAnimeSoundsService
 {
     private readonly HttpClient _httpClient;
+    private readonly MediaPlayer _mediaPlayer = new();
 
     public AnimeSoundsService(HttpClient httpClient)
     {
@@ -47,4 +51,16 @@ public class AnimeSoundsService : IAnimeSoundsService
             return Array.Empty<AnimeSound>();
         }
     }
+
+    public void PlaySound(AnimeSound sound)
+    {
+        _mediaPlayer.Source = MediaSource.CreateFromUri(new Uri(sound.Url));
+        _mediaPlayer.Play();
+    }
+
+    public void Pause()
+    {
+        _mediaPlayer.Pause();
+    }
+
 }

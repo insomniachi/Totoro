@@ -22,7 +22,7 @@ public class AnimixPlayFeaturedAnimeProvider : IFeaturedAnimeProvider
             }
 
             var stream = await response.Content.ReadAsStreamAsync();
-            observer.OnNext(await JsonSerializer.DeserializeAsync<List<FeaturedAnime>>(stream));
+            observer.OnNext(JsonSerializer.Deserialize(stream, FeaturedAnimeCollectionSerializerContext.Default.ListFeaturedAnime));
             observer.OnCompleted();
         });
     }

@@ -6,4 +6,5 @@ public interface ITrackingService
     IObservable<IEnumerable<AnimeModel>> GetAnime();
     IObservable<IEnumerable<ScheduledAnimeModel>> GetCurrentlyAiringTrackedAnime();
     IObservable<IEnumerable<AnimeModel>> GetWatchingAnime();
+    bool IsAuthenticated { get; }
 }
