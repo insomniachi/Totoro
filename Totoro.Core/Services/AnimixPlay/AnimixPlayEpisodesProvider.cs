@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Totoro.Core.Services.AnimixPlay;
 
-public class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
+public partial class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
 {
     private readonly HttpClient _httpClient;
 
@@ -19,7 +19,7 @@ public class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
         return _httpClient
              .GetStringAsync(ep.EpisodeUrl)
              .ToObservable()
-             .Select(content => Regex.Match(content, @"var malid = '(\d+)'"))
+             .Select(content => MalIdRegex().Match(content))
              .Select(match => match.Success ? long.Parse(match.Groups[1].Value) : 0);
     }
 
@@ -99,4 +99,7 @@ public class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
             return Disposable.Empty;
         });
     }
+
+    [GeneratedRegex("var malid = '(\\d+)'")]
+    private static partial Regex MalIdRegex();
 }
