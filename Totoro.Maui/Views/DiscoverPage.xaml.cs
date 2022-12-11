@@ -11,4 +11,10 @@ public partial class DiscoverPage : ReactiveContentPage<DiscoverViewModel>
 		InitializeComponent();
 		ViewModel = vm;
 	}
+
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+		await ViewModel.OnNavigatedTo(new Dictionary<string, object>());
+		await ViewModel.SetInitialState();
+    }
 }

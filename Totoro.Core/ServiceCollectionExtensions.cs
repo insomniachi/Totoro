@@ -1,5 +1,6 @@
 ﻿using MalApi;
 using MalApi.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Totoro.Core.Services;
@@ -44,7 +45,7 @@ namespace Totoro.Core
             return services;
         }
 
-        public static IServiceCollection AddMyAnimeList(this IServiceCollection services, HostBuilderContext context)
+        public static IServiceCollection AddMyAnimeList(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<ITrackingService, MyAnimeListTrackingService>();
             services.AddTransient<IAnimeService, MyAnimeListService>();
@@ -53,7 +54,7 @@ namespace Totoro.Core
             {
                 var settingService = x.GetRequiredService<ILocalSettingsService>();
                 var token = settingService.ReadSetting<OAuthToken>("MalToken");
-                var clientId = context.Configuration["ClientId"];
+                var clientId = configuration["ClientId"];
                 if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
                 {
                     token = MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
