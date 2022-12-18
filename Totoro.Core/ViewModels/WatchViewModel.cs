@@ -23,10 +23,10 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly ObservableAsPropertyHelper<double> _outroPosition;
     private readonly ObservableAsPropertyHelper<TimeSpan> _introEndPosition;
     private readonly ObservableAsPropertyHelper<bool> _isSkipIntroButtonVisible;
-    private readonly ObservableAsPropertyHelper<AnimeTimeStamps> _timeStamps;
     private readonly ObservableAsPropertyHelper<double> _currentPlayerTime;
     private readonly ObservableAsPropertyHelper<double> _currentMediaDuration;
     private readonly ObservableAsPropertyHelper<bool> _isFullWindow;
+    private readonly ObservableAsPropertyHelper<AniSkipResult> _aniSkipResult;
     private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
@@ -213,35 +213,10 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
             .Subscribe();
 
-        // get start position of intro if available
-        episodeChanged
-            .Select(ep => ep.ToString())
-            .Select(ep => TimeStamps?.GetIntroStartPosition(ep) ?? 0)
-            .ToProperty(this, nameof(IntroPosition), out _introPostion);
-
-        // get end position of intro if available
-        episodeChanged
-            .Select(ep => ep.ToString())
-            .Select(ep => TimeStamps?.GetIntroEndPosition(ep) ?? TimeSpan.FromSeconds(0))
-            .ToProperty(this, nameof(IntroEndPosition), out _introEndPosition);
-
-        // get start position of outro if available
-        episodeChanged
-            .Select(ep => ep.ToString())
-            .Select(ep => TimeStamps?.GetOutroStartPosition(ep) ?? 0)
-            .ToProperty(this, nameof(OutroPosition), out _outroPosition);
-
-        SkipButtonVisibleTrigger()            .Merge(SkipButtonHideTrigger())
+        SkipButtonVisibleTrigger().Merge(SkipButtonHideTrigger())
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToProperty(this, nameof(IsSkipIntroButtonVisible), out _isSkipIntroButtonVisible)
             .DisposeWith(Garbage);
-
-        // Fetch timestamps if exists
-        this.ObservableForProperty(x => x.Anime, x => x)
-            .WhereNotNull()
-            .Select(x => x.Id)
-            .SelectMany(timestampsService.GetTimeStamps)
-            .ToProperty(this, nameof(TimeStamps), out _timeStamps);
 
         MediaPlayer
             .PositionChanged
@@ -254,6 +229,31 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Select(ts => ts.TotalSeconds)
             .ToProperty(this, nameof(CurrentMediaDuration), out _currentMediaDuration)
             .DisposeWith(Garbage);
+
+        this.ObservableForProperty(x => x.CurrentMediaDuration, x => x)
+            .Where(_ => Anime is not null)
+            .Where(duration => duration > 0)
+            .Throttle(TimeSpan.FromSeconds(1))
+            .SelectMany(duration => timestampsService.GetTimeStamps(Anime.Id, CurrentEpisode!.Value, duration))
+            .ToProperty(this, nameof(AniSkipResult), out _aniSkipResult);
+
+        this.WhenAnyValue(x => x.AniSkipResult)
+            .WhereNotNull()
+            .Select(x => x.Items?.FirstOrDefault(x => x.SkipType == "op"))
+            .Select(x => x?.Interval?.StartTime ?? 0)
+            .ToProperty(this, nameof(IntroPosition), out _introPostion);
+
+        this.WhenAnyValue(x => x.AniSkipResult)
+            .WhereNotNull()
+            .Select(x => x.Items?.FirstOrDefault(x => x.SkipType == "op"))
+            .Select(x => TimeSpan.FromSeconds(x?.Interval?.EndTime ?? 0))
+            .ToProperty(this, nameof(IntroEndPosition), out _introEndPosition);
+
+        this.WhenAnyValue(x => x.AniSkipResult)
+            .WhereNotNull()
+            .Select(x => x.Items?.FirstOrDefault(x => x.SkipType == "ed"))
+            .Select(x => x?.Interval?.StartTime ?? 0)
+            .ToProperty(this, nameof(OutroPosition), out _outroPosition);
     }
 
     [Reactive] public string Query { get; set; }
@@ -275,12 +275,12 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     public double IntroPosition => _introPostion?.Value ?? 0;
     public double OutroPosition => _outroPosition?.Value ?? 0;
     public TimeSpan IntroEndPosition => _introEndPosition?.Value ?? TimeSpan.FromSeconds(0);
-    public AnimeTimeStamps TimeStamps => _timeStamps?.Value ?? new();
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
     public VideoStreamsForEpisode Streams => _streams.Value;
     public IEnumerable<string> Qualities => _qualities.Value;
+    public AniSkipResult AniSkipResult => _aniSkipResult?.Value;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
 

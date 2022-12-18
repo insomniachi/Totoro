@@ -1,29 +1,30 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
-using Microsoft.AspNetCore.WebUtilities;
 using Totoro.Core.Helpers;
 
 namespace Totoro.Core.Services;
 
 public class TimestampsService : ITimestampsService
 {
-
     private readonly GraphQLHttpClient _animeSkipClient = new("https://api.anime-skip.com/graphql", new SystemTextJsonSerializer());
     private readonly IAnimeIdService _animeIdService;
     private readonly Dictionary<long, List<OfflineEpisodeTimeStamp>> _offlineTimestamps;
+    private readonly HttpClient _httpClient = new();
 
     public TimestampsService(IAnimeIdService animeIdService,
                              IFileService fileService)
     {
         _animeIdService = animeIdService;
         _animeSkipClient.HttpClient.DefaultRequestHeaders.Add("X-Client-ID", "ZGfO0sMF3eCwLYf8yMSCJjlynwNGRXWE");
-
         _offlineTimestamps = fileService.Read<Dictionary<long, List<OfflineEpisodeTimeStamp>>>("", "timestamps_generated.json");
     }
 
+    // This should be removed if aniskip implementation is better.
     public async Task<AnimeTimeStamps> GetTimeStamps(long malId)
     {
         var animeTimeStamps = new AnimeTimeStamps();
@@ -71,6 +72,13 @@ public class TimestampsService : ITimestampsService
         }
         catch { }
         return animeTimeStamps;
+    }
+
+    public async Task<AniSkipResult> GetTimeStamps(long malId, int ep, double duration)
+    {
+        var url = $"https://api.aniskip.com/v1/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}"; // v1 seems more reliable than v2 now.
+        var stream = await _httpClient.GetStreamAsync(url);
+        return await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
     }
 }
 
