@@ -1,4 +1,4 @@
-﻿namespace Totoro.WinUI.Models;
+﻿namespace Totoro.Core.Models;
 
 public class LocalSettingsOptions
 {

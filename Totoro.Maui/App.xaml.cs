@@ -1,12 +1,25 @@
-﻿namespace Totoro.Maui
+﻿using MalApi;
+using Totoro.Core.Contracts;
+using Totoro.Maui.Views;
+
+namespace Totoro.Maui
 {
     public partial class App : Application
     {
-        public App()
+        public App(ILocalSettingsService localSettingsService,
+                   Func<LoginMALPage> createLoginPage,
+                   INavigationService navigationService)
         {
             InitializeComponent();
 
-            MainPage = new AppShell();
+            if (localSettingsService.ReadSetting<OAuthToken>("MalToken") is null)
+            {
+                MainPage = createLoginPage();
+            }
+            else
+            {
+                MainPage = new AppShell(navigationService);
+            }
         }
     }
 }

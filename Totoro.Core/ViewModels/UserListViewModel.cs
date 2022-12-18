@@ -53,6 +53,9 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string QuickAddSearchText { get; set; }
+
+    public IReadOnlyCollection<AnimeStatus> Views { get; } = new List<AnimeStatus> { AnimeStatus.Watching, AnimeStatus.PlanToWatch, AnimeStatus.OnHold, AnimeStatus.Completed, AnimeStatus.Dropped };
+
     public ReadOnlyObservableCollection<SearchResultModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ChangeCurrentViewCommand { get; }

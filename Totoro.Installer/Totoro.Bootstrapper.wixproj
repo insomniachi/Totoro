@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>0b78252d-1c5d-446a-84de-d0b17418218a</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
@@ -18,6 +18,15 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+	    <OutputPath>bin\$(Configuration)\</OutputPath>
+	    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+	    <DefineConstants>Debug</DefineConstants>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+	    <OutputPath>bin\$(Configuration)\</OutputPath>
+	    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    </PropertyGroup>
     <PropertyGroup>
     <Version Condition=" '$(BuildVersion)' == '' ">0.0.1</Version>
     <Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>

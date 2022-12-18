@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rx:ReactiveContentPage
+    x:Class="Totoro.Maui.Views.UserListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:Totoro.Core.Models;assembly=Totoro.Core"
+    xmlns:rx="clr-namespace:ReactiveUI.Maui;assembly=ReactiveUI.Maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:Totoro.Core.ViewModels;assembly=Totoro.Core"
+    Title="My List"
+    x:DataType="vm:UserListViewModel"
+    x:TypeArguments="vm:UserListViewModel">
+    <VerticalStackLayout>
+        <CollectionView ItemsSource="{Binding Views}" SelectedItem="{Binding CurrentView, Mode=TwoWay}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding}" />
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal" />
+            </CollectionView.ItemsLayout>
+        </CollectionView>
+        <CollectionView ItemsSource="{Binding Anime, Mode=OneWay}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="3" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:AnimeModel">
+                    <Grid Margin="5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Image
+                            Grid.Row="0"
+                            Aspect="AspectFill"
+                            Source="{Binding Image}" />
+                        <Label
+                            Grid.Row="1"
+                            FontSize="15"
+                            LineBreakMode="TailTruncation"
+                            Text="{Binding Title}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</rx:ReactiveContentPage>

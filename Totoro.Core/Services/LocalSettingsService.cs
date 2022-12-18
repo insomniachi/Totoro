@@ -1,11 +1,7 @@
-﻿using System.IO;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Totoro.Core.Helpers;
-using Totoro.WinUI.Helpers;
-using Totoro.WinUI.Models;
-using Windows.Storage;
 
-namespace Totoro.WinUI.Services;
+namespace Totoro.Core.Services;
 
 public class LocalSettingsService : ILocalSettingsService
 {
@@ -50,34 +46,34 @@ public class LocalSettingsService : ILocalSettingsService
 
     public T ReadSetting<T>(string key, T defaultValue = default)
     {
-        if (RuntimeHelper.IsMSIX)
+        //if (RuntimeHelper.IsMSIX)
+        //{
+        //    if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
+        //    {
+        //        return Json.ToObject<T>((string)obj);
+        //    }
+        //}
+        //else
+        //{
+        if (_settings != null && _settings.TryGetValue(key, out var obj))
         {
-            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
-            {
-                return Json.ToObject<T>((string)obj);
-            }
+            return Json.ToObject<T>((string)obj);
         }
-        else
-        {
-            if (_settings != null && _settings.TryGetValue(key, out var obj))
-            {
-                return Json.ToObject<T>((string)obj);
-            }
-        }
+        //}
 
         return defaultValue;
     }
 
     public void SaveSetting<T>(string key, T value)
     {
-        if (RuntimeHelper.IsMSIX)
-        {
-            ApplicationData.Current.LocalSettings.Values[key] = Json.Stringify(value);
-        }
-        else
-        {
-            _settings[key] = Json.Stringify(value);
-            _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
-        }
+        //if (RuntimeHelper.IsMSIX)
+        //{
+        //    ApplicationData.Current.LocalSettings.Values[key] = Json.Stringify(value);
+        //}
+        //else
+        //{
+        _settings[key] = Json.Stringify(value);
+        _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
+        //}
     }
 }

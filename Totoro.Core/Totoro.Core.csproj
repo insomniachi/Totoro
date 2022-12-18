@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>Totoro.Core</RootNamespace>
-    <Platforms>x64</Platforms>
+    <Platforms>x64;ARM64</Platforms>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

@@ -5,11 +5,19 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Totoro.Maui"
     xmlns:views="clr-namespace:Totoro.Maui.Views"
+    Loaded="Shell_Loaded"
     Shell.FlyoutBehavior="Disabled">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate views:DiscoverPage}"
-        Route="MainPage" />
+    <TabBar>
+        <Tab Title="My List">
+            <ShellContent Title="Watching" ContentTemplate="{DataTemplate views:UserListPage}" />
+        </Tab>
+        <Tab Title="Discover">
+            <ShellContent
+                Title="Home"
+                ContentTemplate="{DataTemplate views:DiscoverPage}"
+                Route="DiscoverViewModel" />
+        </Tab>
+    </TabBar>
 
 </Shell>

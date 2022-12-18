@@ -28,6 +28,7 @@ namespace Totoro.Core
             services.AddSingleton<ITimestampsService, TimestampsService>();
             services.AddSingleton<ITorrentsService, TorrentsService>();
             services.AddSingleton<ILocalMediaService, LocalMediaService>();
+            services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<MalToModelConverter>();

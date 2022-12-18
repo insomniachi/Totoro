@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Splat;
 using Totoro.Core;
 using Totoro.WinUI.Helpers;
-using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
 using Windows.ApplicationModel;
 using WinUIEx;
