@@ -1,10 +1,7 @@
-﻿using System.Net.Mime;
-using System.Reactive.Concurrency;
+﻿using System.Reactive.Concurrency;
 using FuzzySharp;
-using Humanizer;
 using MonoTorrent;
 using MonoTorrent.Client;
-using Totoro.Core.Contracts;
 
 namespace Totoro.Core.Services;
 
@@ -29,7 +26,7 @@ public class TorrentsService : ITorrentsService
         _localSettingsService = localSettingsService;
         _viewService = viewService;
         _animeService = animeService;
-        _mediaFolder = _localSettingsService.ReadSetting<string>("MediaFolder", Path.Combine(_localSettingsService.ApplicationDataFolder, "Media"));
+        _mediaFolder = _localSettingsService.ReadSetting("MediaFolder", Path.Combine(_localSettingsService.ApplicationDataFolder, "Media"));
     }
 
     public async Task Download(IDownloadableContent content)
