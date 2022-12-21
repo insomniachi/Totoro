@@ -9,4 +9,5 @@ public interface IViewService
     Task AuthenticateMal();
     Task PlayVideo(string title, string url);
     Task<T> SelectModel<T>(IEnumerable<object> models) where T : class;
+    Task SubmitTimeStamp(long malId, int ep, string url, double duration, double introStart);
 }

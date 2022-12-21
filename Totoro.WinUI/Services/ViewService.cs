@@ -121,4 +121,29 @@ public class ViewService : IViewService
 
         return vm.SelectedModel as T;
     }
+
+    public async Task SubmitTimeStamp(long malId, int ep, string url, double duration, double introStart)
+    {
+        var vm = new SubmitTimeStampsViewModel(App.GetService<ITimestampsService>()) // TODO fix later
+        {
+            MediaUrl = url,
+            MalId = malId,
+            Episode = ep,
+            StartPosition = introStart,
+            EndPosition = introStart + 85,
+            Duration = duration
+        };
+
+        await _contentDialogService.ShowDialog(vm, d =>
+        {
+            d.Title = "Submit Timestamp";
+            d.IsPrimaryButtonEnabled = true;
+            d.IsSecondaryButtonEnabled = true;
+            d.PrimaryButtonText = "Submit";
+            d.SecondaryButtonText = "Close";
+            d.PrimaryButtonClick += async (_, _) => await vm.Submit();
+        });
+
+        vm.MediaPlayer.Pause();
+    }
 }

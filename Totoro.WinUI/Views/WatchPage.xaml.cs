@@ -58,6 +58,11 @@ public sealed partial class WatchPage : WatchPageBase
             .OnDynamicSkipIntro
             .InvokeCommand(ViewModel.SkipOpeningDynamic)
             .DisposeWith(d);
+
+            TransportControls
+            .OnSubmitTimeStamp
+            .InvokeCommand(ViewModel.SubmitTimeStamp)
+            .DisposeWith(d);
         });
     }
 }

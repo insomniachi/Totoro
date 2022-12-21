@@ -13,13 +13,16 @@ public class TimestampsService : ITimestampsService
 {
     private readonly GraphQLHttpClient _animeSkipClient = new("https://api.anime-skip.com/graphql", new SystemTextJsonSerializer());
     private readonly IAnimeIdService _animeIdService;
+    private readonly ISettings _settings;
     private readonly Dictionary<long, List<OfflineEpisodeTimeStamp>> _offlineTimestamps;
     private readonly HttpClient _httpClient = new();
 
     public TimestampsService(IAnimeIdService animeIdService,
-                             IFileService fileService)
+                             IFileService fileService,
+                             ISettings settings)
     {
         _animeIdService = animeIdService;
+        _settings = settings;
         _animeSkipClient.HttpClient.DefaultRequestHeaders.Add("X-Client-ID", "ZGfO0sMF3eCwLYf8yMSCJjlynwNGRXWE");
         _offlineTimestamps = fileService.Read<Dictionary<long, List<OfflineEpisodeTimeStamp>>>("", "timestamps_generated.json");
     }
@@ -76,9 +79,38 @@ public class TimestampsService : ITimestampsService
 
     public async Task<AniSkipResult> GetTimeStamps(long malId, int ep, double duration)
     {
-        var url = $"https://api.aniskip.com/v1/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}"; // v1 seems more reliable than v2 now.
-        var stream = await _httpClient.GetStreamAsync(url);
-        return await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
+        var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}"; // v1 seems more reliable than v2 now.
+        try
+        {
+            var stream = await _httpClient.GetStreamAsync(url);
+            var result = await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
+            return result;
+        }
+        catch 
+        {
+            return new AniSkipResult { Success = false, Items = Enumerable.Empty<AniSkipResultItem>().ToArray() };
+        }
+    }
+
+    public async Task SubmitTimeStamp(long malId, int ep, string skipType, Interval interval, double episodeLength)
+    {
+        var postData = new Dictionary<string, string>()
+        {
+            ["skipType"] = skipType,
+            ["providerName"] = "AnimixPlay",
+            ["startTime"] = interval.StartTime.ToString(),
+            ["endTime"] = interval.EndTime.ToString(),
+            ["episodeLength"] = episodeLength.ToString(),
+            ["submitterId"] = _settings.AniSkipId.ToString()
+        };
+        using var content = new FormUrlEncodedContent(postData);
+        content.Headers.Clear();
+        content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}");
+        request.Content = content;
+        var response = await _httpClient.SendAsync(request);
+        var str = await response.Content.ReadAsStringAsync();
     }
 }
 

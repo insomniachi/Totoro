@@ -13,6 +13,7 @@ public class CustomMediaTransportControls : MediaTransportControls
     private readonly Subject<string> _onQualityChanged = new();
     private readonly Subject<Unit> _onDynamicSkipIntro = new();
     private readonly Subject<bool> _onFullWindowRequested = new();
+    private readonly Subject<Unit> _onSubmitTimeStamp = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
     private Button _dynamicSkipIntroButton;
@@ -79,6 +80,7 @@ public class CustomMediaTransportControls : MediaTransportControls
     public IObservable<Unit> OnSkipIntro => _onSkipIntro;
     public IObservable<string> OnQualityChanged => _onQualityChanged;
     public IObservable<Unit> OnDynamicSkipIntro => _onDynamicSkipIntro;
+    public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
 
     public CustomMediaTransportControls()
     {
@@ -91,6 +93,7 @@ public class CustomMediaTransportControls : MediaTransportControls
         var nextTrackButton = GetTemplateChild("NextTrackButton") as AppBarButton;
         var prevTrackButton = GetTemplateChild("PreviousTrackButton") as AppBarButton;
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
+        var submitTimeStamp = GetTemplateChild("SubmitTimeStampsButton") as AppBarButton;
         var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
         var fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
@@ -100,6 +103,7 @@ public class CustomMediaTransportControls : MediaTransportControls
         prevTrackButton.Click += (_, _) => _onPrevTrack.OnNext(Unit.Default);
         nextTrackButton.Click += (_, _) => _onNextTrack.OnNext(Unit.Default);
         skipIntroButton.Click += (_, _) => _onSkipIntro.OnNext(Unit.Default);
+        submitTimeStamp.Click += (_, _) => _onSubmitTimeStamp.OnNext(Unit.Default);
         fullWindowButton.Click += (_, _) =>
         {
             _isFullWindow ^= true;

@@ -1,0 +1,45 @@
+<local:SubmitTimeStampsViewBase
+    x:Class="Totoro.WinUI.Dialogs.Views.SubmitTimeStampsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Totoro.WinUI.Dialogs.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="10">
+        <Grid Width="360">
+            <MediaPlayerElement
+                x:Name="MediaPlayerElement"
+                AreTransportControlsEnabled="True"
+                AutoPlay="false">
+                <MediaPlayerElement.TransportControls>
+                    <MediaTransportControls IsCompact="True" />
+                </MediaPlayerElement.TransportControls>
+            </MediaPlayerElement>
+        </Grid>
+        <ComboBox
+            Width="360"
+            ItemsSource="{x:Bind ViewModel.TimeStampTypes}"
+            SelectedItem="{x:Bind ViewModel.SelectedTimeStampType, Mode=TwoWay}" />
+        <StackPanel Orientation="Horizontal">
+            <TextBox Width="166" Text="{x:Bind ViewModel.StartPosition, Mode=TwoWay}" />
+            <TextBlock
+                Margin="10,0"
+                VerticalAlignment="Center"
+                Text="-" />
+            <TextBox Width="167" Text="{x:Bind ViewModel.EndPosition, Mode=TwoWay}" />
+        </StackPanel>
+        <ctk:RangeSelector
+            Maximum="{x:Bind ViewModel.Duration}"
+            RangeEnd="{x:Bind ViewModel.EndPosition, Mode=TwoWay}"
+            RangeStart="{x:Bind ViewModel.StartPosition, Mode=TwoWay}" />
+        <Button
+            Width="150"
+            Command="{x:Bind ViewModel.PlayRange}"
+            Content="Preview" />
+        <TextBlock Text="{x:Bind ViewModel.CurrentPlayerPosition, Mode=OneWay}" />
+    </StackPanel>
+
+</local:SubmitTimeStampsViewBase>

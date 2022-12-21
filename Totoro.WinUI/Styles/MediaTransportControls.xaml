@@ -253,6 +253,14 @@
                                                     <SymbolIcon x:Name="VolumeMuteSymbol" Symbol="Volume" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <AppBarButton
+                                                x:Name="SubmitTimeStampsButton"
+                                                Style="{StaticResource AppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Submit timestamp">
+                                                <AppBarButton.Icon>
+                                                    <SymbolIcon Symbol="Clock" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                         </StackPanel>
 
                                         <StackPanel

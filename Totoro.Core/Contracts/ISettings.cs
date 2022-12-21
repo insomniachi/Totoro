@@ -10,4 +10,5 @@ public interface ISettings
     bool UseDiscordRichPresense { get; set; }
     int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     int OpeningSkipDurationInSeconds { get; set; }
+    Guid AniSkipId { get; }
 }

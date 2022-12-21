@@ -35,6 +35,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     private int? _episodeRequest;
     private bool _canUpdateTime = false;
     private bool _isUpdatingTracking = false;
+    private double _userSkipOpeningTime;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           ITrackingService trackingService,
@@ -62,9 +63,18 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         NextEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); ++CurrentEpisode; }, HasNextEpisode, RxApp.MainThreadScheduler);
         PrevEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); --CurrentEpisode; }, HasPrevEpisode, RxApp.MainThreadScheduler);
-        SkipOpening = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)), outputScheduler: RxApp.MainThreadScheduler);
+        SkipOpening = ReactiveCommand.Create(() =>
+        {
+            _userSkipOpeningTime = CurrentPlayerTime;
+            MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds));
+        }, outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
         SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);
+        SubmitTimeStamp = ReactiveCommand.Create(() =>
+        {
+            MediaPlayer.Pause();
+            viewService.SubmitTimeStamp(Anime.Id, CurrentEpisode.Value, SelectedStream.Url, CurrentMediaDuration, _userSkipOpeningTime - 5);
+        });
 
         var episodeChanged = this.ObservableForProperty(x => x.CurrentEpisode, x => x)
             .Where(ep => ep > 0);
@@ -209,7 +219,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         this.ObservableForProperty(x => x.SelectedStream, x => x)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(stream => mediaPlayer.SetMedia(stream))
+            .Do(mediaPlayer.SetMedia)
             .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
             .Subscribe();
 
@@ -289,6 +299,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     public ICommand SkipOpening { get; }
     public ICommand SkipOpeningDynamic { get; }
     public ICommand ChangeQuality { get; }
+    public ICommand SubmitTimeStamp { get; }
     
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {

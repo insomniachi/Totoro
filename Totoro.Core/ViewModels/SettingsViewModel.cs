@@ -11,6 +11,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public bool UseDiscordRichPresense { get; set; }
     [Reactive] public int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     [Reactive] public int OpeningSkipDurationInSeconds { get; set; }
+    [Reactive] public Guid AniSkipId { get; set; }
     public List<ElementTheme> Themes { get; set; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ICommand AuthenticateCommand { get; }
@@ -26,6 +27,14 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);
+
+        var newGuid = Guid.NewGuid();
+        AniSkipId = localSettingsService.ReadSetting(nameof(AniSkipId), newGuid);
+
+        if(newGuid == AniSkipId)
+        {
+            localSettingsService.SaveSetting(nameof(AniSkipId), AniSkipId);
+        }
 
         AuthenticateCommand = ReactiveCommand.CreateFromTask(viewService.AuthenticateMal);
 
@@ -55,6 +64,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
                     dRpc.SetPresence();
                 }
             });
+
     }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)

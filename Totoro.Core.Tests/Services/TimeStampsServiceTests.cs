@@ -15,7 +15,7 @@ public class TimeStampsServiceTests
         fileServiceMock.Setup(x => x.Read<Dictionary<long, List<OfflineEpisodeTimeStamp>>>("", "timestamps_generated.json"))
                        .Returns(new Dictionary<long, List<OfflineEpisodeTimeStamp>>());
 
-        var service = new TimestampsService(GetAnimeIdService(malId, aniListId), fileServiceMock.Object);
+        var service = new TimestampsService(GetAnimeIdService(malId, aniListId), fileServiceMock.Object, Mock.Of<ISettings>());
         var expected = SnapshotService.GetSnapshot<AnimeTimeStamps>("JujtsuKaizenTimeStamps");
 
         // act
@@ -46,7 +46,7 @@ public class TimeStampsServiceTests
         fileServiceMock.Setup(x => x.Read<Dictionary<long, List<OfflineEpisodeTimeStamp>>>("", "timestamps_generated.json"))
                        .Returns(new Dictionary<long, List<OfflineEpisodeTimeStamp>>());
 
-        var service = new TimestampsService(GetAnimeIdService(malId, aniListId), fileServiceMock.Object);
+        var service = new TimestampsService(GetAnimeIdService(malId, aniListId), fileServiceMock.Object, Mock.Of<ISettings>());
 
         // act
         var actual = await service.GetTimeStamps(malId);
@@ -71,7 +71,7 @@ public class TimeStampsServiceTests
                            }
                        });
 
-        var service = new TimestampsService(GetAnimeIdService(malId, aniListId, aniDbId), fileServiceMock.Object);
+        var service = new TimestampsService(GetAnimeIdService(malId, aniListId, aniDbId), fileServiceMock.Object, Mock.Of<ISettings>());
 
         // act
         var actual = await service.GetTimeStamps(malId);

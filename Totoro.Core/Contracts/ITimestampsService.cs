@@ -6,5 +6,6 @@ namespace Totoro.Core.Contracts
     {
         Task<AnimeTimeStamps> GetTimeStamps(long malId);
         Task<AniSkipResult> GetTimeStamps(long malId, int ep, double duration);
+        Task SubmitTimeStamp(long malId, int ep, string skipType, Interval interval, double episodeLength);
     }
 }
