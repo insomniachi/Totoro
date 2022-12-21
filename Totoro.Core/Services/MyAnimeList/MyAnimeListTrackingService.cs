@@ -162,14 +162,14 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         return request
             .Publish()
             .ToObservable()
-            .Do(_ => this.Log().Debug("Tracking Updated."))
             .Select(x => new Tracking
             {
                 WatchedEpisodes = x.WatchedEpisodes,
                 Status = (AnimeStatus)(int)x.Status,
                 Score = (int)x.Score,
                 UpdatedAt = x.UpdatedAt
-            });
+            })
+            .Do(tracking => this.Log().Debug("Tracking Updated {0}.", tracking));
     }
 
     private IEnumerable<AnimeModel> ConvertToAnimeModel(List<MalApi.Anime> anime)

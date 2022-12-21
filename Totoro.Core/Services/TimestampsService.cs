@@ -1,15 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.SystemTextJson;
+using Splat;
 using Totoro.Core.Helpers;
 
 namespace Totoro.Core.Services;
 
-public class TimestampsService : ITimestampsService
+public class TimestampsService : ITimestampsService, IEnableLogger
 {
     private readonly GraphQLHttpClient _animeSkipClient = new("https://api.anime-skip.com/graphql", new SystemTextJsonSerializer());
     private readonly IAnimeIdService _animeIdService;
@@ -84,10 +83,12 @@ public class TimestampsService : ITimestampsService
         {
             var stream = await _httpClient.GetStreamAsync(url);
             var result = await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
+            this.Log().Info($"Timestamps received {0}", result.Success);
             return result;
         }
-        catch 
+        catch(Exception ex) 
         {
+            this.Log().Error(ex, "Timestamps not received");
             return new AniSkipResult { Success = false, Items = Enumerable.Empty<AniSkipResultItem>().ToArray() };
         }
     }
@@ -103,6 +104,9 @@ public class TimestampsService : ITimestampsService
             ["episodeLength"] = episodeLength.ToString(),
             ["submitterId"] = _settings.AniSkipId.ToString()
         };
+
+        this.Log().Info($"Submitting timestamp for MalID: {malId}, Ep: {ep}, Type: {skipType}, Start: {interval.StartTime}, End: {interval.EndTime}, Length: {episodeLength}");
+
         using var content = new FormUrlEncodedContent(postData);
         content.Headers.Clear();
         content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
@@ -110,7 +114,7 @@ public class TimestampsService : ITimestampsService
         using var request = new HttpRequestMessage(HttpMethod.Post, $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}");
         request.Content = content;
         var response = await _httpClient.SendAsync(request);
-        var str = await response.Content.ReadAsStringAsync();
+        this.Log().Info("Submitted : {0}", response.IsSuccessStatusCode);
     }
 }
 
