@@ -34,7 +34,7 @@ public class TotoroCommands
             switch (param)
             {
                 case AnimeSound theme:
-                    viewService.PlayVideo(theme.Name, theme.Url);
+                    viewService.PlayVideo(theme.SongName, theme.Url);
                     break;
                 case Video preview:
                     _ = PlayYoutubeVideo(preview, viewService.PlayVideo);

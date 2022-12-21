@@ -245,7 +245,28 @@
                     Margin="{StaticResource SmallTopMargin}"
                     IsItemClickEnabled="True"
                     ItemsSource="{x:Bind ViewModel.QuickSearchResults, Mode=OneWay}"
-                    SelectionMode="None" />
+                    SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="cm:SearchResultModel">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind Title}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Button
+                                    Grid.Column="1"
+                                    Command="{x:Bind root:App.Commands.More}"
+                                    CommandParameter="{x:Bind Id}">
+                                    <SymbolIcon Symbol="More" />
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
         </TeachingTip>
 

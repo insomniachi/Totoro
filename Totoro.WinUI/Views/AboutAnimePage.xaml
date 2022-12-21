@@ -44,7 +44,7 @@
                     <Grid>
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <SymbolIcon Symbol="Play" />
-                            <TextBlock Text="Watch Episodes" />
+                            <TextBlock Text="Watch" />
                         </StackPanel>
                     </Grid>
                 </Button>

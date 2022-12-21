@@ -344,7 +344,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         }
 
         NativeMethods.AllowSleep();
-
+        MediaPlayer.Pause();
         return Task.CompletedTask;
     }
 
