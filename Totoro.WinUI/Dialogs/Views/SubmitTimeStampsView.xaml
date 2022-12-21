@@ -2,7 +2,6 @@
     x:Class="Totoro.WinUI.Dialogs.Views.SubmitTimeStampsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Totoro.WinUI.Dialogs.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,7 +14,13 @@
                 AreTransportControlsEnabled="True"
                 AutoPlay="false">
                 <MediaPlayerElement.TransportControls>
-                    <MediaTransportControls IsCompact="True" />
+                    <MediaTransportControls
+                        IsCompact="True"
+                        IsSkipBackwardButtonVisible="True"
+                        IsSkipBackwardEnabled="True"
+                        IsSkipForwardButtonVisible="True"
+                        IsSkipForwardEnabled="True"
+                        IsZoomButtonVisible="False" />
                 </MediaPlayerElement.TransportControls>
             </MediaPlayerElement>
         </Grid>
@@ -31,10 +36,11 @@
                 Text="-" />
             <TextBox Width="167" Text="{x:Bind ViewModel.EndPosition, Mode=TwoWay}" />
         </StackPanel>
-        <ctk:RangeSelector
-            Maximum="{x:Bind ViewModel.Duration}"
-            RangeEnd="{x:Bind ViewModel.EndPosition, Mode=TwoWay}"
-            RangeStart="{x:Bind ViewModel.StartPosition, Mode=TwoWay}" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Command="{x:Bind ViewModel.SetStartPosition}" Content="Set Start" />
+            <Button Command="{x:Bind ViewModel.SetEndPosition}" Content="Set End" />
+            <Button Command="{x:Bind ViewModel.SkipNearEnd}" Content="Skip near End" />
+        </StackPanel>
         <Button
             Width="150"
             Command="{x:Bind ViewModel.PlayRange}"
