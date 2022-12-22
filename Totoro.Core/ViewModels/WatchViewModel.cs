@@ -450,6 +450,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             OnSubmitTimeStamps();
         }
 
+        _playbackStateStorage.Reset(Anime.Id, CurrentEpisode ?? 0);
+
         return Unit.Default;
     }
 

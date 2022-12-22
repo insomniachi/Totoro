@@ -1,7 +1,9 @@
-﻿using Humanizer;
+﻿using System.Diagnostics;
+using Humanizer;
 
 namespace Totoro.Core.Models;
 
+[DebuggerDisplay("{Anime} - {InfoText}")]
 public sealed class AiredEpisode : IEquatable<AiredEpisode>
 {
     public string Anime { get; set; }
@@ -13,4 +15,11 @@ public sealed class AiredEpisode : IEquatable<AiredEpisode>
     public long Id { get; set; }
 
     public bool Equals(AiredEpisode other) => EpisodeUrl == other.EpisodeUrl;
+
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as AiredEpisode);
+    }
+
+    public override int GetHashCode() => EpisodeUrl.GetHashCode();
 }

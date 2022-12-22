@@ -76,6 +76,7 @@
                         <Button
                             x:Name="DynamicSkipIntroButton"
                             Height="50"
+                            Margin="0,20"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             VerticalContentAlignment="Center"

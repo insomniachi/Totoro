@@ -28,8 +28,8 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _episodesCache
             .Connect()
             .RefCount()
-            .Sort(SortExpressionComparer<AiredEpisode>.Descending(x => x.TimeOfAiring))
             .Filter(this.WhenAnyValue(x => x.ShowOnlyWatchingAnime).Select(Filter))
+            .Sort(SortExpressionComparer<AiredEpisode>.Descending(x => x.TimeOfAiring), SortOptimisations.ComparesImmutableValuesOnly)
             .Bind(out _episodes)
             .DisposeMany()
             .Subscribe()
