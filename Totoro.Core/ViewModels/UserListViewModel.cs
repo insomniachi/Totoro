@@ -71,11 +71,12 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         _animeCache.Clear();
         _trackingService.GetAnime()
                         .ObserveOn(RxApp.MainThreadScheduler)
+                        .Finally(() => IsLoading = false)
                         .Subscribe(list =>
                         {
                             _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id);
                             IsLoading = false;
-                        })
+                        }, RxApp.DefaultExceptionHandler.OnError)
                         .DisposeWith(Garbage);
 
         return Task.CompletedTask;

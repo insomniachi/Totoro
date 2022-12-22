@@ -1,7 +1,4 @@
-﻿using DynamicData;
-using HtmlAgilityPack;
-
-namespace Totoro.Core.ViewModels;
+﻿namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
@@ -91,7 +88,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             .Do(_userAnime.AddRange)
             .ObserveOn(_schedulerProvider.MainThreadScheduler)
             .Do(_ => _episodesCache.Refresh())
-            .Subscribe()
+            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError)
             .DisposeWith(Garbage);
 
         return Task.CompletedTask;
@@ -114,7 +111,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
                                {
                                    _episodesCache.AddOrUpdate(eps);
                                    IsLoading = false;
-                               })
+                               }, RxApp.DefaultExceptionHandler.OnError)
                                .DisposeWith(Garbage);
 
         return Task.CompletedTask;
