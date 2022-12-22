@@ -104,6 +104,16 @@
                     SpinButtonPlacementMode="Inline"
                     Value="{x:Bind ViewModel.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
             </labs:SettingsCard>
+            <labs:SettingsCard Description="Contribute opening and ending timestamps to the community." Header="Contribute Timestamps">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe82e;" />
+                </labs:SettingsCard.HeaderIcon>
+                <ToggleSwitch
+                    FlowDirection="RightToLeft"
+                    IsOn="{x:Bind ViewModel.ContributeTimeStamps, Mode=TwoWay}"
+                    OffContent=""
+                    OnContent="" />
+            </labs:SettingsCard>
         </StackPanel>
 
         <TeachingTip

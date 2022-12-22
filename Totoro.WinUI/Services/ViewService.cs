@@ -130,6 +130,7 @@ public class ViewService : IViewService
             MalId = malId,
             Episode = ep,
             StartPosition = introStart,
+            SuggestedStartPosition = introStart,
             EndPosition = introStart + 85,
             Duration = duration
         };
@@ -138,10 +139,8 @@ public class ViewService : IViewService
         {
             d.Title = "Submit Timestamp";
             d.IsPrimaryButtonEnabled = true;
-            d.IsSecondaryButtonEnabled = true;
-            d.PrimaryButtonText = "Submit";
-            d.SecondaryButtonText = "Close";
-            d.PrimaryButtonClick += async (_, _) => await vm.Submit();
+            d.IsSecondaryButtonEnabled = false;
+            d.PrimaryButtonText = "Close";
         });
 
         vm.MediaPlayer.Pause();

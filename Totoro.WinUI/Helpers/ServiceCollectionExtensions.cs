@@ -78,7 +78,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<ITorrentsService, TorrentsService>();
         services.AddSingleton<ILocalMediaService, LocalMediaService>();
-        
+        services.AddSingleton<IAiredEpisodeNotifier, AnimixPlayNotifier>();
+
         services.AddTransient<IFileService, FileService>();
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();

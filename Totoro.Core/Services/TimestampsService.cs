@@ -79,11 +79,12 @@ public class TimestampsService : ITimestampsService, IEnableLogger
     public async Task<AniSkipResult> GetTimeStamps(long malId, int ep, double duration)
     {
         var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}"; // v1 seems more reliable than v2 now.
+        this.Log().Debug("Requesting timestamps : {0}", url);
         try
         {
             var stream = await _httpClient.GetStreamAsync(url);
             var result = await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
-            this.Log().Info($"Timestamps received {0}", result.Success);
+            this.Log().Info("Timestamps received {0}", result.Success);
             return result;
         }
         catch(Exception ex) 

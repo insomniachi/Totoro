@@ -12,6 +12,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     [Reactive] public int OpeningSkipDurationInSeconds { get; set; }
     [Reactive] public Guid AniSkipId { get; set; }
+    [Reactive] public bool ContributeTimeStamps { get; set; }
     public List<ElementTheme> Themes { get; set; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ICommand AuthenticateCommand { get; }
@@ -27,12 +28,12 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);
+        ContributeTimeStamps = localSettingsService.ReadSetting(nameof(ContributeTimeStamps), false);
 
-        var newGuid = Guid.NewGuid();
-        AniSkipId = localSettingsService.ReadSetting(nameof(AniSkipId), newGuid);
-
-        if(newGuid == AniSkipId)
+        var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
+        if(id == Guid.Empty)
         {
+            AniSkipId = Guid.NewGuid();
             localSettingsService.SaveSetting(nameof(AniSkipId), AniSkipId);
         }
 
@@ -44,27 +45,20 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
             dRpc.SetPresence();
         }
 
-        this.ObservableForProperty(x => x.ElementTheme, x => x)
-            .Subscribe(themeSelectorService.SetTheme);
-        this.ObservableForProperty(x => x.PreferSubs, x => x)
-            .Subscribe(value => localSettingsService.SaveSetting(nameof(PreferSubs), value));
-        this.ObservableForProperty(x => x.DefaultProviderType, x => x)
-            .Subscribe(value => localSettingsService.SaveSetting(nameof(DefaultProviderType), value));
-        this.ObservableForProperty(x => x.TimeRemainingWhenEpisodeCompletesInSeconds, x => x)
-            .Subscribe(value => localSettingsService.SaveSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), value));
-        this.ObservableForProperty(x => x.OpeningSkipDurationInSeconds, x => x)
-            .Subscribe(value => localSettingsService.SaveSetting(nameof(OpeningSkipDurationInSeconds), value));
-        this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
-            .Subscribe(value =>
+        Changed
+            .Select(x => GetType().GetProperty(x.PropertyName))
+            .Subscribe(propInfo =>
             {
-                localSettingsService.SaveSetting(nameof(UseDiscordRichPresense), value);
-                if (value && !dRpc.IsInitialized)
-                {
-                    dRpc.Initialize();
-                    dRpc.SetPresence();
-                }
+                localSettingsService.SaveSetting(propInfo.Name, propInfo.GetValue(this));
             });
 
+        this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
+            .Where(x => x && !dRpc.IsInitialized)
+            .Subscribe(value =>
+            {
+                dRpc.Initialize();
+                dRpc.SetPresence();
+            });
     }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)

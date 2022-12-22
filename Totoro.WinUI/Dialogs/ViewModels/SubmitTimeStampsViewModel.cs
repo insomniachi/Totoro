@@ -16,6 +16,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
         SetStartPosition = ReactiveCommand.Create(() => StartPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
         SetEndPosition = ReactiveCommand.Create(() => EndPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
         SkipNearEnd = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(EndPosition - 5)));
+        Submit = ReactiveCommand.CreateFromTask(SubmitTimeStamp);
 
         MediaPlayer
             .PositionChanged
@@ -25,6 +26,20 @@ public class SubmitTimeStampsViewModel : DialogViewModel
         this.WhenAnyValue(x => x.StartPosition)
             .DistinctUntilChanged()
             .Subscribe(x => MediaPlayer.Seek(TimeSpan.FromSeconds(x)));
+
+        this.WhenAnyValue(x => x.SelectedTimeStampType)
+            .Subscribe(type =>
+            {
+                if (type == "OP")
+                {
+                    StartPosition = SuggestedStartPosition;
+                }
+                else if (type == "ED")
+                {
+                    StartPosition = SuggestedEndPosition;
+                }
+                EndPosition = StartPosition + 85;
+            });
     }
 
     [Reactive] public double StartPosition { get; set; }
@@ -37,13 +52,15 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     public int Episode { get; set; }
     public double Duration { get; set; }
     public string[] TimeStampTypes = new[] { "OP", "ED" };
-
+    public double SuggestedStartPosition { get; set; }
+    public double SuggestedEndPosition => Duration - 120;
     public WinUIMediaPlayerWrapper MediaPlayer { get; } = new WinUIMediaPlayerWrapper();
 
     public ICommand PlayRange { get; }
     public ICommand SetStartPosition { get; }
     public ICommand SetEndPosition { get; }
     public ICommand SkipNearEnd { get; }
+    public ICommand Submit { get; }
 
     private void Play()
     {
@@ -59,7 +76,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
             });
     }
 
-    public async Task Submit()
+    public async Task SubmitTimeStamp()
     {
         await _timestampsService.SubmitTimeStamp(MalId, Episode, SelectedTimeStampType.ToLower(),  new Interval { StartTime = StartPosition, EndTime = EndPosition }, Duration);
     }

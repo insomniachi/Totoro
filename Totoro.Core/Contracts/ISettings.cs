@@ -11,4 +11,5 @@ public interface ISettings
     int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     int OpeningSkipDurationInSeconds { get; set; }
     Guid AniSkipId { get; }
+    bool ContributeTimeStamps { get; set; }
 }

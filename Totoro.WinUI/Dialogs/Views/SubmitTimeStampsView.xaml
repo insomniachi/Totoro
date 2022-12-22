@@ -46,6 +46,10 @@
             Command="{x:Bind ViewModel.PlayRange}"
             Content="Preview" />
         <TextBlock Text="{x:Bind ViewModel.CurrentPlayerPosition, Mode=OneWay}" />
+        <Button
+            Width="150"
+            Command="{x:Bind ViewModel.Submit}"
+            Content="Submit" />
     </StackPanel>
 
 </local:SubmitTimeStampsViewBase>
