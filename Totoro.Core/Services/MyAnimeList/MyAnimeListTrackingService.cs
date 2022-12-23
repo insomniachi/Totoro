@@ -52,31 +52,23 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         {
             return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
-                try
-                {
-                    var watching = await _client.Anime()
-                                                .OfUser()
-                                                .WithStatus(MalApi.AnimeStatus.Watching)
-                                                .IncludeNsfw()
-                                                .WithFields(FieldNames)
-                                                .Find();
+                var watching = await _client.Anime()
+                                            .OfUser()
+                                            .WithStatus(MalApi.AnimeStatus.Watching)
+                                            .IncludeNsfw()
+                                            .WithFields(FieldNames)
+                                            .Find();
 
-                    observer.OnNext(ConvertToAnimeModel(watching.Data));
+                observer.OnNext(ConvertToAnimeModel(watching.Data));
 
-                    var all = await _client.Anime()
-                                           .OfUser()
-                                           .IncludeNsfw()
-                                           .WithFields(FieldNames)
-                                           .Find();
+                var all = await _client.Anime()
+                                       .OfUser()
+                                       .IncludeNsfw()
+                                       .WithFields(FieldNames)
+                                       .Find();
 
-                    observer.OnNext(ConvertToAnimeModel(all.Data));
-                    observer.OnCompleted();
-                }
-                catch (Exception ex)
-                {
-                    observer.OnError(ex);
-                }
-
+                observer.OnNext(ConvertToAnimeModel(all.Data));
+                observer.OnCompleted();
                 return Disposable.Empty;
             });
         }
@@ -92,29 +84,22 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         {
             return Observable.Create<IEnumerable<ScheduledAnimeModel>>(async observer =>
             {
-                try
-                {
-                    var pagedAnime = await _client.Anime()
-                                                  .OfUser()
-                                                  .WithStatus(MalApi.AnimeStatus.Watching)
-                                                  .IncludeNsfw()
-                                                  .WithFields(FieldNames)
-                                                  .Find();
+                var pagedAnime = await _client.Anime()
+                                                .OfUser()
+                                                .WithStatus(MalApi.AnimeStatus.Watching)
+                                                .IncludeNsfw()
+                                                .WithFields(FieldNames)
+                                                .Find();
 
+                observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
+
+                while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
+                {
+                    pagedAnime = await _client.GetNextAnimePage(pagedAnime);
                     observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
-
-                    while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
-                    {
-                        pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                        observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
-                    }
-
-                    observer.OnCompleted();
                 }
-                catch (Exception ex)
-                {
-                    observer.OnError(ex);
-                }
+
+                observer.OnCompleted();
 
                 return Disposable.Empty;
             });

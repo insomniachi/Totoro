@@ -16,7 +16,7 @@ using Microsoft.Extensions.Options;
 
 namespace Totoro.WinUI;
 
-public partial class App : Application
+public partial class App : Application, IEnableLogger
 {
     private static readonly IHost _host = Host
         .CreateDefaultBuilder()
@@ -64,7 +64,13 @@ public partial class App : Application
         InitializeComponent();
         ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
         AppDomain.CurrentDomain.ProcessExit += OnExit;
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         UnhandledException += App_UnhandledException;
+    }
+
+    private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+    {
+        this.Log().Fatal(e.ExceptionObject);
     }
 
     private void OnExit(object sender, EventArgs e)
@@ -90,7 +96,10 @@ public partial class App : Application
     }
 
 
-    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e) { }
+    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e) 
+    {
+        this.Log().Fatal(e.Exception, e.Message);
+    }
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
