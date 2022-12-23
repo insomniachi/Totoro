@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
+using Totoro.Core.Services.GogoAnime;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
@@ -27,11 +28,11 @@ namespace Totoro.Core
             services.AddSingleton<ITimestampsService, TimestampsService>();
             services.AddSingleton<ITorrentsService, TorrentsService>();
             services.AddSingleton<ILocalMediaService, LocalMediaService>();
-            services.AddSingleton<IAiredEpisodeNotifier, AnimixPlayNotifier>();
+            services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<MalToModelConverter>();
-            services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
+            services.AddTransient<IRecentEpisodesProvider, GogoAnimeEpisodesProvider>();
             services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();

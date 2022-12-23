@@ -47,6 +47,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         _animeService = animeService;
         _recentEpisodesProvider = recentEpisodesProvider;
         _streamPageMapper = streamPageMapper;
+        
         MediaPlayer = mediaPlayer;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
@@ -474,7 +475,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         RxApp.MainThreadScheduler.Schedule(async () =>
         {
             MediaPlayer.Pause();
-            await _viewService.SubmitTimeStamp(Anime.Id, CurrentEpisode.Value, SelectedStream.Url, CurrentMediaDuration, _userSkipOpeningTime - 5);
+            await _viewService.SubmitTimeStamp(Anime.Id, CurrentEpisode.Value, SelectedStream, CurrentMediaDuration, _userSkipOpeningTime - 5);
             MediaPlayer.Play();
         });
     }

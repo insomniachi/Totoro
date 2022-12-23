@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Totoro.Core;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
+using Totoro.Core.Services.GogoAnime;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
@@ -78,13 +79,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<ITorrentsService, TorrentsService>();
         services.AddSingleton<ILocalMediaService, LocalMediaService>();
-        services.AddSingleton<IAiredEpisodeNotifier, AnimixPlayNotifier>();
+        services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
 
         services.AddTransient<IFileService, FileService>();
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
         services.AddTransient<MalToModelConverter>();
-        services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
+        services.AddTransient<IRecentEpisodesProvider, GogoAnimeEpisodesProvider>();
         services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();

@@ -16,12 +16,12 @@
 
     <Grid Margin="0,25">
         <Grid.RowDefinitions>
-            <RowDefinition Height="300" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid Margin="10">
+        <!--<Grid Margin="10">
             <FlipView
                 x:Name="Gallery"
                 ItemsSource="{x:Bind ViewModel.Featured, Mode=OneWay}"
@@ -73,7 +73,7 @@
                 VerticalAlignment="Bottom"
                 NumberOfPages="{x:Bind ViewModel.Featured.Count, Mode=OneWay}"
                 SelectedPageIndex="{x:Bind Gallery.SelectedIndex, Mode=TwoWay}" />
-        </Grid>
+        </Grid>-->
 
         <ToggleSwitch
             Grid.Row="1"
@@ -81,11 +81,13 @@
             IsEnabled="{x:Bind ViewModel.IsAuthenticated}"
             IsOn="{x:Bind ViewModel.ShowOnlyWatchingAnime, Mode=TwoWay}"
             OffContent="Show only anime that you are watching"
-            OnContent="Show only anime that you are watching" />
+            OnContent="Show only anime that you are watching"
+            Visibility="Collapsed" />
 
         <GridView
             x:Name="AnimeListView"
             Grid.Row="2"
+            Margin="0,25,0,0"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
             ui:ListViewExtensions.Command="{x:Bind ViewModel.SelectEpisode}"
             IsItemClickEnabled="True"

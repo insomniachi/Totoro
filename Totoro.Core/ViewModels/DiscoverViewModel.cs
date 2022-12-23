@@ -25,8 +25,8 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _episodesCache
             .Connect()
             .RefCount()
-            .Filter(this.WhenAnyValue(x => x.ShowOnlyWatchingAnime).Select(Filter))
-            .Sort(SortExpressionComparer<AiredEpisode>.Descending(x => x.TimeOfAiring), SortOptimisations.ComparesImmutableValuesOnly)
+            //.Filter(this.WhenAnyValue(x => x.ShowOnlyWatchingAnime).Select(Filter))
+            //.Sort(SortExpressionComparer<AiredEpisode>.Descending(x => x.TimeOfAiring), SortOptimisations.ComparesImmutableValuesOnly)
             .Bind(out _episodes)
             .DisposeMany()
             .Subscribe()
@@ -36,30 +36,30 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         SelectFeaturedAnime = ReactiveCommand.Create<FeaturedAnime>(OnFeaturedAnimeSelected);
         ShowOnlyWatchingAnime = IsAuthenticated = trackingService.IsAuthenticated;
 
-        Observable
-            .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10), scheduler: schedulerProvider.TaskpoolScheduler)
-            .ObserveOn(schedulerProvider.MainThreadScheduler)
-            .Where(_ => Featured is not null)
-            .Subscribe(_ =>
-            {
-                if (Featured.Count == 0)
-                {
-                    SelectedIndex = 0;
-                    return;
-                }
+        //Observable
+        //    .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10), scheduler: schedulerProvider.TaskpoolScheduler)
+        //    .ObserveOn(schedulerProvider.MainThreadScheduler)
+        //    .Where(_ => Featured is not null)
+        //    .Subscribe(_ =>
+        //    {
+        //        if (Featured.Count == 0)
+        //        {
+        //            SelectedIndex = 0;
+        //            return;
+        //        }
 
-                if (SelectedIndex == Featured.Count - 1)
-                {
-                    SelectedIndex = 0;
-                    return;
-                }
+        //        if (SelectedIndex == Featured.Count - 1)
+        //        {
+        //            SelectedIndex = 0;
+        //            return;
+        //        }
 
-                SelectedIndex++;
-            });
+        //        SelectedIndex++;
+        //    });
     }
 
 
-    [Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
+    //[Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
     [Reactive] public int SelectedIndex { get; set; }
     [Reactive] public bool ShowOnlyWatchingAnime { get; set; }
     [Reactive] public bool IsLoading { get; set; }
@@ -70,18 +70,18 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     public void RestoreState(IState state)
     {
-        Featured = state.GetValue<IList<FeaturedAnime>>(nameof(Featured));
+        //Featured = state.GetValue<IList<FeaturedAnime>>(nameof(Featured));
         ShowOnlyWatchingAnime = state.GetValue<bool>(nameof(ShowOnlyWatchingAnime));
         _userAnime = state.GetValue<List<AnimeModel>>("UserAnime");
     }
 
     public Task SetInitialState()
     {
-        _featuredAnimeProvider
-            .GetFeaturedAnime()
-            .ObserveOn(_schedulerProvider.MainThreadScheduler)
-            .Subscribe(featured => Featured = featured.ToList())
-            .DisposeWith(Garbage);
+        //_featuredAnimeProvider
+        //    .GetFeaturedAnime()
+        //    .ObserveOn(_schedulerProvider.MainThreadScheduler)
+        //    .Subscribe(featured => Featured = featured.ToList(), RxApp.DefaultExceptionHandler.OnError)
+        //    .DisposeWith(Garbage);
 
         _trackingService
             .GetAnime()
@@ -96,7 +96,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     public void StoreState(IState state)
     {
-        state.AddOrUpdate(Featured);
+        //state.AddOrUpdate(Featured);
         state.AddOrUpdate(ShowOnlyWatchingAnime);
         state.AddOrUpdate(_userAnime, "UserAnime");
     }
@@ -137,22 +137,22 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
     }
 
-    private Func<AiredEpisode, bool> Filter(bool showOnlyUserAnime) => (ep) =>
-    {
-        if (!showOnlyUserAnime)
-        {
-            return true;
-        }
+    //private Func<AiredEpisode, bool> Filter(bool showOnlyUserAnime) => (ep) =>
+    //{
+    //    if (!showOnlyUserAnime)
+    //    {
+    //        return true;
+    //    }
 
-        var model = _userAnime.FirstOrDefault(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x.Title) > 80 || x.AlternativeTitles.Any(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x) > 80));
+    //    var model = _userAnime.FirstOrDefault(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x.Title) > 80 || x.AlternativeTitles.Any(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x) > 80));
 
-        if (model is null)
-        {
-            return false;
-        }
-        else
-        {
-            return model.Tracking.UpdatedAt.HasValue && (DateTime.Today - model.Tracking.UpdatedAt.Value).TotalDays <= 7;
-        }
-    };
+    //    if (model is null)
+    //    {
+    //        return false;
+    //    }
+    //    else
+    //    {
+    //        return model.Tracking.UpdatedAt.HasValue && (DateTime.Today - model.Tracking.UpdatedAt.Value).TotalDays <= 7;
+    //    }
+    //};
 }

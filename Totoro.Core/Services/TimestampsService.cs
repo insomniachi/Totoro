@@ -99,7 +99,7 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         var postData = new Dictionary<string, string>()
         {
             ["skipType"] = skipType,
-            ["providerName"] = "AnimixPlay",
+            ["providerName"] = _settings.DefaultProviderType.ToString(),
             ["startTime"] = interval.StartTime.ToString(),
             ["endTime"] = interval.EndTime.ToString(),
             ["episodeLength"] = episodeLength.ToString(),

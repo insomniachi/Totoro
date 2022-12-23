@@ -15,7 +15,7 @@ public class AnimixPlayFeaturedAnimeProvider : IFeaturedAnimeProvider
     {
         return Observable.Create<IEnumerable<FeaturedAnime>>(async observer =>
         {
-            var response = await _httpClient.GetAsync("https://animixplay.to/assets/s/featured.json");
+            var response = await _httpClient.GetAsync("https://animixplay.to/assets/s/featuredx.json");
 
             if (!response.IsSuccessStatusCode)
             {

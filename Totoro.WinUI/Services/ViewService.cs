@@ -122,11 +122,11 @@ public class ViewService : IViewService
         return vm.SelectedModel as T;
     }
 
-    public async Task SubmitTimeStamp(long malId, int ep, string url, double duration, double introStart)
+    public async Task SubmitTimeStamp(long malId, int ep, VideoStream stream, double duration, double introStart)
     {
         var vm = new SubmitTimeStampsViewModel(App.GetService<ITimestampsService>()) // TODO fix later
         {
-            MediaUrl = url,
+            Stream = stream,
             MalId = malId,
             Episode = ep,
             StartPosition = introStart,

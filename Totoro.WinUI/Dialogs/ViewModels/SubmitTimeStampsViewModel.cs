@@ -40,14 +40,17 @@ public class SubmitTimeStampsViewModel : DialogViewModel
                 }
                 EndPosition = StartPosition + 85;
             });
+
+        this.WhenAnyValue(x => x.Stream)
+            .WhereNotNull()
+            .Subscribe(MediaPlayer.SetMedia);
     }
 
     [Reactive] public double StartPosition { get; set; }
     [Reactive] public double EndPosition { get; set; }
     [Reactive] public string SelectedTimeStampType { get; set; } = "OP";
     [Reactive] public double CurrentPlayerPosition { get; set; }
-
-    public string MediaUrl { get; set; }
+    [Reactive] public VideoStream Stream { get; set; }
     public long MalId { get; set; }
     public int Episode { get; set; }
     public double Duration { get; set; }

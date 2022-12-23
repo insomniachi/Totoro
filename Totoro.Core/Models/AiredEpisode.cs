@@ -12,7 +12,7 @@ public sealed partial class AiredEpisode : IEquatable<AiredEpisode>
     public string EpisodeUrl { get; set; }
     public string Image { get; set; }
     public DateTime TimeOfAiring { get; set; }
-    public string HumanizedTimeOfAiring => TimeOfAiring.Humanize();
+    public string HumanizedTimeOfAiring => string.Empty;
     public long? MalId { get; set; }
     public int GetEpisode()
     {
@@ -29,6 +29,6 @@ public sealed partial class AiredEpisode : IEquatable<AiredEpisode>
 
     public override int GetHashCode() => EpisodeUrl.GetHashCode();
 
-    [GeneratedRegex("ep(\\d+)")]
+    [GeneratedRegex("(\\d+)")]
     private static partial Regex EpisodeRegex();
 }

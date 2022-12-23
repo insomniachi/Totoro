@@ -34,7 +34,8 @@ internal class WatchViewModelBuilder
                                   MediaPlayer,
                                   _timestampsServiceMock.Object,
                                   _recentEpisodesProviderMock.Object,
-                                  Mock.Of<ILocalMediaService>());
+                                  Mock.Of<ILocalMediaService>(),
+                                  Mock.Of<IStreamPageMapper>());
     }
 
     internal WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)

@@ -13,6 +13,21 @@ namespace Totoro.Core.Services
             _httpClient = httpClient;
         }
 
+        public async Task<long> GetMalId(string identifier, ProviderType provider)
+        {
+            try
+            {
+                var json = await _httpClient.GetStringAsync($"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/pages/{GetProviderPage(provider)}/{identifier}.json");
+                var jObject = JsonNode.Parse(json);
+                var value = (long)jObject["malId"].AsValue();
+                return value;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         public async Task<(SearchResult Sub, SearchResult Dub)?> GetStreamPage(long malId, ProviderType provider)
         {
             var json = await _httpClient.GetStringAsync($"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/myanimelist/anime/{malId}.json");
@@ -77,7 +92,17 @@ namespace Totoro.Core.Services
                 ProviderType.AnimixPlay => "AniMixPlay",
                 ProviderType.Tenshi => "Tenshi",
                 ProviderType.AnimePahe => "animepahe",
-                _ => throw new UnreachableException()
+                _ => throw new NotSupportedException()
+            };
+        }
+
+        private static string GetProviderPage(ProviderType provider)
+        {
+            return provider switch
+            {
+                ProviderType.GogoAnime => "Gogoanime",
+                ProviderType.Tenshi => "Tenshi",
+                _ => throw new NotSupportedException()
             };
         }
     }
