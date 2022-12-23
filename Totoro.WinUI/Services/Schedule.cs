@@ -59,7 +59,7 @@ public partial class Schedule : ISchedule
 
     private async Task<Unit> ShowToast(AiredEpisode epInfo)
     {
-        var anime = await _malClient.Anime().WithId(epInfo.Id).WithField(x => x.UserStatus).Find();
+        var anime = await _malClient.Anime().WithId(epInfo.MalId).WithField(x => x.UserStatus).Find();
         var epMatch = EpisodeRegex().Match(epInfo.EpisodeUrl);
         var ep = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
         if (anime.UserStatus is not { Status : MalApi.AnimeStatus.Watching} || (anime.UserStatus?.WatchedEpisodes ?? 0) <= ep)
