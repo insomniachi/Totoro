@@ -16,19 +16,9 @@ public class AnimixPlayNotifier : IAiredEpisodeNotifier, IEnableLogger
     public AnimixPlayNotifier()
 	{
 		Observable
-			.Timer(TimeSpan.Zero, TimeSpan.FromMinutes(1))
+			.Timer(TimeSpan.Zero, TimeSpan.FromMinutes(30))
 			.ObserveOn(RxApp.TaskpoolScheduler)
-			.Subscribe(_ =>
-			{
-				try
-				{
-					Run();
-				}
-				catch(Exception ex)
-				{
-					this.Log().Error(ex);
-				}
-			});
+			.Subscribe(_ => Run(), RxApp.DefaultExceptionHandler.OnError);
 	}
 
 	private void Run()
@@ -41,7 +31,7 @@ public class AnimixPlayNotifier : IAiredEpisodeNotifier, IEnableLogger
 			TimeOfAiring = x.PublishDate.LocalDateTime,
 			Anime = x.Title.Text,
 			EpisodeUrl = x.Links.FirstOrDefault()?.Uri.ToString(),
-			Id = x.ElementExtensions[0].GetObject<long>(),
+			MalId = x.ElementExtensions[0].GetObject<long>(),
 			InfoText = x.ElementExtensions[1].GetObject<string>(),
 		}).ToList();
 

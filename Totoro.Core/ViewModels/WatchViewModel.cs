@@ -300,8 +300,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
-            var epMatch = EpisodeRegex().Match(epInfo.EpisodeUrl);
-            _episodeRequest = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
+            _episodeRequest = epInfo.GetEpisode();
 
             _recentEpisodesProvider
                 .GetMalId(epInfo)
@@ -483,9 +482,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
     private IObservable<bool> HasNextEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.LastOrDefault());
     private IObservable<bool> HasPrevEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.FirstOrDefault());
-
-    [GeneratedRegex("ep(\\d+)")]
-    private static partial Regex EpisodeRegex();
 
     private void OnSubmitTimeStamps()
     {

@@ -1,4 +1,5 @@
-﻿using MalApi.Interfaces;
+﻿using System.Globalization;
+using MalApi.Interfaces;
 using Splat;
 
 namespace Totoro.Core.Services.MyAnimeList;
@@ -22,6 +23,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         MalApi.AnimeFieldNames.Genres,
         MalApi.AnimeFieldNames.Status,
         MalApi.AnimeFieldNames.Videos,
+        MalApi.AnimeFieldNames.EndDate
     };
 
     public bool IsAuthenticated => _client.IsAuthenticated;
@@ -85,18 +87,18 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             return Observable.Create<IEnumerable<ScheduledAnimeModel>>(async observer =>
             {
                 var pagedAnime = await _client.Anime()
-                                                .OfUser()
-                                                .WithStatus(MalApi.AnimeStatus.Watching)
-                                                .IncludeNsfw()
-                                                .WithFields(FieldNames)
-                                                .Find();
+                                              .OfUser()
+                                              .WithStatus(MalApi.AnimeStatus.Watching)
+                                              .IncludeNsfw()
+                                              .WithFields(FieldNames)
+                                              .Find();
 
-                observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
+                observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(CurrentlyAiringOrFinishedWithinLastWeek).ToList()));
 
                 while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
                 {
                     pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                    observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
+                    observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(CurrentlyAiringOrFinishedWithinLastWeek).ToList()));
                 }
 
                 observer.OnCompleted();
@@ -165,5 +167,20 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
     private IEnumerable<ScheduledAnimeModel> ConvertToScheduledAnimeModel(List<MalApi.Anime> anime)
     {
         return anime.Select(x => _converter.Convert<ScheduledAnimeModel>(x) as ScheduledAnimeModel);
+    }
+
+    private static bool CurrentlyAiringOrFinishedWithinLastWeek(MalApi.Anime anime)
+    {
+        if(anime.Status == MalApi.AiringStatus.CurrentlyAiring)
+        {
+            return true;
+        }
+
+        if(!DateTime.TryParseExact(anime.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None,  out DateTime date))
+        {
+            return false;
+        }
+
+        return (DateTime.Today - date).TotalDays < 7;
     }
 }
