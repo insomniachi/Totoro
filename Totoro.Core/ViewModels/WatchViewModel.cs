@@ -15,6 +15,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly IAnimeService _animeService;
     private readonly IRecentEpisodesProvider _recentEpisodesProvider;
+    private readonly IStreamPageMapper _streamPageMapper;
     private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
@@ -35,7 +36,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
                           IMediaPlayer mediaPlayer,
                           ITimestampsService timestampsService,
                           IRecentEpisodesProvider recentEpisodesProvider,
-                          ILocalMediaService localMediaService)
+                          ILocalMediaService localMediaService,
+                          IStreamPageMapper streamPageMapper)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -44,7 +46,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
         _recentEpisodesProvider = recentEpisodesProvider;
-
+        _streamPageMapper = streamPageMapper;
         MediaPlayer = mediaPlayer;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
@@ -338,23 +340,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         {
             return await malCatalog.SearchByMalId(id);
         }
-        else
-        {
-            var results = await Provider.Catalog.Search(title).ToListAsync();
-
-            if (results.Count == 1)
-            {
-                return (results[0], null);
-            }
-            else if (results.Count == 2)
-            {
-                return (results[0], results[1]);
-            }
-            else
-            {
-                return (await _viewService.ChoooseSearchResult(results, SelectedProviderType), null);
-            }
-        }
+        return await _streamPageMapper.GetStreamPage(id, _settings.DefaultProviderType) ?? await SearchProvider(title);
     }
 
     public Task SetInitialState()
@@ -491,5 +477,23 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             await _viewService.SubmitTimeStamp(Anime.Id, CurrentEpisode.Value, SelectedStream.Url, CurrentMediaDuration, _userSkipOpeningTime - 5);
             MediaPlayer.Play();
         });
+    }
+
+    private async Task<(SearchResult Sub, SearchResult Dub)> SearchProvider(string title)
+    {
+        var results = await Provider.Catalog.Search(title).ToListAsync();
+
+        if (results.Count == 1)
+        {
+            return (results[0], null);
+        }
+        else if (results.Count == 2)
+        {
+            return (results[0], results[1]);
+        }
+        else
+        {
+            return (await _viewService.ChoooseSearchResult(results, SelectedProviderType), null);
+        }
     }
 }

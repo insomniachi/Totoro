@@ -115,7 +115,6 @@ public partial class App : Application, IEnableLogger
                     .CreateLogger();
 
         Locator.CurrentMutable.UseSerilogFullLogger();
-        
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
     }

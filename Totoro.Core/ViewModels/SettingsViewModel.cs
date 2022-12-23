@@ -14,7 +14,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public Guid AniSkipId { get; set; }
     [Reactive] public bool ContributeTimeStamps { get; set; }
     public List<ElementTheme> Themes { get; set; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public List<ProviderType> ProviderTypes { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
+    public List<ProviderType> ProviderTypes { get; set; } = new List<ProviderType> { ProviderType.GogoAnime };
     public ICommand AuthenticateCommand { get; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService,
@@ -24,7 +24,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     {
         ElementTheme = themeSelectorService.Theme;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
-        DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.AnimixPlay);
+        DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.GogoAnime);
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);

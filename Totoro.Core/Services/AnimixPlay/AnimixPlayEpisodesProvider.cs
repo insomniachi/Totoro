@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Totoro.Core.Services.AnimixPlay;
 
+[Obsolete("Animix play is dead, RIP")]
 public partial class AnimixPlayEpisodesProvider : IRecentEpisodesProvider
 {
     private readonly HttpClient _httpClient;

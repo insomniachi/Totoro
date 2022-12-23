@@ -92,7 +92,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<TotoroCommands>();
         services.AddTransient<ISystemClock, SystemClock>();
         services.AddTransient<ISchedulerProvider, SchedulerProvider>();
-        
+        services.AddTransient<IStreamPageMapper, MalSyncStreamPageMapper>();
+
         services.AddMemoryCache();
         services.AddHttpClient();
 

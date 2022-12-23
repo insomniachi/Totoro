@@ -5,6 +5,7 @@ using Splat;
 
 namespace Totoro.Core.Services.AnimixPlay;
 
+[Obsolete("Animix play is dead, RIP")]
 public class AnimixPlayNotifier : IAiredEpisodeNotifier, IEnableLogger
 {
 	public const string Url = "https://animixplay.to/rsssub.xml";

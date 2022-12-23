@@ -1,5 +1,6 @@
 ﻿namespace Totoro.Core.Services.AnimixPlay;
 
+[Obsolete("Animix play is dead, RIP")]
 public class AnimixPlayFeaturedAnimeProvider : IFeaturedAnimeProvider
 {
     private readonly HttpClient _httpClient;
