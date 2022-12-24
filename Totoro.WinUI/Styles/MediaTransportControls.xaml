@@ -262,6 +262,15 @@
                                                     <SymbolIcon Symbol="Clock" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <AppBarButton
+                                                x:Name="QualitiesButton"
+                                                IsEnabled="False"
+                                                Style="{StaticResource AppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Quality">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xe93e;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                         </StackPanel>
 
                                         <StackPanel
@@ -316,16 +325,6 @@
                                             Grid.Column="2"
                                             HorizontalAlignment="Right"
                                             Orientation="Horizontal">
-                                            <AppBarButton
-                                                x:Name="QualitiesButton"
-                                                IsEnabled="False"
-                                                Style="{StaticResource AppBarButtonStyle}"
-                                                ToolTipService.ToolTip="Quality"
-                                                Visibility="Collapsed">
-                                                <AppBarButton.Icon>
-                                                    <FontIcon Glyph="&#xED1F;" />
-                                                </AppBarButton.Icon>
-                                            </AppBarButton>
                                             <AppBarButton
                                                 x:Name="SkipIntroButton"
                                                 Style="{StaticResource AppBarButtonStyle}"

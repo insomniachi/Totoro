@@ -47,18 +47,21 @@ public class CustomMediaTransportControls : MediaTransportControls
         if (e.NewValue is IEnumerable<string> values)
         {
             var qualities = values.ToList();
-            if (qualities.Count <= 1)
+            if (qualities.Count == 1)
             {
                 mtc._onQualityChanged.OnNext("default");
+                mtc._qualitiesButton.Visibility = Visibility.Collapsed;
                 return;
             }
-
-            mtc._qualitiesButton.IsEnabled = true;
-            foreach (var item in qualities)
+            else if(qualities.Count > 1)
             {
-                var flyoutItem = new MenuFlyoutItem { Text = item };
-                flyoutItem.Click += mtc.FlyoutItem_Click;
-                flyout.Items.Add(flyoutItem);
+                mtc._qualitiesButton.IsEnabled = true;
+                foreach (var item in qualities)
+                {
+                    var flyoutItem = new MenuFlyoutItem { Text = item };
+                    flyoutItem.Click += mtc.FlyoutItem_Click;
+                    flyout.Items.Add(flyoutItem);
+                }
             }
         }
     }

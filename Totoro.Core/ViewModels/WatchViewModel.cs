@@ -120,7 +120,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         this.WhenAnyValue(x => x.Query)
             .Where(query => query is { Length: > 3 })
             .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
-            .SelectMany(query => animeService.GetAnime(query))
+            .SelectMany(animeService.GetAnime)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(list => _searchResultCache.EditDiff(list, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
 
@@ -129,6 +129,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Where(_ => !UseLocalMedia)
             .WhereNotNull()
             .SelectMany(model => Find(model.Id, model.Title))
+            .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => SelectedAnimeResult = x);
 
@@ -163,6 +164,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         this.ObservableForProperty(x => x.SelectedAudio, x => x)
             .Do(result => DoIfRpcEnabled(() => discordRichPresense.UpdateDetails(result.Title)))
             .SelectMany(result => Provider.StreamProvider.GetNumberOfStreams(result.Url))
+            .Log(this, "Number of Episodes")
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
             .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1)
@@ -174,6 +176,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         episodeChanged
             .Where(_ => !UseLocalMedia)
             .Do(x => DoIfRpcEnabled(() => discordRichPresense.UpdateState($"Episode {x}")))
+            .Log(this, "Current Episode")
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(ep => Provider.StreamProvider.GetStreams(SelectedAudio.Url, ep.Value..ep.Value).ToListAsync().AsTask())
             .Select(list => list.FirstOrDefault())
@@ -195,6 +198,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         this.ObservableForProperty(x => x.Streams, x => x)
             .WhereNotNull()
             .Select(x => x.Qualities.Keys)
+            .Log(this, "Qualities", x => string.Join(",", x))
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToPropertyEx(this, x => x.Qualities, Enumerable.Empty<string>(), true);
 
@@ -202,6 +206,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         this.ObservableForProperty(x => x.SelectedStream, x => x)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Log(this, "Stream changed", x => x.Url)
             .Do(mediaPlayer.SetMedia)
             .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
             .Subscribe();
@@ -247,6 +252,12 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Select(x => x.Items?.FirstOrDefault(x => x.SkipType == "ed"))
             .Select(x => x?.Interval?.StartTime ?? 0)
             .ToPropertyEx(this, x => x.OutroPosition, true);
+
+        this.WhenAnyValue(x => x.Qualities)
+            .Where(x => x.Count() > 1)
+            .Select(x => x.Select(int.Parse).Max().ToString())
+            .Log(this, "Selected Quality")
+            .InvokeCommand(ChangeQuality);
     }
 
     [Reactive] public string Query { get; set; }

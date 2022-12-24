@@ -129,15 +129,4 @@ public class ActivationService : IActivationService
         }
         catch { }
     }
-
-    private static async Task RequestFullscreen()
-    {
-        var windowHandle = WindowNative.GetWindowHandle(App.MainWindow);
-        var windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
-        var appWindow = AppWindow.GetFromWindowId(windowId);
-        appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-        await Task.Delay(250);
-        appWindow.SetPresenter(AppWindowPresenterKind.Default);
-        appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
-    }
 }
