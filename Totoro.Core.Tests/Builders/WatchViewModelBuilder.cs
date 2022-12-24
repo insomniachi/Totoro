@@ -14,7 +14,6 @@ internal class WatchViewModelBuilder
     private readonly Mock<ISettings> _settingsMock = new();
     private readonly Mock<IAnimeService> _animeServiceMock = new();
     private readonly Mock<ITimestampsService> _timestampsServiceMock = new();
-    private readonly Mock<IRecentEpisodesProvider> _recentEpisodesProviderMock = new();
 
     internal MockMediaPlayer MediaPlayer { get; } = new();
 
@@ -33,7 +32,6 @@ internal class WatchViewModelBuilder
                                   _animeServiceMock.Object,
                                   MediaPlayer,
                                   _timestampsServiceMock.Object,
-                                  _recentEpisodesProviderMock.Object,
                                   Mock.Of<ILocalMediaService>(),
                                   Mock.Of<IStreamPageMapper>());
     }
@@ -83,12 +81,6 @@ internal class WatchViewModelBuilder
     internal WatchViewModelBuilder WithTimeStampService(Action<Mock<ITimestampsService>> configure)
     {
         configure(_timestampsServiceMock);
-        return this;
-    }
-
-    internal WatchViewModelBuilder WithRecentEpisodesProvider(Action<Mock<IRecentEpisodesProvider>> configure)
-    {
-        configure(_recentEpisodesProviderMock);
         return this;
     }
 

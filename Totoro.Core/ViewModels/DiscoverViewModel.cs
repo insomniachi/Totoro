@@ -32,7 +32,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             .Subscribe()
             .DisposeWith(Garbage);
 
-        SelectEpisode = ReactiveCommand.Create<AiredEpisode>(OnEpisodeSelected);
+        SelectEpisode = ReactiveCommand.CreateFromTask<AiredEpisode>(OnEpisodeSelected);
         SelectFeaturedAnime = ReactiveCommand.Create<FeaturedAnime>(OnFeaturedAnimeSelected);
         ShowOnlyWatchingAnime = IsAuthenticated = trackingService.IsAuthenticated;
 
@@ -117,8 +117,10 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         return Task.CompletedTask;
     }
 
-    private void OnEpisodeSelected(AiredEpisode episode)
+    private async Task OnEpisodeSelected(AiredEpisode episode)
     {
+        episode.MalId = await _recentEpisodesProvider.GetMalId(episode);
+
         var navigationParameters = new Dictionary<string, object>
         {
             ["EpisodeInfo"] = episode

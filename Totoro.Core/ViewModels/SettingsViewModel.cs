@@ -13,6 +13,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public int OpeningSkipDurationInSeconds { get; set; }
     [Reactive] public Guid AniSkipId { get; set; }
     [Reactive] public bool ContributeTimeStamps { get; set; }
+    [Reactive] public DefaultUrls DefaultUrls { get; set; }
     public List<ElementTheme> Themes { get; set; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; set; } = new List<ProviderType> { ProviderType.GogoAnime };
     public ICommand AuthenticateCommand { get; }
@@ -29,9 +30,10 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);
         ContributeTimeStamps = localSettingsService.ReadSetting(nameof(ContributeTimeStamps), false);
+        DefaultUrls = localSettingsService.ReadSetting(nameof(DefaultUrls), new DefaultUrls());
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
-        if(id == Guid.Empty)
+        if (id == Guid.Empty)
         {
             AniSkipId = Guid.NewGuid();
             localSettingsService.SaveSetting(nameof(AniSkipId), AniSkipId);
@@ -50,7 +52,17 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
             .Subscribe(propInfo =>
             {
                 localSettingsService.SaveSetting(propInfo.Name, propInfo.GetValue(this));
-            });
+            })
+            .DisposeWith(Garbage);
+
+        DefaultUrls
+            .WhenAnyPropertyChanged()
+            .Subscribe(_ => localSettingsService.SaveSetting(nameof(DefaultUrls), DefaultUrls))
+            .DisposeWith(Garbage);
+
+        this.WhenAnyValue(x => x.DefaultUrls)
+            .SelectMany(UpdateUrls)
+            .Subscribe();
 
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
             .Where(x => x && !dRpc.IsInitialized)
@@ -69,6 +81,19 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         }
 
         return base.OnNavigatedTo(parameters);
+    }
+
+    private async Task<Unit> UpdateUrls(DefaultUrls urls)
+    {
+        using var client = new HttpClient();
+        using var response = await client.GetAsync(new Uri(string.IsNullOrEmpty(urls.GogoAnime) ? AnimDL.Core.DefaultUrl.GogoAnime : urls.GogoAnime));
+        if (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently)
+        {
+            urls.GogoAnime = response.Headers.Location.AbsoluteUri;
+        }
+
+        AnimDL.Core.DefaultUrl.GogoAnime = urls.GogoAnime;
+        return Unit.Default;
     }
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();

@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json.Nodes;
+using System.Threading;
 using MalApi.Interfaces;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -82,10 +83,10 @@ public class ActivationService : IActivationService
         }
     }
 
-    private async Task InitializeAsync()
+    private Task InitializeAsync()
     {
         _themeSelectorService.Initialize();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     private async Task StartupAsync()

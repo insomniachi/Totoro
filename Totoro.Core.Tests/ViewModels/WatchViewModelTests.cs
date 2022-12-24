@@ -440,10 +440,6 @@ public class WatchViewModelTests
         var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
         var vm1 = BaseViewModel(provider).Bulid();
         var vm2 = BaseViewModel(provider)
-            .WithRecentEpisodesProvider(x =>
-            {
-                x.Setup(x => x.GetMalId(It.IsAny<AiredEpisode>())).Returns(Observable.Return((long)12189));
-            })
             .WithAnimeService(x =>
             {
                 x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Return(animeModel));
@@ -463,7 +459,8 @@ public class WatchViewModelTests
             ["EpisodeInfo"] = new AiredEpisode
             {
                 Anime = animeModel.Title,
-                EpisodeUrl = "https://animixplay.to/v1/hyouka"
+                EpisodeUrl = "https://animixplay.to/v1/hyouka",
+                MalId = 12189
             }
         }).Wait();
         vm3.OnNavigatedTo(new Dictionary<string, object> { ["Id"] = animeModel.Id }).Wait();

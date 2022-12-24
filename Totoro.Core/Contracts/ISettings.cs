@@ -12,4 +12,10 @@ public interface ISettings
     int OpeningSkipDurationInSeconds { get; set; }
     Guid AniSkipId { get; }
     bool ContributeTimeStamps { get; set; }
+    public DefaultUrls DefaultUrls { get; set; }
+}
+
+public class DefaultUrls : ReactiveObject
+{
+    [Reactive] public string GogoAnime { get; set; }
 }

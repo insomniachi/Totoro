@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using System.Text.RegularExpressions;
 using AnimDL.Api;
 using Splat;
 using Totoro.Core.Helpers;
@@ -14,7 +13,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly IAnimeService _animeService;
-    private readonly IRecentEpisodesProvider _recentEpisodesProvider;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
@@ -35,7 +33,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
                           IAnimeService animeService,
                           IMediaPlayer mediaPlayer,
                           ITimestampsService timestampsService,
-                          IRecentEpisodesProvider recentEpisodesProvider,
                           ILocalMediaService localMediaService,
                           IStreamPageMapper streamPageMapper)
     {
@@ -45,7 +42,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         _playbackStateStorage = playbackStateStorage;
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
-        _recentEpisodesProvider = recentEpisodesProvider;
         _streamPageMapper = streamPageMapper;
         
         MediaPlayer = mediaPlayer;
@@ -305,12 +301,12 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             _episodeRequest = epInfo.GetEpisode();
 
-            _recentEpisodesProvider
-                .GetMalId(epInfo)
-                .Where(id => id > 0)
-                .SelectMany(_animeService.GetInformation)
-                .Subscribe(x => Anime = x)
-                .DisposeWith(Garbage);
+            if(epInfo.MalId is { } id)
+            {
+                _animeService
+                    .GetInformation(id)
+                    .Subscribe(x => Anime = x, RxApp.DefaultExceptionHandler.OnError);
+            }
         }
         else if (parameters.ContainsKey("Id"))
         {
