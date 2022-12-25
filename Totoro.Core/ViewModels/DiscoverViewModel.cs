@@ -1,27 +1,31 @@
-﻿namespace Totoro.Core.ViewModels;
+﻿using AnimDL.Api;
+
+namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly IRecentEpisodesProvider _recentEpisodesProvider;
     private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
     private readonly INavigationService _navigationService;
     private readonly ITrackingService _trackingService;
     private readonly ISchedulerProvider _schedulerProvider;
-    private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Anime);
+    private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Url);
     private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
+    private readonly IProvider _provider;
     private List<AnimeModel> _userAnime = new();
 
-    public DiscoverViewModel(IRecentEpisodesProvider recentEpisodesProvider,
+    public DiscoverViewModel(IProviderFactory providerFacotory,
+                             ISettings settings,
                              IFeaturedAnimeProvider featuredAnimeProvider,
                              INavigationService navigationService,
                              ITrackingService trackingService,
                              ISchedulerProvider schedulerProvider)
     {
-        _recentEpisodesProvider = recentEpisodesProvider;
+        _provider = providerFacotory.GetProvider(settings.DefaultProviderType);
         _featuredAnimeProvider = featuredAnimeProvider;
         _navigationService = navigationService;
         _trackingService = trackingService;
         _schedulerProvider = schedulerProvider;
+
         _episodesCache
             .Connect()
             .RefCount()
@@ -105,28 +109,31 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     {
         IsLoading = true;
 
-        _recentEpisodesProvider.GetRecentlyAiredEpisodes()
-                               .ObserveOn(RxApp.MainThreadScheduler)
-                               .Subscribe(eps =>
-                               {
-                                   _episodesCache.AddOrUpdate(eps);
-                                   IsLoading = false;
-                               }, RxApp.DefaultExceptionHandler.OnError)
-                               .DisposeWith(Garbage);
+        _provider
+            .AiredEpisodesProvider
+            .GetRecentlyAiredEpisodes()
+            .ToObservable()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(eps =>
+            {
+                _episodesCache.AddOrUpdate(eps);
+                IsLoading = false;
+            }, RxApp.DefaultExceptionHandler.OnError)
+            .DisposeWith(Garbage);
 
         return Task.CompletedTask;
     }
 
-    private async Task OnEpisodeSelected(AiredEpisode episode)
+    private Task OnEpisodeSelected(AiredEpisode episode)
     {
-        episode.MalId = await _recentEpisodesProvider.GetMalId(episode);
-
         var navigationParameters = new Dictionary<string, object>
         {
             ["EpisodeInfo"] = episode
         };
 
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
+
+        return Task.CompletedTask;
     }
 
     private void OnFeaturedAnimeSelected(FeaturedAnime anime)

@@ -1,13 +1,8 @@
 ﻿using System.ComponentModel;
-using MalApi;
-using MalApi.Interfaces;
-using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Totoro.Core;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
-using Totoro.Core.Services.GogoAnime;
-using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Activation;
@@ -85,7 +80,6 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
         services.AddTransient<MalToModelConverter>();
-        services.AddTransient<IRecentEpisodesProvider, GogoAnimeEpisodesProvider>();
         services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();
@@ -93,7 +87,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<TotoroCommands>();
         services.AddTransient<ISystemClock, SystemClock>();
         services.AddTransient<ISchedulerProvider, SchedulerProvider>();
-        services.AddTransient<IStreamPageMapper, MalSyncStreamPageMapper>();
+        services.AddTransient<IStreamPageMapper, StreamPageMapper>();
 
         services.AddMemoryCache();
         services.AddHttpClient();

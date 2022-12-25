@@ -1,5 +1,5 @@
 ﻿using System.Reactive.Subjects;
-using Splat;
+using AnimDL.Api;
 
 namespace Totoro.Core.Services;
 
@@ -10,19 +10,21 @@ public class AiredEpisodeNotifier : IAiredEpisodeNotifier
 
     public IObservable<AiredEpisode> OnNewEpisode => _onNewEpisode;
 
-    public AiredEpisodeNotifier(IRecentEpisodesProvider recentEpisodesProvider)
+    public AiredEpisodeNotifier(ISettings settings,
+                                IProviderFactory providerFactory)
     {
+        var provider = providerFactory.GetProvider(settings.DefaultProviderType);
+
         Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromMinutes(30))
-            .SelectMany(_ => recentEpisodesProvider.GetRecentlyAiredEpisodes())
+            .SelectMany(_ => provider.AiredEpisodesProvider.GetRecentlyAiredEpisodes())
             .Select(enumerable => enumerable.ToList())
-            .Do(async list =>
+            .Do(list =>
             {
                 list.RemoveAll(_previousState.Contains);
                 _previousState = list;
                 foreach (var item in list)
                 {
-                    item.MalId = await recentEpisodesProvider.GetMalId(item);
                     _onNewEpisode.OnNext(item);
                 }
             })

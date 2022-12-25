@@ -10,14 +10,22 @@ namespace Totoro.WinUI.Services;
 public partial class Schedule : ISchedule
 {
     public Dictionary<long, TimeRemaining> Dictionary { get; set; } = new();
-    private readonly HttpClient _httpClient;
-    private readonly IMalClient _malClient;
 
-    public Schedule(IMalClient client,
+    private readonly IAnimeService _animeService;
+    private readonly HttpClient _httpClient;
+    private readonly IStreamPageMapper _streamPageMapper;
+    private readonly ISettings _settings;
+
+    public Schedule(IAnimeService trackingService,
                     HttpClient httpClient,
-                    IAiredEpisodeNotifier notifier)
+                    IAiredEpisodeNotifier notifier,
+                    IStreamPageMapper streamPageMapper,
+                    ISettings settings)
     {
+        _animeService = trackingService;
         _httpClient = httpClient;
+        _streamPageMapper = streamPageMapper;
+        _settings = settings;
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(Constants.UserAgent);
 
         notifier
@@ -25,26 +33,19 @@ public partial class Schedule : ISchedule
             .SelectMany(ShowToast)
             .Subscribe();
 
-        _malClient = client;
     }
 
     private async Task<Unit> ShowToast(AiredEpisode epInfo)
     {
-        if(epInfo.MalId == 0)
+        var id = await _streamPageMapper.GetMalIdFromUrl(epInfo.Url, _settings.DefaultProviderType);
+        var anime = await _animeService.GetInformation(id);
+        var ep = epInfo.GetEpisode();
+        if (anime.Tracking is null)
         {
             return Unit.Default;
         }
 
-        var anime = await _malClient.Anime().WithId(epInfo.MalId.Value).WithField(x => x.UserStatus).Find();
-        var epMatch = EpisodeRegex().Match(epInfo.EpisodeUrl);
-        var ep = epMatch.Success ? int.Parse(epMatch.Groups[1].Value) : 1;
-
-        if(anime.UserStatus is null)
-        {
-            return Unit.Default;
-        }
-
-        if (anime.UserStatus is not { Status : MalApi.AnimeStatus.Watching} || (anime.UserStatus?.WatchedEpisodes ?? 0) <= ep)
+        if (anime.Tracking is not { Status: AnimeStatus.Watching } || (anime.Tracking.WatchedEpisodes ?? 0) <= ep)
         {
             return Unit.Default;
         }
@@ -53,7 +54,7 @@ public partial class Schedule : ISchedule
             .SetToastScenario(ToastScenario.Default)
             .AddText("New Episode")
             .AddText(anime.Title)
-            .AddText(epInfo.InfoText)
+            .AddText(epInfo.GetEpisode().ToString())
             .Show();
 
         return Unit.Default;

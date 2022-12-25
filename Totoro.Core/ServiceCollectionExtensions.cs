@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AnimixPlay;
-using Totoro.Core.Services.GogoAnime;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
@@ -32,14 +31,13 @@ namespace Totoro.Core
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<MalToModelConverter>();
-            services.AddTransient<IRecentEpisodesProvider, GogoAnimeEpisodesProvider>();
             services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();
             services.AddTransient<TotoroCommands>();
             services.AddTransient<ISystemClock, SystemClock>();
             services.AddTransient<ISchedulerProvider, SchedulerProvider>();
-            services.AddTransient<IStreamPageMapper, MalSyncStreamPageMapper>();
+            services.AddTransient<IStreamPageMapper, StreamPageMapper>();
 
             services.AddMemoryCache();
             services.AddHttpClient();

@@ -312,7 +312,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             _episodeRequest = epInfo.GetEpisode();
 
-            if(epInfo.MalId is { } id)
+            if(await _streamPageMapper.GetMalIdFromUrl(epInfo.Url, Provider.ProviderType) is long id)
             {
                 _animeService
                     .GetInformation(id)

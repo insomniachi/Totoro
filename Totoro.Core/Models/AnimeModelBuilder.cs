@@ -4,11 +4,8 @@
 
 public class MalToModelConverter
 {
-    private readonly ISchedule _schedule;
-
-    public MalToModelConverter(ISchedule schedule)
+    public MalToModelConverter()
     {
-        _schedule = schedule;
     }
 
     public AnimeModel Convert<T>(MalApi.Anime anime)
@@ -104,17 +101,13 @@ public class MalToModelConverter
     {
         Populate(model, malModel);
 
-        var time = _schedule.GetTimeTillEpisodeAirs(model.Id);
+        //var time = _schedule.GetTimeTillEpisodeAirs(model.Id);
 
-        if (time is null)
-        {
+        //if (time is null)
+        //{
             model.BroadcastDay = malModel.Broadcast?.DayOfWeek;
             return model;
-        }
-
-        model.BroadcastDay = (DateTime.Now + time.TimeSpan).DayOfWeek;
-        model.TimeRemaining = time;
-        return model;
+        //}
     }
 
     private SeasonalAnimeModel PopulateSeason(SeasonalAnimeModel model, MalApi.Anime malModel)

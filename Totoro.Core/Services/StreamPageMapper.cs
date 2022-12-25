@@ -1,14 +1,15 @@
-﻿using System.Diagnostics;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AnimDL.Api;
+using Splat;
 
 namespace Totoro.Core.Services
 {
-    public class MalSyncStreamPageMapper : IStreamPageMapper
+    public partial class StreamPageMapper : IStreamPageMapper, IEnableLogger
     {
         private readonly HttpClient _httpClient;
 
-        public MalSyncStreamPageMapper(HttpClient httpClient)
+        public StreamPageMapper(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
@@ -22,9 +23,38 @@ namespace Totoro.Core.Services
                 var value = (long)jObject["malId"].AsValue();
                 return value;
             }
-            catch
+            catch(Exception ex)
             {
+                this.Log().Error(ex);
                 return 0;
+            }
+        }
+
+        public async Task<long> GetMalIdFromUrl(string url, ProviderType provider)
+        {
+            if(provider == ProviderType.Yugen)
+            {
+                try
+                {
+                    var html = await _httpClient.GetStringAsync(url);
+                    var match = YugenMalIdRegex().Match(html);
+                    return match.Success ? long.Parse(match.Groups[1].Value) : 0;
+                }
+                catch (Exception ex)
+                {
+                    this.Log().Error(ex);
+                    return 0;
+                }
+            }
+            else if(provider == ProviderType.GogoAnime)
+            {
+                var uri = new Uri(url);
+                var match = GogoAnimeIdentifierRegex().Match(uri.AbsolutePath);
+                return await GetMalId(match.Groups[1].Value, ProviderType.GogoAnime);
+            }
+            else
+            {
+                throw new NotSupportedException();
             }
         }
 
@@ -105,5 +135,11 @@ namespace Totoro.Core.Services
                 _ => throw new NotSupportedException()
             };
         }
+
+        [GeneratedRegex("\"mal_id\":(\\d+)")]
+        private static partial Regex YugenMalIdRegex();
+
+        [GeneratedRegex("/?(.+)-episode-\\d+")]
+        private static partial Regex GogoAnimeIdentifierRegex();
     }
 }
