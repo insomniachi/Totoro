@@ -1,6 +1,5 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using AnimDL.Api;
 using Splat;
 
 namespace Totoro.Core.Services
@@ -51,6 +50,12 @@ namespace Totoro.Core.Services
                 var uri = new Uri(url);
                 var match = GogoAnimeIdentifierRegex().Match(uri.AbsolutePath);
                 return await GetMalId(match.Groups[1].Value, ProviderType.GogoAnime);
+            }
+            else if(provider == ProviderType.AnimePahe)
+            {
+                var html = await _httpClient.GetStringAsync(url);
+                var match = AnimePaheMalIdRegex().Match(html);
+                return match.Success ? long.Parse(match.Groups[1].Value) : 0;
             }
             else
             {
@@ -141,5 +146,8 @@ namespace Totoro.Core.Services
 
         [GeneratedRegex("/?(.+)-episode-\\d+")]
         private static partial Regex GogoAnimeIdentifierRegex();
+
+        [GeneratedRegex(@"myanimelist\.net/anime/(\d+)")]
+        private static partial Regex AnimePaheMalIdRegex();
     }
 }

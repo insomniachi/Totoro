@@ -1,10 +1,7 @@
-﻿using AnimDL.Api;
-
-namespace Totoro.Core.ViewModels;
+﻿namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
     private readonly INavigationService _navigationService;
     private readonly ITrackingService _trackingService;
     private readonly ISchedulerProvider _schedulerProvider;
@@ -21,7 +18,6 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
                              ISchedulerProvider schedulerProvider)
     {
         _provider = providerFacotory.GetProvider(settings.DefaultProviderType);
-        _featuredAnimeProvider = featuredAnimeProvider;
         _navigationService = navigationService;
         _trackingService = trackingService;
         _schedulerProvider = schedulerProvider;
@@ -107,6 +103,11 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        if(_provider.AiredEpisodesProvider is null)
+        {
+            return Task.CompletedTask;
+        }
+
         IsLoading = true;
 
         _provider

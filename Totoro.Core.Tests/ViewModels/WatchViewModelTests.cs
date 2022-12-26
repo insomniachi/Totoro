@@ -1,7 +1,5 @@
 ﻿using System.Reactive;
 using System.Reactive.Linq;
-using AnimDL.Api;
-using Splat;
 using Totoro.Core.Tests.Builders;
 using Totoro.Core.Tests.Helpers;
 
@@ -456,11 +454,10 @@ public class WatchViewModelTests
         vm1.OnNavigatedTo(new Dictionary<string, object> { ["Anime"] = animeModel }).Wait();
         vm2.OnNavigatedTo(new Dictionary<string, object>
         {
-            ["EpisodeInfo"] = new AiredEpisode
+            ["EpisodeInfo"] = new TestAiredEpisode(1)
             {
-                Anime = animeModel.Title,
-                EpisodeUrl = "https://animixplay.to/v1/hyouka",
-                MalId = 12189
+                Title = animeModel.Title,
+                Url = "https://animixplay.to/v1/hyouka",
             }
         }).Wait();
         vm3.OnNavigatedTo(new Dictionary<string, object> { ["Id"] = animeModel.Id }).Wait();

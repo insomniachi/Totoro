@@ -7,6 +7,7 @@ using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Totoro.Core
 {

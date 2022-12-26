@@ -1,5 +1,4 @@
-﻿using AnimDL.Api;
-using Splat;
+﻿using Splat;
 
 namespace Totoro.Core.ViewModels;
 
@@ -16,7 +15,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public bool ContributeTimeStamps { get; set; }
     [Reactive] public DefaultUrls DefaultUrls { get; set; }
     public List<ElementTheme> Themes { get; set; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public List<ProviderType> ProviderTypes { get; set; } = new List<ProviderType> { ProviderType.GogoAnime, ProviderType.Yugen };
+    public List<ProviderType> ProviderTypes { get; set; } = new List<ProviderType> { ProviderType.GogoAnime, ProviderType.Yugen, ProviderType.AnimePahe };
     public ICommand AuthenticateCommand { get; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService,

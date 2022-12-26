@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using AnimDL.Api;
 using Splat;
 using Totoro.Core.Helpers;
 
@@ -254,8 +253,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .ToPropertyEx(this, x => x.OutroPosition, true);
 
         this.WhenAnyValue(x => x.Qualities)
-            .Where(x => x.Count() > 1)
-            .Select(x => x.Select(int.Parse).Max().ToString())
+            .Where(Enumerable.Any)
+            .Select(GetDefaultQuality)
             .Log(this, "Selected Quality")
             .InvokeCommand(ChangeQuality);
     }
@@ -502,6 +501,20 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         else
         {
             return (await _viewService.ChoooseSearchResult(results, SelectedProviderType), null);
+        }
+    }
+
+    private static string GetDefaultQuality(IEnumerable<string> qualities)
+    {
+        var list = qualities.ToList();
+
+        if(list.Count == 1)
+        {
+            return list.First();
+        }
+        else
+        {
+            return list.Select(int.Parse).Max().ToString();
         }
     }
 }

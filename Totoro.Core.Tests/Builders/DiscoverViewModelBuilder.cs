@@ -14,7 +14,8 @@ internal class DiscoverViewModelBuilder
 
     internal DiscoverViewModel Builder()
     {
-        return new DiscoverViewModel(_recentEpisodesProviderMock.Object,
+        return new DiscoverViewModel(Mock.Of<IProviderFactory>(),
+                                     Mock.Of<ISettings>(),
                                      _featuredAnimeProviderMock.Object,
                                      _navigationServiceMock.Object,
                                      _trackingServiceMock.Object,

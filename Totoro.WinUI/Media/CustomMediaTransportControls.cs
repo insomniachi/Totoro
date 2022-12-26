@@ -49,9 +49,7 @@ public class CustomMediaTransportControls : MediaTransportControls
             var qualities = values.ToList();
             if (qualities.Count == 1)
             {
-                mtc._onQualityChanged.OnNext("default");
                 mtc._qualitiesButton.Visibility = Visibility.Collapsed;
-                return;
             }
             else if(qualities.Count > 1)
             {
