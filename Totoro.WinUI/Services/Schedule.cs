@@ -39,7 +39,7 @@ public partial class Schedule : ISchedule
     {
         var id = await _streamPageMapper.GetMalIdFromUrl(epInfo.Url, _settings.DefaultProviderType);
         var anime = await _animeService.GetInformation(id);
-        var ep = epInfo.GetEpisode();
+        var ep = epInfo.Episode;
         if (anime.Tracking is null)
         {
             return Unit.Default;
@@ -54,7 +54,7 @@ public partial class Schedule : ISchedule
             .SetToastScenario(ToastScenario.Default)
             .AddText("New Episode")
             .AddText(anime.Title)
-            .AddText(epInfo.GetEpisode().ToString())
+            .AddText(epInfo.Episode.ToString())
             .Show();
 
         return Unit.Default;

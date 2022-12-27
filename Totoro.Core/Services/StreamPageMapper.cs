@@ -7,10 +7,13 @@ namespace Totoro.Core.Services
     public partial class StreamPageMapper : IStreamPageMapper, IEnableLogger
     {
         private readonly HttpClient _httpClient;
+        private readonly IAnimeIdService _animeIdService;
 
-        public StreamPageMapper(HttpClient httpClient)
+        public StreamPageMapper(HttpClient httpClient, 
+                                IAnimeIdService animeIdService)
         {
             _httpClient = httpClient;
+            _animeIdService = animeIdService;
         }
 
         public async Task<long> GetMalId(string identifier, ProviderType provider)
@@ -33,17 +36,7 @@ namespace Totoro.Core.Services
         {
             if(provider == ProviderType.Yugen)
             {
-                try
-                {
-                    var html = await _httpClient.GetStringAsync(url);
-                    var match = YugenMalIdRegex().Match(html);
-                    return match.Success ? long.Parse(match.Groups[1].Value) : 0;
-                }
-                catch (Exception ex)
-                {
-                    this.Log().Error(ex);
-                    return 0;
-                }
+                return await GetIdFromSource(url, YugenMalIdRegex());
             }
             else if(provider == ProviderType.GogoAnime)
             {
@@ -53,13 +46,36 @@ namespace Totoro.Core.Services
             }
             else if(provider == ProviderType.AnimePahe)
             {
-                var html = await _httpClient.GetStringAsync(url);
-                var match = AnimePaheMalIdRegex().Match(html);
-                return match.Success ? long.Parse(match.Groups[1].Value) : 0;
+                return await GetIdFromSource(url, AnimePaheMalIdRegex());
+            }
+            else if(provider == ProviderType.AllAnime)
+            {
+                var aniListId = await GetIdFromSource(url, AllAnimeAniListIdRegex());
+                if(aniListId == 0)
+                {
+                    return 0;
+                }
+                var animeId = await _animeIdService.GetId(AnimeTrackerType.AniList, aniListId);
+                return animeId.MyAnimeList;
             }
             else
             {
                 throw new NotSupportedException();
+            }
+        }
+
+        private async Task<long> GetIdFromSource(string url, Regex regex)
+        {
+            try
+            {
+                var html = await _httpClient.GetStringAsync(url);
+                var match = regex.Match(html);
+                return match.Success ? long.Parse(match.Groups[1].Value) : 0;
+            }
+            catch (Exception ex)
+            {
+                this.Log().Error(ex);
+                return 0;
             }
         }
 
@@ -127,7 +143,7 @@ namespace Totoro.Core.Services
                 ProviderType.AnimixPlay => "AniMixPlay",
                 ProviderType.Tenshi => "Tenshi",
                 ProviderType.AnimePahe => "animepahe",
-                _ => throw new NotSupportedException()
+                _ => string.Empty
             };
         }
 
@@ -149,5 +165,8 @@ namespace Totoro.Core.Services
 
         [GeneratedRegex(@"myanimelist\.net/anime/(\d+)")]
         private static partial Regex AnimePaheMalIdRegex();
+
+        [GeneratedRegex(@"banner/(\d+)")]
+        private static partial Regex AllAnimeAniListIdRegex();
     }
 }

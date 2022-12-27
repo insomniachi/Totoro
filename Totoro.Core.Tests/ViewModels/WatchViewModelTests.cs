@@ -454,7 +454,7 @@ public class WatchViewModelTests
         vm1.OnNavigatedTo(new Dictionary<string, object> { ["Anime"] = animeModel }).Wait();
         vm2.OnNavigatedTo(new Dictionary<string, object>
         {
-            ["EpisodeInfo"] = new TestAiredEpisode(1)
+            ["EpisodeInfo"] = new TestAiredEpisode
             {
                 Title = animeModel.Title,
                 Url = "https://animixplay.to/v1/hyouka",

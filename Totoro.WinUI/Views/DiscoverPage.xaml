@@ -7,6 +7,7 @@
     xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
@@ -121,10 +122,11 @@
                             <Grid.Background>
                                 <SolidColorBrush Opacity="0.5" Color="Black" />
                             </Grid.Background>
-                            <!--<TextBlock
+                            <TextBlock
                                 FontSize="20"
                                 Foreground="White"
-                                Text="{x:Bind HumanizedTimeOfAiring}" />-->
+                                Text="{x:Bind help:ModelHelpers.GetTimeOfAiring((am:AiredEpisode))}"
+                                Visibility="{x:Bind help:ModelHelpers.GetTimeOfAiringVisibility((am:AiredEpisode))}" />
                         </Grid>
 
                         <Border
@@ -145,7 +147,10 @@
                                     TextTrimming="WordEllipsis"
                                     TextWrapping="NoWrap"
                                     ToolTipService.ToolTip="{x:Bind Title}" />
-                                <TextBlock HorizontalAlignment="Center" Text="{x:Bind AdditionalInfo}" />
+                                <TextBlock HorizontalAlignment="Center">
+                                    <Run Text="Episode" />
+                                    <Run Text="{x:Bind Episode}" />
+                                </TextBlock>
                             </StackPanel>
                         </Border>
                     </Grid>

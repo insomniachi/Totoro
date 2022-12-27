@@ -16,7 +16,7 @@ public class DisoverViewModelTests
         var vmBuilder = new DiscoverViewModelBuilder()
             .WithRecentEpisodesProvider(mock => mock.Setup(x => x.GetRecentlyAiredEpisodes()).Returns(Observable.Return(new List<AiredEpisode>
             {
-                new TestAiredEpisode(1){Title = "A"}, new TestAiredEpisode(1){Title = "B" }, new TestAiredEpisode(1){Title="C"}
+                new TestAiredEpisode{Title = "A"}, new TestAiredEpisode{Title = "B" }, new TestAiredEpisode{Title="C"}
             })))
             .WithTrackingService(mock => mock.Setup(x => x.GetAnime()).Returns(Observable.Return(Enumerable.Empty<AnimeModel>())))
             .WithFeaturedAnimeProvider(mock => mock.Setup(x => x.GetFeaturedAnime()).Returns(Observable.Return(Enumerable.Repeat(new FeaturedAnime { Title = "Hyouka" }, 5))));
@@ -37,7 +37,7 @@ public class DisoverViewModelTests
         var vmBuilder = new DiscoverViewModelBuilder();
         var vm = vmBuilder.Builder();
 
-        vm.SelectEpisode.Execute(new TestAiredEpisode(1) { Title = "Hyouka" });
+        vm.SelectEpisode.Execute(new TestAiredEpisode { Title = "Hyouka" });
 
         vmBuilder.GetNavigationService().Verify(x => x.NavigateTo(It.IsAny<WatchViewModel>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<bool>()), Times.Once);
     }

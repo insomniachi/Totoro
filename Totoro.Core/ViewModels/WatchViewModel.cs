@@ -137,8 +137,9 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .WhereNotNull()
             .Select(model => localMediaService.GetEpisodes(model.Id))
             .Do(eps => _episodesCache.EditDiff(eps))
-            .Select(_ => _episodeRequest ?? Anime?.Tracking?.WatchedEpisodes + 1 ?? 1)
-            .Where(ep => ep <= Anime?.TotalEpisodes)
+            .Select(_ => GetQueuedEpisode())
+            .Log(this, "Episode Queued")
+            .Where(RequestedEpisodeIsValid)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
 
@@ -166,8 +167,9 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Log(this, "Number of Episodes")
             .Select(count => Enumerable.Range(1, count).ToList())
             .Do(list => _episodesCache.EditDiff(list))
-            .Select(_ => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1)
-            .Where(ep => ep <= (Anime?.TotalEpisodes ?? int.MaxValue))
+            .Select(_ => GetQueuedEpisode())
+            .Log(this, "Episode Queued")
+            .Where(RequestedEpisodeIsValid)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
 
@@ -196,8 +198,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         // Update qualities selection
         this.ObservableForProperty(x => x.Streams, x => x)
             .WhereNotNull()
-            .Select(x => x.Qualities.Keys)
-            .Log(this, "Qualities", x => string.Join(",", x))
+            .Select(FormatQualityStrings)
+            .Log(this, "Qualities", JoinStrings)
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToPropertyEx(this, x => x.Qualities, Enumerable.Empty<string>(), true);
 
@@ -266,7 +268,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public (SearchResult Sub, SearchResult Dub) SelectedAnimeResult { get; set; }
     [Reactive] public SearchResult SelectedAudio { get; set; }
-    [Reactive] public IAnimeModel Anime { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
     [Reactive] public bool UseLocalMedia { get; set; }
     [ObservableAsProperty] public bool IsFullWindow { get; }
@@ -281,7 +282,14 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     [ObservableAsProperty] public VideoStreamsForEpisode Streams { get; }
     [ObservableAsProperty] public IEnumerable<string> Qualities { get; }
     [ObservableAsProperty] public AniSkipResult AniSkipResult { get; }
-    
+
+    private IAnimeModel _anime;
+    public IAnimeModel Anime
+    {
+        get => _anime;
+        set => this.RaiseAndSetIfChanged(ref _anime, value);
+    }
+
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
@@ -309,14 +317,15 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
-            _episodeRequest = epInfo.GetEpisode();
+            _episodeRequest = epInfo.Episode;
 
-            if(await _streamPageMapper.GetMalIdFromUrl(epInfo.Url, Provider.ProviderType) is long id)
-            {
-                _animeService
-                    .GetInformation(id)
-                    .Subscribe(x => Anime = x, RxApp.DefaultExceptionHandler.OnError);
-            }
+            _streamPageMapper
+                .GetMalIdFromUrl(epInfo.Url, Provider.ProviderType)
+                .ToObservable()
+                .Where(id => id is > 0)
+                .SelectMany(_animeService.GetInformation)
+                .Subscribe(x => QuickSetStream(x, epInfo), RxApp.DefaultExceptionHandler.OnError);
+
         }
         else if (parameters.ContainsKey("Id"))
         {
@@ -437,7 +446,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         _isUpdatingTracking = false;
 
-        if(_settings.ContributeTimeStamps && AniSkipResult.Items.Length < 2) // either op or ed or both are missing.
+        if(_settings.ContributeTimeStamps && AniSkipResult.Items.Any(x => x.SkipType == "op") == false) // don't force to submit if only ed is missing
         {
             OnSubmitTimeStamps();
         }
@@ -514,7 +523,22 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         }
         else
         {
-            return list.Select(int.Parse).Max().ToString();
+            return list.OrderBy(x => x.Length).ThenBy(x => x).LastOrDefault();
         }
     }
+    private void QuickSetStream(IAnimeModel model, AiredEpisode episode)
+    {
+        _anime = model;
+        SelectedAnimeResult = new(new() { Title = episode.Title, Url = episode.Url }, null);
+    }
+    private static IEnumerable<string> FormatQualityStrings(VideoStreamsForEpisode stream)
+    {
+        return stream.Qualities
+                     .Select(x => x.Key)
+                     .OrderBy(x => x.Length)
+                     .ThenBy(x => x);
+    }
+    private static string JoinStrings(IEnumerable<string> items) => string.Join(",", items); 
+    private bool RequestedEpisodeIsValid(int episode) => Anime?.TotalEpisodes is 0 or null || episode <= Anime?.TotalEpisodes;
+    private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1;
 }
