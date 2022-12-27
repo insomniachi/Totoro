@@ -12,6 +12,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     xmlns:views="using:Totoro.WinUI.Views"
+    x:Name="Page"
     Margin="{StaticResource MediumLeftRightMargin}"
     d:DataContext="{d:DesignInstance Type=viewmodels:DiscoverViewModel}"
     mc:Ignorable="d">
@@ -98,7 +99,7 @@
                 <DataTemplate x:DataType="am:AiredEpisode">
                     <Grid
                         x:Name="MainGrid"
-                        Width="190"
+                        Width="{Binding ElementName=Page, Path=ViewModel.CardWidth}"
                         Height="320">
                         <Grid.RowDefinitions>
                             <RowDefinition />
@@ -158,7 +159,7 @@
             </GridView.ItemTemplate>
             <GridView.ItemContainerStyle>
                 <Style TargetType="GridViewItem">
-                    <Setter Property="Margin" Value="10" />
+                    <Setter Property="Margin" Value="5" />
                 </Style>
             </GridView.ItemContainerStyle>
         </GridView>
