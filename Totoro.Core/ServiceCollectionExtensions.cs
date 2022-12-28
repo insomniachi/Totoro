@@ -21,6 +21,7 @@ namespace Totoro.Core
             services.AddSingleton<ITorrentsService, TorrentsService>();
             services.AddSingleton<ILocalMediaService, LocalMediaService>();
             services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
+            services.AddSingleton<IUpdateService, WindowsUpdateService>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<MalToModelConverter>();

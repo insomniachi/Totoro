@@ -1,6 +1,5 @@
 using Totoro.WinUI.Dialogs.ViewModels;
-using Totoro.WinUI.Media;
-using Windows.Media.Core;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Totoro.WinUI.Dialogs.Views;
 
@@ -18,6 +17,20 @@ public sealed partial class SubmitTimeStampsView : SubmitTimeStampsViewBase
                 .Do(wrapper => MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer()))
                 .Subscribe()
                 .DisposeWith(d);
+
+            SetStartButton
+            .Events()
+            .Click
+            .Select(_ => Unit.Default)
+            .InvokeCommand(ViewModel.SetStartPosition)
+            .DisposeWith(d);
+
+            SetEndButton
+            .Events()
+            .Click
+            .Select(_ => Unit.Default)
+            .InvokeCommand(ViewModel.SetStartPosition)
+            .DisposeWith(d);
         });
     }
 }

@@ -12,7 +12,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     {
         _timestampsService = timestampsService;
 
-        PlayRange = ReactiveCommand.Create(() => Play());
+        PlayRange = ReactiveCommand.Create(Play);
         SetStartPosition = ReactiveCommand.Create(() => StartPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
         SetEndPosition = ReactiveCommand.Create(() => EndPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
         SkipNearEnd = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(EndPosition - 5)));
@@ -38,7 +38,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
                 {
                     StartPosition = SuggestedEndPosition;
                 }
-                EndPosition = StartPosition + 85;
+                EndPosition = StartPosition + 90;
             });
 
         this.WhenAnyValue(x => x.Stream)

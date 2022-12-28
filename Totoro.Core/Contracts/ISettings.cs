@@ -14,6 +14,7 @@ public interface ISettings
     bool ContributeTimeStamps { get; set; }
     public DefaultUrls DefaultUrls { get; set; }
     LogLevel MinimumLogLevel { get; set; }
+    bool AutoUpdate { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

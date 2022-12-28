@@ -123,6 +123,16 @@
                     ItemsSource="{x:Bind ViewModel.LogLevels}"
                     SelectedItem="{x:Bind ViewModel.MinimumLogLevel, Mode=TwoWay}" />
             </labs:SettingsCard>
+            <labs:SettingsCard Description="Auto update application when available" Header="Upates">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xecc5;" />
+                </labs:SettingsCard.HeaderIcon>
+                <ToggleSwitch
+                    FlowDirection="RightToLeft"
+                    IsOn="{x:Bind ViewModel.AutoUpdate, Mode=TwoWay}"
+                    OffContent=""
+                    OnContent="" />
+            </labs:SettingsCard>
         </StackPanel>
 
         <TeachingTip

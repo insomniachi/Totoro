@@ -16,6 +16,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public bool ContributeTimeStamps { get; set; }
     [Reactive] public DefaultUrls DefaultUrls { get; set; }
     [Reactive] public LogLevel MinimumLogLevel { get; set; }
+    [Reactive] public bool AutoUpdate { get; set; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen };
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
@@ -35,6 +36,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         ContributeTimeStamps = localSettingsService.ReadSetting(nameof(ContributeTimeStamps), false);
         DefaultUrls = localSettingsService.ReadSetting(nameof(DefaultUrls), new DefaultUrls());
         MinimumLogLevel = localSettingsService.ReadSetting(nameof(MinimumLogLevel), LogLevel.Debug);
+        AutoUpdate = localSettingsService.ReadSetting(nameof(AutoUpdate), true);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)

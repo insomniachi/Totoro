@@ -37,8 +37,8 @@
             <TextBox Width="167" Text="{x:Bind ViewModel.EndPosition, Mode=TwoWay}" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="10">
-            <Button Command="{x:Bind ViewModel.SetStartPosition}" Content="Set Start" />
-            <Button Command="{x:Bind ViewModel.SetEndPosition}" Content="Set End" />
+            <RepeatButton x:Name="SetStartButton" Content="Set Start" />
+            <RepeatButton x:Name="SetEndButton" Content="Set End" />
             <Button Command="{x:Bind ViewModel.SkipNearEnd}" Content="Skip near End" />
         </StackPanel>
         <Button

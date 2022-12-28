@@ -16,7 +16,6 @@ internal class DiscoverViewModelBuilder
     {
         return new DiscoverViewModel(Mock.Of<IProviderFactory>(),
                                      Mock.Of<ISettings>(),
-                                     _featuredAnimeProviderMock.Object,
                                      _navigationServiceMock.Object,
                                      _trackingServiceMock.Object,
                                      _schedulerProvider?.Object ?? new SchedulerProvider());

@@ -1,4 +1,6 @@
-﻿using AnimDL.Core.Api;
+﻿using System.Diagnostics;
+using AnimDL.Core.Api;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
@@ -144,5 +146,22 @@ public class ViewService : IViewService
         });
 
         vm.MediaPlayer.Pause();
+    }
+
+    public async Task<bool> Question(string title, string message)
+    {
+        var dialog = new ContentDialog()
+        {
+            Title = title,
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            DefaultButton = ContentDialogButton.Primary,
+            Content = message,
+            PrimaryButtonText = "Yes",
+            SecondaryButtonText = "No"
+        };
+
+        var result = await dialog.ShowAsync();
+        return result == ContentDialogResult.Primary;
     }
 }

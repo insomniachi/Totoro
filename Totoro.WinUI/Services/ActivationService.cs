@@ -1,16 +1,6 @@
-﻿using System.Diagnostics;
-using System.Net.Http;
-using System.Reflection;
-using System.Text.Json.Nodes;
-using System.Threading;
-using MalApi.Interfaces;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
+﻿using MalApi.Interfaces;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Activation;
-using Totoro.WinUI.Views;
-using WinRT.Interop;
 
 namespace Totoro.WinUI.Services;
 
@@ -89,44 +79,9 @@ public class ActivationService : IActivationService
         return Task.CompletedTask;
     }
 
-    private async Task StartupAsync()
+    private Task StartupAsync()
     {
         _themeSelectorService.SetRequestedTheme();
-
-        try
-        {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Safari/537.36 Edg/104.0.1293.70");
-            var response = await client.GetStringAsync("https://api.github.com/repos/athulrajts/AnimDL.GUI/releases/latest");
-            if (!string.IsNullOrEmpty(response))
-            {
-                var jObject = JsonNode.Parse(response);
-                var latestVersion = new Version(jObject["tag_name"].ToString());
-                var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
-
-                if (latestVersion > appVersion)
-                {
-                    var dialog = new ContentDialog()
-                    {
-                        Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-                        XamlRoot = App.MainWindow.Content.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary,
-                        Content = $"A new version {latestVersion} is available for download",
-                        PrimaryButtonText = "Download now",
-                        CloseButtonText = "Maybe later",
-                        PrimaryButtonCommand = ReactiveCommand.Create(() =>
-                        {
-                            Process.Start(new ProcessStartInfo(jObject["html_url"].ToString())
-                            {
-                                UseShellExecute = true
-                            });
-                        })
-                    };
-
-                    await dialog.ShowAsync();
-                }
-            }
-        }
-        catch { }
+        return Task.CompletedTask;
     }
 }
