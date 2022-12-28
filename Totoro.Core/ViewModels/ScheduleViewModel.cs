@@ -49,7 +49,10 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     public void StoreState(IState state)
     {
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
-        state.AddOrUpdate(SelectedDay.DayOfWeek, nameof(SelectedDay));
+        if (Anime.Any())
+        {
+            state.AddOrUpdate(SelectedDay.DayOfWeek, nameof(SelectedDay)); 
+        }
     }
 
     public Task SetInitialState()

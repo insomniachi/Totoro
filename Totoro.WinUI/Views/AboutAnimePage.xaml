@@ -167,22 +167,22 @@
                 </ScrollViewer>
                 <Pivot>
                     <PivotItem Header="Previews">
-                        <GridView
+                        <ctk:AdaptiveGridView
+                            Margin="0,10"
                             ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
+                            DesiredWidth="360"
                             IsItemClickEnabled="True"
-                            ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}">
+                            ItemHeight="240"
+                            ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}"
+                            StretchContentForSingleRow="False">
                             <GridView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Video">
-                                    <Grid>
+                                    <Grid Margin="3">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition />
-                                            <RowDefinition />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
                                         </Grid.RowDefinitions>
-                                        <Image
-                                            Width="320"
-                                            Height="240"
-                                            Source="{x:Bind Thumbnail}"
-                                            Stretch="Uniform" />
+                                        <Image Source="{x:Bind Thumbnail}" Stretch="UniformToFill" />
                                         <TextBlock
                                             Grid.Row="1"
                                             FontSize="18"
@@ -192,12 +192,7 @@
                                     </Grid>
                                 </DataTemplate>
                             </GridView.ItemTemplate>
-                            <GridView.ItemContainerStyle>
-                                <Style TargetType="GridViewItem">
-                                    <Setter Property="Margin" Value="10" />
-                                </Style>
-                            </GridView.ItemContainerStyle>
-                        </GridView>
+                        </ctk:AdaptiveGridView>
                     </PivotItem>
                     <PivotItem Header="OST">
                         <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">

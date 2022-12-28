@@ -1,6 +1,7 @@
-﻿using DiscordRPC;
+﻿
+using DiscordRPC;
 
-namespace Totoro.WinUI.Services;
+namespace Totoro.Core.Services;
 
 public class DiscordRichPresense : IDiscordRichPresense
 {

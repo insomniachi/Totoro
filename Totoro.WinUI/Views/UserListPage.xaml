@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"
+    xmlns:uhelp="using:Totoro.WinUI.Helpers"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:v="using:Totoro.WinUI.Views"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
@@ -69,6 +70,7 @@
                 Height="35"
                 VerticalAlignment="Center"
                 VerticalContentAlignment="Center"
+                uhelp:OnScreenKeyboard.Enabled="true"
                 PlaceholderText="Search"
                 QueryIcon="Find"
                 Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -78,15 +80,21 @@
 
         <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
             <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-                <GridView
+                <ctk:AdaptiveGridView
                     x:Name="AnimeListView"
                     animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
                     ui:ListViewExtensions.Command="{x:Bind root:App.Commands.Watch}"
+                    DesiredWidth="240"
                     IsItemClickEnabled="True"
-                    ItemsSource="{x:Bind ViewModel.Anime}">
-                    <GridView.ItemTemplate>
+                    ItemHeight="380"
+                    ItemsSource="{x:Bind ViewModel.Anime}"
+                    StretchContentForSingleRow="False">
+                    <ctk:AdaptiveGridView.ItemTemplate>
                         <DataTemplate x:DataType="cm:AnimeModel">
-                            <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
+                            <uc:AnimeCard
+                                x:Name="Card"
+                                Margin="3"
+                                Anime="{x:Bind}">
                                 <uc:AnimeCard.Flyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem
@@ -109,13 +117,8 @@
                                 </uc:AnimeCard.Flyout>
                             </uc:AnimeCard>
                         </DataTemplate>
-                    </GridView.ItemTemplate>
-                    <GridView.ItemContainerStyle>
-                        <Style TargetType="GridViewItem">
-                            <Setter Property="Margin" Value="10" />
-                        </Style>
-                    </GridView.ItemContainerStyle>
-                </GridView>
+                    </ctk:AdaptiveGridView.ItemTemplate>
+                </ctk:AdaptiveGridView>
             </ctk:Case>
             <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
                 <ctk:DataGrid

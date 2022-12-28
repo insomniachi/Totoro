@@ -1,4 +1,6 @@
-﻿namespace Totoro.Core.Contracts;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Totoro.Core.Contracts;
 
 public interface ISettings
 {
@@ -11,6 +13,7 @@ public interface ISettings
     Guid AniSkipId { get; }
     bool ContributeTimeStamps { get; set; }
     public DefaultUrls DefaultUrls { get; set; }
+    LogLevel MinimumLogLevel { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

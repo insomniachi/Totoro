@@ -3,11 +3,9 @@ using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Totoro.Core.Services;
-using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Totoro.Core
 {
@@ -16,13 +14,7 @@ namespace Totoro.Core
 
         public static IServiceCollection AddTotoro(this IServiceCollection services)
         {
-            //services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
-            //services.AddSingleton<ISchedule, Schedule>();
-            //services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
-            //services.AddTransient<IViewService, ViewService>();
-            //services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
-            //services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
-
+            services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
             services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
             services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
             services.AddSingleton<ITimestampsService, TimestampsService>();
@@ -32,7 +24,6 @@ namespace Totoro.Core
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<MalToModelConverter>();
-            services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();
             services.AddTransient<TotoroCommands>();
@@ -69,20 +60,6 @@ namespace Totoro.Core
                 client.SetClientId(clientId);
                 return client;
             });
-
-            return services;
-        }
-
-        public static IServiceCollection AddViewModels(this IServiceCollection services)
-        {
-            services.AddTransient<AboutAnimeViewModel>();
-            services.AddTransient<DiscoverViewModel>();
-            services.AddTransient<DownloadViewModel>();
-            services.AddTransient<ScheduleViewModel>();
-            services.AddTransient<SeasonalViewModel>();
-            services.AddTransient<SettingsViewModel>();
-            services.AddTransient<UserListViewModel>();
-            services.AddTransient<WatchViewModel>();
 
             return services;
         }

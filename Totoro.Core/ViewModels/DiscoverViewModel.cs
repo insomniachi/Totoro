@@ -12,7 +12,6 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
 
     public DiscoverViewModel(IProviderFactory providerFacotory,
                              ISettings settings,
-                             IFeaturedAnimeProvider featuredAnimeProvider,
                              INavigationService navigationService,
                              ITrackingService trackingService,
                              ISchedulerProvider schedulerProvider)

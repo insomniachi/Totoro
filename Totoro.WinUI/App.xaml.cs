@@ -13,6 +13,7 @@ using WinUIEx;
 using Splat.Serilog;
 using Serilog;
 using Microsoft.Extensions.Options;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.WinUI;
 
@@ -106,16 +107,31 @@ public partial class App : Application, IEnableLogger
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
         Commands = GetService<TotoroCommands>();
-        var appDataFolder = GetService<IOptions<LocalSettingsOptions>>().Value.ApplicationDataFolder;
-        var log = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appDataFolder, "Logs/log.txt");
-        Log.Logger = new LoggerConfiguration()
-                    .Enrich.FromLogContext()
-                    .WriteTo.File(log, rollingInterval: RollingInterval.Day)
-                    .MinimumLevel.Debug()
-                    .CreateLogger();
-
-        Locator.CurrentMutable.UseSerilogFullLogger();
+        ConfigureLogging();
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
+    }
+
+    private static void ConfigureLogging()
+    {
+        var appDataFolder = GetService<IOptions<LocalSettingsOptions>>().Value.ApplicationDataFolder;
+        var log = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appDataFolder, "Logs/log.txt");
+        var mimimumLogLevel = GetService<ISettings>().MinimumLogLevel;
+
+        var configuration = new LoggerConfiguration()
+                    .Enrich.FromLogContext()
+                    .WriteTo.File(log, rollingInterval: RollingInterval.Day);
+
+        switch (mimimumLogLevel)
+        {
+            case LogLevel.Debug: configuration.MinimumLevel.Debug();break;
+            case LogLevel.Information: configuration.MinimumLevel.Information();break;
+            case LogLevel.Warning: configuration.MinimumLevel.Warning();break;
+            case LogLevel.Error: configuration.MinimumLevel.Error();break;
+            case LogLevel.Critical: configuration.MinimumLevel.Fatal();break;
+        }
+        
+        Log.Logger = configuration.CreateLogger();
+        Locator.CurrentMutable.UseSerilogFullLogger();
     }
 }

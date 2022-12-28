@@ -114,6 +114,15 @@
                     OffContent=""
                     OnContent="" />
             </labs:SettingsCard>
+            <labs:SettingsCard Description="Set the minumum log level." Header="Logging">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe9f9;" />
+                </labs:SettingsCard.HeaderIcon>
+                <ComboBox
+                    Width="150"
+                    ItemsSource="{x:Bind ViewModel.LogLevels}"
+                    SelectedItem="{x:Bind ViewModel.MinimumLogLevel, Mode=TwoWay}" />
+            </labs:SettingsCard>
         </StackPanel>
 
         <TeachingTip

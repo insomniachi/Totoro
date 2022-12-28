@@ -87,20 +87,19 @@
             OnContent="Show only anime that you are watching"
             Visibility="Collapsed" />
 
-        <GridView
+        <ctk:AdaptiveGridView
             x:Name="AnimeListView"
             Grid.Row="2"
             Margin="0,25,0,0"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
             ui:ListViewExtensions.Command="{x:Bind ViewModel.SelectEpisode}"
+            DesiredWidth="{x:Bind ViewModel.CardWidth}"
             IsItemClickEnabled="True"
+            ItemHeight="320"
             ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}">
-            <GridView.ItemTemplate>
+            <ctk:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="am:AiredEpisode">
-                    <Grid
-                        x:Name="MainGrid"
-                        Width="{Binding ElementName=Page, Path=ViewModel.CardWidth}"
-                        Height="320">
+                    <Grid x:Name="MainGrid" Margin="3">
                         <Grid.RowDefinitions>
                             <RowDefinition />
                             <RowDefinition Height="Auto" />
@@ -156,13 +155,8 @@
                         </Border>
                     </Grid>
                 </DataTemplate>
-            </GridView.ItemTemplate>
-            <GridView.ItemContainerStyle>
-                <Style TargetType="GridViewItem">
-                    <Setter Property="Margin" Value="5" />
-                </Style>
-            </GridView.ItemContainerStyle>
-        </GridView>
+            </ctk:AdaptiveGridView.ItemTemplate>
+        </ctk:AdaptiveGridView>
 
         <ctk:Loading
             x:Name="LoadingControl"

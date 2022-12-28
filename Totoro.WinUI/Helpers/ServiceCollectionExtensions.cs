@@ -2,7 +2,6 @@
 using Microsoft.UI.Xaml;
 using Totoro.Core;
 using Totoro.Core.Services;
-using Totoro.Core.Services.AnimixPlay;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Activation;
@@ -80,7 +79,6 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
         services.AddTransient<MalToModelConverter>();
-        services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();
         services.AddTransient<IShanaProjectService, ShanaProjectService>();

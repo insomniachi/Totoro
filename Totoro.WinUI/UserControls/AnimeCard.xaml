@@ -11,10 +11,7 @@
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
 
         <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-            <Grid
-                Width="240"
-                Height="400"
-                ContextFlyout="{x:Bind Flyout}">
+            <Grid ContextFlyout="{x:Bind Flyout}">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
@@ -103,8 +100,8 @@
         <ctk:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
             <Grid ContextFlyout="{x:Bind Flyout}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="460" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
 
                 <ctk:ImageEx
