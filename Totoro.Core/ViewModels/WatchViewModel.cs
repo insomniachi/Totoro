@@ -13,9 +13,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly IAnimeService _animeService;
     private readonly IStreamPageMapper _streamPageMapper;
-    private readonly SourceCache<SearchResultModel, string> _searchResultCache = new(x => x.Title);
     private readonly SourceList<int> _episodesCache = new();
-    private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
     private readonly ReadOnlyObservableCollection<int> _episodes;
 
     private int? _episodeRequest;
@@ -63,14 +61,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         SubscribeToMediaPlayerEvents();
 
-        _searchResultCache
-            .Connect()
-            .RefCount()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Bind(out _searchResults)
-            .Subscribe()
-            .DisposeWith(Garbage);
-
         _episodesCache
             .Connect()
             .RefCount()
@@ -114,14 +104,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(_ => UpdateTracking())
             .Subscribe();
-
-        /// populate searchbox suggestions
-        this.WhenAnyValue(x => x.Query)
-            .Where(query => query is { Length: > 3 })
-            .Throttle(TimeSpan.FromMilliseconds(250), RxApp.TaskpoolScheduler)
-            .SelectMany(animeService.GetAnime)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(list => _searchResultCache.EditDiff(list, (first, second) => first.Title == second.Title), RxApp.DefaultExceptionHandler.OnNext);
 
         // Triggers the first step to scrape stream urls
         this.ObservableForProperty(x => x.Anime, x => x)
@@ -261,7 +243,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .InvokeCommand(ChangeQuality);
     }
 
-    [Reactive] public string Query { get; set; }
     [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
     [Reactive] public int? CurrentEpisode { get; set; }
     [Reactive] public bool HideControls { get; set; } = true;
@@ -292,7 +273,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
     public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
-    public ReadOnlyObservableCollection<SearchResultModel> SearchResult => _searchResults;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
 
@@ -319,18 +299,27 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             _episodeRequest = epInfo.Episode;
 
-            _streamPageMapper
-                .GetMalIdFromUrl(epInfo.Url, Provider.ProviderType)
-                .ToObservable()
-                .Where(id => id is > 0)
-                .SelectMany(_animeService.GetInformation)
-                .Subscribe(x => QuickSetStream(x, epInfo), RxApp.DefaultExceptionHandler.OnError);
-
+            var malId = await _streamPageMapper.GetMalIdFromUrl(epInfo.Url, Provider.ProviderType);
+            if (malId > 0)
+            {
+                _anime = await _animeService.GetInformation(malId);
+            }
+            SelectedAudio = new SearchResult { Title = epInfo.Title, Url = epInfo.Url };
         }
         else if (parameters.ContainsKey("Id"))
         {
             var id = (long)parameters["Id"];
             Anime = await _animeService.GetInformation(id);
+        }
+        else if(parameters.ContainsKey("SearchResult"))
+        {
+            var searchResult = (SearchResult)parameters["SearchResult"];
+            var malId = await _streamPageMapper.GetMalIdFromUrl(searchResult.Url, Provider.ProviderType);
+            if(malId > 0)
+            {
+                _anime = await _animeService.GetInformation(malId);
+            }
+            SelectedAudio = searchResult;
         }
         else
         {
@@ -525,11 +514,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         {
             return list.OrderBy(x => x.Length).ThenBy(x => x).LastOrDefault();
         }
-    }
-    private void QuickSetStream(IAnimeModel model, AiredEpisode episode)
-    {
-        _anime = model;
-        SelectedAnimeResult = new(new() { Title = episode.Title, Url = episode.Url }, null);
     }
     private static IEnumerable<string> FormatQualityStrings(VideoStreamsForEpisode stream)
     {

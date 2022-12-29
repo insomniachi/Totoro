@@ -1,4 +1,6 @@
-﻿namespace Totoro.Core.ViewModels;
+﻿using Totoro.Core.Models;
+
+namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
@@ -6,7 +8,9 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     private readonly ITrackingService _trackingService;
     private readonly ISchedulerProvider _schedulerProvider;
     private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Url);
+    private readonly SourceCache<SearchResult, string> _animeSearchResultCache = new(x => x.Url);
     private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
+    private readonly ReadOnlyObservableCollection<SearchResult> _animeSearchResults;
     private readonly IProvider _provider;
     private List<AnimeModel> _userAnime = new();
 
@@ -33,13 +37,35 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             .Subscribe()
             .DisposeWith(Garbage);
 
+        _animeSearchResultCache
+            .Connect()
+            .RefCount()
+            .Bind(out _animeSearchResults)
+            .DisposeMany()
+            .Subscribe()
+            .DisposeWith(Garbage);
+
         CardWidth = settings.DefaultProviderType == ProviderType.AnimePahe ? 480 : 190; // animepahe image is thumbnail
         ShowOnlyWatchingAnime = IsAuthenticated = trackingService.IsAuthenticated;
         DontUseImageEx = settings.DefaultProviderType == ProviderType.Yugen; // using imagex for yugen is crashing
 
         SelectEpisode = ReactiveCommand.CreateFromTask<AiredEpisode>(OnEpisodeSelected);
-        SelectFeaturedAnime = ReactiveCommand.Create<FeaturedAnime>(OnFeaturedAnimeSelected);
+        SelectSearchResult = ReactiveCommand.CreateFromTask<SearchResult>(OnSearchResultSelected);
         LoadMore = ReactiveCommand.Create(LoadMoreEpisodes, this.WhenAnyValue(x => x.IsLoading).Select(x => !x));
+
+        this.WhenAnyValue(x => x.SearchText)
+            .Where(x => x is { Length: >= 2 })
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .SelectMany(term => _provider.Catalog.Search(term).ToListAsync().AsTask())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(list => _animeSearchResultCache.EditDiff(list, (item1, item2) => item1.Url == item2.Url), RxApp.DefaultExceptionHandler.OnError);
+
+        this.WhenAnyValue(x => x.SearchText)
+            .Where(x => x is { Length: < 2 } && AnimeSearchResults.Count > 0)
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => _animeSearchResultCache.Clear());
     }
 
     [Reactive] public int SelectedIndex { get; set; }
@@ -48,14 +74,17 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     [Reactive] public PagerViewModel PagerViewModel { get; set; }
     [Reactive] public string FilterText { get; set; }
     [Reactive] public bool DontUseImageEx { get; private set; }
+    [Reactive] public string SearchText { get; set; }
     
     public bool IsAuthenticated { get; }
     public double CardWidth { get; }
     public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
-    
+    public ReadOnlyObservableCollection<SearchResult> AnimeSearchResults => _animeSearchResults;
+
     public ICommand SelectEpisode { get; }
     public ICommand SelectFeaturedAnime { get; }
     public ICommand LoadMore { get; }
+    public ICommand SelectSearchResult { get; }
 
     public void RestoreState(IState state)
     {
@@ -114,15 +143,18 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         return Task.CompletedTask;
     }
 
-    private void OnFeaturedAnimeSelected(FeaturedAnime anime)
+    private Task OnSearchResultSelected(SearchResult searchResult)
     {
         var navigationParameters = new Dictionary<string, object>
         {
-            ["Id"] = long.Parse(anime.Id)
+            ["SearchResult"] = searchResult
         };
 
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
+
+        return Task.CompletedTask;
     }
+
 
     private IObservable<IEnumerable<AiredEpisode>> LoadPage(int page)
     {

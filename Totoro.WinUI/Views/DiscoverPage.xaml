@@ -4,12 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:am="using:AnimDL.Core.Models"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
-    xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     xmlns:views="using:Totoro.WinUI.Views"
     x:Name="Page"
@@ -23,190 +21,243 @@
     </views:DiscoverPageBase.Resources>
 
     <Grid Margin="0,45">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
+        <Pivot>
 
-        <StackPanel HorizontalAlignment="Center" Spacing="5">
+            <PivotItem Header="Recently Aired">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <AutoSuggestBox
-                    Width="300"
-                    Height="35"
-                    VerticalAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    PlaceholderText="Search"
-                    QueryIcon="Find"
-                    Text="{x:Bind ViewModel.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <Button Command="{x:Bind ViewModel.LoadMore}" Content="Load More" />
-            </StackPanel>
+                    <StackPanel
+                        Margin="{StaticResource SmallTopBottomMargin}"
+                        HorizontalAlignment="Center"
+                        Spacing="5">
 
-            <PipsPager
-                Margin="{StaticResource SmallTopBottomMargin}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                NextButtonVisibility="Visible"
-                NumberOfPages="{x:Bind ViewModel.PagerViewModel.PageCount, Mode=OneWay}"
-                PreviousButtonVisibility="Visible"
-                SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <AutoSuggestBox
+                                Width="300"
+                                Height="35"
+                                VerticalAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                PlaceholderText="Search"
+                                QueryIcon="Find"
+                                Text="{x:Bind ViewModel.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Command="{x:Bind ViewModel.LoadMore}" Content="Load More" />
+                        </StackPanel>
 
-        </StackPanel>
-        <!--<Grid Margin="10">
-            <FlipView
-                x:Name="Gallery"
-                ItemsSource="{x:Bind ViewModel.Featured, Mode=OneWay}"
-                SelectedIndex="{x:Bind ViewModel.SelectedIndex, Mode=TwoWay}">
-                <FlipView.ItemTemplate>
-                    <DataTemplate x:DataType="cm:FeaturedAnime">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
-                            <StackPanel Grid.Column="1" Padding="10">
-                                <TextBlock
-                                    FontSize="30"
-                                    FontWeight="Bold"
-                                    Text="{x:Bind Title}"
-                                    TextWrapping="WrapWholeWords" />
+                        <PipsPager
+                            Margin="{StaticResource SmallTopBottomMargin}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            NextButtonVisibility="Visible"
+                            NumberOfPages="{x:Bind ViewModel.PagerViewModel.PageCount, Mode=OneWay}"
+                            PreviousButtonVisibility="Visible"
+                            SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />
 
-                                <ItemsRepeater Margin="0,10" ItemsSource="{x:Bind GenresArray}">
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="x:String">
-                                            <Border
-                                                Padding="5"
-                                                Background="{ThemeResource AccentControlElevationBorderBrush}"
-                                                CornerRadius="3">
-                                                <TextBlock Text="{x:Bind}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                    <ItemsRepeater.Layout>
-                                        <StackLayout Orientation="Horizontal" Spacing="5" />
-                                    </ItemsRepeater.Layout>
-                                </ItemsRepeater>
+                    </StackPanel>
 
-                                <TextBlock
-                                    Padding="10"
-                                    FontSize="20"
-                                    Text="{x:Bind Description}"
-                                    TextTrimming="CharacterEllipsis"
-                                    TextWrapping="WrapWholeWords" />
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </FlipView.ItemTemplate>
-            </FlipView>
-            <PipsPager
-                HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                NumberOfPages="{x:Bind ViewModel.Featured.Count, Mode=OneWay}"
-                SelectedPageIndex="{x:Bind Gallery.SelectedIndex, Mode=TwoWay}" />
-        </Grid>-->
+                    <ToggleSwitch
+                        Grid.Row="1"
+                        Margin="10,5"
+                        IsEnabled="{x:Bind ViewModel.IsAuthenticated}"
+                        IsOn="{x:Bind ViewModel.ShowOnlyWatchingAnime, Mode=TwoWay}"
+                        OffContent="Show only anime that you are watching"
+                        OnContent="Show only anime that you are watching"
+                        Visibility="Collapsed" />
 
-        <ToggleSwitch
-            Grid.Row="1"
-            Margin="10,5"
-            IsEnabled="{x:Bind ViewModel.IsAuthenticated}"
-            IsOn="{x:Bind ViewModel.ShowOnlyWatchingAnime, Mode=TwoWay}"
-            OffContent="Show only anime that you are watching"
-            OnContent="Show only anime that you are watching"
-            Visibility="Collapsed" />
+                    <ctk:AdaptiveGridView
+                        Grid.Row="2"
+                        animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+                        DesiredWidth="{x:Bind ViewModel.CardWidth}"
+                        IsItemClickEnabled="True"
+                        ItemClickCommand="{x:Bind ViewModel.SelectEpisode}"
+                        ItemHeight="320"
+                        ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+                        StretchContentForSingleRow="False">
+                        <ctk:AdaptiveGridView.ItemTemplate>
+                            <DataTemplate x:DataType="am:AiredEpisode">
+                                <Grid x:Name="MainGrid" Margin="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
 
-        <ctk:AdaptiveGridView
-            x:Name="AnimeListView"
-            Grid.Row="2"
-            animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-            ui:ListViewExtensions.Command="{x:Bind ViewModel.SelectEpisode}"
-            DesiredWidth="{x:Bind ViewModel.CardWidth}"
-            IsItemClickEnabled="True"
-            ItemHeight="320"
-            ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
-            StretchContentForSingleRow="False">
-            <ctk:AdaptiveGridView.ItemTemplate>
-                <DataTemplate x:DataType="am:AiredEpisode">
-                    <Grid x:Name="MainGrid" Margin="3">
-                        <Grid.RowDefinitions>
-                            <RowDefinition />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                                    <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
+                                        <ctk:Case IsDefault="True" Value="{StaticResource False}">
+                                            <ctk:ImageEx
+                                                CacheMode="BitmapCache"
+                                                EnableLazyLoading="True"
+                                                IsCacheEnabled="True"
+                                                PlaceholderSource="/Assets/placeholder.jpg"
+                                                PlaceholderStretch="Fill"
+                                                Source="{x:Bind Image}"
+                                                Stretch="UniformToFill" />
+                                        </ctk:Case>
+                                        <ctk:Case Value="{StaticResource True}">
+                                            <Image
+                                                Grid.Row="0"
+                                                Source="{x:Bind Image}"
+                                                Stretch="UniformToFill" />
+                                        </ctk:Case>
+                                    </ctk:SwitchPresenter>
 
-                        <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
-                            <ctk:Case IsDefault="True" Value="{StaticResource False}">
-                                <ctk:ImageEx
-                                    CacheMode="BitmapCache"
-                                    EnableLazyLoading="True"
-                                    IsCacheEnabled="True"
-                                    PlaceholderSource="/Assets/placeholder.jpg"
-                                    PlaceholderStretch="Fill"
-                                    Source="{x:Bind Image}"
-                                    Stretch="UniformToFill" />
-                            </ctk:Case>
-                            <ctk:Case Value="{StaticResource True}">
-                                <Image
-                                    Grid.Row="0"
-                                    Source="{x:Bind Image}"
-                                    Stretch="UniformToFill" />
-                            </ctk:Case>
-                        </ctk:SwitchPresenter>
+                                    <Grid
+                                        x:Name="Time"
+                                        Grid.Row="0"
+                                        Height="30"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top">
+                                        <Grid.Background>
+                                            <SolidColorBrush Opacity="0.5" Color="Black" />
+                                        </Grid.Background>
+                                        <TextBlock
+                                            FontSize="20"
+                                            Foreground="White"
+                                            Text="{x:Bind help:ModelHelpers.GetTimeOfAiring((am:AiredEpisode))}"
+                                            Visibility="{x:Bind help:ModelHelpers.GetTimeOfAiringVisibility((am:AiredEpisode))}" />
+                                    </Grid>
 
-                        <Grid
-                            x:Name="Time"
-                            Grid.Row="0"
-                            Height="30"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top">
-                            <Grid.Background>
-                                <SolidColorBrush Opacity="0.5" Color="Black" />
-                            </Grid.Background>
-                            <TextBlock
-                                FontSize="20"
-                                Foreground="White"
-                                Text="{x:Bind help:ModelHelpers.GetTimeOfAiring((am:AiredEpisode))}"
-                                Visibility="{x:Bind help:ModelHelpers.GetTimeOfAiringVisibility((am:AiredEpisode))}" />
-                        </Grid>
+                                    <Border
+                                        x:Name="Border"
+                                        Grid.Row="1"
+                                        Height="60"
+                                        Padding="3"
+                                        Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
+                                        BorderThickness="0,4,0,0">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Margin="0,3,0,0"
+                                                Padding="3"
+                                                VerticalAlignment="Center"
+                                                FontSize="15"
+                                                Text="{x:Bind Title}"
+                                                TextAlignment="Center"
+                                                TextTrimming="WordEllipsis"
+                                                TextWrapping="NoWrap"
+                                                ToolTipService.ToolTip="{x:Bind Title}" />
+                                            <TextBlock HorizontalAlignment="Center">
+                                                <Run Text="Episode" />
+                                                <Run Text="{x:Bind Episode}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ctk:AdaptiveGridView.ItemTemplate>
+                    </ctk:AdaptiveGridView>
+                </Grid>
+            </PivotItem>
 
-                        <Border
-                            x:Name="Border"
-                            Grid.Row="1"
-                            Height="60"
-                            Padding="3"
-                            Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
-                            BorderThickness="0,4,0,0">
-                            <StackPanel>
-                                <TextBlock
-                                    Margin="0,3,0,0"
-                                    Padding="3"
-                                    VerticalAlignment="Center"
-                                    FontSize="15"
-                                    Text="{x:Bind Title}"
-                                    TextAlignment="Center"
-                                    TextTrimming="WordEllipsis"
-                                    TextWrapping="NoWrap"
-                                    ToolTipService.ToolTip="{x:Bind Title}" />
-                                <TextBlock HorizontalAlignment="Center">
-                                    <Run Text="Episode" />
-                                    <Run Text="{x:Bind Episode}" />
-                                </TextBlock>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </DataTemplate>
-            </ctk:AdaptiveGridView.ItemTemplate>
-        </ctk:AdaptiveGridView>
+            <PivotItem Header="Search">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-        <ctk:Loading
-            x:Name="LoadingControl"
-            Grid.Row="2"
-            IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
+                    <StackPanel
+                        Margin="{StaticResource SmallTopBottomMargin}"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <AutoSuggestBox
+                            Width="300"
+                            Height="35"
+                            VerticalAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            PlaceholderText="Search"
+                            QueryIcon="Find"
+                            Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+
+                    <ctk:AdaptiveGridView
+                        Grid.Row="1"
+                        animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+                        DesiredWidth="190"
+                        IsItemClickEnabled="True"
+                        ItemClickCommand="{x:Bind ViewModel.SelectSearchResult}"
+                        ItemHeight="320"
+                        ItemsSource="{x:Bind ViewModel.AnimeSearchResults, Mode=OneWay}"
+                        StretchContentForSingleRow="False">
+                        <ctk:AdaptiveGridView.ItemTemplate>
+                            <DataTemplate x:DataType="am:SearchResult">
+                                <Grid x:Name="MainGrid" Margin="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
+                                        <ctk:Case IsDefault="True" Value="{StaticResource False}">
+                                            <ctk:ImageEx
+                                                CacheMode="BitmapCache"
+                                                EnableLazyLoading="True"
+                                                IsCacheEnabled="True"
+                                                PlaceholderSource="/Assets/placeholder.jpg"
+                                                PlaceholderStretch="Fill"
+                                                Source="{x:Bind help:ModelHelpers.GetImage((am:SearchResult))}"
+                                                Stretch="UniformToFill" />
+                                        </ctk:Case>
+                                        <ctk:Case Value="{StaticResource True}">
+                                            <Image
+                                                Grid.Row="0"
+                                                Source="{x:Bind help:ModelHelpers.GetImageSource((am:SearchResult))}"
+                                                Stretch="UniformToFill" />
+                                        </ctk:Case>
+                                    </ctk:SwitchPresenter>
+
+                                    <Grid
+                                        Grid.Row="0"
+                                        Height="30"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top">
+                                        <Grid.Background>
+                                            <SolidColorBrush Opacity="0.5" Color="Black" />
+                                        </Grid.Background>
+                                        <TextBlock
+                                            FontSize="20"
+                                            Foreground="White"
+                                            Text="{x:Bind help:ModelHelpers.GetRating((am:SearchResult))}" />
+                                    </Grid>
+
+                                    <Border
+                                        Grid.Row="1"
+                                        Height="60"
+                                        Padding="3"
+                                        Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
+                                        BorderThickness="0,4,0,0">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Margin="0,3,0,0"
+                                                Padding="3"
+                                                VerticalAlignment="Center"
+                                                FontSize="15"
+                                                Text="{x:Bind Title}"
+                                                TextAlignment="Center"
+                                                TextTrimming="WordEllipsis"
+                                                TextWrapping="NoWrap"
+                                                ToolTipService.ToolTip="{x:Bind Title}" />
+                                            <TextBlock HorizontalAlignment="Center" Text="{x:Bind help:ModelHelpers.GetAdditionalInformation((am:SearchResult))}" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ctk:AdaptiveGridView.ItemTemplate>
+                    </ctk:AdaptiveGridView>
+                </Grid>
+            </PivotItem>
+
+        </Pivot>
+        <ctk:Loading x:Name="LoadingControl" IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
             <ctk:Loading.Background>
                 <AcrylicBrush TintColor="Black" TintOpacity="0.2" />
             </ctk:Loading.Background>
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
         </ctk:Loading>
-
     </Grid>
+
 </views:DiscoverPageBase>

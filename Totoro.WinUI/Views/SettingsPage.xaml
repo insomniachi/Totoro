@@ -60,10 +60,9 @@
                     <FontIcon Glyph="&#xe986;" />
                 </labs:SettingsCard.HeaderIcon>
                 <ToggleSwitch
-                    FlowDirection="RightToLeft"
                     IsOn="{x:Bind ViewModel.PreferSubs, Mode=TwoWay}"
-                    OffContent=""
-                    OnContent="" />
+                    OffContent="Off"
+                    OnContent="On" />
             </labs:SettingsCard>
             <labs:SettingsCard Description="Default provider used to stream." Header="Default Stream Provider">
                 <labs:SettingsCard.HeaderIcon>
@@ -79,10 +78,9 @@
                     <FontIcon Glyph="&#xe7fc;" />
                 </labs:SettingsCard.HeaderIcon>
                 <ToggleSwitch
-                    FlowDirection="RightToLeft"
                     IsOn="{x:Bind ViewModel.UseDiscordRichPresense, Mode=TwoWay}"
-                    OffContent=""
-                    OnContent="" />
+                    OffContent="Off"
+                    OnContent="On" />
             </labs:SettingsCard>
             <labs:SettingsCard Description="Auto update tracking when configured number of seconds is remaining" Header="Auto update tracking">
                 <labs:SettingsCard.HeaderIcon>
@@ -109,10 +107,9 @@
                     <FontIcon Glyph="&#xe82e;" />
                 </labs:SettingsCard.HeaderIcon>
                 <ToggleSwitch
-                    FlowDirection="RightToLeft"
                     IsOn="{x:Bind ViewModel.ContributeTimeStamps, Mode=TwoWay}"
-                    OffContent=""
-                    OnContent="" />
+                    OffContent="Off"
+                    OnContent="On" />
             </labs:SettingsCard>
             <labs:SettingsCard Description="Set the minumum log level." Header="Logging">
                 <labs:SettingsCard.HeaderIcon>
@@ -128,10 +125,9 @@
                     <FontIcon Glyph="&#xecc5;" />
                 </labs:SettingsCard.HeaderIcon>
                 <ToggleSwitch
-                    FlowDirection="RightToLeft"
                     IsOn="{x:Bind ViewModel.AutoUpdate, Mode=TwoWay}"
-                    OffContent=""
-                    OnContent="" />
+                    OffContent="Off"
+                    OnContent="On" />
             </labs:SettingsCard>
         </StackPanel>
 

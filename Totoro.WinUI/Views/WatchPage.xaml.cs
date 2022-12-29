@@ -21,16 +21,6 @@ public sealed partial class WatchPage : WatchPageBase
                 .Subscribe()
                 .DisposeWith(d);
 
-            SearchBox
-            .Events()
-            .SuggestionChosen
-            .Select(@event => @event.args.SelectedItem as SearchResultModel)
-            .Do(result => ViewModel.Anime = result)
-            .SelectMany(result => ViewModel.Find(result.Id, result.Title))
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => ViewModel.SelectedAnimeResult = x)
-            .DisposeWith(d);
-
             TransportControls
             .OnNextTrack
             .Where(_ => ViewModel.Anime is not null)

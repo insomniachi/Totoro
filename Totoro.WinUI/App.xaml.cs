@@ -108,6 +108,7 @@ public partial class App : Application, IEnableLogger
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
         Commands = GetService<TotoroCommands>();
         ConfigureLogging();
+        await GetService<ISettings>().UpdateUrls();
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
     }
@@ -117,7 +118,6 @@ public partial class App : Application, IEnableLogger
         var appDataFolder = GetService<IOptions<LocalSettingsOptions>>().Value.ApplicationDataFolder;
         var log = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appDataFolder, "Logs/log.txt");
         var mimimumLogLevel = GetService<ISettings>().MinimumLogLevel;
-
         var configuration = new LoggerConfiguration()
                     .Enrich.FromLogContext()
                     .WriteTo.File(log, rollingInterval: RollingInterval.Day);

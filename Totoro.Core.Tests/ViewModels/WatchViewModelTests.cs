@@ -385,31 +385,6 @@ public class WatchViewModelTests
     }
 
     [Fact]
-    public void WatchViewModel_QueryPopulatesList()
-    {
-        var result = new SearchResultModel()
-        {
-            Id = 12189,
-            Title = "Hyouka",
-            TotalEpisodes = 24,
-        };
-
-        var vm = BaseViewModel(Mock.Of<IProvider>())
-            .WithAnimeService(x =>
-            {
-                x.Setup(x => x.GetAnime("Hyouka")).Returns(Observable.Return(new SearchResultModel[]{ result }));
-            })
-            .Bulid();
-
-        vm.Query = "Hyouka";
-
-        Thread.Sleep(300);
-
-        Assert.Single(vm.SearchResult);
-        Assert.Equal(result, vm.SearchResult[0]);
-    }
-
-    [Fact]
     public void WatchViewModel_HasSearchBoxWhenNavigatedWithoutAnime()
     {
         // arrange

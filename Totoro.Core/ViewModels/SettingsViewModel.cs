@@ -68,10 +68,6 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
             .Subscribe(_ => localSettingsService.SaveSetting(nameof(DefaultUrls), DefaultUrls))
             .DisposeWith(Garbage);
 
-        this.WhenAnyValue(x => x.DefaultUrls)
-            .SelectMany(UpdateUrls)
-            .Subscribe();
-
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
             .Where(x => x && !dRpc.IsInitialized)
             .Subscribe(value =>
@@ -91,16 +87,16 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         return base.OnNavigatedTo(parameters);
     }
 
-    private async Task<Unit> UpdateUrls(DefaultUrls urls)
+    public async Task<Unit> UpdateUrls()
     {
         using var client = new HttpClient();
-        using var response = await client.GetAsync(new Uri(string.IsNullOrEmpty(urls.GogoAnime) ? AnimDL.Core.DefaultUrl.GogoAnime : urls.GogoAnime));
+        using var response = await client.GetAsync(new Uri(string.IsNullOrEmpty(DefaultUrls.GogoAnime) ? AnimDL.Core.DefaultUrl.GogoAnime : DefaultUrls.GogoAnime));
         if (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently)
         {
-            urls.GogoAnime = response.Headers.Location.AbsoluteUri;
+            DefaultUrls.GogoAnime = response.Headers.Location.AbsoluteUri;
         }
 
-        AnimDL.Core.DefaultUrl.GogoAnime = urls.GogoAnime;
+        AnimDL.Core.DefaultUrl.GogoAnime = DefaultUrls.GogoAnime;
         return Unit.Default;
     }
 
