@@ -17,13 +17,42 @@
     d:DataContext="{d:DesignInstance Type=viewmodels:DiscoverViewModel}"
     mc:Ignorable="d">
 
-    <Grid Margin="0,25">
+    <views:DiscoverPageBase.Resources>
+        <x:Boolean x:Key="True">True</x:Boolean>
+        <x:Boolean x:Key="False">False</x:Boolean>
+    </views:DiscoverPageBase.Resources>
+
+    <Grid Margin="0,45">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
+        <StackPanel HorizontalAlignment="Center" Spacing="5">
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <AutoSuggestBox
+                    Width="300"
+                    Height="35"
+                    VerticalAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    PlaceholderText="Search"
+                    QueryIcon="Find"
+                    Text="{x:Bind ViewModel.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Command="{x:Bind ViewModel.LoadMore}" Content="Load More" />
+            </StackPanel>
+
+            <PipsPager
+                Margin="{StaticResource SmallTopBottomMargin}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                NextButtonVisibility="Visible"
+                NumberOfPages="{x:Bind ViewModel.PagerViewModel.PageCount, Mode=OneWay}"
+                PreviousButtonVisibility="Visible"
+                SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />
+
+        </StackPanel>
         <!--<Grid Margin="10">
             <FlipView
                 x:Name="Gallery"
@@ -90,13 +119,13 @@
         <ctk:AdaptiveGridView
             x:Name="AnimeListView"
             Grid.Row="2"
-            Margin="0,25,0,0"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
             ui:ListViewExtensions.Command="{x:Bind ViewModel.SelectEpisode}"
             DesiredWidth="{x:Bind ViewModel.CardWidth}"
             IsItemClickEnabled="True"
             ItemHeight="320"
-            ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}">
+            ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+            StretchContentForSingleRow="False">
             <ctk:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="am:AiredEpisode">
                     <Grid x:Name="MainGrid" Margin="3">
@@ -104,14 +133,25 @@
                             <RowDefinition />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ctk:ImageEx
-                            Grid.Row="0"
-                            CacheMode="BitmapCache"
-                            IsCacheEnabled="True"
-                            PlaceholderSource="/Assets/placeholder.jpg"
-                            PlaceholderStretch="Fill"
-                            Source="{x:Bind Image}"
-                            Stretch="UniformToFill" />
+
+                        <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
+                            <ctk:Case IsDefault="True" Value="{StaticResource False}">
+                                <ctk:ImageEx
+                                    CacheMode="BitmapCache"
+                                    EnableLazyLoading="True"
+                                    IsCacheEnabled="True"
+                                    PlaceholderSource="/Assets/placeholder.jpg"
+                                    PlaceholderStretch="Fill"
+                                    Source="{x:Bind Image}"
+                                    Stretch="UniformToFill" />
+                            </ctk:Case>
+                            <ctk:Case Value="{StaticResource True}">
+                                <Image
+                                    Grid.Row="0"
+                                    Source="{x:Bind Image}"
+                                    Stretch="UniformToFill" />
+                            </ctk:Case>
+                        </ctk:SwitchPresenter>
 
                         <Grid
                             x:Name="Time"
@@ -162,6 +202,9 @@
             x:Name="LoadingControl"
             Grid.Row="2"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
+            <ctk:Loading.Background>
+                <AcrylicBrush TintColor="Black" TintOpacity="0.2" />
+            </ctk:Loading.Background>
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
         </ctk:Loading>
 

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:cm="using:Totoro.Core.Models"
+    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="using:Totoro.Core.Models"
@@ -49,12 +50,15 @@
             </ListBox.ItemsPanel>
         </ListBox>
 
-        <GridView
+        <ctk:AdaptiveGridView
             x:Name="AnimeListView"
             Grid.Row="1"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+            DesiredWidth="240"
             IsItemClickEnabled="True"
-            ItemsSource="{x:Bind ViewModel.Anime}">
+            ItemHeight="380"
+            ItemsSource="{x:Bind ViewModel.Anime}"
+            StretchContentForSingleRow="False">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="cm:ScheduledAnimeModel">
                     <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
@@ -86,7 +90,7 @@
                     <Setter Property="Margin" Value="10" />
                 </Style>
             </GridView.ItemContainerStyle>
-        </GridView>
+        </ctk:AdaptiveGridView>
 
 
     </Grid>

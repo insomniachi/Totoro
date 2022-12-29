@@ -29,7 +29,7 @@ public sealed partial class SubmitTimeStampsView : SubmitTimeStampsViewBase
             .Events()
             .Click
             .Select(_ => Unit.Default)
-            .InvokeCommand(ViewModel.SetStartPosition)
+            .InvokeCommand(ViewModel.SetEndPosition)
             .DisposeWith(d);
         });
     }

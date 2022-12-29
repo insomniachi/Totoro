@@ -93,12 +93,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                                               .WithFields(FieldNames)
                                               .Find();
 
-                observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(CurrentlyAiringOrFinishedWithinLastWeek).ToList()));
+                observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).ToList()));
 
                 while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
                 {
                     pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                    observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(CurrentlyAiringOrFinishedWithinLastWeek).ToList()));
+                    observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).ToList()));
                 }
 
                 observer.OnCompleted();
@@ -169,7 +169,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         return anime.Select(x => _converter.Convert<ScheduledAnimeModel>(x) as ScheduledAnimeModel);
     }
 
-    private static bool CurrentlyAiringOrFinishedWithinLastWeek(MalApi.Anime anime)
+    private static bool CurrentlyAiringOrFinishedToday(MalApi.Anime anime)
     {
         if(anime.Status == MalApi.AiringStatus.CurrentlyAiring)
         {
@@ -181,6 +181,6 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             return false;
         }
 
-        return (DateTime.Today - date).TotalDays < 7;
+        return DateTime.Today == date;
     }
 }
