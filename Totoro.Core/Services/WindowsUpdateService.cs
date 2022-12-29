@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Nodes;
 using Splat;
@@ -23,8 +24,12 @@ public class WindowsUpdateService : IUpdateService, IEnableLogger
                 Version = new Version(jsonNode["tag_name"].ToString()),
                 Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue()
             })
-            .Log(this, "Latest Version", x => x.Version.ToString())
-            .Where(vi => vi.Version > Assembly.GetExecutingAssembly().GetName().Version)
+#if !DEBUG
+            .Where(vi => vi.Version > Assembly.GetEntryAssembly().GetName().Version)
+#else
+            .Where(vi => false)
+#endif
+            .Log(this, "New Version", vi => vi.Version.ToString())
             .Throttle(TimeSpan.FromSeconds(3));
     }
 
@@ -36,15 +41,28 @@ public class WindowsUpdateService : IUpdateService, IEnableLogger
         var fullPath = Path.Combine(_updateFolder, fileName);
         versionInfo.FilePath = fullPath;
 
-        if(File.Exists(fullPath)) // already download before
+        foreach (var file in Directory.GetFiles(_updateFolder).Where(x => x != fullPath))
         {
+            this.Log().Info($"Deleting file {file}");
+            File.Delete(file);
+        }
+
+        if (File.Exists(fullPath)) // already download before
+        {
+            this.Log().Info($"File {fullPath} already Exists");
             return versionInfo;
         }
+
+        this.Log().Info($"Current version : {Assembly.GetEntryAssembly().GetName().Version}");
+        this.Log().Info($"downloading update {versionInfo.Version}");
 
         using var client = new HttpClient();
         using var s = await client.GetStreamAsync(versionInfo.Url);
         using var fs = new FileStream(fullPath, FileMode.OpenOrCreate);
         await s.CopyToAsync(fs);
+
+        this.Log().Info($"downloading update {versionInfo.Version} completed.");
+
         return versionInfo;
     }
 
