@@ -2,7 +2,8 @@
     x:Class="Totoro.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:help="using:Totoro.WinUI.Helpers">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -20,6 +21,14 @@
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/RadioButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="TextBox">
+                <Setter Property="help:OnScreenKeyboard.Enabled" Value="True" />
+            </Style>
+
+            <Style TargetType="AutoSuggestBox">
+                <Setter Property="help:OnScreenKeyboard.Enabled" Value="True" />
+            </Style>
 
         </ResourceDictionary>
     </Application.Resources>

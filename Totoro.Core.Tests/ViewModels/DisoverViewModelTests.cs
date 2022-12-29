@@ -14,28 +14,33 @@ public class DisoverViewModelTests
     public async void DiscoverViewModel_Initializes()
     {
         var vmBuilder = new DiscoverViewModelBuilder()
-            .WithRecentEpisodesProvider(mock => mock.Setup(x => x.GetRecentlyAiredEpisodes()).Returns(Observable.Return(new List<AiredEpisode>
+            .WithSettings(mock => mock.Setup(x => x.DefaultProviderType).Returns(ProviderType.GogoAnime))
+            .WithProviderFacotry(mock =>
             {
-                new TestAiredEpisode{Title = "A"}, new TestAiredEpisode{Title = "B" }, new TestAiredEpisode{Title="C"}
-            })))
+                var providerMock = new Mock<IProvider>();
+                var airedEpisodesProviderMock = new Mock<IAiredEpisodeProvider>();
+                airedEpisodesProviderMock.Setup(x => x.GetRecentlyAiredEpisodes(It.IsAny<int>())).Returns(Task.FromResult(new List<AiredEpisode>
+                {
+                    new TestAiredEpisode(),new TestAiredEpisode(),new TestAiredEpisode()
+                } as IEnumerable<AiredEpisode>));
+                providerMock.Setup(x => x.AiredEpisodesProvider).Returns(airedEpisodesProviderMock.Object);
+                mock.Setup(x => x.GetProvider(ProviderType.GogoAnime)).Returns(providerMock.Object);
+            })
             .WithTrackingService(mock => mock.Setup(x => x.GetAnime()).Returns(Observable.Return(Enumerable.Empty<AnimeModel>())))
             .WithFeaturedAnimeProvider(mock => mock.Setup(x => x.GetFeaturedAnime()).Returns(Observable.Return(Enumerable.Repeat(new FeaturedAnime { Title = "Hyouka" }, 5))));
-        var vm = vmBuilder.Builder();
+        var vm = vmBuilder.Build();
 
         await vm.OnNavigatedTo(parameters: new Dictionary<string, object>());
         await vm.SetInitialState();
 
-        vm.ShowOnlyWatchingAnime = false;
-
         Assert.Equal(3, vm.Episodes.Count);
-        //Assert.Equal(5, vm.Featured.Count);
     }
 
     [Fact]
     public void DisoverViewModel_ClickingEpisodes_GoesToWatch()
     {
         var vmBuilder = new DiscoverViewModelBuilder();
-        var vm = vmBuilder.Builder();
+        var vm = vmBuilder.Build();
 
         vm.SelectEpisode.Execute(new TestAiredEpisode { Title = "Hyouka" });
 
@@ -43,96 +48,41 @@ public class DisoverViewModelTests
     }
 
     [Fact]
-    public void DisoverViewModel_ClickingFeatured_GoesToWatch()
+    public async void DiscoverViewModel_SearchingForAnimeWorks()
     {
-        var vmBuilder = new DiscoverViewModelBuilder()
-            .WithFeaturedAnimeProvider(mock =>
+        var vmBuilder = new DiscoverViewModelBuilder();
+        var vm = vmBuilder
+            .WithSettings(mock => mock.Setup(x => x.DefaultProviderType).Returns(ProviderType.GogoAnime))
+            .WithProviderFacotry(mock =>
             {
-                mock.Setup(x => x.GetFeaturedAnime()).Returns(Observable.Return(Enumerable.Repeat(new FeaturedAnime{Title = "Hyouka"}, 5)));
-            });
-        var vm = vmBuilder.Builder();
-
-        vm.SelectFeaturedAnime.Execute(new FeaturedAnime { Title = "Hyouka", Url = "anime/12189/" });
-
-        vmBuilder.GetNavigationService().Verify(x => x.NavigateTo(It.IsAny<WatchViewModel>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<bool>()), Times.Once);
-    }
-
-    [Theory]
-    [InlineData(5)]
-    public async void DiscoverViewModel_DisplayedFeaturedAnime_Changes(int count)
-    {
-        // arrange
-        var scheduler = new TestScheduler();
-        var vmBuilder = new DiscoverViewModelBuilder()
-            .WithTrackingService(mock =>
-            {
-                mock.Setup(x => x.GetAnime()).Returns(Observable.Return(Enumerable.Empty<AnimeModel>()));
+                var providerMock = new Mock<IProvider>();
+                var catalogMock = new Mock<ICatalog>();
+                catalogMock.Setup(x => x.Search(It.IsAny<string>())).Returns(AsyncEnumerable.Range(1, 3).Select(x =>
+                    new SearchResult
+                    {
+                        Title = x.ToString(),
+                        Url = x.ToString(),
+                    }));
+                providerMock.Setup(x => x.Catalog).Returns(catalogMock.Object);
+                mock.Setup(x => x.GetProvider(ProviderType.GogoAnime)).Returns(providerMock.Object);
             })
-            .WithFeaturedAnimeProvider(mock =>
-            {
-                mock.Setup(x => x.GetFeaturedAnime()).Returns(Observable.Return(Enumerable.Repeat(new FeaturedAnime { Title = "Hyouka" }, count)));
-            })
-            .WithScheduler(mock =>
-            {
-                mock.Setup(x => x.MainThreadScheduler).Returns(scheduler);
-                mock.Setup(x => x.TaskpoolScheduler).Returns(scheduler);
-            });
-        var vm = vmBuilder.Builder();
-        await vm.SetInitialState();
-        Assert.Equal(0, vm.SelectedIndex);
+            .Build();
 
-        for (int i = 0; i < count; i++)
-        {
-            scheduler.AdvanceBy(scheduler.FromTimeSpan(TimeSpan.FromSeconds(11)));
+        vm.SearchText = "Hyouka";
 
-            if(i == count -1)
-            {
-                Assert.Equal(0, vm.SelectedIndex);
-            }
-            else
-            {
-                Assert.Equal(i + 1, vm.SelectedIndex);
-            }
-        }
+        await Task.Delay(300);
 
+        Assert.Equal(3, vm.AnimeSearchResults.Count);
     }
 
     [Fact]
-    public async void DiscoverViewModel_DisplayedFeaturedAnime_DoesNotChangeIfNone()
+    public void DisoverViewModel_SelectingAnimeGoesToWatchViewModel()
     {
-        // arrange
-        var scheduler = new TestScheduler();
-        var vmBuilder = new DiscoverViewModelBuilder()
-            .WithTrackingService(mock =>
-            {
-                mock.Setup(x => x.GetAnime()).Returns(Observable.Return(Enumerable.Empty<AnimeModel>()));
-            })
-            .WithFeaturedAnimeProvider(mock =>
-            {
-                mock.Setup(x => x.GetFeaturedAnime()).Returns(Observable.Return(Enumerable.Empty<FeaturedAnime>()));
-            })
-            .WithScheduler(mock =>
-            {
-                mock.Setup(x => x.MainThreadScheduler).Returns(scheduler);
-                mock.Setup(x => x.TaskpoolScheduler).Returns(scheduler);
-            });
-        var vm = vmBuilder.Builder();
-        await vm.SetInitialState();
-        Assert.Equal(0, vm.SelectedIndex);
+        var vmBuilder = new DiscoverViewModelBuilder();
+        var vm = vmBuilder.Build();
 
-        scheduler.AdvanceBy(scheduler.FromTimeSpan(TimeSpan.FromSeconds(11)));
-        Assert.Equal(0, vm.SelectedIndex);  
-    }
+        vm.SelectSearchResult.Execute(new SearchResult { Title = "Hyouka" });
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void DiscoverViewModel_ShowUserAnimeDisableStatus_WithAuthenticationStatus(bool isAuthenticated)
-    {
-        var vm = new DiscoverViewModelBuilder()
-            .WithTrackingService(mock => mock.Setup(x => x.IsAuthenticated).Returns(isAuthenticated))
-            .Builder();
-
-        Assert.Equal(isAuthenticated, vm.ShowOnlyWatchingAnime);
+        vmBuilder.GetNavigationService().Verify(x => x.NavigateTo(It.IsAny<WatchViewModel>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<bool>()), Times.Once);
     }
 }
