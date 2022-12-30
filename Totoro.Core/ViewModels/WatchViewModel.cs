@@ -84,8 +84,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(x => Anime is not null && x > 10)
-            .Where(x => _canUpdateTime)
+            .Where(x => Anime is not null && x > 10 && _canUpdateTime)
             .Subscribe(time => playbackStateStorage.Update(Anime.Id, CurrentEpisode.Value, time));
 
         // if we actualy know when episode ends, update tracking then.
@@ -336,6 +335,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         NativeMethods.AllowSleep();
         MediaPlayer.Pause();
+        _playbackStateStorage.StoreState();
         return Task.CompletedTask;
     }
 
