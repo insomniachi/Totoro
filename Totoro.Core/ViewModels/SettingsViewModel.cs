@@ -1,4 +1,5 @@
-﻿using Splat;
+﻿using System.Reflection;
+using Splat;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
@@ -17,6 +18,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public DefaultUrls DefaultUrls { get; set; }
     [Reactive] public LogLevel MinimumLogLevel { get; set; }
     [Reactive] public bool AutoUpdate { get; set; }
+    public Version Version { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen };
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
@@ -27,6 +29,8 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
                              IViewService viewService,
                              IDiscordRichPresense dRpc)
     {
+        Version = Assembly.GetEntryAssembly().GetName().Version;
+
         ElementTheme = themeSelectorService.Theme;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
         DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.GogoAnime);

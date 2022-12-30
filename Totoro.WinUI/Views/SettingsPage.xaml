@@ -129,6 +129,11 @@
                     OffContent="Off"
                     OnContent="On" />
             </labs:SettingsCard>
+            <labs:SettingsCard Description="{x:Bind ViewModel.Version}" Header="Totoro">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xe756;" />
+                </labs:SettingsCard.HeaderIcon>
+            </labs:SettingsCard>
         </StackPanel>
 
         <TeachingTip
