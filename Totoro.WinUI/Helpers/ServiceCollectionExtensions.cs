@@ -75,11 +75,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILocalMediaService, LocalMediaService>();
         services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
         services.AddSingleton<IUpdateService, WindowsUpdateService>();
+        services.AddSingleton<ITrackingServiceContext, TrackingServiceContext>();
+        services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
 
         services.AddTransient<IFileService, FileService>();
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
-        services.AddTransient<MalToModelConverter>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();
         services.AddTransient<IShanaProjectService, ShanaProjectService>();

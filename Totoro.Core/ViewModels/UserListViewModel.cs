@@ -3,15 +3,15 @@
 
 public class UserListViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly ITrackingService _trackingService;
+    private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
     private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
-    private readonly SourceCache<SearchResultModel, long> _searchCache = new(x => x.Id);
+    private readonly SourceCache<AnimeModel, long> _searchCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
-    private readonly ReadOnlyObservableCollection<SearchResultModel> _searchResults;
+    private readonly ReadOnlyObservableCollection<AnimeModel> _searchResults;
 
-    public UserListViewModel(ITrackingService trackingService,
-                             IAnimeService animeService,
+    public UserListViewModel(ITrackingServiceContext trackingService,
+                             IAnimeServiceContext animeService,
                              IViewService viewService)
     {
         _trackingService = trackingService;
@@ -53,7 +53,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string QuickAddSearchText { get; set; }
-    public ReadOnlyObservableCollection<SearchResultModel> QuickSearchResults => _searchResults;
+    public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ChangeCurrentViewCommand { get; }
     public ICommand RefreshCommand { get; }

@@ -11,14 +11,14 @@ public class AnimeIdService : IAnimeIdService
         _httpClient = httpClient;
     }
 
-    public async Task<AnimeId> GetId(AnimeTrackerType serviceType, long id)
+    public async Task<AnimeId> GetId(ListServiceType serviceType, long id)
     {
         var source = serviceType switch
         {
-            AnimeTrackerType.AniDb => "anidb",
-            AnimeTrackerType.AniList => "anilist",
-            AnimeTrackerType.MyAnimeList => "myanimelist",
-            AnimeTrackerType.Kitsu => "kitsu",
+            ListServiceType.AniDb => "anidb",
+            ListServiceType.AniList => "anilist",
+            ListServiceType.MyAnimeList => "myanimelist",
+            ListServiceType.Kitsu => "kitsu",
             _ => throw new UnreachableException()
         };
 

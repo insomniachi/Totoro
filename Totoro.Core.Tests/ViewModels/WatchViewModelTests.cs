@@ -400,7 +400,7 @@ public class WatchViewModelTests
     public void WatchViewModel_HidesSearchBoxWhenNavigatedWithAnime()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -447,7 +447,7 @@ public class WatchViewModelTests
     public void WatchViewModel_ClickingNext_AfterTrackingAlreadyUpdated()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -497,7 +497,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_MarksAsCompleteWhenFinishingLastEpisode()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -533,7 +533,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_AddsTrackingWheningFinishingFirstEpisodeOfUntracked()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -565,7 +565,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_WillNotUpdateTrackingIfRewatchingPrevEpisode()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -598,7 +598,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_TrackingWillNotUpdateMultipleTimesAfterEnd()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",

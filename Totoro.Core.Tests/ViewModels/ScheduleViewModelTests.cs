@@ -66,7 +66,7 @@ public class ScheduleViewModelTests
             .WithTrackingService(mock =>
             {
                 // Same as other snapshot, but shows from sunday, and saturday are removed.
-                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<ScheduledAnimeModel[]>("CurrentlyAiringTrackedAnime2")));
+                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("CurrentlyAiringTrackedAnime2")));
             })
             .WithSystemClock(mock =>
             {
@@ -88,7 +88,7 @@ public class ScheduleViewModelTests
         var vm = new ScheduleViewModelBuilder()
             .WithTrackingService(mock =>
             {
-                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(Enumerable.Empty<ScheduledAnimeModel>()));
+                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(Enumerable.Empty<AnimeModel>()));
             })
             .Build();
 
@@ -106,7 +106,7 @@ public class ScheduleViewModelTests
         return new ScheduleViewModelBuilder()
             .WithTrackingService(mock =>
             {
-                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<ScheduledAnimeModel[]>("CurrentlyAiringTrackedAnime")));
+                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("CurrentlyAiringTrackedAnime")));
             });
     }
 }

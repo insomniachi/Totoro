@@ -18,43 +18,18 @@ public class AnimeModel : ReactiveObject, IAnimeModel
     public AiringStatus AiringStatus { get; set; }
     public float? MeanScore { get; set; }
     public int Popularity { get; set; }
-    public List<string> AlternativeTitles { get; set; }
+    public List<string> AlternativeTitles { get; set; } = new();
     public string Description { get; set; }
     public List<Video> Videos { get; set; }
+    public Season Season { get; set; }
+    public string[] Genres { get; set; }
+    public AnimeModel[] Related { get; set; }
+    public DayOfWeek? BroadcastDay { get; set; }
 
     public override string ToString()
     {
         return Title;
     }
-}
-
-public class SearchResultModel : IAnimeModel
-{
-    public string Title { get; set; }
-    public long Id { get; set; }
-    public Tracking Tracking { get; set; }
-    public int? TotalEpisodes { get; set; }
-    public override string ToString() => Title;
-    public List<string> AlternativeTitles { get; set; }
-}
-
-public class ScheduledAnimeModel : AnimeModel
-{
-    public DayOfWeek? BroadcastDay { get; set; }
-    public TimeRemaining TimeRemaining { get; set; }
-}
-
-public class FullAnimeModel : SeasonalAnimeModel
-{
-    public string[] Genres { get; set; }
-
-    public AnimeModel[] Related { get; set; }
-
-}
-
-public class SeasonalAnimeModel : ScheduledAnimeModel
-{
-    public Season Season { get; set; }
 }
 
 public class TimeRemaining : ReactiveObject

@@ -22,11 +22,11 @@
                 <ResourceDictionary Source="/Styles/RadioButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Style TargetType="TextBox">
+            <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="TextBox">
                 <Setter Property="help:OnScreenKeyboard.Enabled" Value="True" />
             </Style>
 
-            <Style TargetType="AutoSuggestBox">
+            <Style BasedOn="{StaticResource DefaultAutoSuggestBoxStyle}" TargetType="AutoSuggestBox">
                 <Setter Property="help:OnScreenKeyboard.Enabled" Value="True" />
             </Style>
 

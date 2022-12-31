@@ -93,9 +93,10 @@
             Grid.Row="2"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
             ui:ListViewExtensions.Command="{x:Bind ViewModel.ItemClickedCommand}"
-            IsItemClickEnabled="True"
             DesiredWidth="700"
-            ItemsSource="{x:Bind ViewModel.Anime}">
+            IsItemClickEnabled="True"
+            ItemsSource="{x:Bind ViewModel.Anime}"
+            StretchContentForSingleRow="False">
             <ctk:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="cm:AnimeModel">
                     <uc:AnimeCard

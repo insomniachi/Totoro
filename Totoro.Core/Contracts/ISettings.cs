@@ -15,6 +15,7 @@ public interface ISettings
     public DefaultUrls DefaultUrls { get; set; }
     LogLevel MinimumLogLevel { get; set; }
     bool AutoUpdate { get; set; }
+    ListServiceType? DefaultListService { get; set; }
     Task<Unit> UpdateUrls();
 }
 

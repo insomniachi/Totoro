@@ -18,6 +18,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public DefaultUrls DefaultUrls { get; set; }
     [Reactive] public LogLevel MinimumLogLevel { get; set; }
     [Reactive] public bool AutoUpdate { get; set; }
+    [Reactive] public ListServiceType? DefaultListService { get; set; }
     public Version Version { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen };
@@ -41,6 +42,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         DefaultUrls = localSettingsService.ReadSetting(nameof(DefaultUrls), new DefaultUrls());
         MinimumLogLevel = localSettingsService.ReadSetting(nameof(MinimumLogLevel), LogLevel.Debug);
         AutoUpdate = localSettingsService.ReadSetting(nameof(AutoUpdate), true);
+        DefaultListService = localSettingsService.ReadSetting(nameof(DefaultListService), default(ListServiceType?));
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)

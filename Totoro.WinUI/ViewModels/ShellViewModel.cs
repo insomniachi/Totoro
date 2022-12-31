@@ -23,7 +23,7 @@ public partial class ShellViewModel : ReactiveObject
 
     public ShellViewModel(IWinUINavigationService navigationService,
                           INavigationViewService navigationViewService,
-                          ITrackingService trackingService,
+                          ITrackingServiceContext trackingService,
                           IUpdateService updateService,
                           IViewService viewService)
     {

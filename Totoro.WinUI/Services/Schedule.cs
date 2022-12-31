@@ -2,7 +2,6 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using CommunityToolkit.WinUI.Notifications;
-using MalApi.Interfaces;
 using Totoro.Core;
 
 namespace Totoro.WinUI.Services;
@@ -11,12 +10,12 @@ public partial class Schedule : ISchedule
 {
     public Dictionary<long, TimeRemaining> Dictionary { get; set; } = new();
 
-    private readonly IAnimeService _animeService;
+    private readonly IAnimeServiceContext _animeService;
     private readonly HttpClient _httpClient;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly ISettings _settings;
 
-    public Schedule(IAnimeService trackingService,
+    public Schedule(IAnimeServiceContext trackingService,
                     HttpClient httpClient,
                     IAiredEpisodeNotifier notifier,
                     IStreamPageMapper streamPageMapper,

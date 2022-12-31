@@ -60,7 +60,7 @@
             ItemsSource="{x:Bind ViewModel.Anime}"
             StretchContentForSingleRow="False">
             <GridView.ItemTemplate>
-                <DataTemplate x:DataType="cm:ScheduledAnimeModel">
+                <DataTemplate x:DataType="cm:AnimeModel">
                     <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
                         <uc:AnimeCard.Flyout>
                             <MenuFlyout>

@@ -55,7 +55,7 @@ namespace Totoro.Core.Services
                 {
                     return 0;
                 }
-                var animeId = await _animeIdService.GetId(AnimeTrackerType.AniList, aniListId);
+                var animeId = await _animeIdService.GetId(ListServiceType.AniList, aniListId);
                 return animeId.MyAnimeList;
             }
             else

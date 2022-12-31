@@ -3,7 +3,6 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Totoro.Core;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.UserControls;
@@ -12,12 +11,11 @@ public sealed partial class AnimeCard : UserControl
 {
     public static readonly DependencyProperty AnimeProperty =
         DependencyProperty.Register("Anime", typeof(AnimeModel), typeof(AnimeCard), new PropertyMetadata(null, OnChanged));
-    private IDisposable _garbage;
 
     private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var card = d as AnimeCard;
-        if (e.NewValue is ScheduledAnimeModel)
+        if (e.NewValue is AnimeModel)
         {
             card.Update();
         }
@@ -52,25 +50,19 @@ public sealed partial class AnimeCard : UserControl
         });
 
         Loaded += AnimeCard_Loaded;
-        Unloaded += AnimeCard_Unloaded;
     }
 
     private void AnimeCard_Loaded(object sender, RoutedEventArgs e)
     {
-        if (Anime is not ScheduledAnimeModel { TimeRemaining: not null })
-        {
-            return;
-        }
+        //if (Anime is not AnimeModel { TimeRemaining: not null })
+        //{
+        //    return;
+        //}
 
-        _garbage = MessageBus.Current.Listen<MinuteTick>().ObserveOn(RxApp.MainThreadScheduler).Subscribe(_ =>
-        {
-            Update();
-        });
-    }
-
-    private void AnimeCard_Unloaded(object sender, RoutedEventArgs e)
-    {
-        _garbage?.Dispose();
+        //_garbage = MessageBus.Current.Listen<MinuteTick>().ObserveOn(RxApp.MainThreadScheduler).Subscribe(_ =>
+        //{
+        //    Update();
+        //});
     }
 
     private void Update() => NextEpisodeInText.Text = GetTime(Anime);
@@ -87,22 +79,24 @@ public sealed partial class AnimeCard : UserControl
 
     public Visibility NextEpisodeInVisibility(AnimeModel a)
     {
-        if (a is not ScheduledAnimeModel m)
-        {
-            return Visibility.Collapsed;
-        }
+        //if (a is not ScheduledAnimeModel m)
+        //{
+        //    return Visibility.Collapsed;
+        //}
 
-        return m.TimeRemaining is not null ? Visibility.Visible : Visibility.Collapsed;
+        //return m.TimeRemaining is not null ? Visibility.Visible : Visibility.Collapsed;
+        return Visibility.Collapsed;
     }
 
     public string GetTime(AnimeModel a)
     {
-        if (a is not ScheduledAnimeModel m)
-        {
-            return string.Empty;
-        }
+        //if (a is not ScheduledAnimeModel m)
+        //{
+        //    return string.Empty;
+        //}
 
-        return m.TimeRemaining is TimeRemaining tr ? ToString(tr.TimeSpan) : string.Empty;
+        //return m.TimeRemaining is TimeRemaining tr ? ToString(tr.TimeSpan) : string.Empty;
+        return string.Empty;
     }
 
     private static string ToString(TimeSpan ts) => ts.Humanize(2);
@@ -120,7 +114,7 @@ public sealed partial class AnimeCard : UserControl
 
     public Dictionary<string,string> GetAdditionalInformation(AnimeModel anime)
     {
-        if(anime is not FullAnimeModel fa)
+        if(anime is not AnimeModel fa)
         {
             return new();
         }

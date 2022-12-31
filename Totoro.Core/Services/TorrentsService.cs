@@ -12,14 +12,14 @@ public class TorrentsService : ITorrentsService
     private readonly ILocalMediaService _localMediaService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IViewService _viewService;
-    private readonly IAnimeService _animeService;
+    private readonly IAnimeServiceContext _animeService;
     private readonly string _mediaFolder;
 
     public TorrentsService(IToastService toastService,
                            ILocalMediaService localMediaService,
                            ILocalSettingsService localSettingsService,
                            IViewService viewService,
-                           IAnimeService animeService)
+                           IAnimeServiceContext animeService)
     {
         _toastService = toastService;
         _localMediaService = localMediaService;
@@ -45,7 +45,7 @@ public class TorrentsService : ITorrentsService
             }
             else
             {
-                var model = await _viewService.SelectModel<SearchResultModel>(filtered);
+                var model = await _viewService.SelectModel<AnimeModel>(filtered);
                 _localMediaService.SetId(saveDirectory, model.Id);
             }
         }

@@ -37,6 +37,7 @@ public partial class App : Application, IEnableLogger
                     .AddApplicationServices()
                     .AddAnimDL()
                     .AddMyAnimeList(context)
+                    .AddAniList()
                     .AddTopLevelPages()
                     .AddDialogPages();
 

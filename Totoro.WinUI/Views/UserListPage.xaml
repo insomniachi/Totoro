@@ -250,7 +250,7 @@
                     ItemsSource="{x:Bind ViewModel.QuickSearchResults, Mode=OneWay}"
                     SelectionMode="None">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="cm:SearchResultModel">
+                        <DataTemplate x:DataType="cm:AnimeModel">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />

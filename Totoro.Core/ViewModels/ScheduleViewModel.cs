@@ -4,8 +4,8 @@ namespace Totoro.Core.ViewModels;
 
 public class ScheduleViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly SourceCache<ScheduledAnimeModel, long> _animeCache = new(x => x.Id);
-    private readonly ReadOnlyObservableCollection<ScheduledAnimeModel> _anime;
+    private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
+    private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
     private readonly ObservableAsPropertyHelper<DayOfWeek> _filter;
     private readonly ITrackingService _trackingService;
     private readonly ISystemClock _systemClock;
@@ -33,13 +33,13 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
 
     [Reactive] public ScheduleModel SelectedDay { get; set; }
     [Reactive] public List<ScheduleModel> WeeklySchedule { get; set; } = new();
-    public ReadOnlyObservableCollection<ScheduledAnimeModel> Anime => _anime;
+    public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public WeeklyScheduleModel Schedule { get; } = new();
     public DayOfWeek Filter => _filter.Value;
 
     public void RestoreState(IState state)
     {
-        var anime = state.GetValue<IEnumerable<ScheduledAnimeModel>>(nameof(Anime));
+        var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         InitSchedule(anime);
         _animeCache.Edit(x => x.AddOrUpdate(anime));
         WeeklySchedule = Schedule.ToList();
@@ -73,7 +73,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         return Task.CompletedTask;
     }
 
-    private void InitSchedule(IEnumerable<ScheduledAnimeModel> anime)
+    private void InitSchedule(IEnumerable<AnimeModel> anime)
     {
         var grouping = anime.GroupBy(x => x.BroadcastDay);
 
@@ -110,6 +110,6 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         return index == values.Length - 1 ? 0 : index + 1;
     }
 
-    private static Func<ScheduledAnimeModel, bool> FilterByDay(DayOfWeek day) => a => a.BroadcastDay == day;
+    private static Func<AnimeModel, bool> FilterByDay(DayOfWeek day) => a => a.BroadcastDay == day;
 
 }

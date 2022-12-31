@@ -6,12 +6,12 @@ namespace Totoro.Core.ViewModels;
 
 public partial class WatchViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly ITrackingService _trackingService;
+    private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IDiscordRichPresense _discordRichPresense;
-    private readonly IAnimeService _animeService;
+    private readonly IAnimeServiceContext _animeService;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<int> _episodes;
@@ -22,12 +22,12 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     private double _userSkipOpeningTime;
 
     public WatchViewModel(IProviderFactory providerFactory,
-                          ITrackingService trackingService,
+                          ITrackingServiceContext trackingService,
                           IViewService viewService,
                           ISettings settings,
                           IPlaybackStateStorage playbackStateStorage,
                           IDiscordRichPresense discordRichPresense,
-                          IAnimeService animeService,
+                          IAnimeServiceContext animeService,
                           IMediaPlayer mediaPlayer,
                           ITimestampsService timestampsService,
                           ILocalMediaService localMediaService,

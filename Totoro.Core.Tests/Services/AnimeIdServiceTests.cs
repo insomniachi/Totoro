@@ -8,12 +8,12 @@ public class AnimeIdServiceTests
     private readonly HttpClient _httpClient = new();
 
     [Theory]
-    [InlineData(AnimeTrackerType.MyAnimeList, (long)12189)]
-    [InlineData(AnimeTrackerType.AniDb, (long)8855)]
-    [InlineData(AnimeTrackerType.AniList, (long)12189)]
-    [InlineData(AnimeTrackerType.Kitsu, (long)6686)]
-    [InlineData((AnimeTrackerType)10, (long)0)]
-    public async void GetId_ReturnsValue(AnimeTrackerType tracker, long id)
+    [InlineData(ListServiceType.MyAnimeList, (long)12189)]
+    [InlineData(ListServiceType.AniDb, (long)8855)]
+    [InlineData(ListServiceType.AniList, (long)12189)]
+    [InlineData(ListServiceType.Kitsu, (long)6686)]
+    [InlineData((ListServiceType)10, (long)0)]
+    public async void GetId_ReturnsValue(ListServiceType tracker, long id)
     {
         // arrange
         var expected = new AnimeId

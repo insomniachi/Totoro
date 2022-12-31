@@ -1,14 +1,16 @@
 ﻿
 
+using Splat;
+
 namespace Totoro.Core.ViewModels;
 
 public class AboutAnimeViewModel : NavigatableViewModel
 {
-	private readonly ObservableAsPropertyHelper<FullAnimeModel> _anime;
+	private readonly ObservableAsPropertyHelper<AnimeModel> _anime;
 	private readonly ObservableAsPropertyHelper<bool> _hasTracking;
 	private readonly ObservableAsPropertyHelper<IList<AnimeSound>> _sounds;
 
-	public AboutAnimeViewModel(IAnimeService animeService,
+	public AboutAnimeViewModel(IAnimeServiceContext animeService,
 							   INavigationService navigationService,
 							   IViewService viewService,
 							   IAnimeSoundsService animeSoundService)
@@ -39,7 +41,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
 	}
 
     [Reactive] public long Id { get; set; }
-	public FullAnimeModel Anime => _anime.Value;
+	public AnimeModel Anime => _anime.Value;
 	public bool HasTracking => _hasTracking.Value;
 	public IList<AnimeSound> Sounds => _sounds.Value;
 	public ICommand WatchEpidoes { get; }
@@ -50,7 +52,6 @@ public class AboutAnimeViewModel : NavigatableViewModel
 	public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
 	{
 		Id = (long)parameters.GetValueOrDefault("Id", (long)0);
-
 		return Task.CompletedTask;
     }
 

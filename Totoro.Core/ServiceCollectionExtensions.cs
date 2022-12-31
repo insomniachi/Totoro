@@ -3,9 +3,9 @@ using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Totoro.Core.Services;
+using Totoro.Core.Services.AniList;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
-using Totoro.Core.ViewModels;
 
 namespace Totoro.Core
 {
@@ -22,6 +22,8 @@ namespace Totoro.Core
             services.AddSingleton<ILocalMediaService, LocalMediaService>();
             services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
             services.AddSingleton<IUpdateService, WindowsUpdateService>();
+            services.AddSingleton<ITrackingServiceContext, TrackingServiceContext>();
+            services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<MalToModelConverter>();
@@ -34,6 +36,14 @@ namespace Totoro.Core
 
             services.AddMemoryCache();
             services.AddHttpClient();
+
+            return services;
+        }
+
+        public static IServiceCollection AddAniList(this IServiceCollection services)
+        {
+            services.AddTransient<ITrackingService, AniListTrackingService>();
+            services.AddTransient<IAnimeService, AniListService>();
 
             return services;
         }

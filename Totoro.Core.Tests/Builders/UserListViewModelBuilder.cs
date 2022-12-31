@@ -7,8 +7,8 @@ namespace Totoro.Core.Tests.Builders;
 internal class UserListViewModelBuilder
 {
 
-    private readonly Mock<ITrackingService> _trackingServiceMock = new();
-    private readonly Mock<IAnimeService> _animeServiceMock = new();
+    private readonly Mock<ITrackingServiceContext> _trackingServiceMock = new();
+    private readonly Mock<IAnimeServiceContext> _animeServiceMock = new();
     private readonly Mock<IViewService> _viewServiceMock = new();
 
     internal UserListViewModel Build()
@@ -18,18 +18,18 @@ internal class UserListViewModelBuilder
                                      _viewServiceMock.Object);
     }
 
-    internal UserListViewModelBuilder WithTrackingService(Action<Mock<ITrackingService>> configure)
+    internal UserListViewModelBuilder WithTrackingService(Action<Mock<ITrackingServiceContext>> configure)
     {
         configure(_trackingServiceMock);
         return this;
     }
 
-    internal UserListViewModelBuilder WithAnimeService(Action<Mock<IAnimeService>> configure)
+    internal UserListViewModelBuilder WithAnimeService(Action<Mock<IAnimeServiceContext>> configure)
     {
         configure(_animeServiceMock);
         return this;
     }
 
     internal Mock<IViewService> GetViewServiceMock() => _viewServiceMock;
-    internal Mock<IAnimeService> GetAnimeServiceMock() => _animeServiceMock;
+    internal Mock<IAnimeServiceContext> GetAnimeServiceMock() => _animeServiceMock;
 }

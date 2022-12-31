@@ -84,7 +84,7 @@ public class UserListViewModelTests
                 mock.Setup(x => x.GetAnime(It.IsAny<string>()))
                     .Returns((string text) =>
                     {
-                        return Observable.Return(new SearchResultModel[] { new SearchResultModel { Title = text, Id = 10 } });
+                        return Observable.Return(new AnimeModel[] { new AnimeModel { Title = text, Id = 10 } });
                     });
             })
             .Build();
@@ -109,7 +109,7 @@ public class UserListViewModelTests
                 mock.Setup(x => x.GetAnime(It.IsAny<string>()))
                     .Returns((string text) =>
                     {
-                        return Observable.Return(new SearchResultModel[] { new SearchResultModel { Title = text, Id = 10 } });
+                        return Observable.Return(new AnimeModel[] { new AnimeModel { Title = text, Id = 10 } });
                     });
             });
         var vm = vmBuilder.Build();
