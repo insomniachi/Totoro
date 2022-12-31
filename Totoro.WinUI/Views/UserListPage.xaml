@@ -33,7 +33,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid HorizontalAlignment="Center">
+        <Grid Margin="0,0,0,12" HorizontalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />

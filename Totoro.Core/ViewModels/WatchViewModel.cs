@@ -109,6 +109,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Where(_ => !UseLocalMedia)
             .WhereNotNull()
             .SelectMany(model => Find(model.Id, model.Title))
+            .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => SelectedAnimeResult = x);
@@ -298,7 +299,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             _episodeRequest = epInfo.Episode;
 
-            var malId = await _streamPageMapper.GetMalIdFromUrl(epInfo.Url, Provider.ProviderType);
+            var malId = await _streamPageMapper.GetIdFromUrl(epInfo.Url, Provider.ProviderType);
             if (malId > 0)
             {
                 _anime = await _animeService.GetInformation(malId);
@@ -313,7 +314,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         else if (parameters.ContainsKey("SearchResult"))
         {
             var searchResult = (SearchResult)parameters["SearchResult"];
-            var malId = await _streamPageMapper.GetMalIdFromUrl(searchResult.Url, Provider.ProviderType);
+            var malId = await _streamPageMapper.GetIdFromUrl(searchResult.Url, Provider.ProviderType);
             if (malId > 0)
             {
                 _anime = await _animeService.GetInformation(malId);
@@ -498,7 +499,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         }
         else
         {
-            return (await _viewService.ChoooseSearchResult(results, SelectedProviderType), null);
+            var suggested = results.MaxBy(x => FuzzySharp.Fuzz.PartialRatio(x.Title, title));
+            return (await _viewService.ChoooseSearchResult(suggested, results, SelectedProviderType), null);
         }
     }
 

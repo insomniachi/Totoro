@@ -58,7 +58,7 @@ public class AniListService : IAnimeService
         {
             var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
-                Query = new QueryQueryBuilder().WithMedia(MediaQueryBuilder(), idMal: (int)id, type: MediaType.Anime).Build()
+                Query = new QueryQueryBuilder().WithMedia(MediaQueryBuilder(), id: (int)id, type: MediaType.Anime).Build()
             });
 
             observer.OnNext(ConvertModel(response.Data.Media));

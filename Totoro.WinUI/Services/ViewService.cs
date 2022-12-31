@@ -62,11 +62,11 @@ public class ViewService : IViewService
         return Unit.Default;
     }
 
-    public async Task<SearchResult> ChoooseSearchResult(List<SearchResult> searchResults, ProviderType providerType)
+    public async Task<SearchResult> ChoooseSearchResult(SearchResult closestMatch, List<SearchResult> searchResults, ProviderType providerType)
     {
         var vm = App.GetService<ChooseSearchResultViewModel>();
         vm.SetValues(searchResults);
-        vm.SelectedSearchResult = searchResults.FirstOrDefault();
+        vm.SelectedSearchResult = closestMatch;
         vm.SelectedProviderType = providerType;
 
         await _contentDialogService.ShowDialog(vm, d =>

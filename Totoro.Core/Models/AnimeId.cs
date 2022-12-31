@@ -15,6 +15,8 @@ public record AnimeId
 
     [JsonPropertyName("kitsu")]
     public long Kitsu { get; set; }
+
+    public static AnimeId Zero => new();
 }
 
 [JsonSerializable(typeof(AnimeId))]

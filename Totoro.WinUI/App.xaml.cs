@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net.Http;
 using AnimDL.Core;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
