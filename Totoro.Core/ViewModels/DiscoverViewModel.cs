@@ -1,6 +1,4 @@
-﻿using Totoro.Core.Models;
-
-namespace Totoro.Core.ViewModels;
+﻿namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel, IHaveState
 {
@@ -75,7 +73,7 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     [Reactive] public string FilterText { get; set; }
     [Reactive] public bool DontUseImageEx { get; private set; }
     [Reactive] public string SearchText { get; set; }
-    
+
     public bool IsAuthenticated { get; }
     public double CardWidth { get; }
     public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
@@ -120,11 +118,11 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         return Task.CompletedTask;
     }
 
-    private void LoadMoreEpisodes() => 
+    private void LoadMoreEpisodes() =>
         LoadPage((PagerViewModel?.PageCount ?? 1) + 1)
         .Finally(() =>
         {
-            if(PagerViewModel.CurrentPage == PagerViewModel.PageCount - 2)
+            if (PagerViewModel.CurrentPage == PagerViewModel.PageCount - 2)
             {
                 PagerViewModel.CurrentPage++;
             }

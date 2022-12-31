@@ -53,9 +53,9 @@ public class ScheduleViewModelTests
 
     [Theory]
     [InlineData(5, DayOfWeek.Tuesday)]  // No show in Monday, chose the next day
-    [InlineData(6, DayOfWeek.Tuesday)] 
-    [InlineData(7, DayOfWeek.Wednesday)] 
-    [InlineData(8, DayOfWeek.Thursday)] 
+    [InlineData(6, DayOfWeek.Tuesday)]
+    [InlineData(7, DayOfWeek.Wednesday)]
+    [InlineData(8, DayOfWeek.Thursday)]
     [InlineData(9, DayOfWeek.Tuesday)]  // No show in Friday, chose next day
     [InlineData(10, DayOfWeek.Tuesday)] // No show in Saturday, chose next day
     [InlineData(11, DayOfWeek.Tuesday)] // No show in Sunday, chose next day

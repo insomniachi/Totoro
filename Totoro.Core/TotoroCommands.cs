@@ -11,11 +11,11 @@ public class TotoroCommands
 {
     private readonly YoutubeClient _youtubeClient = new();
 
-	public TotoroCommands(IViewService viewService,
+    public TotoroCommands(IViewService viewService,
                           INavigationService navigationService)
-	{
+    {
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
-        
+
         Watch = ReactiveCommand.Create<object>(param =>
         {
             switch (param)
@@ -61,7 +61,7 @@ public class TotoroCommands
     public ICommand Watch { get; }
     public ICommand PlayVideo { get; }
 
-    private async Task PlayYoutubeVideo(Video video, Func<string,string,Task> playVideo)
+    private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {
         var manifest = await _youtubeClient.Videos.Streams.GetManifestAsync(VideoId.Parse(video.Url));
         var url = manifest.GetMuxedStreams().LastOrDefault().Url;

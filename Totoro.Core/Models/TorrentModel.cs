@@ -12,7 +12,7 @@ namespace Totoro.Core.Models
         {
             Downloader = torrentManager;
             Name = torrentManager.Torrent.Name;
-            
+
             Observable
                 .FromEventPattern<EventHandler<PieceHashedEventArgs>, PieceHashedEventArgs>(x => torrentManager.PieceHashed += x, x => torrentManager.PieceHashed -= x)
                 .Select(_ => Math.Round(torrentManager.Progress, 2))
@@ -32,7 +32,7 @@ namespace Totoro.Core.Models
         public string Name { get; set; }
         public double Progress => _progress.Value;
         public string DownloadSpeed => _downloadSpeed.Value;
-        [Reactive]public bool IsCompleted { get; set; }
+        [Reactive] public bool IsCompleted { get; set; }
         public TorrentManager Downloader { get; }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System.Globalization;
 using MalApi.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Splat;
-using static Totoro.Core.Models.MalToModelConverter;
+using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
 namespace Totoro.Core.Services.MyAnimeList;
 
@@ -30,10 +31,26 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
     public bool IsAuthenticated => _client.IsAuthenticated;
     public ListServiceType Type => ListServiceType.MyAnimeList;
 
-    public MyAnimeListTrackingService(IMalClient client)
+    public MyAnimeListTrackingService(IMalClient client,
+                                      IConfiguration configuration,
+                                      ILocalSettingsService localSettingsService)
     {
         _client = client;
+        var token = localSettingsService.ReadSetting<MalApi.OAuthToken>("MalToken");
+        var clientId = configuration["ClientId"];
+        if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
+        {
+            token = MalApi.MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
+            localSettingsService.SaveSetting("MalToken", token);
+        }
+        if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
+        {
+            client.SetAccessToken(token.AccessToken);
+        }
+        client.SetClientId(clientId);
     }
+
+    public void SetAccessToken(string accessToken) => _client.SetAccessToken(accessToken);
 
     public IObservable<IEnumerable<AnimeModel>> GetWatchingAnime()
     {
@@ -49,7 +66,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
-        if(IsAuthenticated)
+        if (IsAuthenticated)
         {
             return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
@@ -81,7 +98,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
     {
-        if(IsAuthenticated)
+        if (IsAuthenticated)
         {
             return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
@@ -113,7 +130,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     public IObservable<Tracking> Update(long id, Tracking tracking)
     {
-        if(!IsAuthenticated)
+        if (!IsAuthenticated)
         {
             return Observable.Return(tracking);
         }
@@ -135,12 +152,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             request.WithScore((MalApi.Score)score);
         }
 
-        if(tracking.StartDate is { } sd)
+        if (tracking.StartDate is { } sd)
         {
             request.WithStartDate(sd);
         }
 
-        if(tracking.FinishDate is { } fd)
+        if (tracking.FinishDate is { } fd)
         {
             request.WithFinishDate(fd);
         }
@@ -160,12 +177,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     private static bool CurrentlyAiringOrFinishedToday(MalApi.Anime anime)
     {
-        if(anime.Status == MalApi.AiringStatus.CurrentlyAiring)
+        if (anime.Status == MalApi.AiringStatus.CurrentlyAiring)
         {
             return true;
         }
 
-        if(!DateTime.TryParseExact(anime.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None,  out DateTime date))
+        if (!DateTime.TryParseExact(anime.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
         {
             return false;
         }

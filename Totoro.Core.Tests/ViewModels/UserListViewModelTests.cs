@@ -1,7 +1,6 @@
 ﻿using System.Reactive.Linq;
 using Totoro.Core.Tests.Builders;
 using Totoro.Core.Tests.Helpers;
-using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Tests.ViewModels;
 
@@ -65,7 +64,7 @@ public class UserListViewModelTests
             .Build();
 
         vm.SetInitialState();
-        
+
         // act
         vm.SearchText = @"Chainsaw Man";
 

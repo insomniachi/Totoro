@@ -44,17 +44,43 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </labs:SettingsCard>-->
-            <labs:SettingsCard Description="Authenticate your account to use MyAnimeList public apis." Header="Link MyAnimeList">
-                <labs:SettingsCard.HeaderIcon>
+            <labs:SettingsExpander
+                Description="Choose list service to update tracking"
+                Header="List service"
+                IsExpanded="True">
+                <labs:SettingsExpander.HeaderIcon>
                     <FontIcon Glyph="&#xe71b;" />
-                </labs:SettingsCard.HeaderIcon>
-                <Button
-                    Name="AuthenticateButton"
+                </labs:SettingsExpander.HeaderIcon>
+                <ComboBox
                     Width="150"
-                    Command="{x:Bind ViewModel.AuthenticateCommand}"
-                    Content="Authenticate"
-                    Style="{StaticResource AccentButtonStyle}" />
-            </labs:SettingsCard>
+                    ItemsSource="{x:Bind ViewModel.ServiceTypes}"
+                    SelectedItem="{x:Bind ViewModel.DefaultListService, Mode=TwoWay}" />
+                <labs:SettingsExpander.Items>
+                    <labs:SettingsCard Header="MyAnimeList">
+                        <labs:SettingsCard.HeaderIcon>
+                            <ImageIcon Source="/Assets/mal.png" />
+                        </labs:SettingsCard.HeaderIcon>
+                        <Button
+                            Width="150"
+                            Command="{x:Bind ViewModel.AuthenticateCommand}"
+                            CommandParameter="{x:Bind models:ListServiceType.MyAnimeList}"
+                            Content="Connect"
+                            Style="{StaticResource AccentButtonStyle}" />
+                    </labs:SettingsCard>
+                    <labs:SettingsCard Header="AniList">
+                        <labs:SettingsCard.HeaderIcon>
+                            <ImageIcon Source="/Assets/anilist.png" />
+                        </labs:SettingsCard.HeaderIcon>
+                        <Button
+                            Width="150"
+                            Command="{x:Bind ViewModel.AuthenticateCommand}"
+                            CommandParameter="{x:Bind models:ListServiceType.AniList}"
+                            Content="Connect"
+                            Style="{StaticResource AccentButtonStyle}" />
+                    </labs:SettingsCard>
+                </labs:SettingsExpander.Items>
+            </labs:SettingsExpander>
+
             <labs:SettingsCard Description="Prefer subs for search result, excludes dubs from the result." Header="Prefer Subs over Dubs">
                 <labs:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xe986;" />
@@ -136,12 +162,12 @@
             </labs:SettingsCard>
         </StackPanel>
 
-        <TeachingTip
+        <!--<TeachingTip
             x:Name="TeachingTip"
             Title="Link AnimDL with MyAnimeList"
             IsOpen="{x:Bind help:Converters.Invert(ViewModel.IsAuthenticated), Mode=OneWay}"
             Subtitle="Authenticate your MyAnimeList account to continue"
-            Target="{x:Bind AuthenticateButton}" />
+            Target="{x:Bind AuthenticateButton}" />-->
 
     </Grid>
 </views:SettingsPageBase>

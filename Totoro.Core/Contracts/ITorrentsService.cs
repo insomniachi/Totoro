@@ -1,6 +1,4 @@
-﻿using MonoTorrent;
-
-namespace Totoro.Core.Contracts
+﻿namespace Totoro.Core.Contracts
 {
     public interface ITorrentsService
     {

@@ -586,7 +586,7 @@ public class WatchViewModelTests
 
         vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
         vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23));
-        
+
         // api request was never made.
         vmBuilder.VerifyTrackingService(tracking =>
         {

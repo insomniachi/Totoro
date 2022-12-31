@@ -1,6 +1,4 @@
-﻿using Totoro.Core.Services;
-
-namespace Totoro.Core.Contracts
+﻿namespace Totoro.Core.Contracts
 {
     public interface ITimestampsService
     {

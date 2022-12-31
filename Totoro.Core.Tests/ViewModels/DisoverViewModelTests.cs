@@ -1,6 +1,4 @@
 ﻿using System.Reactive.Linq;
-using Microsoft.Reactive.Testing;
-using ReactiveUI.Testing;
 using Totoro.Core.Tests.Builders;
 using Totoro.Core.Tests.Helpers;
 using Totoro.Core.ViewModels;

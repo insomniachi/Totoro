@@ -16,7 +16,7 @@ public class AnimeServiceContext : IAnimeServiceContext
 
     public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
     {
-        if(_settings.DefaultListService is not ListServiceType type)
+        if (_settings.DefaultListService is not ListServiceType type)
         {
             return Observable.Return(Enumerable.Empty<AnimeModel>());
         }

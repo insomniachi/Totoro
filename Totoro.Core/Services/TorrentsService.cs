@@ -32,14 +32,14 @@ public class TorrentsService : ITorrentsService
     public async Task Download(IDownloadableContent content)
     {
         var saveDirectory = Path.Combine(_mediaFolder, content.Title);
-        
-        if(!Directory.Exists(saveDirectory))
+
+        if (!Directory.Exists(saveDirectory))
         {
             // ask for id
             var candidates = await _animeService.GetAnime(content.Title);
             var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, content.Title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(content.Title, x) > 80)).ToList();
 
-            if(filtered.Count == 1)
+            if (filtered.Count == 1)
             {
                 _localMediaService.SetId(saveDirectory, filtered.First().Id);
             }

@@ -24,7 +24,7 @@ public static class ModelHelpers
     public static string GetImage(this SearchResult searchResult) => searchResult is IHaveImage ihi ? ihi.Image : string.Empty;
     public static ImageSource GetImageSource(this SearchResult searchResult)
     {
-        if(searchResult is not IHaveImage ihi)
+        if (searchResult is not IHaveImage ihi)
         {
             return null;
         }
@@ -37,11 +37,11 @@ public static class ModelHelpers
     public static string GetAdditionalInformation(this SearchResult searchResult)
     {
         StringBuilder sb = new();
-        if(searchResult is IHaveSeason ihs)
+        if (searchResult is IHaveSeason ihs)
         {
             sb.Append($"{ihs.Season} {ihs.Year}");
         }
-        else if(searchResult is IHaveYear ihy)
+        else if (searchResult is IHaveYear ihy)
         {
             sb.Append(ihy.Year);
         }

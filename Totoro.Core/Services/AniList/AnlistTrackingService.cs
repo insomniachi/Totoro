@@ -13,15 +13,22 @@ public class AniListTrackingService : ITrackingService
     public AniListTrackingService(ILocalSettingsService localSettingsService)
     {
         var token = localSettingsService.ReadSetting<AniListAuthToken>("AniListToken", new());
-        if(!string.IsNullOrEmpty(token.AccessToken))
-        {
-            _anilistClient.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-            IsAuthenticated = true;
-        }
+        SetAccessToken(token.AccessToken);
     }
 
     public bool IsAuthenticated { get; private set; }
     public ListServiceType Type => ListServiceType.AniList;
+
+    public void SetAccessToken(string accessToken)
+    {
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return;
+        }
+
+        _anilistClient.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        IsAuthenticated = true;
+    }
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
@@ -33,16 +40,16 @@ public class AniListTrackingService : ITrackingService
             {
                 Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime, status: MediaListStatus.Current).Build(),
             });
-            
+
             observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
 
             response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
                 Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime).Build(),
             });
-            
+
             observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
-            
+
             observer.OnCompleted();
         });
     }
@@ -53,7 +60,7 @@ public class AniListTrackingService : ITrackingService
         {
             var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
-                Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), 
+                Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(),
                     userId: await GetUserId(),
                     type: MediaType.Anime,
                     status: MediaListStatus.Current)
@@ -72,23 +79,23 @@ public class AniListTrackingService : ITrackingService
         {
             var mediaListEntryBuilder = new MediaListQueryBuilder();
 
-            if(tracking.Status is AnimeStatus status)
+            if (tracking.Status is AnimeStatus status)
             {
                 mediaListEntryBuilder.WithStatus();
             }
-            if(tracking.StartDate is DateTime)
+            if (tracking.StartDate is DateTime)
             {
                 mediaListEntryBuilder.WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields());
             }
-            if(tracking.FinishDate is DateTime)
+            if (tracking.FinishDate is DateTime)
             {
                 mediaListEntryBuilder.WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields());
             }
-            if(tracking.Score is int)
+            if (tracking.Score is int)
             {
                 mediaListEntryBuilder.WithScore();
             }
-            if(tracking.WatchedEpisodes is int)
+            if (tracking.WatchedEpisodes is int)
             {
                 mediaListEntryBuilder.WithProgress();
             }
@@ -110,11 +117,11 @@ public class AniListTrackingService : ITrackingService
 
             observer.OnNext(ConvertTracking(response.Data.SaveMediaListEntry));
         });
-     }
+    }
 
     private static bool CurrentlyAiringOrFinishedToday(Media media)
     {
-        if(media.Status == MediaStatus.Releasing)
+        if (media.Status == MediaStatus.Releasing)
         {
             return true;
         }

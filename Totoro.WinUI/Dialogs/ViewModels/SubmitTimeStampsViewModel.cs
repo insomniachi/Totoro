@@ -81,7 +81,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
 
     public async Task SubmitTimeStamp()
     {
-        await _timestampsService.SubmitTimeStamp(MalId, Episode, SelectedTimeStampType.ToLower(),  new Interval { StartTime = StartPosition, EndTime = EndPosition }, Duration);
+        await _timestampsService.SubmitTimeStamp(MalId, Episode, SelectedTimeStampType.ToLower(), new Interval { StartTime = StartPosition, EndTime = EndPosition }, Duration);
     }
 
 }

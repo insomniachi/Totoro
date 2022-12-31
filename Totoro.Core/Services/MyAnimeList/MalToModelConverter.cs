@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Splat;
 
-namespace Totoro.Core.Models;
+namespace Totoro.Core.Services.MyAnimeList;
 
 public class MalToModelConverter
 {
@@ -33,7 +33,7 @@ public class MalToModelConverter
             model.TotalEpisodes = malModel.TotalEpisodes;
             model.MeanScore = malModel.MeanScore;
             model.Popularity = malModel.Popularity ?? 0;
-            if(DateTime.TryParseExact(malModel.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+            if (DateTime.TryParseExact(malModel.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
             {
                 model.BroadcastDay = dt.DayOfWeek;
             }

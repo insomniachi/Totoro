@@ -1,7 +1,6 @@
 ﻿using MalApi;
 using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
 using Totoro.Core.Services.MyAnimeList;
@@ -48,29 +47,11 @@ namespace Totoro.Core
             return services;
         }
 
-        public static IServiceCollection AddMyAnimeList(this IServiceCollection services, HostBuilderContext context)
+        public static IServiceCollection AddMyAnimeList(this IServiceCollection services)
         {
             services.AddTransient<ITrackingService, MyAnimeListTrackingService>();
             services.AddTransient<IAnimeService, MyAnimeListService>();
-
-            services.AddSingleton<IMalClient, MalClient>(x =>
-            {
-                var settingService = x.GetRequiredService<ILocalSettingsService>();
-                var token = settingService.ReadSetting<OAuthToken>("MalToken");
-                var clientId = context.Configuration["ClientId"];
-                if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
-                {
-                    token = MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
-                    settingService.SaveSetting("MalToken", token);
-                }
-                var client = new MalClient();
-                if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
-                {
-                    client.SetAccessToken(token.AccessToken);
-                }
-                client.SetClientId(clientId);
-                return client;
-            });
+            services.AddSingleton<IMalClient, MalClient>();
 
             return services;
         }

@@ -18,12 +18,12 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
                 EpisodesWatched = x.WatchedEpisodes ?? 0;
                 Score = x.Score ?? 0;
 
-                if(x.StartDate != new DateTime())
+                if (x.StartDate != new DateTime())
                 {
                     StartDate = x.StartDate;
                 }
 
-                if(x.FinishDate != new DateTime())
+                if (x.FinishDate != new DateTime())
                 {
                     FinishDate = x.FinishDate;
                 }

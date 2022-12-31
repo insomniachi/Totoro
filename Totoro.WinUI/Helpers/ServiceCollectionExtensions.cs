@@ -113,6 +113,7 @@ public static class ServiceCollectionExtensions
         services.AddPage<UpdateAnimeStatusViewModel, UpdateAnimeStatusView>();
         services.AddPage<ChooseSearchResultViewModel, ChooseSearchResultView>();
         services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
+        services.AddPage<AuthenticateAniListViewModel, AuthenticateAniListView>();
         services.AddPage<PlayVideoDialogViewModel, VideoView>();
         services.AddPage<SelectModelViewModel, SelectModelView>();
         services.AddPage<SubmitTimeStampsViewModel, SubmitTimeStampsView>();

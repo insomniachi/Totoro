@@ -2,17 +2,17 @@
 using AnimDL.Core;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.UI.Xaml;
+using Serilog;
 using Splat;
+using Splat.Serilog;
 using Totoro.Core;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
 using Windows.ApplicationModel;
 using WinUIEx;
-using Splat.Serilog;
-using Serilog;
-using Microsoft.Extensions.Options;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.WinUI;
@@ -36,7 +36,7 @@ public partial class App : Application, IEnableLogger
             services.AddPlatformServices()
                     .AddApplicationServices()
                     .AddAnimDL()
-                    .AddMyAnimeList(context)
+                    .AddMyAnimeList()
                     .AddAniList()
                     .AddTopLevelPages()
                     .AddDialogPages();
@@ -98,7 +98,7 @@ public partial class App : Application, IEnableLogger
     }
 
 
-    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e) 
+    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         this.Log().Fatal(e.Exception, e.Message);
     }
@@ -125,13 +125,23 @@ public partial class App : Application, IEnableLogger
 
         switch (mimimumLogLevel)
         {
-            case LogLevel.Debug: configuration.MinimumLevel.Debug();break;
-            case LogLevel.Information: configuration.MinimumLevel.Information();break;
-            case LogLevel.Warning: configuration.MinimumLevel.Warning();break;
-            case LogLevel.Error: configuration.MinimumLevel.Error();break;
-            case LogLevel.Critical: configuration.MinimumLevel.Fatal();break;
+            case LogLevel.Debug:
+                configuration.MinimumLevel.Debug();
+                break;
+            case LogLevel.Information:
+                configuration.MinimumLevel.Information();
+                break;
+            case LogLevel.Warning:
+                configuration.MinimumLevel.Warning();
+                break;
+            case LogLevel.Error:
+                configuration.MinimumLevel.Error();
+                break;
+            case LogLevel.Critical:
+                configuration.MinimumLevel.Fatal();
+                break;
         }
-        
+
         Log.Logger = configuration.CreateLogger();
         Locator.CurrentMutable.UseSerilogFullLogger();
     }

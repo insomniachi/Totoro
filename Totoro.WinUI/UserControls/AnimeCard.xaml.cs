@@ -112,16 +112,16 @@ public sealed partial class AnimeCard : UserControl
         };
     }
 
-    public Dictionary<string,string> GetAdditionalInformation(AnimeModel anime)
+    public Dictionary<string, string> GetAdditionalInformation(AnimeModel anime)
     {
-        if(anime is not AnimeModel fa)
+        if (anime is not AnimeModel fa)
         {
             return new();
         }
 
         return new Dictionary<string, string>
         {
-            ["Episodes"] = $"{(fa.TotalEpisodes is >0 ? fa.TotalEpisodes.ToString() : "Unknown")}",
+            ["Episodes"] = $"{(fa.TotalEpisodes is > 0 ? fa.TotalEpisodes.ToString() : "Unknown")}",
             ["Genres"] = $"{string.Join(", ", fa.Genres ?? Enumerable.Empty<string>())}",
             ["Score"] = $"{fa.MeanScore}",
             ["Popularity"] = $"#{fa.Popularity}"

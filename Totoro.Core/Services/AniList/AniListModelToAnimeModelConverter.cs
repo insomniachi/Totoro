@@ -6,7 +6,7 @@ namespace Totoro.Core.Services.AniList
     {
         private static DayOfWeek? GetBroadcastDay(FuzzyDate date)
         {
-            if(date.Year is null || date.Month is null || date.Day is null)
+            if (date.Year is null || date.Month is null || date.Day is null)
             {
                 return null;
             }
@@ -16,7 +16,7 @@ namespace Totoro.Core.Services.AniList
 
         private static Season GetSeason(MediaSeason? season, int? year)
         {
-            if(season is null || year is null)
+            if (season is null || year is null)
             {
                 return null;
             }
@@ -28,7 +28,7 @@ namespace Totoro.Core.Services.AniList
         {
             var list = new List<string>();
 
-            if(!string.IsNullOrEmpty(title.English))
+            if (!string.IsNullOrEmpty(title.English))
             {
                 list.Add(title.English);
             }
@@ -76,7 +76,7 @@ namespace Totoro.Core.Services.AniList
 
         public static Tracking ConvertTracking(MediaList listEntry)
         {
-            if(listEntry == null)
+            if (listEntry == null)
             {
                 return null;
             }
@@ -144,7 +144,7 @@ namespace Totoro.Core.Services.AniList
 
         public static DateTime? ConvertDate(FuzzyDate date)
         {
-            if(date.Year is null || date.Month is null || date.Day is null)
+            if (date.Year is null || date.Month is null || date.Day is null)
             {
                 return null;
             }
@@ -154,7 +154,7 @@ namespace Totoro.Core.Services.AniList
 
         public static FuzzyDateInput ConvertDate(DateTime? date)
         {
-            if(date is null)
+            if (date is null)
             {
                 return null;
             }

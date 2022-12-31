@@ -8,7 +8,7 @@ public class WeeklyScheduleModel
     public ScheduleModel Tuesday { get; } = new ScheduleModel { DisplayText = "Tue", DayOfWeek = DayOfWeek.Tuesday };
     public ScheduleModel Wednesday { get; } = new ScheduleModel { DisplayText = "Wed", DayOfWeek = DayOfWeek.Wednesday };
     public ScheduleModel Thursday { get; } = new ScheduleModel { DisplayText = "Thu", DayOfWeek = DayOfWeek.Thursday };
-    public ScheduleModel Friday { get; } = new ScheduleModel { DisplayText = "Fri", DayOfWeek = DayOfWeek.Friday};
+    public ScheduleModel Friday { get; } = new ScheduleModel { DisplayText = "Fri", DayOfWeek = DayOfWeek.Friday };
     public ScheduleModel Saturday { get; } = new ScheduleModel { DisplayText = "Sat", DayOfWeek = DayOfWeek.Saturday };
     public ScheduleModel Sunday { get; } = new ScheduleModel { DisplayText = "Sun", DayOfWeek = DayOfWeek.Sunday };
 

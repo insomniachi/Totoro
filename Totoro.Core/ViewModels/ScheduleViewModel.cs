@@ -45,13 +45,13 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         WeeklySchedule = Schedule.ToList();
         SelectedDay = WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == state.GetValue<DayOfWeek>(nameof(SelectedDay)));
     }
-    
+
     public void StoreState(IState state)
     {
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
         if (Anime.Any())
         {
-            state.AddOrUpdate(SelectedDay.DayOfWeek, nameof(SelectedDay)); 
+            state.AddOrUpdate(SelectedDay.DayOfWeek, nameof(SelectedDay));
         }
     }
 
@@ -92,7 +92,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         var todayIndex = days.IndexOf(today);
         var index = NextCyclicValue(todayIndex, days);
 
-        while(index != todayIndex)
+        while (index != todayIndex)
         {
             if (Schedule[days[index]] is { Count: > 0 } day)
             {

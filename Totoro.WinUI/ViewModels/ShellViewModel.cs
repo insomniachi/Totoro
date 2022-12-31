@@ -1,11 +1,4 @@
-﻿using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.Windows.AppLifecycle;
-using Totoro.Core;
+﻿using Microsoft.UI.Xaml.Navigation;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
@@ -31,11 +24,10 @@ public partial class ShellViewModel : ReactiveObject
         NavigationService.Navigated.Subscribe(OnNavigated);
         NavigationViewService = navigationViewService;
         IsAuthenticated = trackingService.IsAuthenticated;
-        
-        MessageBus.Current
-            .Listen<MalAuthenticatedMessage>()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => IsAuthenticated = true);
+
+        trackingService
+            .Authenticated
+            .Subscribe(_ => IsAuthenticated = trackingService.IsAuthenticated);
 
         updateService
             .OnUpdateAvailable
@@ -44,7 +36,7 @@ public partial class ShellViewModel : ReactiveObject
             .Select(async vi =>
             {
                 var answer = await viewService.Question("Update Downloaded", $"New update version {vi.Version} downloaded, Install now ?");
-                if(answer)
+                if (answer)
                 {
                     updateService.InstallUpdate(vi);
                 }

@@ -17,8 +17,8 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}";
         this.Log().Debug("Requesting timestamps : {0}", url);
         var response = await _httpClient.GetAsync(url);
-        
-        if(!response.IsSuccessStatusCode)
+
+        if (!response.IsSuccessStatusCode)
         {
             this.Log().Info($"Timestamps for MalId = {malId}, Ep = {ep}, Duration = {duration} not found");
             return new AniSkipResult { Success = false, Items = Enumerable.Empty<AniSkipResultItem>().ToArray() };
@@ -27,7 +27,7 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         var stream = await response.Content.ReadAsStreamAsync();
         var result = await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
         this.Log().Info("Timestamps received : {0}", result.Success);
-        
+
         return result;
     }
 

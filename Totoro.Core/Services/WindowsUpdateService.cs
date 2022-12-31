@@ -8,7 +8,7 @@ namespace Totoro.Core.Services;
 public class WindowsUpdateService : IUpdateService, IEnableLogger
 {
     private readonly IObservable<VersionInfo> _onUpdate;
-    private readonly string  _updateFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "ApplicationData", "Updates");
+    private readonly string _updateFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "ApplicationData", "Updates");
     public IObservable<VersionInfo> OnUpdateAvailable => _onUpdate;
 
     public WindowsUpdateService(HttpClient httpClient)

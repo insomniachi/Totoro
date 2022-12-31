@@ -23,6 +23,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen };
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
+    public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public ICommand AuthenticateCommand { get; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService,
@@ -51,7 +52,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
             localSettingsService.SaveSetting(nameof(AniSkipId), AniSkipId);
         }
 
-        AuthenticateCommand = ReactiveCommand.CreateFromTask(viewService.AuthenticateMal);
+        AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
 
         if (UseDiscordRichPresense && !dRpc.IsInitialized)
         {

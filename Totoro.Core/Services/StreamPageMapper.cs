@@ -9,7 +9,7 @@ namespace Totoro.Core.Services
         private readonly HttpClient _httpClient;
         private readonly IAnimeIdService _animeIdService;
 
-        public StreamPageMapper(HttpClient httpClient, 
+        public StreamPageMapper(HttpClient httpClient,
                                 IAnimeIdService animeIdService)
         {
             _httpClient = httpClient;
@@ -25,7 +25,7 @@ namespace Totoro.Core.Services
                 var value = (long)jObject["malId"].AsValue();
                 return value;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.Log().Error(ex);
                 return 0;
@@ -34,24 +34,24 @@ namespace Totoro.Core.Services
 
         public async Task<long> GetMalIdFromUrl(string url, ProviderType provider)
         {
-            if(provider == ProviderType.Yugen)
+            if (provider == ProviderType.Yugen)
             {
                 return await GetIdFromSource(url, YugenMalIdRegex());
             }
-            else if(provider == ProviderType.GogoAnime)
+            else if (provider == ProviderType.GogoAnime)
             {
                 var uri = new Uri(url);
                 var match = GogoAnimeIdentifierRegex().Match(uri.AbsolutePath);
                 return await GetMalId(match.Groups[1].Value, ProviderType.GogoAnime);
             }
-            else if(provider == ProviderType.AnimePahe)
+            else if (provider == ProviderType.AnimePahe)
             {
                 return await GetIdFromSource(url, AnimePaheMalIdRegex());
             }
-            else if(provider == ProviderType.AllAnime)
+            else if (provider == ProviderType.AllAnime)
             {
                 var aniListId = await GetIdFromSource(url, AllAnimeAniListIdRegex());
-                if(aniListId == 0)
+                if (aniListId == 0)
                 {
                     return 0;
                 }
@@ -86,33 +86,33 @@ namespace Totoro.Core.Services
             var key = GetKey(provider);
             var pages = jObject["Pages"];
 
-            if(pages is null)
+            if (pages is null)
             {
                 return null;
             }
 
             var providerPages = pages[key];
 
-            if(providerPages is null)
+            if (providerPages is null)
             {
                 return null;
             }
 
             var providerPageObj = providerPages.AsObject();
 
-            if(providerPageObj.Count == 0)
+            if (providerPageObj.Count == 0)
             {
                 return null;
             }
-            else if(providerPageObj.Count == 1)
+            else if (providerPageObj.Count == 1)
             {
                 return (GetSearchResult(providerPageObj.ElementAt(0).Value), null);
             }
-            else if(providerPageObj.Count == 2)
+            else if (providerPageObj.Count == 2)
             {
                 var first = GetSearchResult(providerPageObj.ElementAt(0).Value);
                 var second = GetSearchResult(providerPageObj.ElementAt(1).Value);
-                
+
                 return second.Title.ToLower().Contains("dub")
                     ? (first, second)
                     : (second, first);

@@ -35,14 +35,14 @@ namespace Totoro.Core.Services.ShanaProject
 
             var result = new ShanaProjectPage
             {
-                HasNextPage = doc.DocumentNode.InnerHtml.Contains($"/series/{id}/{page+1}"),
+                HasNextPage = doc.DocumentNode.InnerHtml.Contains($"/series/{id}/{page + 1}"),
                 HasPreviousPage = doc.DocumentNode.InnerHtml.Contains($"/series/{id}/{page - 1}"),
                 DownloadableContents = new List<ShanaProjectDownloadableContent>()
             };
 
             foreach (var releaseItem in nodes)
             {
-                if(string.IsNullOrEmpty(releaseItem.Id) || releaseItem.Id?.Contains("rel") == false)
+                if (string.IsNullOrEmpty(releaseItem.Id) || releaseItem.Id?.Contains("rel") == false)
                 {
                     continue;
                 }

@@ -40,7 +40,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
-        
+
         MediaPlayer = mediaPlayer;
         SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
@@ -281,10 +281,10 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     public ICommand SkipOpeningDynamic { get; }
     public ICommand ChangeQuality { get; }
     public ICommand SubmitTimeStamp { get; }
-    
+
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if(parameters.ContainsKey("UseLocalMedia"))
+        if (parameters.ContainsKey("UseLocalMedia"))
         {
             UseLocalMedia = (bool)parameters["UseLocalMedia"];
         }
@@ -310,11 +310,11 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             var id = (long)parameters["Id"];
             Anime = await _animeService.GetInformation(id);
         }
-        else if(parameters.ContainsKey("SearchResult"))
+        else if (parameters.ContainsKey("SearchResult"))
         {
             var searchResult = (SearchResult)parameters["SearchResult"];
             var malId = await _streamPageMapper.GetMalIdFromUrl(searchResult.Url, Provider.ProviderType);
-            if(malId > 0)
+            if (malId > 0)
             {
                 _anime = await _animeService.GetInformation(malId);
             }
@@ -408,7 +408,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
     public async Task<Unit> UpdateTracking()
     {
-        if(_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= Streams.Episode)
+        if (_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= Streams.Episode)
         {
             return Unit.Default;
         }
@@ -425,7 +425,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             tracking.Status = AnimeStatus.Completed;
             tracking.FinishDate = DateTime.Today;
         }
-        else if(Streams.Episode == 1)
+        else if (Streams.Episode == 1)
         {
             tracking.Status = AnimeStatus.Watching;
             tracking.StartDate = DateTime.Today;
@@ -435,7 +435,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         _isUpdatingTracking = false;
 
-        if(_settings.ContributeTimeStamps && AniSkipResult.Items.Any(x => x.SkipType == "op") == false) // don't force to submit if only ed is missing
+        if (_settings.ContributeTimeStamps && AniSkipResult.Items.Any(x => x.SkipType == "op") == false) // don't force to submit if only ed is missing
         {
             OnSubmitTimeStamps();
         }
@@ -506,7 +506,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     {
         var list = qualities.ToList();
 
-        if(list.Count == 1)
+        if (list.Count == 1)
         {
             return list.First();
         }
@@ -522,7 +522,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
                      .OrderBy(x => x.Length)
                      .ThenBy(x => x);
     }
-    private static string JoinStrings(IEnumerable<string> items) => string.Join(",", items); 
+    private static string JoinStrings(IEnumerable<string> items) => string.Join(",", items);
     private bool RequestedEpisodeIsValid(int episode) => Anime?.TotalEpisodes is 0 or null || episode <= Anime?.TotalEpisodes;
     private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1;
 }

@@ -1,7 +1,5 @@
 ﻿using System.Web;
 using MalApi;
-using MalApi.Interfaces;
-using Totoro.Core;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;
@@ -11,8 +9,8 @@ public class AuthenticateMyAnimeListViewModel : DialogViewModel
     public AuthenticateMyAnimeListViewModel(IConfiguration configuration,
                                             ILocalSettingsService localSettingsService,
                                             INavigationService navigationService,
-                                            IMalClient malClient,
-                                            IMessageBus messageBus)
+                                            ITrackingServiceContext trackingService,
+                                            ISettings settings)
     {
         var clientId = configuration["ClientId"];
         AuthUrl = MalAuthHelper.GetAuthUrl(clientId);
@@ -29,9 +27,9 @@ public class AuthenticateMyAnimeListViewModel : DialogViewModel
                 IsAuthenticated = true;
                 localSettingsService.SaveSetting("MalToken", token);
                 IsLoading = false;
-                _close.OnNext(Unit.Default);
-                malClient.SetAccessToken(token.AccessToken);
-                messageBus.SendMessage(new MalAuthenticatedMessage());
+                CloseDialog();
+                trackingService.SetAccessToken(token.AccessToken, ListServiceType.MyAnimeList);
+                settings.DefaultListService = ListServiceType.MyAnimeList;
                 navigationService.NavigateTo<UserListViewModel>();
             });
     }

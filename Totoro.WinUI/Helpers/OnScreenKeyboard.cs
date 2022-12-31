@@ -21,7 +21,7 @@ namespace Totoro.WinUI.Helpers
 
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if(d is TextBox || d is AutoSuggestBox)
+            if (d is TextBox || d is AutoSuggestBox)
             {
                 var control = d as FrameworkElement;
                 control.GotFocus += ControlGotFocus;

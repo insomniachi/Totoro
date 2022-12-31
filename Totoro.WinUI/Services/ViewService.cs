@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using AnimDL.Core.Api;
+﻿using AnimDL.Core.Api;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
@@ -52,7 +51,7 @@ public class ViewService : IViewService
             {
                 tracking.StartDate = sd.Date;
             }
-            if(vm.FinishDate is { } fd)
+            if (vm.FinishDate is { } fd)
             {
                 tracking.FinishDate = fd.Date;
             }
@@ -82,16 +81,30 @@ public class ViewService : IViewService
         return vm.SelectedSearchResult;
     }
 
-    public async Task AuthenticateMal()
+    public Task Authenticate(ListServiceType type)
     {
-        await _contentDialogService.ShowDialog<AuthenticateMyAnimeListViewModel>(d =>
+        if (type == ListServiceType.AniList)
         {
-            d.Title = "Authenticate";
-            d.IsPrimaryButtonEnabled = false;
-            d.IsSecondaryButtonEnabled = false;
-            d.CloseButtonText = "Ok";
-            d.Width = App.MainWindow.Bounds.Width;
-        });
+            return _contentDialogService.ShowDialog<AuthenticateAniListViewModel>(d =>
+            {
+                d.Title = "Authenticate";
+                d.IsPrimaryButtonEnabled = false;
+                d.IsSecondaryButtonEnabled = false;
+                d.CloseButtonText = "Ok";
+                d.Width = App.MainWindow.Bounds.Width;
+            });
+        }
+        else
+        {
+            return _contentDialogService.ShowDialog<AuthenticateMyAnimeListViewModel>(d =>
+            {
+                d.Title = "Authenticate";
+                d.IsPrimaryButtonEnabled = false;
+                d.IsSecondaryButtonEnabled = false;
+                d.CloseButtonText = "Ok";
+                d.Width = App.MainWindow.Bounds.Width;
+            });
+        }
     }
 
     public async Task PlayVideo(string title, string url)
@@ -106,7 +119,7 @@ public class ViewService : IViewService
     }
 
     public async Task<T> SelectModel<T>(IEnumerable<object> models)
-        where T: class
+        where T : class
     {
         var vm = new SelectModelViewModel()
         {

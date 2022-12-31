@@ -51,7 +51,7 @@ public class CustomMediaTransportControls : MediaTransportControls
             {
                 mtc._qualitiesButton.Visibility = Visibility.Collapsed;
             }
-            else if(qualities.Count > 1)
+            else if (qualities.Count > 1)
             {
                 mtc._qualitiesButton.IsEnabled = true;
                 foreach (var item in qualities)

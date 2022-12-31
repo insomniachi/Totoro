@@ -1,5 +1,5 @@
-﻿using Totoro.Core.ViewModels;
-using ReactiveMarbles.ObservableEvents;
+﻿using ReactiveMarbles.ObservableEvents;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
 
@@ -25,11 +25,11 @@ public sealed partial class DownloadPage : DownloadPageBase
             .Click
             .Subscribe(_ =>
             {
-                if(ViewModel.ShowDownloads)
+                if (ViewModel.ShowDownloads)
                 {
                     ViewModel.ShowDownloads = false;
                 }
-                else if(ViewModel.TorrentsSerivce.ActiveDownlaods.Any())
+                else if (ViewModel.TorrentsSerivce.ActiveDownlaods.Any())
                 {
                     ViewModel.ShowDownloads = true;
                 }
