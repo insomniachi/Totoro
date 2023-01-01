@@ -2,7 +2,10 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using DynamicData.Aggregation;
+using FuzzySharp;
+using HtmlAgilityPack;
 using Splat;
+using Totoro.Core.Contracts;
 using Totoro.Core.Models;
 
 namespace Totoro.Core.Services
@@ -45,7 +48,7 @@ namespace Totoro.Core.Services
             }
         }
 
-        public async Task<long> GetIdFromUrl(string url, ProviderType provider)
+        public async Task<long?> GetIdFromUrl(string url, ProviderType provider)
         {
             if (provider == ProviderType.Yugen)
             {
@@ -53,7 +56,7 @@ namespace Totoro.Core.Services
                 {
                     ListServiceType.MyAnimeList => YugenMalIdRegex(),
                     ListServiceType.AniList => YugenAnilistIdRegex(),
-                    _ => throw new NotSupportedException()
+                    _ => null
                 };
 
                 return await GetIdFromSource(url, regex);
@@ -96,7 +99,7 @@ namespace Totoro.Core.Services
                 catch (Exception ex)
                 {
                     this.Log().Error(ex);
-                    return 0;
+                    return null;
                 }
             }
             else if (provider == ProviderType.AllAnime)
@@ -104,14 +107,14 @@ namespace Totoro.Core.Services
                 var aniListId = await GetIdFromSource(url, AllAnimeAniListIdRegex());
                 if (aniListId == 0)
                 {
-                    return 0;
+                    return null;
                 }
                 var animeId = await _animeIdService.GetId(ListServiceType.AniList, aniListId);
                 return GetId(animeId);
             }
             else
             {
-                throw new NotSupportedException();
+                return null;
             }
         }
 

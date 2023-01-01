@@ -37,7 +37,13 @@ public partial class Schedule : ISchedule
     private async Task<Unit> ShowToast(AiredEpisode epInfo)
     {
         var id = await _streamPageMapper.GetIdFromUrl(epInfo.Url, _settings.DefaultProviderType);
-        var anime = await _animeService.GetInformation(id);
+
+        if(id is null)
+        {
+            return Unit.Default;
+        }
+
+        var anime = await _animeService.GetInformation(id.Value);
         var ep = epInfo.Episode;
         if (anime.Tracking is null)
         {

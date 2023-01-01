@@ -1,4 +1,6 @@
 ﻿using System.Reactive.Concurrency;
+using AnimDL.Core.Models;
+using FuzzySharp;
 using Splat;
 using Totoro.Core.Helpers;
 
@@ -298,12 +300,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         {
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             _episodeRequest = epInfo.Episode;
-
-            var malId = await _streamPageMapper.GetIdFromUrl(epInfo.Url, Provider.ProviderType);
-            if (malId > 0)
-            {
-                _anime = await _animeService.GetInformation(malId);
-            }
+            await TrySetAnime(epInfo.Url, epInfo.Title);
             SelectedAudio = new SearchResult { Title = epInfo.Title, Url = epInfo.Url };
         }
         else if (parameters.ContainsKey("Id"))
@@ -314,11 +311,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         else if (parameters.ContainsKey("SearchResult"))
         {
             var searchResult = (SearchResult)parameters["SearchResult"];
-            var malId = await _streamPageMapper.GetIdFromUrl(searchResult.Url, Provider.ProviderType);
-            if (malId > 0)
-            {
-                _anime = await _animeService.GetInformation(malId);
-            }
+            await TrySetAnime(searchResult.Url, searchResult.Title);
             SelectedAudio = searchResult;
         }
         else
@@ -493,13 +486,18 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         {
             return (results[0], null);
         }
-        else if (results.Count == 2)
+        else if (results.Count == 2 && _settings.DefaultProviderType == ProviderType.GogoAnime) // gogo anime has separate listing for sub/dub
         {
             return (results[0], results[1]);
+        }
+        else if(results.FirstOrDefault(x => string.Equals(x.Title, title, StringComparison.OrdinalIgnoreCase)) is { } exactMatch)
+        {
+            return (exactMatch, null);
         }
         else
         {
             var suggested = results.MaxBy(x => FuzzySharp.Fuzz.PartialRatio(x.Title, title));
+            this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {FuzzySharp.Fuzz.PartialRatio(suggested.Title, title)}");
             return (await _viewService.ChoooseSearchResult(suggested, results, SelectedProviderType), null);
         }
     }
@@ -527,4 +525,23 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     private static string JoinStrings(IEnumerable<string> items) => string.Join(",", items);
     private bool RequestedEpisodeIsValid(int episode) => Anime?.TotalEpisodes is 0 or null || episode <= Anime?.TotalEpisodes;
     private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1;
+    private async Task TrySetAnime(string url, string title)
+    {
+        var id = await _streamPageMapper.GetIdFromUrl(url, Provider.ProviderType) ?? await TryGetId(title);
+        _anime = await _animeService.GetInformation(id);
+    }
+    private async Task<long> TryGetId(string title)
+    {
+        var candidates = await _animeService.GetAnime(title);
+        var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(title, x) > 80)).ToList();
+        if (filtered.Count == 1)
+        {
+            return filtered[0].Id;
+        }
+        else
+        {
+            var model = await _viewService.SelectModel<AnimeModel>(filtered);
+            return model.Id;
+        }
+    }
 }

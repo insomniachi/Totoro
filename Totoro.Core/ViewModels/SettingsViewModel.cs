@@ -20,8 +20,9 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public bool AutoUpdate { get; set; }
     [Reactive] public ListServiceType? DefaultListService { get; set; }
     public Version Version { get; }
+    public Version ScrapperVersion { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen };
+    public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen, ProviderType.Tenshi };
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public ICommand AuthenticateCommand { get; }
@@ -32,6 +33,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
                              IDiscordRichPresense dRpc)
     {
         Version = Assembly.GetEntryAssembly().GetName().Version;
+        ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly.GetName().Version;
 
         ElementTheme = themeSelectorService.Theme;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
@@ -108,5 +110,6 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     }
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();
+    public string GetDescripton() => $"Client - {Version} | Scrapper - {ScrapperVersion}";
 
 }

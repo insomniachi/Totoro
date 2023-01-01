@@ -155,7 +155,10 @@
                     OffContent="Off"
                     OnContent="On" />
             </labs:SettingsCard>
-            <labs:SettingsCard Description="{x:Bind ViewModel.Version}" Header="Totoro">
+            <labs:SettingsCard
+                Description="{x:Bind ViewModel.GetDescripton()}"
+                Header="Totoro"
+                IsClickEnabled="True">
                 <labs:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xe756;" />
                 </labs:SettingsCard.HeaderIcon>
