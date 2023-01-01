@@ -26,11 +26,13 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public ICommand AuthenticateCommand { get; }
+    public ICommand ShowAbout { get; }
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService,
                              ILocalSettingsService localSettingsService,
                              IViewService viewService,
-                             IDiscordRichPresense dRpc)
+                             IDiscordRichPresense dRpc,
+                             IUpdateService updateService)
     {
         Version = Assembly.GetEntryAssembly().GetName().Version;
         ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly.GetName().Version;
@@ -55,6 +57,15 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         }
 
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
+        ShowAbout = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var currentInfo = await updateService.GetCurrentVersionInfo();
+            if(currentInfo is null)
+            {
+                return;
+            }    
+            await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
+        });
 
         if (UseDiscordRichPresense && !dRpc.IsInitialized)
         {

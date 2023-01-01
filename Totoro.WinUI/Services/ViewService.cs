@@ -1,4 +1,5 @@
 ﻿using AnimDL.Core.Api;
+using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
@@ -176,5 +177,21 @@ public class ViewService : IViewService
 
         var result = await dialog.ShowAsync();
         return result == ContentDialogResult.Primary;
+    }
+
+    public async Task<Unit> Information(string title, string message)
+    {
+        var dialog = new ContentDialog()
+        {
+            Title = title,
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            DefaultButton = ContentDialogButton.Primary,
+            Content = new MarkdownTextBlock() { Text = message, TextWrapping = TextWrapping.WrapWholeWords, Padding = new Thickness(10)},
+            PrimaryButtonText = "Yes",
+        };
+
+        var result = await dialog.ShowAsync();
+        return Unit.Default;
     }
 }

@@ -5,10 +5,13 @@ using Splat;
 
 namespace Totoro.Core.Services;
 
-public class WindowsUpdateService : IUpdateService, IEnableLogger
+public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogger
 {
     private readonly IObservable<VersionInfo> _onUpdate;
     private readonly string _updateFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "ApplicationData", "Updates");
+    private readonly HttpClient _httpClient;
+    private VersionInfo _current;
+
     public IObservable<VersionInfo> OnUpdateAvailable => _onUpdate;
 
     public WindowsUpdateService(HttpClient httpClient)
@@ -21,15 +24,34 @@ public class WindowsUpdateService : IUpdateService, IEnableLogger
             .Select(jsonNode => new VersionInfo()
             {
                 Version = new Version(jsonNode["tag_name"].ToString()),
-                Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue()
+                Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue(),
+                Body = jsonNode?["body"]?.ToString()
             })
-#if !DEBUG
             .Where(vi => vi.Version > Assembly.GetEntryAssembly().GetName().Version)
-#else
-            .Where(vi => false)
-#endif
             .Log(this, "New Version", vi => vi.Version.ToString())
             .Throttle(TimeSpan.FromSeconds(3));
+        _httpClient = httpClient;
+    }
+
+    public async ValueTask<VersionInfo> GetCurrentVersionInfo()
+    {
+        if(_current is null)
+        {
+            var url = $"https://api.github.com/repositories/522584084/releases/tags/{Assembly.GetEntryAssembly().GetName().Version}";
+            var response = await _httpClient.GetAsync(url);
+
+            if(response.IsSuccessStatusCode)
+            {
+                var jsonNode = JsonNode.Parse(await response.Content.ReadAsStreamAsync());
+                _current = new VersionInfo()
+                {
+                    Version = new Version(jsonNode["tag_name"].ToString()),
+                    Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue(),
+                    Body = jsonNode?["body"]?.ToString()
+                };
+            }
+        }
+        return _current;
     }
 
     public async Task<VersionInfo> DownloadUpdate(VersionInfo versionInfo)

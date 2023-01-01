@@ -9,4 +9,5 @@ public interface IViewService
     Task<T> SelectModel<T>(IEnumerable<object> models) where T : class;
     Task SubmitTimeStamp(long malId, int ep, VideoStream stream, double duration, double introStart);
     Task<bool> Question(string title, string message);
+    Task<Unit> Information(string title, string message);
 }
