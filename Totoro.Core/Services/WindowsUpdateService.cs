@@ -37,7 +37,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
     {
         if(_current is null)
         {
-            var url = $"https://api.github.com/repositories/522584084/releases/tags/{Assembly.GetEntryAssembly().GetName().Version}";
+            var url = $"https://api.github.com/repositories/522584084/releases/tags/{Assembly.GetEntryAssembly().GetName().Version.ToString(3)}";
             var response = await _httpClient.GetAsync(url);
 
             if(response.IsSuccessStatusCode)
@@ -74,7 +74,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             return versionInfo;
         }
 
-        this.Log().Info($"Current version : {Assembly.GetEntryAssembly().GetName().Version}");
+        this.Log().Info($"Current version : {Assembly.GetEntryAssembly().GetName().Version.ToString(3)}");
         this.Log().Info($"downloading update {versionInfo.Version}");
 
         using var client = new HttpClient();

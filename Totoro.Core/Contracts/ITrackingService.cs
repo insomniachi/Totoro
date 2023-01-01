@@ -18,4 +18,5 @@ public interface ITrackingServiceContext
     IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime();
     void SetAccessToken(string token, ListServiceType type);
     bool IsAuthenticated { get; }
+    bool IsTrackerAuthenticated(ListServiceType type);
 }

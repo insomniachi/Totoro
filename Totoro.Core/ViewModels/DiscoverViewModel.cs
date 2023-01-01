@@ -1,27 +1,20 @@
 ﻿namespace Totoro.Core.ViewModels;
 
-public class DiscoverViewModel : NavigatableViewModel, IHaveState
+public class DiscoverViewModel : NavigatableViewModel
 {
     private readonly INavigationService _navigationService;
-    private readonly ITrackingService _trackingService;
-    private readonly ISchedulerProvider _schedulerProvider;
     private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Url);
     private readonly SourceCache<SearchResult, string> _animeSearchResultCache = new(x => x.Url);
     private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
     private readonly ReadOnlyObservableCollection<SearchResult> _animeSearchResults;
     private readonly IProvider _provider;
-    private List<AnimeModel> _userAnime = new();
 
     public DiscoverViewModel(IProviderFactory providerFacotory,
                              ISettings settings,
-                             INavigationService navigationService,
-                             ITrackingService trackingService,
-                             ISchedulerProvider schedulerProvider)
+                             INavigationService navigationService)
     {
         _provider = providerFacotory.GetProvider(settings.DefaultProviderType);
         _navigationService = navigationService;
-        _trackingService = trackingService;
-        _schedulerProvider = schedulerProvider;
 
         _episodesCache
             .Connect()
@@ -44,7 +37,6 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
             .DisposeWith(Garbage);
 
         CardWidth = settings.DefaultProviderType == ProviderType.AnimePahe ? 480 : 190; // animepahe image is thumbnail
-        ShowOnlyWatchingAnime = IsAuthenticated = trackingService.IsAuthenticated;
         DontUseImageEx = settings.DefaultProviderType == ProviderType.Yugen; // using imagex for yugen is crashing
 
         SelectEpisode = ReactiveCommand.CreateFromTask<AiredEpisode>(OnEpisodeSelected);
@@ -83,31 +75,6 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
     public ICommand SelectFeaturedAnime { get; }
     public ICommand LoadMore { get; }
     public ICommand SelectSearchResult { get; }
-
-    public void RestoreState(IState state)
-    {
-        ShowOnlyWatchingAnime = state.GetValue<bool>(nameof(ShowOnlyWatchingAnime));
-        _userAnime = state.GetValue<List<AnimeModel>>("UserAnime");
-    }
-
-    public Task SetInitialState()
-    {
-        _trackingService
-            .GetAnime()
-            .Do(_userAnime.AddRange)
-            .ObserveOn(_schedulerProvider.MainThreadScheduler)
-            .Do(_ => _episodesCache.Refresh())
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError)
-            .DisposeWith(Garbage);
-
-        return Task.CompletedTask;
-    }
-
-    public void StoreState(IState state)
-    {
-        state.AddOrUpdate(ShowOnlyWatchingAnime);
-        state.AddOrUpdate(_userAnime, "UserAnime");
-    }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.Json.Serialization;
 using Splat;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -19,6 +20,10 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     [Reactive] public LogLevel MinimumLogLevel { get; set; }
     [Reactive] public bool AutoUpdate { get; set; }
     [Reactive] public ListServiceType? DefaultListService { get; set; }
+
+    [Reactive,JsonIgnore] public bool IsMalConnected { get; set; }
+    [Reactive,JsonIgnore] public bool IsAniListConnected { get; set; }
+
     public Version Version { get; }
     public Version ScrapperVersion { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
@@ -36,6 +41,16 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
     {
         Version = Assembly.GetEntryAssembly().GetName().Version;
         ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly.GetName().Version;
+
+        if(localSettingsService.ContainsKey("MalToken"))
+        {
+            IsMalConnected = true;
+        }
+        if(localSettingsService.ContainsKey("AniListToken"))
+        {
+            IsAniListConnected = true;
+        }
+
 
         ElementTheme = themeSelectorService.Theme;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
@@ -75,6 +90,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
 
         Changed
             .Select(x => GetType().GetProperty(x.PropertyName))
+            .Where(x => x.GetCustomAttribute<JsonIgnoreAttribute>() is null)
             .Subscribe(propInfo =>
             {
                 var value = propInfo.GetValue(this);

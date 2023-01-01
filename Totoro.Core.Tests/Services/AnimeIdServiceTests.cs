@@ -23,7 +23,7 @@ public class AnimeIdServiceTests
             AniList = 12189,
             Kitsu = 6686
         };
-        var service = new AnimeIdService(_httpClient);
+        var service = new AnimeIdService(_httpClient, Mock.Of<ISettings>());
 
         // act
         try

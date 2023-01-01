@@ -31,6 +31,8 @@ public class TrackingServiceContext : ITrackingServiceContext
         }
     }
 
+    public bool IsTrackerAuthenticated(ListServiceType type) => _trackers[type].IsAuthenticated;
+
     public IObservable<ListServiceType> Authenticated => _authenticatedSubject;
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()

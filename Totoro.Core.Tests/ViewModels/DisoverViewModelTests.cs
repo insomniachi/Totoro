@@ -29,7 +29,6 @@ public class DisoverViewModelTests
         var vm = vmBuilder.Build();
 
         await vm.OnNavigatedTo(parameters: new Dictionary<string, object>());
-        await vm.SetInitialState();
 
         Assert.Equal(3, vm.Episodes.Count);
     }
