@@ -22,8 +22,8 @@ public class CustomMediaTransportControls : MediaTransportControls
     public static readonly DependencyProperty QualitiesProperty =
         DependencyProperty.Register("Qualities", typeof(IEnumerable<string>), typeof(CustomMediaTransportControls), new PropertyMetadata(null, OnQualitiesChanged));
 
-    public static readonly DependencyProperty IsSkipIntroButtonVisibleProperty =
-        DependencyProperty.Register("IsSkipIntroButtonVisible", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false, OnSkipIntroVisibleChanged));
+    public static readonly DependencyProperty IsSkipButtonVisibleProperty =
+        DependencyProperty.Register("IsSkipButtonVisible", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false, OnSkipIntroVisibleChanged));
 
     private static void OnSkipIntroVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -70,17 +70,17 @@ public class CustomMediaTransportControls : MediaTransportControls
         set { SetValue(QualitiesProperty, value); }
     }
 
-    public bool IsSkipIntroButtonVisible
+    public bool IsSkipButtonVisible
     {
-        get { return (bool)GetValue(IsSkipIntroButtonVisibleProperty); }
-        set { SetValue(IsSkipIntroButtonVisibleProperty, value); }
+        get { return (bool)GetValue(IsSkipButtonVisibleProperty); }
+        set { SetValue(IsSkipButtonVisibleProperty, value); }
     }
 
     public IObservable<Unit> OnNextTrack => _onNextTrack;
     public IObservable<Unit> OnPrevTrack => _onPrevTrack;
     public IObservable<Unit> OnSkipIntro => _onSkipIntro;
     public IObservable<string> OnQualityChanged => _onQualityChanged;
-    public IObservable<Unit> OnDynamicSkipIntro => _onDynamicSkipIntro;
+    public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
 
     public CustomMediaTransportControls()

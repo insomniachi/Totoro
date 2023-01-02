@@ -5,15 +5,19 @@ namespace Totoro.Core.Services;
 public class TimestampsService : ITimestampsService, IEnableLogger
 {
     private readonly ISettings _settings;
+    private readonly IAnimeIdService _animeIdService;
     private readonly HttpClient _httpClient = new();
 
-    public TimestampsService(ISettings settings)
+    public TimestampsService(ISettings settings,
+                             IAnimeIdService animeIdService)
     {
         _settings = settings;
+        _animeIdService = animeIdService;
     }
 
-    public async Task<AniSkipResult> GetTimeStamps(long malId, int ep, double duration)
+    public async Task<AniSkipResult> GetTimeStamps(long id, int ep, double duration)
     {
+        var malId = GetMalId(id);
         var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}";
         this.Log().Debug("Requesting timestamps : {0}", url);
         var response = await _httpClient.GetAsync(url);
@@ -31,8 +35,9 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         return result;
     }
 
-    public async Task SubmitTimeStamp(long malId, int ep, string skipType, Interval interval, double episodeLength)
+    public async Task SubmitTimeStamp(long id, int ep, string skipType, Interval interval, double episodeLength)
     {
+        var malId = GetMalId(id);
         var postData = new Dictionary<string, string>()
         {
             ["skipType"] = skipType,
@@ -53,6 +58,18 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         request.Content = content;
         var response = await _httpClient.SendAsync(request);
         this.Log().Info("Submitted : {0}", response.IsSuccessStatusCode);
+    }
+
+    private async ValueTask<long> GetMalId(long id)
+    {
+        if (_settings.DefaultListService == ListServiceType.MyAnimeList)
+        {
+            return id;
+        }
+        else
+        {
+            return (await _animeIdService.GetId(id)).MyAnimeList;
+        }
     }
 }
 

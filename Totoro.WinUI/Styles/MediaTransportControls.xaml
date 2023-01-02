@@ -76,11 +76,12 @@
                         <Button
                             x:Name="DynamicSkipIntroButton"
                             Height="50"
+                            Width="150"
                             Margin="0,20"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             VerticalContentAlignment="Center"
-                            Content="Skip Intro"
+                            Content="Skip"
                             FontSize="20"
                             FontWeight="Bold"
                             Foreground="White"

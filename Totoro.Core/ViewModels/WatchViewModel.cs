@@ -6,7 +6,7 @@ using Totoro.Core.Helpers;
 
 namespace Totoro.Core.ViewModels;
 
-public partial class WatchViewModel : NavigatableViewModel, IHaveState
+public partial class WatchViewModel : NavigatableViewModel
 {
     private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
@@ -55,7 +55,17 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds));
         }, outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
-        SkipOpeningDynamic = ReactiveCommand.Create(() => MediaPlayer.Seek(IntroEndPosition), this.WhenAnyValue(x => x.IntroEndPosition).Select(x => x.TotalSeconds > 0), RxApp.MainThreadScheduler);
+        SkipDynamic = ReactiveCommand.Create(() =>
+        {
+            if(EndingTimeStamp is not null && CurrentPlayerTime > EndingTimeStamp.Interval.StartTime)
+            {
+                MediaPlayer.Seek(TimeSpan.FromSeconds(EndingTimeStamp.Interval.EndTime));
+            }
+            else if(OpeningTimeStamp is not null && CurrentPlayerTime > OpeningTimeStamp.Interval.StartTime)
+            {
+                MediaPlayer.Seek(TimeSpan.FromSeconds(OpeningTimeStamp.Interval.EndTime));
+            }
+        });
         SubmitTimeStamp = ReactiveCommand.Create(OnSubmitTimeStamps);
 
         var episodeChanged = this.ObservableForProperty(x => x.CurrentEpisode, x => x)
@@ -91,7 +101,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
 
         // if we actualy know when episode ends, update tracking then.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(x => OutroPosition > 0 && x >= OutroPosition && Anime is not null && (Anime.Tracking?.WatchedEpisodes ?? 1) < CurrentEpisode)
+            .Where(_ => Anime is not null && EndingTimeStamp is not null)
+            .Where(x => x >= EndingTimeStamp.Interval.StartTime  && (Anime.Tracking?.WatchedEpisodes ?? 1) < CurrentEpisode)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(_ => UpdateTracking())
             .Subscribe();
@@ -99,7 +110,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         /// if we have less than configured seconds left and we have not completed this episode
         /// set this episode as watched.
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(_ => Anime is not null && OutroPosition <= 0)
+            .Where(_ => Anime is not null && EndingTimeStamp is null)
             .Where(_ => (Anime.Tracking?.WatchedEpisodes ?? 0) < CurrentEpisode)
             .Where(x => CurrentMediaDuration - x <= settings.TimeRemainingWhenEpisodeCompletesInSeconds)
             .ObserveOn(RxApp.TaskpoolScheduler)
@@ -196,11 +207,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
             .Subscribe();
 
-        SkipButtonVisibleTrigger().Merge(SkipButtonHideTrigger())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.IsSkipIntroButtonVisible, deferSubscription: true)
-            .DisposeWith(Garbage);
-
         MediaPlayer
             .PositionChanged
             .Select(ts => ts.TotalSeconds)
@@ -221,50 +227,46 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             .ToPropertyEx(this, x => x.AniSkipResult, true);
 
         this.WhenAnyValue(x => x.AniSkipResult)
-            .WhereNotNull()
-            .Select(x => x.Items?.FirstOrDefault(x => x.SkipType == "op"))
-            .Select(x => x?.Interval?.StartTime ?? 0)
-            .ToPropertyEx(this, x => x.IntroPosition, true);
-
-        this.WhenAnyValue(x => x.AniSkipResult)
-            .WhereNotNull()
-            .Select(x => x.Items?.FirstOrDefault(x => x.SkipType == "op"))
-            .Select(x => TimeSpan.FromSeconds(x?.Interval?.EndTime ?? 0))
-            .ToPropertyEx(this, x => x.IntroEndPosition, true);
-
-        this.WhenAnyValue(x => x.AniSkipResult)
-            .WhereNotNull()
-            .Select(x => x.Items?.FirstOrDefault(x => x.SkipType == "ed"))
-            .Select(x => x?.Interval?.StartTime ?? 0)
-            .ToPropertyEx(this, x => x.OutroPosition, true);
+            .Where(x => x is { Success: true })
+            .Subscribe(x =>
+            {
+                OpeningTimeStamp = x.Opening;
+                EndingTimeStamp = x.Ending;
+            });
 
         this.WhenAnyValue(x => x.Qualities)
             .Where(Enumerable.Any)
             .Select(GetDefaultQuality)
             .Log(this, "Selected Quality")
             .InvokeCommand(ChangeQuality);
+
+        this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
+            .Where(_ => AniSkipResult is { Success: true })
+            .Select(IsPlayingOpeningOrEnding)
+            .DistinctUntilChanged()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToPropertyEx(this, x => x.IsSkipButtonVisible, deferSubscription: true);
+
     }
 
     [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
     [Reactive] public int? CurrentEpisode { get; set; }
-    [Reactive] public bool HideControls { get; set; } = true;
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public (SearchResult Sub, SearchResult Dub) SelectedAnimeResult { get; set; }
     [Reactive] public SearchResult SelectedAudio { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
     [Reactive] public bool UseLocalMedia { get; set; }
     [ObservableAsProperty] public bool IsFullWindow { get; }
-    [ObservableAsProperty] public bool IsSkipIntroButtonVisible { get; }
+    [ObservableAsProperty] public bool IsSkipButtonVisible { get; }
     [ObservableAsProperty] public IProvider Provider { get; }
     [ObservableAsProperty] public bool HasSubAndDub { get; }
     [ObservableAsProperty] public double CurrentPlayerTime { get; }
     [ObservableAsProperty] public double CurrentMediaDuration { get; }
-    [ObservableAsProperty] public double IntroPosition { get; }
-    [ObservableAsProperty] public double OutroPosition { get; }
-    [ObservableAsProperty] public TimeSpan IntroEndPosition { get; }
     [ObservableAsProperty] public VideoStreamsForEpisode Streams { get; }
     [ObservableAsProperty] public IEnumerable<string> Qualities { get; }
     [ObservableAsProperty] public AniSkipResult AniSkipResult { get; }
+    public AniSkipResultItem OpeningTimeStamp { get; set; }
+    public AniSkipResultItem EndingTimeStamp { get; set; }
 
     private IAnimeModel _anime;
     public IAnimeModel Anime
@@ -273,7 +275,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         set => this.RaiseAndSetIfChanged(ref _anime, value);
     }
 
-    public List<ProviderType> Providers { get; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
@@ -281,7 +282,7 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
     public ICommand NextEpisode { get; }
     public ICommand PrevEpisode { get; }
     public ICommand SkipOpening { get; }
-    public ICommand SkipOpeningDynamic { get; }
+    public ICommand SkipDynamic { get; }
     public ICommand ChangeQuality { get; }
     public ICommand SubmitTimeStamp { get; }
 
@@ -314,10 +315,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             await TrySetAnime(searchResult.Url, searchResult.Title);
             SelectedAudio = searchResult;
         }
-        else
-        {
-            HideControls = false;
-        }
     }
 
     public override Task OnNavigatedFrom()
@@ -340,30 +337,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             return await malCatalog.SearchByMalId(id);
         }
         return await _streamPageMapper.GetStreamPage(id, _settings.DefaultProviderType) ?? await SearchProvider(title);
-    }
-
-    public Task SetInitialState()
-    {
-        return Task.CompletedTask;
-    }
-
-    public void StoreState(IState state)
-    {
-        state.AddOrUpdate(HideControls);
-
-        if (Anime is not null)
-        {
-            state.AddOrUpdate(Anime);
-        }
-    }
-
-    public void RestoreState(IState state)
-    {
-        //if (state.GetValue<IAnimeModel>(nameof(Anime)) is IAnimeModel model)
-        //{
-        //    Anime ??= model;
-        //    HideControls = true;
-        //}
     }
 
     private void SubscribeToMediaPlayerEvents()
@@ -449,22 +422,6 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         action();
     }
 
-    private IObservable<bool> SkipButtonVisibleTrigger()
-    {
-        return this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-                   .Where(_ => !IsSkipIntroButtonVisible && IntroPosition > 0)
-                   .Where(x => x >= IntroPosition && x <= IntroEndPosition.TotalSeconds)
-                   .Select(_ => true);
-    }
-
-    private IObservable<bool> SkipButtonHideTrigger()
-    {
-        return this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-                   .Where(_ => IsSkipIntroButtonVisible && IntroEndPosition.TotalSeconds > 0)
-                   .Where(x => x >= IntroEndPosition.TotalSeconds || x <= IntroPosition)
-                   .Select(_ => false);
-    }
-
     private IObservable<bool> HasNextEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.LastOrDefault());
     private IObservable<bool> HasPrevEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.FirstOrDefault());
 
@@ -496,8 +453,8 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
         }
         else
         {
-            var suggested = results.MaxBy(x => FuzzySharp.Fuzz.PartialRatio(x.Title, title));
-            this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {FuzzySharp.Fuzz.PartialRatio(suggested.Title, title)}");
+            var suggested = results.MaxBy(x => Fuzz.PartialRatio(x.Title, title));
+            this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {Fuzz.PartialRatio(suggested.Title, title)}");
             return (await _viewService.ChoooseSearchResult(suggested, results, SelectedProviderType), null);
         }
     }
@@ -543,5 +500,12 @@ public partial class WatchViewModel : NavigatableViewModel, IHaveState
             var model = await _viewService.SelectModel<AnimeModel>(filtered);
             return model.Id;
         }
+    }
+    private bool IsPlayingOpeningOrEnding(double currentTime)
+    {
+        var isOpening = OpeningTimeStamp is not null && currentTime > OpeningTimeStamp.Interval.StartTime && currentTime < OpeningTimeStamp.Interval.EndTime;
+        var isEnding = EndingTimeStamp is not null && currentTime > EndingTimeStamp.Interval.StartTime && currentTime < EndingTimeStamp.Interval.EndTime;
+
+        return isOpening || isEnding;   
     }
 }

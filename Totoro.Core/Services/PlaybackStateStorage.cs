@@ -1,6 +1,8 @@
-﻿namespace Totoro.Core.Services;
+﻿using Splat;
 
-public class PlaybackStateStorage : IPlaybackStateStorage
+namespace Totoro.Core.Services;
+
+public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
 {
     private readonly Dictionary<long, Dictionary<int, double>> _recents;
     private readonly ILocalSettingsService _localSettingsService;
@@ -49,6 +51,7 @@ public class PlaybackStateStorage : IPlaybackStateStorage
     public void StoreState()
     {
         _localSettingsService.SaveSetting("Recents", _recents);
+        this.Log().Info("Saved playback state");
     }
 
     public void Update(long id, int episode, double time)

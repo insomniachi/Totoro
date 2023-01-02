@@ -385,65 +385,6 @@ public class WatchViewModelTests
     }
 
     [Fact]
-    public void WatchViewModel_HasSearchBoxWhenNavigatedWithoutAnime()
-    {
-        // arrange
-        var vm = BaseViewModel(Mock.Of<IProvider>()).Bulid();
-
-        // act
-        vm.OnNavigatedTo(new Dictionary<string, object>()).Wait();
-
-        Assert.False(vm.HideControls);
-    }
-
-    [Fact]
-    public void WatchViewModel_HidesSearchBoxWhenNavigatedWithAnime()
-    {
-        // arrange
-        AnimeModel animeModel = new()
-        {
-            Id = 12189,
-            Title = "Hyouka",
-            TotalEpisodes = 24,
-            Tracking = new Tracking
-            {
-                WatchedEpisodes = 10
-            }
-        };
-        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
-        var vm1 = BaseViewModel(provider).Bulid();
-        var vm2 = BaseViewModel(provider)
-            .WithAnimeService(x =>
-            {
-                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Return(animeModel));
-            })
-            .Bulid();
-        var vm3 = BaseViewModel(provider)
-            .WithAnimeService(x =>
-            {
-                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Return(animeModel));
-            })
-            .Bulid();
-
-        // act
-        vm1.OnNavigatedTo(new Dictionary<string, object> { ["Anime"] = animeModel }).Wait();
-        vm2.OnNavigatedTo(new Dictionary<string, object>
-        {
-            ["EpisodeInfo"] = new TestAiredEpisode
-            {
-                Title = animeModel.Title,
-                Url = "https://animixplay.to/v1/hyouka",
-            }
-        }).Wait();
-        vm3.OnNavigatedTo(new Dictionary<string, object> { ["Id"] = animeModel.Id }).Wait();
-
-        // assert
-        Assert.True(vm1.HideControls);
-        Assert.True(vm2.HideControls);
-        Assert.True(vm3.HideControls);
-    }
-
-    [Fact]
     public void WatchViewModel_ClickingNext_AfterTrackingAlreadyUpdated()
     {
         // arrange

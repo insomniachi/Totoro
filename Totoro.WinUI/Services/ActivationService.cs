@@ -1,10 +1,11 @@
 ﻿using MalApi.Interfaces;
 using Microsoft.UI.Xaml;
+using Splat;
 using Totoro.WinUI.Activation;
 
 namespace Totoro.WinUI.Services;
 
-public class ActivationService : IActivationService
+public class ActivationService : IActivationService, IEnableLogger
 {
     private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
@@ -50,6 +51,7 @@ public class ActivationService : IActivationService
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        this.Log().Info("Closing MainWindow");
         if (!string.IsNullOrEmpty(_prevWebviewFolder) && _prevWebviewFolder != _tempPath)
         {
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _prevWebviewFolder);

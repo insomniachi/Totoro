@@ -11,15 +11,6 @@
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
 
-    <local:WatchPageBase.Resources>
-        <DataTemplate x:Key="EpisodeUpdateTemplate" x:DataType="viewmodels:WatchViewModel">
-            <TextBlock>
-                <Run Text="Updating progress to Episode " />
-                <Run Text="{x:Bind CurrentEpisode}" />
-            </TextBlock>
-        </DataTemplate>
-    </local:WatchPageBase.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -38,9 +29,9 @@
                     IsPreviousTrackButtonVisible="True"
                     IsSkipBackwardButtonVisible="True"
                     IsSkipBackwardEnabled="True"
+                    IsSkipButtonVisible="{x:Bind ViewModel.IsSkipButtonVisible, Mode=OneWay}"
                     IsSkipForwardButtonVisible="True"
                     IsSkipForwardEnabled="True"
-                    IsSkipIntroButtonVisible="{x:Bind ViewModel.IsSkipIntroButtonVisible, Mode=OneWay}"
                     Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>

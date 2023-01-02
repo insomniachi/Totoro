@@ -10,6 +10,9 @@ public class AniSkipResult
 
     [JsonPropertyName("results")]
     public AniSkipResultItem[] Items { get; set; }
+
+    public AniSkipResultItem Opening => Items.FirstOrDefault(x => x.SkipType == "op");
+    public AniSkipResultItem Ending => Items.FirstOrDefault(x => x.SkipType == "ed");
 }
 
 public class AniSkipResultItem
