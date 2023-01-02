@@ -54,7 +54,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
 
         ElementTheme = themeSelectorService.Theme;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
-        DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.GogoAnime);
+        DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.AllAnime);
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);
