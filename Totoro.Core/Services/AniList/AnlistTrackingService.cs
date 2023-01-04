@@ -32,91 +32,112 @@ public class AniListTrackingService : ITrackingService
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        if(IsAuthenticated)
         {
-            var userId = await GetUserId();
-
-            var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+            return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
-                Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime, status: MediaListStatus.Current).Build(),
+                var userId = await GetUserId();
+
+                var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+                {
+                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime, status: MediaListStatus.Current).Build(),
+                });
+
+                observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
+
+                response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+                {
+                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime).Build(),
+                });
+
+                observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
+
+                observer.OnCompleted();
             });
-
-            observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
-
-            response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-            {
-                Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime).Build(),
-            });
-
-            observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
-
-            observer.OnCompleted();
-        });
+        }
+        else
+        {
+            return Observable.Empty<IEnumerable<AnimeModel>>();
+        }
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
     {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        if (IsAuthenticated)
         {
-            var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+            return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
-                Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(),
-                    userId: await GetUserId(),
-                    type: MediaType.Anime,
-                    status: MediaListStatus.Current)
-                .Build(),
+                var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+                {
+                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(),
+                        userId: await GetUserId(),
+                        type: MediaType.Anime,
+                        status: MediaListStatus.Current)
+                    .Build(),
+                });
+
+                observer.OnNext(response.Data.MediaListCollection.Lists.ElementAt(0).Entries.Select(x => x.Media).Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
+
+                observer.OnCompleted();
             });
-
-            observer.OnNext(response.Data.MediaListCollection.Lists.ElementAt(0).Entries.Select(x => x.Media).Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
-
-            observer.OnCompleted();
-        });
+        }
+        else
+        {
+            return Observable.Empty<IEnumerable<AnimeModel>>();
+        }
     }
 
     public IObservable<Tracking> Update(long id, Tracking tracking)
     {
-        return Observable.Create<Tracking>(async observer =>
+        if (IsAuthenticated)
         {
-            var mediaListEntryBuilder = new MediaListQueryBuilder();
+            return Observable.Create<Tracking>(async observer =>
+            {
+                var mediaListEntryBuilder = new MediaListQueryBuilder();
 
-            if (tracking.Status is AnimeStatus status)
-            {
-                mediaListEntryBuilder.WithStatus();
-            }
-            if (tracking.StartDate is DateTime)
-            {
-                mediaListEntryBuilder.WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields());
-            }
-            if (tracking.FinishDate is DateTime)
-            {
-                mediaListEntryBuilder.WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields());
-            }
-            if (tracking.Score is int)
-            {
-                mediaListEntryBuilder.WithScore();
-            }
-            if (tracking.WatchedEpisodes is int)
-            {
-                mediaListEntryBuilder.WithProgress();
-            }
+                if (tracking.Status is AnimeStatus status)
+                {
+                    mediaListEntryBuilder.WithStatus();
+                }
+                if (tracking.StartDate is DateTime)
+                {
+                    mediaListEntryBuilder.WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields());
+                }
+                if (tracking.FinishDate is DateTime)
+                {
+                    mediaListEntryBuilder.WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields());
+                }
+                if (tracking.Score is int)
+                {
+                    mediaListEntryBuilder.WithScore();
+                }
+                if (tracking.WatchedEpisodes is int)
+                {
+                    mediaListEntryBuilder.WithProgress();
+                }
 
-            var query = new MutationQueryBuilder()
-                .WithSaveMediaListEntry(mediaListEntryBuilder,
-                    status: ConvertListStatus(tracking.Status),
-                    startedAt: ConvertDate(tracking.StartDate),
-                    completedAt: ConvertDate(tracking.FinishDate),
-                    scoreRaw: tracking.Score * 100,
-                    progress: tracking.WatchedEpisodes,
-                    mediaId: (int)id)
-                .Build();
+                var query = new MutationQueryBuilder()
+                    .WithSaveMediaListEntry(mediaListEntryBuilder,
+                        status: ConvertListStatus(tracking.Status),
+                        startedAt: ConvertDate(tracking.StartDate),
+                        completedAt: ConvertDate(tracking.FinishDate),
+                        scoreRaw: tracking.Score * 100,
+                        progress: tracking.WatchedEpisodes,
+                        mediaId: (int)id)
+                    .Build();
 
-            var response = await _anilistClient.SendMutationAsync<Mutation>(new GraphQL.GraphQLRequest
-            {
-                Query = query
+                var response = await _anilistClient.SendMutationAsync<Mutation>(new GraphQL.GraphQLRequest
+                {
+                    Query = query
+                });
+
+                observer.OnNext(ConvertTracking(response.Data.SaveMediaListEntry));
             });
-
-            observer.OnNext(ConvertTracking(response.Data.SaveMediaListEntry));
-        });
+        }
+        else
+        {
+            return Observable.Return(tracking);
+        }
     }
 
     private static bool CurrentlyAiringOrFinishedToday(Media media)
