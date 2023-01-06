@@ -2,8 +2,12 @@
 
 public class UpdateAnimeStatusViewModel : ReactiveObject
 {
-    public UpdateAnimeStatusViewModel()
+    private readonly ITrackingServiceContext _trackingService;
+
+    public UpdateAnimeStatusViewModel(ITrackingServiceContext trackingService)
     {
+        _trackingService = trackingService;
+
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
             .Subscribe(x => TotalEpisodes = x.TotalEpisodes == 0 ? double.MaxValue : x.TotalEpisodes.Value);
@@ -34,7 +38,39 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
             .Where(_ => Anime is not null)
             .Where(x => x == Anime.TotalEpisodes)
             .Subscribe(x => Status = AnimeStatus.Completed);
+    }
 
+    public void UpdateTracking()
+    {
+        if(Anime is null)
+        {
+            return;
+        }
+
+        var tracking = new Tracking();
+
+        if (Anime.Tracking?.Status != Status)
+        {
+            tracking.Status = Status;
+        }
+        if (Score is int score && score != (Anime.Tracking?.Score ?? 0))
+        {
+            tracking.Score = score;
+        }
+        if (EpisodesWatched > 0)
+        {
+            tracking.WatchedEpisodes = (int)EpisodesWatched;
+        }
+        if (StartDate is { } sd)
+        {
+            tracking.StartDate = sd.Date;
+        }
+        if (FinishDate is { } fd)
+        {
+            tracking.FinishDate = fd.Date;
+        }
+
+        _trackingService.Update(Anime.Id, tracking).Subscribe(t => Anime.Tracking = t);
     }
 
     [Reactive] public IAnimeModel Anime { get; set; }

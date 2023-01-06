@@ -7,10 +7,10 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
     private readonly ObservableAsPropertyHelper<DayOfWeek> _filter;
-    private readonly ITrackingService _trackingService;
+    private readonly ITrackingServiceContext _trackingService;
     private readonly ISystemClock _systemClock;
 
-    public ScheduleViewModel(ITrackingService trackingService,
+    public ScheduleViewModel(ITrackingServiceContext trackingService,
                              ISystemClock systemClock)
     {
         _trackingService = trackingService;

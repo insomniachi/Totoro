@@ -10,20 +10,16 @@ namespace Totoro.WinUI.Services;
 public class ViewService : IViewService
 {
     private readonly IContentDialogService _contentDialogService;
-    private readonly ITrackingService _trackingService;
 
-    public ViewService(IContentDialogService contentDialogService,
-                       ITrackingService trackingService)
+    public ViewService(IContentDialogService contentDialogService)
     {
         _contentDialogService = contentDialogService;
-        _trackingService = trackingService;
     }
 
     public async Task<Unit> UpdateTracking(IAnimeModel a)
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
-        vm.Anime = a;
-
+        
         var result = await _contentDialogService.ShowDialog(vm, d =>
         {
             d.Title = a.Title;
@@ -34,30 +30,7 @@ public class ViewService : IViewService
 
         if (result == ContentDialogResult.Primary)
         {
-            var tracking = new Tracking();
-
-            if (a.Tracking?.Status != vm.Status)
-            {
-                tracking.Status = vm.Status;
-            }
-            if (vm.Score is int score && score != (a.Tracking?.Score ?? 0))
-            {
-                tracking.Score = score;
-            }
-            if (vm.EpisodesWatched > 0)
-            {
-                tracking.WatchedEpisodes = (int)vm.EpisodesWatched;
-            }
-            if (vm.StartDate is { } sd)
-            {
-                tracking.StartDate = sd.Date;
-            }
-            if (vm.FinishDate is { } fd)
-            {
-                tracking.FinishDate = fd.Date;
-            }
-
-            _trackingService.Update(a.Id, tracking).Subscribe(x => a.Tracking = x);
+            vm.UpdateTracking();
         }
 
         return Unit.Default;
