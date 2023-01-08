@@ -41,7 +41,7 @@
                         x:Name="AppTitleBarText"
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
                         TextWrapping="NoWrap" />
                 </Grid>
             </NavigationView.PaneHeader>

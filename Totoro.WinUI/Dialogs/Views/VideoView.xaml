@@ -11,6 +11,10 @@
         <MediaPlayerElement
             x:Name="MediaPlayerElement"
             AreTransportControlsEnabled="True"
-            AutoPlay="True" />
+            AutoPlay="True">
+            <MediaPlayerElement.TransportControls>
+                <MediaTransportControls IsCompact="True" />
+            </MediaPlayerElement.TransportControls>
+        </MediaPlayerElement>
     </Grid>
 </local:VideoViewBase>

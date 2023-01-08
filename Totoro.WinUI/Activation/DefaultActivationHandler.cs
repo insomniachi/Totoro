@@ -1,5 +1,4 @@
-﻿using MalApi;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 

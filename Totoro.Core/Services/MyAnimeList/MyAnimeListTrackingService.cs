@@ -1,12 +1,14 @@
-﻿using MalApi.Interfaces;
+﻿using System.Globalization;
+using MalApi.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Splat;
+using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
 namespace Totoro.Core.Services.MyAnimeList;
 
 public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
-    private readonly MalToModelConverter _converter;
     private static readonly string[] FieldNames = new[]
     {
         MalApi.AnimeFieldNames.Synopsis,
@@ -22,16 +24,33 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         MalApi.AnimeFieldNames.Genres,
         MalApi.AnimeFieldNames.Status,
         MalApi.AnimeFieldNames.Videos,
+        MalApi.AnimeFieldNames.EndDate,
+        MalApi.AnimeFieldNames.StartDate,
     };
 
     public bool IsAuthenticated => _client.IsAuthenticated;
+    public ListServiceType Type => ListServiceType.MyAnimeList;
 
     public MyAnimeListTrackingService(IMalClient client,
-                                      MalToModelConverter converter)
+                                      IConfiguration configuration,
+                                      ILocalSettingsService localSettingsService)
     {
         _client = client;
-        _converter = converter;
+        var token = localSettingsService.ReadSetting<MalApi.OAuthToken>("MalToken");
+        var clientId = configuration["ClientId"];
+        if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
+        {
+            token = MalApi.MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
+            localSettingsService.SaveSetting("MalToken", token);
+        }
+        if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
+        {
+            client.SetAccessToken(token.AccessToken);
+        }
+        client.SetClientId(clientId);
     }
+
+    public void SetAccessToken(string accessToken) => _client.SetAccessToken(accessToken);
 
     public IObservable<IEnumerable<AnimeModel>> GetWatchingAnime()
     {
@@ -42,40 +61,63 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             .IncludeNsfw()
             .WithFields(FieldNames)
             .Find().ToObservable()
-            .Select(paged => paged.Data)
-            .Select(ConvertToAnimeModel);
+            .Select(paged => paged.Data.Select(ConvertModel));
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
-        if(IsAuthenticated)
+        if (IsAuthenticated)
         {
             return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
-                try
+                var watching = await _client.Anime()
+                                            .OfUser()
+                                            .WithStatus(MalApi.AnimeStatus.Watching)
+                                            .IncludeNsfw()
+                                            .WithFields(FieldNames)
+                                            .Find();
+
+                observer.OnNext(watching.Data.Select(ConvertModel));
+
+                var all = await _client.Anime()
+                                       .OfUser()
+                                       .IncludeNsfw()
+                                       .WithFields(FieldNames)
+                                       .Find();
+
+                observer.OnNext(all.Data.Select(ConvertModel));
+                observer.OnCompleted();
+                return Disposable.Empty;
+            });
+        }
+        else
+        {
+            return Observable.Empty<IEnumerable<AnimeModel>>();
+        }
+    }
+
+    public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
+    {
+        if (IsAuthenticated)
+        {
+            return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+            {
+                var pagedAnime = await _client.Anime()
+                                              .OfUser()
+                                              .WithStatus(MalApi.AnimeStatus.Watching)
+                                              .IncludeNsfw()
+                                              .WithFields(FieldNames)
+                                              .Find();
+
+                observer.OnNext(pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
+
+                while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
                 {
-                    var watching = await _client.Anime()
-                                                .OfUser()
-                                                .WithStatus(MalApi.AnimeStatus.Watching)
-                                                .IncludeNsfw()
-                                                .WithFields(FieldNames)
-                                                .Find();
-
-                    observer.OnNext(ConvertToAnimeModel(watching.Data));
-
-                    var all = await _client.Anime()
-                                           .OfUser()
-                                           .IncludeNsfw()
-                                           .WithFields(FieldNames)
-                                           .Find();
-
-                    observer.OnNext(ConvertToAnimeModel(all.Data));
-                    observer.OnCompleted();
+                    pagedAnime = await _client.GetNextAnimePage(pagedAnime);
+                    observer.OnNext(pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
                 }
-                catch (Exception ex)
-                {
-                    observer.OnError(ex);
-                }
+
+                observer.OnCompleted();
 
                 return Disposable.Empty;
             });
@@ -86,48 +128,9 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         }
     }
 
-    public IObservable<IEnumerable<ScheduledAnimeModel>> GetCurrentlyAiringTrackedAnime()
-    {
-        if(IsAuthenticated)
-        {
-            return Observable.Create<IEnumerable<ScheduledAnimeModel>>(async observer =>
-            {
-                try
-                {
-                    var pagedAnime = await _client.Anime()
-                                                  .OfUser()
-                                                  .WithStatus(MalApi.AnimeStatus.Watching)
-                                                  .IncludeNsfw()
-                                                  .WithFields(FieldNames)
-                                                  .Find();
-
-                    observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
-
-                    while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
-                    {
-                        pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                        observer.OnNext(ConvertToScheduledAnimeModel(pagedAnime.Data.Where(x => x.Status == MalApi.AiringStatus.CurrentlyAiring).ToList()));
-                    }
-
-                    observer.OnCompleted();
-                }
-                catch (Exception ex)
-                {
-                    observer.OnError(ex);
-                }
-
-                return Disposable.Empty;
-            });
-        }
-        else
-        {
-            return Observable.Empty<IEnumerable<ScheduledAnimeModel>>();
-        }
-    }
-
     public IObservable<Tracking> Update(long id, Tracking tracking)
     {
-        if(!IsAuthenticated)
+        if (!IsAuthenticated)
         {
             return Observable.Return(tracking);
         }
@@ -149,12 +152,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             request.WithScore((MalApi.Score)score);
         }
 
-        if(tracking.StartDate is { } sd)
+        if (tracking.StartDate is { } sd)
         {
             request.WithStartDate(sd);
         }
 
-        if(tracking.FinishDate is { } fd)
+        if (tracking.FinishDate is { } fd)
         {
             request.WithFinishDate(fd);
         }
@@ -162,23 +165,28 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         return request
             .Publish()
             .ToObservable()
-            .Do(_ => this.Log().Debug("Tracking Updated."))
             .Select(x => new Tracking
             {
                 WatchedEpisodes = x.WatchedEpisodes,
                 Status = (AnimeStatus)(int)x.Status,
                 Score = (int)x.Score,
                 UpdatedAt = x.UpdatedAt
-            });
+            })
+            .Do(tracking => this.Log().Debug("Tracking Updated {0}.", tracking));
     }
 
-    private IEnumerable<AnimeModel> ConvertToAnimeModel(List<MalApi.Anime> anime)
+    private static bool CurrentlyAiringOrFinishedToday(MalApi.Anime anime)
     {
-        return anime.Select(x => _converter.Convert<AnimeModel>(x));
-    }
+        if (anime.Status == MalApi.AiringStatus.CurrentlyAiring)
+        {
+            return true;
+        }
 
-    private IEnumerable<ScheduledAnimeModel> ConvertToScheduledAnimeModel(List<MalApi.Anime> anime)
-    {
-        return anime.Select(x => _converter.Convert<ScheduledAnimeModel>(x) as ScheduledAnimeModel);
+        if (!DateTime.TryParseExact(anime.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+        {
+            return false;
+        }
+
+        return DateTime.Today == date;
     }
 }

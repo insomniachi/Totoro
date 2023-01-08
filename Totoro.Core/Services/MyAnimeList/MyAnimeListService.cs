@@ -5,16 +5,14 @@ namespace Totoro.Core.Services.MyAnimeList;
 public class MyAnimeListService : IAnimeService
 {
     private readonly IMalClient _client;
-    private readonly MalToModelConverter _converter;
-
-    public MyAnimeListService(IMalClient client,
-                              MalToModelConverter converter)
+    public MyAnimeListService(IMalClient client)
     {
         _client = client;
-        _converter = converter;
     }
 
-    public IObservable<FullAnimeModel> GetInformation(long id)
+    public ListServiceType Type => ListServiceType.MyAnimeList;
+
+    public IObservable<AnimeModel> GetInformation(long id)
     {
         return _client
             .Anime()
@@ -23,10 +21,10 @@ public class MyAnimeListService : IAnimeService
             .WithField(x => x.Genres).WithField(x => x.RelatedAnime)
             .Find()
             .ToObservable()
-            .Select(malModel => _converter.Convert<FullAnimeModel>(malModel) as FullAnimeModel);
+            .Select(MalToModelConverter.ConvertModel);
     }
 
-    public IObservable<IEnumerable<SearchResultModel>> GetAnime(string name)
+    public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
     {
         return _client
             .Anime()
@@ -36,12 +34,12 @@ public class MyAnimeListService : IAnimeService
             .IncludeNsfw()
             .Find()
             .ToObservable()
-            .Select(x => x.Data.Select(x => _converter.ToSearchResult(x)));
+            .Select(x => x.Data.Select(MalToModelConverter.ConvertModel));
     }
 
-    public IObservable<IEnumerable<FullAnimeModel>> GetSeasonalAnime()
+    public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
     {
-        return Observable.Create<IEnumerable<FullAnimeModel>>(async observer =>
+        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
         {
             IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
             {
@@ -61,7 +59,7 @@ public class MyAnimeListService : IAnimeService
                 foreach (var season in new[] { current, prev, next })
                 {
                     var pagedAnime = await baseRequest(season).Find();
-                    observer.OnNext(pagedAnime.Data.Select(malModel => _converter.Convert<FullAnimeModel>(malModel) as FullAnimeModel));
+                    observer.OnNext(pagedAnime.Data.Select(MalToModelConverter.ConvertModel));
                 }
 
                 observer.OnCompleted();
@@ -85,7 +83,7 @@ public class MyAnimeListService : IAnimeService
             .WithFields(_commonFields)
             .Find()
             .ToObservable()
-            .Select(x => x.Data.Select(x => _converter.Convert<ScheduledAnimeModel>(x.Anime)));
+            .Select(x => x.Data.Select(x => MalToModelConverter.ConvertModel(x.Anime)));
     }
 
     private static MalApi.Season PrevSeason()
@@ -166,6 +164,7 @@ public class MyAnimeListService : IAnimeService
         MalApi.AnimeFieldNames.StartSeason,
         MalApi.AnimeFieldNames.Genres,
         MalApi.AnimeFieldNames.Status,
-        MalApi.AnimeFieldNames.Videos
+        MalApi.AnimeFieldNames.Videos,
+        MalApi.AnimeFieldNames.StartDate
     };
 }

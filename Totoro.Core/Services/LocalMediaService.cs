@@ -32,12 +32,12 @@
         }
 
         public bool HasMedia(long id) => _idToDirLookup.TryGetValue(id, out _);
-        
+
         public IEnumerable<int> GetEpisodes(long id)
         {
             var dir = GetDirectory(id);
 
-            if(string.IsNullOrEmpty(dir))
+            if (string.IsNullOrEmpty(dir))
             {
                 return Enumerable.Empty<int>();
             }
@@ -71,7 +71,7 @@
             {
                 var result = AnitomySharp.AnitomySharp.Parse(Path.GetFileName(item));
 
-                if(result.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } epResult && int.Parse(epResult.Value) == ep)
+                if (result.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } epResult && int.Parse(epResult.Value) == ep)
                 {
                     return item;
                 }

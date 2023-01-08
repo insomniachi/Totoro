@@ -4,12 +4,12 @@ namespace Totoro.Core.ViewModels;
 
 public class SeasonalViewModel : NavigatableViewModel, IHaveState
 {
-    private readonly IAnimeService _animeService;
+    private readonly IAnimeServiceContext _animeService;
     private readonly IViewService _viewService;
-    private readonly SourceCache<SeasonalAnimeModel, long> _animeCache = new(x => x.Id);
-    private readonly ReadOnlyObservableCollection<SeasonalAnimeModel> _anime;
+    private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
+    private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
 
-    public SeasonalViewModel(IAnimeService animeService,
+    public SeasonalViewModel(IAnimeServiceContext animeService,
                              IViewService viewService,
                              INavigationService navigationService)
     {
@@ -18,14 +18,14 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
 
         SetSeasonCommand = ReactiveCommand.Create<string>(SwitchSeasonFilter);
         AddToListCommand = ReactiveCommand.CreateFromTask<AnimeModel>(AddToList);
-        ItemClickedCommand = ReactiveCommand.Create<SeasonalAnimeModel>(m => navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object> { ["Id"] = m.Id }));
+        ItemClickedCommand = ReactiveCommand.Create<AnimeModel>(m => navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object> { ["Id"] = m.Id }));
         SetSortCommand = ReactiveCommand.Create<Sort>(s => Sort = s);
 
         var sort = this.WhenAnyValue(x => x.Sort)
             .Select(sort => sort switch
             {
-                Sort.Popularity => SortExpressionComparer<SeasonalAnimeModel>.Ascending(x => x.Popularity),
-                Sort.Score => SortExpressionComparer<SeasonalAnimeModel>.Descending(x => x.MeanScore ?? 0),
+                Sort.Popularity => SortExpressionComparer<AnimeModel>.Ascending(x => x.Popularity),
+                Sort.Score => SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore ?? 0),
                 _ => throw new NotSupportedException(),
             });
 
@@ -52,7 +52,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     [Reactive] public string SearchText { get; set; }
     [Reactive] public Sort Sort { get; set; } = Sort.Popularity;
     public PagerViewModel PagerViewModel { get; } = new PagerViewModel(0, 15);
-    public ReadOnlyObservableCollection<SeasonalAnimeModel> Anime => _anime;
+    public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }
     public ICommand ItemClickedCommand { get; }
@@ -68,8 +68,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
                      {
                          _animeCache.Edit(x => x.AddOrUpdate(list));
                          IsLoading = false;
-                     })
-                     .DisposeWith(Garbage);
+                     }, RxApp.DefaultExceptionHandler.OnError);
 
         Season = Current;
 
@@ -85,7 +84,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
 
     public void RestoreState(IState state)
     {
-        var anime = state.GetValue<IEnumerable<SeasonalAnimeModel>>(nameof(Anime));
+        var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         SeasonFilter = state.GetValue<string>(nameof(SeasonFilter));
         Sort = state.GetValue<Sort>(nameof(Sort));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
@@ -103,8 +102,8 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     }
 
     private async Task AddToList(AnimeModel a) => await _viewService.UpdateTracking(a);
-    private static Func<SeasonalAnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
-    private static Func<SeasonalAnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
+    private static Func<AnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
+    private static Func<AnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
                                                                                       x.Title.ToLower().Contains(title) ||
                                                                                       (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true);
     public static Season Current => AnimeHelpers.CurrentSeason();

@@ -21,7 +21,7 @@ namespace Totoro.Core.Models
         public string Size { get; set; }
         public string Url { get; set; }
         public string Subber { get; set; }
-        public ReactiveCommand<Unit,Unit> Download { get; } = ReactiveCommand.Create<Unit, Unit>(_ => Unit.Default);
+        public ReactiveCommand<Unit, Unit> Download { get; } = ReactiveCommand.Create<Unit, Unit>(_ => Unit.Default);
     }
 
     public class ShanaProjectPage

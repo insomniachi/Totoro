@@ -1,5 +1,5 @@
-﻿using Totoro.Core.ViewModels;
-using ReactiveMarbles.ObservableEvents;
+﻿using ReactiveMarbles.ObservableEvents;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
 

@@ -76,4 +76,6 @@ public class LocalSettingsService : ILocalSettingsService
         _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
         //}
     }
+
+    public bool ContainsKey(string key) => _settings.ContainsKey(key);
 }

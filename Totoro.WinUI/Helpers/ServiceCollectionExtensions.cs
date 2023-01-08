@@ -1,12 +1,7 @@
 ﻿using System.ComponentModel;
-using MalApi;
-using MalApi.Interfaces;
-using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Totoro.Core;
 using Totoro.Core.Services;
-using Totoro.Core.Services.AnimixPlay;
-using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Activation;
@@ -78,20 +73,22 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<ITorrentsService, TorrentsService>();
         services.AddSingleton<ILocalMediaService, LocalMediaService>();
-        
+        services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
+        services.AddSingleton<IUpdateService, WindowsUpdateService>();
+        services.AddSingleton<ITrackingServiceContext, TrackingServiceContext>();
+        services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
+
         services.AddTransient<IFileService, FileService>();
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
-        services.AddTransient<MalToModelConverter>();
-        services.AddTransient<IRecentEpisodesProvider, AnimixPlayEpisodesProvider>();
-        services.AddTransient<IFeaturedAnimeProvider, AnimixPlayFeaturedAnimeProvider>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddTransient<IAnimeIdService, AnimeIdService>();
         services.AddTransient<IShanaProjectService, ShanaProjectService>();
         services.AddTransient<TotoroCommands>();
         services.AddTransient<ISystemClock, SystemClock>();
         services.AddTransient<ISchedulerProvider, SchedulerProvider>();
-        
+        services.AddTransient<IStreamPageMapper, StreamPageMapper>();
+
         services.AddMemoryCache();
         services.AddHttpClient();
 
@@ -116,8 +113,10 @@ public static class ServiceCollectionExtensions
         services.AddPage<UpdateAnimeStatusViewModel, UpdateAnimeStatusView>();
         services.AddPage<ChooseSearchResultViewModel, ChooseSearchResultView>();
         services.AddPage<AuthenticateMyAnimeListViewModel, AuthenticateMyAnimeListView>();
+        services.AddPage<AuthenticateAniListViewModel, AuthenticateAniListView>();
         services.AddPage<PlayVideoDialogViewModel, VideoView>();
         services.AddPage<SelectModelViewModel, SelectModelView>();
+        services.AddPage<SubmitTimeStampsViewModel, SubmitTimeStampsView>();
         return services;
     }
 }

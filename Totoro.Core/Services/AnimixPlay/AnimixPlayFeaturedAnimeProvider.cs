@@ -1,5 +1,6 @@
 ﻿namespace Totoro.Core.Services.AnimixPlay;
 
+[Obsolete("Animix play is dead, RIP")]
 public class AnimixPlayFeaturedAnimeProvider : IFeaturedAnimeProvider
 {
     private readonly HttpClient _httpClient;
@@ -14,7 +15,7 @@ public class AnimixPlayFeaturedAnimeProvider : IFeaturedAnimeProvider
     {
         return Observable.Create<IEnumerable<FeaturedAnime>>(async observer =>
         {
-            var response = await _httpClient.GetAsync("https://animixplay.to/assets/s/featured.json");
+            var response = await _httpClient.GetAsync("https://animixplay.to/assets/s/featuredx.json");
 
             if (!response.IsSuccessStatusCode)
             {

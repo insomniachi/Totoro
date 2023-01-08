@@ -1,10 +1,7 @@
-﻿using System.Net.Mime;
-using System.Reactive.Concurrency;
+﻿using System.Reactive.Concurrency;
 using FuzzySharp;
-using Humanizer;
 using MonoTorrent;
 using MonoTorrent.Client;
-using Totoro.Core.Contracts;
 
 namespace Totoro.Core.Services;
 
@@ -15,40 +12,40 @@ public class TorrentsService : ITorrentsService
     private readonly ILocalMediaService _localMediaService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IViewService _viewService;
-    private readonly IAnimeService _animeService;
+    private readonly IAnimeServiceContext _animeService;
     private readonly string _mediaFolder;
 
     public TorrentsService(IToastService toastService,
                            ILocalMediaService localMediaService,
                            ILocalSettingsService localSettingsService,
                            IViewService viewService,
-                           IAnimeService animeService)
+                           IAnimeServiceContext animeService)
     {
         _toastService = toastService;
         _localMediaService = localMediaService;
         _localSettingsService = localSettingsService;
         _viewService = viewService;
         _animeService = animeService;
-        _mediaFolder = _localSettingsService.ReadSetting<string>("MediaFolder", Path.Combine(_localSettingsService.ApplicationDataFolder, "Media"));
+        _mediaFolder = _localSettingsService.ReadSetting("MediaFolder", Path.Combine(_localSettingsService.ApplicationDataFolder, "Media"));
     }
 
     public async Task Download(IDownloadableContent content)
     {
         var saveDirectory = Path.Combine(_mediaFolder, content.Title);
-        
-        if(!Directory.Exists(saveDirectory))
+
+        if (!Directory.Exists(saveDirectory))
         {
             // ask for id
             var candidates = await _animeService.GetAnime(content.Title);
             var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, content.Title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(content.Title, x) > 80)).ToList();
 
-            if(filtered.Count == 1)
+            if (filtered.Count == 1)
             {
                 _localMediaService.SetId(saveDirectory, filtered.First().Id);
             }
             else
             {
-                var model = await _viewService.SelectModel<SearchResultModel>(filtered);
+                var model = await _viewService.SelectModel<AnimeModel>(filtered);
                 _localMediaService.SetId(saveDirectory, model.Id);
             }
         }

@@ -1,9 +1,8 @@
-﻿using Totoro.Core.Services;
-
-namespace Totoro.Core.Contracts
+﻿namespace Totoro.Core.Contracts
 {
     public interface ITimestampsService
     {
-        Task<AnimeTimeStamps> GetTimeStamps(long malId);
+        Task<AniSkipResult> GetTimeStamps(long id, int ep, double duration);
+        Task SubmitTimeStamp(long id, int ep, string skipType, Interval interval, double episodeLength);
     }
 }

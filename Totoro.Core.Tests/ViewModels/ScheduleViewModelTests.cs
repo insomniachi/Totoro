@@ -53,9 +53,9 @@ public class ScheduleViewModelTests
 
     [Theory]
     [InlineData(5, DayOfWeek.Tuesday)]  // No show in Monday, chose the next day
-    [InlineData(6, DayOfWeek.Tuesday)] 
-    [InlineData(7, DayOfWeek.Wednesday)] 
-    [InlineData(8, DayOfWeek.Thursday)] 
+    [InlineData(6, DayOfWeek.Tuesday)]
+    [InlineData(7, DayOfWeek.Wednesday)]
+    [InlineData(8, DayOfWeek.Thursday)]
     [InlineData(9, DayOfWeek.Tuesday)]  // No show in Friday, chose next day
     [InlineData(10, DayOfWeek.Tuesday)] // No show in Saturday, chose next day
     [InlineData(11, DayOfWeek.Tuesday)] // No show in Sunday, chose next day
@@ -66,7 +66,7 @@ public class ScheduleViewModelTests
             .WithTrackingService(mock =>
             {
                 // Same as other snapshot, but shows from sunday, and saturday are removed.
-                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<ScheduledAnimeModel[]>("CurrentlyAiringTrackedAnime2")));
+                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("CurrentlyAiringTrackedAnime2")));
             })
             .WithSystemClock(mock =>
             {
@@ -88,7 +88,7 @@ public class ScheduleViewModelTests
         var vm = new ScheduleViewModelBuilder()
             .WithTrackingService(mock =>
             {
-                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(Enumerable.Empty<ScheduledAnimeModel>()));
+                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(Enumerable.Empty<AnimeModel>()));
             })
             .Build();
 
@@ -106,7 +106,7 @@ public class ScheduleViewModelTests
         return new ScheduleViewModelBuilder()
             .WithTrackingService(mock =>
             {
-                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<ScheduledAnimeModel[]>("CurrentlyAiringTrackedAnime")));
+                mock.Setup(x => x.GetCurrentlyAiringTrackedAnime()).Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("CurrentlyAiringTrackedAnime")));
             });
     }
 }

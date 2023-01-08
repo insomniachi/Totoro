@@ -22,14 +22,14 @@ namespace Totoro.Core.ViewModels
                 .RefCount()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _searchResults)
-                .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
+                .Subscribe()
                 .DisposeWith(Garbage);
 
             this.ObservableForProperty(x => x.Term, x => x)
-                .Where(term => term is { Length: >3 })
+                .Where(term => term is { Length: > 3 })
                 .Throttle(TimeSpan.FromMilliseconds(250))
                 .ObserveOn(RxApp.TaskpoolScheduler)
-                .SelectMany(term => shanaProjectService.Search(term))
+                .SelectMany(shanaProjectService.Search)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(result => _searchResultsCache.EditDiff(result, (first, second) => first.Id == second.Id))
                 .DisposeWith(Garbage);

@@ -1,4 +1,4 @@
-﻿using AnimDL.Api;
+﻿using AnimDL.Core.Api;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;
 

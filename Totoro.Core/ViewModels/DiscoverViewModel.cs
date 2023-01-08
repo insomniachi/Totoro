@@ -1,126 +1,102 @@
-﻿using DynamicData;
-using HtmlAgilityPack;
+﻿namespace Totoro.Core.ViewModels;
 
-namespace Totoro.Core.ViewModels;
-
-public class DiscoverViewModel : NavigatableViewModel, IHaveState
+public class DiscoverViewModel : NavigatableViewModel
 {
-    private readonly IRecentEpisodesProvider _recentEpisodesProvider;
-    private readonly IFeaturedAnimeProvider _featuredAnimeProvider;
     private readonly INavigationService _navigationService;
-    private readonly ITrackingService _trackingService;
-    private readonly ISchedulerProvider _schedulerProvider;
-    private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Anime);
+    private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Url);
+    private readonly SourceCache<SearchResult, string> _animeSearchResultCache = new(x => x.Url);
     private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
-    private List<AnimeModel> _userAnime = new();
+    private readonly ReadOnlyObservableCollection<SearchResult> _animeSearchResults;
+    private readonly IProvider _provider;
 
-    public DiscoverViewModel(IRecentEpisodesProvider recentEpisodesProvider,
-                             IFeaturedAnimeProvider featuredAnimeProvider,
-                             INavigationService navigationService,
-                             ITrackingService trackingService,
-                             ISchedulerProvider schedulerProvider)
+    public DiscoverViewModel(IProviderFactory providerFacotory,
+                             ISettings settings,
+                             INavigationService navigationService)
     {
-        _recentEpisodesProvider = recentEpisodesProvider;
-        _featuredAnimeProvider = featuredAnimeProvider;
+        _provider = providerFacotory.GetProvider(settings.DefaultProviderType);
         _navigationService = navigationService;
-        _trackingService = trackingService;
-        _schedulerProvider = schedulerProvider;
+
         _episodesCache
             .Connect()
             .RefCount()
-            .Sort(SortExpressionComparer<AiredEpisode>.Descending(x => x.TimeOfAiring))
-            .Filter(this.WhenAnyValue(x => x.ShowOnlyWatchingAnime).Select(Filter))
+            .Filter(this.WhenAnyValue(x => x.FilterText).Select(FilterByTitle))
+            .Sort(SortExpressionComparer<AiredEpisode>.Ascending(x => _episodesCache.Items.IndexOf(x)))
+            .Page(this.WhenAnyValue(x => x.PagerViewModel).WhereNotNull().SelectMany(x => x.AsPager()))
+            .Do(changes => PagerViewModel?.Update(changes.Response))
             .Bind(out _episodes)
             .DisposeMany()
             .Subscribe()
             .DisposeWith(Garbage);
 
-        SelectEpisode = ReactiveCommand.Create<AiredEpisode>(OnEpisodeSelected);
-        SelectFeaturedAnime = ReactiveCommand.Create<FeaturedAnime>(OnFeaturedAnimeSelected);
-        ShowOnlyWatchingAnime = IsAuthenticated = trackingService.IsAuthenticated;
-
-        Observable
-            .Timer(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10), scheduler: schedulerProvider.TaskpoolScheduler)
-            .ObserveOn(schedulerProvider.MainThreadScheduler)
-            .Where(_ => Featured is not null)
-            .Subscribe(_ =>
-            {
-                if (Featured.Count == 0)
-                {
-                    SelectedIndex = 0;
-                    return;
-                }
-
-                if (SelectedIndex == Featured.Count - 1)
-                {
-                    SelectedIndex = 0;
-                    return;
-                }
-
-                SelectedIndex++;
-            });
-    }
-
-
-    [Reactive] public IList<FeaturedAnime> Featured { get; set; } = new List<FeaturedAnime>();
-    [Reactive] public int SelectedIndex { get; set; }
-    [Reactive] public bool ShowOnlyWatchingAnime { get; set; }
-    [Reactive] public bool IsLoading { get; set; }
-    public bool IsAuthenticated { get; }
-    public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
-    public ICommand SelectEpisode { get; }
-    public ICommand SelectFeaturedAnime { get; }
-
-    public void RestoreState(IState state)
-    {
-        Featured = state.GetValue<IList<FeaturedAnime>>(nameof(Featured));
-        ShowOnlyWatchingAnime = state.GetValue<bool>(nameof(ShowOnlyWatchingAnime));
-        _userAnime = state.GetValue<List<AnimeModel>>("UserAnime");
-    }
-
-    public Task SetInitialState()
-    {
-        _featuredAnimeProvider
-            .GetFeaturedAnime()
-            .ObserveOn(_schedulerProvider.MainThreadScheduler)
-            .Subscribe(featured => Featured = featured.ToList())
-            .DisposeWith(Garbage);
-
-        _trackingService
-            .GetAnime()
-            .Do(_userAnime.AddRange)
-            .ObserveOn(_schedulerProvider.MainThreadScheduler)
-            .Do(_ => _episodesCache.Refresh())
+        _animeSearchResultCache
+            .Connect()
+            .RefCount()
+            .Bind(out _animeSearchResults)
+            .DisposeMany()
             .Subscribe()
             .DisposeWith(Garbage);
 
-        return Task.CompletedTask;
+        CardWidth = settings.DefaultProviderType == ProviderType.AnimePahe ? 480 : 190; // animepahe image is thumbnail
+        DontUseImageEx = settings.DefaultProviderType == ProviderType.Yugen; // using imagex for yugen is crashing
+
+        SelectEpisode = ReactiveCommand.CreateFromTask<AiredEpisode>(OnEpisodeSelected);
+        SelectSearchResult = ReactiveCommand.CreateFromTask<SearchResult>(OnSearchResultSelected);
+        LoadMore = ReactiveCommand.Create(LoadMoreEpisodes, this.WhenAnyValue(x => x.IsLoading).Select(x => !x));
+
+        this.WhenAnyValue(x => x.SearchText)
+            .Where(x => x is { Length: >= 2 })
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .ObserveOn(RxApp.TaskpoolScheduler)
+            .SelectMany(term => _provider.Catalog.Search(term).ToListAsync().AsTask())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(list => _animeSearchResultCache.EditDiff(list, (item1, item2) => item1.Url == item2.Url), RxApp.DefaultExceptionHandler.OnError);
+
+        this.WhenAnyValue(x => x.SearchText)
+            .Where(x => x is { Length: < 2 } && AnimeSearchResults.Count > 0)
+            .Throttle(TimeSpan.FromMilliseconds(200))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => _animeSearchResultCache.Clear());
     }
 
-    public void StoreState(IState state)
-    {
-        state.AddOrUpdate(Featured);
-        state.AddOrUpdate(ShowOnlyWatchingAnime);
-        state.AddOrUpdate(_userAnime, "UserAnime");
-    }
+    [Reactive] public int SelectedIndex { get; set; }
+    [Reactive] public bool ShowOnlyWatchingAnime { get; set; }
+    [Reactive] public bool IsLoading { get; set; }
+    [Reactive] public PagerViewModel PagerViewModel { get; set; }
+    [Reactive] public string FilterText { get; set; }
+    [Reactive] public bool DontUseImageEx { get; private set; }
+    [Reactive] public string SearchText { get; set; }
+
+    public bool IsAuthenticated { get; }
+    public double CardWidth { get; }
+    public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
+    public ReadOnlyObservableCollection<SearchResult> AnimeSearchResults => _animeSearchResults;
+
+    public ICommand SelectEpisode { get; }
+    public ICommand SelectFeaturedAnime { get; }
+    public ICommand LoadMore { get; }
+    public ICommand SelectSearchResult { get; }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        IsLoading = true;
-
-        _recentEpisodesProvider.GetRecentlyAiredEpisodes()
-                               .ObserveOn(RxApp.MainThreadScheduler)
-                               .Subscribe(eps =>
-                               {
-                                   _episodesCache.AddOrUpdate(eps);
-                                   IsLoading = false;
-                               })
-                               .DisposeWith(Garbage);
+        LoadPage(1)
+            .Finally(() => PagerViewModel = new(0, _episodesCache.Items.Count()))
+            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
 
         return Task.CompletedTask;
     }
 
-    private void OnEpisodeSelected(AiredEpisode episode)
+    private void LoadMoreEpisodes() =>
+        LoadPage((PagerViewModel?.PageCount ?? 1) + 1)
+        .Finally(() =>
+        {
+            if (PagerViewModel.CurrentPage == PagerViewModel.PageCount - 2)
+            {
+                PagerViewModel.CurrentPage++;
+            }
+        })
+        .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
+
+    private Task OnEpisodeSelected(AiredEpisode episode)
     {
         var navigationParameters = new Dictionary<string, object>
         {
@@ -128,34 +104,43 @@ public class DiscoverViewModel : NavigatableViewModel, IHaveState
         };
 
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
+
+        return Task.CompletedTask;
     }
 
-    private void OnFeaturedAnimeSelected(FeaturedAnime anime)
+    private Task OnSearchResultSelected(SearchResult searchResult)
     {
         var navigationParameters = new Dictionary<string, object>
         {
-            ["Id"] = long.Parse(anime.Id)
+            ["SearchResult"] = searchResult
         };
 
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
+
+        return Task.CompletedTask;
     }
 
-    private Func<AiredEpisode, bool> Filter(bool showOnlyUserAnime) => (ep) =>
+
+    private IObservable<IEnumerable<AiredEpisode>> LoadPage(int page)
     {
-        if (!showOnlyUserAnime)
+        if (_provider.AiredEpisodesProvider is null)
         {
-            return true;
+            return Observable.Empty<IEnumerable<AiredEpisode>>();
         }
 
-        var model = _userAnime.FirstOrDefault(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x.Title) > 80 || x.AlternativeTitles.Any(x => FuzzySharp.Fuzz.PartialRatio(ep.Anime, x) > 80));
+        IsLoading = true;
 
-        if (model is null)
-        {
-            return false;
-        }
-        else
-        {
-            return model.Tracking.UpdatedAt.HasValue && (DateTime.Today - model.Tracking.UpdatedAt.Value).TotalDays <= 7;
-        }
-    };
+        return _provider
+             .AiredEpisodesProvider
+             .GetRecentlyAiredEpisodes(page)
+             .ToObservable()
+             .ObserveOn(RxApp.MainThreadScheduler)
+             .Do(eps =>
+             {
+                 _episodesCache.AddOrUpdate(eps);
+                 IsLoading = false;
+             });
+    }
+
+    private static Func<AiredEpisode, bool> FilterByTitle(string title) => (AiredEpisode ae) => string.IsNullOrEmpty(title) || ae.Title.ToLower().Contains(title.ToLower());
 }

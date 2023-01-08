@@ -5,7 +5,7 @@ namespace Totoro.Core.Tests.Builders;
 
 internal class ScheduleViewModelBuilder
 {
-    private readonly Mock<ITrackingService> _trackingServiceMock = new();
+    private readonly Mock<ITrackingServiceContext> _trackingServiceMock = new();
     private Mock<ISystemClock> _systemClockMock;
 
     internal ScheduleViewModel Build()
@@ -14,7 +14,7 @@ internal class ScheduleViewModelBuilder
                                      _systemClockMock?.Object ?? new SystemClock());
     }
 
-    internal ScheduleViewModelBuilder WithTrackingService(Action<Mock<ITrackingService>> configure)
+    internal ScheduleViewModelBuilder WithTrackingService(Action<Mock<ITrackingServiceContext>> configure)
     {
         configure(_trackingServiceMock);
         return this;

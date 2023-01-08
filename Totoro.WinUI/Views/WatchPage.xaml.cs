@@ -1,5 +1,4 @@
-﻿using ReactiveMarbles.ObservableEvents;
-using Totoro.Core.ViewModels;
+﻿using Totoro.Core.ViewModels;
 using Totoro.WinUI.Media;
 
 namespace Totoro.WinUI.Views;
@@ -20,16 +19,6 @@ public sealed partial class WatchPage : WatchPageBase
                 .Do(wrapper => MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer()))
                 .Subscribe()
                 .DisposeWith(d);
-
-            SearchBox
-            .Events()
-            .SuggestionChosen
-            .Select(@event => @event.args.SelectedItem as SearchResultModel)
-            .Do(result => ViewModel.Anime = result)
-            .SelectMany(result => ViewModel.Find(result.Id, result.Title))
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => ViewModel.SelectedAnimeResult = x)
-            .DisposeWith(d);
 
             TransportControls
             .OnNextTrack
@@ -55,8 +44,13 @@ public sealed partial class WatchPage : WatchPageBase
             .DisposeWith(d);
 
             TransportControls
-            .OnDynamicSkipIntro
-            .InvokeCommand(ViewModel.SkipOpeningDynamic)
+            .OnDynamicSkip
+            .InvokeCommand(ViewModel.SkipDynamic)
+            .DisposeWith(d);
+
+            TransportControls
+            .OnSubmitTimeStamp
+            .InvokeCommand(ViewModel.SubmitTimeStamp)
             .DisposeWith(d);
         });
     }

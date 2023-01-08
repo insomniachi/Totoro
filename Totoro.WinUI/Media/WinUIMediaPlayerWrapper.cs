@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Windows.Foundation;
+using MediaPlayerElementWithHttpClient;
 using ReactiveMarbles.ObservableEvents;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -48,9 +49,10 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
                 _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
             }
 
-            AdaptiveMediaSource.CreateFromUriAsync(new Uri(stream.Url), _httpClient)
+            Uri uri = new(stream.Url);
+            AdaptiveMediaSource.CreateFromUriAsync(uri, _httpClient)
                 .ToObservable()
-                .Subscribe(amsr =>
+                .Subscribe(async amsr =>
                 {
                     if (amsr.Status == AdaptiveMediaSourceCreationStatus.Success)
                     {
@@ -58,7 +60,8 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
                     }
                     else
                     {
-                        _player.Source = MediaSource.CreateFromUri(new Uri(stream.Url));
+                        HttpRandomAccessStream httpStream = await HttpRandomAccessStream.CreateAsync(_httpClient, uri);
+                        _player.Source = MediaSource.CreateFromStream(httpStream, httpStream.ContentType);
                     }
                 });
         }

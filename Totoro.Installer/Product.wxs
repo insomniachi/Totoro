@@ -26,8 +26,17 @@
 			  SourceFile="$(var.Totoro.WinUI.ProjectDir)\Assets\WindowIcon.ico"/>
 
 		<Property Id="ARPPRODUCTICON">Icon.ico</Property>
-		<Property Id="ARPURLINFOABOUT">https://github.com/athulrajts/AnimDL</Property>
 
+		<CustomAction Id="EXECUTE_AFTER_FINALIZE"
+              Execute="immediate"
+              Impersonate="no"
+              Return="asyncNoWait"
+			  Directory="INSTALLFOLDER"
+		      ExeCommand="[INSTALLFOLDER]Totoro.WinUI.exe"/>
+
+		<InstallExecuteSequence>
+			<Custom Action="EXECUTE_AFTER_FINALIZE" After="InstallFinalize">NOT Installed</Custom>
+		</InstallExecuteSequence>
 
 		<!--<UIRef Id="WixUI_Minimal"/>-->
 		

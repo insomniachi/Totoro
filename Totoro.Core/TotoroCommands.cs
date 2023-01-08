@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Splat;
 using Totoro.Core.ViewModels;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -7,15 +8,15 @@ using Video = Totoro.Core.Models.Video;
 namespace Totoro.Core;
 
 [ExcludeFromCodeCoverage]
-public class TotoroCommands
+public class TotoroCommands : IEnableLogger
 {
     private readonly YoutubeClient _youtubeClient = new();
 
-	public TotoroCommands(IViewService viewService,
+    public TotoroCommands(IViewService viewService,
                           INavigationService navigationService)
-	{
+    {
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
-        
+
         Watch = ReactiveCommand.Create<object>(param =>
         {
             switch (param)
@@ -34,7 +35,7 @@ public class TotoroCommands
             switch (param)
             {
                 case AnimeSound theme:
-                    viewService.PlayVideo(theme.Name, theme.Url);
+                    viewService.PlayVideo(theme.SongName, theme.Url);
                     break;
                 case Video preview:
                     _ = PlayYoutubeVideo(preview, viewService.PlayVideo);
@@ -61,10 +62,18 @@ public class TotoroCommands
     public ICommand Watch { get; }
     public ICommand PlayVideo { get; }
 
-    private async Task PlayYoutubeVideo(Video video, Func<string,string,Task> playVideo)
+    private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {
-        var manifest = await _youtubeClient.Videos.Streams.GetManifestAsync(VideoId.Parse(video.Url));
-        var url = manifest.GetMuxedStreams().LastOrDefault().Url;
-        await playVideo(video.Title, url);
+        try
+        {
+            var videoId = VideoId.Parse(video.Url);
+            var manifest = await _youtubeClient.Videos.Streams.GetManifestAsync(videoId);
+            var url = manifest.GetMuxedStreams().LastOrDefault().Url;
+            await playVideo(video.Title, url);
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+        }
     }
 }

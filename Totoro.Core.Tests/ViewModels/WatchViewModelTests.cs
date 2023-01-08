@@ -1,7 +1,5 @@
 ﻿using System.Reactive;
 using System.Reactive.Linq;
-using AnimDL.Api;
-using Splat;
 using Totoro.Core.Tests.Builders;
 using Totoro.Core.Tests.Helpers;
 
@@ -387,98 +385,10 @@ public class WatchViewModelTests
     }
 
     [Fact]
-    public void WatchViewModel_QueryPopulatesList()
-    {
-        var result = new SearchResultModel()
-        {
-            Id = 12189,
-            Title = "Hyouka",
-            TotalEpisodes = 24,
-        };
-
-        var vm = BaseViewModel(Mock.Of<IProvider>())
-            .WithAnimeService(x =>
-            {
-                x.Setup(x => x.GetAnime("Hyouka")).Returns(Observable.Return(new SearchResultModel[]{ result }));
-            })
-            .Bulid();
-
-        vm.Query = "Hyouka";
-
-        Thread.Sleep(300);
-
-        Assert.Single(vm.SearchResult);
-        Assert.Equal(result, vm.SearchResult[0]);
-    }
-
-    [Fact]
-    public void WatchViewModel_HasSearchBoxWhenNavigatedWithoutAnime()
-    {
-        // arrange
-        var vm = BaseViewModel(Mock.Of<IProvider>()).Bulid();
-
-        // act
-        vm.OnNavigatedTo(new Dictionary<string, object>()).Wait();
-
-        Assert.False(vm.HideControls);
-    }
-
-    [Fact]
-    public void WatchViewModel_HidesSearchBoxWhenNavigatedWithAnime()
-    {
-        // arrange
-        FullAnimeModel animeModel = new()
-        {
-            Id = 12189,
-            Title = "Hyouka",
-            TotalEpisodes = 24,
-            Tracking = new Tracking
-            {
-                WatchedEpisodes = 10
-            }
-        };
-        var provider = GetProvider(new SearchResult { Title = "Hyouka" }, 24);
-        var vm1 = BaseViewModel(provider).Bulid();
-        var vm2 = BaseViewModel(provider)
-            .WithRecentEpisodesProvider(x =>
-            {
-                x.Setup(x => x.GetMalId(It.IsAny<AiredEpisode>())).Returns(Observable.Return((long)12189));
-            })
-            .WithAnimeService(x =>
-            {
-                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Return(animeModel));
-            })
-            .Bulid();
-        var vm3 = BaseViewModel(provider)
-            .WithAnimeService(x =>
-            {
-                x.Setup(x => x.GetInformation(animeModel.Id)).Returns(Observable.Return(animeModel));
-            })
-            .Bulid();
-
-        // act
-        vm1.OnNavigatedTo(new Dictionary<string, object> { ["Anime"] = animeModel }).Wait();
-        vm2.OnNavigatedTo(new Dictionary<string, object>
-        {
-            ["EpisodeInfo"] = new AiredEpisode
-            {
-                Anime = animeModel.Title,
-                EpisodeUrl = "https://animixplay.to/v1/hyouka"
-            }
-        }).Wait();
-        vm3.OnNavigatedTo(new Dictionary<string, object> { ["Id"] = animeModel.Id }).Wait();
-
-        // assert
-        Assert.True(vm1.HideControls);
-        Assert.True(vm2.HideControls);
-        Assert.True(vm3.HideControls);
-    }
-
-    [Fact]
     public void WatchViewModel_ClickingNext_AfterTrackingAlreadyUpdated()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -528,7 +438,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_MarksAsCompleteWhenFinishingLastEpisode()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -564,7 +474,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_AddsTrackingWheningFinishingFirstEpisodeOfUntracked()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -596,7 +506,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_WillNotUpdateTrackingIfRewatchingPrevEpisode()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",
@@ -617,7 +527,7 @@ public class WatchViewModelTests
 
         vmBuilder.MediaPlayer.DurationChangedSubject.OnNext(TimeSpan.FromMinutes(24));
         vmBuilder.MediaPlayer.PositionChangedSubject.OnNext(TimeSpan.FromMinutes(23));
-        
+
         // api request was never made.
         vmBuilder.VerifyTrackingService(tracking =>
         {
@@ -629,7 +539,7 @@ public class WatchViewModelTests
     public async void WatchViewModel_TrackingWillNotUpdateMultipleTimesAfterEnd()
     {
         // arrange
-        FullAnimeModel animeModel = new()
+        AnimeModel animeModel = new()
         {
             Id = 12189,
             Title = "Hyouka",

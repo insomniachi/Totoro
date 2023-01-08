@@ -1,4 +1,4 @@
-﻿using AnimDL.Api;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Totoro.Core.Contracts;
 
@@ -10,4 +10,16 @@ public interface ISettings
     bool UseDiscordRichPresense { get; set; }
     int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     int OpeningSkipDurationInSeconds { get; set; }
+    Guid AniSkipId { get; }
+    bool ContributeTimeStamps { get; set; }
+    public DefaultUrls DefaultUrls { get; set; }
+    LogLevel MinimumLogLevel { get; set; }
+    bool AutoUpdate { get; set; }
+    ListServiceType? DefaultListService { get; set; }
+    Task<Unit> UpdateUrls();
+}
+
+public class DefaultUrls : ReactiveObject
+{
+    [Reactive] public string GogoAnime { get; set; }
 }

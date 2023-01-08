@@ -1,6 +1,6 @@
 ﻿namespace Totoro.Core.Models;
 
-public enum AnimeTrackerType
+public enum ListServiceType
 {
     AniDb,
     AniList,
