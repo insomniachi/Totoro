@@ -23,6 +23,7 @@ namespace Totoro.Core
             services.AddSingleton<IUpdateService, WindowsUpdateService>();
             services.AddSingleton<ITrackingServiceContext, TrackingServiceContext>();
             services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
+            services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<MalToModelConverter>();

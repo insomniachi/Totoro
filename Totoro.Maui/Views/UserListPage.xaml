@@ -11,16 +11,6 @@
     x:DataType="vm:UserListViewModel"
     x:TypeArguments="vm:UserListViewModel">
     <VerticalStackLayout>
-        <CollectionView ItemsSource="{Binding Views}" SelectedItem="{Binding CurrentView, Mode=TwoWay}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Label Text="{Binding}" />
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Horizontal" />
-            </CollectionView.ItemsLayout>
-        </CollectionView>
         <CollectionView ItemsSource="{Binding Anime, Mode=OneWay}">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical" Span="3" />
@@ -34,11 +24,12 @@
                         </Grid.RowDefinitions>
                         <Image
                             Grid.Row="0"
-                            Aspect="AspectFill"
+                            Aspect="AspectFit"
                             Source="{Binding Image}" />
                         <Label
                             Grid.Row="1"
                             FontSize="15"
+                            HorizontalOptions="CenterAndExpand"
                             LineBreakMode="TailTruncation"
                             Text="{Binding Title}" />
                     </Grid>

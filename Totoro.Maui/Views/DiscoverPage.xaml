@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:core="clr-namespace:Totoro.Core.ViewModels;assembly=Totoro.Core"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="clr-namespace:Totoro.Core.Models;assembly=Totoro.Core"
+    xmlns:models="clr-namespace:AnimDL.Core.Models;assembly=AnimDL.Core"
     xmlns:mx="http://compiledbindings.com/x"
     xmlns:rx="clr-namespace:ReactiveUI.Maui;assembly=ReactiveUI.Maui"
     Title="Discover"
@@ -13,42 +13,15 @@
     x:TypeArguments="core:DiscoverViewModel"
     mc:Ignorable="mx">
     <VerticalStackLayout Spacing="10">
-        <CarouselView ItemsSource="{Binding Featured, Mode=OneWay}">
-            <CarouselView.ItemTemplate>
-                <DataTemplate x:DataType="models:FeaturedAnime">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="2*" />
-                        </Grid.ColumnDefinitions>
-                        <Image Aspect="AspectFit" Source="{Binding Image}" />
-                        <VerticalStackLayout Grid.Column="1" Padding="10">
-                            <Label
-                                FontAttributes="Bold"
-                                LineBreakMode="WordWrap"
-                                Text="{Binding Title}" />
-
-                            <Label LineBreakMode="WordWrap" Text="{Binding Description}" />
-                        </VerticalStackLayout>
-                    </Grid>
-                </DataTemplate>
-            </CarouselView.ItemTemplate>
-        </CarouselView>
-
-        <HorizontalStackLayout>
-            <Switch HorizontalOptions="Start" IsToggled="{Binding ShowOnlyWatchingAnime, Mode=TwoWay}" />
-            <Label Text="Show Only Watching Anime" VerticalOptions="Center" />
-        </HorizontalStackLayout>
-
         <CollectionView ItemsSource="{Binding Episodes, Mode=OneWay}">
             <CollectionView.ItemsLayout>
-                <GridItemsLayout Orientation="Vertical" Span="3" />
+                <GridItemsLayout Orientation="Vertical" Span="2" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:AiredEpisode">
-                    <Grid Margin="3" WidthRequest="120">
+                    <Grid Margin="3">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="170" />
+                            <RowDefinition Height="250" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Image
@@ -60,7 +33,8 @@
                             FontAutoScalingEnabled="True"
                             FontSize="10"
                             LineBreakMode="WordWrap"
-                            Text="{Binding Anime}" />
+                            HorizontalOptions="CenterAndExpand"
+                            Text="{Binding Title}" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

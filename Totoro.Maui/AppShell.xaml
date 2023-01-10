@@ -9,8 +9,12 @@
     Shell.FlyoutBehavior="Disabled">
 
     <TabBar>
-        <Tab Title="My List">
+        <Tab>
             <ShellContent Title="Watching" ContentTemplate="{DataTemplate views:UserListPage}" />
+            <ShellContent Title="Plan To Watch" ContentTemplate="{DataTemplate views:UserListPage}" />
+            <ShellContent Title="On Hold" ContentTemplate="{DataTemplate views:UserListPage}" />
+            <ShellContent Title="Completed" ContentTemplate="{DataTemplate views:UserListPage}" />
+            <ShellContent Title="Dropped" ContentTemplate="{DataTemplate views:UserListPage}" />
         </Tab>
         <Tab Title="Discover">
             <ShellContent

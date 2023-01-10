@@ -17,5 +17,10 @@ namespace Totoro.Maui
         {
             ((ShellNavigationService)_navigationService).Initialize();
         }
+
+        protected override void OnNavigating(ShellNavigatingEventArgs args)
+        {
+            base.OnNavigating(args);
+        }
     }
 }

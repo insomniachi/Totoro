@@ -39,8 +39,8 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
                              IDiscordRichPresense dRpc,
                              IUpdateService updateService)
     {
-        Version = Assembly.GetEntryAssembly().GetName().Version;
-        ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly.GetName().Version;
+        Version = Assembly.GetEntryAssembly()?.GetName()?.Version;
+        ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly?.GetName()?.Version;
 
         if(localSettingsService.ContainsKey("MalToken"))
         {
@@ -62,7 +62,7 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
         DefaultUrls = localSettingsService.ReadSetting(nameof(DefaultUrls), new DefaultUrls());
         MinimumLogLevel = localSettingsService.ReadSetting(nameof(MinimumLogLevel), LogLevel.Debug);
         AutoUpdate = localSettingsService.ReadSetting(nameof(AutoUpdate), true);
-        DefaultListService = localSettingsService.ReadSetting(nameof(DefaultListService), default(ListServiceType?));
+        DefaultListService = localSettingsService.ReadSetting(nameof(DefaultListService), ListServiceType.MyAnimeList);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
