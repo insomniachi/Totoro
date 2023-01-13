@@ -19,6 +19,7 @@ public class ViewService : IViewService
     public async Task<Unit> UpdateTracking(IAnimeModel a)
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
+        vm.Anime = a;
         
         var result = await _contentDialogService.ShowDialog(vm, d =>
         {

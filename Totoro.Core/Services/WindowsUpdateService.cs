@@ -14,10 +14,13 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
 
     public IObservable<VersionInfo> OnUpdateAvailable => _onUpdate;
 
-    public WindowsUpdateService(HttpClient httpClient)
+    public WindowsUpdateService(HttpClient httpClient,
+                                ISettings settings)
     {
+        _httpClient = httpClient;
         _onUpdate = Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
+            .Where(_ => settings.AutoUpdate)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(_ => httpClient.GetStreamAsync("https://api.github.com/repos/athulrajts/AnimDL.GUI/releases/latest"))
             .Select(x => JsonNode.Parse(x))
@@ -30,7 +33,6 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             .Where(vi => vi.Version > Assembly.GetEntryAssembly().GetName().Version)
             .Log(this, "New Version", vi => vi.Version.ToString())
             .Throttle(TimeSpan.FromSeconds(3));
-        _httpClient = httpClient;
     }
 
     public async ValueTask<VersionInfo> GetCurrentVersionInfo()
