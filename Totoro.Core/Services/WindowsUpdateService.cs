@@ -15,12 +15,14 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
     public IObservable<VersionInfo> OnUpdateAvailable => _onUpdate;
 
     public WindowsUpdateService(HttpClient httpClient,
-                                ISettings settings)
+                                ILocalSettingsService localSettingsService)
     {
+        var autoUpdateEnabled = localSettingsService.ReadSetting(nameof(ISettings.AutoUpdate), true);
+
         _httpClient = httpClient;
         _onUpdate = Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
-            .Where(_ => settings.AutoUpdate)
+            .Where(_ => autoUpdateEnabled)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(_ => httpClient.GetStreamAsync("https://api.github.com/repos/athulrajts/AnimDL.GUI/releases/latest"))
             .Select(x => JsonNode.Parse(x))

@@ -60,6 +60,24 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         this.Log().Info("Submitted : {0}", response.IsSuccessStatusCode);
     }
 
+    public async Task Vote(string skipId, bool isThumpsUp)
+    {
+        var voteType = isThumpsUp ? "upvote" : "downvote";
+        var postData = new Dictionary<string, string>()
+        {
+            ["voteType"] = voteType
+        };
+
+        using var content = new FormUrlEncodedContent(postData);
+        content.Headers.Clear();
+        content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"https://api.aniskip.com/v2/skip-times/vote/{skipId}");
+        request.Content = content;
+        var response = await _httpClient.SendAsync(request);
+        this.Log().Info($"Vote ({voteType}) submitted");
+    }
+
     private async ValueTask<long> GetMalId(long id)
     {
         if (_settings.DefaultListService == ListServiceType.MyAnimeList)

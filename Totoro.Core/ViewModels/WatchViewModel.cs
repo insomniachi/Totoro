@@ -430,7 +430,7 @@ public partial class WatchViewModel : NavigatableViewModel
         RxApp.MainThreadScheduler.Schedule(async () =>
         {
             MediaPlayer.Pause();
-            await _viewService.SubmitTimeStamp(Anime.Id, CurrentEpisode.Value, SelectedStream, CurrentMediaDuration, _userSkipOpeningTime == 0 ? 0 : _userSkipOpeningTime - 5);
+            await _viewService.SubmitTimeStamp(Anime.Id, CurrentEpisode.Value, SelectedStream, AniSkipResult, CurrentMediaDuration, _userSkipOpeningTime == 0 ? 0 : _userSkipOpeningTime - 5);
             MediaPlayer.Play();
         });
     }

@@ -24,10 +24,22 @@
                 </MediaPlayerElement.TransportControls>
             </MediaPlayerElement>
         </Grid>
-        <ComboBox
-            Width="360"
-            ItemsSource="{x:Bind ViewModel.TimeStampTypes}"
-            SelectedItem="{x:Bind ViewModel.SelectedTimeStampType, Mode=TwoWay}" />
+
+        <StackPanel
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="3">
+            <ComboBox
+                Width="264"
+                ItemsSource="{x:Bind ViewModel.TimeStampTypes}"
+                SelectedItem="{x:Bind ViewModel.SelectedTimeStampType, Mode=TwoWay}" />
+            <Button Command="{x:Bind ViewModel.VoteUp}">
+                <FontIcon Foreground="Green" Glyph="&#xeb0f;" />
+            </Button>
+            <Button Command="{x:Bind ViewModel.VoteDown}">
+                <FontIcon Foreground="Red" Glyph="&#xeb11;" />
+            </Button>
+        </StackPanel>
         <StackPanel Orientation="Horizontal">
             <TextBox Width="166" Text="{x:Bind ViewModel.StartPosition, Mode=TwoWay}" />
             <TextBlock

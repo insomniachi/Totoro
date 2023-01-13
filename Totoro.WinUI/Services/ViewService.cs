@@ -112,7 +112,7 @@ public class ViewService : IViewService
         return vm.SelectedModel as T;
     }
 
-    public async Task SubmitTimeStamp(long malId, int ep, VideoStream stream, double duration, double introStart)
+    public async Task SubmitTimeStamp(long malId, int ep, VideoStream stream, AniSkipResult existingResult, double duration, double introStart)
     {
         var vm = new SubmitTimeStampsViewModel(App.GetService<ITimestampsService>()) // TODO fix later
         {
@@ -122,7 +122,8 @@ public class ViewService : IViewService
             StartPosition = introStart,
             SuggestedStartPosition = introStart,
             EndPosition = introStart + 85,
-            Duration = duration
+            Duration = duration,
+            ExistingResult = existingResult
         };
 
         await _contentDialogService.ShowDialog(vm, d =>

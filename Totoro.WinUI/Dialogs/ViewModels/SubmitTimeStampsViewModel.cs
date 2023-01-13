@@ -1,5 +1,4 @@
-﻿
-using Totoro.WinUI.Media;
+﻿using Totoro.WinUI.Media;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;
 
@@ -18,6 +17,22 @@ public class SubmitTimeStampsViewModel : DialogViewModel
         SkipNearEnd = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(EndPosition - 5)));
         Submit = ReactiveCommand.CreateFromTask(SubmitTimeStamp);
 
+        var canVote = this.WhenAnyValue(x => x.SelectedTimeStampType, x => x.ExistingResult)
+            .Where(x => x.Item2 is not null)
+            .Select(tuple =>
+            {
+                (string type, AniSkipResult result) = tuple;
+                return type switch
+                {
+                    "OP" => result.Opening is not null,
+                    "ED" => result.Ending is not null,
+                    _ => false
+                };
+            });
+
+        VoteUp = ReactiveCommand.Create(() => Vote(true), canVote);
+        VoteDown = ReactiveCommand.Create(() => Vote(false), canVote);
+
         MediaPlayer
             .PositionChanged
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -27,18 +42,21 @@ public class SubmitTimeStampsViewModel : DialogViewModel
             .DistinctUntilChanged()
             .Subscribe(x => MediaPlayer.Seek(TimeSpan.FromSeconds(x)));
 
-        this.WhenAnyValue(x => x.SelectedTimeStampType)
-            .Subscribe(type =>
+        this.WhenAnyValue(x => x.SelectedTimeStampType, x => x.ExistingResult)
+            .Subscribe(tuple =>
             {
+                (string type, AniSkipResult result) = tuple;
+
                 if (type == "OP")
                 {
-                    StartPosition = SuggestedStartPosition;
+                    StartPosition = result?.Opening?.Interval?.StartTime ?? SuggestedStartPosition;
+                    EndPosition = result?.Opening?.Interval?.EndTime ?? StartPosition + 90;
                 }
                 else if (type == "ED")
                 {
-                    StartPosition = SuggestedEndPosition;
+                    StartPosition = result?.Ending?.Interval?.StartTime ?? SuggestedEndPosition;
+                    EndPosition = result?.Ending?.Interval?.EndTime ?? StartPosition + 90;
                 }
-                EndPosition = StartPosition + 90;
             });
 
         this.WhenAnyValue(x => x.Stream)
@@ -51,6 +69,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     [Reactive] public string SelectedTimeStampType { get; set; } = "OP";
     [Reactive] public double CurrentPlayerPosition { get; set; }
     [Reactive] public VideoStream Stream { get; set; }
+    [Reactive] public AniSkipResult ExistingResult { get; set; }
     public long MalId { get; set; }
     public int Episode { get; set; }
     public double Duration { get; set; }
@@ -64,6 +83,8 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     public ICommand SetEndPosition { get; }
     public ICommand SkipNearEnd { get; }
     public ICommand Submit { get; }
+    public ICommand VoteUp { get; }
+    public ICommand VoteDown { get; }
 
     private void Play()
     {
@@ -77,6 +98,18 @@ public class SubmitTimeStampsViewModel : DialogViewModel
                 _subscription?.Dispose();
                 MediaPlayer.Pause();
             });
+    }
+
+    private void Vote(bool vote)
+    {
+        if (SelectedTimeStampType == "OP" && ExistingResult.Opening is { } op)
+        {
+            _timestampsService.Vote(op.SkipId, vote);
+        }
+        else if (SelectedTimeStampType == "ED" && ExistingResult.Ending is { } ed)
+        {
+            _timestampsService.Vote(ed.SkipId, vote);
+        }
     }
 
     public async Task SubmitTimeStamp()
