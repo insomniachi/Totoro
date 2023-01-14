@@ -5,54 +5,12 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
 
-public class SettingsViewModel : NavigatableViewModel, ISettings
+internal class SettingsModel : ReactiveObject, ISettings
 {
-    [Reactive] public ElementTheme ElementTheme { get; set; }
-    [Reactive] public bool PreferSubs { get; set; }
-    [Reactive] public ProviderType DefaultProviderType { get; set; }
-    [Reactive] public bool IsAuthenticated { get; set; } = true;
-    [Reactive] public bool UseDiscordRichPresense { get; set; }
-    [Reactive] public int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
-    [Reactive] public int OpeningSkipDurationInSeconds { get; set; }
-    [Reactive] public Guid AniSkipId { get; set; }
-    [Reactive] public bool ContributeTimeStamps { get; set; }
-    [Reactive] public DefaultUrls DefaultUrls { get; set; }
-    [Reactive] public LogLevel MinimumLogLevel { get; set; }
-    [Reactive] public bool AutoUpdate { get; set; }
-    [Reactive] public ListServiceType? DefaultListService { get; set; }
-
-    [Reactive,JsonIgnore] public bool IsMalConnected { get; set; }
-    [Reactive,JsonIgnore] public bool IsAniListConnected { get; set; }
-
-    public Version Version { get; }
-    public Version ScrapperVersion { get; }
-    public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen, ProviderType.Tenshi };
-    public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
-    public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
-    public ICommand AuthenticateCommand { get; }
-    public ICommand ShowAbout { get; }
-
-    public SettingsViewModel(IThemeSelectorService themeSelectorService,
-                             ILocalSettingsService localSettingsService,
-                             IViewService viewService,
-                             IDiscordRichPresense dRpc,
-                             IUpdateService updateService)
+    public SettingsModel(ILocalSettingsService localSettingsService,
+                         IDiscordRichPresense dRpc)
     {
-        Version = Assembly.GetEntryAssembly().GetName().Version;
-        ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly.GetName().Version;
-
-        if(localSettingsService.ContainsKey("MalToken"))
-        {
-            IsMalConnected = true;
-        }
-        if(localSettingsService.ContainsKey("AniListToken"))
-        {
-            IsAniListConnected = true;
-        }
-
-
-        ElementTheme = themeSelectorService.Theme;
+        ElementTheme = ElementTheme.Dark;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
         DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.AllAnime);
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
@@ -71,17 +29,6 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
             localSettingsService.SaveSetting(nameof(AniSkipId), AniSkipId);
         }
 
-        AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
-        ShowAbout = ReactiveCommand.CreateFromTask(async () =>
-        {
-            var currentInfo = await updateService.GetCurrentVersionInfo();
-            if(currentInfo is null)
-            {
-                return;
-            }    
-            await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
-        });
-
         if (UseDiscordRichPresense && !dRpc.IsInitialized)
         {
             dRpc.Initialize();
@@ -96,13 +43,11 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
                 var value = propInfo.GetValue(this);
                 this.Log().Debug($"""Setting Changed "{propInfo.Name}" => {value}""");
                 localSettingsService.SaveSetting(propInfo.Name, value);
-            })
-            .DisposeWith(Garbage);
+            });
 
         DefaultUrls
             .WhenAnyPropertyChanged()
-            .Subscribe(_ => localSettingsService.SaveSetting(nameof(DefaultUrls), DefaultUrls))
-            .DisposeWith(Garbage);
+            .Subscribe(_ => localSettingsService.SaveSetting(nameof(DefaultUrls), DefaultUrls));
 
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
             .Where(x => x && !dRpc.IsInitialized)
@@ -113,15 +58,18 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
             });
     }
 
-    public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
-    {
-        if (parameters.ContainsKey("IsAuthenticated"))
-        {
-            IsAuthenticated = false;
-        }
-
-        return base.OnNavigatedTo(parameters);
-    }
+    [Reactive] public ElementTheme ElementTheme { get; set; }
+    [Reactive] public bool PreferSubs { get; set; }
+    [Reactive] public ProviderType DefaultProviderType { get; set; }
+    [Reactive] public bool UseDiscordRichPresense { get; set; }
+    [Reactive] public int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
+    [Reactive] public int OpeningSkipDurationInSeconds { get; set; }
+    [Reactive] public bool ContributeTimeStamps { get; set; }
+    [Reactive] public DefaultUrls DefaultUrls { get; set; }
+    [Reactive] public LogLevel MinimumLogLevel { get; set; }
+    [Reactive] public bool AutoUpdate { get; set; }
+    [Reactive] public ListServiceType? DefaultListService { get; set; }
+    [Reactive] public Guid AniSkipId { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {
@@ -134,6 +82,45 @@ public class SettingsViewModel : NavigatableViewModel, ISettings
 
         AnimDL.Core.DefaultUrl.GogoAnime = DefaultUrls.GogoAnime;
         return Unit.Default;
+    }
+}
+
+public class SettingsViewModel : NavigatableViewModel
+{
+    [Reactive] public bool IsMalConnected { get; set; }
+    [Reactive] public bool IsAniListConnected { get; set; }
+    
+    public ISettings Settings { get; }
+    public Version Version { get; }
+    public Version ScrapperVersion { get; }
+    public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
+    public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen, ProviderType.Tenshi };
+    public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
+    public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
+    public ICommand AuthenticateCommand { get; }
+    public ICommand ShowAbout { get; }
+
+    public SettingsViewModel(ISettings settings,
+                             ITrackingServiceContext trackingServiceContext,
+                             IViewService viewService,
+                             IUpdateService updateService)
+    {
+        Settings = settings;
+        Version = Assembly.GetEntryAssembly().GetName().Version;
+        ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly.GetName().Version;
+        IsMalConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.MyAnimeList);
+        IsAniListConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
+
+        AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
+        ShowAbout = ReactiveCommand.CreateFromTask(async () =>
+        {
+            var currentInfo = await updateService.GetCurrentVersionInfo();
+            if(currentInfo is null)
+            {
+                return;
+            }    
+            await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
+        });
     }
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();

@@ -31,7 +31,7 @@
                     <ComboBox
                         Width="150"
                         ItemsSource="{x:Bind ViewModel.ServiceTypes}"
-                        SelectedItem="{x:Bind ViewModel.DefaultListService, Mode=TwoWay}" />
+                        SelectedItem="{x:Bind ViewModel.Settings.DefaultListService, Mode=TwoWay}" />
                     <labs:SettingsExpander.Items>
                         <labs:SettingsCard Header="MyAnimeList">
                             <labs:SettingsCard.HeaderIcon>
@@ -91,7 +91,7 @@
                         <FontIcon Glyph="&#xe986;" />
                     </labs:SettingsCard.HeaderIcon>
                     <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.PreferSubs, Mode=TwoWay}"
+                        IsOn="{x:Bind ViewModel.Settings.PreferSubs, Mode=TwoWay}"
                         OffContent="Off"
                         OnContent="On" />
                 </labs:SettingsCard>
@@ -102,14 +102,14 @@
                     <ComboBox
                         Width="150"
                         ItemsSource="{x:Bind ViewModel.ProviderTypes}"
-                        SelectedItem="{x:Bind ViewModel.DefaultProviderType, Mode=TwoWay}" />
+                        SelectedItem="{x:Bind ViewModel.Settings.DefaultProviderType, Mode=TwoWay}" />
                 </labs:SettingsCard>
                 <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
                     <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xe7fc;" />
                     </labs:SettingsCard.HeaderIcon>
                     <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.UseDiscordRichPresense, Mode=TwoWay}"
+                        IsOn="{x:Bind ViewModel.Settings.UseDiscordRichPresense, Mode=TwoWay}"
                         OffContent="Off"
                         OnContent="On" />
                 </labs:SettingsCard>
@@ -121,7 +121,7 @@
                         LargeChange="5"
                         SmallChange="1"
                         SpinButtonPlacementMode="Inline"
-                        Value="{x:Bind ViewModel.TimeRemainingWhenEpisodeCompletesInSeconds, Mode=TwoWay}" />
+                        Value="{x:Bind ViewModel.Settings.TimeRemainingWhenEpisodeCompletesInSeconds, Mode=TwoWay}" />
                 </labs:SettingsCard>
                 <labs:SettingsCard Description="Amount to seconds to skip when skip opening button is clicked during media playback" Header="Opening duration">
                     <labs:SettingsCard.HeaderIcon>
@@ -131,14 +131,14 @@
                         LargeChange="5"
                         SmallChange="1"
                         SpinButtonPlacementMode="Inline"
-                        Value="{x:Bind ViewModel.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
+                        Value="{x:Bind ViewModel.Settings.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
                 </labs:SettingsCard>
                 <labs:SettingsCard Description="Contribute opening and ending timestamps to the community." Header="Contribute Timestamps">
                     <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xe82e;" />
                     </labs:SettingsCard.HeaderIcon>
                     <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.ContributeTimeStamps, Mode=TwoWay}"
+                        IsOn="{x:Bind ViewModel.Settings.ContributeTimeStamps, Mode=TwoWay}"
                         OffContent="Off"
                         OnContent="On" />
                 </labs:SettingsCard>
@@ -149,14 +149,14 @@
                     <ComboBox
                         Width="150"
                         ItemsSource="{x:Bind ViewModel.LogLevels}"
-                        SelectedItem="{x:Bind ViewModel.MinimumLogLevel, Mode=TwoWay}" />
+                        SelectedItem="{x:Bind ViewModel.Settings.MinimumLogLevel, Mode=TwoWay}" />
                 </labs:SettingsCard>
                 <labs:SettingsCard Description="Auto update application when available" Header="Upates">
                     <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xecc5;" />
                     </labs:SettingsCard.HeaderIcon>
                     <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.AutoUpdate, Mode=TwoWay}"
+                        IsOn="{x:Bind ViewModel.Settings.AutoUpdate, Mode=TwoWay}"
                         OffContent="Off"
                         OnContent="On" />
                 </labs:SettingsCard>

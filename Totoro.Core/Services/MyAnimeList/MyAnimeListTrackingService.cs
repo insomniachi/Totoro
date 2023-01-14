@@ -9,6 +9,7 @@ namespace Totoro.Core.Services.MyAnimeList;
 public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
+    private readonly IAnimeScheduleService _animeScheduleService;
     private static readonly string[] FieldNames = new[]
     {
         MalApi.AnimeFieldNames.Synopsis,
@@ -33,9 +34,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     public MyAnimeListTrackingService(IMalClient client,
                                       IConfiguration configuration,
-                                      ILocalSettingsService localSettingsService)
+                                      ILocalSettingsService localSettingsService,
+                                      IAnimeScheduleService animeScheduleService)
     {
         _client = client;
+        _animeScheduleService = animeScheduleService;
+
         var token = localSettingsService.ReadSetting<MalApi.OAuthToken>("MalToken");
         var clientId = configuration["ClientId"];
         if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
@@ -52,18 +56,6 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     public void SetAccessToken(string accessToken) => _client.SetAccessToken(accessToken);
 
-    public IObservable<IEnumerable<AnimeModel>> GetWatchingAnime()
-    {
-        return _client
-            .Anime()
-            .OfUser()
-            .WithStatus(MalApi.AnimeStatus.Watching)
-            .IncludeNsfw()
-            .WithFields(FieldNames)
-            .Find().ToObservable()
-            .Select(paged => paged.Data.Select(ConvertModel));
-    }
-
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
         if (IsAuthenticated)
@@ -77,7 +69,21 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                                             .WithFields(FieldNames)
                                             .Find();
 
-                observer.OnNext(watching.Data.Select(ConvertModel));
+                var list = new List<AnimeModel>();
+
+                foreach (var item in watching.Data)
+                {
+                    var model = ConvertModel(item);
+                    
+                    GetAiredEpisodes(model)
+                    .ToObservable()
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Subscribe(x => model.AiredEpisodes = x);
+
+                    list.Add(model);
+                }
+
+                observer.OnNext(list);
 
                 var all = await _client.Anime()
                                        .OfUser()
@@ -188,5 +194,11 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         }
 
         return DateTime.Today == date;
+    }
+
+    private async Task<int> GetAiredEpisodes(AnimeModel model)
+    {
+        var nextEp = await _animeScheduleService.GetNextAiringEpisode(model.Id);
+        return nextEp - 1 ?? 0;
     }
 }

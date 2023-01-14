@@ -1,4 +1,5 @@
-﻿using Humanizer;
+﻿using System.Reactive.Linq;
+using Humanizer;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -23,6 +24,7 @@ public sealed partial class AnimeCard : UserControl
 
     private readonly IViewService _viewService = App.GetService<IViewService>();
     private readonly INavigationService _navigationService = App.GetService<INavigationService>();
+    //private static readonly IAnimeScheduleService _animeScheduleService = App.GetService<IAnimeScheduleService>();
 
     public AnimeModel Anime
     {
@@ -49,20 +51,21 @@ public sealed partial class AnimeCard : UserControl
             _navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
         });
 
-        Loaded += AnimeCard_Loaded;
-    }
+        //this.WhenAnyValue(x => x.Anime)
+        //    .WhereNotNull()
+        //    .Where(x => x.Tracking is { Status : AnimeStatus.Watching })
+        //    .ObserveOn(RxApp.MainThreadScheduler)
+        //    .Subscribe(async anime =>
+        //    {
+        //        var nextEp = await _animeScheduleService.GetNextAiringEpisode(anime.Id);
+        //        var unwatched = nextEp - 1 - (anime.Tracking.WatchedEpisodes ?? 0);
+        //        if (unwatched is > 0)
+        //        {
+        //            InfoBadge.Visibility = Visibility.Visible;
+        //            InfoBadge.Value = unwatched ?? -1;
+        //        }
+        //    });
 
-    private void AnimeCard_Loaded(object sender, RoutedEventArgs e)
-    {
-        //if (Anime is not AnimeModel { TimeRemaining: not null })
-        //{
-        //    return;
-        //}
-
-        //_garbage = MessageBus.Current.Listen<MinuteTick>().ObserveOn(RxApp.MainThreadScheduler).Subscribe(_ =>
-        //{
-        //    Update();
-        //});
     }
 
     private void Update() => NextEpisodeInText.Text = GetTime(Anime);
@@ -126,6 +129,27 @@ public sealed partial class AnimeCard : UserControl
             ["Score"] = $"{fa.MeanScore}",
             ["Popularity"] = $"#{fa.Popularity}"
         };
+    }
+
+    public Visibility InfoBadgeVisibillity(int value) => value > 0 ? Visibility.Visible : Visibility.Collapsed;
+    public int UnwatchedEpisodes(int airedEpisodes)
+    {
+        if(Anime is null)
+        {
+            return -1;
+        }    
+
+        if(Anime.Tracking is null || Anime.Tracking.WatchedEpisodes is null)
+        {
+            return -1;
+        }
+
+        if(airedEpisodes == 0)
+        {
+            return -1;
+        }
+
+        return (airedEpisodes - Anime.Tracking.WatchedEpisodes.Value);
     }
 
 }

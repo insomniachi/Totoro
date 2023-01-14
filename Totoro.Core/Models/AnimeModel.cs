@@ -25,6 +25,7 @@ public class AnimeModel : ReactiveObject, IAnimeModel
     public string[] Genres { get; set; }
     public AnimeModel[] Related { get; set; }
     public DayOfWeek? BroadcastDay { get; set; }
+    [Reactive] public int AiredEpisodes { get; set; }
 
     public override string ToString()
     {

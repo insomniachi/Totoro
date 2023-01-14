@@ -42,7 +42,6 @@ public static class ServiceCollectionExtensions
         services.AddTransient<SettingsPage>();
         services.AddTransient<ViewType<SettingsViewModel>>(x => new(typeof(SettingsPage)));
         services.AddTransient<ViewType>(x => x.GetService<ViewType<SettingsViewModel>>());
-        services.AddTransient<ISettings>(x => x.GetRequiredService<SettingsViewModel>());
         services.AddTransient<ShellPage>();
         services.AddSingleton<ShellViewModel>();
 
@@ -53,44 +52,19 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-        services.AddTransient<INavigationViewService, NavigationViewService>();
+        services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
+        services.AddSingleton<IActivationService, ActivationService>();
         services.AddSingleton<IWinUINavigationService, NavigationService>();
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
-        services.AddSingleton<IActivationService, ActivationService>();
+        services.AddSingleton<ISchedule, Schedule>();
+        
+        services.AddTransient<INavigationViewService, NavigationViewService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
         services.AddTransient<IToastService, ToastService>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
-        services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
-        services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
-        services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
-        services.AddSingleton<ISchedule, Schedule>();
-        services.AddSingleton<ITimestampsService, TimestampsService>();
-        services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
-        services.AddSingleton<ITorrentsService, TorrentsService>();
-        services.AddSingleton<ILocalMediaService, LocalMediaService>();
-        services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
-        services.AddSingleton<IUpdateService, WindowsUpdateService>();
-        services.AddSingleton<ITrackingServiceContext, TrackingServiceContext>();
-        services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
-
-        services.AddTransient<IFileService, FileService>();
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
-        services.AddTransient<IAnimeIdService, AnimeIdService>();
-        services.AddTransient<IShanaProjectService, ShanaProjectService>();
-        services.AddTransient<TotoroCommands>();
-        services.AddTransient<ISystemClock, SystemClock>();
-        services.AddTransient<ISchedulerProvider, SchedulerProvider>();
-        services.AddTransient<IStreamPageMapper, StreamPageMapper>();
 
-        services.AddMemoryCache();
-        services.AddHttpClient();
 
         return services;
     }

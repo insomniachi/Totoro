@@ -16,6 +16,7 @@
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
+
                 <ctk:ImageEx
                     Grid.Row="0"
                     CacheMode="BitmapCache"
@@ -25,6 +26,17 @@
                     PlaceholderStretch="Fill"
                     Source="{x:Bind Anime.Image, Mode=OneWay}"
                     Stretch="UniformToFill" />
+
+                <InfoBadge
+                    x:Name="InfoBadge"
+                    Width="30"
+                    Height="30"
+                    MaxHeight="30"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Style="{ThemeResource AttentionValueInfoBadgeStyle}"
+                    Visibility="{x:Bind InfoBadgeVisibillity(InfoBadge.Value), Mode=OneWay}"
+                    Value="{x:Bind UnwatchedEpisodes(Anime.AiredEpisodes), Mode=OneWay}" />
 
                 <Grid
                     x:Name="NextEpisodeInContainer"

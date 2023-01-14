@@ -198,6 +198,8 @@ public class AniListTrackingService : ITrackingService
                             .WithEndDate(new FuzzyDateQueryBuilder().WithAllFields())
                             .WithSeason()
                             .WithSeasonYear()
+                            .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
+                                .WithEpisode())
                             .WithMediaListEntry(new MediaListQueryBuilder()
                                 .WithScore()
                                 .WithStatus()

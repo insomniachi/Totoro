@@ -25,6 +25,7 @@ namespace Totoro.Core.Services.AniList
                 BroadcastDay = GetBroadcastDay(media.StartDate),
                 Season = GetSeason(media.Season, media.SeasonYear),
                 AlternativeTitles = GetAlternateTiltes(media.Title),
+                AiredEpisodes = media.NextAiringEpisode?.Episode - 1 ?? 0
             };
         }
 

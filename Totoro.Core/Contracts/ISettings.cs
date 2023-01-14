@@ -22,4 +22,8 @@ public interface ISettings
 public class DefaultUrls : ReactiveObject
 {
     [Reactive] public string GogoAnime { get; set; }
+    [Reactive] public string Tenshi { get; set; }
+    [Reactive] public string Yugen { get; set; }
+    [Reactive] public string AnimePahe { get; set; }
+    [Reactive] public string AllAnime { get; set; }
 }

@@ -5,6 +5,7 @@ using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.Core
 {
@@ -23,15 +24,16 @@ namespace Totoro.Core
             services.AddSingleton<IUpdateService, WindowsUpdateService>();
             services.AddSingleton<ITrackingServiceContext, TrackingServiceContext>();
             services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
+            services.AddSingleton<ISettings, SettingsModel>();
 
             services.AddTransient<IFileService, FileService>();
-            services.AddTransient<MalToModelConverter>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();
             services.AddTransient<TotoroCommands>();
             services.AddTransient<ISystemClock, SystemClock>();
             services.AddTransient<ISchedulerProvider, SchedulerProvider>();
             services.AddTransient<IStreamPageMapper, StreamPageMapper>();
+            services.AddSingleton<IAnimeScheduleService, AnimeScheduleService>();
 
             services.AddMemoryCache();
             services.AddHttpClient();

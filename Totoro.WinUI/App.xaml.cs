@@ -35,7 +35,7 @@ public partial class App : Application, IEnableLogger
             MessageBus.Current.RegisterMessageSource(Observable.Timer(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).Select(_ => new MinuteTick()));
 
             services.AddPlatformServices()
-                    .AddApplicationServices()
+                    .AddTotoro()
                     .AddAnimDL()
                     .AddMyAnimeList()
                     .AddAniList()
