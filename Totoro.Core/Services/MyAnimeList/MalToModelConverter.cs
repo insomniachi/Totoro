@@ -40,9 +40,10 @@ public class MalToModelConverter
 
             if (malModel.AlternativeTitles is { } alt)
             {
-                model.AlternativeTitles = alt.Aliases.ToList();
-                model.AlternativeTitles.Add(alt.English);
-                model.AlternativeTitles.Add(alt.Japanese);
+                var titles = alt.Aliases.ToList();
+                titles.Add(alt.English);
+                titles.Add(alt.Japanese);
+                model.AlternativeTitles = titles.Distinct();
             }
 
             if (malModel.Videos is { Length: > 0 } videos)
@@ -78,23 +79,4 @@ public class MalToModelConverter
 
         return model;
     }
-
-    private static Season CurrentSeason()
-    {
-        var date = DateTime.Now;
-        var year = date.Year;
-        var month = date.Month;
-
-        var current = month switch
-        {
-            1 or 2 or 3 => AnimeSeason.Winter,
-            4 or 5 or 6 => AnimeSeason.Spring,
-            7 or 8 or 9 => AnimeSeason.Summer,
-            10 or 11 or 12 => AnimeSeason.Fall,
-            _ => throw new InvalidOperationException()
-        };
-
-        return new(current, year);
-    }
-
 }

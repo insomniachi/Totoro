@@ -9,7 +9,7 @@ namespace Totoro.Core.Services.MyAnimeList;
 public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
-    private readonly IAnimeScheduleService _animeScheduleService;
+    private readonly IAnilistService _anilistService;
     private static readonly string[] FieldNames = new[]
     {
         MalApi.AnimeFieldNames.Synopsis,
@@ -35,10 +35,10 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
     public MyAnimeListTrackingService(IMalClient client,
                                       IConfiguration configuration,
                                       ILocalSettingsService localSettingsService,
-                                      IAnimeScheduleService animeScheduleService)
+                                      IAnilistService animeScheduleService)
     {
         _client = client;
-        _animeScheduleService = animeScheduleService;
+        _anilistService = animeScheduleService;
 
         var token = localSettingsService.ReadSetting<MalApi.OAuthToken>("MalToken");
         var clientId = configuration["ClientId"];
@@ -115,12 +115,36 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                                               .WithFields(FieldNames)
                                               .Find();
 
-                observer.OnNext(pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
+                var data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
+                observer.OnNext(data);
+
+                foreach (var item in data)
+                {
+                    await Task.Delay(100);
+
+                    _anilistService
+                        .GetNextAiringEpisodeTime(item.Id)
+                        .ToObservable()
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(x => item.NextEpisodeAt = x);
+                }
 
                 while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
                 {
                     pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                    observer.OnNext(pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
+                    data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
+                    observer.OnNext(data);
+
+                    foreach (var item in data)
+                    {
+                        await Task.Delay(100);
+
+                        _anilistService
+                            .GetNextAiringEpisodeTime(item.Id)
+                            .ToObservable()
+                            .ObserveOn(RxApp.MainThreadScheduler)
+                            .Subscribe(x => item.NextEpisodeAt = x);
+                    }
                 }
 
                 observer.OnCompleted();
@@ -198,7 +222,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     private async Task<int> GetAiredEpisodes(AnimeModel model)
     {
-        var nextEp = await _animeScheduleService.GetNextAiringEpisode(model.Id);
+        var nextEp = await _anilistService.GetNextAiringEpisode(model.Id);
         return nextEp - 1 ?? 0;
     }
 }

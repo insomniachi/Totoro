@@ -18,14 +18,16 @@ public class AnimeModel : ReactiveObject, IAnimeModel
     public AiringStatus AiringStatus { get; set; }
     public float? MeanScore { get; set; }
     public int Popularity { get; set; }
-    public List<string> AlternativeTitles { get; set; } = new();
+    public IEnumerable<string> AlternativeTitles { get; set; } = Enumerable.Empty<string>();
     public string Description { get; set; }
     public List<Video> Videos { get; set; }
     public Season Season { get; set; }
-    public string[] Genres { get; set; }
+    public IEnumerable<string> Genres { get; set; }
     public AnimeModel[] Related { get; set; }
     public DayOfWeek? BroadcastDay { get; set; }
     [Reactive] public int AiredEpisodes { get; set; }
+    [Reactive] public string BannerImage { get; set; } = string.Empty;
+    [Reactive] public DateTime? NextEpisodeAt { get; set; }
 
     public override string ToString()
     {

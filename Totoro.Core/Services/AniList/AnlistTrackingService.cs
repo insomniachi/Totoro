@@ -76,7 +76,7 @@ public class AniListTrackingService : ITrackingService
                     .Build(),
                 });
 
-                observer.OnNext(response.Data.MediaListCollection.Lists.ElementAt(0).Entries.Select(x => x.Media).Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
+                observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => x.Media).Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
 
                 observer.OnCompleted();
             });
@@ -199,7 +199,8 @@ public class AniListTrackingService : ITrackingService
                             .WithSeason()
                             .WithSeasonYear()
                             .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
-                                .WithEpisode())
+                                .WithEpisode()
+                                .WithTimeUntilAiring())
                             .WithMediaListEntry(new MediaListQueryBuilder()
                                 .WithScore()
                                 .WithStatus()

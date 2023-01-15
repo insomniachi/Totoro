@@ -7,12 +7,16 @@ using static Totoro.Core.Services.AniList.AniListModelToAnimeModelConverter;
 
 namespace Totoro.Core.Services.AniList;
 
-public class AniListService : IAnimeService
+public class AnilistService : IAnimeService, IAnilistService
 {
     private readonly GraphQLHttpClient _anilistClient = new("https://graphql.anilist.co/", new NewtonsoftJsonSerializer());
+    private readonly IAnimeIdService _animeIdService;
 
-    public AniListService(ILocalSettingsService localSettingsSerivce)
+    public AnilistService(ILocalSettingsService localSettingsSerivce,
+                          IAnimeIdService animeIdService)
     {
+        _animeIdService = animeIdService;
+
         var token = localSettingsSerivce.ReadSetting<AniListAuthToken>("AniListToken", new());
         if (!string.IsNullOrEmpty(token.AccessToken))
         {
@@ -98,6 +102,51 @@ public class AniListService : IAnimeService
         });
     }
 
+    public async Task<string> GetBannerImage(long id)
+    {
+        var animeId = await _animeIdService.GetId(id);
+
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+        {
+            Query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
+                .WithBannerImage(), id: (int)animeId.AniList).Build()
+        });
+
+        return response.Data.Media.BannerImage;
+    }
+
+    public async Task<int?> GetNextAiringEpisode(long id)
+    {
+        var animeId = await _animeIdService.GetId(id);
+
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+        {
+            Query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
+                .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
+                    .WithEpisode()), id: (int)animeId.AniList).Build()
+        });
+
+        return response.Data.Media.NextAiringEpisode.Episode;
+    }
+
+    public async Task<DateTime?> GetNextAiringEpisodeTime(long id)
+    {
+        var animeId = await _animeIdService.GetId(id);
+
+        var response = _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+        {
+            Query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
+                .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
+                    .WithTimeUntilAiring()), id: (int)animeId.AniList).Build()
+        });
+
+
+        var nextEp = response.Result.Data.Media.NextAiringEpisode.TimeUntilAiring;
+        DateTime? dt = nextEp is null ? null : DateTime.Now + TimeSpan.FromSeconds(nextEp.Value);
+
+        return dt;
+    }
+
     private static MediaQueryBuilder MediaQueryBuilder()
     {
         return new MediaQueryBuilder()
@@ -113,7 +162,7 @@ public class AniListService : IAnimeService
             .WithStatus()
             .WithMeanScore()
             .WithPopularity()
-            .WithDescription()
+            .WithDescription(asHtml: false)
             .WithTrailer(new MediaTrailerQueryBuilder()
                 .WithSite()
                 .WithThumbnail()
@@ -123,6 +172,7 @@ public class AniListService : IAnimeService
             .WithEndDate(new FuzzyDateQueryBuilder().WithAllFields())
             .WithSeason()
             .WithSeasonYear()
+            .WithBannerImage()
             .WithMediaListEntry(new MediaListQueryBuilder()
                 .WithScore()
                 .WithStatus()

@@ -33,7 +33,7 @@ namespace Totoro.Core
             services.AddTransient<ISystemClock, SystemClock>();
             services.AddTransient<ISchedulerProvider, SchedulerProvider>();
             services.AddTransient<IStreamPageMapper, StreamPageMapper>();
-            services.AddSingleton<IAnimeScheduleService, AnimeScheduleService>();
+            services.AddTransient<IAnilistService, AnilistService>();
 
             services.AddMemoryCache();
             services.AddHttpClient();
@@ -44,7 +44,7 @@ namespace Totoro.Core
         public static IServiceCollection AddAniList(this IServiceCollection services)
         {
             services.AddTransient<ITrackingService, AniListTrackingService>();
-            services.AddTransient<IAnimeService, AniListService>();
+            services.AddTransient<IAnimeService>(x => x.GetRequiredService<IAnilistService>());
 
             return services;
         }

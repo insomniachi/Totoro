@@ -1,30 +1,15 @@
-﻿using System.Reactive.Linq;
-using Humanizer;
+﻿using Humanizer;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.UserControls;
 
 public sealed partial class AnimeCard : UserControl
 {
     public static readonly DependencyProperty AnimeProperty =
-        DependencyProperty.Register("Anime", typeof(AnimeModel), typeof(AnimeCard), new PropertyMetadata(null, OnChanged));
-
-    private static void OnChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        var card = d as AnimeCard;
-        if (e.NewValue is AnimeModel)
-        {
-            card.Update();
-        }
-    }
-
-    private readonly IViewService _viewService = App.GetService<IViewService>();
-    private readonly INavigationService _navigationService = App.GetService<INavigationService>();
-    //private static readonly IAnimeScheduleService _animeScheduleService = App.GetService<IAnimeScheduleService>();
+        DependencyProperty.Register("Anime", typeof(AnimeModel), typeof(AnimeCard), new PropertyMetadata(null));
 
     public AnimeModel Anime
     {
@@ -37,38 +22,12 @@ public sealed partial class AnimeCard : UserControl
     public ICommand WatchCommand { get; }
     public ICommand MoreCommand { get; }
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
+    public bool ShowNextEpisodeTime { get; set; } = false;
 
     public AnimeCard()
     {
         InitializeComponent();
-        UpdateStatusCommand = ReactiveCommand.CreateFromTask<AnimeModel>(_viewService.UpdateTracking);
-        WatchCommand = ReactiveCommand.Create<AnimeModel>(anime =>
-        {
-            _navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });
-        });
-        MoreCommand = ReactiveCommand.Create<long>(id =>
-        {
-            _navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
-        });
-
-        //this.WhenAnyValue(x => x.Anime)
-        //    .WhereNotNull()
-        //    .Where(x => x.Tracking is { Status : AnimeStatus.Watching })
-        //    .ObserveOn(RxApp.MainThreadScheduler)
-        //    .Subscribe(async anime =>
-        //    {
-        //        var nextEp = await _animeScheduleService.GetNextAiringEpisode(anime.Id);
-        //        var unwatched = nextEp - 1 - (anime.Tracking.WatchedEpisodes ?? 0);
-        //        if (unwatched is > 0)
-        //        {
-        //            InfoBadge.Visibility = Visibility.Visible;
-        //            InfoBadge.Value = unwatched ?? -1;
-        //        }
-        //    });
-
     }
-
-    private void Update() => NextEpisodeInText.Text = GetTime(Anime);
 
     public Visibility AddToListButtonVisibility(AnimeModel a)
     {
@@ -80,26 +39,21 @@ public sealed partial class AnimeCard : UserControl
         return a.Tracking is null ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    public Visibility NextEpisodeInVisibility(AnimeModel a)
+    public Visibility NextEpisodeInVisibility(string text)
     {
-        //if (a is not ScheduledAnimeModel m)
-        //{
-        //    return Visibility.Collapsed;
-        //}
-
-        //return m.TimeRemaining is not null ? Visibility.Visible : Visibility.Collapsed;
-        return Visibility.Collapsed;
+        return string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
     }
 
-    public string GetTime(AnimeModel a)
+    public string GetTime(DateTime? airingAt)
     {
-        //if (a is not ScheduledAnimeModel m)
-        //{
-        //    return string.Empty;
-        //}
+        if(!ShowNextEpisodeTime)
+        {
+            return string.Empty;
+        }
 
-        //return m.TimeRemaining is TimeRemaining tr ? ToString(tr.TimeSpan) : string.Empty;
-        return string.Empty;
+        return airingAt is null
+            ? string.Empty
+            : (airingAt.Value - DateTime.Now).Humanize(2);
     }
 
     private static string ToString(TimeSpan ts) => ts.Humanize(2);

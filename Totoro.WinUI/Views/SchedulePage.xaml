@@ -61,7 +61,10 @@
             StretchContentForSingleRow="False">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="cm:AnimeModel">
-                    <uc:AnimeCard x:Name="Card" Anime="{x:Bind}">
+                    <uc:AnimeCard
+                        x:Name="Card"
+                        Anime="{x:Bind}"
+                        ShowNextEpisodeTime="true">
                         <uc:AnimeCard.Flyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem
@@ -85,11 +88,6 @@
                     </uc:AnimeCard>
                 </DataTemplate>
             </GridView.ItemTemplate>
-            <GridView.ItemContainerStyle>
-                <Style TargetType="GridViewItem">
-                    <Setter Property="Margin" Value="10" />
-                </Style>
-            </GridView.ItemContainerStyle>
         </ctk:AdaptiveGridView>
 
 

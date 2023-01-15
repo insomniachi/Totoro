@@ -34,6 +34,7 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
     [Reactive] public ScheduleModel SelectedDay { get; set; }
     [Reactive] public List<ScheduleModel> WeeklySchedule { get; set; } = new();
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
+    public IEnumerable<AnimeModel> AllAnime => _animeCache.Items;
     public WeeklyScheduleModel Schedule { get; } = new();
     public DayOfWeek Filter => _filter.Value;
 

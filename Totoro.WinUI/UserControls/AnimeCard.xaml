@@ -11,7 +11,7 @@
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
 
         <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-            <Grid ContextFlyout="{x:Bind Flyout}">
+            <Grid ContextFlyout="{x:Bind Flyout}" CornerRadius="3">
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
@@ -44,7 +44,7 @@
                     Height="30"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
-                    Visibility="{x:Bind NextEpisodeInVisibility(Anime), Mode=OneWay}">
+                    Visibility="{x:Bind NextEpisodeInVisibility(NextEpisodeInText.Text), Mode=OneWay}">
                     <Grid.Background>
                         <SolidColorBrush Opacity="0.5" Color="Black" />
                     </Grid.Background>
@@ -52,7 +52,8 @@
                         x:Name="NextEpisodeInText"
                         Padding="5,0"
                         FontSize="20"
-                        Foreground="White" />
+                        Foreground="White"
+                        Text="{x:Bind GetTime(Anime.NextEpisodeAt), Mode=OneWay}" />
                 </Grid>
 
                 <Grid

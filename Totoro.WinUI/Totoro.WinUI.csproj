@@ -16,14 +16,13 @@
 		<PackageIcon>WindowIcon.png</PackageIcon>
 		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
 	</PropertyGroup>
-	<ItemGroup>
-	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.10" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.12" />
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Media" Version="7.1.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
@@ -36,7 +35,7 @@
 		<PackageReference Include="ReactiveUI.Fody" Version="18.4.1" />
 		<PackageReference Include="ReactiveUI.WinUI" Version="18.4.1" />
 		<PackageReference Include="System.Reactive" Version="5.0.0" />
-		<PackageReference Include="WinUIEx" Version="2.0.0" />
+		<PackageReference Include="WinUIEx" Version="2.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>

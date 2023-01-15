@@ -1,4 +1,5 @@
-﻿using Totoro.Core.Helpers;
+﻿using DynamicData.Binding;
+using Totoro.Core.Helpers;
 
 namespace Totoro.Core.ViewModels;
 
@@ -24,7 +25,9 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         var sort = this.WhenAnyValue(x => x.Sort)
             .Select(sort => sort switch
             {
-                Sort.Popularity => SortExpressionComparer<AnimeModel>.Ascending(x => x.Popularity),
+                Sort.Popularity => animeService.Current == ListServiceType.AniList 
+                    ? SortExpressionComparer<AnimeModel>.Descending(x => x.Popularity)
+                    : SortExpressionComparer<AnimeModel>.Ascending(x => x.Popularity),
                 Sort.Score => SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore ?? 0),
                 _ => throw new NotSupportedException(),
             });

@@ -1,27 +1,37 @@
 ﻿using MalApi.Interfaces;
+using Totoro.Core.Contracts;
+using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
 namespace Totoro.Core.Services.MyAnimeList;
 
 public class MyAnimeListService : IAnimeService
 {
     private readonly IMalClient _client;
-    public MyAnimeListService(IMalClient client)
+    private readonly IAnilistService _anilistService;
+
+    public MyAnimeListService(IMalClient client, 
+                              IAnilistService anilistService)
     {
         _client = client;
+        _anilistService = anilistService;
     }
 
     public ListServiceType Type => ListServiceType.MyAnimeList;
 
     public IObservable<AnimeModel> GetInformation(long id)
     {
-        return _client
-            .Anime()
-            .WithId(id)
-            .WithFields(_commonFields)
-            .WithField(x => x.Genres).WithField(x => x.RelatedAnime)
-            .Find()
-            .ToObservable()
-            .Select(MalToModelConverter.ConvertModel);
+        return Observable.Create<AnimeModel>(async observer =>
+        {
+            var malModel = await _client.Anime().WithId(id).WithFields(_commonFields).WithField(x => x.Genres).WithField(x => x.RelatedAnime).Find();
+            var model = ConvertModel(malModel);
+            observer.OnNext(model);
+
+            _anilistService
+                .GetBannerImage(id)
+                .ToObservable()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(x => model.BannerImage = x);
+        });
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)

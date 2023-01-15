@@ -25,7 +25,10 @@ namespace Totoro.Core.Services.AniList
                 BroadcastDay = GetBroadcastDay(media.StartDate),
                 Season = GetSeason(media.Season, media.SeasonYear),
                 AlternativeTitles = GetAlternateTiltes(media.Title),
-                AiredEpisodes = media.NextAiringEpisode?.Episode - 1 ?? 0
+                AiredEpisodes = media.NextAiringEpisode?.Episode - 1 ?? 0,
+                BannerImage = media.BannerImage,
+                NextEpisodeAt = ConvertToExactTime(media.NextAiringEpisode?.TimeUntilAiring),
+                Genres = media.Genres
             };
         }
 
@@ -37,6 +40,16 @@ namespace Totoro.Core.Services.AniList
                 MediaStatus.Finished => AiringStatus.FinishedAiring,
                 _ => AiringStatus.NotYetAired
             };
+        }
+
+        public static DateTime? ConvertToExactTime(int? secondsTillAiring)
+        {
+            if(secondsTillAiring is null)
+            {
+                return null;
+            }
+
+            return DateTime.Now + TimeSpan.FromSeconds(secondsTillAiring.Value);
         }
 
         public static Tracking ConvertTracking(MediaList listEntry)
@@ -152,7 +165,7 @@ namespace Totoro.Core.Services.AniList
             return new Season(ConvertSeason(season.Value), year.Value);
         }
 
-        private static List<string> GetAlternateTiltes(MediaTitle title)
+        private static IEnumerable<string> GetAlternateTiltes(MediaTitle title)
         {
             var list = new List<string>();
 
@@ -169,7 +182,7 @@ namespace Totoro.Core.Services.AniList
                 list.Add(title.Native);
             }
 
-            return list;
+            return list.Distinct();
         }
 
         private static List<Video> ConvertTrailer(MediaTrailer trailer)
