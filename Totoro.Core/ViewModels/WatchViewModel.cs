@@ -439,6 +439,11 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         var results = await Provider.Catalog.Search(title).ToListAsync();
 
+        if(results.Count == 0)
+        {
+            return (null, null);
+        }
+
         if (results.Count == 1)
         {
             return (results[0], null);

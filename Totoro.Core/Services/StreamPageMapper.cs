@@ -154,7 +154,15 @@ namespace Totoro.Core.Services
                 _ => throw new NotSupportedException()
             };
 
-            var json = await _httpClient.GetStringAsync($"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/{listService}/anime/{id}.json");
+            var url = $"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/{listService}/anime/{id}.json";
+            var result = await _httpClient.GetAsync(url);
+
+            if(!result.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var json = await result.Content.ReadAsStringAsync();
             var jObject = JsonNode.Parse(json);
             var key = GetKey(provider);
             var pages = jObject["Pages"];
