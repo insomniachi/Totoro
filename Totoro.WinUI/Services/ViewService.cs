@@ -37,7 +37,7 @@ public class ViewService : IViewService
         return Unit.Default;
     }
 
-    public async Task<SearchResult> ChoooseSearchResult(SearchResult closestMatch, List<SearchResult> searchResults, ProviderType providerType)
+    public async Task<SearchResult> ChoooseSearchResult(SearchResult closestMatch, List<SearchResult> searchResults, string providerType)
     {
         var vm = App.GetService<ChooseSearchResultViewModel>();
         vm.SetValues(searchResults);

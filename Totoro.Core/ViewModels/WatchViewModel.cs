@@ -249,7 +249,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     }
 
-    [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
+    [Reactive] public string SelectedProviderType { get; set; } = "allanime";
     [Reactive] public int? CurrentEpisode { get; set; }
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public (SearchResult Sub, SearchResult Dub) SelectedAnimeResult { get; set; }
@@ -448,7 +448,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return (results[0], null);
         }
-        else if (results.Count == 2 && _settings.DefaultProviderType == ProviderType.GogoAnime) // gogo anime has separate listing for sub/dub
+        else if (results.Count == 2 && _settings.DefaultProviderType is "gogo") // gogo anime has separate listing for sub/dub
         {
             return (results[0], results[1]);
         }
@@ -489,7 +489,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1;
     private async Task TrySetAnime(string url, string title)
     {
-        var id = await _streamPageMapper.GetIdFromUrl(url, Provider.ProviderType) ?? await TryGetId(title);
+        var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType) ?? await TryGetId(title);
         _anime = await _animeService.GetInformation(id);
     }
     private async Task<long> TryGetId(string title)

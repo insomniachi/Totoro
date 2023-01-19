@@ -12,7 +12,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     {
         ElementTheme = ElementTheme.Dark;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
-        DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), ProviderType.AllAnime);
+        DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), "allanime");
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);
@@ -60,7 +60,7 @@ internal class SettingsModel : ReactiveObject, ISettings
 
     [Reactive] public ElementTheme ElementTheme { get; set; }
     [Reactive] public bool PreferSubs { get; set; }
-    [Reactive] public ProviderType DefaultProviderType { get; set; }
+    [Reactive] public string DefaultProviderType { get; set; }
     [Reactive] public bool UseDiscordRichPresense { get; set; }
     [Reactive] public int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     [Reactive] public int OpeningSkipDurationInSeconds { get; set; }

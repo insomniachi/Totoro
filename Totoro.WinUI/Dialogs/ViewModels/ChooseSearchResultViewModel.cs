@@ -12,7 +12,7 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
     {
 
         this.WhenAnyValue(x => x.SelectedProviderType)
-            .Select(x => providerFactory.GetProvider(x))
+            .Select(providerFactory.GetProvider)
             .ToProperty(this, x => x.Provider, out _provider);
 
         this.ObservableForProperty(x => x.Title, x => x)
@@ -35,7 +35,7 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
 
     [Reactive] public SearchResult SelectedSearchResult { get; set; }
     [Reactive] public string Title { get; set; }
-    [Reactive] public ProviderType SelectedProviderType { get; set; } = ProviderType.AnimixPlay;
+    [Reactive] public string SelectedProviderType { get; set; } = "allanime";
     public IEnumerable<SearchResult> SearchResults => _searchResults;
     public List<ProviderType> Providers { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
     public IProvider Provider => _provider.Value;

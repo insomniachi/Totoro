@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Net.Http;
 using AnimDL.Core;
+using AnimDL.Core.Api;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -42,8 +42,11 @@ public partial class App : Application, IEnableLogger
                     .AddTopLevelPages()
                     .AddDialogPages();
 
+            services.AddSingleton<IProviderFactory>(ProviderFactory.Instance);
             services.AddSingleton(MessageBus.Current);
             services.AddTransient<DefaultExceptionHandler>();
+
+            ProviderFactory.Instance.LoadPlugins("Plugins");
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

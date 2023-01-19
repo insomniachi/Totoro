@@ -25,7 +25,7 @@ namespace Totoro.Core.Services
             _settings = settings;
         }
 
-        public async Task<long> GetId(string identifier, ProviderType provider)
+        public async Task<long> GetId(string identifier, string provider)
         {
             try
             {
@@ -48,9 +48,9 @@ namespace Totoro.Core.Services
             }
         }
 
-        public async Task<long?> GetIdFromUrl(string url, ProviderType provider)
+        public async Task<long?> GetIdFromUrl(string url, string provider)
         {
-            if (provider == ProviderType.Yugen)
+            if (provider == "yugen")
             {
                 var regex = _settings.DefaultListService switch
                 {
@@ -61,13 +61,13 @@ namespace Totoro.Core.Services
 
                 return await GetIdFromSource(url, regex);
             }
-            else if (provider == ProviderType.GogoAnime)
+            else if (provider == "gogo")
             {
                 var uri = new Uri(url);
                 var match = GogoAnimeIdentifierRegex().Match(uri.AbsolutePath);
-                return await GetId(match.Groups[1].Value, ProviderType.GogoAnime);
+                return await GetId(match.Groups[1].Value, "gogo");
             }
-            else if (provider == ProviderType.AnimePahe)
+            else if (provider == "animepahe")
             {
                 try
                 {
@@ -102,7 +102,7 @@ namespace Totoro.Core.Services
                     return null;
                 }
             }
-            else if (provider == ProviderType.AllAnime)
+            else if (provider == "allanime")
             {
                 var aniListId = await GetIdFromSource(url, AllAnimeAniListIdRegex());
                 if (aniListId == 0)
@@ -145,7 +145,7 @@ namespace Totoro.Core.Services
             };
         }
 
-        public async Task<(SearchResult Sub, SearchResult Dub)?> GetStreamPage(long id, ProviderType provider)
+        public async Task<(SearchResult Sub, SearchResult Dub)?> GetStreamPage(long id, string provider)
         {
             var listService = _settings.DefaultListService switch
             {
@@ -214,26 +214,23 @@ namespace Totoro.Core.Services
             };
         }
 
-        private static string GetKey(ProviderType provider)
+        private static string GetKey(string provider)
         {
             return provider switch
             {
-                ProviderType.GogoAnime => "Gogoanime",
-                ProviderType.Yugen => "YugenAnime",
-                ProviderType.Zoro => "Zoro",
-                ProviderType.AnimixPlay => "AniMixPlay",
-                ProviderType.Tenshi => "Tenshi",
-                ProviderType.AnimePahe => "animepahe",
+                "gogo" => "Gogoanime",
+                "yugen" => "YugenAnime",
+                "zoro" => "Zoro",
+                "animepahe" => "animepahe",
                 _ => string.Empty
             };
         }
 
-        private static string GetProviderPage(ProviderType provider)
+        private static string GetProviderPage(string provider)
         {
             return provider switch
             {
-                ProviderType.GogoAnime => "Gogoanime",
-                ProviderType.Tenshi => "Tenshi",
+                "gogo" => "Gogoanime",
                 _ => throw new NotSupportedException()
             };
         }

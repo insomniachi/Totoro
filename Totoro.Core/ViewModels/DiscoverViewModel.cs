@@ -36,8 +36,8 @@ public class DiscoverViewModel : NavigatableViewModel
             .Subscribe()
             .DisposeWith(Garbage);
 
-        CardWidth = settings.DefaultProviderType is ProviderType.AnimePahe or ProviderType.Marin ? 480 : 190; // animepahe image is thumbnail
-        DontUseImageEx = settings.DefaultProviderType == ProviderType.Yugen; // using imagex for yugen is crashing
+        CardWidth = settings.DefaultProviderType is "animepahe" or "marin" ? 480 : 190; // animepahe image is thumbnail
+        DontUseImageEx = settings.DefaultProviderType is "yugen"; // using imagex for yugen is crashing
 
         SelectEpisode = ReactiveCommand.CreateFromTask<AiredEpisode>(OnEpisodeSelected);
         SelectSearchResult = ReactiveCommand.CreateFromTask<SearchResult>(OnSearchResultSelected);
