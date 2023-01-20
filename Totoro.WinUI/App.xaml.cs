@@ -46,8 +46,6 @@ public partial class App : Application, IEnableLogger
             services.AddSingleton(MessageBus.Current);
             services.AddTransient<DefaultExceptionHandler>();
 
-            ProviderFactory.Instance.LoadPlugins("Plugins");
-
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
         })
@@ -58,12 +56,19 @@ public partial class App : Application, IEnableLogger
     public static T GetService<T>()
         where T : class
     {
-        return _host.Services.GetService(typeof(T)) as T;
+        try
+        {
+            return _host.Services.GetService(typeof(T)) as T;
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     public static object GetService(Type t) => _host.Services.GetService(t);
 
-    public static WindowEx MainWindow { get; set; } = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
+    public static WindowEx MainWindow { get; set; }
 
     public App()
     {
@@ -109,6 +114,7 @@ public partial class App : Application, IEnableLogger
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        MainWindow = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
         Commands = GetService<TotoroCommands>();

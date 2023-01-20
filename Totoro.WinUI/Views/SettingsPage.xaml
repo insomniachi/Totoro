@@ -101,8 +101,9 @@
                     </labs:SettingsCard.HeaderIcon>
                     <ComboBox
                         Width="150"
+                        DisplayMemberPath="DisplayName"
                         ItemsSource="{x:Bind ViewModel.ProviderTypes}"
-                        SelectedItem="{x:Bind ViewModel.Settings.DefaultProviderType, Mode=TwoWay}" />
+                        SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
                 </labs:SettingsCard>
                 <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
                     <labs:SettingsCard.HeaderIcon>

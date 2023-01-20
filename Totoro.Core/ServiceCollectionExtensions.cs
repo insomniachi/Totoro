@@ -25,6 +25,7 @@ namespace Totoro.Core
             services.AddSingleton<ITrackingServiceContext, TrackingServiceContext>();
             services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
             services.AddSingleton<ISettings, SettingsModel>();
+            services.AddSingleton<IPluginManager, PluginManager>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();

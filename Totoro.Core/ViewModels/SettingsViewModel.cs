@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.Json.Serialization;
+using AnimDL.Core;
 using Splat;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -80,7 +81,7 @@ internal class SettingsModel : ReactiveObject, ISettings
             DefaultUrls.GogoAnime = response.Headers.Location.AbsoluteUri;
         }
 
-        AnimDL.Core.DefaultUrl.GogoAnime = DefaultUrls.GogoAnime;
+        DefaultUrl.GogoAnime = DefaultUrls.GogoAnime;
         return Unit.Default;
     }
 }
@@ -89,12 +90,13 @@ public class SettingsViewModel : NavigatableViewModel
 {
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
+    [Reactive] public ProviderInfo SelectedProvider { get; set; }
     
     public ISettings Settings { get; }
     public Version Version { get; }
     public Version ScrapperVersion { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public List<ProviderType> ProviderTypes { get; } = new List<ProviderType> { ProviderType.AllAnime, ProviderType.AnimePahe, ProviderType.GogoAnime, ProviderType.Yugen, ProviderType.Marin };
+    public IEnumerable<ProviderInfo> ProviderTypes => ProviderFactory.Instance.Providers;
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public ICommand AuthenticateCommand { get; }
@@ -107,9 +109,11 @@ public class SettingsViewModel : NavigatableViewModel
     {
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
-        ScrapperVersion = typeof(AnimDL.Core.DefaultUrl).Assembly.GetName().Version;
+        ScrapperVersion = typeof(DefaultUrl).Assembly.GetName().Version;
         IsMalConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.MyAnimeList);
         IsAniListConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
+        SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
+            ?? ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == "allanime");
 
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
@@ -121,6 +125,9 @@ public class SettingsViewModel : NavigatableViewModel
             }    
             await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
         });
+
+        this.ObservableForProperty(x => x.SelectedProvider, x => x)
+            .Subscribe(provider => settings.DefaultProviderType = provider.Name);
     }
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();

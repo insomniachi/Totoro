@@ -68,6 +68,26 @@ public class LocalSettingsService : ILocalSettingsService
         return defaultValue;
     }
 
+    public string ReadSettingString(string key, string defaultValue = default)
+    {
+        if (RuntimeHelper.IsMSIX)
+        {
+            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
+            {
+                return obj as string;
+            }
+        }
+        else
+        {
+            if (_settings != null && _settings.TryGetValue(key, out var obj))
+            {
+                return obj as string;
+            }
+        }
+
+        return defaultValue;
+    }
+
     public void SaveSetting<T>(string key, T value)
     {
         if (RuntimeHelper.IsMSIX)

@@ -22,7 +22,7 @@ public class DisoverViewModelTests
                     new TestAiredEpisode(),new TestAiredEpisode(),new TestAiredEpisode()
                 } as IEnumerable<AiredEpisode>));
                 providerMock.Setup(x => x.AiredEpisodesProvider).Returns(airedEpisodesProviderMock.Object);
-                mock.Setup(x => x.GetProvider(ProviderType.GogoAnime)).Returns(providerMock.Object);
+                mock.Setup(x => x.GetProvider("gogo")).Returns(providerMock.Object);
             })
             .WithTrackingService(mock => mock.Setup(x => x.GetAnime()).Returns(Observable.Return(Enumerable.Empty<AnimeModel>())))
             .WithFeaturedAnimeProvider(mock => mock.Setup(x => x.GetFeaturedAnime()).Returns(Observable.Return(Enumerable.Repeat(new FeaturedAnime { Title = "Hyouka" }, 5))));
