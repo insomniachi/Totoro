@@ -375,6 +375,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public async Task<Unit> UpdateTracking()
     {
+        if(_settings.DefaultProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
+        {
+            return Unit.Default;
+        }
+
         if (_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= Streams.Episode)
         {
             return Unit.Default;
@@ -489,11 +494,22 @@ public partial class WatchViewModel : NavigatableViewModel
     private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1;
     private async Task TrySetAnime(string url, string title)
     {
+        if (_settings.DefaultProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
+        {
+            return;
+        }
+
         var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType) ?? await TryGetId(title);
         _anime = await _animeService.GetInformation(id);
     }
+
     private async Task<long> TryGetId(string title)
     {
+        if (_settings.DefaultProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
+        {
+            return 0;
+        }
+
         var candidates = await _animeService.GetAnime(title);
         var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(title, x) > 80)).ToList();
         if (filtered.Count == 1)
@@ -502,7 +518,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else
         {
-            var model = await _viewService.SelectModel<AnimeModel>(filtered);
+            var model = await _viewService.SelectModel<AnimeModel>(candidates);
             return model.Id;
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text.Json.Nodes;
 using AnimDL.Core;
+using Microsoft.AspNetCore.WebUtilities;
 using Splat;
 
 namespace Totoro.Core.Services;
@@ -67,7 +68,7 @@ public class PluginManager : IPluginManager, IEnableLogger
             }
 
             var newReleases = pluginInfos.Except(localPlugins).ToList();
-
+            var hasNewConfig = false;
             foreach (var item in newReleases)
             {
                 var path = Path.Combine(_pluginFolder, item.FileName);
@@ -80,25 +81,59 @@ public class PluginManager : IPluginManager, IEnableLogger
                 using var s = await _httpClient.GetStreamAsync(url);
                 using var fs = new FileStream(path, FileMode.OpenOrCreate);
                 await s.CopyToAsync(fs);
+                hasNewConfig = true;
             }
 
             ProviderFactory.Instance.LoadPlugins(_pluginFolder);
 
             foreach (var item in ProviderFactory.Instance.Providers)
             {
-                if(!_configs.ContainsKey(item.Name))
+                var baseConfig = (Parameters)ProviderFactory.Instance.GetConfiguration(item.Name);
+                if (!_configs.ContainsKey(item.Name))
                 {
-                    _configs.Add(item.Name, (Parameters)ProviderFactory.Instance.GetConfiguration(item.Name));
+                    _configs.Add(item.Name, baseConfig);
+
+                    if(item.Name == "kamy") // auth kamy first time
+                    {
+                        if(baseConfig.TryGetValue("AccessToken", out string token) && string.IsNullOrEmpty(token))
+                        {
+                            baseConfig["AccessToken"] = await AuthenticateKamy();
+                            ProviderFactory.Instance.SetConfiguration(item.Name, _configs[item.Name]);
+                        }
+                    }
+                    hasNewConfig = true;
                 }
                 else
                 {
-                    ProviderFactory.Instance.SetConfiguration(item.Name, _configs[item.Name]);
+                    foreach (var kv in _configs[item.Name].Where(x => baseConfig.ContainsKey(x.Key)))
+                    {
+                        baseConfig[kv.Key] = kv.Value;  
+                    }
+
+                    ProviderFactory.Instance.SetConfiguration(item.Name, baseConfig);
                 }
+            }
+
+            if(hasNewConfig)
+            {
+                SaveConfig();
             }
         }
         catch (Exception ex)
         {
            this.Log().Error(ex);
         }
+    }
+
+    public async Task<string> AuthenticateKamy()
+    {
+        var url = QueryHelpers.AddQueryString("https://api.kamyroll.tech/auth/v1/token", new Dictionary<string, string>
+        {
+            ["device_id"] = "whatvalueshouldbeforweb",
+            ["device_type"] = "com.service.data",
+            ["access_token"] = "HMbQeThWmZq4t7w"
+        });
+        var json = await _httpClient.GetStringAsync(url);
+        return $"{JsonNode.Parse(json)?["access_token"]}";
     }
 }

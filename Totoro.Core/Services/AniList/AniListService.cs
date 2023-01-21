@@ -126,7 +126,7 @@ public class AnilistService : IAnimeService, IAnilistService
                     .WithEpisode()), id: (int)animeId.AniList).Build()
         });
 
-        return response.Data.Media.NextAiringEpisode.Episode;
+        return response.Data.Media.NextAiringEpisode?.Episode;
     }
 
     public async Task<DateTime?> GetNextAiringEpisodeTime(long id)
