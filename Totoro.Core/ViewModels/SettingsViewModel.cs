@@ -13,7 +13,17 @@ internal class SettingsModel : ReactiveObject, ISettings
     {
         ElementTheme = ElementTheme.Dark;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
-        DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), "allanime");
+        
+        // temp hack for backward compat
+        try
+        {
+            DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), "allanime");
+        }
+        catch
+        {
+            DefaultProviderType = "allanime";
+        }
+
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);

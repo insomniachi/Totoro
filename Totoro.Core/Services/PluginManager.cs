@@ -97,6 +97,7 @@ public class PluginManager : IPluginManager, IEnableLogger
                     {
                         if(baseConfig.TryGetValue("AccessToken", out string token) && string.IsNullOrEmpty(token))
                         {
+                            this.Log().Info("Fetching kamyroll access token.");
                             baseConfig["AccessToken"] = await AuthenticateKamy();
                             ProviderFactory.Instance.SetConfiguration(item.Name, _configs[item.Name]);
                         }
@@ -112,6 +113,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
                     ProviderFactory.Instance.SetConfiguration(item.Name, baseConfig);
                 }
+                this.Log().Info($"Loaded plugin {item.DisplayName}");
             }
 
             if(hasNewConfig)
