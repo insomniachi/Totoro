@@ -12,7 +12,6 @@ public interface ISettings
     int OpeningSkipDurationInSeconds { get; set; }
     Guid AniSkipId { get; }
     bool ContributeTimeStamps { get; set; }
-    public DefaultUrls DefaultUrls { get; set; }
     LogLevel MinimumLogLevel { get; set; }
     bool AutoUpdate { get; set; }
     ListServiceType? DefaultListService { get; set; }

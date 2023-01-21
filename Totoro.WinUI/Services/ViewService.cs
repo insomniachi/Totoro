@@ -2,6 +2,7 @@
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Core.Contracts;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
 
@@ -167,6 +168,26 @@ public class ViewService : IViewService
         };
 
         var result = await dialog.ShowAsync();
+        return Unit.Default;
+    }
+
+    public async Task<Unit> ConfigureProvider(ProviderInfo provider)
+    {
+        var vm = new ConfigureProviderViewModel(App.GetService<IPluginManager>())
+        {
+            ProviderType = provider.Name
+        };
+
+        var result = await _contentDialogService.ShowDialog(vm, d =>
+        {
+            d.Title = provider.DisplayName;
+            d.IsPrimaryButtonEnabled = true;
+            d.IsSecondaryButtonEnabled = true;
+            d.PrimaryButtonText = "Save";
+            d.SecondaryButtonText = "Cancel";
+            d.PrimaryButtonCommand = vm.Save;
+        });
+
         return Unit.Default;
     }
 }

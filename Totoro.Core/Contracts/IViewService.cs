@@ -10,4 +10,5 @@ public interface IViewService
     Task SubmitTimeStamp(long malId, int ep, VideoStream stream, AniSkipResult existingResult, double duration, double introStart);
     Task<bool> Question(string title, string message);
     Task<Unit> Information(string title, string message);
+    Task<Unit> ConfigureProvider(ProviderInfo providerType);
 }

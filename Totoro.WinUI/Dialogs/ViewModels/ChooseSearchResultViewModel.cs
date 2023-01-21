@@ -37,7 +37,7 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
     [Reactive] public string Title { get; set; }
     [Reactive] public string SelectedProviderType { get; set; } = "allanime";
     public IEnumerable<SearchResult> SearchResults => _searchResults;
-    public List<ProviderType> Providers { get; set; } = Enum.GetValues<ProviderType>().Cast<ProviderType>().ToList();
+    public List<string> Providers { get; set; } = new List<string>();
     public IProvider Provider => _provider.Value;
     public void SetValues(IEnumerable<SearchResult> values)
     {

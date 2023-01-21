@@ -119,7 +119,7 @@ public partial class App : Application, IEnableLogger
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
         Commands = GetService<TotoroCommands>();
         ConfigureLogging();
-        await GetService<ISettings>().UpdateUrls();
+        //await GetService<ISettings>().UpdateUrls();
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
     }

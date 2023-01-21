@@ -4,15 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:am="using:AnimDL.Core.Models"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Totoro.Core.Models"
+    xmlns:root="using:Totoro.WinUI"
     xmlns:views="using:Totoro.WinUI.Views"
     Name="Page"
     Margin="24"
     mc:Ignorable="d">
-    <Grid>
+    <Grid MaxWidth="1000">
         <ScrollViewer Grid.Row="1">
             <StackPanel Spacing="10">
                 <TextBlock
@@ -95,16 +97,33 @@
                         OffContent="Off"
                         OnContent="On" />
                 </labs:SettingsCard>
-                <labs:SettingsCard Description="Default provider used to stream." Header="Default Stream Provider">
-                    <labs:SettingsCard.HeaderIcon>
+                <labs:SettingsExpander
+                    Description="Default provider used to stream."
+                    Header="Default Stream Provider"
+                    ItemsSource="{x:Bind ViewModel.ProviderTypes}">
+                    <labs:SettingsExpander.HeaderIcon>
                         <FontIcon Glyph="&#xe93e;" />
-                    </labs:SettingsCard.HeaderIcon>
+                    </labs:SettingsExpander.HeaderIcon>
                     <ComboBox
                         Width="150"
                         DisplayMemberPath="DisplayName"
                         ItemsSource="{x:Bind ViewModel.ProviderTypes}"
                         SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
-                </labs:SettingsCard>
+                    <labs:SettingsExpander.ItemTemplate>
+                        <DataTemplate x:DataType="am:ProviderInfo">
+                            <labs:SettingsCard
+                                Command="{x:Bind root:App.Commands.ConfigureProvider}"
+                                CommandParameter="{x:Bind}"
+                                Description="{x:Bind Version}"
+                                Header="{x:Bind DisplayName}"
+                                IsClickEnabled="True">
+                                <labs:SettingsCard.ActionIcon>
+                                    <FontIcon Glyph="&#xe713;" />
+                                </labs:SettingsCard.ActionIcon>
+                            </labs:SettingsCard>
+                        </DataTemplate>
+                    </labs:SettingsExpander.ItemTemplate>
+                </labs:SettingsExpander>
                 <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
                     <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xe7fc;" />

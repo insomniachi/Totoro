@@ -123,7 +123,7 @@ public class DiscoverViewModel : NavigatableViewModel
 
     private IObservable<IEnumerable<AiredEpisode>> LoadPage(int page)
     {
-        if (_provider.AiredEpisodesProvider is null)
+        if (_provider?.AiredEpisodesProvider is null)
         {
             return Observable.Empty<IEnumerable<AiredEpisode>>();
         }

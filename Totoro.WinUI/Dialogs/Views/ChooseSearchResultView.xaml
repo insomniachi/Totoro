@@ -22,8 +22,8 @@
                     SelectedItem="{x:Bind ViewModel.SelectedProviderType, Mode=TwoWay}"
                     Visibility="Collapsed">
                     <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="api:ProviderType">
-                            <TextBlock Text="{x:Bind}" />
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

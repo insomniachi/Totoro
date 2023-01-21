@@ -18,7 +18,6 @@ internal class SettingsModel : ReactiveObject, ISettings
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(nameof(TimeRemainingWhenEpisodeCompletesInSeconds), 120);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(nameof(OpeningSkipDurationInSeconds), 85);
         ContributeTimeStamps = localSettingsService.ReadSetting(nameof(ContributeTimeStamps), false);
-        DefaultUrls = localSettingsService.ReadSetting(nameof(DefaultUrls), new DefaultUrls());
         MinimumLogLevel = localSettingsService.ReadSetting(nameof(MinimumLogLevel), LogLevel.Debug);
         AutoUpdate = localSettingsService.ReadSetting(nameof(AutoUpdate), true);
         DefaultListService = localSettingsService.ReadSetting(nameof(DefaultListService), default(ListServiceType?));
@@ -45,10 +44,6 @@ internal class SettingsModel : ReactiveObject, ISettings
                 this.Log().Debug($"""Setting Changed "{propInfo.Name}" => {value}""");
                 localSettingsService.SaveSetting(propInfo.Name, value);
             });
-
-        DefaultUrls
-            .WhenAnyPropertyChanged()
-            .Subscribe(_ => localSettingsService.SaveSetting(nameof(DefaultUrls), DefaultUrls));
 
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
             .Where(x => x && !dRpc.IsInitialized)
@@ -109,7 +104,6 @@ public class SettingsViewModel : NavigatableViewModel
     {
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
-        ScrapperVersion = typeof(DefaultUrl).Assembly.GetName().Version;
         IsMalConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.MyAnimeList);
         IsAniListConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
         SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
@@ -131,6 +125,6 @@ public class SettingsViewModel : NavigatableViewModel
     }
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();
-    public string GetDescripton() => $"Client - {Version} | Scrapper - {ScrapperVersion}";
+    public string GetDescripton() => $"Client - {Version}";
 
 }

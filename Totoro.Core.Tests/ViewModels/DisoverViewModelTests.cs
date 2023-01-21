@@ -12,7 +12,7 @@ public class DisoverViewModelTests
     public async void DiscoverViewModel_Initializes()
     {
         var vmBuilder = new DiscoverViewModelBuilder()
-            .WithSettings(mock => mock.Setup(x => x.DefaultProviderType).Returns(ProviderType.GogoAnime))
+            .WithSettings(mock => mock.Setup(x => x.DefaultProviderType).Returns("gogo"))
             .WithProviderFacotry(mock =>
             {
                 var providerMock = new Mock<IProvider>();
@@ -49,7 +49,7 @@ public class DisoverViewModelTests
     {
         var vmBuilder = new DiscoverViewModelBuilder();
         var vm = vmBuilder
-            .WithSettings(mock => mock.Setup(x => x.DefaultProviderType).Returns(ProviderType.GogoAnime))
+            .WithSettings(mock => mock.Setup(x => x.DefaultProviderType).Returns("gogo"))
             .WithProviderFacotry(mock =>
             {
                 var providerMock = new Mock<IProvider>();
@@ -61,7 +61,7 @@ public class DisoverViewModelTests
                         Url = x.ToString(),
                     }));
                 providerMock.Setup(x => x.Catalog).Returns(catalogMock.Object);
-                mock.Setup(x => x.GetProvider(ProviderType.GogoAnime)).Returns(providerMock.Object);
+                mock.Setup(x => x.GetProvider("gogo")).Returns(providerMock.Object);
             })
             .Build();
 

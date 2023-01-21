@@ -16,6 +16,9 @@
 		<PackageIcon>WindowIcon.png</PackageIcon>
 		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Dialogs\Views\ConfigureProviderView.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.12" />
@@ -66,6 +69,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Dialogs\Views\ConfigureProviderView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Dialogs\Views\AuthenticateAniListView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

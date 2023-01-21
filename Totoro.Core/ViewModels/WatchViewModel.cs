@@ -402,7 +402,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         _isUpdatingTracking = false;
 
-        if (_settings.ContributeTimeStamps && AniSkipResult.Items.Any(x => x.SkipType == "op") == false) // don't force to submit if only ed is missing
+        if (_settings.ContributeTimeStamps && AniSkipResult?.Items.Any(x => x.SkipType == "op") == false) // don't force to submit if only ed is missing
         {
             OnSubmitTimeStamps();
         }

@@ -55,12 +55,15 @@ public class TotoroCommands : IEnableLogger
                     break;
             }
         });
+
+        ConfigureProvider = ReactiveCommand.CreateFromTask<ProviderInfo>(viewService.ConfigureProvider);
     }
 
     public ICommand UpdateTracking { get; }
     public ICommand More { get; }
     public ICommand Watch { get; }
     public ICommand PlayVideo { get; }
+    public ICommand ConfigureProvider { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

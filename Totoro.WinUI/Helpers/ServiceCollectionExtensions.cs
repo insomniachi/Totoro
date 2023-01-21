@@ -91,6 +91,7 @@ public static class ServiceCollectionExtensions
         services.AddPage<PlayVideoDialogViewModel, VideoView>();
         services.AddPage<SelectModelViewModel, SelectModelView>();
         services.AddPage<SubmitTimeStampsViewModel, SubmitTimeStampsView>();
+        services.AddPage<ConfigureProviderViewModel, ConfigureProviderView>();
         return services;
     }
 }
