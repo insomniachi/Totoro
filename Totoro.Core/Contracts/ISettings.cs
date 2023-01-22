@@ -15,6 +15,7 @@ public interface ISettings
     LogLevel MinimumLogLevel { get; set; }
     bool AutoUpdate { get; set; }
     ListServiceType? DefaultListService { get; set; }
+    string HomePage { get; set; }
     Task<Unit> UpdateUrls();
 }
 

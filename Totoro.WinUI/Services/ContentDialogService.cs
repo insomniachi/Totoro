@@ -14,6 +14,38 @@ public class ContentDialogService : IContentDialogService
         return await ShowDialog(vm, configure);
     }
 
+    public async Task<ContentDialogResult> ShowDialog<TView, TViewModel>(TViewModel viewModel, Action<ContentDialog> configure)
+        where TView : IViewFor, new()
+    {
+        var view = new TView
+        {
+            ViewModel = viewModel
+        };
+        var dialog = new ContentDialog()
+        {
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            DefaultButton = ContentDialogButton.Primary,
+            Content = view
+        };
+
+        IDisposable disposable = null;
+        if (viewModel is IClosable closeable)
+        {
+            disposable = closeable.Close.Subscribe(x => dialog.Hide());
+        }
+
+        configure(dialog);
+        var result = await dialog.ShowAsync();
+        disposable?.Dispose();
+        if (viewModel is IDisposable d)
+        {
+            d.Dispose();
+        }
+
+        return result;
+    }
+
     public async Task<ContentDialogResult> ShowDialog<TViewModel>(TViewModel viewModel, Action<ContentDialog> configure)
         where TViewModel : class
     {
@@ -35,10 +67,7 @@ public class ContentDialogService : IContentDialogService
 
         configure(dialog);
         var result = await dialog.ShowAsync();
-        if (disposable is not null)
-        {
-            disposable.Dispose();
-        }
+        disposable?.Dispose();
         if (viewModel is IDisposable d)
         {
             d.Dispose();

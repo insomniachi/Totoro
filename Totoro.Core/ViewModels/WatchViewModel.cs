@@ -1,4 +1,5 @@
-﻿using System.Reactive.Concurrency;
+﻿using System.Diagnostics;
+using System.Reactive.Concurrency;
 using AnimDL.Core.Models;
 using FuzzySharp;
 using Splat;
@@ -380,6 +381,11 @@ public partial class WatchViewModel : NavigatableViewModel
             return Unit.Default;
         }
 
+        if(Anime is null)
+        {
+            return Unit.Default;
+        }
+
         if (_isUpdatingTracking || Anime.Tracking is not null && Anime.Tracking.WatchedEpisodes >= Streams.Episode)
         {
             return Unit.Default;
@@ -407,7 +413,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         _isUpdatingTracking = false;
 
-        if (_settings.ContributeTimeStamps && AniSkipResult?.Items.Any(x => x.SkipType == "op") == false) // don't force to submit if only ed is missing
+        if (_settings.ContributeTimeStamps && AniSkipResult?.Items.Any(x => x.SkipType == "op") is not true) // don't force to submit if only ed is missing
         {
             OnSubmitTimeStamps();
         }
@@ -500,27 +506,24 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType) ?? await TryGetId(title);
-        _anime = await _animeService.GetInformation(id);
+
+        if (id is null)
+        {
+            this.Log().Warn($"Unable to find Id for {title}, watch session will not be tracked");
+            return;
+        }
+
+        _anime = await _animeService.GetInformation(id.Value);
     }
 
-    private async Task<long> TryGetId(string title)
+    private async Task<long?> TryGetId(string title)
     {
         if (_settings.DefaultProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
         {
             return 0;
         }
 
-        var candidates = await _animeService.GetAnime(title);
-        var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(title, x) > 80)).ToList();
-        if (filtered.Count == 1)
-        {
-            return filtered[0].Id;
-        }
-        else
-        {
-            var model = await _viewService.SelectModel<AnimeModel>(candidates);
-            return model.Id;
-        }
+        return await _viewService.TryGetId(title);
     }
     private bool IsPlayingOpeningOrEnding(double currentTime)
     {

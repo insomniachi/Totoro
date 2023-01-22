@@ -56,10 +56,6 @@
                     Icon="Library"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.WatchViewModel"
-                    Content="Watch"
-                    Icon="Play" />
-                <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.SeasonalViewModel"
                     Content="Seasonal"
                     Icon="Calendar" />

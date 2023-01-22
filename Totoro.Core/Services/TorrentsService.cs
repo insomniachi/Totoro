@@ -1,11 +1,11 @@
 ﻿using System.Reactive.Concurrency;
-using FuzzySharp;
 using MonoTorrent;
 using MonoTorrent.Client;
+using Splat;
 
 namespace Totoro.Core.Services;
 
-public class TorrentsService : ITorrentsService
+public class TorrentsService : ITorrentsService, IEnableLogger
 {
     private readonly ClientEngine _engine = new(new());
     private readonly IToastService _toastService;
@@ -36,17 +36,10 @@ public class TorrentsService : ITorrentsService
         if (!Directory.Exists(saveDirectory))
         {
             // ask for id
-            var candidates = await _animeService.GetAnime(content.Title);
-            var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, content.Title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(content.Title, x) > 80)).ToList();
-
-            if (filtered.Count == 1)
+            var id = await _viewService.TryGetId(content.Title);
+            if(id is { })
             {
-                _localMediaService.SetId(saveDirectory, filtered.First().Id);
-            }
-            else
-            {
-                var model = await _viewService.SelectModel<AnimeModel>(filtered);
-                _localMediaService.SetId(saveDirectory, model.Id);
+                _localMediaService.SetId(saveDirectory, id.Value);
             }
         }
 

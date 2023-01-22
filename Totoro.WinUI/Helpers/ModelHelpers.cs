@@ -29,9 +29,16 @@ public static class ModelHelpers
             return null;
         }
 
-        var uri = new Uri(ihi.Image, UriKind.Absolute);
-        var imageSource = new BitmapImage { UriSource = uri };
-        return imageSource;
+        try
+        {
+            var uri = new Uri(ihi.Image, UriKind.Absolute);
+            var imageSource = new BitmapImage { UriSource = uri };
+            return imageSource;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public static string GetAdditionalInformation(this SearchResult searchResult)

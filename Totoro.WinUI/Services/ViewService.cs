@@ -1,20 +1,25 @@
-﻿using AnimDL.Core.Api;
+﻿using System.Reactive.Threading.Tasks;
 using CommunityToolkit.WinUI.UI.Controls;
+using FuzzySharp;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Totoro.Core.Contracts;
+using Splat;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
+using Totoro.WinUI.Dialogs.Views;
 
 namespace Totoro.WinUI.Services;
 
-public class ViewService : IViewService
+public class ViewService : IViewService, IEnableLogger
 {
     private readonly IContentDialogService _contentDialogService;
+    private readonly IAnimeServiceContext _animeService;
 
-    public ViewService(IContentDialogService contentDialogService)
+    public ViewService(IContentDialogService contentDialogService,
+                       IAnimeServiceContext animeService)
     {
         _contentDialogService = contentDialogService;
+        _animeService = animeService;
     }
 
     public async Task<Unit> UpdateTracking(IAnimeModel a)
@@ -94,15 +99,17 @@ public class ViewService : IViewService
         }, vm => vm.Url = url);
     }
 
-    public async Task<T> SelectModel<T>(IEnumerable<object> models)
+    public async Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string, Task<IEnumerable<T>>> searcher = default)
         where T : class
     {
-        var vm = new SelectModelViewModel()
+        var vm = new SelectModelViewModel<T>()
         {
             Models = models,
+            SelectedModel = defaultValue,
+            Search = searcher,
         };
 
-        await _contentDialogService.ShowDialog(vm, d =>
+        await _contentDialogService.ShowDialog<SelectModelView,SelectModelViewModel<T>>(vm, d =>
         {
             d.Title = "Select";
             d.IsPrimaryButtonEnabled = false;
@@ -110,8 +117,34 @@ public class ViewService : IViewService
             d.CloseButtonText = "Ok";
         });
 
-        return vm.SelectedModel as T;
+        return vm.SelectedModel;
     }
+
+    public async Task<long?> TryGetId(string title)
+    {
+        var candidates = Enumerable.Empty<AnimeModel>();
+        try
+        {
+            candidates = await _animeService.GetAnime(title[..Math.Min(title.Length, 50)]);
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+            return null;
+        }
+
+        var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(title, x) > 80)).ToList();
+        if (filtered.Count == 1)
+        {
+            return filtered[0].Id;
+        }
+        else
+        {
+            var model = await SelectModel(candidates, candidates.FirstOrDefault(), title => _animeService.GetAnime(title).ToTask());
+            return model?.Id;
+        }
+    }
+
 
     public async Task SubmitTimeStamp(long malId, int ep, VideoStream stream, AniSkipResult existingResult, double duration, double introStart)
     {

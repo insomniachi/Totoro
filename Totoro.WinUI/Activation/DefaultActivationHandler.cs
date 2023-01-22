@@ -7,10 +7,16 @@ namespace Totoro.WinUI.Activation;
 public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventArgs>
 {
     private readonly IWinUINavigationService _navigationService;
+    private readonly ITrackingServiceContext _trackingService;
+    private readonly ISettings _settings;
 
-    public DefaultActivationHandler(IWinUINavigationService navigationService)
+    public DefaultActivationHandler(IWinUINavigationService navigationService,
+                                    ITrackingServiceContext trackingService,
+                                    ISettings settings)
     {
         _navigationService = navigationService;
+        _trackingService = trackingService;
+        _settings = settings;
     }
 
     protected override bool CanHandleInternal(LaunchActivatedEventArgs args)
@@ -19,9 +25,29 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
         return _navigationService.Frame.Content == null;
     }
 
-    protected async override Task HandleInternalAsync(LaunchActivatedEventArgs args)
+    protected override Task HandleInternalAsync(LaunchActivatedEventArgs args)
     {
-        _navigationService.NavigateTo<DiscoverViewModel>();
-        await Task.CompletedTask;
+        if(_trackingService.IsAuthenticated)
+        {
+            NavigateToHome();
+        }
+        else
+        {
+            _navigationService.NavigateTo<DiscoverViewModel>();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void NavigateToHome()
+    {
+        if(_settings.HomePage == "Discover")
+        {
+            _navigationService.NavigateTo<DiscoverViewModel>();
+        }
+        else if(_settings.HomePage == "My List")
+        {
+            _navigationService.NavigateTo<UserListViewModel>();
+        }
     }
 }

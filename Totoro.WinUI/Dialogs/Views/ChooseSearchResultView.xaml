@@ -40,7 +40,7 @@
                 SelectedItem="{x:Bind ViewModel.SelectedSearchResult, Mode=TwoWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:SearchResult">
-                        <TextBlock Text="{x:Bind Title}" />
+                        <TextBlock Text="{x:Bind Title}" ToolTipService.ToolTip="{x:Bind Title}" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

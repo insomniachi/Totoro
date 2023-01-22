@@ -6,7 +6,8 @@ public interface IViewService
     Task<SearchResult> ChoooseSearchResult(SearchResult closesMatch, List<SearchResult> searchResults, string providerType);
     Task Authenticate(ListServiceType type);
     Task PlayVideo(string title, string url);
-    Task<T> SelectModel<T>(IEnumerable<object> models) where T : class;
+    Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string,Task<IEnumerable<T>>> searcher = default) where T : class;
+    Task<long?> TryGetId(string title);
     Task SubmitTimeStamp(long malId, int ep, VideoStream stream, AniSkipResult existingResult, double duration, double introStart);
     Task<bool> Question(string title, string message);
     Task<Unit> Information(string title, string message);

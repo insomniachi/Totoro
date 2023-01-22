@@ -88,6 +88,16 @@
                     </labs:SettingsExpander.Items>
                 </labs:SettingsExpander>
 
+                <labs:SettingsCard Description="Choose which page loads at startu" Header="Home Page">
+                    <labs:SettingsCard.HeaderIcon>
+                        <SymbolIcon Symbol="Home" />
+                    </labs:SettingsCard.HeaderIcon>
+                    <ComboBox
+                        Width="150"
+                        ItemsSource="{x:Bind ViewModel.HomePages}"
+                        SelectedItem="{x:Bind ViewModel.Settings.HomePage, Mode=TwoWay}" />
+                </labs:SettingsCard>
+
                 <labs:SettingsCard Description="Prefer subs for search result, excludes dubs from the result." Header="Prefer Subs over Dubs">
                     <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xe986;" />

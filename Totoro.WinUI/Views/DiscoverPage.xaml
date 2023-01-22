@@ -253,9 +253,6 @@
 
         </Pivot>
         <ctk:Loading x:Name="LoadingControl" IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ctk:Loading.Background>
-                <AcrylicBrush TintColor="Black" TintOpacity="0.2" />
-            </ctk:Loading.Background>
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
         </ctk:Loading>
     </Grid>

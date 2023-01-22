@@ -10,12 +10,28 @@
     mc:Ignorable="d">
 
     <Grid>
-        <ComboBox
-            Margin="{StaticResource SmallLeftRightMargin}"
-            HorizontalAlignment="Stretch"
-            ItemsSource="{Binding Models, Mode=OneWay}"
-            Loaded="ComboBox_Loaded"
-            SelectedItem="{Binding SelectedModel, Mode=TwoWay}" />
+        <StackPanel Spacing="10">
+            <TextBox
+                Margin="5,0"
+                HorizontalAlignment="Stretch"
+                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
+            <ListView
+                Width="500"
+                MinHeight="200"
+                MaxHeight="400"
+                Margin="5,0"
+                Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
+                CornerRadius="5"
+                ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedModel, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}" ToolTipService.ToolTip="{Binding Title}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackPanel>
     </Grid>
+
 </Page>

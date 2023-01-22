@@ -9,20 +9,24 @@ namespace Totoro.WinUI.Dialogs.Views;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class SelectModelView : Page, IViewFor<SelectModelViewModel>
+public sealed partial class SelectModelView : Page, IViewFor<ISelectModelViewModel>
 {
     public SelectModelView()
     {
         InitializeComponent();
     }
 
-    public SelectModelViewModel ViewModel
-    {
-        get => DataContext as SelectModelViewModel;
-        set => DataContext = value;
+    public ISelectModelViewModel ViewModel
+    { 
+        get => DataContext as ISelectModelViewModel;
+        set => DataContext = value; 
     }
 
-    object IViewFor.ViewModel { get => ViewModel; set => ViewModel = value as SelectModelViewModel; }
+    object IViewFor.ViewModel 
+    {
+        get => DataContext;
+        set => DataContext = value; 
+    }
 
     private void ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
