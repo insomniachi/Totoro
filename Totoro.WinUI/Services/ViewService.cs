@@ -180,7 +180,7 @@ public class ViewService : IViewService
 
         var result = await _contentDialogService.ShowDialog(vm, d =>
         {
-            d.Title = provider.DisplayName;
+            d.Title = $"{provider.DisplayName} {provider.Version}";
             d.IsPrimaryButtonEnabled = true;
             d.IsSecondaryButtonEnabled = true;
             d.PrimaryButtonText = "Save";

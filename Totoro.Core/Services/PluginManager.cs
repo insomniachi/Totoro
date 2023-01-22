@@ -98,7 +98,9 @@ public class PluginManager : IPluginManager, IEnableLogger
                         if(baseConfig.TryGetValue("AccessToken", out string token) && string.IsNullOrEmpty(token))
                         {
                             this.Log().Info("Fetching kamyroll access token.");
-                            baseConfig["AccessToken"] = await AuthenticateKamy();
+                            (string accessToken, DateTime expiresAt) = await AuthenticateKamy();
+                            baseConfig["AccessToken"] = accessToken;
+                            _localSettingsService.SaveSetting("KamyExpiresAt", expiresAt);
                             ProviderFactory.Instance.SetConfiguration(item.Name, _configs[item.Name]);
                         }
                     }
@@ -109,6 +111,18 @@ public class PluginManager : IPluginManager, IEnableLogger
                     foreach (var kv in _configs[item.Name].Where(x => baseConfig.ContainsKey(x.Key)))
                     {
                         baseConfig[kv.Key] = kv.Value;  
+                    }
+
+                    if(item.Name == "kamy")
+                    {
+                        var now = DateTime.Now;
+                        var dt = _localSettingsService.ReadSetting("KamyExpiresAt", DateTime.Now);
+                        if(dt <= now)
+                        {
+                            (string accessToken, DateTime expiresAt) = await AuthenticateKamy();
+                            baseConfig["AccessToken"] = accessToken;
+                            _localSettingsService.SaveSetting("KamyExpiresAt", expiresAt);
+                        }
                     }
 
                     ProviderFactory.Instance.SetConfiguration(item.Name, baseConfig);
@@ -127,7 +141,7 @@ public class PluginManager : IPluginManager, IEnableLogger
         }
     }
 
-    public async Task<string> AuthenticateKamy()
+    public async Task<(string, DateTime)> AuthenticateKamy()
     {
         var url = QueryHelpers.AddQueryString("https://api.kamyroll.tech/auth/v1/token", new Dictionary<string, string>
         {
@@ -136,6 +150,12 @@ public class PluginManager : IPluginManager, IEnableLogger
             ["access_token"] = "HMbQeThWmZq4t7w"
         });
         var json = await _httpClient.GetStringAsync(url);
-        return $"{JsonNode.Parse(json)?["access_token"]}";
+        var time = DateTime.Now;
+        if(int.TryParse($"{JsonNode.Parse(json)?["access_token"]}", out int secs))
+        {
+            time = DateTime.Now + TimeSpan.FromSeconds(secs);
+        }
+
+        return ($"{JsonNode.Parse(json)?["access_token"]}", time);
     }
 }

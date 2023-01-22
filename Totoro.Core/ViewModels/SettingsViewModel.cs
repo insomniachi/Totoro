@@ -106,6 +106,7 @@ public class SettingsViewModel : NavigatableViewModel
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }
+    public ICommand ConfigureProvider { get; }
 
     public SettingsViewModel(ISettings settings,
                              ITrackingServiceContext trackingServiceContext,
@@ -129,6 +130,7 @@ public class SettingsViewModel : NavigatableViewModel
             }    
             await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
         });
+        ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));
 
         this.ObservableForProperty(x => x.SelectedProvider, x => x)
             .Subscribe(provider => settings.DefaultProviderType = provider.Name);

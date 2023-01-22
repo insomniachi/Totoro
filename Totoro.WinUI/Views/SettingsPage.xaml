@@ -97,33 +97,23 @@
                         OffContent="Off"
                         OnContent="On" />
                 </labs:SettingsCard>
-                <labs:SettingsExpander
+                <labs:SettingsCard
+                    Command="{x:Bind ViewModel.ConfigureProvider}"
                     Description="Default provider used to stream."
                     Header="Default Stream Provider"
-                    ItemsSource="{x:Bind ViewModel.ProviderTypes}">
-                    <labs:SettingsExpander.HeaderIcon>
+                    IsClickEnabled="True">
+                    <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xe93e;" />
-                    </labs:SettingsExpander.HeaderIcon>
+                    </labs:SettingsCard.HeaderIcon>
+                    <labs:SettingsCard.ActionIcon>
+                        <SymbolIcon Symbol="Setting" />
+                    </labs:SettingsCard.ActionIcon>
                     <ComboBox
                         Width="150"
                         DisplayMemberPath="DisplayName"
                         ItemsSource="{x:Bind ViewModel.ProviderTypes}"
                         SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
-                    <labs:SettingsExpander.ItemTemplate>
-                        <DataTemplate x:DataType="am:ProviderInfo">
-                            <labs:SettingsCard
-                                Command="{x:Bind root:App.Commands.ConfigureProvider}"
-                                CommandParameter="{x:Bind}"
-                                Description="{x:Bind Version}"
-                                Header="{x:Bind DisplayName}"
-                                IsClickEnabled="True">
-                                <labs:SettingsCard.ActionIcon>
-                                    <FontIcon Glyph="&#xe713;" />
-                                </labs:SettingsCard.ActionIcon>
-                            </labs:SettingsCard>
-                        </DataTemplate>
-                    </labs:SettingsExpander.ItemTemplate>
-                </labs:SettingsExpander>
+                </labs:SettingsCard>
                 <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
                     <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xe7fc;" />
