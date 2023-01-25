@@ -137,11 +137,10 @@
 
         <Grid Grid.Column="1" Margin="20">
             <StackPanel Spacing="10">
-                <Grid CornerRadius="10">
-
+                <Grid Height="400" CornerRadius="10">
                     <ctk:ImageEx Source="{x:Bind ViewModel.Anime.BannerImage, Mode=OneWay}" Stretch="UniformToFill" />
-                    <StackPanel Padding="20" Spacing="10">
-                        <StackPanel.Background>
+                    <Grid Padding="20">
+                        <Grid.Background>
                             <media:PipelineBrush Source="{media:BackdropSource}">
                                 <media:LuminanceToAlphaEffect />
                                 <media:OpacityEffect Value="0.4" />
@@ -149,41 +148,50 @@
                                 <media:BlurEffect Amount="5" />
                                 <media:ShadeEffect Intensity="0.2" Color="#FF222222" />
                             </media:PipelineBrush>
-                        </StackPanel.Background>
-                        <Border>
-                            <TextBlock
-                                FontSize="30"
-                                FontWeight="Bold"
-                                Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
-                        </Border>
+                        </Grid.Background>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Spacing="10">
+                            <Border>
+                                <TextBlock
+                                    FontSize="30"
+                                    FontWeight="Bold"
+                                    Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
+                            </Border>
 
 
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border
-                                        Margin="3"
-                                        Padding="15,5"
-                                        Background="{StaticResource CardBackgroundFillColorDefault}"
-                                        CornerRadius="5">
-                                        <TextBlock FontWeight="Bold" Text="{Binding}" />
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ctk:WrapPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
+                            <ItemsControl ItemsSource="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border
+                                            Margin="3"
+                                            Padding="15,5"
+                                            Background="{StaticResource CardBackgroundFillColorDefault}"
+                                            CornerRadius="5">
+                                            <TextBlock FontWeight="Bold" Text="{Binding}" />
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <ctk:WrapPanel Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                        </StackPanel>
 
-                        <ScrollViewer>
+                        <ScrollViewer Grid.Row="1">
                             <TextBlock
                                 FontSize="20"
                                 Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}"
                                 TextWrapping="Wrap" />
                         </ScrollViewer>
-                    </StackPanel>
+
+                    </Grid>
                 </Grid>
 
                 <Pivot>
