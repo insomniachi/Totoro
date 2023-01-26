@@ -166,6 +166,7 @@
                         Orientation="Horizontal"
                         Spacing="10">
                         <AutoSuggestBox
+                            x:Name="ProviderSearchBox"
                             Width="300"
                             Height="35"
                             VerticalAlignment="Center"

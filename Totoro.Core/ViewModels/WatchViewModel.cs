@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reactive.Concurrency;
-using AnimDL.Core.Models;
+﻿using System.Reactive.Concurrency;
 using FuzzySharp;
 using Splat;
 using Totoro.Core.Helpers;
@@ -497,15 +495,15 @@ public partial class WatchViewModel : NavigatableViewModel
     }
     private static string JoinStrings(IEnumerable<string> items) => string.Join(",", items);
     private bool RequestedEpisodeIsValid(int episode) => Anime?.TotalEpisodes is 0 or null || episode <= Anime?.TotalEpisodes;
-    private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 0) + 1;
+    private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 1);
     private async Task TrySetAnime(string url, string title)
     {
-        if (_settings.DefaultProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
-        {
-            return;
-        }
+        var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType);
 
-        var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType) ?? await TryGetId(title);
+        if(_trackingService.IsAuthenticated)
+        {
+            id ??= await TryGetId(title);
+        }
 
         if (id is null)
         {

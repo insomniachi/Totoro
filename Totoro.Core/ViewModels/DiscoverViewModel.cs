@@ -1,4 +1,7 @@
-﻿namespace Totoro.Core.ViewModels;
+﻿using System.Reactive.Concurrency;
+using DynamicData;
+
+namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel
 {
@@ -21,8 +24,6 @@ public class DiscoverViewModel : NavigatableViewModel
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.FilterText).Select(FilterByTitle))
             .Sort(SortExpressionComparer<AiredEpisode>.Ascending(x => _episodesCache.Items.IndexOf(x)))
-            //.Page(this.WhenAnyValue(x => x.PagerViewModel).WhereNotNull().SelectMany(x => x.AsPager()))
-            //.Do(changes => PagerViewModel?.Update(changes.Response))
             .Bind(out _episodes)
             .DisposeMany()
             .Subscribe()
@@ -31,6 +32,7 @@ public class DiscoverViewModel : NavigatableViewModel
         _animeSearchResultCache
             .Connect()
             .RefCount()
+            .Sort(SortExpressionComparer<SearchResult>.Ascending(x => x.Title))
             .Bind(out _animeSearchResults)
             .DisposeMany()
             .Subscribe()
@@ -42,6 +44,16 @@ public class DiscoverViewModel : NavigatableViewModel
         SelectEpisode = ReactiveCommand.CreateFromTask<AiredEpisode>(OnEpisodeSelected);
         SelectSearchResult = ReactiveCommand.CreateFromTask<SearchResult>(OnSearchResultSelected);
         LoadMore = ReactiveCommand.Create(LoadMoreEpisodes, this.WhenAnyValue(x => x.IsLoading).Select(x => !x));
+        SearchProvider = ReactiveCommand.Create<string>(query =>
+        {
+            Observable
+            .Start(() => _provider.Catalog.Search(query).ToListAsync().AsTask())
+            .Do(_ => SetLoading(true))
+            .SelectMany(x => x)
+            .Finally(() => SetLoading(false))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(list => _animeSearchResultCache.EditDiff(list, (item1, item2) => item1.Url == item2.Url), RxApp.DefaultExceptionHandler.OnError);
+        });
 
         this.WhenAnyValue(x => x.SearchText)
             .Where(x => x is { Length: >= 2 })
@@ -75,6 +87,7 @@ public class DiscoverViewModel : NavigatableViewModel
     public ICommand SelectFeaturedAnime { get; }
     public ICommand LoadMore { get; }
     public ICommand SelectSearchResult { get; }
+    public ICommand SearchProvider { get; }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
@@ -132,6 +145,11 @@ public class DiscoverViewModel : NavigatableViewModel
                  _episodesCache.AddOrUpdate(eps);
                  IsLoading = false;
              });
+    }
+
+    private void SetLoading(bool isLoading)
+    {
+        RxApp.MainThreadScheduler.Schedule(() => IsLoading = isLoading);
     }
 
     private static Func<AiredEpisode, bool> FilterByTitle(string title) => (AiredEpisode ae) => string.IsNullOrEmpty(title) || ae.Title.ToLower().Contains(title.ToLower());
