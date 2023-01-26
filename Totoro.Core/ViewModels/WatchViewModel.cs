@@ -495,7 +495,7 @@ public partial class WatchViewModel : NavigatableViewModel
     }
     private static string JoinStrings(IEnumerable<string> items) => string.Join(",", items);
     private bool RequestedEpisodeIsValid(int episode) => Anime?.TotalEpisodes is 0 or null || episode <= Anime?.TotalEpisodes;
-    private int GetQueuedEpisode() => _episodeRequest ?? (Anime?.Tracking?.WatchedEpisodes ?? 1);
+    private int GetQueuedEpisode() => _episodeRequest ?? ((Anime?.Tracking?.WatchedEpisodes ?? 0) + 1);
     private async Task TrySetAnime(string url, string title)
     {
         var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType);

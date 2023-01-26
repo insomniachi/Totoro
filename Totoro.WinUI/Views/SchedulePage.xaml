@@ -21,7 +21,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ListBox
+        <!--<ListBox
             HorizontalAlignment="Center"
             ItemsSource="{x:Bind ViewModel.WeeklySchedule, Mode=OneWay}"
             SelectedItem="{x:Bind ViewModel.SelectedDay, Mode=TwoWay}">
@@ -48,7 +48,7 @@
                     <ItemsStackPanel Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
-        </ListBox>
+        </ListBox>-->
 
         <ctk:AdaptiveGridView
             x:Name="AnimeListView"
@@ -63,6 +63,7 @@
                 <DataTemplate x:DataType="cm:AnimeModel">
                     <uc:AnimeCard
                         x:Name="Card"
+                        Margin="3"
                         Anime="{x:Bind}"
                         ShowNextEpisodeTime="true">
                         <uc:AnimeCard.Flyout>

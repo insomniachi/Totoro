@@ -24,7 +24,8 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         _animeCache
             .Connect()
             .RefCount()
-            .Filter(this.WhenAnyValue(x => x.Filter).Select(FilterByDay))
+            .Sort(SortExpressionComparer<AnimeModel>.Ascending(x => x.NextEpisodeAt))
+            //.Filter(this.WhenAnyValue(x => x.Filter).Select(FilterByDay))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
@@ -43,17 +44,17 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         InitSchedule(anime);
         _animeCache.Edit(x => x.AddOrUpdate(anime));
-        WeeklySchedule = Schedule.ToList();
-        SelectedDay = WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == state.GetValue<DayOfWeek>(nameof(SelectedDay)));
+        //WeeklySchedule = Schedule.ToList();
+        //SelectedDay = WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == state.GetValue<DayOfWeek>(nameof(SelectedDay)));
     }
 
     public void StoreState(IState state)
     {
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
-        if (Anime.Any())
-        {
-            state.AddOrUpdate(SelectedDay.DayOfWeek, nameof(SelectedDay));
-        }
+        //if (Anime.Any())
+        //{
+        //    state.AddOrUpdate(SelectedDay.DayOfWeek, nameof(SelectedDay));
+        //}
     }
 
     public Task SetInitialState()
@@ -61,13 +62,13 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         var current = AnimeHelpers.CurrentSeason();
 
         _trackingService.GetCurrentlyAiringTrackedAnime()
-                        .Do(InitSchedule)
+                        //.Do(InitSchedule)
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(list =>
                         {
-                            WeeklySchedule = Schedule.ToList();
-                            this.RaisePropertyChanged(nameof(Schedule));
-                            SelectedDay = GetSelectedDay();
+                            //WeeklySchedule = Schedule.ToList();
+                            //this.RaisePropertyChanged(nameof(Schedule));
+                            //SelectedDay = GetSelectedDay();
                             _animeCache.Edit(x => x.AddOrUpdate(list));
                         });
 
