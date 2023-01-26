@@ -85,27 +85,27 @@ public class ScheduleViewModel : NavigatableViewModel, IHaveState
         }
     }
 
-    private ScheduleModel GetSelectedDay() => WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == _systemClock.Today.DayOfWeek) ?? GetNextDayWithAiringAnime();
+    //private ScheduleModel GetSelectedDay() => WeeklySchedule.FirstOrDefault(x => x.DayOfWeek == _systemClock.Today.DayOfWeek) ?? GetNextDayWithAiringAnime();
 
-    private ScheduleModel GetNextDayWithAiringAnime()
-    {
-        var days = Enum.GetValues<DayOfWeek>();
-        var today = _systemClock.Today.DayOfWeek;
-        var todayIndex = days.IndexOf(today);
-        var index = NextCyclicValue(todayIndex, days);
+    //private ScheduleModel GetNextDayWithAiringAnime()
+    //{
+    //    var days = Enum.GetValues<DayOfWeek>();
+    //    var today = _systemClock.Today.DayOfWeek;
+    //    var todayIndex = days.IndexOf(today);
+    //    var index = NextCyclicValue(todayIndex, days);
 
-        while (index != todayIndex)
-        {
-            if (Schedule[days[index]] is { Count: > 0 } day)
-            {
-                return day;
-            }
+    //    while (index != todayIndex)
+    //    {
+    //        if (Schedule[days[index]] is { Count: > 0 } day)
+    //        {
+    //            return day;
+    //        }
 
-            index = NextCyclicValue(index, days);
-        }
+    //        index = NextCyclicValue(index, days);
+    //    }
 
-        return null; // This should only happen when you are watching nothing.
-    }
+    //    return null; // This should only happen when you are watching nothing.
+    //}
 
     private static int NextCyclicValue<T>(int index, T[] values)
     {
