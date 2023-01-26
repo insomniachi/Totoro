@@ -140,7 +140,13 @@ public class ViewService : IViewService, IEnableLogger
         }
         else
         {
-            var model = await SelectModel(candidates, candidates.FirstOrDefault(), title => _animeService.GetAnime(title).ToTask());
+            if(!candidates.Any())
+            {
+                this.Log().Fatal($"no candidates found for title {title}");
+                return null;
+            }
+
+            var model = await SelectModel(candidates, filtered.FirstOrDefault() ?? candidates.FirstOrDefault(), title => _animeService.GetAnime(title).ToTask());
             return model?.Id;
         }
     }
