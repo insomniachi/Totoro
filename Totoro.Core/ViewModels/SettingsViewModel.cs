@@ -32,6 +32,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         AutoUpdate = localSettingsService.ReadSetting(nameof(AutoUpdate), true);
         DefaultListService = localSettingsService.ReadSetting(nameof(DefaultListService), default(ListServiceType?));
         HomePage = localSettingsService.ReadSetting(nameof(HomePage), "Discover");
+        AllowSideLoadingPlugins = localSettingsService.ReadSetting(nameof(AllowSideLoadingPlugins), false);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
@@ -78,6 +79,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public ListServiceType? DefaultListService { get; set; }
     [Reactive] public Guid AniSkipId { get; set; }
     [Reactive] public string HomePage { get; set; }
+    [Reactive] public bool AllowSideLoadingPlugins { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {

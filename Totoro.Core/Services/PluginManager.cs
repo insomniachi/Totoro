@@ -14,21 +14,24 @@ public class PluginManager : IPluginManager, IEnableLogger
     private readonly string _pluginFolder;
     private readonly HttpClient _httpClient;
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly ISettings _settings;
     private readonly Dictionary<string, Parameters> _configs;
 
     record PluginInfo(string FileName, string Version);
 
     public PluginManager(HttpClient httpClient,
-                         ILocalSettingsService localSettingsService)
+                         ILocalSettingsService localSettingsService,
+                         ISettings settings)
     {
         _pluginFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder, "Plugins");
         _configs = localSettingsService.ReadSetting("ProviderConfigs", new Dictionary<string, Parameters>()).ToDictionary(x => x.Key, x => Clean(x.Value));
         Directory.CreateDirectory(_pluginFolder);
         _httpClient = httpClient;
         _localSettingsService = localSettingsService;
+        _settings = settings;
     }
 
-    private Parameters Clean(Parameters paramters)
+    private static Parameters Clean(Parameters paramters)
     {
         foreach (var item in paramters)
         {
@@ -84,6 +87,16 @@ public class PluginManager : IPluginManager, IEnableLogger
                 hasNewConfig = true;
             }
 
+            if (!_settings.AllowSideLoadingPlugins)
+            {
+                localPlugins = Directory.GetFiles(_pluginFolder).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
+                foreach (var item in localPlugins.Except(pluginInfos))
+                {
+                    this.Log().Info($"Removing plugin : {item.FileName}");
+                    File.Delete(Path.Combine(_pluginFolder, item.FileName));
+                }
+            }
+
             ProviderFactory.Instance.LoadPlugins(_pluginFolder);
 
             foreach (var item in ProviderFactory.Instance.Providers)
@@ -92,18 +105,6 @@ public class PluginManager : IPluginManager, IEnableLogger
                 if (!_configs.ContainsKey(item.Name))
                 {
                     _configs.Add(item.Name, baseConfig);
-
-                    if(item.Name == "kamy") // auth kamy first time
-                    {
-                        if(baseConfig.TryGetValue("AccessToken", out string token) && string.IsNullOrEmpty(token))
-                        {
-                            this.Log().Info("Fetching kamyroll access token.");
-                            (string accessToken, DateTime expiresAt) = await AuthenticateKamy();
-                            baseConfig["AccessToken"] = accessToken;
-                            _localSettingsService.SaveSetting("KamyExpiresAt", expiresAt);
-                            ProviderFactory.Instance.SetConfiguration(item.Name, _configs[item.Name]);
-                        }
-                    }
                     hasNewConfig = true;
                 }
                 else
@@ -113,21 +114,18 @@ public class PluginManager : IPluginManager, IEnableLogger
                         baseConfig[kv.Key] = kv.Value;  
                     }
 
-                    if(item.Name == "kamy")
-                    {
-                        var now = DateTime.Now;
-                        var dt = _localSettingsService.ReadSetting("KamyExpiresAt", DateTime.Now);
-                        if(dt <= now)
-                        {
-                            (string accessToken, DateTime expiresAt) = await AuthenticateKamy();
-                            baseConfig["AccessToken"] = accessToken;
-                            _localSettingsService.SaveSetting("KamyExpiresAt", expiresAt);
-                        }
-                    }
-
                     ProviderFactory.Instance.SetConfiguration(item.Name, baseConfig);
                 }
                 this.Log().Info($"Loaded plugin {item.DisplayName}");
+            }
+
+            if(!_settings.AllowSideLoadingPlugins)
+            {
+                foreach (var key in _configs.Keys.Except(ProviderFactory.Instance.Providers.Select(x => x.Name)))
+                {
+                    _configs.Remove(key);
+                    hasNewConfig = true;
+                }
             }
 
             if(hasNewConfig)

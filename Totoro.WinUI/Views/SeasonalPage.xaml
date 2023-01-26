@@ -93,7 +93,7 @@
             Grid.Row="2"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
             ui:ListViewExtensions.Command="{x:Bind ViewModel.ItemClickedCommand}"
-            DesiredWidth="700"
+            DesiredWidth="710"
             IsItemClickEnabled="True"
             ItemsSource="{x:Bind ViewModel.Anime}"
             StretchContentForSingleRow="False">
@@ -101,6 +101,7 @@
                 <DataTemplate x:DataType="cm:AnimeModel">
                     <uc:AnimeCard
                         x:Name="Card"
+                        Margin="7"
                         Anime="{x:Bind}"
                         DisplayMode="DetailedGrid">
                         <uc:AnimeCard.Flyout>
@@ -126,11 +127,6 @@
                     </uc:AnimeCard>
                 </DataTemplate>
             </ctk:AdaptiveGridView.ItemTemplate>
-            <GridView.ItemContainerStyle>
-                <Style TargetType="GridViewItem">
-                    <Setter Property="Margin" Value="10" />
-                </Style>
-            </GridView.ItemContainerStyle>
         </ctk:AdaptiveGridView>
 
         <ctk:Loading

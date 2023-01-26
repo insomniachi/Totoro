@@ -16,6 +16,7 @@ public interface ISettings
     bool AutoUpdate { get; set; }
     ListServiceType? DefaultListService { get; set; }
     string HomePage { get; set; }
+    bool AllowSideLoadingPlugins { get; set; }
     Task<Unit> UpdateUrls();
 }
 

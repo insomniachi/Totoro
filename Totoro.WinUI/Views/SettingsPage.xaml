@@ -88,7 +88,7 @@
                     </labs:SettingsExpander.Items>
                 </labs:SettingsExpander>
 
-                <labs:SettingsCard Description="Choose which page loads at startu" Header="Home Page">
+                <labs:SettingsCard Description="Choose which page loads at startup" Header="Home Page">
                     <labs:SettingsCard.HeaderIcon>
                         <SymbolIcon Symbol="Home" />
                     </labs:SettingsCard.HeaderIcon>
@@ -123,6 +123,15 @@
                         DisplayMemberPath="DisplayName"
                         ItemsSource="{x:Bind ViewModel.ProviderTypes}"
                         SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
+                </labs:SettingsCard>
+                <labs:SettingsCard Description="Allow sideloading 3rd party provider plugins" Header="Sideload plugins">
+                    <labs:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xe836;" />
+                    </labs:SettingsCard.HeaderIcon>
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.Settings.AllowSideLoadingPlugins, Mode=TwoWay}"
+                        OffContent="Off"
+                        OnContent="On" />
                 </labs:SettingsCard>
                 <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
                     <labs:SettingsCard.HeaderIcon>

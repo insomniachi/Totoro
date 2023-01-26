@@ -48,14 +48,14 @@
                             <Button Command="{x:Bind ViewModel.LoadMore}" Content="Load More" />
                         </StackPanel>
 
-                        <PipsPager
+                        <!--<PipsPager
                             Margin="{StaticResource SmallTopBottomMargin}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             NextButtonVisibility="Visible"
                             NumberOfPages="{x:Bind ViewModel.PagerViewModel.PageCount, Mode=OneWay}"
                             PreviousButtonVisibility="Visible"
-                            SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />
+                            SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />-->
 
                     </StackPanel>
 
@@ -79,7 +79,10 @@
                         StretchContentForSingleRow="False">
                         <ctk:AdaptiveGridView.ItemTemplate>
                             <DataTemplate x:DataType="am:AiredEpisode">
-                                <Grid x:Name="MainGrid" Margin="3">
+                                <Grid
+                                    x:Name="MainGrid"
+                                    Margin="3"
+                                    CornerRadius="3">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
                                         <RowDefinition Height="Auto" />
@@ -125,8 +128,7 @@
                                         Grid.Row="1"
                                         Height="60"
                                         Padding="3"
-                                        Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
-                                        BorderThickness="0,4,0,0">
+                                        Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
                                         <StackPanel>
                                             <TextBlock
                                                 Margin="0,3,0,0"

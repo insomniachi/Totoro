@@ -111,7 +111,7 @@
         </ctk:Case>
 
         <ctk:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
-            <Grid ContextFlyout="{x:Bind Flyout}">
+            <Grid ContextFlyout="{x:Bind Flyout}" CornerRadius="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="2*" />
@@ -119,8 +119,6 @@
 
                 <ctk:ImageEx
                     Grid.Column="0"
-                    Width="240"
-                    Height="340"
                     CacheMode="BitmapCache"
                     EnableLazyLoading="True"
                     IsCacheEnabled="True"
@@ -132,8 +130,8 @@
                 <Grid Grid.Column="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="100" />
                     </Grid.RowDefinitions>
 
                     <Grid
@@ -170,10 +168,13 @@
 
                     </Grid>
 
-                    <ItemsControl Grid.Row="1" ItemsSource="{x:Bind GetAdditionalInformation(Anime), Mode=OneWay}">
+                    <ItemsControl
+                        Grid.Row="1"
+                        Margin="0,0,0,5"
+                        ItemsSource="{x:Bind GetAdditionalInformation(Anime), Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <ctk:UniformGrid Margin="{StaticResource SmallTopBottomMargin}" Columns="2">
+                                <ctk:UniformGrid Margin="{StaticResource XXSmallLeftTopRightBottomMargin}" Columns="2">
                                     <TextBlock Margin="{StaticResource SmallLeftMargin}" FontWeight="Bold">
                                         <Run Text="{Binding Key}" />
                                     </TextBlock>
@@ -187,7 +188,10 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <ScrollViewer Grid.Row="2" Padding="10">
+                    <ScrollViewer
+                        Grid.Row="2"
+                        MaxHeight="200"
+                        Padding="10">
                         <TextBlock Text="{x:Bind Anime.Description, Mode=OneWay}" TextWrapping="WrapWholeWords" />
                     </ScrollViewer>
                 </Grid>

@@ -21,8 +21,8 @@ public class DiscoverViewModel : NavigatableViewModel
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.FilterText).Select(FilterByTitle))
             .Sort(SortExpressionComparer<AiredEpisode>.Ascending(x => _episodesCache.Items.IndexOf(x)))
-            .Page(this.WhenAnyValue(x => x.PagerViewModel).WhereNotNull().SelectMany(x => x.AsPager()))
-            .Do(changes => PagerViewModel?.Update(changes.Response))
+            //.Page(this.WhenAnyValue(x => x.PagerViewModel).WhereNotNull().SelectMany(x => x.AsPager()))
+            //.Do(changes => PagerViewModel?.Update(changes.Response))
             .Bind(out _episodes)
             .DisposeMany()
             .Subscribe()
@@ -61,10 +61,10 @@ public class DiscoverViewModel : NavigatableViewModel
     [Reactive] public int SelectedIndex { get; set; }
     [Reactive] public bool ShowOnlyWatchingAnime { get; set; }
     [Reactive] public bool IsLoading { get; set; }
-    [Reactive] public PagerViewModel PagerViewModel { get; set; }
     [Reactive] public string FilterText { get; set; }
     [Reactive] public bool DontUseImageEx { get; private set; }
     [Reactive] public string SearchText { get; set; }
+    [Reactive] public int TotalPages { get; set; } = 1;
 
     public bool IsAuthenticated { get; }
     public double CardWidth { get; }
@@ -78,22 +78,14 @@ public class DiscoverViewModel : NavigatableViewModel
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        LoadPage(1)
-            .Finally(() => PagerViewModel = new(0, _episodesCache.Items.Count()))
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
+        LoadPage(1).Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
 
         return Task.CompletedTask;
     }
 
     private void LoadMoreEpisodes() =>
-        LoadPage((PagerViewModel?.PageCount ?? 1) + 1)
-        .Finally(() =>
-        {
-            if (PagerViewModel.CurrentPage == PagerViewModel.PageCount - 2)
-            {
-                PagerViewModel.CurrentPage++;
-            }
-        })
+        LoadPage(TotalPages + 1)
+        .Finally(() => TotalPages++)
         .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
 
     private Task OnEpisodeSelected(AiredEpisode episode)
