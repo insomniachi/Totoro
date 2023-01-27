@@ -28,7 +28,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Media" Version="7.1.2" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
 		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.2.3">
 			<PrivateAssets>all</PrivateAssets>
