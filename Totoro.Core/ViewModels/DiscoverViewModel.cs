@@ -47,7 +47,7 @@ public class DiscoverViewModel : NavigatableViewModel
         SearchProvider = ReactiveCommand.Create<string>(query =>
         {
             Observable
-            .Start(() => _provider.Catalog.Search(query).ToListAsync().AsTask())
+            .Start(() => Search(query))
             .Do(_ => SetLoading(true))
             .SelectMany(x => x)
             .Finally(() => SetLoading(false))
@@ -59,7 +59,7 @@ public class DiscoverViewModel : NavigatableViewModel
             .Where(x => x is { Length: >= 2 })
             .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(term => _provider.Catalog.Search(term).ToListAsync().AsTask())
+            .SelectMany(Search)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(list => _animeSearchResultCache.EditDiff(list, (item1, item2) => item1.Url == item2.Url), RxApp.DefaultExceptionHandler.OnError);
 
@@ -135,7 +135,7 @@ public class DiscoverViewModel : NavigatableViewModel
 
         IsLoading = true;
 
-        return _provider
+        return _provider?
              .AiredEpisodesProvider
              .GetRecentlyAiredEpisodes(page)
              .ToObservable()
@@ -150,6 +150,16 @@ public class DiscoverViewModel : NavigatableViewModel
     private void SetLoading(bool isLoading)
     {
         RxApp.MainThreadScheduler.Schedule(() => IsLoading = isLoading);
+    }
+
+    private Task<List<SearchResult>>Search(string term)
+    {
+        if(_provider is null)
+        {
+            return Task.FromResult(new List<SearchResult>());
+        }
+
+        return _provider.Catalog.Search(term).ToListAsync().AsTask();
     }
 
     private static Func<AiredEpisode, bool> FilterByTitle(string title) => (AiredEpisode ae) => string.IsNullOrEmpty(title) || ae.Title.ToLower().Contains(title.ToLower());

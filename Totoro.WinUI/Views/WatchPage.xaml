@@ -44,7 +44,7 @@
             IsExpanded="True"
             Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.IsFullWindow), Mode=OneWay}">
             <Expander.Header>
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Spacing="10">
                     <TextBlock
                         Margin="0,0,50,0"
                         VerticalAlignment="Center"
@@ -58,6 +58,13 @@
                         OffContent="Sub"
                         OnContent="Dub"
                         Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasSubAndDub), Mode=OneWay}" />
+
+                    <ComboBox
+                        Width="150"
+                        ItemsSource="{x:Bind ViewModel.AudioStreams, Mode=OneWay}"
+                        SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}"
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasMultipleAudioStreams), Mode=OneWay}" />
+
                 </StackPanel>
             </Expander.Header>
             <Grid>

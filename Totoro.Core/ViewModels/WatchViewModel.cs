@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Concurrency;
+using System.Security.Cryptography.X509Certificates;
 using FuzzySharp;
 using Splat;
 using Totoro.Core.Helpers;
@@ -16,11 +17,14 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<int> _episodes;
-
+   
+    private ProviderOptions _providerOptions;
     private int? _episodeRequest;
     private bool _canUpdateTime = false;
     private bool _isUpdatingTracking = false;
     private double _userSkipOpeningTime;
+
+    private IAnimeModel _anime;
 
     public WatchViewModel(IProviderFactory providerFactory,
                           ITrackingServiceContext trackingService,
@@ -41,10 +45,12 @@ public partial class WatchViewModel : NavigatableViewModel
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
+        _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
 
         MediaPlayer = mediaPlayer;
-        SelectedProviderType = _settings.DefaultProviderType;
         UseDub = !settings.PreferSubs;
+        Provider = providerFactory.GetProvider(settings.DefaultProviderType);
+        SelectedAudioStream = GetDefaultAudioStream();
 
         NextEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); ++CurrentEpisode; }, HasNextEpisode, RxApp.MainThreadScheduler);
         PrevEpisode = ReactiveCommand.Create(() => { _canUpdateTime = false; mediaPlayer.Pause(); --CurrentEpisode; }, HasPrevEpisode, RxApp.MainThreadScheduler);
@@ -84,10 +90,6 @@ public partial class WatchViewModel : NavigatableViewModel
             .Listen<RequestFullWindowMessage>()
             .Select(message => message.IsFullWindow)
             .ToPropertyEx(this, x => x.IsFullWindow, deferSubscription: true);
-
-        this.WhenAnyValue(x => x.SelectedProviderType)
-            .Select(providerFactory.GetProvider)
-            .ToPropertyEx(this, x => x.Provider, providerFactory.GetProvider(SelectedProviderType), true);
 
         this.WhenAnyValue(x => x.SelectedAnimeResult)
             .Select(x => x is { Dub: { }, Sub: { } })
@@ -175,8 +177,9 @@ public partial class WatchViewModel : NavigatableViewModel
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(ep => Provider.StreamProvider.GetStreams(SelectedAudio.Url, ep.Value..ep.Value).ToListAsync().AsTask())
             .Select(list => list.FirstOrDefault())
+            .Log(this, "Stream", x => JsonSerializer.Serialize(x))
             .WhereNotNull()
-            .ToPropertyEx(this, x => x.Streams, true);
+            .Subscribe(x => Streams = x);
 
         episodeChanged
             .Where(_ => UseLocalMedia)
@@ -196,6 +199,35 @@ public partial class WatchViewModel : NavigatableViewModel
             .Log(this, "Qualities", JoinStrings)
             .ObserveOn(RxApp.MainThreadScheduler)
             .ToPropertyEx(this, x => x.Qualities, Enumerable.Empty<string>(), true);
+
+        this.WhenAnyValue(x => x.Streams)
+            .WhereNotNull()
+            .Select(x => x.StreamTypes.Any())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToPropertyEx(this, x => x.HasMultipleAudioStreams);
+
+        this.WhenAnyValue(x => x.HasMultipleAudioStreams)
+            .Where(x => x)
+            .Select(_ => Streams.StreamTypes)
+            .Log(this, "Stream Types", x => string.Join(",", x))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToPropertyEx(this, x => x.AudioStreams);
+
+        this.WhenAnyValue(x => x.AudioStreams)
+            .WhereNotNull()
+            .Where(Enumerable.Any)
+            .Select(_ => GetDefaultAudioStream())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => SelectedAudioStream = x);
+
+        this.ObservableForProperty(x => x.SelectedAudioStream, x => x)
+            .WhereNotNull()
+            .Log(this, "Selected Audio Stream")
+            .Where(_ => Provider.StreamProvider is IMultiAudioStreamProvider)
+            .SelectMany(type => (Provider.StreamProvider as IMultiAudioStreamProvider).GetStreams(SelectedAudio.Url, CurrentEpisode.Value..CurrentEpisode.Value, type).ToListAsync().AsTask())
+            .Select(list => list.FirstOrDefault())
+            .WhereNotNull()
+            .Subscribe(x => Streams = x);
 
         // Start playing when we can and start from the previous session if exists
         this.ObservableForProperty(x => x.SelectedStream, x => x)
@@ -248,26 +280,27 @@ public partial class WatchViewModel : NavigatableViewModel
 
     }
 
-    [Reactive] public string SelectedProviderType { get; set; } = "allanime";
     [Reactive] public int? CurrentEpisode { get; set; }
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public (SearchResult Sub, SearchResult Dub) SelectedAnimeResult { get; set; }
     [Reactive] public SearchResult SelectedAudio { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
     [Reactive] public bool UseLocalMedia { get; set; }
+    [Reactive] public VideoStreamsForEpisode Streams { get; set; }
+    [Reactive] public string SelectedAudioStream { get; set; }
     [ObservableAsProperty] public bool IsFullWindow { get; }
     [ObservableAsProperty] public bool IsSkipButtonVisible { get; }
-    [ObservableAsProperty] public IProvider Provider { get; }
     [ObservableAsProperty] public bool HasSubAndDub { get; }
     [ObservableAsProperty] public double CurrentPlayerTime { get; }
     [ObservableAsProperty] public double CurrentMediaDuration { get; }
-    [ObservableAsProperty] public VideoStreamsForEpisode Streams { get; }
     [ObservableAsProperty] public IEnumerable<string> Qualities { get; }
     [ObservableAsProperty] public AniSkipResult AniSkipResult { get; }
+    [ObservableAsProperty] public bool HasMultipleAudioStreams { get; }
+    [ObservableAsProperty] public IEnumerable<string> AudioStreams { get; }
+
+    public IProvider Provider { get; }
     public AniSkipResultItem OpeningTimeStamp { get; set; }
     public AniSkipResultItem EndingTimeStamp { get; set; }
-
-    private IAnimeModel _anime;
     public IAnimeModel Anime
     {
         get => _anime;
@@ -331,6 +364,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public async Task<(SearchResult Sub, SearchResult Dub)> Find(long id, string title)
     {
+        if(Provider is null)
+        {
+            return (null, null);
+        }
+
         if (Provider.Catalog is IMalCatalog malCatalog)
         {
             return await malCatalog.SearchByMalId(id);
@@ -469,7 +507,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             var suggested = results.MaxBy(x => Fuzz.PartialRatio(x.Title, title));
             this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {Fuzz.PartialRatio(suggested.Title, title)}");
-            return (await _viewService.ChoooseSearchResult(suggested, results, SelectedProviderType), null);
+            return (await _viewService.ChoooseSearchResult(suggested, results, _settings.DefaultProviderType), null);
         }
     }
 
@@ -529,5 +567,15 @@ public partial class WatchViewModel : NavigatableViewModel
         var isEnding = EndingTimeStamp is not null && currentTime > EndingTimeStamp.Interval.StartTime && currentTime < EndingTimeStamp.Interval.EndTime;
 
         return isOpening || isEnding;   
+    }
+    private string GetDefaultAudioStream()
+    {
+        var key = "StreamType";
+        if(_settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll")
+        {
+            key = "CrunchyrollStreamType";
+        }
+
+        return _providerOptions.GetString(key, "");
     }
 }

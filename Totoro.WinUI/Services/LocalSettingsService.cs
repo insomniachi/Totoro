@@ -54,14 +54,28 @@ public class LocalSettingsService : ILocalSettingsService
         {
             if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
             {
-                return Json.ToObject<T>((string)obj);
+                try
+                {
+                    return Json.ToObject<T>((string)obj);
+                }
+                catch
+                {
+                    return defaultValue;
+                }
             }
         }
         else
         {
             if (_settings != null && _settings.TryGetValue(key, out var obj))
             {
-                return Json.ToObject<T>((string)obj);
+                try
+                {
+                    return Json.ToObject<T>((string)obj);
+                }
+                catch
+                {
+                    return defaultValue;
+                }
             }
         }
 

@@ -15,7 +15,7 @@ public class PluginManager : IPluginManager, IEnableLogger
     private readonly HttpClient _httpClient;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly ISettings _settings;
-    private readonly Dictionary<string, Parameters> _configs;
+    private readonly Dictionary<string, ProviderOptions> _configs;
 
     record PluginInfo(string FileName, string Version);
 
@@ -24,29 +24,17 @@ public class PluginManager : IPluginManager, IEnableLogger
                          ISettings settings)
     {
         _pluginFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder, "Plugins");
-        _configs = localSettingsService.ReadSetting("ProviderConfigs", new Dictionary<string, Parameters>()).ToDictionary(x => x.Key, x => Clean(x.Value));
+        _configs = localSettingsService.ReadSetting("ProviderConfigs", new Dictionary<string, ProviderOptions>());
         Directory.CreateDirectory(_pluginFolder);
         _httpClient = httpClient;
         _localSettingsService = localSettingsService;
         _settings = settings;
     }
 
-    private static Parameters Clean(Parameters paramters)
+    public void SaveConfig(string provider, ProviderOptions config)
     {
-        foreach (var item in paramters)
-        {
-            if(item.Value is JsonElement je)
-            {
-                paramters[item.Key] = je.ToString();
-            }
-        }
-        return paramters;
-    }
-
-    public void SaveConfig(string provider, IParameters config)
-    {
-        ProviderFactory.Instance.SetConfiguration(provider, config);
-        _configs[provider] = config as Parameters;
+        ProviderFactory.Instance.SetOptions(provider, config);
+        _configs[provider] = config;
         SaveConfig();
     }
 
@@ -101,7 +89,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
             foreach (var item in ProviderFactory.Instance.Providers)
             {
-                var baseConfig = (Parameters)ProviderFactory.Instance.GetConfiguration(item.Name);
+                var baseConfig = ProviderFactory.Instance.GetOptions(item.Name);
                 if (!_configs.ContainsKey(item.Name))
                 {
                     _configs.Add(item.Name, baseConfig);
@@ -109,12 +97,12 @@ public class PluginManager : IPluginManager, IEnableLogger
                 }
                 else
                 {
-                    foreach (var kv in _configs[item.Name].Where(x => baseConfig.ContainsKey(x.Key)))
+                    foreach (var option in _configs[item.Name].Where(x => baseConfig.FirstOrDefault(y => y.Name == x.Name) is { }))
                     {
-                        baseConfig[kv.Key] = kv.Value;  
+                        baseConfig.TrySetValue(option.Name, option.Value);
                     }
 
-                    ProviderFactory.Instance.SetConfiguration(item.Name, baseConfig);
+                    ProviderFactory.Instance.SetOptions(item.Name, baseConfig);
                 }
                 this.Log().Info($"Loaded plugin {item.DisplayName}");
             }

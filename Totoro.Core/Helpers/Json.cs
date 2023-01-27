@@ -9,6 +9,11 @@ public static class Json
 
     public static string Stringify(object value)
     {
-        return JsonSerializer.Serialize(value);
+        if(value is null)
+        {
+            return string.Empty;
+        }
+
+        return JsonSerializer.Serialize(value, value.GetType());
     }
 }

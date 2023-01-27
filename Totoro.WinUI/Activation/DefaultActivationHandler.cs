@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using AnimDL.Core;
+using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 
@@ -9,14 +10,17 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
     private readonly IWinUINavigationService _navigationService;
     private readonly ITrackingServiceContext _trackingService;
     private readonly ISettings _settings;
+    private readonly IViewService _viewService;
 
     public DefaultActivationHandler(IWinUINavigationService navigationService,
                                     ITrackingServiceContext trackingService,
-                                    ISettings settings)
+                                    ISettings settings,
+                                    IViewService viewService)
     {
         _navigationService = navigationService;
         _trackingService = trackingService;
         _settings = settings;
+        _viewService = viewService;
     }
 
     protected override bool CanHandleInternal(LaunchActivatedEventArgs args)
@@ -34,6 +38,11 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
         else
         {
             _navigationService.NavigateTo<DiscoverViewModel>();
+        }
+
+        if(!ProviderFactory.Instance.Providers.Any())
+        {
+            _viewService.Information("Ops...", "There has been a breaking change, please wait till application downloads update");
         }
 
         return Task.CompletedTask;
