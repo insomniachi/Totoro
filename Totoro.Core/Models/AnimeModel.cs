@@ -23,7 +23,8 @@ public class AnimeModel : ReactiveObject, IAnimeModel
     public List<Video> Videos { get; set; }
     public Season Season { get; set; }
     public IEnumerable<string> Genres { get; set; }
-    public AnimeModel[] Related { get; set; }
+    public AnimeModel[] Related { get; set; } = Array.Empty<AnimeModel>();
+    public AnimeModel[] Recommended { get; set; } = Array.Empty<AnimeModel>();
     public DayOfWeek? BroadcastDay { get; set; }
     [Reactive] public int AiredEpisodes { get; set; }
     [Reactive] public string BannerImage { get; set; } = string.Empty;

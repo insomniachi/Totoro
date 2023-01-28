@@ -5,7 +5,9 @@
     xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:root="using:Totoro.WinUI"
     mc:Ignorable="d">
 
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
@@ -60,7 +62,8 @@
                     Grid.Row="0"
                     Margin="0"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom">
+                    VerticalAlignment="Bottom"
+                    Visibility="{x:Bind help:Converters.NullToVisibility(Flyout)}">
                     <Button
                         Width="50"
                         Height="50"
@@ -100,7 +103,7 @@
                             Grid.Column="1"
                             Width="45"
                             Height="45"
-                            Command="{x:Bind UpdateStatusCommand}"
+                            Command="{x:Bind root:App.Commands.UpdateTracking}"
                             CommandParameter="{x:Bind Anime, Mode=OneWay}"
                             Visibility="{x:Bind AddToListButtonVisibility(Anime), Mode=OneWay}">
                             <SymbolIcon Symbol="Add" />
@@ -159,7 +162,7 @@
                                 <SymbolIcon Symbol="More" />
                             </Button>
                             <Button
-                                Command="{x:Bind UpdateStatusCommand}"
+                                Command="{x:Bind root:App.Commands.UpdateTracking}"
                                 CommandParameter="{x:Bind Anime, Mode=OneWay}"
                                 Visibility="{x:Bind AddToListButtonVisibility(Anime), Mode=OneWay}">
                                 <SymbolIcon Symbol="Add" />

@@ -28,8 +28,29 @@ namespace Totoro.Core.Services.AniList
                 AiredEpisodes = media.NextAiringEpisode?.Episode - 1 ?? 0,
                 BannerImage = media.BannerImage,
                 NextEpisodeAt = ConvertToExactTime(media.NextAiringEpisode?.TimeUntilAiring),
-                Genres = media.Genres
+                Genres = media.Genres,
+                Related = ConvertSimple(media.Relations?.Nodes.Where(x => x.Type == MediaType.Anime)),
+                Recommended = ConvertSimple(media.Recommendations?.Nodes.Select(x => x.MediaRecommendation).Where(x => x.Type == MediaType.Anime))
             };
+        }
+
+        public static AnimeModel[] ConvertSimple(IEnumerable<Media> media)
+        {
+            if(media is null)
+            {
+                return Array.Empty<AnimeModel>();
+            }
+
+            return media.Where(x => x.Type == MediaType.Anime)
+                .Select(x => new AnimeModel
+                {
+                    Title = x.Title.Romaji ?? x.Title.English ?? string.Empty,
+                    Id = x.Id ?? 0,
+                    Image = x.CoverImage.Large,
+                    Tracking = ConvertTracking(x.MediaListEntry),
+                    AiringStatus = ConvertStatus(x.Status),
+                })
+                .ToArray();
         }
 
         public static AiringStatus ConvertStatus(MediaStatus? status)
@@ -147,7 +168,7 @@ namespace Totoro.Core.Services.AniList
 
         private static DayOfWeek? GetBroadcastDay(FuzzyDate date)
         {
-            if (date.Year is null || date.Month is null || date.Day is null)
+            if (date is null || date.Year is null || date.Month is null || date.Day is null)
             {
                 return null;
             }

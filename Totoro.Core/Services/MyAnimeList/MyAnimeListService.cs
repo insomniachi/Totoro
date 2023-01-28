@@ -22,7 +22,13 @@ public class MyAnimeListService : IAnimeService
     {
         return Observable.Create<AnimeModel>(async observer =>
         {
-            var malModel = await _client.Anime().WithId(id).WithFields(_commonFields).WithField(x => x.Genres).WithField(x => x.RelatedAnime).Find();
+            var malModel = await _client.Anime().WithId(id)
+                                        .WithFields(_commonFields)
+                                        .WithField(x => x.Genres)
+                                        .WithFields("related_anime{my_list_status,status}")
+                                        .WithFields("recommendations{my_list_status,status}")
+                                        .Find();
+            
             var model = ConvertModel(malModel);
             observer.OnNext(model);
 

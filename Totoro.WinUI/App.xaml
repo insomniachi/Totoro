@@ -12,6 +12,10 @@
                         <ResourceDictionary>
                             <x:Double x:Key="ContentDialogMaxWidth">1000</x:Double>
                             <x:Double x:Key="ContentDialogMaxHeight">1000</x:Double>
+                            <x:Double x:Key="TeachingTipMinHeight">40</x:Double>
+                            <x:Double x:Key="TeachingTipMaxHeight">520</x:Double>
+                            <x:Double x:Key="TeachingTipMinWidth">20</x:Double>
+                            <x:Double x:Key="TeachingTipMaxWidth">536</x:Double>
                         </ResourceDictionary>
                     </controls:XamlControlsResources.MergedDictionaries>
                 </XamlControlsResources>

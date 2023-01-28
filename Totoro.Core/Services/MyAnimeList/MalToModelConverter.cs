@@ -71,6 +71,11 @@ public class MalToModelConverter
             {
                 model.Related = ra.Select(x => ConvertModel(x.Anime)).ToArray();
             }
+
+            if(malModel.Recommendations is { Length: > 0} rec)
+            {
+                model.Recommended = rec.Select(x => ConvertModel(x.Anime)).ToArray();
+            }
         }
         catch (Exception ex)
         {

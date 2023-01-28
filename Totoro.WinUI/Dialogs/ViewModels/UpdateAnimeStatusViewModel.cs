@@ -10,7 +10,7 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
-            .Subscribe(x => TotalEpisodes = x.TotalEpisodes == 0 ? double.MaxValue : x.TotalEpisodes.Value);
+            .Subscribe(x => TotalEpisodes = x.TotalEpisodes == 0 ? double.MaxValue : x.TotalEpisodes ?? double.MaxValue);
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()

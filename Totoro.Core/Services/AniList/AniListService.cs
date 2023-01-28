@@ -62,7 +62,7 @@ public class AnilistService : IAnimeService, IAnilistService
         {
             var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
-                Query = new QueryQueryBuilder().WithMedia(MediaQueryBuilder(), id: (int)id, type: MediaType.Anime).Build()
+                Query = new QueryQueryBuilder().WithMedia(MediaQueryBuilderFull(), id: (int)id, type: MediaType.Anime).Build()
             });
 
             observer.OnNext(ConvertModel(response.Data.Media));
@@ -173,6 +173,66 @@ public class AnilistService : IAnimeService, IAnilistService
             .WithSeason()
             .WithSeasonYear()
             .WithBannerImage()
+            .WithMediaListEntry(new MediaListQueryBuilder()
+                .WithScore()
+                .WithStatus()
+                .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
+                .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
+                .WithProgress());
+    }
+
+    private static MediaQueryBuilder MediaQueryBuilderSimple()
+    {
+        return new MediaQueryBuilder()
+            .WithId()
+            .WithIdMal()
+            .WithTitle(new MediaTitleQueryBuilder()
+                .WithEnglish()
+                .WithNative()
+                .WithRomaji())
+            .WithCoverImage(new MediaCoverImageQueryBuilder()
+                .WithLarge())
+            .WithType()
+            .WithMediaListEntry(new MediaListQueryBuilder()
+                .WithScore()
+                .WithStatus()
+                .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
+                .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
+                .WithProgress())
+            .WithStatus();
+    }
+
+    private static MediaQueryBuilder MediaQueryBuilderFull()
+    {
+        return new MediaQueryBuilder()
+            .WithId()
+            .WithIdMal()
+            .WithTitle(new MediaTitleQueryBuilder()
+                .WithEnglish()
+                .WithNative()
+                .WithRomaji())
+            .WithCoverImage(new MediaCoverImageQueryBuilder()
+                .WithLarge())
+            .WithEpisodes()
+            .WithStatus()
+            .WithMeanScore()
+            .WithPopularity()
+            .WithDescription(asHtml: false)
+            .WithTrailer(new MediaTrailerQueryBuilder()
+                .WithSite()
+                .WithThumbnail()
+                .WithId())
+            .WithGenres()
+            .WithStartDate(new FuzzyDateQueryBuilder().WithAllFields())
+            .WithEndDate(new FuzzyDateQueryBuilder().WithAllFields())
+            .WithSeason()
+            .WithSeasonYear()
+            .WithBannerImage()
+            .WithRelations(new MediaConnectionQueryBuilder()
+                .WithNodes(MediaQueryBuilderSimple()))
+            .WithRecommendations(new RecommendationConnectionQueryBuilder()
+                .WithNodes(new RecommendationQueryBuilder()
+                    .WithMediaRecommendation(MediaQueryBuilderSimple())))
             .WithMediaListEntry(new MediaListQueryBuilder()
                 .WithScore()
                 .WithStatus()

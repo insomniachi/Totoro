@@ -259,7 +259,8 @@
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     Text="{x:Bind Title}"
-                                    TextTrimming="CharacterEllipsis" />
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTipService.ToolTip="{x:Bind Title}" />
                                 <Button
                                     Grid.Column="1"
                                     Command="{x:Bind root:App.Commands.More}"

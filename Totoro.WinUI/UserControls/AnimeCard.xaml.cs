@@ -18,11 +18,11 @@ public sealed partial class AnimeCard : UserControl
     }
 
     public MenuFlyout Flyout { get; set; }
-    public ICommand UpdateStatusCommand { get; }
     public ICommand WatchCommand { get; }
     public ICommand MoreCommand { get; }
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
     public bool ShowNextEpisodeTime { get; set; } = false;
+    public bool ShowAddToList { get; set; } = true;
 
     public AnimeCard()
     {
@@ -31,7 +31,7 @@ public sealed partial class AnimeCard : UserControl
 
     public Visibility AddToListButtonVisibility(AnimeModel a)
     {
-        if (a is null)
+        if (a is null || ShowAddToList == false)
         {
             return Visibility.Collapsed;
         }

@@ -42,4 +42,6 @@ public static class Converters
     {
         return Enum.GetValues(value.GetType());
     }
+
+    public static Visibility NullToVisibility(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
 }
