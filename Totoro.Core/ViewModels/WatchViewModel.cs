@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Concurrency;
 using System.Security.Cryptography.X509Certificates;
+using AnimDL.Core.Models.Interfaces;
 using FuzzySharp;
 using Splat;
 using Totoro.Core.Helpers;
@@ -404,12 +405,17 @@ public partial class WatchViewModel : NavigatableViewModel
         MediaPlayer
             .Playing
             .Where(_ => _settings.UseDiscordRichPresense)
-            .Do(_ => _canUpdateTime = true)
-            .Do(_ => _discordRichPresense.UpdateDetails(SelectedAudio?.Title ?? Anime.Title))
-            .Do(_ => _discordRichPresense.UpdateState($"Episode {CurrentEpisode}"))
-            .Do(_ => _discordRichPresense.UpdateTimer(TimeRemaining))
-            .Do(_ => NativeMethods.PreventSleep())
-            .Subscribe().DisposeWith(Garbage);
+            .Do(_ =>
+            {
+                _canUpdateTime = true;
+                _discordRichPresense.UpdateDetails(SelectedAudio?.Title ?? Anime.Title);
+                _discordRichPresense.UpdateState($"Episode {CurrentEpisode}");
+                _discordRichPresense.UpdateTimer(TimeRemaining);
+                _discordRichPresense.UpdateImage(GetImageKey());
+                NativeMethods.PreventSleep();
+            })
+            .Subscribe()
+            .DisposeWith(Garbage);
     }
 
     public async Task<Unit> UpdateTracking()
@@ -579,5 +585,15 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         return _providerOptions.GetString(key, "");
+    }
+
+    private string GetImageKey()
+    {
+        if(SelectedAudio is IHaveImage ihi)
+        {
+            return ihi.Image;
+        }
+
+        return "icon";
     }
 }

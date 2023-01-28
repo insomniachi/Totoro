@@ -6,6 +6,7 @@ public interface IDiscordRichPresense
     void UpdateDetails(string details);
     void UpdateState(string state);
     void UpdateTimer(TimeSpan timeSpan);
+    void UpdateImage(string url);
     void Clear();
     void ClearTimer();
     void Initialize();

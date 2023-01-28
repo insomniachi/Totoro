@@ -13,11 +13,21 @@ public class DiscordRichPresense : IDiscordRichPresense
     public void UpdateState(string state) => _client.UpdateState(state);
     public void UpdateTimer(TimeSpan timeSpan) => _client.UpdateEndTime(DateTime.UtcNow + timeSpan);
     public void SetPresence() => _client.SetPresence(new RichPresence().WithAssets(new Assets() { LargeImageKey = "icon" }));
+    public void UpdateImage(string url)
+    {
+        _client.UpdateLargeAsset(url);
+        
+        if(url != "icon")
+        {
+            _client.UpdateSmallAsset("icon");
+        }
+    }
     public void ClearTimer() => _client.UpdateClearTime();
     public void Clear()
     {
         _client.UpdateDetails("Idle");
         _client.UpdateState(string.Empty);
+        _client.UpdateLargeAsset("icon");
         ClearTimer();
     }
 }
