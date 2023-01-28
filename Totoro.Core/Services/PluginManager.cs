@@ -43,13 +43,11 @@ public class PluginManager : IPluginManager, IEnableLogger
         _localSettingsService.SaveSetting("ProviderConfigs", _configs);
     }
 
-    public async Task Initialize()
+    private async Task<IEnumerable<PluginInfo>> GetListedPlugins()
     {
         try
         {
-            var localPlugins = Directory.GetFiles(_pluginFolder).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
             var json = await _httpClient.GetStringAsync($"{_baseUrl}/plugins.json");
-
             var pluginInfos = new List<PluginInfo>();
             foreach (var item in JsonNode.Parse(json)?.AsArray())
             {
@@ -57,8 +55,22 @@ public class PluginManager : IPluginManager, IEnableLogger
                 var name = Path.GetFileName($"{item?["Url"]}");
                 pluginInfos.Add(new PluginInfo(name, version));
             }
+            return pluginInfos;
+        }
+        catch(Exception ex)
+        {
+            this.Log().Error(ex);
+            return Enumerable.Empty<PluginInfo>(); 
+        }
+    }
 
-            var newReleases = pluginInfos.Except(localPlugins).ToList();
+    public async Task Initialize()
+    {
+        try
+        {
+            var localPlugins = Directory.GetFiles(_pluginFolder).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
+            var listedPlugins = await GetListedPlugins();
+            var newReleases = listedPlugins.Except(localPlugins).ToList();
             var hasNewConfig = false;
             foreach (var item in newReleases)
             {
@@ -75,10 +87,10 @@ public class PluginManager : IPluginManager, IEnableLogger
                 hasNewConfig = true;
             }
 
-            if (!_settings.AllowSideLoadingPlugins)
+            if (!_settings.AllowSideLoadingPlugins && listedPlugins.Any())
             {
                 localPlugins = Directory.GetFiles(_pluginFolder).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
-                foreach (var item in localPlugins.Except(pluginInfos))
+                foreach (var item in localPlugins.Except(listedPlugins))
                 {
                     this.Log().Info($"Removing plugin : {item.FileName}");
                     File.Delete(Path.Combine(_pluginFolder, item.FileName));
@@ -125,23 +137,5 @@ public class PluginManager : IPluginManager, IEnableLogger
         {
            this.Log().Error(ex);
         }
-    }
-
-    public async Task<(string, DateTime)> AuthenticateKamy()
-    {
-        var url = QueryHelpers.AddQueryString("https://api.kamyroll.tech/auth/v1/token", new Dictionary<string, string>
-        {
-            ["device_id"] = "whatvalueshouldbeforweb",
-            ["device_type"] = "com.service.data",
-            ["access_token"] = "HMbQeThWmZq4t7w"
-        });
-        var json = await _httpClient.GetStringAsync(url);
-        var time = DateTime.Now;
-        if(int.TryParse($"{JsonNode.Parse(json)?["access_token"]}", out int secs))
-        {
-            time = DateTime.Now + TimeSpan.FromSeconds(secs);
-        }
-
-        return ($"{JsonNode.Parse(json)?["access_token"]}", time);
     }
 }

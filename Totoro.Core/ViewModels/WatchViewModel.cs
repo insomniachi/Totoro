@@ -234,9 +234,11 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Log(this, "Stream changed", x => x.Url)
-            .Do(mediaPlayer.SetMedia)
-            .Do(_ => mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
-            .Subscribe();
+            .Subscribe(async stream =>
+            {
+                await mediaPlayer.SetMedia(stream, Streams.AdditionalInformation);
+                mediaPlayer.Play(playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0));
+            });
 
         MediaPlayer
             .PositionChanged

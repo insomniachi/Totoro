@@ -1,4 +1,6 @@
 ﻿using System.Reactive.Windows.Foundation;
+using System.Text.Json;
+using System.Linq;
 using MediaPlayerElementWithHttpClient;
 using ReactiveMarbles.ObservableEvents;
 using Windows.Media.Core;
@@ -13,6 +15,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
+    private Dictionary<TimedTextSource, string> _ttsMap = new Dictionary<TimedTextSource, string>();
 
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -39,42 +42,70 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         _player.Play();
     }
 
-    public void SetMedia(VideoStream stream)
+    public async Task<Unit> SetMedia(VideoStream stream, Dictionary<string,string> AdditionalInformation = null)
     {
-        if (stream.Headers is { Count: > 0 } headers)
-        {
-            _httpClient.DefaultRequestHeaders.Clear();
-            foreach (var item in stream.Headers)
-            {
-                _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
-            }
+        var source = await GetMediaSource(stream);
 
-            Uri uri = new(stream.Url);
-            AdaptiveMediaSource.CreateFromUriAsync(uri, _httpClient)
-                .ToObservable()
-                .Subscribe(async amsr =>
-                {
-                    if (amsr.Status == AdaptiveMediaSourceCreationStatus.Success)
-                    {
-                        _player.Source = MediaSource.CreateFromAdaptiveMediaSource(amsr.MediaSource);
-                    }
-                    else
-                    {
-                        HttpRandomAccessStream httpStream = await HttpRandomAccessStream.CreateAsync(_httpClient, uri);
-                        _player.Source = MediaSource.CreateFromStream(httpStream, httpStream.ContentType);
-                    }
-                });
-        }
-        else
+        if(AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
         {
-            _player.Source = MediaSource.CreateFromUri(new Uri(stream.Url));
+            var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+            _ttsMap.Clear();
+            foreach (var item in subtitles)
+            {
+                var tts = TimedTextSource.CreateFromUri(new Uri(item.Value));
+                tts.Resolved += OnTtsResolved;
+                source.ExternalTimedTextSources.Add(tts);
+                _ttsMap[tts] = item.Key;
+            }
+        }
+
+        _player.Source = new MediaPlaybackItem(source);
+        
+        return Unit.Default;
+    }
+
+    private void OnTtsResolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)
+    {
+        if(!_ttsMap.TryGetValue(sender, out string lang))
+        {
+            return;
+        }
+
+        args.Tracks[0].Label = lang;
+
+        if(lang == "en-US")
+        {
+            var index = args.Tracks[0].PlaybackItem.TimedMetadataTracks.IndexOf(args.Tracks[0]);
+            args.Tracks[0].PlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.PlatformPresented);
         }
     }
 
-    public async Task SetMedia(string localFile)
+    public async Task<Unit> SetMedia(string localFile)
     {
         _player.Source = MediaSource.CreateFromStorageFile(await StorageFile.GetFileFromPathAsync(localFile));
+        return Unit.Default;
     }
 
     public MediaPlayer GetMediaPlayer() => _player;
+
+    private async Task<MediaSource> GetMediaSource(VideoStream stream)
+    {
+        _httpClient.DefaultRequestHeaders.Clear();
+        foreach (var item in stream.Headers)
+        {
+            _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
+        }
+
+        Uri uri = new(stream.Url);
+        var result = await AdaptiveMediaSource.CreateFromUriAsync(uri, _httpClient);
+        if (result.Status == AdaptiveMediaSourceCreationStatus.Success)
+        {
+            return MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
+        }
+        else
+        {
+            HttpRandomAccessStream httpStream = await HttpRandomAccessStream.CreateAsync(_httpClient, uri);
+            return MediaSource.CreateFromStream(httpStream, httpStream.ContentType);
+        }
+    }
 }

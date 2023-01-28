@@ -75,8 +75,8 @@
                         </Grid.Resources>
                         <Button
                             x:Name="DynamicSkipIntroButton"
-                            Height="50"
                             Width="150"
+                            Height="50"
                             Margin="0,20"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
@@ -270,6 +270,14 @@
                                                 ToolTipService.ToolTip="Quality">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xe93e;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                            <AppBarButton
+                                                x:Name="CCSelectionButton"
+                                                Style="{StaticResource AppBarButtonStyle}"
+                                                Visibility="Collapsed">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xED1E;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                         </StackPanel>
