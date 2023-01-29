@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel;
+using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml;
 
 namespace Totoro.WinUI.Helpers;
 
-public static class Converters
+public static partial class Converters
 {
     public static Visibility BooleanToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
     public static Visibility InvertedBooleanToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
@@ -44,4 +45,30 @@ public static class Converters
     }
 
     public static Visibility NullToVisibility(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
+
+
+    public static string ConvertStreamType(string type)
+    {
+        static string getDubedName(string type)
+        {
+            {
+                var match = DubRegex().Match(type);
+                return $"{match.Groups["Type"].Value} Season {match.Groups["Season"].Value}";
+            }
+        }
+
+        return type switch
+        {
+            "sub" => "Sub",
+            "dub" => "Dub",
+            string s when s.StartsWith("subbed") => $"Season {GetNumber().Match(s).Groups[1].Value}",
+            _ => getDubedName(type)
+        };
+    }
+
+    [GeneratedRegex(@"(\d+)")]
+    private static partial Regex GetNumber();
+
+    [GeneratedRegex(@"(?'Type'.+)\sDub(?'Season'\d+)")]
+    private static partial Regex DubRegex();
 }

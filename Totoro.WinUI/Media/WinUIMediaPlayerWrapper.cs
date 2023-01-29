@@ -15,7 +15,8 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
-    private Dictionary<TimedTextSource, string> _ttsMap = new Dictionary<TimedTextSource, string>();
+    private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
+    private bool _isHardSub;
 
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -45,6 +46,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     public async Task<Unit> SetMedia(VideoStream stream, Dictionary<string,string> AdditionalInformation = null)
     {
         var source = await GetMediaSource(stream);
+        _isHardSub = stream.Quality == "hardsub"; 
 
         if(AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
         {
@@ -73,7 +75,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
         args.Tracks[0].Label = lang;
 
-        if(lang == "en-US")
+        if(lang == "en-US" && !_isHardSub)
         {
             var index = args.Tracks[0].PlaybackItem.TimedMetadataTracks.IndexOf(args.Tracks[0]);
             args.Tracks[0].PlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.PlatformPresented);

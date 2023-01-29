@@ -63,7 +63,13 @@
                         Width="150"
                         ItemsSource="{x:Bind ViewModel.AudioStreams, Mode=OneWay}"
                         SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasMultipleAudioStreams), Mode=OneWay}" />
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasMultipleAudioStreams), Mode=OneWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{x:Bind help:Converters.ConvertStreamType((x:String))}" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                 </StackPanel>
             </Expander.Header>
