@@ -31,12 +31,12 @@ Although you can use the application without login in with MyAnimeList, it's the
 ## Features
 - [X] Automatically update tracking while your watching.
     - [X] MyAnimeList
-    - [ ] AniList
+    - [X] AniList
     - [ ] Kitsu
 - [X] Resume video playback from where you last left off.
 - [X] Manually update tracking
     - [X] MyAnimeList
-    - [ ] AniList
+    - [X] AniList
     - [ ] Kitsu
 - [X] Skip openings. 
 - [X] Discord Rich Presense.
