@@ -33,6 +33,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         DefaultListService = localSettingsService.ReadSetting(nameof(DefaultListService), default(ListServiceType?));
         HomePage = localSettingsService.ReadSetting(nameof(HomePage), "Discover");
         AllowSideLoadingPlugins = localSettingsService.ReadSetting(nameof(AllowSideLoadingPlugins), false);
+        DefaultStreamQualitySelection = localSettingsService.ReadSetting(nameof(DefaultStreamQualitySelection), StreamQualitySelection.Auto);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
@@ -80,6 +81,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public Guid AniSkipId { get; set; }
     [Reactive] public string HomePage { get; set; }
     [Reactive] public bool AllowSideLoadingPlugins { get; set; }
+    [Reactive] public StreamQualitySelection DefaultStreamQualitySelection { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {
@@ -109,6 +111,7 @@ public class SettingsViewModel : NavigatableViewModel
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
+    public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }
     public ICommand ConfigureProvider { get; }

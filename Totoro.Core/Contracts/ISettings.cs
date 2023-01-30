@@ -17,6 +17,7 @@ public interface ISettings
     ListServiceType? DefaultListService { get; set; }
     string HomePage { get; set; }
     bool AllowSideLoadingPlugins { get; set; }
+    StreamQualitySelection DefaultStreamQualitySelection { get; set; }
     Task<Unit> UpdateUrls();
 }
 

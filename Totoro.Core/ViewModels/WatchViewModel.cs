@@ -476,8 +476,8 @@ public partial class WatchViewModel : NavigatableViewModel
 
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(x => Anime is not null && x > 10 && _canUpdateTime)
-            .Subscribe(time => _playbackStateStorage.Update(Anime.Id, CurrentEpisode.Value, time));
+            .Where(x => x > 10 && _canUpdateTime)
+            .Subscribe(time => _playbackStateStorage.Update(Anime?.Id ?? 0, CurrentEpisode.Value, time));
 
 
         // if we actualy know when episode ends, update tracking then.
@@ -614,7 +614,7 @@ public partial class WatchViewModel : NavigatableViewModel
     /// </summary>
     /// <param name="qualities"></param>
     /// <returns></returns>
-    private static string GetDefaultQuality(IEnumerable<string> qualities)
+    private string GetDefaultQuality(IEnumerable<string> qualities)
     {
         var list = qualities.ToList();
 
@@ -622,7 +622,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return list.First();
         }
-        else if(list.Contains("auto"))
+        else if(list.Contains("auto") && _settings.DefaultStreamQualitySelection == StreamQualitySelection.Auto)
         {
             return "auto";
         }
@@ -647,7 +647,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private int GetQueuedEpisode()
     {
         return _isCrunchyroll 
-            ? 0
+            ? CurrentEpisode ?? 0
             : _episodeRequest ?? CurrentEpisode ?? ((Anime?.Tracking?.WatchedEpisodes ?? 0) + 1);
     }
     

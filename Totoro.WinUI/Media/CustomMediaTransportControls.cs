@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Subjects;
+using AngleSharp.Dom.Events;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.Core;
@@ -24,6 +25,28 @@ public class CustomMediaTransportControls : MediaTransportControls
 
     public static readonly DependencyProperty IsSkipButtonVisibleProperty =
         DependencyProperty.Register("IsSkipButtonVisible", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false, OnSkipIntroVisibleChanged));
+
+    public static readonly DependencyProperty SelectedQualityProperty =
+        DependencyProperty.Register("SelectedQuality", typeof(string), typeof(CustomMediaTransportControls), new PropertyMetadata("", OnQualyChanged));
+
+    private static void OnQualyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if(e.NewValue is not string s)
+        {
+            return;
+        }
+
+        if(string.IsNullOrEmpty(s))
+        {
+            return;
+        }
+
+        var mtc = d as CustomMediaTransportControls;
+        foreach (var item in mtc._qualitiesFlyout.Items.OfType<ToggleMenuFlyoutItem>())
+        {
+            item.IsChecked = item.Text == s;
+        }
+    }
 
     private static void OnSkipIntroVisibleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -56,7 +79,7 @@ public class CustomMediaTransportControls : MediaTransportControls
                 mtc._qualitiesButton.IsEnabled = true;
                 foreach (var item in qualities)
                 {
-                    var flyoutItem = new MenuFlyoutItem { Text = item };
+                    var flyoutItem = new ToggleMenuFlyoutItem { Text = item };
                     flyoutItem.Click += mtc.FlyoutItem_Click;
                     flyout.Items.Add(flyoutItem);
                 }
@@ -74,6 +97,12 @@ public class CustomMediaTransportControls : MediaTransportControls
     {
         get { return (bool)GetValue(IsSkipButtonVisibleProperty); }
         set { SetValue(IsSkipButtonVisibleProperty, value); }
+    }
+
+    public string SelectedQuality
+    {
+        get { return (string)GetValue(SelectedQualityProperty); }
+        set { SetValue(SelectedQualityProperty, value); }
     }
 
     public IObservable<Unit> OnNextTrack => _onNextTrack;

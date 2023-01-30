@@ -107,6 +107,17 @@
                         OffContent="Off"
                         OnContent="On" />
                 </labs:SettingsCard>
+
+                <labs:SettingsCard Description="Decides how to choose stream qualitiy when multiple qualities as available" Header="Default Stream Quality">
+                    <labs:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xe786;" />
+                    </labs:SettingsCard.HeaderIcon>
+                    <ComboBox
+                        Width="150"
+                        ItemsSource="{x:Bind ViewModel.QualitySelections}"
+                        SelectedItem="{x:Bind ViewModel.Settings.DefaultStreamQualitySelection, Mode=TwoWay}" />
+                </labs:SettingsCard>
+
                 <labs:SettingsCard
                     Command="{x:Bind ViewModel.ConfigureProvider}"
                     Description="Default provider used to stream."
