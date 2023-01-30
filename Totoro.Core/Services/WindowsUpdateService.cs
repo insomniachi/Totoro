@@ -11,6 +11,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
     private readonly string _updateFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "ApplicationData", "Updates");
     private readonly HttpClient _httpClient;
     private VersionInfo _current;
+    private CancellationTokenSource _cts;
 
     public IObservable<VersionInfo> OnUpdateAvailable => _onUpdate;
 
@@ -79,10 +80,24 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
         this.Log().Info($"Current version : {Assembly.GetEntryAssembly().GetName().Version.ToString(3)}");
         this.Log().Info($"downloading update {versionInfo.Version}");
 
+        _cts = new();
         using var client = new HttpClient();
         using var s = await client.GetStreamAsync(versionInfo.Url);
         using var fs = new FileStream(fullPath, FileMode.OpenOrCreate);
-        await s.CopyToAsync(fs);
+        
+        try
+        {
+            await s.CopyToAsync(fs, _cts.Token);
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+            fs.Dispose();
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath); 
+            }
+        }
 
         this.Log().Info($"downloading update {versionInfo.Version} completed.");
 
@@ -98,4 +113,6 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
         });
         Process.GetCurrentProcess().CloseMainWindow();
     }
+
+    public void ShutDown() => _cts?.Cancel();
 }

@@ -6,6 +6,7 @@
         Task<VersionInfo> DownloadUpdate(VersionInfo versionInfo);
         void InstallUpdate(VersionInfo versionInfo);
         ValueTask<VersionInfo> GetCurrentVersionInfo();
+        void ShutDown();
     }
 
     public class VersionInfo

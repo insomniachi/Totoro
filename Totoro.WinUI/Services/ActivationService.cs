@@ -13,6 +13,7 @@ public class ActivationService : IActivationService, IEnableLogger
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IPluginManager _pluginManager;
+    private readonly IUpdateService _updateService;
     private readonly string _prevWebviewFolder;
     private readonly string _tempPath = System.IO.Path.GetTempPath();
 
@@ -22,15 +23,17 @@ public class ActivationService : IActivationService, IEnableLogger
                              IEnumerable<IActivationHandler> activationHandlers,
                              IThemeSelectorService themeSelectorService,
                              IPlaybackStateStorage playbackStateStorage,
-                             IMalClient malClient,
-                             IPluginManager pluginManager)
+                             ITrackingServiceContext trackingService,
+                             IPluginManager pluginManager,
+                             IUpdateService updateService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
         _playbackStateStorage = playbackStateStorage;
         _pluginManager = pluginManager;
-        IsAuthenticated = malClient.IsAuthenticated;
+        _updateService = updateService;
+        IsAuthenticated = trackingService.IsAuthenticated;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
     }
@@ -61,6 +64,7 @@ public class ActivationService : IActivationService, IEnableLogger
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _prevWebviewFolder);
         }
         _playbackStateStorage.StoreState();
+        _updateService.ShutDown();
         App.MainWindow.Closed -= MainWindow_Closed;
     }
 
