@@ -116,11 +116,11 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public VideoStreamsForEpisode Streams { get; set; }
     [Reactive] public string SelectedAudioStream { get; set; }
     [Reactive] public int NumberOfStreams { get; set; }
+    [Reactive] public double CurrentPlayerTime { get; set; }
     
     [ObservableAsProperty] public bool IsFullWindow { get; }
     [ObservableAsProperty] public bool IsSkipButtonVisible { get; }
     [ObservableAsProperty] public bool HasSubAndDub { get; }
-    [ObservableAsProperty] public double CurrentPlayerTime { get; }
     [ObservableAsProperty] public double CurrentMediaDuration { get; }
     [ObservableAsProperty] public IEnumerable<string> Qualities { get; }
     [ObservableAsProperty] public AniSkipResult AniSkipResult { get; }
@@ -252,7 +252,13 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private void DoStuffWhenEpisodeChanges()
     {
-        var episodeChanged = this.ObservableForProperty(x => x.CurrentEpisode, x => x).Where(ep => ep > 0);
+        var episodeChanged = this.ObservableForProperty(x => x.CurrentEpisode, x => x)
+            .Where(ep => ep > 0)
+            .Do(_ =>
+            {
+                MediaPlayer.Pause();
+                CurrentPlayerTime = 0;
+            });
 
         // when streaming
         episodeChanged
@@ -367,7 +373,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(async stream =>
             {
                 await MediaPlayer.SetMedia(stream, Streams.AdditionalInformation);
-                MediaPlayer.Play(_playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0));
+                MediaPlayer.Play(GetPlayerTime());
             });
 
 
@@ -402,7 +408,7 @@ public partial class WatchViewModel : NavigatableViewModel
         MediaPlayer
             .PositionChanged
             .Select(ts => ts.TotalSeconds)
-            .ToPropertyEx(this, x => x.CurrentPlayerTime, true)
+            .Subscribe(x => CurrentPlayerTime = x)
             .DisposeWith(Garbage);
 
         MediaPlayer
@@ -476,8 +482,8 @@ public partial class WatchViewModel : NavigatableViewModel
 
         // periodically save the current timestamp so that we can resume later
         this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(x => x > 10 && _canUpdateTime)
-            .Subscribe(time => _playbackStateStorage.Update(Anime?.Id ?? 0, CurrentEpisode.Value, time));
+            .Where(x => Anime is not null && x > 10 && _canUpdateTime)
+            .Subscribe(time => _playbackStateStorage.Update(Anime.Id, CurrentEpisode.Value, time));
 
 
         // if we actualy know when episode ends, update tracking then.
@@ -746,5 +752,15 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         return true;
+    }
+
+    private double GetPlayerTime()
+    {
+        if(Anime is null)
+        {
+            return CurrentPlayerTime;
+        }
+
+        return _playbackStateStorage.GetTime(Anime.Id, CurrentEpisode ?? 0);
     }
 }
