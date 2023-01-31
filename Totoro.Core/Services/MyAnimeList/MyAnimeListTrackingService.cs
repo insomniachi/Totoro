@@ -120,7 +120,6 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
                 foreach (var item in data)
                 {
-                    await Task.Delay(100);
 
                     _anilistService
                         .GetNextAiringEpisodeTime(item.Id)
