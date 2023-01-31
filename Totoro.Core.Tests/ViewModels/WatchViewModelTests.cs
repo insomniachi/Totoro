@@ -575,15 +575,48 @@ public class WatchViewModelTests
 
     }
 
+    [Theory]
+    [InlineData(StreamQualitySelection.Auto, "auto")]
+    [InlineData(StreamQualitySelection.Highest, "1080p")]
+    public async Task WatchViewModel_SelectsCorrectQuality(StreamQualitySelection selection, string expected)
+    {
+        // arrange
+        AnimeModel animeModel = new()
+        {
+            Id = 12189,
+            Title = "Hyouka",
+            TotalEpisodes = 24,
+            Tracking = new Tracking
+            {
+                WatchedEpisodes = 24
+            }
+        };
+
+        var provider = GetProviderForQualitySelectionTests(new(), 24, new[] { "240p", "720p", "1080p", "auto" });
+        var vmBuilder = BaseViewModel(provider);
+        vmBuilder.WithSettings(mock =>
+        {
+            mock.Setup(x => x.DefaultStreamQualitySelection).Returns(selection);
+        });
+        var vm = vmBuilder.Bulid();
+
+        // act
+        await vm.OnNavigatedTo(new Dictionary<string, object> { [nameof(vm.Anime)] = animeModel });
+        vm.CurrentEpisode = 1;
+        await Task.Delay(100);
+
+        Assert.Equal(expected, vm.SelectedStream.Quality);
+    }
+
 
     private static WatchViewModelBuilder BaseViewModel(IProvider provider) => new WatchViewModelBuilder()
             .WithProviderFactory(factory =>
             {
-                factory.Setup(x => x.GetProvider(It.IsAny<ProviderType>())).Returns(provider);
+                factory.Setup(x => x.GetProvider(It.IsAny<string>())).Returns(provider);
             })
             .WithSettings(settings =>
             {
-                settings.Setup(x => x.DefaultProviderType).Returns(ProviderType.AnimixPlay);
+                settings.Setup(x => x.DefaultProviderType).Returns("allanime");
                 settings.Setup(x => x.UseDiscordRichPresense).Returns(false);
                 settings.Setup(x => x.PreferSubs).Returns(true);
                 settings.Setup(x => x.ElementTheme).Returns(ElementTheme.Dark);
@@ -610,7 +643,7 @@ public class WatchViewModelTests
         streamProviderMock.Setup(x => x.GetStreams(It.IsAny<string>(), It.IsAny<System.Range>()))
                           .Returns((string url, System.Range range) =>
                           {
-                              return Default(url, numberOfEps, range);
+                              return Default(url, range);
                           });
 
         var providerMock = new Mock<IProvider>();
@@ -620,7 +653,32 @@ public class WatchViewModelTests
         return providerMock.Object;
     }
 
-    private static async IAsyncEnumerable<VideoStreamsForEpisode> Default(string url, int total, System.Range range)
+    private static IProvider GetProviderForQualitySelectionTests(SearchResult result, int numberOfEps, IEnumerable<string> qualities)
+    {
+        var catalogMock = new Mock<TestCatalog>();
+        catalogMock.Setup(x => x.SearchByMalId(It.IsAny<long>())).Returns(Task.FromResult((result, new SearchResult
+        {
+            Title = result.Title + " Dub",
+            Url = result.Url + "-dub"
+        })));
+        catalogMock.Setup(x => x.Search(It.IsAny<string>())).Returns(RepeatResults(result, 5));
+
+        var streamProviderMock = new Mock<IStreamProvider>();
+        streamProviderMock.Setup(x => x.GetNumberOfStreams(It.IsAny<string>())).Returns(Task.FromResult(numberOfEps));
+        streamProviderMock.Setup(x => x.GetStreams(It.IsAny<string>(), It.IsAny<System.Range>()))
+                          .Returns((string url, System.Range range) =>
+                          {
+                              return Default(url, range, qualities);
+                          });
+
+        var providerMock = new Mock<IProvider>();
+        providerMock.Setup(x => x.Catalog).Returns(catalogMock.Object);
+        providerMock.Setup(x => x.StreamProvider).Returns(streamProviderMock.Object);
+
+        return providerMock.Object;
+    }
+
+    private static async IAsyncEnumerable<VideoStreamsForEpisode> Default(string url, System.Range range)
     {
         await Task.Delay(0);
         var ep = range.End.Value;
@@ -636,6 +694,29 @@ public class WatchViewModelTests
                 }
             }
         };
+    }
+
+    private static async IAsyncEnumerable<VideoStreamsForEpisode> Default(string url, System.Range range, IEnumerable<string> qualities)
+    {
+        await Task.Delay(0);
+        var ep = range.End.Value;
+
+        var result = new VideoStreamsForEpisode
+        {
+            Episode = ep,
+            Qualities = new Dictionary<string, VideoStream>()
+        };
+
+        foreach (var item in qualities)
+        {
+            result.Qualities[item] = new VideoStream
+            {
+                Quality = item,
+                Url = $"{url}_stream_{ep}"
+            };
+        }
+
+        yield return result;
     }
 
     private static async IAsyncEnumerable<SearchResult> RepeatResults(SearchResult result, int count)

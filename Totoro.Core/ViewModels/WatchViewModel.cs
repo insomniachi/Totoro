@@ -701,12 +701,12 @@ public partial class WatchViewModel : NavigatableViewModel
     private string GetDefaultAudioStream()
     {
         var key = "StreamType";
-        if(_settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll")
+        if(_settings.DefaultProviderType == "consumet" && _providerOptions?.GetString("Provider", "zoro") == "crunchyroll")
         {
             key = "CrunchyrollStreamType";
         }
 
-        return _providerOptions.GetString(key, "");
+        return _providerOptions?.GetString(key, "");
     }
 
     private string GetDiscordImageKey()

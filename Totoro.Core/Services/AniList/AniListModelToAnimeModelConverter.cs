@@ -83,7 +83,7 @@ namespace Totoro.Core.Services.AniList
             return new Tracking
             {
                 WatchedEpisodes = listEntry.Progress,
-                Score = (int)listEntry.Score,
+                Score = (int)(listEntry.Score ?? 0),
                 Status = ConvertListStatus(listEntry.Status),
                 StartDate = ConvertDate(listEntry.StartedAt),
                 FinishDate = ConvertDate(listEntry.CompletedAt),
@@ -143,7 +143,7 @@ namespace Totoro.Core.Services.AniList
 
         public static DateTime? ConvertDate(FuzzyDate date)
         {
-            if (date.Year is null || date.Month is null || date.Day is null)
+            if (date is null || date.Year is null || date.Month is null || date.Day is null)
             {
                 return null;
             }

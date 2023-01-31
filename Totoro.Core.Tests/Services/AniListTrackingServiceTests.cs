@@ -48,7 +48,7 @@ public class AniListTrackingServiceTests
         var localSettingsServiceMock = new Mock<ILocalSettingsService>();
         localSettingsServiceMock.Setup(x => x.ReadSetting("AniListToken", It.IsAny<AniListAuthToken>())).Returns(_token);
 
-        var service = new AniListService(localSettingsServiceMock.Object);
+        var service = new AnilistService(localSettingsServiceMock.Object, Mock.Of<IAnimeIdService>());
 
         await service.GetSeasonalAnime().ForEachAsync(x =>
         {
@@ -62,7 +62,7 @@ public class AniListTrackingServiceTests
         var localSettingsServiceMock = new Mock<ILocalSettingsService>();
         localSettingsServiceMock.Setup(x => x.ReadSetting("AniListToken", It.IsAny<AniListAuthToken>())).Returns(_token);
 
-        var service = new AniListService(localSettingsServiceMock.Object);
+        var service = new AnilistService(localSettingsServiceMock.Object, Mock.Of<IAnimeIdService>());
 
         var result = await service.GetInformation(31646);
     }
