@@ -1,12 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using DynamicData.Aggregation;
-using FuzzySharp;
-using HtmlAgilityPack;
 using Splat;
-using Totoro.Core.Contracts;
-using Totoro.Core.Models;
 
 namespace Totoro.Core.Services
 {
@@ -27,6 +21,12 @@ namespace Totoro.Core.Services
 
         public async Task<long> GetId(string identifier, string provider)
         {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                this.Log().Warn("No identifier found");
+                return 0;
+            }
+
             try
             {
                 var key = _settings.DefaultListService switch
@@ -38,7 +38,7 @@ namespace Totoro.Core.Services
 
                 var json = await _httpClient.GetStringAsync($"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/pages/{GetProviderPage(provider)}/{identifier}.json");
                 var jObject = JsonNode.Parse(json);
-                var value = (long)jObject["malId"].AsValue();
+                var value = (long)jObject[key].AsValue();
                 return value;
             }
             catch (Exception ex)
@@ -64,8 +64,16 @@ namespace Totoro.Core.Services
             else if (provider == "gogo")
             {
                 var uri = new Uri(url);
-                var match = GogoAnimeIdentifierRegex().Match(uri.AbsolutePath);
-                return await GetId(match.Groups[1].Value, "gogo");
+                var path = uri.Segments[^1];
+
+                if(path.Contains("-episode-"))
+                {
+                    return await GetId(path.Split("-episode").FirstOrDefault(), provider);
+                }
+                else
+                {
+                    return await GetId(path, provider);
+                }
             }
             else if (provider == "animepahe")
             {
@@ -241,8 +249,6 @@ namespace Totoro.Core.Services
         [GeneratedRegex(@"anilist.co/anime/(\d+)")]
         private static partial Regex YugenAnilistIdRegex();
 
-        [GeneratedRegex("/?(.+)-episode-\\d+")]
-        private static partial Regex GogoAnimeIdentifierRegex();
 
         [GeneratedRegex(@"<meta name=""(?'Type'anidb|anilist|kitsu|myanimelist)"" content=""(?'Id'\d+)"">")]
         private static partial Regex AnimePaheAnimeIdRegex();

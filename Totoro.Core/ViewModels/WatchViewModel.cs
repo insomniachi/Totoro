@@ -105,6 +105,8 @@ public partial class WatchViewModel : NavigatableViewModel
             .Where(RequestedEpisodeIsValid)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(ep => CurrentEpisode = ep);
+
+        NativeMethods.PreventSleep();
     }
 
     [Reactive] public int? CurrentEpisode { get; set; }
@@ -422,7 +424,6 @@ public partial class WatchViewModel : NavigatableViewModel
             .Do(_ =>
             {
                 _canUpdateTime = false;
-                NativeMethods.AllowSleep();
                 DoIfRpcEnabled(() => _discordRichPresense.Clear());
             })
             .SelectMany(_ => UpdateTracking())
@@ -432,7 +433,6 @@ public partial class WatchViewModel : NavigatableViewModel
 
         MediaPlayer
             .Paused
-            .Do(_ => NativeMethods.AllowSleep())
             .Where(_ => _settings.UseDiscordRichPresense)
             .Subscribe(_ =>
             {
@@ -443,7 +443,6 @@ public partial class WatchViewModel : NavigatableViewModel
 
         MediaPlayer
             .Playing
-            .Do(_ => NativeMethods.AllowSleep())
             .Where(_ => _settings.UseDiscordRichPresense)
             .Subscribe(_ =>
             {
