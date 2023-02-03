@@ -23,11 +23,11 @@
                 Margin="5,0"
                 Background="{StaticResource ApplicationPageBackgroundThemeBrush}"
                 CornerRadius="5"
-                ItemsSource="{x:Bind ViewModel.Models, Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.SelectedModel, Mode=TwoWay}">
+                ItemsSource="{Binding Models, Mode=OneWay}"
+                SelectedItem="{Binding SelectedModel, Mode=TwoWay}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Title}" ToolTipService.ToolTip="{Binding Title}" />
+                        <TextBlock Text="{Binding Title, Mode=OneWay}" ToolTipService.ToolTip="{Binding Title, Mode=OneWay}" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

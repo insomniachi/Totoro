@@ -99,7 +99,7 @@ public class ViewService : IViewService, IEnableLogger
         }, vm => vm.Url = url);
     }
 
-    public async Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string, Task<IEnumerable<T>>> searcher = default)
+    public async Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string, IObservable<IEnumerable<T>>> searcher = default)
         where T : class
     {
         var vm = new SelectModelViewModel<T>()
@@ -146,7 +146,7 @@ public class ViewService : IViewService, IEnableLogger
                 return null;
             }
 
-            var model = await SelectModel(candidates, filtered.FirstOrDefault() ?? candidates.FirstOrDefault(), title => _animeService.GetAnime(title).ToTask());
+            var model = await SelectModel(candidates, filtered.FirstOrDefault() ?? candidates.FirstOrDefault(), _animeService.GetAnime);
             return model?.Id;
         }
     }

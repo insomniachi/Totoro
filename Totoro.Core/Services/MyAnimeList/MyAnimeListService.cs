@@ -50,7 +50,7 @@ public class MyAnimeListService : IAnimeService
             .IncludeNsfw()
             .Find()
             .ToObservable()
-            .Select(x => x.Data.Select(MalToModelConverter.ConvertModel));
+            .Select(x => x.Data.Select(ConvertModel));
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()

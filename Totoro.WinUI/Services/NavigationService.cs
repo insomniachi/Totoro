@@ -162,7 +162,14 @@ public class NavigationService : IWinUINavigationService, IEnableLogger
 
         if (view.ViewModel is INavigationAware navigationAware)
         {
-            await navigationAware.OnNavigatedTo(e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>());
+            try
+            {
+                await navigationAware.OnNavigatedTo(e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>());
+            }
+            catch (Exception ex)
+            {
+                this.Log().Fatal(ex);
+            }
         }
 
         this.Log().Debug($"Navigated to {view.ViewModel.GetType().Name}");

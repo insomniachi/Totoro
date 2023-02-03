@@ -27,9 +27,4 @@ public sealed partial class SelectModelView : Page, IViewFor<ISelectModelViewMod
         get => DataContext;
         set => DataContext = value; 
     }
-
-    private void ComboBox_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        (sender as ComboBox).SelectedIndex = 0;
-    }
 }

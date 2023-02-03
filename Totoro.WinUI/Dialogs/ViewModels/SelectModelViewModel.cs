@@ -1,23 +1,21 @@
-﻿using System.Reactive.Threading.Tasks;
-
-namespace Totoro.WinUI.Dialogs.ViewModels;
+﻿namespace Totoro.WinUI.Dialogs.ViewModels;
 
 public class SelectModelViewModel<TModel> : DialogViewModel, ISelectModelViewModel
 {
     public SelectModelViewModel()
     {
         this.WhenAnyValue(x => x.SearchText)
-            .WhereNotNull()
+            .Where(x => x is { Length: > 2 })
+            .Throttle(TimeSpan.FromMilliseconds(200))
             .SelectMany(text => Search?.Invoke(text))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => Models = x);
-
+            .Subscribe(x => Models = x, RxApp.DefaultExceptionHandler.OnError);
     }
 
     [Reactive] public IEnumerable<TModel> Models { get; set; }
     [Reactive] public TModel SelectedModel { get; set; }
     [Reactive] public string SearchText { get; set; }
-    public Func<string,Task<IEnumerable<TModel>>> Search { get; set; }
+    public Func<string,IObservable<IEnumerable<TModel>>> Search { get; set; }
 
     IEnumerable<object> ISelectModelViewModel.Models => (IEnumerable<object>)Models;
     object ISelectModelViewModel.SelectedModel

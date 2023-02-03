@@ -271,7 +271,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .SelectMany(ep => GetStreams())
             .Select(list => list.FirstOrDefault())
             .WhereNotNull()
-            .Subscribe(x => Streams = x);
+            .Subscribe(x => Streams = x, RxApp.DefaultExceptionHandler.OnError);
 
         // when playing files in system
         episodeChanged
@@ -311,7 +311,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => SelectedAnimeResult = x);
+            .Subscribe(x => SelectedAnimeResult = x, RxApp.DefaultExceptionHandler.OnError);
 
         // Step 2
         this.ObservableForProperty(x => x.SelectedAudio, x => x)
@@ -325,13 +325,13 @@ public partial class WatchViewModel : NavigatableViewModel
                     NumberOfStreams = -1;
                 }
                 NumberOfStreams = count;
-            });
+            }, RxApp.DefaultExceptionHandler.OnError);
 
         // Step 3
         this.ObservableForProperty(x => x.NumberOfStreams, x => x)
             .Where(count => count > 0)
             .Log(this, "Number of Episodes")
-            .Select(count => Enumerable.Range(1, count).ToList())
+            .Select(count => Enumerable.Range(1, count))
             .Do(list => _episodesCache.EditDiff(list))
             .Select(_ => GetQueuedEpisode())
             .Log(this, "Episode Queued")
@@ -345,7 +345,7 @@ public partial class WatchViewModel : NavigatableViewModel
                 }
 
                 CurrentEpisode = ep;
-            });
+            }, RxApp.DefaultExceptionHandler.OnError);
 
         /// Step 4 <see cref="DoStuffWhenEpisodeChanges"/>
 
@@ -376,7 +376,7 @@ public partial class WatchViewModel : NavigatableViewModel
             {
                 await MediaPlayer.SetMedia(stream, Streams.AdditionalInformation);
                 MediaPlayer.Play(GetPlayerTime());
-            });
+            }, RxApp.DefaultExceptionHandler.OnError);
 
 
     }
@@ -718,24 +718,42 @@ public partial class WatchViewModel : NavigatableViewModel
         return "icon";
     }
 
-    private Task<int> GetNumberOfStreams(string url)
+    private async Task<int> GetNumberOfStreams(string url)
     {
-        return Provider?.StreamProvider switch
+        try
         {
-            IMultiAudioStreamProvider mp => mp.GetNumberOfStreams(url, SelectedAudioStream),
-            IStreamProvider sp => sp.GetNumberOfStreams(url),
-            _ => Task.FromResult(0)
-        };
+            var count = Provider?.StreamProvider switch
+            {
+                IMultiAudioStreamProvider mp => await mp.GetNumberOfStreams(url, SelectedAudioStream),
+                IStreamProvider sp => await sp.GetNumberOfStreams(url),
+                _ => 0
+            };
+
+            return count;
+        }
+        catch (Exception ex)
+        {
+            this.Log().Fatal(ex);
+            return 0;
+        }
     }
 
-    private Task<List<VideoStreamsForEpisode>> GetStreams()
+    private async Task<List<VideoStreamsForEpisode>> GetStreams()
     {
-        return Provider?.StreamProvider switch
+        try
         {
-            IMultiAudioStreamProvider mp => mp.GetStreams(SelectedAudio.Url, GetRange(), SelectedAudioStream).ToListAsync().AsTask(),
-            IStreamProvider sp => sp.GetStreams(SelectedAudio.Url, GetRange()).ToListAsync().AsTask(),
-            _ => Task.FromResult(new List<VideoStreamsForEpisode>())
-        };
+            return Provider?.StreamProvider switch
+            {
+                IMultiAudioStreamProvider mp => await mp.GetStreams(SelectedAudio.Url, GetRange(), SelectedAudioStream).ToListAsync(),
+                IStreamProvider sp => await sp.GetStreams(SelectedAudio.Url, GetRange()).ToListAsync(),
+                _ => new List<VideoStreamsForEpisode>()
+            };
+        }
+        catch (Exception ex)
+        {
+            this.Log().Fatal(ex);
+            return new List<VideoStreamsForEpisode>();
+        }
     }
 
     private Range GetRange() => CurrentEpisode.Value..CurrentEpisode.Value;
