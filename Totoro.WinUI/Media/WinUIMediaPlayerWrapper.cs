@@ -1,7 +1,4 @@
-﻿using System.Reactive.Windows.Foundation;
-using System.Text.Json;
-using System.Linq;
-using MediaPlayerElementWithHttpClient;
+﻿using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -43,12 +40,12 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         _player.Play();
     }
 
-    public async Task<Unit> SetMedia(VideoStream stream, Dictionary<string,string> AdditionalInformation = null)
+    public async Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation = null)
     {
         var source = await GetMediaSource(stream);
-        _isHardSub = stream.Quality == "hardsub"; 
+        _isHardSub = stream.Quality == "hardsub";
 
-        if(AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
+        if (AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
         {
             var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
             _ttsMap.Clear();
@@ -62,20 +59,20 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         }
 
         _player.Source = new MediaPlaybackItem(source);
-        
+
         return Unit.Default;
     }
 
     private void OnTtsResolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)
     {
-        if(!_ttsMap.TryGetValue(sender, out string lang))
+        if (!_ttsMap.TryGetValue(sender, out string lang))
         {
             return;
         }
 
         args.Tracks[0].Label = lang;
 
-        if(lang == "en-US" && !_isHardSub)
+        if (lang == "en-US" && !_isHardSub)
         {
             var index = args.Tracks[0].PlaybackItem.TimedMetadataTracks.IndexOf(args.Tracks[0]);
             args.Tracks[0].PlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.PlatformPresented);

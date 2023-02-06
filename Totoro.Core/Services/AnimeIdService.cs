@@ -16,7 +16,7 @@ public class AnimeIdService : IAnimeIdService
 
     public Task<AnimeId> GetId(ListServiceType serviceType, long id) => GetIdInternal(ConvertType(serviceType), id);
     public Task<AnimeId> GetId(long id) => GetIdInternal(ConvertType(_settings.DefaultListService), id);
-    
+
     private static string ConvertType(ListServiceType? type)
     {
         return type switch

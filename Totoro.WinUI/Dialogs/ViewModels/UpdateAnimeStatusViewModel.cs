@@ -42,7 +42,7 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
 
     public void UpdateTracking()
     {
-        if(Anime is null)
+        if (Anime is null)
         {
             return;
         }

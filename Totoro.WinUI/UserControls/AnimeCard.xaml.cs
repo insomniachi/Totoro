@@ -46,7 +46,7 @@ public sealed partial class AnimeCard : UserControl
 
     public string GetTime(DateTime? airingAt)
     {
-        if(!ShowNextEpisodeTime)
+        if (!ShowNextEpisodeTime)
         {
             return string.Empty;
         }
@@ -88,17 +88,17 @@ public sealed partial class AnimeCard : UserControl
     public Visibility InfoBadgeVisibillity(int value) => value > 0 ? Visibility.Visible : Visibility.Collapsed;
     public int UnwatchedEpisodes(int airedEpisodes)
     {
-        if(Anime is null)
-        {
-            return -1;
-        }    
-
-        if(Anime.Tracking is null || Anime.Tracking.WatchedEpisodes is null)
+        if (Anime is null)
         {
             return -1;
         }
 
-        if(airedEpisodes == 0)
+        if (Anime.Tracking is null || Anime.Tracking.WatchedEpisodes is null)
+        {
+            return -1;
+        }
+
+        if (airedEpisodes == 0)
         {
             return -1;
         }

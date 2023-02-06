@@ -4,17 +4,17 @@ using Windows.Foundation;
 using Windows.Storage.Streams;
 using Windows.Web.Http;
 
-namespace MediaPlayerElementWithHttpClient;
+namespace Totoro.WinUI.Media;
 
 class HttpRandomAccessStream : IRandomAccessStreamWithContentType
 {
-    private HttpClient client;
+    private readonly HttpClient client;
     private IInputStream inputStream;
     private ulong size;
     private ulong requestedPosition;
     private string etagHeader;
     private string lastModifiedHeader;
-    private Uri requestedUri;
+    private readonly Uri requestedUri;
 
     // No public constructor, factory methods instead to handle async tasks.
     private HttpRandomAccessStream(HttpClient client, Uri uri)
@@ -28,7 +28,7 @@ class HttpRandomAccessStream : IRandomAccessStreamWithContentType
     {
         HttpRandomAccessStream randomStream = new HttpRandomAccessStream(client, uri);
 
-        return AsyncInfo.Run<HttpRandomAccessStream>(async (cancellationToken) =>
+        return AsyncInfo.Run(async (cancellationToken) =>
         {
             await randomStream.SendRequesAsync().ConfigureAwait(false);
             return randomStream;
@@ -42,14 +42,14 @@ class HttpRandomAccessStream : IRandomAccessStreamWithContentType
         HttpRequestMessage request = null;
         request = new HttpRequestMessage(HttpMethod.Get, requestedUri);
 
-        request.Headers.Add("Range", String.Format("bytes={0}-", requestedPosition));
+        request.Headers.Add("Range", string.Format("bytes={0}-", requestedPosition));
 
-        if (!String.IsNullOrEmpty(etagHeader))
+        if (!string.IsNullOrEmpty(etagHeader))
         {
             request.Headers.Add("If-Match", etagHeader);
         }
 
-        if (!String.IsNullOrEmpty(lastModifiedHeader))
+        if (!string.IsNullOrEmpty(lastModifiedHeader))
         {
             request.Headers.Add("If-Unmodified-Since", lastModifiedHeader);
         }
@@ -60,7 +60,7 @@ class HttpRandomAccessStream : IRandomAccessStreamWithContentType
 
         if (response.Content.Headers.ContentType != null)
         {
-            this.ContentType = response.Content.Headers.ContentType.MediaType;
+            ContentType = response.Content.Headers.ContentType.MediaType;
         }
 
         size = response.Content.Headers.ContentLength.Value;
@@ -72,17 +72,17 @@ class HttpRandomAccessStream : IRandomAccessStreamWithContentType
 
         if (!response.Headers.ContainsKey("Accept-Ranges"))
         {
-            throw new Exception(String.Format(
+            throw new Exception(string.Format(
                 "HTTP server does not support range requests: {0}",
                 "http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.5"));
         }
 
-        if (String.IsNullOrEmpty(etagHeader) && response.Headers.ContainsKey("ETag"))
+        if (string.IsNullOrEmpty(etagHeader) && response.Headers.ContainsKey("ETag"))
         {
             etagHeader = response.Headers["ETag"];
         }
 
-        if (String.IsNullOrEmpty(lastModifiedHeader) && response.Content.Headers.ContainsKey("Last-Modified"))
+        if (string.IsNullOrEmpty(lastModifiedHeader) && response.Content.Headers.ContainsKey("Last-Modified"))
         {
             lastModifiedHeader = response.Content.Headers["Last-Modified"];
         }
@@ -177,7 +177,7 @@ class HttpRandomAccessStream : IRandomAccessStreamWithContentType
         }
     }
 
-    public Windows.Foundation.IAsyncOperationWithProgress<IBuffer, uint> ReadAsync(IBuffer buffer, uint count, InputStreamOptions options)
+    public IAsyncOperationWithProgress<IBuffer, uint> ReadAsync(IBuffer buffer, uint count, InputStreamOptions options)
     {
         return AsyncInfo.Run<IBuffer, uint>(async (cancellationToken, progress) =>
         {
@@ -206,12 +206,12 @@ class HttpRandomAccessStream : IRandomAccessStreamWithContentType
         });
     }
 
-    public Windows.Foundation.IAsyncOperation<bool> FlushAsync()
+    public IAsyncOperation<bool> FlushAsync()
     {
         throw new NotImplementedException();
     }
 
-    public Windows.Foundation.IAsyncOperationWithProgress<uint, uint> WriteAsync(IBuffer buffer)
+    public IAsyncOperationWithProgress<uint, uint> WriteAsync(IBuffer buffer)
     {
         throw new NotImplementedException();
     }

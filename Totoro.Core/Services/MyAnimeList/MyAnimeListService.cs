@@ -9,7 +9,7 @@ public class MyAnimeListService : IAnimeService
     private readonly IAnilistService _anilistService;
     private readonly ISettings _settings;
 
-    public MyAnimeListService(IMalClient client, 
+    public MyAnimeListService(IMalClient client,
                               IAnilistService anilistService,
                               ISettings settings)
     {
@@ -30,7 +30,7 @@ public class MyAnimeListService : IAnimeService
                                         .WithFields("related_anime{my_list_status,status}")
                                         .WithFields("recommendations{my_list_status,status}")
                                         .Find();
-            
+
             var model = ConvertModel(malModel);
             observer.OnNext(model);
 
@@ -50,7 +50,7 @@ public class MyAnimeListService : IAnimeService
             .WithFields(_commonFields)
             .WithLimit(5);
 
-        if(_settings.IncludeNsfw)
+        if (_settings.IncludeNsfw)
         {
             request.IncludeNsfw();
         }
@@ -68,7 +68,7 @@ public class MyAnimeListService : IAnimeService
                                      .OfSeason(season.SeasonName, season.Year)
                                      .WithFields(_commonFields);
 
-                if(_settings.IncludeNsfw)
+                if (_settings.IncludeNsfw)
                 {
                     request.IncludeNsfw();
                 }

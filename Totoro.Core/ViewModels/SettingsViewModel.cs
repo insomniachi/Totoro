@@ -13,7 +13,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     {
         ElementTheme = ElementTheme.Dark;
         PreferSubs = localSettingsService.ReadSetting(nameof(PreferSubs), true);
-        
+
         // temp hack for backward compat
         try
         {
@@ -104,7 +104,7 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
-    
+
     public ISettings Settings { get; }
     public Version Version { get; }
     public Version ScrapperVersion { get; }
@@ -134,10 +134,10 @@ public class SettingsViewModel : NavigatableViewModel
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {
             var currentInfo = await updateService.GetCurrentVersionInfo();
-            if(currentInfo is null)
+            if (currentInfo is null)
             {
                 return;
-            }    
+            }
             await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
         });
         ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));

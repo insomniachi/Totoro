@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using DynamicData;
 
 namespace Totoro.Core.ViewModels;
 
@@ -152,9 +151,9 @@ public class DiscoverViewModel : NavigatableViewModel
         RxApp.MainThreadScheduler.Schedule(() => IsLoading = isLoading);
     }
 
-    private Task<List<SearchResult>>Search(string term)
+    private Task<List<SearchResult>> Search(string term)
     {
-        if(_provider is null)
+        if (_provider is null)
         {
             return Task.FromResult(new List<SearchResult>());
         }

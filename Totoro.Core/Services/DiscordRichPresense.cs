@@ -16,8 +16,8 @@ public class DiscordRichPresense : IDiscordRichPresense
     public void UpdateImage(string url)
     {
         _client.UpdateLargeAsset(url);
-        
-        if(url != "icon")
+
+        if (url != "icon")
         {
             _client.UpdateSmallAsset("icon");
         }

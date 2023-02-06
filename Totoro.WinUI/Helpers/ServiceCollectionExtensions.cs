@@ -1,8 +1,5 @@
 ﻿using System.ComponentModel;
 using Microsoft.UI.Xaml;
-using Totoro.Core;
-using Totoro.Core.Services;
-using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Activation;
 using Totoro.WinUI.Contracts;
@@ -57,7 +54,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWinUINavigationService, NavigationService>();
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
         services.AddSingleton<ISchedule, Schedule>();
-        
+
         services.AddTransient<INavigationViewService, NavigationViewService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
         services.AddTransient<IToastService, ToastService>();

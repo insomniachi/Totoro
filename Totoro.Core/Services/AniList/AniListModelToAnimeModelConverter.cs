@@ -36,7 +36,7 @@ namespace Totoro.Core.Services.AniList
 
         public static AnimeModel[] ConvertSimple(IEnumerable<Media> media)
         {
-            if(media is null)
+            if (media is null)
             {
                 return Array.Empty<AnimeModel>();
             }
@@ -65,7 +65,7 @@ namespace Totoro.Core.Services.AniList
 
         public static DateTime? ConvertToExactTime(int? secondsTillAiring)
         {
-            if(secondsTillAiring is null)
+            if (secondsTillAiring is null)
             {
                 return null;
             }
@@ -208,7 +208,7 @@ namespace Totoro.Core.Services.AniList
 
         private static List<Video> ConvertTrailer(MediaTrailer trailer)
         {
-            if(trailer is null)
+            if (trailer is null)
             {
                 return new List<Video>();
             }

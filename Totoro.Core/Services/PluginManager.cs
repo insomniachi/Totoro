@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text.Json.Nodes;
 using AnimDL.Core;
-using Microsoft.AspNetCore.WebUtilities;
 using Splat;
 
 namespace Totoro.Core.Services;
@@ -57,10 +56,10 @@ public class PluginManager : IPluginManager, IEnableLogger
             }
             return pluginInfos;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             this.Log().Error(ex);
-            return Enumerable.Empty<PluginInfo>(); 
+            return Enumerable.Empty<PluginInfo>();
         }
     }
 
@@ -119,7 +118,7 @@ public class PluginManager : IPluginManager, IEnableLogger
                 this.Log().Info($"Loaded plugin {item.DisplayName}");
             }
 
-            if(!_settings.AllowSideLoadingPlugins)
+            if (!_settings.AllowSideLoadingPlugins)
             {
                 foreach (var key in _configs.Keys.Except(ProviderFactory.Instance.Providers.Select(x => x.Name)))
                 {
@@ -128,14 +127,14 @@ public class PluginManager : IPluginManager, IEnableLogger
                 }
             }
 
-            if(hasNewConfig)
+            if (hasNewConfig)
             {
                 SaveConfig();
             }
         }
         catch (Exception ex)
         {
-           this.Log().Error(ex);
+            this.Log().Error(ex);
         }
     }
 }

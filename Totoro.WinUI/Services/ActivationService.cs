@@ -1,6 +1,4 @@
-﻿using AnimDL.Core;
-using MalApi.Interfaces;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Splat;
 using Totoro.WinUI.Activation;
 

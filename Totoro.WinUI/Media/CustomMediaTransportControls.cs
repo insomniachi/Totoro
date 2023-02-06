@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Subjects;
-using AngleSharp.Dom.Events;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.Core;
@@ -31,12 +30,12 @@ public class CustomMediaTransportControls : MediaTransportControls
 
     private static void OnQualyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if(e.NewValue is not string s)
+        if (e.NewValue is not string s)
         {
             return;
         }
 
-        if(string.IsNullOrEmpty(s))
+        if (string.IsNullOrEmpty(s))
         {
             return;
         }

@@ -66,7 +66,7 @@ namespace Totoro.Core.Services
                 var uri = new Uri(url);
                 var path = uri.Segments[^1];
 
-                if(path.Contains("-episode-"))
+                if (path.Contains("-episode-"))
                 {
                     return await GetId(path.Split("-episode").FirstOrDefault(), provider);
                 }
@@ -165,7 +165,7 @@ namespace Totoro.Core.Services
             var url = $"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/{listService}/anime/{id}.json";
             var result = await _httpClient.GetAsync(url);
 
-            if(!result.IsSuccessStatusCode)
+            if (!result.IsSuccessStatusCode)
             {
                 return null;
             }

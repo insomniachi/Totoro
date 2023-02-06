@@ -15,7 +15,7 @@ public class SelectModelViewModel<TModel> : DialogViewModel, ISelectModelViewMod
     [Reactive] public IEnumerable<TModel> Models { get; set; }
     [Reactive] public TModel SelectedModel { get; set; }
     [Reactive] public string SearchText { get; set; }
-    public Func<string,IObservable<IEnumerable<TModel>>> Search { get; set; }
+    public Func<string, IObservable<IEnumerable<TModel>>> Search { get; set; }
 
     IEnumerable<object> ISelectModelViewModel.Models => (IEnumerable<object>)Models;
     object ISelectModelViewModel.SelectedModel
@@ -23,7 +23,7 @@ public class SelectModelViewModel<TModel> : DialogViewModel, ISelectModelViewMod
         get => SelectedModel;
         set
         {
-            if(value is not TModel model)
+            if (value is not TModel model)
             {
                 return;
             }

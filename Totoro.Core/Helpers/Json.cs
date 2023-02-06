@@ -9,7 +9,7 @@ public static class Json
 
     public static string Stringify(object value)
     {
-        if(value is null)
+        if (value is null)
         {
             return string.Empty;
         }

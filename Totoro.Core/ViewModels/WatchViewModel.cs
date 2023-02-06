@@ -21,7 +21,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ReadOnlyObservableCollection<int> _episodes;
     private readonly ProviderOptions _providerOptions;
     private readonly bool _isCrunchyroll;
-   
+
     private int? _episodeRequest;
     private bool _canUpdateTime = false;
     private bool _isUpdatingTracking = false;
@@ -75,11 +75,11 @@ public partial class WatchViewModel : NavigatableViewModel
         ChangeQuality = ReactiveCommand.Create<string>(quality => SelectedStream = Streams.Qualities[quality], outputScheduler: RxApp.MainThreadScheduler);
         SkipDynamic = ReactiveCommand.Create(() =>
         {
-            if(EndingTimeStamp is not null && CurrentPlayerTime > EndingTimeStamp.Interval.StartTime)
+            if (EndingTimeStamp is not null && CurrentPlayerTime > EndingTimeStamp.Interval.StartTime)
             {
                 MediaPlayer.Seek(TimeSpan.FromSeconds(EndingTimeStamp.Interval.EndTime));
             }
-            else if(OpeningTimeStamp is not null && CurrentPlayerTime > OpeningTimeStamp.Interval.StartTime)
+            else if (OpeningTimeStamp is not null && CurrentPlayerTime > OpeningTimeStamp.Interval.StartTime)
             {
                 MediaPlayer.Seek(TimeSpan.FromSeconds(OpeningTimeStamp.Interval.EndTime));
             }
@@ -119,7 +119,7 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public string SelectedAudioStream { get; set; }
     [Reactive] public int NumberOfStreams { get; set; }
     [Reactive] public double CurrentPlayerTime { get; set; }
-    
+
     [ObservableAsProperty] public bool IsFullWindow { get; }
     [ObservableAsProperty] public bool IsSkipButtonVisible { get; }
     [ObservableAsProperty] public bool HasSubAndDub { get; }
@@ -244,7 +244,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .SelectMany(_ => GetNumberOfStreams(SelectedAudio.Url))
             .Subscribe(count =>
             {
-                if(NumberOfStreams == count)
+                if (NumberOfStreams == count)
                 {
                     NumberOfStreams = -1;
                 }
@@ -520,13 +520,13 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public async Task<Unit> UpdateTracking()
     {
-        if(!CanUpdateTracking())
+        if (!CanUpdateTracking())
         {
             return Unit.Default;
         }
 
         _isUpdatingTracking = true;
-        
+
         this.Log().Debug($"Updating tracking for {Anime.Title} from {Anime.Tracking?.WatchedEpisodes ?? Streams.Episode - 1} to {Streams.Episode}");
 
         _playbackStateStorage.Reset(Anime.Id, Streams.Episode);
@@ -569,7 +569,7 @@ public partial class WatchViewModel : NavigatableViewModel
     }
 
     private IObservable<bool> HasNextEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.LastOrDefault());
-    
+
     private IObservable<bool> HasPrevEpisode => this.ObservableForProperty(x => x.CurrentEpisode, x => x).Select(episode => episode != Episodes.FirstOrDefault());
 
     private void OnSubmitTimeStamps()
@@ -586,7 +586,7 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         var results = await Provider.Catalog.Search(title).ToListAsync();
 
-        if(results.Count == 0)
+        if (results.Count == 0)
         {
             return (null, null);
         }
@@ -599,7 +599,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return (results[0], results[1]);
         }
-        else if(results.FirstOrDefault(x => string.Equals(x.Title, title, StringComparison.OrdinalIgnoreCase)) is { } exactMatch)
+        else if (results.FirstOrDefault(x => string.Equals(x.Title, title, StringComparison.OrdinalIgnoreCase)) is { } exactMatch)
         {
             return (exactMatch, null);
         }
@@ -627,7 +627,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return list.First();
         }
-        else if(list.Contains("auto") && _settings.DefaultStreamQualitySelection == StreamQualitySelection.Auto)
+        else if (list.Contains("auto") && _settings.DefaultStreamQualitySelection == StreamQualitySelection.Auto)
         {
             return "auto";
         }
@@ -636,7 +636,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return list.Where(x => x != "hardsub").OrderBy(x => x.Length).ThenBy(x => x).LastOrDefault();
         }
     }
-    
+
     private static IEnumerable<string> FormatQualityStrings(VideoStreamsForEpisode stream)
     {
         return stream.Qualities
@@ -644,28 +644,28 @@ public partial class WatchViewModel : NavigatableViewModel
                      .OrderBy(x => x.Length)
                      .ThenBy(x => x);
     }
-    
+
     private static string JoinStrings(IEnumerable<string> items) => string.Join(",", items);
-    
+
     private bool RequestedEpisodeIsValid(int episode) => Anime?.TotalEpisodes is 0 or null || episode <= Anime?.TotalEpisodes;
-    
+
     private int GetQueuedEpisode()
     {
-        return _isCrunchyroll 
+        return _isCrunchyroll
             ? CurrentEpisode ?? 0
             : _episodeRequest ?? CurrentEpisode ?? ((Anime?.Tracking?.WatchedEpisodes ?? 0) + 1);
     }
-    
+
     private async Task TrySetAnime(string url, string title)
     {
-        if(_isCrunchyroll) // crunchyroll combines seasons to single series, had to update tracking 
+        if (_isCrunchyroll) // crunchyroll combines seasons to single series, had to update tracking 
         {
             return;
         }
 
         var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType);
 
-        if(_trackingService.IsAuthenticated)
+        if (_trackingService.IsAuthenticated)
         {
             id ??= await TryGetId(title);
         }
@@ -694,13 +694,13 @@ public partial class WatchViewModel : NavigatableViewModel
         var isOpening = OpeningTimeStamp is not null && currentTime > OpeningTimeStamp.Interval.StartTime && currentTime < OpeningTimeStamp.Interval.EndTime;
         var isEnding = EndingTimeStamp is not null && currentTime > EndingTimeStamp.Interval.StartTime && currentTime < EndingTimeStamp.Interval.EndTime;
 
-        return isOpening || isEnding;   
+        return isOpening || isEnding;
     }
 
     private string GetDefaultAudioStream()
     {
         var key = "StreamType";
-        if(_settings.DefaultProviderType == "consumet" && _providerOptions?.GetString("Provider", "zoro") == "crunchyroll")
+        if (_settings.DefaultProviderType == "consumet" && _providerOptions?.GetString("Provider", "zoro") == "crunchyroll")
         {
             key = "CrunchyrollStreamType";
         }
@@ -710,7 +710,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private string GetDiscordImageKey()
     {
-        if(SelectedAudio is IHaveImage ihi)
+        if (SelectedAudio is IHaveImage ihi)
         {
             return ihi.Image;
         }
@@ -773,7 +773,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private double GetPlayerTime()
     {
-        if(Anime is null)
+        if (Anime is null)
         {
             return CurrentPlayerTime;
         }

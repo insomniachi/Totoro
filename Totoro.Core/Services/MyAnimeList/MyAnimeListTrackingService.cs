@@ -74,7 +74,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                 foreach (var item in watching.Data)
                 {
                     var model = ConvertModel(item);
-                    
+
                     GetAiredEpisodes(model)
                     .ToObservable()
                     .ObserveOn(RxApp.MainThreadScheduler)

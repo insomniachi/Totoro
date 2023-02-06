@@ -37,7 +37,7 @@ public class TorrentsService : ITorrentsService, IEnableLogger
         {
             // ask for id
             var id = await _viewService.TryGetId(content.Title);
-            if(id is { })
+            if (id is { })
             {
                 _localMediaService.SetId(saveDirectory, id.Value);
             }

@@ -1,5 +1,4 @@
-﻿using System.Reactive.Threading.Tasks;
-using CommunityToolkit.WinUI.UI.Controls;
+﻿using CommunityToolkit.WinUI.UI.Controls;
 using FuzzySharp;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,7 +25,7 @@ public class ViewService : IViewService, IEnableLogger
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
         vm.Anime = a;
-        
+
         var result = await _contentDialogService.ShowDialog(vm, d =>
         {
             d.Title = a.Title;
@@ -109,7 +108,7 @@ public class ViewService : IViewService, IEnableLogger
             Search = searcher,
         };
 
-        await _contentDialogService.ShowDialog<SelectModelView,SelectModelViewModel<T>>(vm, d =>
+        await _contentDialogService.ShowDialog<SelectModelView, SelectModelViewModel<T>>(vm, d =>
         {
             d.Title = "Select";
             d.IsPrimaryButtonEnabled = false;
@@ -140,7 +139,7 @@ public class ViewService : IViewService, IEnableLogger
         }
         else
         {
-            if(!candidates.Any())
+            if (!candidates.Any())
             {
                 this.Log().Fatal($"no candidates found for title {title}");
                 return null;
@@ -202,7 +201,7 @@ public class ViewService : IViewService, IEnableLogger
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
             XamlRoot = App.MainWindow.Content.XamlRoot,
             DefaultButton = ContentDialogButton.Primary,
-            Content = new MarkdownTextBlock() { Text = message, TextWrapping = TextWrapping.WrapWholeWords, Padding = new Thickness(10)},
+            Content = new MarkdownTextBlock() { Text = message, TextWrapping = TextWrapping.WrapWholeWords, Padding = new Thickness(10) },
             PrimaryButtonText = "Yes",
         };
 

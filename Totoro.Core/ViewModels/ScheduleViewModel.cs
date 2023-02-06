@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using Totoro.Core.Helpers;
 
 namespace Totoro.Core.ViewModels;
 

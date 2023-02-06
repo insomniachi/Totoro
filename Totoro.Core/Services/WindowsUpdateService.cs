@@ -38,12 +38,12 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
 
     public async ValueTask<VersionInfo> GetCurrentVersionInfo()
     {
-        if(_current is null)
+        if (_current is null)
         {
             var url = $"https://api.github.com/repositories/522584084/releases/tags/{Assembly.GetEntryAssembly().GetName().Version.ToString(3)}";
             var response = await _httpClient.GetAsync(url);
 
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 var jsonNode = JsonNode.Parse(await response.Content.ReadAsStreamAsync());
                 _current = new VersionInfo()
@@ -84,7 +84,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
         using var client = new HttpClient();
         using var s = await client.GetStreamAsync(versionInfo.Url);
         using var fs = new FileStream(fullPath, FileMode.OpenOrCreate);
-        
+
         try
         {
             await s.CopyToAsync(fs, _cts.Token);
@@ -95,7 +95,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             fs.Dispose();
             if (File.Exists(fullPath))
             {
-                File.Delete(fullPath); 
+                File.Delete(fullPath);
             }
         }
 

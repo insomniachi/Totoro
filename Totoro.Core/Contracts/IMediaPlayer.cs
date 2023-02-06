@@ -11,6 +11,6 @@ public interface IMediaPlayer : IDisposable
     IObservable<Unit> PlaybackEnded { get; }
     IObservable<TimeSpan> PositionChanged { get; }
     IObservable<TimeSpan> DurationChanged { get; }
-    Task<Unit> SetMedia(VideoStream stream, Dictionary<string,string> AdditionalInformation);
+    Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation);
     Task<Unit> SetMedia(string localFile);
 }

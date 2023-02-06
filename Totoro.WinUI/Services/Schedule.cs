@@ -38,7 +38,7 @@ public partial class Schedule : ISchedule
     {
         var id = await _streamPageMapper.GetIdFromUrl(epInfo.Url, _settings.DefaultProviderType);
 
-        if(id is null)
+        if (id is null)
         {
             return Unit.Default;
         }

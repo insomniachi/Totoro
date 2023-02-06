@@ -31,7 +31,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
 
     protected override Task HandleInternalAsync(LaunchActivatedEventArgs args)
     {
-        if(_trackingService.IsAuthenticated)
+        if (_trackingService.IsAuthenticated)
         {
             NavigateToHome();
         }
@@ -40,7 +40,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
             _navigationService.NavigateTo<DiscoverViewModel>();
         }
 
-        if(!ProviderFactory.Instance.Providers.Any())
+        if (!ProviderFactory.Instance.Providers.Any())
         {
             _viewService.Information("Ops...", "There has been a breaking change, please wait till application downloads update");
         }
@@ -50,11 +50,11 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
 
     private void NavigateToHome()
     {
-        if(_settings.HomePage == "Discover")
+        if (_settings.HomePage == "Discover")
         {
             _navigationService.NavigateTo<DiscoverViewModel>();
         }
-        else if(_settings.HomePage == "My List")
+        else if (_settings.HomePage == "My List")
         {
             _navigationService.NavigateTo<UserListViewModel>();
         }

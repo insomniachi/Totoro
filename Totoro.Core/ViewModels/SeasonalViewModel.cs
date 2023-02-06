@@ -24,7 +24,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         var sort = this.WhenAnyValue(x => x.Sort)
             .Select(sort => sort switch
             {
-                Sort.Popularity => animeService.Current == ListServiceType.AniList 
+                Sort.Popularity => animeService.Current == ListServiceType.AniList
                     ? SortExpressionComparer<AnimeModel>.Descending(x => x.Popularity)
                     : SortExpressionComparer<AnimeModel>.Ascending(x => x.Popularity),
                 Sort.Score => SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore ?? 0),

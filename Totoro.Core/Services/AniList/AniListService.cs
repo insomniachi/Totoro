@@ -158,7 +158,7 @@ public class AnilistService : IAnimeService, IAnilistService
 
     private bool FilterNsfw(Media m)
     {
-        if(_settings.IncludeNsfw)
+        if (_settings.IncludeNsfw)
         {
             return true;
         }

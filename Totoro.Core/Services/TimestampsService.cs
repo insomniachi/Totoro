@@ -15,7 +15,7 @@ public class TimestampsService : ITimestampsService, IEnableLogger
     {
         _settings = settings;
         _animeIdService = animeIdService;
-        
+
         using var fs = File.OpenRead("aniskip.json");
         if (JsonSerializer.Deserialize<Dictionary<string, List<OpeningInfo>>>(fs) is { } skipInfo)
         {
@@ -27,7 +27,7 @@ public class TimestampsService : ITimestampsService, IEnableLogger
     {
         var malId = await GetMalId(id);
 
-        if(_offlineSkipInfo.TryGetValue(malId.ToString(), out List<OpeningInfo> value) && value.FirstOrDefault(x => x.Episode == ep) is { } info)
+        if (_offlineSkipInfo.TryGetValue(malId.ToString(), out List<OpeningInfo> value) && value.FirstOrDefault(x => x.Episode == ep) is { } info)
         {
             this.Log().Info("Timestamps found in offline db");
             return info.ToAniSkipResult();
@@ -76,7 +76,7 @@ public class TimestampsService : ITimestampsService, IEnableLogger
 
     public async Task Vote(string skipId, bool isThumpsUp)
     {
-        if(skipId == Guid.Empty.ToString())
+        if (skipId == Guid.Empty.ToString())
         {
             return;
         }

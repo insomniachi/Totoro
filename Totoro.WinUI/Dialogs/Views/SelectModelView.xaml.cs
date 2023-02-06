@@ -17,14 +17,14 @@ public sealed partial class SelectModelView : Page, IViewFor<ISelectModelViewMod
     }
 
     public ISelectModelViewModel ViewModel
-    { 
+    {
         get => DataContext as ISelectModelViewModel;
-        set => DataContext = value; 
+        set => DataContext = value;
     }
 
-    object IViewFor.ViewModel 
+    object IViewFor.ViewModel
     {
         get => DataContext;
-        set => DataContext = value; 
+        set => DataContext = value;
     }
 }

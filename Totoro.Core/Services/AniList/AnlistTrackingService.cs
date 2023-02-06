@@ -32,7 +32,7 @@ public class AniListTrackingService : ITrackingService
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
-        if(IsAuthenticated)
+        if (IsAuthenticated)
         {
             return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {

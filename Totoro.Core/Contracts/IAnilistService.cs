@@ -1,9 +1,8 @@
-﻿namespace Totoro.Core.Contracts
+﻿namespace Totoro.Core.Contracts;
+
+public interface IAnilistService : IAnimeService
 {
-    public interface IAnilistService : IAnimeService
-    {
-        Task<int?> GetNextAiringEpisode(long id);
-        Task<DateTime?> GetNextAiringEpisodeTime(long id);
-        Task<string> GetBannerImage(long id); 
-    }
+    Task<int?> GetNextAiringEpisode(long id);
+    Task<DateTime?> GetNextAiringEpisodeTime(long id);
+    Task<string> GetBannerImage(long id);
 }
