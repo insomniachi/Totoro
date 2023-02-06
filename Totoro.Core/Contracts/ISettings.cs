@@ -18,6 +18,7 @@ public interface ISettings
     string HomePage { get; set; }
     bool AllowSideLoadingPlugins { get; set; }
     StreamQualitySelection DefaultStreamQualitySelection { get; set; }
+    bool IncludeNsfw { get; set; }
     Task<Unit> UpdateUrls();
 }
 

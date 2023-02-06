@@ -1,5 +1,4 @@
 ﻿using MalApi.Interfaces;
-using Totoro.Core.Contracts;
 using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
 namespace Totoro.Core.Services.MyAnimeList;
@@ -8,12 +7,15 @@ public class MyAnimeListService : IAnimeService
 {
     private readonly IMalClient _client;
     private readonly IAnilistService _anilistService;
+    private readonly ISettings _settings;
 
     public MyAnimeListService(IMalClient client, 
-                              IAnilistService anilistService)
+                              IAnilistService anilistService,
+                              ISettings settings)
     {
         _client = client;
         _anilistService = anilistService;
+        _settings = settings;
     }
 
     public ListServiceType Type => ListServiceType.MyAnimeList;
@@ -42,15 +44,18 @@ public class MyAnimeListService : IAnimeService
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
     {
-        return _client
+        var request = _client
             .Anime()
             .WithName(name)
             .WithFields(_commonFields)
-            .WithLimit(5)
-            .IncludeNsfw()
-            .Find()
-            .ToObservable()
-            .Select(x => x.Data.Select(ConvertModel));
+            .WithLimit(5);
+
+        if(_settings.IncludeNsfw)
+        {
+            request.IncludeNsfw();
+        }
+
+        return request.Find().ToObservable().Select(x => x.Data.Select(ConvertModel));
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
@@ -59,11 +64,16 @@ public class MyAnimeListService : IAnimeService
         {
             IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
             {
-                return _client
-                .Anime()
-                .OfSeason(season.SeasonName, season.Year)
-                .IncludeNsfw()
-                .WithFields(_commonFields);
+                var request = _client.Anime()
+                                     .OfSeason(season.SeasonName, season.Year)
+                                     .WithFields(_commonFields);
+
+                if(_settings.IncludeNsfw)
+                {
+                    request.IncludeNsfw();
+                }
+
+                return request;
             }
 
             var current = CurrentSeason();
@@ -92,14 +102,20 @@ public class MyAnimeListService : IAnimeService
 
     public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
     {
-        return _client
+        var request = _client
             .Anime()
             .Top(MalApi.AnimeRankingType.Airing)
             .IncludeNsfw()
-            .WithFields(_commonFields)
-            .Find()
-            .ToObservable()
-            .Select(x => x.Data.Select(x => MalToModelConverter.ConvertModel(x.Anime)));
+            .WithFields(_commonFields);
+
+        if (_settings.IncludeNsfw)
+        {
+            request.IncludeNsfw();
+        }
+
+        return request.Find()
+                      .ToObservable()
+                      .Select(x => x.Data.Select(x => ConvertModel(x.Anime)));
     }
 
     private static MalApi.Season PrevSeason()

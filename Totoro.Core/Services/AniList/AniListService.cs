@@ -11,12 +11,14 @@ public class AnilistService : IAnimeService, IAnilistService
 {
     private readonly GraphQLHttpClient _anilistClient = new("https://graphql.anilist.co/", new NewtonsoftJsonSerializer());
     private readonly IAnimeIdService _animeIdService;
+    private readonly ISettings _settings;
 
     public AnilistService(ILocalSettingsService localSettingsSerivce,
-                          IAnimeIdService animeIdService)
+                          IAnimeIdService animeIdService,
+                          ISettings settings)
     {
         _animeIdService = animeIdService;
-
+        _settings = settings;
         var token = localSettingsSerivce.ReadSetting<AniListAuthToken>("AniListToken", new());
         if (!string.IsNullOrEmpty(token.AccessToken))
         {
@@ -36,7 +38,7 @@ public class AnilistService : IAnimeService, IAnilistService
                     .WithMedia(MediaQueryBuilder(), type: MediaType.Anime, status: MediaStatus.Releasing), page: 1, perPage: 20).Build()
             });
 
-            observer.OnNext(response.Data.Page.Media.Select(ConvertModel));
+            observer.OnNext(response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel));
             observer.OnCompleted();
         });
     }
@@ -48,10 +50,10 @@ public class AnilistService : IAnimeService, IAnilistService
             var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
                 Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
-                    .WithMedia(MediaQueryBuilder(), search: name, type: MediaType.Anime), page: 1, perPage: 20).Build()
+                    .WithMedia(MediaQueryBuilder(), search: name, type: MediaType.Anime), page: 1, perPage: 10).Build()
             });
 
-            observer.OnNext(response.Data.Page.Media.Select(ConvertModel));
+            observer.OnNext(response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel));
             observer.OnCompleted();
         });
     }
@@ -60,9 +62,12 @@ public class AnilistService : IAnimeService, IAnilistService
     {
         return Observable.Create<AnimeModel>(async observer =>
         {
+            var query = new QueryQueryBuilder().WithMedia(MediaQueryBuilderFull(), id: (int)id,
+                                                                                   type: MediaType.Anime).Build();
+
             var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
-                Query = new QueryQueryBuilder().WithMedia(MediaQueryBuilderFull(), id: (int)id, type: MediaType.Anime).Build()
+                Query = query
             });
 
             observer.OnNext(ConvertModel(response.Data.Media));
@@ -82,13 +87,17 @@ public class AnilistService : IAnimeService, IAnilistService
             {
                 foreach (var season in new[] { current, prev, next })
                 {
+                    var query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
+                                .WithMedia(MediaQueryBuilder(), season: ConvertSeason(season.SeasonName),
+                                                                seasonYear: season.Year,
+                                                                type: MediaType.Anime), 1, 50).Build();
+
                     var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
                     {
-                        Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
-                                .WithMedia(MediaQueryBuilder(), season: ConvertSeason(season.SeasonName), seasonYear: season.Year, type: MediaType.Anime), 1, 50).Build()
+                        Query = query
                     });
 
-                    observer.OnNext(response.Data.Page.Media.Select(ConvertModel));
+                    observer.OnNext(response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel));
                 }
 
                 observer.OnCompleted();
@@ -147,6 +156,16 @@ public class AnilistService : IAnimeService, IAnilistService
         return dt;
     }
 
+    private bool FilterNsfw(Media m)
+    {
+        if(_settings.IncludeNsfw)
+        {
+            return true;
+        }
+
+        return m.IsAdult is false or null;
+    }
+
     private static MediaQueryBuilder MediaQueryBuilder()
     {
         return new MediaQueryBuilder()
@@ -178,7 +197,8 @@ public class AnilistService : IAnimeService, IAnilistService
                 .WithStatus()
                 .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
                 .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
-                .WithProgress());
+                .WithProgress())
+            .WithIsAdult();
     }
 
     private static MediaQueryBuilder MediaQueryBuilderSimple()

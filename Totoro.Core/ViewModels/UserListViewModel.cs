@@ -42,6 +42,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
         this.WhenAnyValue(x => x.QuickAddSearchText)
             .Where(text => text is { Length: > 3 })
+            .Throttle(TimeSpan.FromMilliseconds(500))
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(animeService.GetAnime)
             .ObserveOn(RxApp.MainThreadScheduler)

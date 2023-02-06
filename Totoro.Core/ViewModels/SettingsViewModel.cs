@@ -34,6 +34,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         HomePage = localSettingsService.ReadSetting(nameof(HomePage), "Discover");
         AllowSideLoadingPlugins = localSettingsService.ReadSetting(nameof(AllowSideLoadingPlugins), false);
         DefaultStreamQualitySelection = localSettingsService.ReadSetting(nameof(DefaultStreamQualitySelection), StreamQualitySelection.Auto);
+        IncludeNsfw = localSettingsService.ReadSetting(nameof(IncludeNsfw), false);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
@@ -82,6 +83,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public string HomePage { get; set; }
     [Reactive] public bool AllowSideLoadingPlugins { get; set; }
     [Reactive] public StreamQualitySelection DefaultStreamQualitySelection { get; set; }
+    [Reactive] public bool IncludeNsfw { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {

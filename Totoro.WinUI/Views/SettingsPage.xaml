@@ -22,6 +22,7 @@
                     FontSize="30"
                     FontWeight="SemiBold"
                     Text="Settings" />
+
                 <labs:SettingsExpander
                     Name="SettingCard"
                     Description="Choose list service to update tracking"
@@ -84,6 +85,15 @@
                                     </Interactions:DataTriggerBehavior>
                                 </Interactivity:Interaction.Behaviors>
                             </Button>
+                        </labs:SettingsCard>
+                        <labs:SettingsCard Description="Show results which are not safe for work" Header="Include Nsfw">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe814;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.IncludeNsfw, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
                         </labs:SettingsCard>
                     </labs:SettingsExpander.Items>
                 </labs:SettingsExpander>
