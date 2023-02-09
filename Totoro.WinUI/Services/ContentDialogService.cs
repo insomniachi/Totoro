@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
 
@@ -26,7 +27,19 @@ public class ContentDialogService : IContentDialogService
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
             XamlRoot = App.MainWindow.Content.XamlRoot,
             DefaultButton = ContentDialogButton.Primary,
-            Content = view
+            Content = view,
+            ManipulationMode = Microsoft.UI.Xaml.Input.ManipulationModes.All
+        };
+
+        dialog.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (!e.IsInertial)
+            {
+                dialog.Margin = new Thickness(dialog.Margin.Left + e.Delta.Translation.X,
+                                              dialog.Margin.Top + e.Delta.Translation.Y,
+                                              dialog.Margin.Left - e.Delta.Translation.X,
+                                              dialog.Margin.Top - e.Delta.Translation.Y);
+            }
         };
 
         IDisposable disposable = null;
@@ -56,7 +69,19 @@ public class ContentDialogService : IContentDialogService
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
             XamlRoot = App.MainWindow.Content.XamlRoot,
             DefaultButton = ContentDialogButton.Primary,
-            Content = view
+            Content = view,
+            ManipulationMode = Microsoft.UI.Xaml.Input.ManipulationModes.All
+        };
+
+        dialog.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (!e.IsInertial)
+            {
+                dialog.Margin = new Thickness(dialog.Margin.Left + e.Delta.Translation.X,
+                                              dialog.Margin.Top + e.Delta.Translation.Y,
+                                              dialog.Margin.Left - e.Delta.Translation.X,
+                                              dialog.Margin.Top - e.Delta.Translation.Y);
+            }
         };
 
         IDisposable disposable = null;
