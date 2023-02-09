@@ -1,6 +1,8 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Splat;
 using Totoro.WinUI.Activation;
+using WinUIEx;
 
 namespace Totoro.WinUI.Services;
 
@@ -47,7 +49,7 @@ public class ActivationService : IActivationService, IEnableLogger
 
         // Activate the MainWindow.
         App.MainWindow.Activate();
-
+        App.MainWindow.Maximize();
         App.MainWindow.Closed += MainWindow_Closed;
 
         // Execute tasks after activation.
