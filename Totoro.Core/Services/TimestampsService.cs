@@ -30,7 +30,7 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         if (_offlineSkipInfo.TryGetValue(malId.ToString(), out List<OpeningInfo> value) && value.FirstOrDefault(x => x.Episode == ep) is { } info)
         {
             this.Log().Info("Timestamps found in offline db");
-            return info.ToAniSkipResult();
+            return info.ToAniSkipResult(duration);
         }
 
         var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}";
@@ -121,14 +121,20 @@ public class OpeningInfo
         public double End { get; set; }
     }
 
+
+    [JsonPropertyName("duration")]
+    public string Duration { get; set; }
+
     [JsonPropertyName("number")]
     public int Episode { get; set; }
 
     [JsonPropertyName("intro")]
     public Interval Intro { get; set; }
 
-    public AniSkipResult ToAniSkipResult()
+    public AniSkipResult ToAniSkipResult(double actualDuration)
     {
+        _ = double.TryParse(Duration, out double expectedDuration);
+
         return new AniSkipResult
         {
             Success = true,
@@ -141,7 +147,7 @@ public class OpeningInfo
                     Interval = new()
                     {
                         StartTime = Intro.Start,
-                        EndTime = Intro.End,
+                        EndTime = Intro.End + actualDuration - expectedDuration,
                     }
                 }
             }
