@@ -20,7 +20,8 @@
         <MediaPlayerElement
             x:Name="MediaPlayerElement"
             Grid.Row="0"
-            AreTransportControlsEnabled="True">
+            AreTransportControlsEnabled="True"
+            IsDoubleTapEnabled="True">
             <MediaPlayerElement.TransportControls>
                 <media:CustomMediaTransportControls
                     x:Name="TransportControls"

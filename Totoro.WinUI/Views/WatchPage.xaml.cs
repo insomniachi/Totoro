@@ -1,5 +1,7 @@
 ﻿using Totoro.Core.ViewModels;
 using Totoro.WinUI.Media;
+using ReactiveMarbles.ObservableEvents;
+using Totoro.Core;
 
 namespace Totoro.WinUI.Views;
 
@@ -19,6 +21,16 @@ public sealed partial class WatchPage : WatchPageBase
                 .Do(wrapper => MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer()))
                 .Subscribe()
                 .DisposeWith(d);
+
+            MediaPlayerElement
+            .Events()
+            .DoubleTapped
+            .Subscribe(_ =>
+            {
+                MessageBus.Current.SendMessage(new RequestFullWindowMessage(!ViewModel.IsFullWindow));
+                TransportControls.UpdateFullWindow(ViewModel.IsFullWindow);
+            })
+            .DisposeWith(d);
 
             TransportControls
             .OnNextTrack

@@ -15,6 +15,8 @@ public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
 
     public double GetTime(long id, int episode)
     {
+        this.Log().Debug($"Checking saved time for Anime: {id}, Episode: {episode}");
+
         if (!_recents.ContainsKey(id))
         {
             return 0;
@@ -25,7 +27,10 @@ public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
             return 0;
         }
 
-        return _recents[id][episode];
+        var time = _recents[id][episode];
+
+        this.Log().Debug($"Saved time found {time}");
+        return time;
     }
 
     public void Reset(long id, int episode)

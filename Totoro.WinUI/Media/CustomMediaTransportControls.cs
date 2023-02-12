@@ -18,6 +18,7 @@ public class CustomMediaTransportControls : MediaTransportControls
     private AppBarButton _qualitiesButton;
     private Button _dynamicSkipIntroButton;
     private bool _isFullWindow;
+    private SymbolIcon _fullWindowSymbol;
 
     public static readonly DependencyProperty QualitiesProperty =
         DependencyProperty.Register("Qualities", typeof(IEnumerable<string>), typeof(CustomMediaTransportControls), new PropertyMetadata(null, OnQualitiesChanged));
@@ -114,7 +115,13 @@ public class CustomMediaTransportControls : MediaTransportControls
     public CustomMediaTransportControls()
     {
         DefaultStyleKey = typeof(CustomMediaTransportControls);
-        MessageBus.Current.RegisterMessageSource(_onFullWindowRequested.Select(x => new RequestFullWindowMessage(x)));
+        MessageBus.Current.RegisterMessageSource(_onFullWindowRequested.Select(x => new RequestFullWindowMessage(x)));                  
+    }
+
+    public void UpdateFullWindow(bool isFullWindow)
+    {
+        _isFullWindow = isFullWindow;
+        _fullWindowSymbol.Symbol = isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
     }
 
     protected override void OnApplyTemplate()
@@ -124,7 +131,7 @@ public class CustomMediaTransportControls : MediaTransportControls
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
         var submitTimeStamp = GetTemplateChild("SubmitTimeStampsButton") as AppBarButton;
         var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
-        var fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
+        _fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;
         _dynamicSkipIntroButton = GetTemplateChild("DynamicSkipIntroButton") as Button;
@@ -136,8 +143,8 @@ public class CustomMediaTransportControls : MediaTransportControls
         fullWindowButton.Click += (_, _) =>
         {
             _isFullWindow ^= true;
+            _fullWindowSymbol.Symbol = _isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
             _onFullWindowRequested.OnNext(_isFullWindow);
-            fullWindowSymbol.Symbol = _isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
         };
         _dynamicSkipIntroButton.Click += (_, __) => _onDynamicSkipIntro.OnNext(Unit.Default);
 

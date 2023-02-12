@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Navigation;
+﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
@@ -10,6 +11,8 @@ public partial class ShellViewModel : ReactiveObject
     [Reactive] public object Selected { get; set; }
     [Reactive] public bool IsBackEnabled { get; set; }
     [Reactive] public bool IsAuthenticated { get; set; }
+    [ObservableAsProperty] public bool IsWatchView { get; }
+    [ObservableAsProperty] public bool IsAboutView { get; }
 
     public IWinUINavigationService NavigationService { get; }
     public INavigationViewService NavigationViewService { get; set; }
@@ -42,6 +45,14 @@ public partial class ShellViewModel : ReactiveObject
                 }
             })
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
+
+        this.WhenAnyValue(x => x.Selected)
+            .Select(x => x is NavigationViewItem { Content: "Watch" })
+            .ToPropertyEx(this, x => x.IsWatchView);
+
+        this.WhenAnyValue(x => x.Selected)
+            .Select(x => x is NavigationViewItem { Content: "About" })
+            .ToPropertyEx(this, x => x.IsAboutView);
     }
 
     private void OnNavigated(NavigationEventArgs e)

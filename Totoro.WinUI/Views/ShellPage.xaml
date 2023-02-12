@@ -67,6 +67,16 @@
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DownloadViewModel"
                     Content="Download"
                     Icon="Download" />
+                <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.WatchViewModel"
+                    Content="Watch"
+                    Icon="Play"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsWatchView), Mode=OneWay}" />
+                <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.AboutAnimeViewModel"
+                    Content="About"
+                    Icon="Document"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAboutView), Mode=OneWay}" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <NavigationViewItem Content="Give Feedback" Tapped="Feedback_Tapped">
