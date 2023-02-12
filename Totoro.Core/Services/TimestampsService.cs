@@ -27,26 +27,26 @@ public class TimestampsService : ITimestampsService, IEnableLogger
     {
         var malId = await GetMalId(id);
 
+        var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}";
+        this.Log().Debug("Requesting timestamps : {0}", url);
+        var response = await _httpClient.GetAsync(url);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var stream = await response.Content.ReadAsStreamAsync();
+            var result = await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
+            this.Log().Info("Timestamps received : {0}", result.Success);
+            return result;
+        }
+
         if (_offlineSkipInfo.TryGetValue(malId.ToString(), out List<OpeningInfo> value) && value.FirstOrDefault(x => x.Episode == ep) is { } info)
         {
             this.Log().Info("Timestamps found in offline db");
             return info.ToAniSkipResult(duration);
         }
 
-        var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}";
-        this.Log().Debug("Requesting timestamps : {0}", url);
-        var response = await _httpClient.GetAsync(url);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            this.Log().Info($"Timestamps for MalId = {malId}, Ep = {ep}, Duration = {duration} not found");
-            return new AniSkipResult { Success = false, Items = Enumerable.Empty<AniSkipResultItem>().ToArray() };
-        }
-
-        var stream = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
-        this.Log().Info("Timestamps received : {0}", result.Success);
-        return result;
+        this.Log().Info($"Timestamps for MalId = {malId}, Ep = {ep}, Duration = {duration} not found");
+        return new AniSkipResult { Success = false, Items = Enumerable.Empty<AniSkipResultItem>().ToArray() };
     }
 
     public async Task SubmitTimeStamp(long id, int ep, string skipType, Interval interval, double episodeLength)
