@@ -52,8 +52,7 @@
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.UserListViewModel"
                     Content="My List"
-                    Icon="Library"
-                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
+                    Icon="Library" />
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.SeasonalViewModel"
                     Content="Seasonal"

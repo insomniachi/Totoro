@@ -16,6 +16,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     {
         _trackingService = trackingService;
         _viewService = viewService;
+        IsAuthenticated = trackingService.IsAuthenticated;
 
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => CurrentView = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
@@ -54,6 +55,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string QuickAddSearchText { get; set; }
+    public bool IsAuthenticated { get; }
     public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ChangeCurrentViewCommand { get; }
@@ -67,6 +69,11 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public Task SetInitialState()
     {
+        if(!IsAuthenticated)
+        {
+            return Task.CompletedTask;
+        }
+
         IsLoading = true;
 
         _animeCache.Clear();
@@ -85,6 +92,11 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public void StoreState(IState state)
     {
+        if(_animeCache.Count == 0)
+        {
+            return;
+        }
+
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
         state.AddOrUpdate(CurrentView);
     }

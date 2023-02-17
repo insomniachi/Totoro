@@ -26,253 +26,276 @@
         </ResourceDictionary>
     </v:UserListPageBase.Resources>
 
-    <Grid x:Name="ContentArea" Margin="0,25,0,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-
-        <Grid Margin="0,0,0,12" HorizontalAlignment="Center">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <ListBox
-                x:Name="StatusStrip"
-                Margin="{StaticResource SmallTopBottomMargin}"
-                HorizontalAlignment="Center"
-                ItemsSource="{x:Bind Statuses}"
-                SelectedItem="{x:Bind ViewModel.CurrentView, Mode=TwoWay}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="cm:AnimeStatus">
-                        <TextBlock
-                            Width="200"
-                            Text="{x:Bind v:UserListPage.ToStatusString((cm:AnimeStatus))}"
-                            TextAlignment="Center" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="Height" Value="40" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ctk:WrapPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-            </ListBox>
-
-            <AutoSuggestBox
-                Grid.Row="1"
-                Width="300"
-                Height="35"
-                VerticalAlignment="Center"
-                VerticalContentAlignment="Center"
-                uhelp:OnScreenKeyboard.Enabled="true"
-                PlaceholderText="Search"
-                QueryIcon="Find"
-                Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-        </Grid>
-
-
-        <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
-            <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-                <ctk:AdaptiveGridView
-                    x:Name="AnimeListView"
-                    animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                    ui:ListViewExtensions.Command="{x:Bind root:App.Commands.Watch}"
-                    DesiredWidth="240"
-                    IsItemClickEnabled="True"
-                    ItemHeight="380"
-                    ItemsSource="{x:Bind ViewModel.Anime}"
-                    StretchContentForSingleRow="False">
-                    <ctk:AdaptiveGridView.ItemTemplate>
-                        <DataTemplate x:DataType="cm:AnimeModel">
-                            <uc:AnimeCard
-                                x:Name="Card"
-                                Margin="3"
-                                Anime="{x:Bind}">
-                                <uc:AnimeCard.Flyout>
-                                    <MenuFlyout>
-                                        <MenuFlyoutItem
-                                            Command="{x:Bind root:App.Commands.UpdateTracking}"
-                                            CommandParameter="{x:Bind}"
-                                            Text="Update">
-                                            <MenuFlyoutItem.Icon>
-                                                <SymbolIcon Symbol="PostUpdate" />
-                                            </MenuFlyoutItem.Icon>
-                                        </MenuFlyoutItem>
-                                        <MenuFlyoutItem
-                                            Command="{x:Bind root:App.Commands.More}"
-                                            CommandParameter="{x:Bind Id}"
-                                            Text="More">
-                                            <MenuFlyoutItem.Icon>
-                                                <SymbolIcon Symbol="More" />
-                                            </MenuFlyoutItem.Icon>
-                                        </MenuFlyoutItem>
-                                    </MenuFlyout>
-                                </uc:AnimeCard.Flyout>
-                            </uc:AnimeCard>
-                        </DataTemplate>
-                    </ctk:AdaptiveGridView.ItemTemplate>
-                </ctk:AdaptiveGridView>
-            </ctk:Case>
-            <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
-                <ctk:DataGrid
-                    AutoGenerateColumns="False"
-                    IsReadOnly="True"
-                    ItemsSource="{x:Bind ViewModel.Anime}"
-                    SelectionMode="Single">
-                    <ctk:DataGrid.Columns>
-                        <ctk:DataGridTextColumn
-                            Width="*"
-                            Binding="{Binding Title}"
-                            Header="Title" />
-                        <ctk:DataGridTemplateColumn Width="150" Header="Rating">
-                            <ctk:DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <RatingControl IsReadOnly="True" Value="{x:Bind help:AnimeHelpers.ScoreToRating(Tracking.Score)}" />
-                                </DataTemplate>
-                            </ctk:DataGridTemplateColumn.CellTemplate>
-                        </ctk:DataGridTemplateColumn>
-                        <ctk:DataGridTemplateColumn Width="100" Header="Ep">
-                            <ctk:DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <TextBlock HorizontalAlignment="Center" Text="{x:Bind help:AnimeHelpers.Eps((cm:AnimeModel))}" />
-                                </DataTemplate>
-                            </ctk:DataGridTemplateColumn.CellTemplate>
-                        </ctk:DataGridTemplateColumn>
-                    </ctk:DataGrid.Columns>
-                </ctk:DataGrid>
-            </ctk:Case>
-        </ctk:SwitchPresenter>
-
-        <ctk:Loading
-            x:Name="LoadingControl"
-            Grid.Row="1"
-            IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </ctk:Loading>
-
-
-        <CommandBar
-            Grid.Row="2"
-            Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
-            DefaultLabelPosition="Bottom">
-            <AppBarButton
-                x:Name="QuickAdd"
-                Icon="Add"
-                Label="Quick Add" />
-            <AppBarButton
-                Command="{x:Bind ViewModel.RefreshCommand}"
-                Icon="Refresh"
-                Label="Refresh" />
-            <AppBarButton Icon="View" Label="Display mode">
-                <AppBarButton.Flyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem
-                            Command="{x:Bind ViewModel.SetDisplayMode}"
-                            CommandParameter="{x:Bind cm:DisplayMode.Grid}"
-                            Text="Grid view">
-                            <MenuFlyoutItem.Icon>
-                                <FontIcon Glyph="&#xf0e2;" />
-                            </MenuFlyoutItem.Icon>
-                        </MenuFlyoutItem>
-                        <MenuFlyoutItem
-                            Command="{x:Bind ViewModel.SetDisplayMode}"
-                            CommandParameter="{x:Bind cm:DisplayMode.List}"
-                            Text="List view">
-                            <MenuFlyoutItem.Icon>
-                                <FontIcon Glyph="&#xf0e4;" />
-                            </MenuFlyoutItem.Icon>
-                        </MenuFlyoutItem>
-                    </MenuFlyout>
-                </AppBarButton.Flyout>
-            </AppBarButton>
-            <AppBarButton Icon="Filter" Label="Filter">
-                <AppBarButton.Flyout>
-                    <MenuFlyout>
-                        <RadioMenuFlyoutItem
-                            x:Name="WatchingFlyoutToggle"
-                            Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                            CommandParameter="{x:Bind cm:AnimeStatus.Watching}"
-                            Text="Watching" />
-                        <RadioMenuFlyoutItem
-                            x:Name="PtwFlyoutToggle"
-                            Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                            CommandParameter="{x:Bind cm:AnimeStatus.PlanToWatch}"
-                            Text="Plan to watch" />
-                        <RadioMenuFlyoutItem
-                            x:Name="OnHoldFlyoutToggle"
-                            Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                            CommandParameter="{x:Bind cm:AnimeStatus.OnHold}"
-                            Text="On Hold" />
-                        <RadioMenuFlyoutItem
-                            x:Name="CompletedFlyoutToggle"
-                            Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                            CommandParameter="{x:Bind cm:AnimeStatus.Completed}"
-                            Text="Completed" />
-                        <RadioMenuFlyoutItem
-                            x:Name="DroppedFlyoutToggle"
-                            Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                            CommandParameter="{x:Bind cm:AnimeStatus.Dropped}"
-                            Text="Dropped" />
-                    </MenuFlyout>
-                </AppBarButton.Flyout>
-            </AppBarButton>
-        </CommandBar>
-
-        <TeachingTip
-            x:Name="QuickAddPopup"
-            Title="Quick Add"
-            Grid.Row="1"
-            Target="{x:Bind QuickAdd}">
-            <Grid Padding="3,5">
+    <ctk:SwitchPresenter Value="{x:Bind ViewModel.IsAuthenticated}">
+        <ctk:Case>
+            <ctk:Case.Value>
+                <x:Boolean>True</x:Boolean>
+            </ctk:Case.Value>
+            <Grid x:Name="ContentArea" Margin="0,25,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <AutoSuggestBox
-                    PlaceholderText="Search"
-                    QueryIcon="Find"
-                    Text="{x:Bind ViewModel.QuickAddSearchText, Mode=TwoWay}" />
-
-                <ListView
-                    x:Name="QuickAddResult"
-                    Grid.Row="1"
-                    Height="150"
-                    Margin="{StaticResource SmallTopMargin}"
-                    IsItemClickEnabled="True"
-                    ItemsSource="{x:Bind ViewModel.QuickSearchResults, Mode=OneWay}"
-                    SelectionMode="None">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="cm:AnimeModel">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
+                <Grid Margin="0,0,0,12" HorizontalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ListBox
+                        x:Name="StatusStrip"
+                        Margin="{StaticResource SmallTopBottomMargin}"
+                        HorizontalAlignment="Center"
+                        ItemsSource="{x:Bind Statuses}"
+                        SelectedItem="{x:Bind ViewModel.CurrentView, Mode=TwoWay}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="cm:AnimeStatus">
                                 <TextBlock
-                                    VerticalAlignment="Center"
-                                    Text="{x:Bind Title}"
-                                    TextTrimming="CharacterEllipsis"
-                                    ToolTipService.ToolTip="{x:Bind Title}" />
-                                <Button
-                                    Grid.Column="1"
-                                    Command="{x:Bind root:App.Commands.More}"
-                                    CommandParameter="{x:Bind Id}">
-                                    <SymbolIcon Symbol="More" />
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
-        </TeachingTip>
+                                    Width="200"
+                                    Text="{x:Bind v:UserListPage.ToStatusString((cm:AnimeStatus))}"
+                                    TextAlignment="Center" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Height" Value="40" />
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ctk:WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
 
-    </Grid>
+                    <AutoSuggestBox
+                        Grid.Row="1"
+                        Width="300"
+                        Height="35"
+                        VerticalAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        uhelp:OnScreenKeyboard.Enabled="true"
+                        PlaceholderText="Search"
+                        QueryIcon="Find"
+                        Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                </Grid>
+
+                <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
+                    <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
+                        <ctk:AdaptiveGridView
+                            x:Name="AnimeListView"
+                            animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+                            ui:ListViewExtensions.Command="{x:Bind root:App.Commands.Watch}"
+                            DesiredWidth="240"
+                            IsItemClickEnabled="True"
+                            ItemHeight="380"
+                            ItemsSource="{x:Bind ViewModel.Anime}"
+                            StretchContentForSingleRow="False">
+                            <ctk:AdaptiveGridView.ItemTemplate>
+                                <DataTemplate x:DataType="cm:AnimeModel">
+                                    <uc:AnimeCard
+                                        x:Name="Card"
+                                        Margin="3"
+                                        Anime="{x:Bind}">
+                                        <uc:AnimeCard.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem
+                                                    Command="{x:Bind root:App.Commands.UpdateTracking}"
+                                                    CommandParameter="{x:Bind}"
+                                                    Text="Update">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <SymbolIcon Symbol="PostUpdate" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem
+                                                    Command="{x:Bind root:App.Commands.More}"
+                                                    CommandParameter="{x:Bind Id}"
+                                                    Text="More">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <SymbolIcon Symbol="More" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                            </MenuFlyout>
+                                        </uc:AnimeCard.Flyout>
+                                    </uc:AnimeCard>
+                                </DataTemplate>
+                            </ctk:AdaptiveGridView.ItemTemplate>
+                        </ctk:AdaptiveGridView>
+                    </ctk:Case>
+                    <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
+                        <ctk:DataGrid
+                            AutoGenerateColumns="False"
+                            IsReadOnly="True"
+                            ItemsSource="{x:Bind ViewModel.Anime}"
+                            SelectionMode="Single">
+                            <ctk:DataGrid.Columns>
+                                <ctk:DataGridTextColumn
+                                    Width="*"
+                                    Binding="{Binding Title}"
+                                    Header="Title" />
+                                <ctk:DataGridTemplateColumn Width="150" Header="Rating">
+                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="cm:AnimeModel">
+                                            <RatingControl IsReadOnly="True" Value="{x:Bind help:AnimeHelpers.ScoreToRating(Tracking.Score)}" />
+                                        </DataTemplate>
+                                    </ctk:DataGridTemplateColumn.CellTemplate>
+                                </ctk:DataGridTemplateColumn>
+                                <ctk:DataGridTemplateColumn Width="100" Header="Ep">
+                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="cm:AnimeModel">
+                                            <TextBlock HorizontalAlignment="Center" Text="{x:Bind help:AnimeHelpers.Eps((cm:AnimeModel))}" />
+                                        </DataTemplate>
+                                    </ctk:DataGridTemplateColumn.CellTemplate>
+                                </ctk:DataGridTemplateColumn>
+                            </ctk:DataGrid.Columns>
+                        </ctk:DataGrid>
+                    </ctk:Case>
+                </ctk:SwitchPresenter>
+
+                <ctk:Loading
+                    x:Name="LoadingControl"
+                    Grid.Row="1"
+                    IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
+                    <ProgressRing Margin="0,0,12,0" IsActive="True" />
+                </ctk:Loading>
+
+                <CommandBar
+                    Grid.Row="2"
+                    Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
+                    DefaultLabelPosition="Bottom">
+                    <AppBarButton
+                        x:Name="QuickAdd"
+                        Icon="Add"
+                        Label="Quick Add" />
+                    <AppBarButton
+                        Command="{x:Bind ViewModel.RefreshCommand}"
+                        Icon="Refresh"
+                        Label="Refresh" />
+                    <AppBarButton Icon="View" Label="Display mode">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SetDisplayMode}"
+                                    CommandParameter="{x:Bind cm:DisplayMode.Grid}"
+                                    Text="Grid view">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xf0e2;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SetDisplayMode}"
+                                    CommandParameter="{x:Bind cm:DisplayMode.List}"
+                                    Text="List view">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xf0e4;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                    <AppBarButton Icon="Filter" Label="Filter">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout>
+                                <RadioMenuFlyoutItem
+                                    x:Name="WatchingFlyoutToggle"
+                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                    CommandParameter="{x:Bind cm:AnimeStatus.Watching}"
+                                    Text="Watching" />
+                                <RadioMenuFlyoutItem
+                                    x:Name="PtwFlyoutToggle"
+                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                    CommandParameter="{x:Bind cm:AnimeStatus.PlanToWatch}"
+                                    Text="Plan to watch" />
+                                <RadioMenuFlyoutItem
+                                    x:Name="OnHoldFlyoutToggle"
+                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                    CommandParameter="{x:Bind cm:AnimeStatus.OnHold}"
+                                    Text="On Hold" />
+                                <RadioMenuFlyoutItem
+                                    x:Name="CompletedFlyoutToggle"
+                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                    CommandParameter="{x:Bind cm:AnimeStatus.Completed}"
+                                    Text="Completed" />
+                                <RadioMenuFlyoutItem
+                                    x:Name="DroppedFlyoutToggle"
+                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                    CommandParameter="{x:Bind cm:AnimeStatus.Dropped}"
+                                    Text="Dropped" />
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                </CommandBar>
+
+                <TeachingTip
+                    x:Name="QuickAddPopup"
+                    Title="Quick Add"
+                    Grid.Row="1"
+                    Target="{x:Bind QuickAdd}">
+                    <Grid Padding="3,5">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <AutoSuggestBox
+                            PlaceholderText="Search"
+                            QueryIcon="Find"
+                            Text="{x:Bind ViewModel.QuickAddSearchText, Mode=TwoWay}" />
+
+                        <ListView
+                            x:Name="QuickAddResult"
+                            Grid.Row="1"
+                            Height="150"
+                            Margin="{StaticResource SmallTopMargin}"
+                            IsItemClickEnabled="True"
+                            ItemsSource="{x:Bind ViewModel.QuickSearchResults, Mode=OneWay}"
+                            SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="cm:AnimeModel">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind Title}"
+                                            TextTrimming="CharacterEllipsis"
+                                            ToolTipService.ToolTip="{x:Bind Title}" />
+                                        <Button
+                                            Grid.Column="1"
+                                            Command="{x:Bind root:App.Commands.More}"
+                                            CommandParameter="{x:Bind Id}">
+                                            <SymbolIcon Symbol="More" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </TeachingTip>
+
+            </Grid>
+        </ctk:Case>
+        <ctk:Case>
+            <ctk:Case.Value>
+                <x:Boolean>False</x:Boolean>
+            </ctk:Case.Value>
+            <Grid>
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="30"
+                    Text="Not connected to any Anime List service, Go to settings page to connect."
+                    TextWrapping="Wrap">
+                    <TextBlock.Foreground>
+                        <SolidColorBrush Opacity="0.3" Color="White" /> 
+                    </TextBlock.Foreground>
+                </TextBlock>
+            </Grid>
+        </ctk:Case>
+
+    </ctk:SwitchPresenter>
 </v:UserListPageBase>
