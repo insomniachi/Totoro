@@ -108,15 +108,16 @@ public class ViewService : IViewService, IEnableLogger
             Search = searcher,
         };
 
-        await _contentDialogService.ShowDialog<SelectModelView, SelectModelViewModel<T>>(vm, d =>
+        var result = await _contentDialogService.ShowDialog<SelectModelView, SelectModelViewModel<T>>(vm, d =>
         {
             d.Title = "Select";
-            d.IsPrimaryButtonEnabled = false;
+            d.IsPrimaryButtonEnabled = true;
+            d.PrimaryButtonText = "Ok";
             d.IsSecondaryButtonEnabled = false;
-            d.CloseButtonText = "Ok";
+            d.CloseButtonText = "Cancel";
         });
 
-        return vm.SelectedModel;
+        return result == ContentDialogResult.Primary ? vm.SelectedModel : null;
     }
 
     public async Task<long?> TryGetId(string title)
