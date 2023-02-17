@@ -90,21 +90,30 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private async Task<MediaSource> GetMediaSource(VideoStream stream)
     {
         _httpClient.DefaultRequestHeaders.Clear();
-        foreach (var item in stream.Headers)
-        {
-            _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
-        }
-
+        var hasHeaders = stream.Headers is { Count: > 0 };
         Uri uri = new(stream.Url);
-        var result = await AdaptiveMediaSource.CreateFromUriAsync(uri, _httpClient);
-        if (result.Status == AdaptiveMediaSourceCreationStatus.Success)
+        
+        if (hasHeaders)
         {
-            return MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
+            foreach (var item in stream.Headers)
+            {
+                _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
+            }
+            var result = await AdaptiveMediaSource.CreateFromUriAsync(uri, _httpClient);
+            if (result.Status == AdaptiveMediaSourceCreationStatus.Success)
+            {
+                return MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
+            }
+            else
+            {
+                HttpRandomAccessStream httpStream = await HttpRandomAccessStream.CreateAsync(_httpClient, uri);
+                return MediaSource.CreateFromStream(httpStream, httpStream.ContentType);
+            }
         }
         else
         {
-            HttpRandomAccessStream httpStream = await HttpRandomAccessStream.CreateAsync(_httpClient, uri);
-            return MediaSource.CreateFromStream(httpStream, httpStream.ContentType);
+            return MediaSource.CreateFromUri(uri);
         }
+
     }
 }
