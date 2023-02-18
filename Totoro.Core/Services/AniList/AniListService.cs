@@ -150,7 +150,7 @@ public class AnilistService : IAnimeService, IAnilistService
         });
 
 
-        var nextEp = response.Result.Data.Media.NextAiringEpisode.TimeUntilAiring;
+        var nextEp = response.Result.Data.Media.NextAiringEpisode?.TimeUntilAiring;
         DateTime? dt = nextEp is null ? null : DateTime.Now + TimeSpan.FromSeconds(nextEp.Value);
 
         return dt;
