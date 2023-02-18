@@ -37,9 +37,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
             .Filter(this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason))
             .Filter(this.WhenAnyValue(x => x.SearchText).Select(x => x?.ToLower()).Select(FilterByTitle))
             .Sort(sort)
-            .Page(PagerViewModel.AsPager())
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(changes => PagerViewModel.Update(changes.Response))
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
@@ -53,7 +51,6 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     [Reactive] public string SeasonFilter { get; set; } = "Current";
     [Reactive] public string SearchText { get; set; }
     [Reactive] public Sort Sort { get; set; } = Sort.Popularity;
-    public PagerViewModel PagerViewModel { get; } = new PagerViewModel(0, 15);
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand SetSeasonCommand { get; }
     public ICommand AddToListCommand { get; }

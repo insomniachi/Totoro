@@ -77,15 +77,6 @@
 
         </Grid>
 
-        <PipsPager
-            Grid.Row="1"
-            Margin="{StaticResource SmallTopBottomMargin}"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            NextButtonVisibility="Visible"
-            NumberOfPages="{x:Bind ViewModel.PagerViewModel.PageCount, Mode=OneWay}"
-            PreviousButtonVisibility="Visible"
-            SelectedPageIndex="{x:Bind ViewModel.PagerViewModel.CurrentPage, Mode=TwoWay}" />
 
 
         <ctk:AdaptiveGridView
