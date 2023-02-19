@@ -19,6 +19,7 @@ public interface ISettings
     bool AllowSideLoadingPlugins { get; set; }
     StreamQualitySelection DefaultStreamQualitySelection { get; set; }
     bool IncludeNsfw { get; set; }
+    bool EnterFullScreenWhenPlaying { get; set; }
     Task<Unit> UpdateUrls();
 }
 

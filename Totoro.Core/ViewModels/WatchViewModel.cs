@@ -93,6 +93,7 @@ public partial class WatchViewModel : NavigatableViewModel
         MessageBus.Current
             .Listen<RequestFullWindowMessage>()
             .Select(message => message.IsFullWindow)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .ToPropertyEx(this, x => x.IsFullWindow, deferSubscription: true);
 
         this.ObservableForProperty(x => x.Anime, x => x)
@@ -140,6 +141,7 @@ public partial class WatchViewModel : NavigatableViewModel
     public ReadOnlyObservableCollection<int> Episodes => _episodes;
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
+    public bool AutoFullScreen => _settings.EnterFullScreenWhenPlaying;
 
     public ICommand NextEpisode { get; }
     public ICommand PrevEpisode { get; }

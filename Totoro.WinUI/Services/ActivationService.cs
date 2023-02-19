@@ -14,6 +14,7 @@ public class ActivationService : IActivationService, IEnableLogger
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IPluginManager _pluginManager;
     private readonly IUpdateService _updateService;
+    private readonly IAiredEpisodeToastService _toastService;
     private readonly string _prevWebviewFolder;
     private readonly string _tempPath = System.IO.Path.GetTempPath();
 
@@ -25,7 +26,8 @@ public class ActivationService : IActivationService, IEnableLogger
                              IPlaybackStateStorage playbackStateStorage,
                              ITrackingServiceContext trackingService,
                              IPluginManager pluginManager,
-                             IUpdateService updateService)
+                             IUpdateService updateService,
+                             IAiredEpisodeToastService toastService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
@@ -33,8 +35,10 @@ public class ActivationService : IActivationService, IEnableLogger
         _playbackStateStorage = playbackStateStorage;
         _pluginManager = pluginManager;
         _updateService = updateService;
-        IsAuthenticated = trackingService.IsAuthenticated;
+        _toastService = toastService;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
+        
+        IsAuthenticated = trackingService.IsAuthenticated;
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
     }
 
@@ -87,6 +91,7 @@ public class ActivationService : IActivationService, IEnableLogger
     {
         _themeSelectorService.Initialize();
         await _pluginManager.Initialize();
+        _toastService.Start();
     }
 
     private Task StartupAsync()

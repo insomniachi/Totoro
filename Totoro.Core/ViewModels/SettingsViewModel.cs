@@ -35,6 +35,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         AllowSideLoadingPlugins = localSettingsService.ReadSetting(nameof(AllowSideLoadingPlugins), false);
         DefaultStreamQualitySelection = localSettingsService.ReadSetting(nameof(DefaultStreamQualitySelection), StreamQualitySelection.Auto);
         IncludeNsfw = localSettingsService.ReadSetting(nameof(IncludeNsfw), false);
+        EnterFullScreenWhenPlaying = localSettingsService.ReadSetting(nameof(EnterFullScreenWhenPlaying), false);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
@@ -84,6 +85,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool AllowSideLoadingPlugins { get; set; }
     [Reactive] public StreamQualitySelection DefaultStreamQualitySelection { get; set; }
     [Reactive] public bool IncludeNsfw { get; set; }
+    [Reactive] public bool EnterFullScreenWhenPlaying { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {
@@ -101,6 +103,8 @@ internal class SettingsModel : ReactiveObject, ISettings
 
 public class SettingsViewModel : NavigatableViewModel
 {
+    private readonly ITrackingServiceContext _trackingServiceContext;
+
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
@@ -123,13 +127,12 @@ public class SettingsViewModel : NavigatableViewModel
                              IViewService viewService,
                              IUpdateService updateService)
     {
+        _trackingServiceContext = trackingServiceContext;
+
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
-        IsMalConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.MyAnimeList);
-        IsAniListConnected = trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
         SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
             ?? ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == "allanime");
-
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -144,6 +147,19 @@ public class SettingsViewModel : NavigatableViewModel
 
         this.ObservableForProperty(x => x.SelectedProvider, x => x)
             .Subscribe(provider => settings.DefaultProviderType = provider.Name);
+
+        trackingServiceContext
+            .Authenticated
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => UpdateConnectionStatus());
+
+        UpdateConnectionStatus();
+    }
+
+    private void UpdateConnectionStatus()
+    {
+        IsMalConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.MyAnimeList);
+        IsAniListConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
     }
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();

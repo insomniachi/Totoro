@@ -1,4 +1,5 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Reactive.Concurrency;
+using System.Reactive.Subjects;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.Core;
@@ -120,8 +121,11 @@ public class CustomMediaTransportControls : MediaTransportControls
 
     public void UpdateFullWindow(bool isFullWindow)
     {
-        _isFullWindow = isFullWindow;
-        _fullWindowSymbol.Symbol = isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
+        RxApp.MainThreadScheduler.Schedule(() =>
+        {
+            _isFullWindow = isFullWindow;
+            _fullWindowSymbol.Symbol = isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
+        });
     }
 
     protected override void OnApplyTemplate()

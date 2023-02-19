@@ -32,6 +32,20 @@ public sealed partial class WatchPage : WatchPageBase
             })
             .DisposeWith(d);
 
+            ViewModel
+            .MediaPlayer
+            .DurationChanged
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Where(x => x > TimeSpan.Zero && !ViewModel.IsFullWindow && ViewModel.AutoFullScreen)
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .Subscribe(x =>
+            {
+                MessageBus.Current.SendMessage(new RequestFullWindowMessage(true));
+                TransportControls.UpdateFullWindow(true);
+            })
+            .DisposeWith(d);
+            
+
             TransportControls
             .OnNextTrack
             .Where(_ => ViewModel.Anime is not null)

@@ -128,6 +128,16 @@
                         SelectedItem="{x:Bind ViewModel.Settings.DefaultStreamQualitySelection, Mode=TwoWay}" />
                 </labs:SettingsCard>
 
+                <labs:SettingsCard Description="Make the video player go fullscreen when it first starts playing if not already" Header="Auto Fullscreen">
+                    <labs:SettingsCard.HeaderIcon>
+                        <SymbolIcon Symbol="FullScreen" />
+                    </labs:SettingsCard.HeaderIcon>
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.Settings.EnterFullScreenWhenPlaying, Mode=TwoWay}"
+                        OffContent="Off"
+                        OnContent="On" />
+                </labs:SettingsCard>
+
                 <labs:SettingsCard
                     Command="{x:Bind ViewModel.ConfigureProvider}"
                     Description="Default provider used to stream."

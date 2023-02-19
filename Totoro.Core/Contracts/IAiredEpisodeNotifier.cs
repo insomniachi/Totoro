@@ -3,4 +3,5 @@
 public interface IAiredEpisodeNotifier
 {
     IObservable<AiredEpisode> OnNewEpisode { get; }
+    void Start();
 }

@@ -24,6 +24,7 @@ public sealed partial class ShellPage : Page
 
         MessageBus.Current
             .Listen<RequestFullWindowMessage>()
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(message =>
             {
                 App.MainWindow.PresenterKind = message.IsFullWindow ? Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen : Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped;
