@@ -3,6 +3,8 @@ using AnimDL.Core.Models.Interfaces;
 using FuzzySharp;
 using Splat;
 using Totoro.Core.Helpers;
+using Totoro.Core.Services;
+using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 
 namespace Totoro.Core.ViewModels;
 
@@ -17,6 +19,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ITimestampsService _timestampsService;
     private readonly ILocalMediaService _localMediaService;
     private readonly IStreamPageMapper _streamPageMapper;
+    private readonly IPremiumizeService _premiumize;
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<int> _episodes;
     private readonly ProviderOptions _providerOptions;
@@ -39,7 +42,8 @@ public partial class WatchViewModel : NavigatableViewModel
                           IMediaPlayer mediaPlayer,
                           ITimestampsService timestampsService,
                           ILocalMediaService localMediaService,
-                          IStreamPageMapper streamPageMapper)
+                          IStreamPageMapper streamPageMapper,
+                          IPremiumizeService premiumize)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -48,6 +52,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
+        _premiumize = premiumize;
         _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
         _timestampsService = timestampsService;
@@ -89,6 +94,7 @@ public partial class WatchViewModel : NavigatableViewModel
         DoStuffOnMediaPlayerEvents();
         DoMainSequence();
         DoStuffOnUserInteraction();
+        DoStuffForTorrent();
 
         MessageBus.Current
             .Listen<RequestFullWindowMessage>()
@@ -116,10 +122,14 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public SearchResult SelectedAudio { get; set; }
     [Reactive] public VideoStream SelectedStream { get; set; }
     [Reactive] public bool UseLocalMedia { get; set; }
+    [Reactive] public bool UseTorrents { get; set; }
     [Reactive] public VideoStreamsForEpisode Streams { get; set; }
     [Reactive] public string SelectedAudioStream { get; set; }
     [Reactive] public int NumberOfStreams { get; set; }
     [Reactive] public double CurrentPlayerTime { get; set; }
+    [Reactive] public List<DirectDownloadLink> Links { get; set; }
+    [Reactive] public DirectDownloadLink SelectedLink { get; set; }
+
 
     [ObservableAsProperty] public bool IsFullWindow { get; }
     [ObservableAsProperty] public bool IsSkipButtonVisible { get; }
@@ -182,6 +192,30 @@ public partial class WatchViewModel : NavigatableViewModel
             var searchResult = (SearchResult)parameters["SearchResult"];
             await TrySetAnime(searchResult.Url, searchResult.Title);
             SelectedAudio = searchResult;
+        }
+        else if(parameters.ContainsKey("Torrent"))
+        {
+            var torrent = (TorrentModel)parameters["Torrent"];
+            UseTorrents = true;
+            var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
+            if(parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle) is { } title)
+            {
+                await TrySetAnime(title.Value);
+            }
+            if(parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } episode)
+            {
+                if(int.TryParse(episode.Value, out var ep))
+                {
+                    CurrentEpisode = ep;
+                }
+            }
+
+            Links = (await _premiumize.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
+
+            if(Links.Count == 1)
+            {
+                SelectedLink = Links[0];
+            }
         }
     }
 
@@ -254,6 +288,18 @@ public partial class WatchViewModel : NavigatableViewModel
             });
     }
 
+
+    private void DoStuffForTorrent()
+    {
+        this.WhenAnyValue(x => x.SelectedLink)
+            .WhereNotNull()
+            .Subscribe(x =>
+            {
+                MediaPlayer.SetMedia(x.StreamLink);
+                MediaPlayer.Play();
+            });
+    }
+
     private void DoStuffWhenEpisodeChanges()
     {
         var episodeChanged = this.ObservableForProperty(x => x.CurrentEpisode, x => x)
@@ -266,7 +312,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         // when streaming
         episodeChanged
-            .Where(_ => !UseLocalMedia)
+            .Where(_ => !UseLocalMedia && !UseTorrents)
             .Do(x => DoIfRpcEnabled(() => _discordRichPresense.UpdateState($"Episode {x}")))
             .Log(this, "Current Episode")
             .ObserveOn(RxApp.TaskpoolScheduler)
@@ -283,7 +329,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Select(ep => _localMediaService.GetMedia(Anime.Id, ep.Value))
             .Where(file => !string.IsNullOrEmpty(file))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(async file => await MediaPlayer.SetMedia(file))
+            .Do(async file => await MediaPlayer.SetMediaFromFile(file))
             .Do(_ => MediaPlayer.Play(_playbackStateStorage.GetTime(Anime?.Id ?? 0, CurrentEpisode ?? 0)))
             .Subscribe();
     }
@@ -449,7 +495,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(_ =>
             {
                 _canUpdateTime = true;
-                _discordRichPresense.UpdateDetails(SelectedAudio?.Title ?? Anime.Title);
+                _discordRichPresense.UpdateDetails(SelectedAudio?.Title ?? Anime?.Title ?? "Something");
                 _discordRichPresense.UpdateState($"Episode {CurrentEpisode}");
                 _discordRichPresense.UpdateTimer(TimeRemaining);
                 _discordRichPresense.UpdateImage(GetDiscordImageKey());
@@ -671,6 +717,19 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             id ??= await TryGetId(title);
         }
+
+        if (id is null)
+        {
+            this.Log().Warn($"Unable to find Id for {title}, watch session will not be tracked");
+            return;
+        }
+
+        _anime = await _animeService.GetInformation(id.Value);
+    }
+
+    private async Task TrySetAnime(string title)
+    {
+        var id = await TryGetId(title);
 
         if (id is null)
         {

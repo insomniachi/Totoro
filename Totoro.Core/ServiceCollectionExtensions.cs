@@ -5,6 +5,7 @@ using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
+using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core
@@ -55,6 +56,14 @@ namespace Totoro.Core
             services.AddTransient<ITrackingService, MyAnimeListTrackingService>();
             services.AddTransient<IAnimeService, MyAnimeListService>();
             services.AddSingleton<IMalClient, MalClient>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddTorrenting(this IServiceCollection services)
+        {
+            services.AddTransient<IPremiumizeService, PremiumizeService>();
+            services.AddTransient<ITorrentCatalog, NyaaCatalog>();
 
             return services;
         }

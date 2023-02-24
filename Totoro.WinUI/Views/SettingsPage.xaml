@@ -14,8 +14,9 @@
     Name="Page"
     Margin="24"
     mc:Ignorable="d">
-    <Grid MaxWidth="1000">
-        <ScrollViewer Grid.Row="1">
+    <ScrollViewer Grid.Row="1">
+        <Grid MaxWidth="1000">
+
             <StackPanel Spacing="10">
                 <TextBlock
                     Width="{Binding ElementName=SettingCard, Path=ActualWidth}"
@@ -155,6 +156,21 @@
                         ItemsSource="{x:Bind ViewModel.ProviderTypes}"
                         SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
                 </labs:SettingsCard>
+
+                <labs:SettingsExpander Description="Options for torrenting" Header="Torrenting">
+                    <labs:SettingsExpander.HeaderIcon>
+                        <FontIcon Glyph="&#xe705;" />
+                    </labs:SettingsExpander.HeaderIcon>
+                    <labs:SettingsExpander.Items>
+                        <labs:SettingsCard Description="API key" Header="Premiumize">
+                            <TextBox Width="200" Text="{x:Bind ViewModel.Settings.PremiumizeKey, Mode=TwoWay}" />
+                        </labs:SettingsCard>
+                        <labs:SettingsCard Description="Url" Header="Nyaa">
+                            <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />
+                        </labs:SettingsCard>
+                    </labs:SettingsExpander.Items>
+                </labs:SettingsExpander>
+
                 <labs:SettingsCard Description="Allow sideloading 3rd party provider plugins" Header="Sideload plugins">
                     <labs:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xe836;" />
@@ -230,8 +246,9 @@
                     </labs:SettingsCard.HeaderIcon>
                 </labs:SettingsCard>
             </StackPanel>
-        </ScrollViewer>
 
-    </Grid>
+        </Grid>
+    </ScrollViewer>
+
 </views:SettingsPageBase>
 

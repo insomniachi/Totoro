@@ -1,0 +1,142 @@
+<local:TorrentingViewBase
+    x:Class="Totoro.WinUI.Views.TorrentingView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Totoro.WinUI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:root="using:Totoro.WinUI"
+    x:Name="Page"
+    mc:Ignorable="d">
+    <local:TorrentingViewBase.Resources>
+        <local:TorrentStateConverter x:Key="StateConverter" />
+        <local:HumanizeConverter x:Key="HumanizeConverter" />
+    </local:TorrentingViewBase.Resources>
+
+    <ctk:SwitchPresenter Value="{x:Bind ViewModel.IsAuthenticted}">
+        <ctk:Case>
+            <ctk:Case.Value>
+                <x:Boolean>False</x:Boolean>
+            </ctk:Case.Value>
+            <Grid>
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="30"
+                    Text="API key for Premiumize not present, Go to settings page to set api key."
+                    TextWrapping="Wrap">
+                    <TextBlock.Foreground>
+                        <SolidColorBrush Opacity="0.3" Color="White" />
+                    </TextBlock.Foreground>
+                </TextBlock>
+            </Grid>
+        </ctk:Case>
+        <ctk:Case>
+            <ctk:Case.Value>
+                <x:Boolean>True</x:Boolean>
+            </ctk:Case.Value>
+            <Grid Margin="0,25,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="10">
+                    <AutoSuggestBox
+                        x:Name="SearchBox"
+                        Width="300"
+                        PlaceholderText="Search"
+                        QueryIcon="Find"
+                        Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
+                    <Button Content="Paste Magnet Link">
+                        <Button.Flyout>
+                            <Flyout>
+                                <StackPanel Spacing="10">
+                                    <TextBox
+                                        x:Name="PasteBin"
+                                        Width="400"
+                                        Height="200"
+                                        AcceptsReturn="True"
+                                        Text="{x:Bind ViewModel.PastedTorrent.MagnetLink, Mode=TwoWay}"
+                                        TextWrapping="Wrap" />
+                                    <Button
+                                        Command="{x:Bind root:App.Commands.TorrentCommand}"
+                                        CommandParameter="{x:Bind ViewModel.PastedTorrent}"
+                                        Content="{x:Bind ViewModel.PastedTorrent.State, Converter={StaticResource StateConverter}, Mode=OneWay}" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+
+                <ctk:DataGrid
+                    Grid.Row="1"
+                    Margin="20"
+                    AutoGenerateColumns="False"
+                    CanUserReorderColumns="False"
+                    CanUserResizeColumns="False"
+                    CanUserSortColumns="True"
+                    IsReadOnly="true"
+                    ItemsSource="{x:Bind ViewModel.Torrents}"
+                    SelectionMode="Single"
+                    Sorting="DataGrid_Sorting">
+                    <ctk:DataGrid.Columns>
+                        <ctk:DataGridTemplateColumn Header="Category">
+                            <ctk:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ctk:ImageEx
+                                        Width="80"
+                                        Height="28"
+                                        CacheMode="BitmapCache"
+                                        IsCacheEnabled="True"
+                                        Source="{Binding Category}" />
+                                </DataTemplate>
+                            </ctk:DataGridTemplateColumn.CellTemplate>
+                        </ctk:DataGridTemplateColumn>
+                        <ctk:DataGridTextColumn Binding="{Binding Name}" Header="Name" />
+                        <ctk:DataGridTextColumn Binding="{Binding Size}" Header="Size" />
+                        <ctk:DataGridTemplateColumn
+                            CanUserSort="True"
+                            Header="Time"
+                            Tag="Time">
+                            <ctk:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Date, Converter={StaticResource HumanizeConverter}}" />
+                                </DataTemplate>
+                            </ctk:DataGridTemplateColumn.CellTemplate>
+                        </ctk:DataGridTemplateColumn>
+                        <ctk:DataGridTextColumn
+                            Binding="{Binding Seeders}"
+                            Header="Seeders"
+                            Tag="Seeders" />
+                        <ctk:DataGridTextColumn Binding="{Binding Leeches}" Header="Leeches" />
+                        <ctk:DataGridTextColumn Binding="{Binding Completed}" Header="Completed" />
+                        <ctk:DataGridTemplateColumn Header="Actions">
+                            <ctk:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button
+                                        x:Name="Button"
+                                        Margin="3"
+                                        HorizontalAlignment="Stretch"
+                                        Click="TorrentAction"
+                                        Content="{Binding State, Converter={StaticResource StateConverter}}" />
+                                </DataTemplate>
+                            </ctk:DataGridTemplateColumn.CellTemplate>
+                        </ctk:DataGridTemplateColumn>
+                    </ctk:DataGrid.Columns>
+                </ctk:DataGrid>
+
+                <ctk:Loading
+                    x:Name="LoadingControl"
+                    Grid.Row="1"
+                    IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
+                    <ProgressRing Margin="0,0,12,0" IsActive="True" />
+                </ctk:Loading>
+            </Grid>
+        </ctk:Case>
+    </ctk:SwitchPresenter>
+
+</local:TorrentingViewBase>

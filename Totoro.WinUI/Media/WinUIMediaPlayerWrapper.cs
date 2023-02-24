@@ -79,7 +79,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         }
     }
 
-    public async Task<Unit> SetMedia(string localFile)
+    public async Task<Unit> SetMediaFromFile(string localFile)
     {
         _player.Source = MediaSource.CreateFromStorageFile(await StorageFile.GetFileFromPathAsync(localFile));
         return Unit.Default;
@@ -115,5 +115,10 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
             return MediaSource.CreateFromUri(uri);
         }
 
+    }
+
+    public void SetMedia(string url)
+    {
+        _player.Source = MediaSource.CreateFromUri(new Uri(url));
     }
 }

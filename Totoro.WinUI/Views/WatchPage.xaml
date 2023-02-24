@@ -7,6 +7,7 @@
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
+    xmlns:s="using:Totoro.Core.Services"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
@@ -83,10 +84,37 @@
                     HorizontalAlignment="Stretch"
                     VerticalContentAlignment="Top"
                     ItemsSource="{x:Bind ViewModel.Episodes}"
-                    SelectedItem="{x:Bind ViewModel.CurrentEpisode, Mode=TwoWay}">
+                    SelectedItem="{x:Bind ViewModel.CurrentEpisode, Mode=TwoWay}"
+                    Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.UseTorrents), Mode=OneWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="x:Int32">
                             <TextBlock Text="{x:Bind}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumBrush}" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+
+                <ListView
+                    MaxHeight="80"
+                    Margin="0,0,10,0"
+                    HorizontalAlignment="Stretch"
+                    VerticalContentAlignment="Top"
+                    ItemsSource="{x:Bind ViewModel.Links, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedLink, Mode=TwoWay}"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.UseTorrents), Mode=OneWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="s:DirectDownloadLink">
+                            <TextBlock Text="{x:Bind FileName}" />
                         </DataTemplate>
                     </ListView.ItemTemplate>
                     <ListView.ItemsPanel>

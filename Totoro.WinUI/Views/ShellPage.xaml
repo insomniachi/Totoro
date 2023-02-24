@@ -63,9 +63,13 @@
                     Icon="Clock"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
                 <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.TorrentingViewModel"
+                    Content="Torrenting"
+                    Icon="People" />
+                <!--<NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DownloadViewModel"
                     Content="Download"
-                    Icon="Download" />
+                    Icon="Download" />-->
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.WatchViewModel"
                     Content="Watch"

@@ -10,8 +10,7 @@ internal class ScheduleViewModelBuilder
 
     internal ScheduleViewModel Build()
     {
-        return new ScheduleViewModel(_trackingServiceMock.Object,
-                                     _systemClockMock?.Object ?? new SystemClock());
+        return new ScheduleViewModel(_trackingServiceMock.Object);
     }
 
     internal ScheduleViewModelBuilder WithTrackingService(Action<Mock<ITrackingServiceContext>> configure)

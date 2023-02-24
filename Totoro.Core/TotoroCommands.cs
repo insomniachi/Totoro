@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using MalApi;
 using Splat;
+using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
+using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 using Video = Totoro.Core.Models.Video;
 
 namespace Totoro.Core;
@@ -13,7 +16,8 @@ public class TotoroCommands : IEnableLogger
     private readonly YoutubeClient _youtubeClient = new();
 
     public TotoroCommands(IViewService viewService,
-                          INavigationService navigationService)
+                          INavigationService navigationService,
+                          IPremiumizeService premiumize)
     {
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
 
@@ -56,6 +60,24 @@ public class TotoroCommands : IEnableLogger
             }
         });
 
+        TorrentCommand = ReactiveCommand.CreateFromTask<TorrentModel>(async model =>
+        {
+            switch (model.State)
+            {
+                case TorrentState.Unknown:
+                    var isCached = await premiumize.Check(model.MagnetLink);
+                    model.State = isCached ? TorrentState.Cached : TorrentState.NotCached;
+                    break;
+                case TorrentState.Cached:
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Torrent"] = model });
+                    break;
+                case TorrentState.NotCached:
+                    var id = await premiumize.CreateTransfer(model.MagnetLink);
+                    model.State = TorrentState.Requested;
+                    break;
+            }
+        });
+
         ConfigureProvider = ReactiveCommand.CreateFromTask<ProviderInfo>(viewService.ConfigureProvider);
     }
 
@@ -64,6 +86,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand Watch { get; }
     public ICommand PlayVideo { get; }
     public ICommand ConfigureProvider { get; }
+    public ICommand TorrentCommand { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

@@ -36,6 +36,8 @@ internal class SettingsModel : ReactiveObject, ISettings
         DefaultStreamQualitySelection = localSettingsService.ReadSetting(nameof(DefaultStreamQualitySelection), StreamQualitySelection.Auto);
         IncludeNsfw = localSettingsService.ReadSetting(nameof(IncludeNsfw), false);
         EnterFullScreenWhenPlaying = localSettingsService.ReadSetting(nameof(EnterFullScreenWhenPlaying), false);
+        PremiumizeKey = localSettingsService.ReadSetting(nameof(PremiumizeKey), string.Empty);
+
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
@@ -53,6 +55,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         Changed
             .Select(x => GetType().GetProperty(x.PropertyName))
             .Where(x => x.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+            .Throttle(TimeSpan.FromMilliseconds(500))
             .Subscribe(propInfo =>
             {
                 var value = propInfo.GetValue(this);
@@ -86,6 +89,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public StreamQualitySelection DefaultStreamQualitySelection { get; set; }
     [Reactive] public bool IncludeNsfw { get; set; }
     [Reactive] public bool EnterFullScreenWhenPlaying { get; set; }
+    [Reactive] public string PremiumizeKey { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {
@@ -108,6 +112,7 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
+    [Reactive] public string NyaaUrl { get; set; }
 
     public ISettings Settings { get; }
     public Version Version { get; }
@@ -125,7 +130,8 @@ public class SettingsViewModel : NavigatableViewModel
     public SettingsViewModel(ISettings settings,
                              ITrackingServiceContext trackingServiceContext,
                              IViewService viewService,
-                             IUpdateService updateService)
+                             IUpdateService updateService,
+                             ILocalSettingsService localSettingsService)
     {
         _trackingServiceContext = trackingServiceContext;
 
@@ -144,9 +150,14 @@ public class SettingsViewModel : NavigatableViewModel
             await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
         });
         ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));
+        NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
 
         this.ObservableForProperty(x => x.SelectedProvider, x => x)
             .Subscribe(provider => settings.DefaultProviderType = provider.Name);
+
+        this.ObservableForProperty(x => x.NyaaUrl, x => x)
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Subscribe(x => localSettingsService.SaveSetting("Nyaa", x));
 
         trackingServiceContext
             .Authenticated

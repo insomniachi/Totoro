@@ -76,6 +76,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
         services.AddPageForNavigation<AboutAnimeViewModel, AboutAnimePage>();
         services.AddPageForNavigation<DownloadViewModel, DownloadPage>();
+        services.AddPageForNavigation<TorrentingViewModel, TorrentingView>();
         return services;
     }
 
