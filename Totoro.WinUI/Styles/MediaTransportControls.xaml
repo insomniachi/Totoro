@@ -283,7 +283,7 @@
                                             <AppBarButton
                                                 x:Name="AddCCButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
-                                                Visibility="Visible">
+                                                Visibility="Collapsed">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xed11;" />
                                                 </AppBarButton.Icon>

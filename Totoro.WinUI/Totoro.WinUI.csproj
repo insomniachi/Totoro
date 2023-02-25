@@ -23,22 +23,24 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.12" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.15" />
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Media" Version="7.1.2" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+		<PackageReference Include="FFmpegInteropX" Version="1.1.0-pre38" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230118.102" />
+		<PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.230217.4" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
 		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.2.3">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="ReactiveUI" Version="18.4.1" />
-		<PackageReference Include="ReactiveUI.Fody" Version="18.4.1" />
-		<PackageReference Include="ReactiveUI.WinUI" Version="18.4.1" />
+		<PackageReference Include="ReactiveUI" Version="18.4.22" />
+		<PackageReference Include="ReactiveUI.Fody" Version="18.4.22" />
+		<PackageReference Include="ReactiveUI.WinUI" Version="18.4.22" />
 		<PackageReference Include="System.Reactive" Version="5.0.0" />
 		<PackageReference Include="WinUIEx" Version="2.1.0" />
 	</ItemGroup>

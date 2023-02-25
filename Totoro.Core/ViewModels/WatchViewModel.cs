@@ -276,7 +276,7 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         this.WhenAnyValue(x => x.SelectedLink)
             .WhereNotNull()
-            .Subscribe(x =>
+            .Subscribe(async x =>
             {
                 var parsedResult = AnitomySharp.AnitomySharp.Parse(x.FileName);
                 if (parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } epString &&
@@ -290,7 +290,7 @@ public partial class WatchViewModel : NavigatableViewModel
                         CurrentEpisode = ep;
                     });
                 }
-                MediaPlayer.SetMedia(x.StreamLink);
+                await MediaPlayer.SetMedia(x.Link);
                 MediaPlayer.Play();
             });
     }

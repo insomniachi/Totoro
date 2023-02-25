@@ -115,6 +115,11 @@ public class AnilistService : IAnimeService, IAnilistService
     {
         var animeId = await _animeIdService.GetId(id);
 
+        if(animeId is null)
+        {
+            return string.Empty;
+        }
+
         var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
             Query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
@@ -127,6 +132,11 @@ public class AnilistService : IAnimeService, IAnilistService
     public async Task<int?> GetNextAiringEpisode(long id)
     {
         var animeId = await _animeIdService.GetId(id);
+
+        if (animeId is null)
+        {
+            return null;
+        }
 
         var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
@@ -141,6 +151,11 @@ public class AnilistService : IAnimeService, IAnilistService
     public async Task<DateTime?> GetNextAiringEpisodeTime(long id)
     {
         var animeId = await _animeIdService.GetId(id);
+
+        if (animeId is null)
+        {
+            return null;
+        }
 
         var response = _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {

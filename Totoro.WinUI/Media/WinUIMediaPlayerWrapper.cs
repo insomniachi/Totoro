@@ -128,8 +128,11 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     }
 
-    public void SetMedia(string url)
+    public async Task SetMedia(string url)
     {
-        _player.Source = MediaSource.CreateFromUri(new Uri(url));
+        var fms = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url);
+        var mediaSource = fms.CreateMediaPlaybackItem();
+        mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
+        _player.Source = mediaSource;
     }
 }
