@@ -6,7 +6,7 @@ public class SelectModelViewModel<TModel> : DialogViewModel, ISelectModelViewMod
     {
         this.WhenAnyValue(x => x.SearchText)
             .Where(x => x is { Length: > 2 })
-            .Throttle(TimeSpan.FromMilliseconds(200))
+            .Throttle(TimeSpan.FromSeconds(1))
             .SelectMany(text => Search?.Invoke(text))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => Models = x, RxApp.DefaultExceptionHandler.OnError);
