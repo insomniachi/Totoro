@@ -6,7 +6,6 @@ internal class DebridServiceContext : IDebridServiceContext
 {
     private readonly Dictionary<DebridServiceType, IDebridService> _services;
     private readonly ISettings _settings;
-    private readonly ILocalSettingsService _localSettingsService;
 
 
     public DebridServiceContext(IEnumerable<IDebridService> debridServices,

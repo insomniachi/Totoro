@@ -19,7 +19,7 @@
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup>
-    <Version Condition=" '$(BuildVersion)' == '' ">0.0.1</Version>
+    <!--<Version Condition=" '$(BuildVersion)' == '' ">0.0.1</Version>-->
     <Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>
     <DefineConstants>BuildVersion=$(Version)</DefineConstants>
   </PropertyGroup>
@@ -66,11 +66,11 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
-    <Exec Command="rd /s /q ..\Totoro.WinUI\bin\publish\" />
+    <!--<Exec Command="rd /s /q ..\Totoro.WinUI\bin\publish\" />-->
     <PropertyGroup>
       <DefineConstants>BuildVersion=$(Version);BasePath=..\Totoro.WinUI\bin\publish\</DefineConstants>
     </PropertyGroup>
-    <Exec Command="dotnet publish ..\Totoro.WinUI\Totoro.WinUI.csproj -c $(Configuration) --self-contained -r win10-x64 -o ..\Totoro.WinUI\bin\publish\ /property:BuildVersion=$(BuildVersion)" />
+    <!--<Exec Command="dotnet publish ..\Totoro.WinUI\Totoro.WinUI.csproj -c $(Configuration) -r win10-x64 -o ..\Totoro.WinUI\bin\publish\ /property:BuildVersion=$(BuildVersion)" />-->
     <HeatDirectory OutputFile="ComponentsGenerated.wxs" DirectoryRefId="INSTALLFOLDER" ComponentGroupName="PublishedComponents" SuppressCom="true" Directory="..\Totoro.WinUI\bin\publish\" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" AutoGenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="$(RunWixToolsOutOfProc)" PreprocessorVariable="var.BasePath" />
   </Target>
   <Target Name="AfterBuild">

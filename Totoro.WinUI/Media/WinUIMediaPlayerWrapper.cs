@@ -14,6 +14,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private readonly HttpClient _httpClient = new();
     private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
     private bool _isHardSub;
+    private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
 
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -130,8 +131,20 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     public async Task SetMedia(string url)
     {
-        var fms = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url);
-        var mediaSource = fms.CreateMediaPlaybackItem();
+        _ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
+        {
+            ReadAheadBufferEnabled = true,
+            ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
+            ReadAheadBufferSize = 50 * 1024 * 1024,
+            FFmpegOptions = new Windows.Foundation.Collections.PropertySet
+            {
+                { "reconnect", 1 },
+                { "reconnect_streamed", 1 },
+                { "reconnect_on_network_error", 1 },
+            }
+        });
+        
+        var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
         mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
         _player.Source = mediaSource;
     }

@@ -2,6 +2,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	
 	<?define UpgradeCode = "{C64BF0BE-4AB6-48DA-ACC2-23FFF4C5A77A}"?>
+	<?define BuildVersion = "0.8.2"?>
 	
 	<Product Id="*"
 			 Name="!(loc.ProductName)" 
