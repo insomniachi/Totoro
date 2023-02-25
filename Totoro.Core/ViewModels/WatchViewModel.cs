@@ -3,7 +3,7 @@ using AnimDL.Core.Models.Interfaces;
 using FuzzySharp;
 using Splat;
 using Totoro.Core.Helpers;
-using Totoro.Core.Services;
+using Totoro.Core.Services.Debrid;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 
 namespace Totoro.Core.ViewModels;
@@ -19,7 +19,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ITimestampsService _timestampsService;
     private readonly ILocalMediaService _localMediaService;
     private readonly IStreamPageMapper _streamPageMapper;
-    private readonly IPremiumizeService _premiumize;
+    private readonly IDebridServiceContext _premiumize;
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<int> _episodes;
     private readonly ProviderOptions _providerOptions;
@@ -43,7 +43,7 @@ public partial class WatchViewModel : NavigatableViewModel
                           ITimestampsService timestampsService,
                           ILocalMediaService localMediaService,
                           IStreamPageMapper streamPageMapper,
-                          IPremiumizeService premiumize)
+                          IDebridServiceContext debridServiceContext)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -52,7 +52,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
-        _premiumize = premiumize;
+        _premiumize = debridServiceContext;
         _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
         _timestampsService = timestampsService;

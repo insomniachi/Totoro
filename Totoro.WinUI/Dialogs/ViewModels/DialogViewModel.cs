@@ -6,4 +6,6 @@ public abstract class DialogViewModel : ReactiveObject, IClosable
     public IObservable<Unit> Close => _close;
 
     protected void CloseDialog() => _close.OnNext(Unit.Default);
+
+    [Reactive] public string Title { get; set; }
 }

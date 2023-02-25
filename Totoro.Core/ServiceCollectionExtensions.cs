@@ -3,6 +3,7 @@ using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
+using Totoro.Core.Services.Debrid;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.Torrents;
@@ -62,8 +63,10 @@ namespace Totoro.Core
 
         public static IServiceCollection AddTorrenting(this IServiceCollection services)
         {
-            services.AddTransient<IPremiumizeService, PremiumizeService>();
+            services.AddTransient<IDebridService, PremiumizeService>();
             services.AddTransient<ITorrentCatalog, NyaaCatalog>();
+            services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
+            services.AddSingleton<IDebridServiceOptions, DebridServiceOptions>();
 
             return services;
         }

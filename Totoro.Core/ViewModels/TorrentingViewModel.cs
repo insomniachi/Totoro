@@ -12,15 +12,15 @@ public enum SortMode
 
 public class TorrentingViewModel : NavigatableViewModel
 {
-    private readonly IPremiumizeService _premiumize;
+    private readonly IDebridServiceContext _debridServiceContext;
     private readonly ITorrentCatalog _catalog;
     private readonly SourceCache<TorrentModel, string> _torrentsCache = new(x => x.Link);
     private readonly ReadOnlyObservableCollection<TorrentModel> _torrents;
 
-    public TorrentingViewModel(IPremiumizeService premiumize,
+    public TorrentingViewModel(IDebridServiceContext debridServiceContext,
                                ITorrentCatalog catalog)
     {
-        _premiumize = premiumize;
+        _debridServiceContext = debridServiceContext;
         _catalog = catalog;
 
         var sort = this.WhenAnyValue(x => x.SortMode)
@@ -52,7 +52,7 @@ public class TorrentingViewModel : NavigatableViewModel
 
     public TorrentModel PastedTorrent { get; } = new();
 
-    public bool IsAuthenticted => _premiumize.IsAuthenticated;
+    public bool IsAuthenticted => _debridServiceContext.IsAuthenticated;
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
 
     public ICommand Search { get; }

@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using AnimDL.Core.Helpers;
 
-namespace Totoro.Core.Services;
+namespace Totoro.Core.Services.Debrid;
 
 public class DirectDownloadLink
 {
@@ -31,18 +31,25 @@ public class Transfer
     public string Status { get; set; }
 }
 
-public class PremiumizeService : IPremiumizeService
+public class PremiumizeService : IDebridService
 {
-    public const string Key = "PremiumizeKey";
     private readonly HttpClient _httpClient;
+    private readonly IDebridServiceOptions _options;
     private readonly string _api = @"https://www.premiumize.me/api";
     private string _apiKey;
 
     public PremiumizeService(HttpClient httpClient,
-                             ISettings settings)
+                             IDebridServiceOptions options)
     {
         _httpClient = httpClient;
-        _apiKey = settings.PremiumizeKey;
+        _options = options;
+
+        options
+            .Changed
+            .Where(x => x == Type)
+            .Subscribe(_ => SetApiKey(ApiKey));
+
+        SetApiKey(ApiKey);
     }
 
     public void SetApiKey(string apiKey)
@@ -51,10 +58,13 @@ public class PremiumizeService : IPremiumizeService
     }
 
     public bool IsAuthenticated => !string.IsNullOrEmpty(_apiKey);
+    public string ApiKey => _options[Type].GetString("Key", "");
+
+    public DebridServiceType Type => DebridServiceType.Premiumize;
 
     public async Task<bool> Check(string magneticLink)
     {
-        if(string.IsNullOrEmpty(_apiKey))
+        if (string.IsNullOrEmpty(_apiKey))
         {
             return false;
         }

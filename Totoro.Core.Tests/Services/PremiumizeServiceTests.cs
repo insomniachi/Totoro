@@ -1,10 +1,10 @@
-﻿using Totoro.Core.Services;
+﻿using Totoro.Core.Services.Debrid;
 
 namespace Totoro.Core.Tests.Services
 {
     public class PremiumizeServiceTests
     {
-        private static readonly string _apiKey = "98r3femefpa9xnme";
+        private static readonly string _apiKey = "";
         private static readonly HttpClient _httpClient = new();
         private static readonly string _magnet = "magnet:?xt=urn:btih:7b556cf6bf0fe445043a841ce149a92c5be4a62e%26dn=%" +
                                                  "5BHorribleSubs%5D%20One%20Punch%20Man%20S2%20-%2009%20%5B1080p%5D.mk" +
@@ -58,7 +58,7 @@ namespace Totoro.Core.Tests.Services
         }
 
 
-        private static IPremiumizeService GetService()
+        private static IDebridService GetService()
         {
             var settingsMock = new Mock<ILocalSettingsService>();
             settingsMock.Setup(x => x.ReadSetting(PremiumizeService.Key, string.Empty)).Returns(_apiKey);

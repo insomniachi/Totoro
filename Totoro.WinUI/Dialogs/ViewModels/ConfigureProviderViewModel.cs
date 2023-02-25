@@ -35,33 +35,3 @@ public class ConfigureProviderViewModel : DialogViewModel
         _pluginManager.SaveConfig(ProviderType, Config);
     }
 }
-
-//public class ConfigModel
-//{
-//	public List<ConfigItemModel> Items { get; } = new();
-
-//	public ConfigModel(IParameters parameters)
-//	{
-//		foreach (var item in parameters)
-//		{
-//			Items.Add(new ConfigItemModel
-//			{
-//				Key = item.Key,
-//				Value = item.Value
-//			});
-//		}
-//	}
-
-//	public Parameters ToParameters()
-//	{
-//		var parameters = new Parameters();
-//		Items.ForEach(x => parameters.Add(new KeyValuePair<string, object>(x.Key, x.Value)));
-//		return parameters;
-//	}
-//}
-
-//public class ConfigItemModel
-//{
-//	public string Key { get; set; }
-//	[Reactive] public object Value { get; set; }
-//}

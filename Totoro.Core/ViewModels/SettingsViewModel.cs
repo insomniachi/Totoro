@@ -36,8 +36,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         DefaultStreamQualitySelection = localSettingsService.ReadSetting(nameof(DefaultStreamQualitySelection), StreamQualitySelection.Auto);
         IncludeNsfw = localSettingsService.ReadSetting(nameof(IncludeNsfw), false);
         EnterFullScreenWhenPlaying = localSettingsService.ReadSetting(nameof(EnterFullScreenWhenPlaying), false);
-        PremiumizeKey = localSettingsService.ReadSetting(nameof(PremiumizeKey), string.Empty);
-
+        DebridServiceType = localSettingsService.ReadSetting(nameof(DebridServiceType), DebridServiceType.Premiumize);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
@@ -89,7 +88,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public StreamQualitySelection DefaultStreamQualitySelection { get; set; }
     [Reactive] public bool IncludeNsfw { get; set; }
     [Reactive] public bool EnterFullScreenWhenPlaying { get; set; }
-    [Reactive] public string PremiumizeKey { get; set; }
+    [Reactive] public DebridServiceType DebridServiceType { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {
@@ -108,6 +107,7 @@ internal class SettingsModel : ReactiveObject, ISettings
 public class SettingsViewModel : NavigatableViewModel
 {
     private readonly ITrackingServiceContext _trackingServiceContext;
+    private readonly IDebridServiceOptions _debridOptions;
 
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
@@ -123,17 +123,21 @@ public class SettingsViewModel : NavigatableViewModel
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
     public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
+    public List<DebridServiceType> DebridServices { get; } = Enum.GetValues<DebridServiceType>().Cast<DebridServiceType>().ToList();
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }
     public ICommand ConfigureProvider { get; }
+    public ICommand ConfigureDebridService { get; }
 
     public SettingsViewModel(ISettings settings,
                              ITrackingServiceContext trackingServiceContext,
                              IViewService viewService,
                              IUpdateService updateService,
-                             ILocalSettingsService localSettingsService)
+                             ILocalSettingsService localSettingsService,
+                             IDebridServiceOptions debridOptions)
     {
         _trackingServiceContext = trackingServiceContext;
+        _debridOptions = debridOptions;
 
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
@@ -150,6 +154,8 @@ public class SettingsViewModel : NavigatableViewModel
             await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
         });
         ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));
+        ConfigureDebridService = ReactiveCommand.CreateFromTask(() => viewService.ConfigureOptions(settings.DebridServiceType, t => debridOptions[t], (t, _) => debridOptions.Save(t)));
+        
         NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
 
         this.ObservableForProperty(x => x.SelectedProvider, x => x)

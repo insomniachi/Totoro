@@ -229,4 +229,25 @@ public class ViewService : IViewService, IEnableLogger
 
         return Unit.Default;
     }
+
+    public async Task<Unit> ConfigureOptions<T>(T debridServiceType, Func<T, ProviderOptions> getFunc, Action<T, ProviderOptions> saveFunc)
+    {
+        var vm = new ConfigureOptionsViewModel<T>(getFunc, saveFunc)
+        {
+            Type = debridServiceType,
+            Title = debridServiceType.ToString()
+        };
+
+        var result = await _contentDialogService.ShowDialog<ConfigureOptionsView, object>(vm, d =>
+        {
+            d.Title = vm.Title;
+            d.IsPrimaryButtonEnabled = true;
+            d.IsSecondaryButtonEnabled = true;
+            d.PrimaryButtonText = "Save";
+            d.SecondaryButtonText = "Cancel";
+            d.PrimaryButtonCommand = vm.Save;
+        });
+
+        return Unit.Default;
+    }
 }

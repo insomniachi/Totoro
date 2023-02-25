@@ -17,7 +17,7 @@ public class TotoroCommands : IEnableLogger
 
     public TotoroCommands(IViewService viewService,
                           INavigationService navigationService,
-                          IPremiumizeService premiumize)
+                          IDebridServiceContext debridServiceContext)
     {
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
 
@@ -65,14 +65,18 @@ public class TotoroCommands : IEnableLogger
             switch (model.State)
             {
                 case TorrentState.Unknown:
-                    var isCached = await premiumize.Check(model.MagnetLink);
+                    var isCached = await debridServiceContext.Check(model.MagnetLink);
                     model.State = isCached ? TorrentState.Cached : TorrentState.NotCached;
+                    if(isCached)
+                    {
+                        navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Torrent"] = model });
+                    }
                     break;
                 case TorrentState.Cached:
                     navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Torrent"] = model });
                     break;
                 case TorrentState.NotCached:
-                    var id = await premiumize.CreateTransfer(model.MagnetLink);
+                    var id = await debridServiceContext.CreateTransfer(model.MagnetLink);
                     model.State = TorrentState.Requested;
                     break;
             }

@@ -162,8 +162,18 @@
                         <FontIcon Glyph="&#xe705;" />
                     </labs:SettingsExpander.HeaderIcon>
                     <labs:SettingsExpander.Items>
-                        <labs:SettingsCard Description="API key" Header="Premiumize">
-                            <TextBox Width="200" Text="{x:Bind ViewModel.Settings.PremiumizeKey, Mode=TwoWay}" />
+                        <labs:SettingsCard
+                            Command="{x:Bind ViewModel.ConfigureDebridService}"
+                            Description="Select and cofigure debrid service"
+                            Header="Debrid Service"
+                            IsClickEnabled="True">
+                            <labs:SettingsCard.ActionIcon>
+                                <SymbolIcon Symbol="Setting" />
+                            </labs:SettingsCard.ActionIcon>
+                            <ComboBox
+                                Width="150"
+                                ItemsSource="{x:Bind ViewModel.DebridServices}"
+                                SelectedItem="{x:Bind ViewModel.Settings.DebridServiceType, Mode=TwoWay}" />
                         </labs:SettingsCard>
                         <labs:SettingsCard Description="Url" Header="Nyaa">
                             <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />

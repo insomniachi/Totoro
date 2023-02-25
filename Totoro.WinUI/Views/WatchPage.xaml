@@ -7,7 +7,7 @@
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
-    xmlns:s="using:Totoro.Core.Services"
+    xmlns:s="using:Totoro.Core.Services.Debrid"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">

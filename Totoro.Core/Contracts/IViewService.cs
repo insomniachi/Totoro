@@ -12,4 +12,5 @@ public interface IViewService
     Task<bool> Question(string title, string message);
     Task<Unit> Information(string title, string message);
     Task<Unit> ConfigureProvider(ProviderInfo providerType);
+    Task<Unit> ConfigureOptions<T>(T keyType, Func<T, ProviderOptions> getFunc, Action<T, ProviderOptions> saveFunc);
 }

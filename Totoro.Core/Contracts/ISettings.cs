@@ -20,7 +20,7 @@ public interface ISettings
     StreamQualitySelection DefaultStreamQualitySelection { get; set; }
     bool IncludeNsfw { get; set; }
     bool EnterFullScreenWhenPlaying { get; set; }
-    string PremiumizeKey { get; set; }
+    DebridServiceType DebridServiceType { get; set; }
     Task<Unit> UpdateUrls();
 }
 
