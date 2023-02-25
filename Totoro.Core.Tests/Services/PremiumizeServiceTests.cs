@@ -61,8 +61,7 @@ namespace Totoro.Core.Tests.Services
         private static IDebridService GetService()
         {
             var settingsMock = new Mock<ILocalSettingsService>();
-            settingsMock.Setup(x => x.ReadSetting(PremiumizeService.Key, string.Empty)).Returns(_apiKey);
-            return new PremiumizeService(_httpClient, settingsMock.Object);
+            return new PremiumizeService(_httpClient, Mock.Of<IDebridServiceOptions>());
         }
     }
 }

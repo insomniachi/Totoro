@@ -1,7 +1,6 @@
 ﻿using AnimDL.Core.Helpers;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
-using Humanizer;
 
 namespace Totoro.Core.Torrents;
 
@@ -21,21 +20,30 @@ public class NyaaCatalog : ITorrentCatalog
 
     public async IAsyncEnumerable<TorrentModel> Search(string query)
     {
-        var stream = await _httpClient.GetStreamAsync(_baseUrl, new Dictionary<string, string>
+        Stream stream;
+        try
         {
-            ["f"] = "2",
-            ["c"] = "1_0",
-            ["q"] = query,
-            ["s"] = "seeders",
-            ["o"] = "desc"
-        });
+            stream = await _httpClient.GetStreamAsync(_baseUrl, new Dictionary<string, string>
+            {
+                ["f"] = "2",
+                ["c"] = "1_0",
+                ["q"] = query,
+                ["s"] = "seeders",
+                ["o"] = "desc"
+            });
+        }
+        catch
+        {
+            yield break;
+        }
+
         var doc = new HtmlDocument();
         doc.Load(stream);
-
         var trimmedBaseUrl = _baseUrl.TrimEnd('/');
         foreach (var item in doc.QuerySelectorAll("table tr .success"))
         {
-            var type = item.ChildNodes[1].ChildNodes[1].ChildNodes[1].Attributes["src"].Value;
+            var image = item.ChildNodes[1].ChildNodes[1].ChildNodes[1].Attributes["src"].Value;
+            var category = item.ChildNodes[1].ChildNodes[1].Attributes["title"].Value;
             var name = item.ChildNodes[3].ChildNodes.Count <= 3
                 ? item.ChildNodes[3].ChildNodes[1].InnerHtml
                 : item.ChildNodes[3].ChildNodes[3].InnerHtml;
@@ -49,7 +57,8 @@ public class NyaaCatalog : ITorrentCatalog
 
             yield return new TorrentModel
             {
-                Category = trimmedBaseUrl + type,
+                CategoryImage = trimmedBaseUrl + image,
+                Category = category,
                 Name = name,
                 Link = trimmedBaseUrl + link,
                 MagnetLink = magnet,

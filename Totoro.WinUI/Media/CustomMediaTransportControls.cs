@@ -15,6 +15,7 @@ public class CustomMediaTransportControls : MediaTransportControls
     private readonly Subject<Unit> _onDynamicSkipIntro = new();
     private readonly Subject<bool> _onFullWindowRequested = new();
     private readonly Subject<Unit> _onSubmitTimeStamp = new();
+    private readonly Subject<Unit> _onAddCc = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
     private Button _dynamicSkipIntroButton;
@@ -109,6 +110,7 @@ public class CustomMediaTransportControls : MediaTransportControls
     public IObservable<Unit> OnNextTrack => _onNextTrack;
     public IObservable<Unit> OnPrevTrack => _onPrevTrack;
     public IObservable<Unit> OnSkipIntro => _onSkipIntro;
+    public IObservable<Unit> OnAddCc => _onAddCc;
     public IObservable<string> OnQualityChanged => _onQualityChanged;
     public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
@@ -135,6 +137,7 @@ public class CustomMediaTransportControls : MediaTransportControls
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
         var submitTimeStamp = GetTemplateChild("SubmitTimeStampsButton") as AppBarButton;
         var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
+        var addccButon = GetTemplateChild("AddCCButton") as AppBarButton;
         _fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;
@@ -144,6 +147,7 @@ public class CustomMediaTransportControls : MediaTransportControls
         nextTrackButton.Click += (_, _) => _onNextTrack.OnNext(Unit.Default);
         skipIntroButton.Click += (_, _) => _onSkipIntro.OnNext(Unit.Default);
         submitTimeStamp.Click += (_, _) => _onSubmitTimeStamp.OnNext(Unit.Default);
+        addccButon.Click += (_, _) => _onAddCc.OnNext(Unit.Default);
         fullWindowButton.Click += (_, _) =>
         {
             _isFullWindow ^= true;

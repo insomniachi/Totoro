@@ -24,7 +24,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     FontSize="30"
-                    Text="API key for Premiumize not present, Go to settings page to set api key."
+                    Text="API key for Debrid service is not found, Go to settings page to set api key."
                     TextWrapping="Wrap">
                     <TextBlock.Foreground>
                         <SolidColorBrush Opacity="0.3" Color="White" />
@@ -92,7 +92,8 @@
                                         Height="28"
                                         CacheMode="BitmapCache"
                                         IsCacheEnabled="True"
-                                        Source="{Binding Category}" />
+                                        Source="{Binding CategoryImage}"
+                                        ToolTipService.ToolTip="{Binding Category}" />
                                 </DataTemplate>
                             </ctk:DataGridTemplateColumn.CellTemplate>
                         </ctk:DataGridTemplateColumn>
@@ -110,9 +111,15 @@
                         </ctk:DataGridTemplateColumn>
                         <ctk:DataGridTextColumn
                             Binding="{Binding Seeders}"
+                            FontWeight="Bold"
+                            Foreground="Green"
                             Header="Seeders"
                             Tag="Seeders" />
-                        <ctk:DataGridTextColumn Binding="{Binding Leeches}" Header="Leeches" />
+                        <ctk:DataGridTextColumn
+                            Binding="{Binding Leeches}"
+                            FontWeight="Bold"
+                            Foreground="Red"
+                            Header="Leeches" />
                         <ctk:DataGridTextColumn Binding="{Binding Completed}" Header="Completed" />
                         <ctk:DataGridTemplateColumn Header="Actions">
                             <ctk:DataGridTemplateColumn.CellTemplate>

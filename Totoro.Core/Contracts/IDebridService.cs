@@ -6,7 +6,6 @@ public interface IDebridService
 {
     DebridServiceType Type { get; }
     Task<bool> Check(string magneticLink);
-    void SetApiKey(string apiKey);
     Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magneticLink);
     Task<IEnumerable<Transfer>> GetTransfers();
     Task<string> CreateTransfer(string magneticLink);
@@ -16,7 +15,6 @@ public interface IDebridService
 public interface IDebridServiceContext
 {
     Task<bool> Check(string magneticLink);
-    void SetApiKey(string apiKey);
     Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magneticLink);
     Task<IEnumerable<Transfer>> GetTransfers();
     Task<string> CreateTransfer(string magneticLink);

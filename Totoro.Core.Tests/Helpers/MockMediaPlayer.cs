@@ -25,5 +25,7 @@ namespace Totoro.Core.Tests.Helpers
         public Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation) => Task.FromResult(Unit.Default);
         public void SetMedia(string url) { }
         public Task<Unit> SetMediaFromFile(string localFile) => Task.FromResult(Unit.Default);
+
+        public Task SetSubtitleFromFile(string file) => Task.CompletedTask;
     }
 }

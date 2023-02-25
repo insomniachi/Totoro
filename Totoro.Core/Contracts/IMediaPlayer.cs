@@ -14,4 +14,5 @@ public interface IMediaPlayer : IDisposable
     Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation);
     Task<Unit> SetMediaFromFile(string localFile);
     void SetMedia(string url);
+    Task SetSubtitleFromFile(string file);
 }

@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Concurrency;
 using AnimDL.Core.Models.Interfaces;
 using FuzzySharp;
+using MonoTorrent;
 using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services.Debrid;
@@ -197,25 +198,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             var torrent = (TorrentModel)parameters["Torrent"];
             UseTorrents = true;
-            var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
-            if(parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle) is { } title)
-            {
-                await TrySetAnime(title.Value);
-            }
-            if(parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } episode)
-            {
-                if(int.TryParse(episode.Value, out var ep))
-                {
-                    CurrentEpisode = ep;
-                }
-            }
-
-            Links = (await _premiumize.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
-
-            if(Links.Count == 1)
-            {
-                SelectedLink = Links[0];
-            }
+            await InitializeFromTorrent(torrent);
         }
     }
 
@@ -295,6 +278,18 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Subscribe(x =>
             {
+                var parsedResult = AnitomySharp.AnitomySharp.Parse(x.FileName);
+                if (parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } epString &&
+                   int.TryParse(epString.Value, out var ep))
+                {
+                    // hack
+                    _episodesCache.EditDiff(new[] { ep });
+
+                    RxApp.MainThreadScheduler.Schedule(() =>
+                    {
+                        CurrentEpisode = ep;
+                    });
+                }
                 MediaPlayer.SetMedia(x.StreamLink);
                 MediaPlayer.Play();
             });
@@ -306,7 +301,10 @@ public partial class WatchViewModel : NavigatableViewModel
             .Where(ep => ep > 0)
             .Do(_ =>
             {
-                MediaPlayer.Pause();
+                if(CurrentPlayerTime > 60)
+                {
+                    MediaPlayer.Pause();
+                }
                 CurrentPlayerTime = 0;
             });
 
@@ -840,5 +838,21 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         return _playbackStateStorage.GetTime(Anime.Id, CurrentEpisode ?? 0);
+    }
+
+    private async Task InitializeFromTorrent(TorrentModel torrent)
+    {
+        var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
+        if (parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle) is { } title)
+        {
+            await TrySetAnime(title.Value);
+        }
+
+        Links = (await _premiumize.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
+
+        if (Links.Count == 1)
+        {
+            SelectedLink = Links[0];
+        }
     }
 }

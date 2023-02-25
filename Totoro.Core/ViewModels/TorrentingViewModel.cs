@@ -74,13 +74,23 @@ public class TorrentingViewModel : NavigatableViewModel
     {
         IsLoading = true;
 
-        _catalog.Recents()
-                .ToListAsync()
-                .AsTask()
-                .ToObservable()
-                .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
+        if(parameters.ContainsKey("Anime"))
+        {
+            SortMode = SortMode.Seeders;
+            var anime = (AnimeModel)parameters["Anime"];
+            Query = $"{anime.Title} - {((anime.Tracking.WatchedEpisodes ?? 0) + 1).ToString().PadLeft(2, '0')}";
+            Search.Execute(Unit.Default);
+        }
+        else
+        {
+            _catalog.Recents()
+                    .ToListAsync()
+                    .AsTask()
+                    .ToObservable()
+                    .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
+        }
 
         return Task.CompletedTask;
     }

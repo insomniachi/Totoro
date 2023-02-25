@@ -280,6 +280,14 @@
                                                     <FontIcon Glyph="&#xED1E;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <AppBarButton
+                                                x:Name="AddCCButton"
+                                                Style="{StaticResource AppBarButtonStyle}"
+                                                Visibility="Visible">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xed11;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                         </StackPanel>
 
                                         <StackPanel

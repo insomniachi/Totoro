@@ -63,10 +63,21 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         return Unit.Default;
     }
 
+    public async Task SetSubtitleFromFile(string file)
+    {
+        var sf = await StorageFile.GetFileFromPathAsync(file);
+        var tts = TimedTextSource.CreateFromStream(await sf.OpenReadAsync());
+        tts.Resolved += OnTtsResolved;
+        var source = _player.Source as MediaSource;
+        source.ExternalTimedTextSources.Add(tts);
+    }
+
     private void OnTtsResolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)
     {
         if (!_ttsMap.TryGetValue(sender, out string lang))
         {
+            var index = args.Tracks[0].PlaybackItem.TimedMetadataTracks.IndexOf(args.Tracks[0]);
+            args.Tracks[0].PlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.PlatformPresented);
             return;
         }
 

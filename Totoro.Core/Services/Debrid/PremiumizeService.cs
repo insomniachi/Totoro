@@ -6,8 +6,9 @@ namespace Totoro.Core.Services.Debrid;
 
 public class DirectDownloadLink
 {
+
     [JsonPropertyName("path")]
-    public string FileName { get; set; }
+    public string Path { get; set; }
 
     [JsonPropertyName("size")]
     public long Size { get; set; }
@@ -17,7 +18,10 @@ public class DirectDownloadLink
 
     [JsonPropertyName("stream_link")]
     public string StreamLink { get; set; }
+
+    public string FileName => System.IO.Path.GetFileName(Path);
 }
+
 
 public class Transfer
 {
@@ -55,9 +59,12 @@ public class PremiumizeService : IDebridService
     public void SetApiKey(string apiKey)
     {
         _apiKey = apiKey;
+        IsPremium()
+            .ToObservable()
+            .Subscribe(x => IsAuthenticated = x);
     }
 
-    public bool IsAuthenticated => !string.IsNullOrEmpty(_apiKey);
+    public bool IsAuthenticated { get; private set; }
     public string ApiKey => _options[Type].GetString("Key", "");
 
     public DebridServiceType Type => DebridServiceType.Premiumize;
@@ -125,5 +132,21 @@ public class PremiumizeService : IDebridService
         var jObject = JsonNode.Parse(json);
 
         return jObject?["transfers"]?.Deserialize<List<Transfer>>() ?? Enumerable.Empty<Transfer>();
+    }
+
+    private async Task<bool> IsPremium()
+    {
+        if (string.IsNullOrEmpty(_apiKey))
+        {
+            return false;
+        }
+
+        var json = await _httpClient.GetStringAsync(_api + "/account/info", new Dictionary<string, string>
+        {
+            ["apikey"] = _apiKey,
+        });
+        var jObject = JsonNode.Parse(json);
+        long premiumUntil = ((long?)jObject?["premium_until"]?.AsValue()) ?? 0;
+        return premiumUntil > 0;
     }
 }

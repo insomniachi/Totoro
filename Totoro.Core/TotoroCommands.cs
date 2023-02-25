@@ -66,20 +66,22 @@ public class TotoroCommands : IEnableLogger
             {
                 case TorrentState.Unknown:
                     var isCached = await debridServiceContext.Check(model.MagnetLink);
-                    model.State = isCached ? TorrentState.Cached : TorrentState.NotCached;
+                    model.State = isCached ? TorrentState.Unknown : TorrentState.NotCached;
                     if(isCached)
                     {
                         navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Torrent"] = model });
                     }
-                    break;
-                case TorrentState.Cached:
-                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Torrent"] = model });
                     break;
                 case TorrentState.NotCached:
                     var id = await debridServiceContext.CreateTransfer(model.MagnetLink);
                     model.State = TorrentState.Requested;
                     break;
             }
+        });
+
+        SearchTorrent = ReactiveCommand.Create<AnimeModel>(model =>
+        {
+            navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = model });
         });
 
         ConfigureProvider = ReactiveCommand.CreateFromTask<ProviderInfo>(viewService.ConfigureProvider);
@@ -91,6 +93,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand PlayVideo { get; }
     public ICommand ConfigureProvider { get; }
     public ICommand TorrentCommand { get; }
+    public ICommand SearchTorrent { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

@@ -2,6 +2,7 @@
 using Totoro.WinUI.Media;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core;
+using Windows.Storage.Pickers;
 
 namespace Totoro.WinUI.Views;
 
@@ -77,6 +78,38 @@ public sealed partial class WatchPage : WatchPageBase
             TransportControls
             .OnSubmitTimeStamp
             .InvokeCommand(ViewModel.SubmitTimeStamp)
+            .DisposeWith(d);
+
+            TransportControls
+            .OnAddCc
+            .Subscribe(async _ =>
+            {
+                // Create a file picker
+                var openPicker = new FileOpenPicker();
+
+                // Retrieve the window handle (HWND) of the current WinUI 3 window.
+                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+
+                // Initialize the file picker with the window handle (HWND).
+                WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
+
+                // Set options for your file picker
+                openPicker.ViewMode = PickerViewMode.Thumbnail;
+                openPicker.FileTypeFilter.Add("*");
+
+                ViewModel.MediaPlayer.Pause();
+
+                // Open the picker for the user to pick a file
+                var file = await openPicker.PickSingleFileAsync();
+
+                if(file is not null)
+                {
+                    await ViewModel.MediaPlayer.SetSubtitleFromFile(file.Path);
+                }
+
+                ViewModel.MediaPlayer.Play();
+
+            })
             .DisposeWith(d);
         });
     }

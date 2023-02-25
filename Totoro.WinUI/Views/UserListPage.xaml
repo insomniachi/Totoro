@@ -110,6 +110,14 @@
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                                 <MenuFlyoutItem
+                                                    Command="{x:Bind root:App.Commands.SearchTorrent}"
+                                                    CommandParameter="{x:Bind}"
+                                                    Text="Search Torrents">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <SymbolIcon Symbol="Globe" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem
                                                     Command="{x:Bind root:App.Commands.More}"
                                                     CommandParameter="{x:Bind Id}"
                                                     Text="More">
@@ -291,7 +299,7 @@
                     Text="Not connected to any Anime List service, Go to settings page to connect."
                     TextWrapping="Wrap">
                     <TextBlock.Foreground>
-                        <SolidColorBrush Opacity="0.3" Color="White" /> 
+                        <SolidColorBrush Opacity="0.3" Color="White" />
                     </TextBlock.Foreground>
                 </TextBlock>
             </Grid>

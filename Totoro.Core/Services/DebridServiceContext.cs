@@ -25,6 +25,4 @@ internal class DebridServiceContext : IDebridServiceContext
     public Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magneticLink) => _services[_settings.DebridServiceType].GetDirectDownloadLinks(magneticLink);
 
     public Task<IEnumerable<Transfer>> GetTransfers() => _services[_settings.DebridServiceType].GetTransfers();
-
-    public void SetApiKey(string apiKey) => _services[_settings.DebridServiceType].SetApiKey(apiKey);
 }

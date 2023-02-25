@@ -9,7 +9,6 @@ public interface ITorrentCatalog
 public enum TorrentState
 {
     Unknown,
-    Cached,
     NotCached,
     Requested
 }
@@ -24,6 +23,7 @@ public class TorrentModel : ReactiveObject
     public int Seeders { get; set; }
     public int Leeches { get; set; }
     public int Completed { get; set; }
+    public string CategoryImage { get; set; }
     public string Category { get; set; }
     [Reactive] public TorrentState State { get; set; }
 }

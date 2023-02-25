@@ -44,11 +44,11 @@ public sealed partial class TorrentingView : TorrentingViewBase
 
     private void DataGrid_Sorting(object sender, DataGridColumnEventArgs e)
     {
-        if (e.Column.Tag.ToString() == "Time")
+        if (e.Column.Tag is "Time")
         {
             ViewModel.SortMode = SortMode.Date;
         }
-        else if(e.Column.Tag.ToString() == "Seeders")
+        else if(e.Column.Tag is "Seeders")
         {
             ViewModel.SortMode = SortMode.Seeders;
         }
@@ -66,8 +66,7 @@ public class TorrentStateConverter : IValueConverter
 
         return state switch
         {
-            TorrentState.Unknown => "Check",
-            TorrentState.Cached => "Play",
+            TorrentState.Unknown => "Try Play",
             TorrentState.NotCached => "Download",
             TorrentState.Requested => "Caching",
             _ => throw new UnreachableException()
