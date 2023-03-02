@@ -23,7 +23,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
             .Where(_ => settings.AutoUpdate)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(_ => httpClient.GetStreamAsync("https://api.github.com/repos/athulrajts/AnimDL.GUI/releases/latest"))
+            .SelectMany(_ => httpClient.GetStreamAsync("https://api.github.com/repos/insomniachi/totoro/releases/latest"))
             .Select(x => JsonNode.Parse(x))
             .Select(jsonNode => new VersionInfo()
             {

@@ -131,6 +131,8 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     public async Task SetMedia(string url)
     {
+        //_player.Source = MediaSource.CreateFromUri(new(url));
+        //await Task.Delay(1);
         _ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
         {
             ReadAheadBufferEnabled = true,
@@ -143,7 +145,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
                 { "reconnect_on_network_error", 1 },
             }
         });
-        
+
         var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
         mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
         _player.Source = mediaSource;

@@ -91,7 +91,7 @@ public class ActivationService : IActivationService, IEnableLogger
     {
         _themeSelectorService.Initialize();
         await _pluginManager.Initialize();
-        _toastService.Start();
+        //_toastService.Start();
     }
 
     private Task StartupAsync()
