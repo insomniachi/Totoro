@@ -31,9 +31,6 @@ jobs:
 
         -   name: 'Build MSI'
             run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
-
-        -   name: 'Build Bootstrapper'
-            run: msbuild ${{ env.BOOTSTRAPPER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
   
         -   name: 'Create release'
             id: create_release
@@ -43,13 +40,6 @@ jobs:
             with:
                 tag_name: ${{ steps.version.outputs.version-without-v }}
                 release_name: ${{ steps.version.outputs.version-without-v }}
-        
-        -   name: 'Add Bootstrapper to release'
-            uses: csexton/release-asset-action@v2
-            with:
-                github-token: ${{ secrets.GITHUB_TOKEN }}
-                pattern: Totoro.Installer/bin/Release/Totoro.exe
-                release-url: ${{ steps.create_release.outputs.upload_url }}
 
         -   name: 'Add MSI to release'
             uses: csexton/release-asset-action@v2
