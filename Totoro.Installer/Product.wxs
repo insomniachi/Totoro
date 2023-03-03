@@ -22,8 +22,8 @@
 		
 		<MediaTemplate EmbedCab="yes"/>
 
-		<Icon Id="Icon.ico"
-			  SourceFile="$(var.Totoro.WinUI.ProjectDir)\Assets\WindowIcon.ico"/>
+		<!--<Icon Id="Icon.ico"
+			  SourceFile="$(var.Totoro.WinUI.ProjectDir)\Assets\WindowIcon.ico"/>-->
 
 		<Property Id="ARPPRODUCTICON">Icon.ico</Property>
 
