@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.IO;
+using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -14,7 +15,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private readonly HttpClient _httpClient = new();
     private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
     private bool _isHardSub;
-    private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
+    //private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
 
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -66,8 +67,10 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     public async Task SetSubtitleFromFile(string file)
     {
+        var fileName = Path.GetFileName(file);
         var sf = await StorageFile.GetFileFromPathAsync(file);
         var tts = TimedTextSource.CreateFromStream(await sf.OpenReadAsync());
+        _ttsMap[tts] = fileName.ToLower();
         tts.Resolved += OnTtsResolved;
         var source = _player.Source as MediaSource;
         source.ExternalTimedTextSources.Add(tts);
@@ -77,14 +80,14 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     {
         if (!_ttsMap.TryGetValue(sender, out string lang))
         {
-            var index = args.Tracks[0].PlaybackItem.TimedMetadataTracks.IndexOf(args.Tracks[0]);
-            args.Tracks[0].PlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.PlatformPresented);
             return;
         }
 
         args.Tracks[0].Label = lang;
 
-        if (lang == "en-US" && !_isHardSub)
+        if (!_isHardSub && (lang == "en-US" || 
+            lang.Contains("english") ||
+            lang.Contains("eng")))
         {
             var index = args.Tracks[0].PlaybackItem.TimedMetadataTracks.IndexOf(args.Tracks[0]);
             args.Tracks[0].PlaybackItem.TimedMetadataTracks.SetPresentationMode((uint)index, TimedMetadataTrackPresentationMode.PlatformPresented);
@@ -129,25 +132,25 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     }
 
-    public async Task SetMedia(string url)
+    public ValueTask SetMedia(string url)
     {
-        //_player.Source = MediaSource.CreateFromUri(new(url));
-        //await Task.Delay(1);
-        _ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
-        {
-            ReadAheadBufferEnabled = true,
-            ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
-            ReadAheadBufferSize = 50 * 1024 * 1024,
-            FFmpegOptions = new Windows.Foundation.Collections.PropertySet
-            {
-                { "reconnect", 1 },
-                { "reconnect_streamed", 1 },
-                { "reconnect_on_network_error", 1 },
-            }
-        });
+        _player.Source = MediaSource.CreateFromUri(new(url));
+        return ValueTask.CompletedTask;
+        //_ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
+        //{
+        //    ReadAheadBufferEnabled = true,
+        //    ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
+        //    ReadAheadBufferSize = 50 * 1024 * 1024,
+        //    FFmpegOptions = new Windows.Foundation.Collections.PropertySet
+        //    {
+        //        { "reconnect", 1 },
+        //        { "reconnect_streamed", 1 },
+        //        { "reconnect_on_network_error", 1 },
+        //    }
+        //});
 
-        var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
-        mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
-        _player.Source = mediaSource;
+        //var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
+        //mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
+        //_player.Source = mediaSource;
     }
 }

@@ -13,6 +13,6 @@ public interface IMediaPlayer : IDisposable
     IObservable<TimeSpan> DurationChanged { get; }
     Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation);
     Task<Unit> SetMediaFromFile(string localFile);
-    Task SetMedia(string url);
+    ValueTask SetMedia(string url);
     Task SetSubtitleFromFile(string file);
 }

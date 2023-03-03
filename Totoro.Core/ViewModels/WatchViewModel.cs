@@ -5,6 +5,7 @@ using MonoTorrent;
 using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services.Debrid;
+using Totoro.Core.Torrents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 
 namespace Totoro.Core.ViewModels;
@@ -20,7 +21,8 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ITimestampsService _timestampsService;
     private readonly ILocalMediaService _localMediaService;
     private readonly IStreamPageMapper _streamPageMapper;
-    private readonly IDebridServiceContext _premiumize;
+    private readonly IDebridServiceContext _debridService;
+    private readonly ITorrentCatalog _torrentCatalog;
     private readonly SourceList<int> _episodesCache = new();
     private readonly ReadOnlyObservableCollection<int> _episodes;
     private readonly ProviderOptions _providerOptions;
@@ -44,7 +46,8 @@ public partial class WatchViewModel : NavigatableViewModel
                           ITimestampsService timestampsService,
                           ILocalMediaService localMediaService,
                           IStreamPageMapper streamPageMapper,
-                          IDebridServiceContext debridServiceContext)
+                          IDebridServiceContext debridServiceContext,
+                          ITorrentCatalog torrentCatalog)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -53,7 +56,8 @@ public partial class WatchViewModel : NavigatableViewModel
         _discordRichPresense = discordRichPresense;
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
-        _premiumize = debridServiceContext;
+        _debridService = debridServiceContext;
+        _torrentCatalog = torrentCatalog;
         _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
         _timestampsService = timestampsService;
@@ -153,6 +157,7 @@ public partial class WatchViewModel : NavigatableViewModel
     public TimeSpan TimeRemaining => TimeSpan.FromSeconds(CurrentMediaDuration - CurrentPlayerTime);
     public IMediaPlayer MediaPlayer { get; }
     public bool AutoFullScreen => _settings.EnterFullScreenWhenPlaying;
+    public TorrentModel Torrent { get; private set; }
 
     public ICommand NextEpisode { get; }
     public ICommand PrevEpisode { get; }
@@ -196,9 +201,9 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else if(parameters.ContainsKey("Torrent"))
         {
-            var torrent = (TorrentModel)parameters["Torrent"];
+            Torrent = (TorrentModel)parameters["Torrent"];
             UseTorrents = true;
-            await InitializeFromTorrent(torrent);
+            await InitializeFromTorrent(Torrent);
         }
     }
 
@@ -290,8 +295,17 @@ public partial class WatchViewModel : NavigatableViewModel
                         CurrentEpisode = ep;
                     });
                 }
-                await MediaPlayer.SetMedia(x.Link);
+                await MediaPlayer.SetMedia(x.StreamLink);
                 MediaPlayer.Play();
+
+                if(_torrentCatalog is ISubtitlesDownloader isd)
+                {
+                    var subtitles = await isd.DownloadSubtitles(Torrent.Link);
+                    foreach (var item in subtitles)
+                    {
+                        await MediaPlayer.SetSubtitleFromFile(item.Value);
+                    }
+                }
             });
     }
 
@@ -848,7 +862,7 @@ public partial class WatchViewModel : NavigatableViewModel
             await TrySetAnime(title.Value);
         }
 
-        Links = (await _premiumize.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
+        Links = (await _debridService.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
 
         if (Links.Count == 1)
         {

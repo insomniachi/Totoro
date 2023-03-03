@@ -84,7 +84,7 @@
                     SelectionMode="Single"
                     Sorting="DataGrid_Sorting">
                     <ctk:DataGrid.Columns>
-                        <ctk:DataGridTemplateColumn Header="Category">
+                        <!--<ctk:DataGridTemplateColumn Header="Category">
                             <ctk:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ctk:ImageEx
@@ -96,10 +96,13 @@
                                         ToolTipService.ToolTip="{Binding Category}" />
                                 </DataTemplate>
                             </ctk:DataGridTemplateColumn.CellTemplate>
-                        </ctk:DataGridTemplateColumn>
-                        <ctk:DataGridTextColumn Binding="{Binding Name}" Header="Name" />
+                        </ctk:DataGridTemplateColumn>-->
+                        <ctk:DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Name}"
+                            Header="Name" />
                         <ctk:DataGridTextColumn Binding="{Binding Size}" Header="Size" />
-                        <ctk:DataGridTemplateColumn
+                        <!--<ctk:DataGridTemplateColumn
                             CanUserSort="True"
                             Header="Time"
                             Tag="Time">
@@ -108,7 +111,7 @@
                                     <TextBlock VerticalAlignment="Center" Text="{Binding Date, Converter={StaticResource HumanizeConverter}}" />
                                 </DataTemplate>
                             </ctk:DataGridTemplateColumn.CellTemplate>
-                        </ctk:DataGridTemplateColumn>
+                        </ctk:DataGridTemplateColumn>-->
                         <ctk:DataGridTextColumn
                             Binding="{Binding Seeders}"
                             FontWeight="Bold"
@@ -120,8 +123,8 @@
                             FontWeight="Bold"
                             Foreground="Red"
                             Header="Leeches" />
-                        <ctk:DataGridTextColumn Binding="{Binding Completed}" Header="Completed" />
-                        <ctk:DataGridTemplateColumn Header="Actions">
+                        <!--<ctk:DataGridTextColumn Binding="{Binding Completed}" Header="Completed" />-->
+                        <ctk:DataGridTemplateColumn Width="200" Header="Actions">
                             <ctk:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button

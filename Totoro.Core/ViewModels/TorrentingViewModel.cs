@@ -48,7 +48,7 @@ public class TorrentingViewModel : NavigatableViewModel
 
     [Reactive] public string Query { get; set; }
     [Reactive] public bool IsLoading { get; set; }
-    [Reactive] public SortMode SortMode { get; set; } = SortMode.Date;
+    [Reactive] public SortMode SortMode { get; set; } = SortMode.Seeders;
 
     public TorrentModel PastedTorrent { get; } = new();
 

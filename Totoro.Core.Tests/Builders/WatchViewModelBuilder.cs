@@ -1,4 +1,5 @@
 ﻿using Totoro.Core.Tests.Helpers;
+using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Tests.Builders;
@@ -32,7 +33,9 @@ internal class WatchViewModelBuilder
                                   MediaPlayer,
                                   _timestampsServiceMock.Object,
                                   Mock.Of<ILocalMediaService>(),
-                                  Mock.Of<IStreamPageMapper>());
+                                  Mock.Of<IStreamPageMapper>(),
+                                  Mock.Of<IDebridServiceContext>(),
+                                  Mock.Of<ITorrentCatalog>());
     }
 
     internal WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)

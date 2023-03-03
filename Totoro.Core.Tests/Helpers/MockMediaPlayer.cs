@@ -23,7 +23,7 @@ namespace Totoro.Core.Tests.Helpers
         public void Play(double offsetInSeconds) { }
         public void Seek(TimeSpan ts) { }
         public Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation) => Task.FromResult(Unit.Default);
-        public Task SetMedia(string url) => Task.CompletedTask;
+        public ValueTask SetMedia(string url) => ValueTask.CompletedTask;
         public Task<Unit> SetMediaFromFile(string localFile) => Task.FromResult(Unit.Default);
 
         public Task SetSubtitleFromFile(string file) => Task.CompletedTask;

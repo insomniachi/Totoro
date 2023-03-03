@@ -26,4 +26,11 @@ public class TorrentCatalogTests
             _testOutputHelper.WriteLine(JsonSerializer.Serialize(item, _serializerOptions));
         }
     }
+
+    [Fact]
+    public async Task ToshoSubtitles()
+    {
+        var catalog = new AnimeToshoCatalog(_httpClient);
+        var result = await catalog.GetSubtitles("https://mirror.animetosho.org/view/subsplease-dungeon-ni-deai-wo-motomeru-no-wa.1746767");
+    }
 }

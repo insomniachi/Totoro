@@ -2,17 +2,23 @@
 using AnimDL.Core.Helpers;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using SharpCompress.Archives;
+using SharpCompress.Archives.SevenZip;
 
 namespace Totoro.Core.Torrents;
 
-internal partial class AnimeToshoCatalog : ITorrentCatalog
+public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader
 {
     private readonly string _baseUrl = @"https://mirror.animetosho.org/";
     private readonly HttpClient _httpClient;
+    private readonly string _subtitlesFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "ApplicationData", "TempSubtitles");
+    private readonly string _zipFile;
 
     public AnimeToshoCatalog(HttpClient httpClient)
     {
         _httpClient = httpClient;
+        _zipFile = Path.Combine(_subtitlesFolder, "subtitles.7z");
+        Directory.CreateDirectory(_subtitlesFolder);
     }
 
     public async IAsyncEnumerable<TorrentModel> Recents()
@@ -29,6 +35,7 @@ internal partial class AnimeToshoCatalog : ITorrentCatalog
             yield return item;
         }
     }
+
     public async IAsyncEnumerable<TorrentModel> Search(string query)
     {
         var stream = await _httpClient.GetStreamAsync(_baseUrl.TrimEnd('/') + "/search" , new Dictionary<string, string>
@@ -54,6 +61,61 @@ internal partial class AnimeToshoCatalog : ITorrentCatalog
         {
             yield return item;
         }
+    }
+
+    public async Task<IEnumerable<KeyValuePair<string, string>>> DownloadSubtitles(string url)
+    {
+        if(File.Exists(_zipFile))
+        {
+            foreach (var item in Directory.EnumerateFileSystemEntries(_subtitlesFolder))
+            {
+                File.Delete(item);
+            }
+        }
+
+        var zip = await GetSubtitles(url);
+
+        if(string.IsNullOrEmpty(zip))
+        {
+            return Enumerable.Empty<KeyValuePair<string, string>>();
+        }
+
+        using var s = await _httpClient.GetStreamAsync(zip);
+        using var fs = new FileStream(_zipFile, FileMode.OpenOrCreate);
+        try
+        {
+            await s.CopyToAsync(fs);
+            fs.Dispose();
+            var result = new List<KeyValuePair<string,string>>();
+            using var archive = SevenZipArchive.Open(_zipFile);
+            foreach (var item in archive.Entries.Where(x => x.Key.EndsWith(".ass") || x.Key.EndsWith(".srt") || x.Key.EndsWith(".vtt")))
+            {
+                result.Add(new(item.Key, Path.Combine(_subtitlesFolder, item.Key)));
+                item.WriteToDirectory(_subtitlesFolder);
+            }
+
+            return result;
+        }
+        catch { }
+
+        return Enumerable.Empty<KeyValuePair<string, string>>();
+    }
+
+    public async Task<string> GetSubtitles(string url)
+    {
+        var stream = await _httpClient.GetStreamAsync(url);
+        var doc = new HtmlDocument();
+        doc.Load(stream);
+
+        foreach (var item in doc.DocumentNode.Descendants("a"))
+        {
+            if(item.InnerHtml?.Contains("All Attachments") == true)
+            {
+                return item.Attributes["href"].Value;
+            }
+        }
+
+        return string.Empty;
     }
 
     private static IEnumerable<TorrentModel> Parse(Stream stream)

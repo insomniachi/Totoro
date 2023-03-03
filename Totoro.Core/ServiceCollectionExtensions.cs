@@ -64,7 +64,7 @@ namespace Totoro.Core
         public static IServiceCollection AddTorrenting(this IServiceCollection services)
         {
             services.AddTransient<IDebridService, PremiumizeService>();
-            services.AddTransient<ITorrentCatalog, NyaaCatalog>();
+            services.AddTransient<ITorrentCatalog, AnimeToshoCatalog>();
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
             services.AddSingleton<IDebridServiceOptions, DebridServiceOptions>();
 
