@@ -14,15 +14,17 @@ public class TorrentingViewModel : NavigatableViewModel
 {
     private readonly IDebridServiceContext _debridServiceContext;
     private readonly ITorrentCatalog _catalog;
+    private readonly IAnimeIdService _animeIdService;
     private readonly SourceCache<TorrentModel, string> _torrentsCache = new(x => x.Link);
     private readonly ReadOnlyObservableCollection<TorrentModel> _torrents;
 
     public TorrentingViewModel(IDebridServiceContext debridServiceContext,
-                               ITorrentCatalog catalog)
+                               ITorrentCatalog catalog,
+                               IAnimeIdService animeIdService)
     {
         _debridServiceContext = debridServiceContext;
         _catalog = catalog;
-
+        _animeIdService = animeIdService;
         var sort = this.WhenAnyValue(x => x.SortMode)
             .Select(sort => sort switch
             {
@@ -51,7 +53,6 @@ public class TorrentingViewModel : NavigatableViewModel
     [Reactive] public SortMode SortMode { get; set; } = SortMode.Seeders;
 
     public TorrentModel PastedTorrent { get; } = new();
-
     public bool IsAuthenticted => _debridServiceContext.IsAuthenticated;
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
 
@@ -70,7 +71,7 @@ public class TorrentingViewModel : NavigatableViewModel
                 .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
     }
 
-    public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
+    public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         IsLoading = true;
 
@@ -78,8 +79,22 @@ public class TorrentingViewModel : NavigatableViewModel
         {
             SortMode = SortMode.Seeders;
             var anime = (AnimeModel)parameters["Anime"];
-            Query = $"{anime.Title} - {((anime.Tracking.WatchedEpisodes ?? 0) + 1).ToString().PadLeft(2, '0')}";
-            Search.Execute(Unit.Default);
+            Query = GetQueryText(anime);
+            if (_catalog is IIndexedTorrentCatalog itc && anime is not null)
+            {
+                var id = await _animeIdService.GetId(anime.Id);
+                itc.Search(Query, id)
+                   .ToListAsync()
+                   .AsTask()
+                   .ToObservable()
+                   .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
+                   .ObserveOn(RxApp.MainThreadScheduler)
+                   .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
+            }
+            else
+            {
+                OnSearch();
+            }
         }
         else
         {
@@ -91,7 +106,17 @@ public class TorrentingViewModel : NavigatableViewModel
                     .ObserveOn(RxApp.MainThreadScheduler)
                     .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
         }
+    }
 
-        return Task.CompletedTask;
+    private static string GetQueryText(AnimeModel anime)
+    {
+        var watchedEpisodes = anime.Tracking?.WatchedEpisodes ?? 0;
+
+        if(watchedEpisodes == anime.AiredEpisodes)
+        {
+            return anime.Title;
+        }
+
+        return $"{anime.Title} - {(watchedEpisodes + 1).ToString().PadLeft(2, '0')}";
     }
 }

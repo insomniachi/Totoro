@@ -7,7 +7,7 @@ using SharpCompress.Archives.SevenZip;
 
 namespace Totoro.Core.Torrents;
 
-public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader
+public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, IIndexedTorrentCatalog
 {
     private readonly string _baseUrl = @"https://mirror.animetosho.org/";
     private readonly HttpClient _httpClient;
@@ -49,13 +49,19 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader
         }
     }
 
-    public async IAsyncEnumerable<TorrentModel> SearchWithId(string query, long id)
+    public async IAsyncEnumerable<TorrentModel> Search(string query, AnimeId id)
     {
-        var stream = await _httpClient.GetStreamAsync(_baseUrl.TrimEnd('/') + "/search", new Dictionary<string, string>
+        var @params = new Dictionary<string, string>
         {
             ["q"] = query,
-            ["aids"] = id.ToString()
-        });
+        };
+
+        if(id.AniDb > 0)
+        {
+            @params["aids"] = id.AniDb.ToString();
+        }
+
+        var stream = await _httpClient.GetStreamAsync(_baseUrl.TrimEnd('/') + "/search", @params);
 
         foreach (var item in Parse(stream))
         {

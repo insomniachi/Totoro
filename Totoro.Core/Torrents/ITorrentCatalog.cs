@@ -6,6 +6,11 @@ public interface ITorrentCatalog
     IAsyncEnumerable<TorrentModel> Search(string query);
 }
 
+public interface IIndexedTorrentCatalog
+{
+    IAsyncEnumerable<TorrentModel> Search(string query, AnimeId id);
+}
+
 public enum TorrentState
 {
     Unknown,
