@@ -4,7 +4,7 @@ using AnimDL.Core.Helpers;
 
 namespace Totoro.Core.Services.Debrid;
 
-public class DirectDownloadLink
+public class DirectDownloadLink : ReactiveObject
 {
 
     [JsonPropertyName("path")]
@@ -20,6 +20,8 @@ public class DirectDownloadLink
     public string StreamLink { get; set; }
 
     public string FileName => System.IO.Path.GetFileName(Path);
+
+    [Reactive] public int Episode { get; set; }
 }
 
 

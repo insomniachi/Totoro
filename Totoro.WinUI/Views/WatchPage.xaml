@@ -115,7 +115,7 @@
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.UseTorrents), Mode=OneWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="s:DirectDownloadLink">
-                            <TextBlock Text="{x:Bind FileName}" />
+                            <TextBlock Text="{x:Bind Episode}" />
                         </DataTemplate>
                     </ListView.ItemTemplate>
                     <ListView.ItemsPanel>

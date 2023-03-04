@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Concurrency;
 using AnimDL.Core.Models.Interfaces;
+using AnitomySharp;
 using FuzzySharp;
 using MonoTorrent;
 using Splat;
@@ -283,18 +284,14 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Subscribe(async x =>
             {
-                var parsedResult = AnitomySharp.AnitomySharp.Parse(x.FileName);
-                if (parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } epString &&
-                   int.TryParse(epString.Value, out var ep))
+                if(x.Episode > 0)
                 {
-                    // hack
-                    _episodesCache.EditDiff(new[] { ep });
-
                     RxApp.MainThreadScheduler.Schedule(() =>
                     {
-                        CurrentEpisode = ep;
+                        CurrentEpisode = x.Episode;
                     });
                 }
+
                 await MediaPlayer.SetMedia(x.StreamLink);
                 MediaPlayer.Play();
 
@@ -856,14 +853,28 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task InitializeFromTorrent(TorrentModel torrent)
     {
-        var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
-        if (parsedResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle) is { } title)
+        var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name, new(episode:false, extension:false, group:false));
+        if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle) is { } title)
         {
             await TrySetAnime(title.Value);
         }
 
-        Links = (await _debridService.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
+        var links = (await _debridService.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
 
+        var options = new Options(title: false, extension: false, group: false);
+        foreach (var item in links)
+        {
+            parsedResult = AnitomySharp.AnitomySharp.Parse(item.FileName, options);
+            if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epString && int.TryParse(epString.Value, out var ep))
+            {
+                item.Episode = ep;
+            }
+        }
+
+        links.Sort(SortExpressionComparer<DirectDownloadLink>.Ascending(x => x.Episode));
+        _episodesCache.EditDiff(links.Where(x => x.Episode > 0).Select(x => x.Episode));
+        
+        Links = links;
         if (Links.Count == 1)
         {
             SelectedLink = Links[0];

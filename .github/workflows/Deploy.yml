@@ -7,7 +7,6 @@ on:
 
 env:
   INSTALLER_PATH: 'Totoro.Installer/Totoro.Installer.wixproj'
-  BOOTSTRAPPER_PATH: 'Totoro.Installer/Totoro.Bootstrapper.wixproj'
 
 jobs:
     deploy:
