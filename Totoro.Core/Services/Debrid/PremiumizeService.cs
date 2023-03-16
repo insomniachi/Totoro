@@ -31,10 +31,12 @@ public class Transfer
     public string Name { get; set; }
 
     [JsonPropertyName("progress")]
-    public string Progress { get; set; }
+    public double? Progress { get; set; }
 
     [JsonPropertyName("status")]
     public string Status { get; set; }
+
+    public double ProgressValue => Progress ?? 0;
 }
 
 public class PremiumizeService : IDebridService

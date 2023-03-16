@@ -73,7 +73,7 @@ public class TotoroCommands : IEnableLogger
                     }
                     break;
                 case TorrentState.NotCached:
-                    var id = await debridServiceContext.CreateTransfer(model.MagnetLink);
+                    _ = await debridServiceContext.CreateTransfer(model.MagnetLink);
                     model.State = TorrentState.Requested;
                     break;
             }

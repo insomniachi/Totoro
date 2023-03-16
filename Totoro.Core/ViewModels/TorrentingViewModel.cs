@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Concurrency;
+using Totoro.Core.Services.Debrid;
 using Totoro.Core.Torrents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 
@@ -16,7 +17,11 @@ public class TorrentingViewModel : NavigatableViewModel
     private readonly ITorrentCatalog _catalog;
     private readonly IAnimeIdService _animeIdService;
     private readonly SourceCache<TorrentModel, string> _torrentsCache = new(x => x.Link);
+    private readonly SourceCache<Transfer, string> _transfersCache = new(x => x.Name);
     private readonly ReadOnlyObservableCollection<TorrentModel> _torrents;
+    private readonly ReadOnlyObservableCollection<Transfer> _transfers;
+    private IDisposable _transfersSubscription;
+    private bool _isSubscriptionDisposed;
 
     public TorrentingViewModel(IDebridServiceContext debridServiceContext,
                                ITorrentCatalog catalog,
@@ -41,6 +46,26 @@ public class TorrentingViewModel : NavigatableViewModel
             .Subscribe()
             .DisposeWith(Garbage);
 
+        _transfersCache
+            .Connect()
+            .RefCount()
+            .Bind(out _transfers)
+            .Subscribe()
+            .DisposeWith(Garbage);
+
+        _debridServiceContext
+            .TransferCreated
+            .Subscribe(_ =>
+            {
+                if (!_isSubscriptionDisposed)
+                {
+                    return;
+                }
+
+                MonitorTransfers();
+            })
+            .DisposeWith(Garbage);
+
         this.WhenAnyValue(x => x.PastedTorrent.MagnetLink)
             .Where(x => !string.IsNullOrEmpty(x))
             .Subscribe(_ => PastedTorrent.State = TorrentState.Unknown);
@@ -55,8 +80,39 @@ public class TorrentingViewModel : NavigatableViewModel
     public TorrentModel PastedTorrent { get; } = new();
     public bool IsAuthenticted => _debridServiceContext.IsAuthenticated;
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
+    public ReadOnlyObservableCollection<Transfer> Transfers => _transfers;
 
     public ICommand Search { get; }
+
+    private void MonitorTransfers()
+    {
+        _transfersSubscription = Observable.Timer(TimeSpan.Zero, TimeSpan.FromMinutes(1))
+            .SelectMany(_ => _debridServiceContext.GetTransfers())
+            .Select(list => list.Where(x => x.Status != "finished"))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(list =>
+            {
+                _transfersCache.Clear();
+                
+                if (!list.Any())
+                {
+                    DisposeSubscription();
+                    return;
+                }
+
+                _transfersCache.AddOrUpdate(list);
+
+            }, RxApp.DefaultExceptionHandler.OnError);
+
+        _isSubscriptionDisposed = false;
+    }
+
+    private void DisposeSubscription()
+    {
+        _transfersSubscription?.Dispose();
+        _isSubscriptionDisposed = true;
+    }
+
     
     private void OnSearch()
     {
@@ -71,11 +127,24 @@ public class TorrentingViewModel : NavigatableViewModel
                 .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
     }
 
+    public override Task OnNavigatedFrom()
+    {
+        DisposeSubscription();
+        return Task.CompletedTask;
+    }
+
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        IsLoading = true;
+        if(!IsAuthenticted)
+        {
+            return;
+        }
 
-        if(parameters.ContainsKey("Anime"))
+        IsLoading = true;
+        MonitorTransfers();
+
+
+        if (parameters.ContainsKey("Anime"))
         {
             SortMode = SortMode.Seeders;
             var anime = (AnimeModel)parameters["Anime"];

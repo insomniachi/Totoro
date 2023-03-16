@@ -18,6 +18,7 @@ public interface IDebridServiceContext
     Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magneticLink);
     Task<IEnumerable<Transfer>> GetTransfers();
     Task<string> CreateTransfer(string magneticLink);
+    IObservable<string> TransferCreated { get; }
     bool IsAuthenticated { get; }
 }
 
