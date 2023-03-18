@@ -47,13 +47,13 @@ public sealed partial class WatchPage : WatchPageBase
             .DisposeWith(d);
             
 
-            TransportControls
-            .OnNextTrack
-            .Where(_ => ViewModel.Anime is not null)
-            .SelectMany(_ => ViewModel.UpdateTracking())
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .InvokeCommand(ViewModel.NextEpisode)
-            .DisposeWith(d);
+            //TransportControls
+            //.OnNextTrack
+            //.Where(_ => ViewModel.Anime is not null)
+            //.SelectMany(_ => ViewModel.UpdateTracking())
+            //.ObserveOn(RxApp.MainThreadScheduler)
+            //.InvokeCommand(ViewModel.NextEpisode)
+            //.DisposeWith(d);
 
             TransportControls
             .OnPrevTrack
@@ -102,10 +102,10 @@ public sealed partial class WatchPage : WatchPageBase
                 // Open the picker for the user to pick a file
                 var file = await openPicker.PickSingleFileAsync();
 
-                if(file is not null)
-                {
-                    await ViewModel.MediaPlayer.SetSubtitleFromFile(file.Path);
-                }
+                //if(file is not null)
+                //{
+                //    await ViewModel.MediaPlayer.SetSubtitleFromFile(file.Path);
+                //}
 
                 ViewModel.MediaPlayer.Play();
 

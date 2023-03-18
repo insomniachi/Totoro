@@ -4,8 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
 using Totoro.Core.Services.Debrid;
+using Totoro.Core.Services.MediaEvents;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
+using Totoro.Core.Services.StreamResolvers;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 
@@ -37,6 +39,11 @@ namespace Totoro.Core
             services.AddTransient<ISchedulerProvider, SchedulerProvider>();
             services.AddTransient<IStreamPageMapper, StreamPageMapper>();
             services.AddTransient<IAnilistService, AnilistService>();
+            services.AddTransient<IVideoStreamResolverFactory, VideoStreamResolverFactory>();
+
+            services.AddTransient<IMediaEventListener, MediaSessionStateStorage>();
+            services.AddTransient<IMediaEventListener, TrackingUpdater>();
+            services.AddTransient<IMediaEventListener, DiscordRichPresenseUpdater>();
 
             services.AddMemoryCache();
             services.AddHttpClient();

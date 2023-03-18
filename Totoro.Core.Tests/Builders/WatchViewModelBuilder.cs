@@ -21,22 +21,22 @@ internal class WatchViewModelBuilder
     {
     }
 
-    internal WatchViewModel Bulid()
-    {
-        return new WatchViewModel(_providerFactoryMock.Object,
-                                  _trackingServiceMock.Object,
-                                  _viewServiceMock.Object,
-                                  _settingsMock.Object,
-                                  _playbackStateStorageMock.Object,
-                                  _discordRpcMock.Object,
-                                  _animeServiceMock.Object,
-                                  MediaPlayer,
-                                  _timestampsServiceMock.Object,
-                                  Mock.Of<ILocalMediaService>(),
-                                  Mock.Of<IStreamPageMapper>(),
-                                  Mock.Of<IDebridServiceContext>(),
-                                  Mock.Of<ITorrentCatalog>());
-    }
+    //internal WatchViewModel Bulid()
+    //{
+    //    return new WatchViewModel(_providerFactoryMock.Object,
+    //                              _trackingServiceMock.Object,
+    //                              _viewServiceMock.Object,
+    //                              _settingsMock.Object,
+    //                              _playbackStateStorageMock.Object,
+    //                              _discordRpcMock.Object,
+    //                              _animeServiceMock.Object,
+    //                              MediaPlayer,
+    //                              _timestampsServiceMock.Object,
+    //                              Mock.Of<ILocalMediaService>(),
+    //                              Mock.Of<IStreamPageMapper>(),
+    //                              Mock.Of<IDebridServiceContext>(),
+    //                              Mock.Of<ITorrentCatalog>());
+    //}
 
     internal WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
     {

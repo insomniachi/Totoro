@@ -42,11 +42,8 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         _player.Play();
     }
 
-    public async Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation = null)
+    private void SetSubtitles(MediaSource source, Dictionary<string, string> AdditionalInformation)
     {
-        var source = await GetMediaSource(stream);
-        _isHardSub = stream.Quality == "hardsub";
-
         if (AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
         {
             var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
@@ -60,19 +57,44 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
             }
         }
 
-        _player.Source = new MediaPlaybackItem(source);
+        if (AdditionalInformation?.TryGetValue("subtitleFiles", out string jsonFiles) == true)
+        {
+            var subtitles = JsonSerializer.Deserialize<List<KeyValuePair<string,string>>>(jsonFiles);
+            _ttsMap.Clear();
+            foreach (var item in subtitles)
+            {
+                _ = SetSubtitleFromFile(source, item.Value);
+            }
+        }
 
+    }
+
+    public async Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation = null)
+    {
+        var source = await GetMediaSource(stream.Url, stream.Headers);
+        _isHardSub = stream.Quality == "hardsub";
+        SetSubtitles(source, AdditionalInformation);
+        _player.Source = new MediaPlaybackItem(source);
         return Unit.Default;
     }
 
-    public async Task SetSubtitleFromFile(string file)
+
+    public async Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation)
+    {
+        var source = await GetMediaSource(stream.StreamUrl, stream.Headers);
+        _isHardSub = stream.Quality == "hardsub";
+        SetSubtitles(source, AdditionalInformation);
+        _player.Source = new MediaPlaybackItem(source);
+        return Unit.Default;
+    }
+
+    public async Task SetSubtitleFromFile(MediaSource source, string file)
     {
         var fileName = Path.GetFileName(file);
         var sf = await StorageFile.GetFileFromPathAsync(file);
         var tts = TimedTextSource.CreateFromStream(await sf.OpenReadAsync());
         _ttsMap[tts] = fileName.ToLower();
         tts.Resolved += OnTtsResolved;
-        var source = _player.Source as MediaSource;
         source.ExternalTimedTextSources.Add(tts);
     }
 
@@ -102,15 +124,15 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     public MediaPlayer GetMediaPlayer() => _player;
 
-    private async Task<MediaSource> GetMediaSource(VideoStream stream)
+    private async Task<MediaSource> GetMediaSource(string url, Dictionary<string,string> headers)
     {
         _httpClient.DefaultRequestHeaders.Clear();
-        var hasHeaders = stream.Headers is { Count: > 0 };
-        Uri uri = new(stream.Url);
+        var hasHeaders = headers is { Count: > 0 };
+        Uri uri = new(url);
         
         if (hasHeaders)
         {
-            foreach (var item in stream.Headers)
+            foreach (var item in headers)
             {
                 _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
             }

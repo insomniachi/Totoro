@@ -6,6 +6,7 @@
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:io="using:System.IO"
     xmlns:local="using:Totoro.WinUI.Views"
+    xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
     xmlns:s="using:Totoro.Core.Services.Debrid"
@@ -36,7 +37,7 @@
                     IsSkipForwardButtonVisible="True"
                     IsSkipForwardEnabled="True"
                     Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}"
-                    SelectedQuality="{x:Bind ViewModel.SelectedStream.Quality, Mode=OneWay}" />
+                    SelectedQuality="{x:Bind ViewModel.SelectedQuality, Mode=OneWay}" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
 
@@ -61,13 +62,13 @@
                         IsOn="{x:Bind ViewModel.UseDub, Mode=TwoWay}"
                         OffContent="Sub"
                         OnContent="Dub"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasSubAndDub), Mode=OneWay}" />
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasSubDub), Mode=OneWay}" />
 
                     <ComboBox
                         Width="150"
-                        ItemsSource="{x:Bind ViewModel.AudioStreams, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.SubStreams, Mode=OneWay}"
                         SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasMultipleAudioStreams), Mode=OneWay}">
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasMultipleSubStreams), Mode=OneWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
                                 <TextBlock Text="{x:Bind help:Converters.ConvertStreamType((x:String))}" TextTrimming="CharacterEllipsis" />
@@ -84,12 +85,11 @@
                     Margin="0,0,10,0"
                     HorizontalAlignment="Stretch"
                     VerticalContentAlignment="Top"
-                    ItemsSource="{x:Bind ViewModel.Episodes}"
-                    SelectedItem="{x:Bind ViewModel.CurrentEpisode, Mode=TwoWay}"
-                    Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.UseTorrents), Mode=OneWay}">
+                    ItemsSource="{x:Bind ViewModel.EpisodeModels, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="x:Int32">
-                            <TextBlock Text="{x:Bind}" />
+                        <DataTemplate x:DataType="m:EpisodeModel">
+                            <TextBlock Text="{x:Bind DisplayName}" />
                         </DataTemplate>
                     </ListView.ItemTemplate>
                     <ListView.ItemsPanel>
@@ -105,7 +105,7 @@
                     </ListView.ItemContainerStyle>
                 </ListView>
 
-                <ListView
+                <!--<ListView
                     MaxHeight="80"
                     Margin="0,0,10,0"
                     HorizontalAlignment="Stretch"
@@ -129,7 +129,7 @@
                             <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumBrush}" />
                         </Style>
                     </ListView.ItemContainerStyle>
-                </ListView>
+                </ListView>-->
             </Grid>
         </Expander>
     </Grid>

@@ -61,14 +61,14 @@ public class SubmitTimeStampsViewModel : DialogViewModel
 
         this.WhenAnyValue(x => x.Stream)
             .WhereNotNull()
-            .Subscribe(async x => await MediaPlayer.SetMedia(x));
+            .Subscribe(async x => await MediaPlayer.SetMedia(x, new()));
     }
 
     [Reactive] public double StartPosition { get; set; }
     [Reactive] public double EndPosition { get; set; }
     [Reactive] public string SelectedTimeStampType { get; set; } = "OP";
     [Reactive] public double CurrentPlayerPosition { get; set; }
-    [Reactive] public VideoStream Stream { get; set; }
+    [Reactive] public VideoStreamModel Stream { get; set; }
     [Reactive] public AniSkipResult ExistingResult { get; set; }
     public long MalId { get; set; }
     public int Episode { get; set; }
