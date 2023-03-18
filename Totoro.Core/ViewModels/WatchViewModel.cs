@@ -17,7 +17,6 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ISettings _settings;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IAnimeServiceContext _animeService;
-    private readonly ITimestampsService _timestampsService;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly IDebridServiceContext _debridService;
     private readonly ITorrentCatalog _torrentCatalog;
@@ -27,7 +26,6 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly bool _isCrunchyroll;
 
     private int? _episodeRequest;
-    private double _userSkipOpeningTime;
     private IVideoStreamModelResolver _videoStreamResolver;
     private IAnimeModel _anime;
 
@@ -38,7 +36,6 @@ public partial class WatchViewModel : NavigatableViewModel
                           IPlaybackStateStorage playbackStateStorage,
                           IAnimeServiceContext animeService,
                           IMediaPlayer mediaPlayer,
-                          ITimestampsService timestampsService,
                           IStreamPageMapper streamPageMapper,
                           IDebridServiceContext debridServiceContext,
                           ITorrentCatalog torrentCatalog,
@@ -60,11 +57,11 @@ public partial class WatchViewModel : NavigatableViewModel
         _timestampsService = timestampsService;
 
         SetMediaPlayer(mediaPlayer);
-
         MediaPlayer = mediaPlayer;
         UseDub = !settings.PreferSubs;
         Provider = providerFactory.GetProvider(settings.DefaultProviderType);
         SelectedAudioStream = GetDefaultAudioStream();
+        
         NextEpisode = ReactiveCommand.Create(() => 
         {
             mediaPlayer.Pause(); 
@@ -77,7 +74,6 @@ public partial class WatchViewModel : NavigatableViewModel
         }, HasPrevEpisode(), RxApp.MainThreadScheduler);
         SkipOpening = ReactiveCommand.Create(() =>
         {
-            _userSkipOpeningTime = CurrentPlayerTime;
             MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds));
         }, outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality =>
@@ -85,124 +81,8 @@ public partial class WatchViewModel : NavigatableViewModel
             SelectedQuality = null;
             SelectedQuality = quality;
         }, outputScheduler: RxApp.MainThreadScheduler);
-        SkipDynamic = ReactiveCommand.Create(() =>
-        {
-            if (EndingTimeStamp is not null && CurrentPlayerTime > EndingTimeStamp.Interval.StartTime)
-            {
-                MediaPlayer.Seek(TimeSpan.FromSeconds(EndingTimeStamp.Interval.EndTime));
-            }
-            else if (OpeningTimeStamp is not null && CurrentPlayerTime > OpeningTimeStamp.Interval.StartTime)
-            {
-                MediaPlayer.Seek(TimeSpan.FromSeconds(OpeningTimeStamp.Interval.EndTime));
-            }
-        });
         SubmitTimeStamp = ReactiveCommand.Create(OnSubmitTimeStamps);
 
-        DoStuffOnMediaPlayerEvents();
-        DoMainSequence();
-        
-        MessageBus.Current
-            .Listen<RequestFullWindowMessage>()
-            .Select(message => message.IsFullWindow)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.IsFullWindow, deferSubscription: true);
-
-        this.WhenAnyValue(x => x.Anime)
-            .WhereNotNull()
-            .Subscribe(SetAnime);
-
-        this.WhenAnyValue(x => x.SubStreams)
-            .Select(x => x.Count() > 1)
-            .ToPropertyEx(this, x => x.HasMultipleSubStreams);
-
-        NativeMethods.PreventSleep();
-    }
-
-    [Reactive] public bool UseDub { get; set; }
-    [Reactive] public bool UseTorrents { get; set; }
-    [Reactive] public string SelectedAudioStream { get; set; }
-    [Reactive] public int NumberOfEpisodes { get; set; }
-    [Reactive] public double CurrentPlayerTime { get; set; }
-    [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
-    [Reactive] public IEnumerable<string> Qualities { get; set; }
-    [Reactive] public bool HasSubDub { get; set; }
-    [Reactive] public IEnumerable<string> SubStreams { get; set; }
-    [Reactive] public string SelectedQuality { get; set; }
-    [Reactive] public VideoStreamsForEpisodeModel Streams { get; set; }
-    [Reactive] public VideoStreamModel SelectedStream { get; set; }
-
-
-    [ObservableAsProperty] public bool IsFullWindow { get; }
-    [ObservableAsProperty] public bool IsSkipButtonVisible { get; }
-    [ObservableAsProperty] public double CurrentMediaDuration { get; }
-    [ObservableAsProperty] public AniSkipResult AniSkipResult { get; }
-    [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
-
-    public IProvider Provider { get; }
-    public AniSkipResultItem OpeningTimeStamp { get; set; }
-    public AniSkipResultItem EndingTimeStamp { get; set; }
-    public IAnimeModel Anime
-    {
-        get => _anime;
-        set => this.RaiseAndSetIfChanged(ref _anime, value);
-    }
-
-    public IMediaPlayer MediaPlayer { get; }
-    public bool AutoFullScreen => _settings.EnterFullScreenWhenPlaying;
-    public TorrentModel Torrent { get; private set; }
-
-    public ICommand NextEpisode { get; }
-    public ICommand PrevEpisode { get; }
-    public ICommand SkipOpening { get; }
-    public ICommand SkipDynamic { get; }
-    public ICommand ChangeQuality { get; }
-    public ICommand SubmitTimeStamp { get; }
-
-    public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
-    {
-        if (parameters.ContainsKey("Anime"))
-        {
-            // Start Main Sequence from Step 1
-            Anime = parameters["Anime"] as IAnimeModel;
-        }
-        else if (parameters.ContainsKey("EpisodeInfo"))
-        {
-            // Start Main Sequence from Step 1.1 but plays this episode instead of the next unwatched episode
-            var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
-            _episodeRequest = epInfo.Episode;
-            _ = CreateAnimDLResolver(epInfo.Url);
-            _ = TrySetAnime(epInfo.Url, epInfo.Title);
-        }
-        else if (parameters.ContainsKey("Id"))
-        {
-            // Start Main Sequence from Step 1
-            var id = (long)parameters["Id"];
-            Anime = await _animeService.GetInformation(id);
-        }
-        else if (parameters.ContainsKey("SearchResult"))
-        {
-            // Start Main Sequence from Step 1.1
-            var searchResult = (SearchResult)parameters["SearchResult"];
-            _ = CreateAnimDLResolver(searchResult.Url);
-            _ = TrySetAnime(searchResult.Url, searchResult.Title);
-        }
-        else if(parameters.ContainsKey("Torrent"))
-        {
-            Torrent = (TorrentModel)parameters["Torrent"];
-            UseTorrents = true;
-            _ = InitializeFromTorrent(Torrent);
-        }
-    }
-
-    public override Task OnNavigatedFrom()
-    {
-        NativeMethods.AllowSleep();
-        MediaPlayer.Pause();
-        return Task.CompletedTask;
-    }
-
-    private void DoMainSequence()
-    {
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
             .SelectMany(model => Find(model.Id, model.Title))
@@ -223,7 +103,7 @@ public partial class WatchViewModel : NavigatableViewModel
                         .Subscribe(x =>
                         {
                             ;
-                        }); 
+                        });
                 }
             }, RxApp.DefaultExceptionHandler.OnError);
 
@@ -277,7 +157,8 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Subscribe(async stream =>
             {
-                if (_torrentCatalog is ISubtitlesDownloader isd)
+                SetVideoStreamModel(stream);
+                if (_torrentCatalog is ISubtitlesDownloader isd && UseTorrents)
                 {
                     var subtitles = await isd.DownloadSubtitles(Torrent.Link);
                     Streams.AdditionalInformation.Add("subtitleFiles", JsonSerializer.Serialize(subtitles));
@@ -285,37 +166,101 @@ public partial class WatchViewModel : NavigatableViewModel
                 await MediaPlayer.SetMedia(stream, Streams.AdditionalInformation);
                 MediaPlayer.Play(GetPlayerTime());
             });
-    }
 
-
-    private void DoStuffOnMediaPlayerEvents()
-    {
         MediaPlayer.DisposeWith(Garbage);
 
-        // display skip button based on current time
-        this.ObservableForProperty(x => x.CurrentPlayerTime, x => x)
-            .Where(_ => AniSkipResult is { Success: true })
-            .Select(IsPlayingOpeningOrEnding)
-            .DistinctUntilChanged()
+        MessageBus.Current
+            .Listen<RequestFullWindowMessage>()
+            .Select(message => message.IsFullWindow)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.IsSkipButtonVisible, deferSubscription: true);
+            .ToPropertyEx(this, x => x.IsFullWindow, deferSubscription: true);
 
-        // when total duration of episode received, try to get skip times
-        this.ObservableForProperty(x => x.CurrentMediaDuration, x => x)
-            .Where(_ => Anime is not null)
-            .Where(duration => duration > 0)
-            .Throttle(TimeSpan.FromSeconds(1))
-            .SelectMany(duration => _timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration))
-            .ToPropertyEx(this, x => x.AniSkipResult, true);
+        this.WhenAnyValue(x => x.Anime)
+            .WhereNotNull()
+            .Subscribe(SetAnime);
 
-        // Get op and ed in to variable for convenience.
-        this.WhenAnyValue(x => x.AniSkipResult)
-            .Where(x => x is { Success: true })
-            .Subscribe(x =>
-            {
-                OpeningTimeStamp = x.Opening;
-                EndingTimeStamp = x.Ending;
-            });
+        this.WhenAnyValue(x => x.SubStreams)
+            .Select(x => x.Count() > 1)
+            .ToPropertyEx(this, x => x.HasMultipleSubStreams);
+
+        NativeMethods.PreventSleep();
+    }
+
+    [Reactive] public bool UseDub { get; set; }
+    [Reactive] public bool UseTorrents { get; set; }
+    [Reactive] public string SelectedAudioStream { get; set; }
+    [Reactive] public int NumberOfEpisodes { get; set; }
+    [Reactive] public double CurrentPlayerTime { get; set; }
+    [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
+    [Reactive] public IEnumerable<string> Qualities { get; set; }
+    [Reactive] public bool HasSubDub { get; set; }
+    [Reactive] public IEnumerable<string> SubStreams { get; set; }
+    [Reactive] public string SelectedQuality { get; set; }
+    [Reactive] public VideoStreamsForEpisodeModel Streams { get; set; }
+    [Reactive] public VideoStreamModel SelectedStream { get; set; }
+
+
+    [ObservableAsProperty] public bool IsFullWindow { get; }
+    [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
+
+    public IProvider Provider { get; }
+    public IAnimeModel Anime
+    {
+        get => _anime;
+        set => this.RaiseAndSetIfChanged(ref _anime, value);
+    }
+
+    public IMediaPlayer MediaPlayer { get; }
+    public bool AutoFullScreen => _settings.EnterFullScreenWhenPlaying;
+    public TorrentModel Torrent { get; private set; }
+
+    public ICommand NextEpisode { get; }
+    public ICommand PrevEpisode { get; }
+    public ICommand SkipOpening { get; }
+    public ICommand ChangeQuality { get; }
+    public ICommand SubmitTimeStamp { get; }
+
+    public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
+    {
+        if (parameters.ContainsKey("Anime"))
+        {
+            // Start Main Sequence from Step 1
+            Anime = parameters["Anime"] as IAnimeModel;
+        }
+        else if (parameters.ContainsKey("EpisodeInfo"))
+        {
+            // Start Main Sequence from Step 1.1 but plays this episode instead of the next unwatched episode
+            var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
+            _episodeRequest = epInfo.Episode;
+            _ = CreateAnimDLResolver(epInfo.Url);
+            _ = TrySetAnime(epInfo.Url, epInfo.Title);
+        }
+        else if (parameters.ContainsKey("Id"))
+        {
+            // Start Main Sequence from Step 1
+            var id = (long)parameters["Id"];
+            Anime = await _animeService.GetInformation(id);
+        }
+        else if (parameters.ContainsKey("SearchResult"))
+        {
+            // Start Main Sequence from Step 1.1
+            var searchResult = (SearchResult)parameters["SearchResult"];
+            _ = CreateAnimDLResolver(searchResult.Url);
+            _ = TrySetAnime(searchResult.Url, searchResult.Title);
+        }
+        else if(parameters.ContainsKey("Torrent"))
+        {
+            Torrent = (TorrentModel)parameters["Torrent"];
+            UseTorrents = true;
+            _ = InitializeFromTorrent(Torrent);
+        }
+    }
+
+    public override Task OnNavigatedFrom()
+    {
+        NativeMethods.AllowSleep();
+        MediaPlayer.Pause();
+        return Task.CompletedTask;
     }
 
     private async Task<(SearchResult Sub, SearchResult Dub)> Find(long id, string title)
@@ -355,7 +300,7 @@ public partial class WatchViewModel : NavigatableViewModel
         RxApp.MainThreadScheduler.Schedule(async () =>
         {
             MediaPlayer.Pause();
-            await _viewService.SubmitTimeStamp(Anime.Id, EpisodeModels.Current.EpisodeNumber, SelectedStream, AniSkipResult, CurrentMediaDuration, _userSkipOpeningTime == 0 ? 0 : _userSkipOpeningTime - 5);
+            await GetMediaEventListener<IAniskip>()?.SubmitTimeStamp();
             MediaPlayer.Play();
         });
     }
@@ -479,14 +424,6 @@ public partial class WatchViewModel : NavigatableViewModel
         return await _viewService.TryGetId(title);
     }
 
-    private bool IsPlayingOpeningOrEnding(double currentTime)
-    {
-        var isOpening = OpeningTimeStamp is not null && currentTime > OpeningTimeStamp.Interval.StartTime && currentTime < OpeningTimeStamp.Interval.EndTime;
-        var isEnding = EndingTimeStamp is not null && currentTime > EndingTimeStamp.Interval.StartTime && currentTime < EndingTimeStamp.Interval.EndTime;
-
-        return isOpening || isEnding;
-    }
-
     private string GetDefaultAudioStream()
     {
         var key = "StreamType";
@@ -524,11 +461,11 @@ public partial class WatchViewModel : NavigatableViewModel
         }
     }
 
-    private void SetSearchResult(SearchResult result)
+    private void SetVideoStreamModel(VideoStreamModel videoStreamModel)
     {
         foreach (var item in _mediaEventListeners)
         {
-            item.SetSearchResult(result);
+            item.SetVideoStreamModel(videoStreamModel);
         }
     }
 
@@ -538,6 +475,11 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             item.SetMediaPlayer(mediaPlayer);
         }
+    }
+
+    private TEventListener GetMediaEventListener<TEventListener>()
+    {
+        return (TEventListener)_mediaEventListeners.FirstOrDefault(x => x is TEventListener);
     }
 
     private async Task InitializeFromTorrent(TorrentModel torrent)

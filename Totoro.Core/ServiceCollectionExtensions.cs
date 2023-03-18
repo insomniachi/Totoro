@@ -44,6 +44,7 @@ namespace Totoro.Core
             services.AddTransient<IMediaEventListener, MediaSessionStateStorage>();
             services.AddTransient<IMediaEventListener, TrackingUpdater>();
             services.AddTransient<IMediaEventListener, DiscordRichPresenseUpdater>();
+            services.AddTransient<IMediaEventListener, Aniskip>();
 
             services.AddMemoryCache();
             services.AddHttpClient();

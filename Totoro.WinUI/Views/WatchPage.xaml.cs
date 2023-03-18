@@ -17,10 +17,13 @@ public sealed partial class WatchPage : WatchPageBase
         this.WhenActivated(d =>
         {
             this.WhenAnyValue(x => x.ViewModel.MediaPlayer)
-                .Where(mediaPlayer => mediaPlayer is WinUIMediaPlayerWrapper)
                 .Select(mediaPlayer => mediaPlayer as WinUIMediaPlayerWrapper)
-                .Do(wrapper => MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer()))
-                .Subscribe()
+                .WhereNotNull()
+                .Subscribe(wrapper =>
+                {
+                    MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer());
+                    wrapper.SetTransportControls(MediaPlayerElement.TransportControls as CustomMediaTransportControls);
+                })
                 .DisposeWith(d);
 
             MediaPlayerElement
@@ -45,15 +48,14 @@ public sealed partial class WatchPage : WatchPageBase
                 TransportControls.UpdateFullWindow(true);
             })
             .DisposeWith(d);
-            
 
-            //TransportControls
-            //.OnNextTrack
-            //.Where(_ => ViewModel.Anime is not null)
-            //.SelectMany(_ => ViewModel.UpdateTracking())
-            //.ObserveOn(RxApp.MainThreadScheduler)
-            //.InvokeCommand(ViewModel.NextEpisode)
-            //.DisposeWith(d);
+
+            TransportControls
+            .OnNextTrack
+            .Where(_ => ViewModel.Anime is not null)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .InvokeCommand(ViewModel.NextEpisode)
+            .DisposeWith(d);
 
             TransportControls
             .OnPrevTrack
@@ -68,11 +70,6 @@ public sealed partial class WatchPage : WatchPageBase
             TransportControls
             .OnQualityChanged
             .InvokeCommand(ViewModel.ChangeQuality)
-            .DisposeWith(d);
-
-            TransportControls
-            .OnDynamicSkip
-            .InvokeCommand(ViewModel.SkipDynamic)
             .DisposeWith(d);
 
             TransportControls

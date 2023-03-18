@@ -11,8 +11,11 @@ public interface IMediaPlayer : IDisposable
     IObservable<Unit> PlaybackEnded { get; }
     IObservable<TimeSpan> PositionChanged { get; }
     IObservable<TimeSpan> DurationChanged { get; }
+    IObservable<Unit> OnDynamicSkip { get; }
+    IObservable<Unit> OnStaticSkip { get; }
     Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation);
     Task<Unit> SetMediaFromFile(string localFile);
     ValueTask SetMedia(string url);
     Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation);
+    bool IsSkipButtonVisible { get; set; }
 }

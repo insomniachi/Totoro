@@ -33,7 +33,6 @@
                     IsPreviousTrackButtonVisible="True"
                     IsSkipBackwardButtonVisible="True"
                     IsSkipBackwardEnabled="True"
-                    IsSkipButtonVisible="{x:Bind ViewModel.IsSkipButtonVisible, Mode=OneWay}"
                     IsSkipForwardButtonVisible="True"
                     IsSkipForwardEnabled="True"
                     Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}"

@@ -7,6 +7,7 @@ public interface IMediaEventListener
     void SetSearchResult(SearchResult searchResult);
     void SetCurrentEpisode(int episode);
     void Stop();
+    void SetVideoStreamModel(VideoStreamModel videoStreamModel);
 }
 
 

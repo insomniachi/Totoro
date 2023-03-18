@@ -3,9 +3,10 @@
 public abstract class MediaEventListener : IMediaEventListener
 {
     protected IAnimeModel _animeModel;
-    private IMediaPlayer _mediaPlayer;
+    protected IMediaPlayer _mediaPlayer;
     protected int _currentEpisode;
     protected SearchResult _searchResult;
+    protected VideoStreamModel _videoStreamModel;
 
     public void SetAnime(IAnimeModel anime)
     {
@@ -29,7 +30,6 @@ public abstract class MediaEventListener : IMediaEventListener
 
         _mediaPlayer
             .PositionChanged
-            .Throttle(TimeSpan.FromSeconds(2))
             .Subscribe(OnPositionChanged);
 
         _mediaPlayer
@@ -43,6 +43,14 @@ public abstract class MediaEventListener : IMediaEventListener
         _mediaPlayer
             .Playing
             .Subscribe(_ => OnPlay());
+
+        _mediaPlayer
+            .OnDynamicSkip
+            .Subscribe(_ => OnDynamicSkipped());
+
+        _mediaPlayer
+            .OnStaticSkip
+            .Subscribe(_ => OnStaticSkipped());
     }
 
     public void SetSearchResult(SearchResult searchResult)
@@ -50,8 +58,12 @@ public abstract class MediaEventListener : IMediaEventListener
         _searchResult = searchResult;
     }
 
-    public virtual void Stop() { }
+    public void SetVideoStreamModel(VideoStreamModel videoStreamModel)
+    {
+        _videoStreamModel = videoStreamModel;
+    }
 
+    public virtual void Stop() { }
     protected virtual void OnPlay() { }
     protected virtual void OnPaused() { }
     protected virtual void OnPlaybackEnded() { }
@@ -59,5 +71,7 @@ public abstract class MediaEventListener : IMediaEventListener
     protected virtual void OnDurationChanged(TimeSpan duration) { }
     protected virtual void OnEpisodeChanged() { }
     protected virtual void OnAnimeChanged() { }
+    protected virtual void OnDynamicSkipped() { }
+    protected virtual void OnStaticSkipped() { }
 }
 
