@@ -19,6 +19,16 @@ internal class TrackingUpdater : MediaEventListener
         _updateAt = duration - TimeSpan.FromSeconds(_settings.TimeRemainingWhenEpisodeCompletesInSeconds);
     }
 
+    protected override void OnTimestampsChanged()
+    {
+        if(_timeStamps.Ending is not { } ed)
+        {
+            return;
+        }
+
+        _updateAt = TimeSpan.FromSeconds(ed.Interval.StartTime);
+    }
+
     protected override void OnPositionChanged(TimeSpan position)
     {
         if(!IsEnabled || position < _updateAt || _isUpdated || _animeModel.Tracking.WatchedEpisodes >= _currentEpisode)

@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using AnitomySharp;
 using FuzzySharp;
 using Splat;
@@ -15,7 +14,6 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
-    private readonly ITimestampsService _timestampsService;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IAnimeServiceContext _animeService;
     private readonly IStreamPageMapper _streamPageMapper;
