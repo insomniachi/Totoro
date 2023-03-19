@@ -41,7 +41,6 @@ public partial class WatchViewModel : NavigatableViewModel
         _trackingService = trackingService;
         _viewService = viewService;
         _settings = settings;
-        _timestampsService = timestampsService;
         _playbackStateStorage = playbackStateStorage;
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
