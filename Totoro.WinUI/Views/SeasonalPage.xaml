@@ -6,6 +6,7 @@
     xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
@@ -37,7 +38,26 @@
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <ListBox
+
+            <labs:Segmented
+                Margin="{StaticResource SmallTopBottomMargin}"
+                FontSize="20"
+                ItemsSource="{x:Bind Seasons}"
+                SelectedItem="{x:Bind ViewModel.SeasonFilter, Mode=TwoWay}">
+                <labs:Segmented.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ctk:WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </labs:Segmented.ItemsPanel>
+                <labs:Segmented.ItemContainerStyle>
+                    <Style TargetType="labs:SegmentedItem">
+                        <Setter Property="MinWidth" Value="200" />
+                        <Setter Property="FontSize" Value="20" />
+                    </Style>
+                </labs:Segmented.ItemContainerStyle>
+            </labs:Segmented>
+
+            <!--<ListBox
                 x:Name="SeasonsStrip"
                 Margin="{StaticResource SmallTopBottomMargin}"
                 HorizontalAlignment="Center"
@@ -63,7 +83,7 @@
                         <ctk:WrapPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListBox.ItemsPanel>
-            </ListBox>
+            </ListBox>-->
 
             <AutoSuggestBox
                 Grid.Row="1"

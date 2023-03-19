@@ -1,9 +1,42 @@
-﻿namespace Totoro.Core.Torrents;
+﻿using System.Diagnostics;
+
+namespace Totoro.Core.Torrents;
+
+public enum TorrentProviderType
+{
+    Nya,
+    AnimeTosho
+}
 
 public interface ITorrentCatalog
 {
     IAsyncEnumerable<TorrentModel> Recents();
     IAsyncEnumerable<TorrentModel> Search(string query);
+}
+
+public interface ITorrentCatalogFactory
+{
+    ITorrentCatalog GetCatalog(TorrentProviderType type);
+}
+
+public class TorrentCatalogFactory : ITorrentCatalogFactory
+{
+    private readonly IEnumerable<ITorrentCatalog> _torrentCatalogs;
+
+    public TorrentCatalogFactory(IEnumerable<ITorrentCatalog> torrentCatalogs)
+    {
+        _torrentCatalogs = torrentCatalogs;
+    }
+
+    public ITorrentCatalog GetCatalog(TorrentProviderType type)
+    {
+        return type switch
+        {
+            TorrentProviderType.Nya => _torrentCatalogs.First(x => x is NyaaCatalog),
+            TorrentProviderType.AnimeTosho => _torrentCatalogs.First(x => x is AnimeToshoCatalog),
+            _ => throw new UnreachableException()
+        };
+    }
 }
 
 public interface IIndexedTorrentCatalog

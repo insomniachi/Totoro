@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
@@ -15,171 +16,165 @@
         <local:HumanizeConverter x:Key="HumanizeConverter" />
     </local:TorrentingViewBase.Resources>
 
-    <ctk:SwitchPresenter Value="{x:Bind ViewModel.IsAuthenticted}">
-        <ctk:Case>
-            <ctk:Case.Value>
-                <x:Boolean>False</x:Boolean>
-            </ctk:Case.Value>
-            <Grid>
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="30"
-                    Text="API key for Debrid service is not found, Go to settings page to set api key."
-                    TextWrapping="Wrap">
-                    <TextBlock.Foreground>
-                        <SolidColorBrush Opacity="0.3" Color="White" />
-                    </TextBlock.Foreground>
-                </TextBlock>
-            </Grid>
-        </ctk:Case>
-        <ctk:Case>
-            <ctk:Case.Value>
-                <x:Boolean>True</x:Boolean>
-            </ctk:Case.Value>
+    <Grid Margin="0,25,0,0">
 
-            <Grid Margin="0,25,0,0">
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="30"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.CanUseTorrents)}">
+            <TextBlock.Foreground>
+                <SolidColorBrush Opacity="0.3" Color="White" />
+            </TextBlock.Foreground>
+            <Run Text="Unable to use torrents. Either configure a" />
+            <Run FontWeight="Bold" Text="Debrid Service" />
+            <Run Text="or install" />
+            <Hyperlink NavigateUri="https://github.com/webtorrent/webtorrent-cli">WebTorrent</Hyperlink>
+        </TextBlock>
+        <Pivot Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.CanUseTorrents)}">
+            <PivotItem Header="Torrents">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <AutoSuggestBox
+                            x:Name="SearchBox"
+                            Width="300"
+                            PlaceholderText="Search"
+                            QueryIcon="Find"
+                            Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
+                        <Button Content="Paste Magnet Link">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <StackPanel Spacing="10">
+                                        <TextBox
+                                            x:Name="PasteBin"
+                                            Width="400"
+                                            Height="200"
+                                            AcceptsReturn="True"
+                                            Text="{x:Bind ViewModel.PastedTorrent.MagnetLink, Mode=TwoWay}"
+                                            TextWrapping="Wrap" />
+                                        <Button
+                                            Command="{x:Bind root:App.Commands.TorrentCommand}"
+                                            CommandParameter="{x:Bind ViewModel.PastedTorrent}"
+                                            Content="{x:Bind ViewModel.PastedTorrent.State, Converter={StaticResource StateConverter}, Mode=OneWay}" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
 
-                <Pivot>
-                    <PivotItem Header="Torrents">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition />
-                            </Grid.RowDefinitions>
-                            <StackPanel
-                                HorizontalAlignment="Center"
-                                Orientation="Horizontal"
-                                Spacing="10">
-                                <AutoSuggestBox
-                                    x:Name="SearchBox"
-                                    Width="300"
-                                    PlaceholderText="Search"
-                                    QueryIcon="Find"
-                                    Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
-                                <Button Content="Paste Magnet Link">
-                                    <Button.Flyout>
-                                        <Flyout>
-                                            <StackPanel Spacing="10">
-                                                <TextBox
-                                                    x:Name="PasteBin"
-                                                    Width="400"
-                                                    Height="200"
-                                                    AcceptsReturn="True"
-                                                    Text="{x:Bind ViewModel.PastedTorrent.MagnetLink, Mode=TwoWay}"
-                                                    TextWrapping="Wrap" />
-                                                <Button
-                                                    Command="{x:Bind root:App.Commands.TorrentCommand}"
-                                                    CommandParameter="{x:Bind ViewModel.PastedTorrent}"
-                                                    Content="{x:Bind ViewModel.PastedTorrent.State, Converter={StaticResource StateConverter}, Mode=OneWay}" />
-                                            </StackPanel>
-                                        </Flyout>
-                                    </Button.Flyout>
-                                </Button>
-                            </StackPanel>
+                    <ctk:DataGrid
+                        x:Name="DataGrid"
+                        Grid.Row="1"
+                        Margin="20"
+                        AutoGenerateColumns="False"
+                        CanUserReorderColumns="False"
+                        CanUserResizeColumns="False"
+                        CanUserSortColumns="True"
+                        IsReadOnly="true"
+                        ItemsSource="{x:Bind ViewModel.Torrents}"
+                        SelectionMode="Single"
+                        Sorting="DataGrid_Sorting">
+                        <ctk:DataGrid.Columns>
+                            <ctk:DataGridTemplateColumn Header="Category" Visibility="Collapsed">
+                                <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <ctk:ImageEx
+                                            Width="80"
+                                            Height="28"
+                                            CacheMode="BitmapCache"
+                                            IsCacheEnabled="True"
+                                            Source="{Binding CategoryImage}"
+                                            ToolTipService.ToolTip="{Binding Category}" />
+                                    </DataTemplate>
+                                </ctk:DataGridTemplateColumn.CellTemplate>
+                            </ctk:DataGridTemplateColumn>
+                            <ctk:DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding Name}"
+                                Header="Name" />
+                            <ctk:DataGridTextColumn Binding="{Binding Size}" Header="Size" />
+                            <ctk:DataGridTemplateColumn
+                                CanUserSort="True"
+                                Header="Time"
+                                Tag="Time"
+                                Visibility="Collapsed">
+                                <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Date, Converter={StaticResource HumanizeConverter}}" />
+                                    </DataTemplate>
+                                </ctk:DataGridTemplateColumn.CellTemplate>
+                            </ctk:DataGridTemplateColumn>
+                            <ctk:DataGridTextColumn
+                                Binding="{Binding Seeders}"
+                                FontWeight="Bold"
+                                Foreground="Green"
+                                Header="Seeders"
+                                Tag="Seeders" />
+                            <ctk:DataGridTextColumn
+                                Binding="{Binding Leeches}"
+                                FontWeight="Bold"
+                                Foreground="Red"
+                                Header="Leeches" />
+                            <ctk:DataGridTextColumn
+                                Binding="{Binding Completed}"
+                                Header="Completed"
+                                Visibility="Collapsed" />
+                            <ctk:DataGridTemplateColumn Width="200" Header="Actions">
+                                <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button
+                                            x:Name="Button"
+                                            Margin="3"
+                                            HorizontalAlignment="Stretch"
+                                            Click="TorrentAction"
+                                            Content="{Binding State, Converter={StaticResource StateConverter}}" />
+                                    </DataTemplate>
+                                </ctk:DataGridTemplateColumn.CellTemplate>
+                            </ctk:DataGridTemplateColumn>
+                        </ctk:DataGrid.Columns>
+                    </ctk:DataGrid>
+                </Grid>
+            </PivotItem>
+            <PivotItem Header="Transfers">
+                <ListView Margin="0,20" ItemsSource="{x:Bind ViewModel.Transfers}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="t:Transfer">
+                            <Grid>
+                                <StackPanel Spacing="10">
+                                    <TextBlock FontWeight="Bold" Text="{x:Bind Name}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <ProgressBar
+                                            Width="300"
+                                            Height="5"
+                                            HorizontalAlignment="Left"
+                                            Maximum="1"
+                                            Minimum="0"
+                                            Value="{x:Bind ProgressValue, Mode=OneWay}" />
+                                        <TextBlock Margin="10,0" Text="{x:Bind Progress, Mode=OneWay}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </PivotItem>
 
-                            <ctk:DataGrid
-                                Grid.Row="1"
-                                Margin="20"
-                                AutoGenerateColumns="False"
-                                CanUserReorderColumns="False"
-                                CanUserResizeColumns="False"
-                                CanUserSortColumns="True"
-                                IsReadOnly="true"
-                                ItemsSource="{x:Bind ViewModel.Torrents}"
-                                SelectionMode="Single"
-                                Sorting="DataGrid_Sorting">
-                                <ctk:DataGrid.Columns>
-                                    <!--<ctk:DataGridTemplateColumn Header="Category">
-                            <ctk:DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ctk:ImageEx
-                                        Width="80"
-                                        Height="28"
-                                        CacheMode="BitmapCache"
-                                        IsCacheEnabled="True"
-                                        Source="{Binding CategoryImage}"
-                                        ToolTipService.ToolTip="{Binding Category}" />
-                                </DataTemplate>
-                            </ctk:DataGridTemplateColumn.CellTemplate>
-                        </ctk:DataGridTemplateColumn>-->
-                                    <ctk:DataGridTextColumn
-                                        Width="*"
-                                        Binding="{Binding Name}"
-                                        Header="Name" />
-                                    <ctk:DataGridTextColumn Binding="{Binding Size}" Header="Size" />
-                                    <!--<ctk:DataGridTemplateColumn
-                            CanUserSort="True"
-                            Header="Time"
-                            Tag="Time">
-                            <ctk:DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock VerticalAlignment="Center" Text="{Binding Date, Converter={StaticResource HumanizeConverter}}" />
-                                </DataTemplate>
-                            </ctk:DataGridTemplateColumn.CellTemplate>
-                        </ctk:DataGridTemplateColumn>-->
-                                    <ctk:DataGridTextColumn
-                                        Binding="{Binding Seeders}"
-                                        FontWeight="Bold"
-                                        Foreground="Green"
-                                        Header="Seeders"
-                                        Tag="Seeders" />
-                                    <ctk:DataGridTextColumn
-                                        Binding="{Binding Leeches}"
-                                        FontWeight="Bold"
-                                        Foreground="Red"
-                                        Header="Leeches" />
-                                    <!--<ctk:DataGridTextColumn Binding="{Binding Completed}" Header="Completed" />-->
-                                    <ctk:DataGridTemplateColumn Width="200" Header="Actions">
-                                        <ctk:DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <Button
-                                                    x:Name="Button"
-                                                    Margin="3"
-                                                    HorizontalAlignment="Stretch"
-                                                    Click="TorrentAction"
-                                                    Content="{Binding State, Converter={StaticResource StateConverter}}" />
-                                            </DataTemplate>
-                                        </ctk:DataGridTemplateColumn.CellTemplate>
-                                    </ctk:DataGridTemplateColumn>
-                                </ctk:DataGrid.Columns>
-                            </ctk:DataGrid>
-                        </Grid>
-                    </PivotItem>
-                    <PivotItem Header="Transfers">
-                        <ListView Margin="0,20" ItemsSource="{x:Bind ViewModel.Transfers}">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="t:Transfer">
-                                    <Grid>
-                                        <StackPanel Spacing="10">
-                                            <TextBlock FontWeight="Bold" Text="{x:Bind Name}" />
-                                            <StackPanel Orientation="Horizontal">
-                                                <ProgressBar
-                                                    Width="300"
-                                                    Height="5"
-                                                    HorizontalAlignment="Left"
-                                                    Maximum="1"
-                                                    Minimum="0"
-                                                    Value="{x:Bind ProgressValue, Mode=OneWay}" />
-                                                <TextBlock Margin="10,0" Text="{x:Bind Progress, Mode=OneWay}" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </PivotItem>
+        </Pivot>
 
-                </Pivot>
-
-                <ctk:Loading
-                    x:Name="LoadingControl"
-                    Grid.Row="1"
-                    IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-                    <ProgressRing Margin="0,0,12,0" IsActive="True" />
-                </ctk:Loading>
-            </Grid>
-        </ctk:Case>
-    </ctk:SwitchPresenter>
+        <ctk:Loading
+            x:Name="LoadingControl"
+            Grid.Row="1"
+            IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
+            <ProgressRing Margin="0,0,12,0" IsActive="True" />
+        </ctk:Loading>
+    </Grid>
 
 </local:TorrentingViewBase>

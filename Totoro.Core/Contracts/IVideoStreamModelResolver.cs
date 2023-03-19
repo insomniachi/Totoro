@@ -3,7 +3,7 @@
 
 public interface IVideoStreamModelResolver
 {
-    Task<VideoStreamsForEpisodeModel> Resolve(int episode, string subStream);
-    Task<int> GetNumberOfEpisodes(string subStream);
+    Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream);
+    Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream);
 }
 

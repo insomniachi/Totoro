@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Totoro.Core.Torrents;
 
 namespace Totoro.Core.Contracts;
 
@@ -21,6 +22,7 @@ public interface ISettings
     bool IncludeNsfw { get; set; }
     bool EnterFullScreenWhenPlaying { get; set; }
     DebridServiceType DebridServiceType { get; set; }
+    TorrentProviderType TorrentProviderType { get; set; }
     Task<Unit> UpdateUrls();
 }
 

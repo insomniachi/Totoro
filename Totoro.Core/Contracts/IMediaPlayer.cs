@@ -15,7 +15,7 @@ public interface IMediaPlayer : IDisposable
     IObservable<Unit> OnStaticSkip { get; }
     Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation);
     Task<Unit> SetMediaFromFile(string localFile);
-    ValueTask SetMedia(string url);
+    ValueTask SetFFMpegMedia(string url);
     Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation);
     bool IsSkipButtonVisible { get; set; }
 }

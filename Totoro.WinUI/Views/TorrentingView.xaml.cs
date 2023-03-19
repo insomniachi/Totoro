@@ -28,10 +28,20 @@ public sealed partial class TorrentingView : TorrentingViewBase
             .Select(_ => Unit.Default)
             .InvokeCommand(ViewModel.Search)
             .DisposeWith(d);
+
+            switch (ViewModel.ProviderType)
+            {
+                case TorrentProviderType.Nya:
+                    foreach (var item in DataGrid.Columns)
+                    {
+                        item.Visibility = Visibility.Visible;
+                    }
+                    break;
+            }
         });
     }
 
-    private void TorrentAction(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void TorrentAction(object sender, RoutedEventArgs e)
     {
         var button = sender as Button;
         if(button.DataContext is not TorrentModel m)

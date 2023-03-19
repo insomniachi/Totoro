@@ -35,6 +35,7 @@
                     IsSkipBackwardEnabled="True"
                     IsSkipForwardButtonVisible="True"
                     IsSkipForwardEnabled="True"
+                    IsTextScaleFactorEnabled="True"
                     Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}"
                     SelectedQuality="{x:Bind ViewModel.SelectedQuality, Mode=OneWay}" />
             </MediaPlayerElement.TransportControls>

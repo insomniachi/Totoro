@@ -62,20 +62,35 @@ public class TotoroCommands : IEnableLogger
 
         TorrentCommand = ReactiveCommand.CreateFromTask<TorrentModel>(async model =>
         {
-            switch (model.State)
+            if(debridServiceContext.IsAuthenticated)
             {
-                case TorrentState.Unknown:
-                    var isCached = await debridServiceContext.Check(model.MagnetLink);
-                    model.State = isCached ? TorrentState.Unknown : TorrentState.NotCached;
-                    if(isCached)
-                    {
-                        navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Torrent"] = model });
-                    }
-                    break;
-                case TorrentState.NotCached:
-                    _ = await debridServiceContext.CreateTransfer(model.MagnetLink);
-                    model.State = TorrentState.Requested;
-                    break;
+                switch (model.State)
+                {
+                    case TorrentState.Unknown:
+                        var isCached = await debridServiceContext.Check(model.MagnetLink);
+                        model.State = isCached ? TorrentState.Unknown : TorrentState.NotCached;
+                        if (isCached)
+                        {
+                            navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() 
+                            {
+                                ["Torrent"] = model,
+                                ["UseDebrid"] = true,
+                            });
+                        }
+                        break;
+                    case TorrentState.NotCached:
+                        _ = await debridServiceContext.CreateTransfer(model.MagnetLink);
+                        model.State = TorrentState.Requested;
+                        break;
+                }
+            }
+            else
+            {
+                navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
+                {
+                    ["Torrent"] = model,
+                    ["UseDebrid"] = false,
+                });
             }
         });
 

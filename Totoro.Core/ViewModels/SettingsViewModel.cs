@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using AnimDL.Core;
 using Splat;
+using Totoro.Core.Torrents;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
@@ -17,11 +18,11 @@ internal class SettingsModel : ReactiveObject, ISettings
         // temp hack for backward compat
         try
         {
-            DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), "allanime");
+            DefaultProviderType = localSettingsService.ReadSetting(nameof(DefaultProviderType), "animepahe");
         }
         catch
         {
-            DefaultProviderType = "allanime";
+            DefaultProviderType = "animepahe";
         }
 
         UseDiscordRichPresense = localSettingsService.ReadSetting(nameof(UseDiscordRichPresense), false);
@@ -37,6 +38,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         IncludeNsfw = localSettingsService.ReadSetting(nameof(IncludeNsfw), false);
         EnterFullScreenWhenPlaying = localSettingsService.ReadSetting(nameof(EnterFullScreenWhenPlaying), false);
         DebridServiceType = localSettingsService.ReadSetting(nameof(DebridServiceType), DebridServiceType.Premiumize);
+        TorrentProviderType = localSettingsService.ReadSetting(nameof(TorrentProviderType), TorrentProviderType.Nya);
 
         var id = localSettingsService.ReadSetting(nameof(AniSkipId), Guid.Empty);
         if (id == Guid.Empty)
@@ -89,6 +91,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool IncludeNsfw { get; set; }
     [Reactive] public bool EnterFullScreenWhenPlaying { get; set; }
     [Reactive] public DebridServiceType DebridServiceType { get; set; }
+    [Reactive] public TorrentProviderType TorrentProviderType { get; set; }
 
     public async Task<Unit> UpdateUrls()
     {
@@ -124,6 +127,7 @@ public class SettingsViewModel : NavigatableViewModel
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
     public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
     public List<DebridServiceType> DebridServices { get; } = Enum.GetValues<DebridServiceType>().Cast<DebridServiceType>().ToList();
+    public List<TorrentProviderType> TorrentProviderTypes { get; } = Enum.GetValues<TorrentProviderType>().Cast<TorrentProviderType>().ToList();
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }
     public ICommand ConfigureProvider { get; }

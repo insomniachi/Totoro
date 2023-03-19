@@ -25,7 +25,15 @@ namespace Totoro.Core.Models
         {
             return new VideoStreamModel
             {
-                StreamUrl = link.StreamLink
+                StreamUrl = link.Link
+            };
+        }
+
+        public static VideoStreamModel FromUrl(string url)
+        {
+            return new VideoStreamModel
+            {
+                StreamUrl = url,
             };
         }
     }

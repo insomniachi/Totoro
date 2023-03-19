@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
+using Windows.Media.ClosedCaptioning;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.Streaming.Adaptive;
@@ -18,7 +19,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private bool _isHardSub;
     private readonly ScheduledSubject<Unit> _onDynamicSkip = new(RxApp.MainThreadScheduler);
     private readonly ScheduledSubject<Unit> _onSkip = new(RxApp.MainThreadScheduler); 
-    //private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
+    private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
 
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -182,25 +183,22 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     }
 
-    public ValueTask SetMedia(string url)
+    public async ValueTask SetFFMpegMedia(string url)
     {
-        _player.Source = MediaSource.CreateFromUri(new(url));
-        return ValueTask.CompletedTask;
-        //_ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
-        //{
-        //    ReadAheadBufferEnabled = true,
-        //    ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
-        //    ReadAheadBufferSize = 50 * 1024 * 1024,
-        //    FFmpegOptions = new Windows.Foundation.Collections.PropertySet
-        //    {
-        //        { "reconnect", 1 },
-        //        { "reconnect_streamed", 1 },
-        //        { "reconnect_on_network_error", 1 },
-        //    }
-        //});
-
-        //var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
-        //mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
-        //_player.Source = mediaSource;
+        _ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
+        {
+            ReadAheadBufferEnabled = true,
+            ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
+            ReadAheadBufferSize = 50 * 1024 * 1024,
+            FFmpegOptions = new Windows.Foundation.Collections.PropertySet
+        {
+            { "reconnect", 1 },
+            { "reconnect_streamed", 1 },
+            { "reconnect_on_network_error", 1 },
+        }
+        });
+        var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
+        mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
+        _player.Source = mediaSource;
     }
 }

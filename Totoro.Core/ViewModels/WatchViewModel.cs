@@ -5,7 +5,6 @@ using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services;
 using Totoro.Core.Services.MediaEvents;
-using Totoro.Core.Torrents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 
 namespace Totoro.Core.ViewModels;
@@ -18,8 +17,6 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly IAnimeServiceContext _animeService;
     private readonly IStreamPageMapper _streamPageMapper;
-    private readonly IDebridServiceContext _debridService;
-    private readonly ITorrentCatalog _torrentCatalog;
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
     private readonly List<IMediaEventListener> _mediaEventListeners;
     private readonly ProviderOptions _providerOptions;
@@ -37,8 +34,6 @@ public partial class WatchViewModel : NavigatableViewModel
                           IAnimeServiceContext animeService,
                           IMediaPlayer mediaPlayer,
                           IStreamPageMapper streamPageMapper,
-                          IDebridServiceContext debridServiceContext,
-                          ITorrentCatalog torrentCatalog,
                           IVideoStreamResolverFactory videoStreamResolverFactory,
                           IEnumerable<IMediaEventListener> mediaEventListeners)
     {
@@ -48,13 +43,10 @@ public partial class WatchViewModel : NavigatableViewModel
         _playbackStateStorage = playbackStateStorage;
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
-        _debridService = debridServiceContext;
-        _torrentCatalog = torrentCatalog;
         _videoStreamResolverFactory = videoStreamResolverFactory;
         _mediaEventListeners = mediaEventListeners.ToList();
         _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
-        _timestampsService = timestampsService;
 
         SetMediaPlayer(mediaPlayer);
         MediaPlayer = mediaPlayer;
@@ -99,18 +91,14 @@ public partial class WatchViewModel : NavigatableViewModel
                     this.ObservableForProperty(x => x.UseDub, x => x)
                         .Where(_ => HasSubDub)
                         .Select(useDub => useDub ? x.Dub : x.Sub)
-                        .Do(_ => EpisodeModels.Current = null)
                         .Subscribe(x =>
                         {
-                            ;
+                            var currentEpNumber = EpisodeModels.Current.EpisodeNumber;
+                            EpisodeModels.Current = null;
+                            // TODO
                         });
                 }
             }, RxApp.DefaultExceptionHandler.OnError);
-
-        this.ObservableForProperty(x => x.NumberOfEpisodes, x => x)
-            .Where(epCount => epCount > 0)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(ep => EpisodeModels = EpisodeModelCollection.FromEpisodeCount(ep));
 
         this.WhenAnyValue(x => x.EpisodeModels)
             .Where(_ => !UseTorrents)
@@ -135,7 +123,7 @@ public partial class WatchViewModel : NavigatableViewModel
                 CurrentPlayerTime = 0;
                 SetEpisode(epModel.EpisodeNumber);
             })
-            .SelectMany(epModel => _videoStreamResolver.Resolve(epModel.EpisodeNumber, SelectedAudioStream))
+            .SelectMany(epModel => _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, SelectedAudioStream))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(stream => Streams = stream);
 
@@ -158,12 +146,15 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(async stream =>
             {
                 SetVideoStreamModel(stream);
-                if (_torrentCatalog is ISubtitlesDownloader isd && UseTorrents)
+                if(UseTorrents)
                 {
-                    var subtitles = await isd.DownloadSubtitles(Torrent.Link);
-                    Streams.AdditionalInformation.Add("subtitleFiles", JsonSerializer.Serialize(subtitles));
+                    await mediaPlayer.SetFFMpegMedia(stream.StreamUrl);
                 }
-                await MediaPlayer.SetMedia(stream, Streams.AdditionalInformation);
+                else
+                {
+                    await MediaPlayer.SetMedia(stream, Streams.AdditionalInformation);
+                }
+
                 MediaPlayer.Play(GetPlayerTime());
             });
 
@@ -189,7 +180,6 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public bool UseDub { get; set; }
     [Reactive] public bool UseTorrents { get; set; }
     [Reactive] public string SelectedAudioStream { get; set; }
-    [Reactive] public int NumberOfEpisodes { get; set; }
     [Reactive] public double CurrentPlayerTime { get; set; }
     [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     [Reactive] public IEnumerable<string> Qualities { get; set; }
@@ -250,9 +240,10 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else if(parameters.ContainsKey("Torrent"))
         {
-            Torrent = (TorrentModel)parameters["Torrent"];
             UseTorrents = true;
-            _ = InitializeFromTorrent(Torrent);
+            Torrent = (TorrentModel)parameters["Torrent"];
+            var useDebrid = (bool)parameters["UseDebrid"];
+            _ = InitializeFromTorrent(Torrent, useDebrid);
         }
     }
 
@@ -482,38 +473,29 @@ public partial class WatchViewModel : NavigatableViewModel
         return (TEventListener)_mediaEventListeners.FirstOrDefault(x => x is TEventListener);
     }
 
-    private async Task InitializeFromTorrent(TorrentModel torrent)
+    private async Task InitializeFromTorrent(TorrentModel torrent, bool useDebrid)
     {
-        var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name, new(episode:false, extension:false, group:false));
+        var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
         if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle) is { } title)
         {
             await TrySetAnime(title.Value);
         }
 
-        var links = (await _debridService.GetDirectDownloadLinks(torrent.MagnetLink)).ToList();
+        _videoStreamResolver = useDebrid
+            ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.MagnetLink)
+            : _videoStreamResolverFactory.CreateWebTorrentStreamResolver(parsedResult, torrent.MagnetLink);
 
-        var options = new Options(title: false, extension: false, group: false);
-        foreach (var item in links)
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes("");
+
+        if (EpisodeModels.Count == 1)
         {
-            parsedResult = AnitomySharp.AnitomySharp.Parse(item.FileName, options);
-            if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epString && int.TryParse(epString.Value, out var ep))
-            {
-                item.Episode = ep;
-            }
-        }
-
-        _videoStreamResolver = _videoStreamResolverFactory.CreateTorrentStreamResolver(links);
-        EpisodeModels = EpisodeModelCollection.FromDirectDownloadLinks(links);
-
-        if(links.Count == 1)
-        {
-            EpisodeModels.Current = EpisodeModels.First();
+            EpisodeModels.Current = EpisodeModels.FirstOrDefault();
         }
     }
 
     private async Task CreateAnimDLResolver(string url)
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(url);
-        NumberOfEpisodes = await _videoStreamResolver.GetNumberOfEpisodes(SelectedAudioStream);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
     }
 }

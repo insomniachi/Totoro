@@ -16,7 +16,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         _baseUrl = baseUrl;
     }
 
-    public async Task<VideoStreamsForEpisodeModel> Resolve(int episode, string subStream)
+    public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
     {
         var results = await GetStreams(episode, subStream);
 
@@ -64,6 +64,11 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
             this.Log().Fatal(ex);
             return 0;
         }
+    }
+
+    public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
+    {
+        return EpisodeModelCollection.FromEpisodeCount(await GetNumberOfEpisodes(subStream));
     }
 }
 

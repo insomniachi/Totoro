@@ -178,6 +178,12 @@
                         <labs:SettingsCard Description="Url" Header="Nyaa">
                             <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />
                         </labs:SettingsCard>
+                        <labs:SettingsCard Description="Site to search for torrents" Header="Torrent Provider">
+                            <ComboBox
+                                Width="150"
+                                ItemsSource="{x:Bind ViewModel.TorrentProviderTypes}"
+                                SelectedItem="{x:Bind ViewModel.Settings.TorrentProviderType, Mode=TwoWay}" />
+                        </labs:SettingsCard>
                     </labs:SettingsExpander.Items>
                 </labs:SettingsExpander>
 

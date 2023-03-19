@@ -7,6 +7,7 @@
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.Core.Helpers"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"
@@ -43,31 +44,28 @@
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <ListBox
-                        x:Name="StatusStrip"
+
+                    <labs:Segmented
                         Margin="{StaticResource SmallTopBottomMargin}"
-                        HorizontalAlignment="Center"
                         ItemsSource="{x:Bind Statuses}"
                         SelectedItem="{x:Bind ViewModel.CurrentView, Mode=TwoWay}">
-                        <ListBox.ItemTemplate>
+                        <labs:Segmented.ItemTemplate>
                             <DataTemplate x:DataType="cm:AnimeStatus">
-                                <TextBlock
-                                    Width="200"
-                                    Text="{x:Bind v:UserListPage.ToStatusString((cm:AnimeStatus))}"
-                                    TextAlignment="Center" />
+                                <TextBlock Text="{x:Bind v:UserListPage.ToStatusString((cm:AnimeStatus))}" />
                             </DataTemplate>
-                        </ListBox.ItemTemplate>
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="Height" Value="40" />
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemsPanel>
+                        </labs:Segmented.ItemTemplate>
+                        <labs:Segmented.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ctk:WrapPanel Orientation="Horizontal" />
                             </ItemsPanelTemplate>
-                        </ListBox.ItemsPanel>
-                    </ListBox>
+                        </labs:Segmented.ItemsPanel>
+                        <labs:Segmented.ItemContainerStyle>
+                            <Style TargetType="labs:SegmentedItem">
+                                <Setter Property="MinWidth" Value="200" />
+                                <Setter Property="FontSize" Value="20" />
+                            </Style>
+                        </labs:Segmented.ItemContainerStyle>
+                    </labs:Segmented>
 
                     <AutoSuggestBox
                         Grid.Row="1"
