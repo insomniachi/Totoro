@@ -43,12 +43,6 @@ internal class TrackingUpdater : MediaEventListener
         _trackingService
             .Update(_animeModel.Id, tracking)
             .Subscribe(tracking => _animeModel.Tracking = tracking);
-
-
-        //if (_settings.ContributeTimeStamps && AniSkipResult?.Items.Any(x => x.SkipType == "op") is not true) // don't force to submit if only ed is missing
-        //{
-        //    OnSubmitTimeStamps();
-        //}
     }
 
     protected override void OnEpisodeChanged()

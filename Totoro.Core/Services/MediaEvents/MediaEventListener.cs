@@ -7,6 +7,7 @@ public abstract class MediaEventListener : IMediaEventListener
     protected int _currentEpisode;
     protected SearchResult _searchResult;
     protected VideoStreamModel _videoStreamModel;
+    protected AniSkipResult _timeStamps;
 
     public void SetAnime(IAnimeModel anime)
     {
@@ -20,12 +21,19 @@ public abstract class MediaEventListener : IMediaEventListener
         OnEpisodeChanged();
     }
 
+    public void SetTimeStamps(AniSkipResult timeStamps)
+    {
+        _timeStamps = timeStamps;
+        OnTimestampsChanged();
+    }
+
     public void SetMediaPlayer(IMediaPlayer mediaPlayer)
     {
         _mediaPlayer ??= mediaPlayer;
 
         _mediaPlayer
             .DurationChanged
+            .Throttle(TimeSpan.FromSeconds(1))
             .Subscribe(OnDurationChanged);
 
         _mediaPlayer
@@ -73,5 +81,6 @@ public abstract class MediaEventListener : IMediaEventListener
     protected virtual void OnAnimeChanged() { }
     protected virtual void OnDynamicSkipped() { }
     protected virtual void OnStaticSkipped() { }
+    protected virtual void OnTimestampsChanged() { }
 }
 
