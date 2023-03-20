@@ -1,8 +1,8 @@
-﻿using Totoro.Core.ViewModels;
-using Totoro.WinUI.Media;
-using ReactiveMarbles.ObservableEvents;
+﻿using ReactiveMarbles.ObservableEvents;
 using Totoro.Core;
-using Windows.Storage.Pickers;
+using Totoro.Core.ViewModels;
+using Totoro.WinUI.Contracts;
+using Totoro.WinUI.Media;
 
 namespace Totoro.WinUI.Views;
 
@@ -16,98 +16,44 @@ public sealed partial class WatchPage : WatchPageBase
 
         this.WhenActivated(d =>
         {
+            var windowService = App.GetService<IWindowService>();
             this.WhenAnyValue(x => x.ViewModel.MediaPlayer)
                 .Select(mediaPlayer => mediaPlayer as WinUIMediaPlayerWrapper)
                 .WhereNotNull()
                 .Subscribe(wrapper =>
                 {
                     MediaPlayerElement.SetMediaPlayer(wrapper.GetMediaPlayer());
-                    wrapper.SetTransportControls(MediaPlayerElement.TransportControls as CustomMediaTransportControls);
+                    var transportControls = wrapper.TransportControls as CustomMediaTransportControls;
+                    this.WhenAnyValue(x => x.ViewModel.Qualities)
+                        .Subscribe(qualities => transportControls.Qualities = qualities);
+
+                    this.WhenAnyValue(x => x.ViewModel.SelectedQuality)
+                        .Subscribe(quality => transportControls.SelectedQuality = quality);
+
+                    transportControls.WhenAnyValue(x => x.SelectedQuality)
+                        .Subscribe(quality => ViewModel.SelectedQuality = quality);
                 })
                 .DisposeWith(d);
+
+            windowService
+            .IsFullWindowChanged
+            .Subscribe(isFullWindow => EpisodesExpander.Visibility = isFullWindow ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible);
 
             MediaPlayerElement
             .Events()
             .DoubleTapped
-            .Subscribe(_ =>
-            {
-                MessageBus.Current.SendMessage(new RequestFullWindowMessage(!ViewModel.IsFullWindow));
-                TransportControls.UpdateFullWindow(ViewModel.IsFullWindow);
-            })
+            .Subscribe(_ => windowService.ToggleIsFullWindow())
             .DisposeWith(d);
 
             ViewModel
             .MediaPlayer
             .DurationChanged
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Where(x => x > TimeSpan.Zero && !ViewModel.IsFullWindow && ViewModel.AutoFullScreen)
+            .Where(x => x > TimeSpan.Zero && ViewModel.AutoFullScreen)
             .Throttle(TimeSpan.FromMilliseconds(100))
-            .Subscribe(x =>
-            {
-                MessageBus.Current.SendMessage(new RequestFullWindowMessage(true));
-                TransportControls.UpdateFullWindow(true);
-            })
+            .Subscribe(x => windowService.SetIsFullWindow(true))
             .DisposeWith(d);
 
-
-            TransportControls
-            .OnNextTrack
-            .Where(_ => ViewModel.Anime is not null)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .InvokeCommand(ViewModel.NextEpisode)
-            .DisposeWith(d);
-
-            TransportControls
-            .OnPrevTrack
-            .InvokeCommand(ViewModel.PrevEpisode)
-            .DisposeWith(d);
-
-            TransportControls
-            .OnSkipIntro
-            .InvokeCommand(ViewModel.SkipOpening)
-            .DisposeWith(d);
-
-            TransportControls
-            .OnQualityChanged
-            .InvokeCommand(ViewModel.ChangeQuality)
-            .DisposeWith(d);
-
-            TransportControls
-            .OnSubmitTimeStamp
-            .InvokeCommand(ViewModel.SubmitTimeStamp)
-            .DisposeWith(d);
-
-            TransportControls
-            .OnAddCc
-            .Subscribe(async _ =>
-            {
-                // Create a file picker
-                var openPicker = new FileOpenPicker();
-
-                // Retrieve the window handle (HWND) of the current WinUI 3 window.
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
-
-                // Initialize the file picker with the window handle (HWND).
-                WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
-
-                // Set options for your file picker
-                openPicker.ViewMode = PickerViewMode.Thumbnail;
-                openPicker.FileTypeFilter.Add("*");
-
-                ViewModel.MediaPlayer.Pause();
-
-                // Open the picker for the user to pick a file
-                var file = await openPicker.PickSingleFileAsync();
-
-                //if(file is not null)
-                //{
-                //    await ViewModel.MediaPlayer.SetSubtitleFromFile(file.Path);
-                //}
-
-                ViewModel.MediaPlayer.Play();
-
-            })
-            .DisposeWith(d);
         });
     }
 }

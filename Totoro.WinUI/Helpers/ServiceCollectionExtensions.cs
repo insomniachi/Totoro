@@ -61,6 +61,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
         services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
+        services.AddSingleton<IWindowService, WindowService>();
 
 
         return services;

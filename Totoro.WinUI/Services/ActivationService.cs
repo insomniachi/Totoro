@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Splat;
 using Totoro.WinUI.Activation;
+using Totoro.WinUI.Helpers;
 using WinUIEx;
 
 namespace Totoro.WinUI.Services;
@@ -69,6 +70,7 @@ public class ActivationService : IActivationService, IEnableLogger
         }
         _playbackStateStorage.StoreState();
         _updateService.ShutDown();
+        NativeMethods.AllowSleep();
         App.MainWindow.Closed -= MainWindow_Closed;
     }
 

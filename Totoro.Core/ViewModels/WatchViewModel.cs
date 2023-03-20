@@ -114,13 +114,16 @@ public partial class WatchViewModel : NavigatableViewModel
             .SelectMany(x => x.WhenAnyValue(x => x.Current))
             .WhereNotNull()
             .Where(ep => ep.EpisodeNumber > 0)
+            .Do(_ => mediaPlayer.Pause())
             .Log(this, "Selected Episode :", ep => ep.EpisodeNumber.ToString())
             .Do(epModel =>
             {
-                if (CurrentPlayerTime > 60)
+                if(EpisodeModels.Count > 1)
                 {
-                    MediaPlayer.Pause();
+                    mediaPlayer.TransportControls.IsNextTrackButtonVisible = epModel != EpisodeModels.Last();
+                    mediaPlayer.TransportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
                 }
+
                 CurrentPlayerTime = 0;
                 SetEpisode(epModel.EpisodeNumber);
             })
@@ -172,17 +175,51 @@ public partial class WatchViewModel : NavigatableViewModel
                 }
 
                 var timeStamps = await timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds);
+
+                if(!timeStamps.Success)
+                {
+                    return;
+                }
+
                 foreach (var item in mediaEventListeners)
                 {
                     item.SetTimeStamps(timeStamps);
                 }
             });
 
-        MessageBus.Current
-            .Listen<RequestFullWindowMessage>()
-            .Select(message => message.IsFullWindow)
+        MediaPlayer
+            .TransportControls
+            .OnNextTrack
             .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.IsFullWindow, deferSubscription: true);
+            .Subscribe(_ => EpisodeModels.SelectNext());
+
+        MediaPlayer
+            .TransportControls
+            .OnPrevTrack
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => EpisodeModels.SelectPrevious());
+
+        MediaPlayer
+            .TransportControls
+            .OnStaticSkip
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)));
+
+        MediaPlayer
+            .TransportControls
+            .OnQualityChanged
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(quality =>
+            {
+                SelectedQuality = null;
+                SelectedQuality = quality;
+            });
+
+        MediaPlayer
+            .TransportControls
+            .OnSubmitTimeStamp
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => OnSubmitTimeStamps());
 
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
@@ -206,9 +243,6 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public string SelectedQuality { get; set; }
     [Reactive] public VideoStreamsForEpisodeModel Streams { get; set; }
     [Reactive] public VideoStreamModel SelectedStream { get; set; }
-
-
-    [ObservableAsProperty] public bool IsFullWindow { get; }
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
     public IProvider Provider { get; }
@@ -232,12 +266,10 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         if (parameters.ContainsKey("Anime"))
         {
-            // Start Main Sequence from Step 1
             Anime = parameters["Anime"] as IAnimeModel;
         }
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
-            // Start Main Sequence from Step 1.1 but plays this episode instead of the next unwatched episode
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             _episodeRequest = epInfo.Episode;
             _ = CreateAnimDLResolver(epInfo.Url);
@@ -245,13 +277,11 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else if (parameters.ContainsKey("Id"))
         {
-            // Start Main Sequence from Step 1
             var id = (long)parameters["Id"];
             Anime = await _animeService.GetInformation(id);
         }
         else if (parameters.ContainsKey("SearchResult"))
         {
-            // Start Main Sequence from Step 1.1
             var searchResult = (SearchResult)parameters["SearchResult"];
             _ = CreateAnimDLResolver(searchResult.Url);
             _ = TrySetAnime(searchResult.Url, searchResult.Title);
@@ -369,14 +399,6 @@ public partial class WatchViewModel : NavigatableViewModel
         }
     }
 
-    private static IEnumerable<string> FormatQualityStrings(VideoStreamsForEpisode stream)
-    {
-        return stream.Qualities
-                     .Select(x => x.Key)
-                     .OrderBy(x => x.Length)
-                     .ThenBy(x => x);
-    }
-
     private bool RequestedEpisodeIsValid(int episode) => Anime?.TotalEpisodes is 0 or null || episode <= Anime?.TotalEpisodes;
 
     private int GetQueuedEpisode()
@@ -478,7 +500,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
     }
 
-    private void SetMediaPlayer(IMediaPlayer mediaPlayer)
+    public void SetMediaPlayer(IMediaPlayer mediaPlayer)
     {
         foreach (var item in _mediaEventListeners)
         {

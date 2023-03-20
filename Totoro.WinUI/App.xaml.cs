@@ -82,6 +82,7 @@ public partial class App : Application, IEnableLogger
 
     private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
     {
+        NativeMethods.AllowSleep();
         this.Log().Fatal(e.ExceptionObject);
     }
 
@@ -110,6 +111,7 @@ public partial class App : Application, IEnableLogger
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
+        NativeMethods.AllowSleep();
         this.Log().Fatal(e.Exception, e.Message);
     }
 

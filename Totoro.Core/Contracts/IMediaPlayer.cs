@@ -11,11 +11,22 @@ public interface IMediaPlayer : IDisposable
     IObservable<Unit> PlaybackEnded { get; }
     IObservable<TimeSpan> PositionChanged { get; }
     IObservable<TimeSpan> DurationChanged { get; }
-    IObservable<Unit> OnDynamicSkip { get; }
-    IObservable<Unit> OnStaticSkip { get; }
-    Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation);
-    Task<Unit> SetMediaFromFile(string localFile);
-    ValueTask SetFFMpegMedia(string url);
+    Task<Unit> SetFFMpegMedia(string url);
     Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation);
-    bool IsSkipButtonVisible { get; set; }
+    IMediaTransportControls TransportControls { get; }
 }
+
+public interface IMediaTransportControls
+{
+    IObservable<Unit> OnNextTrack { get; }
+    IObservable<Unit> OnPrevTrack { get; }
+    IObservable<Unit> OnStaticSkip { get; }
+    IObservable<Unit> OnDynamicSkip { get; }
+    IObservable<Unit> OnAddCc { get; }
+    IObservable<string> OnQualityChanged { get; }
+    IObservable<Unit> OnSubmitTimeStamp { get; }
+    bool IsSkipButtonVisible { get; set; }
+    bool IsNextTrackButtonVisible { get; set; }
+    bool IsPreviousTrackButtonVisible { get; set; }
+}
+

@@ -4,12 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
-    xmlns:io="using:System.IO"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
-    xmlns:s="using:Totoro.Core.Services.Debrid"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
@@ -24,30 +22,16 @@
             x:Name="MediaPlayerElement"
             Grid.Row="0"
             AreTransportControlsEnabled="True"
-            IsDoubleTapEnabled="True">
-            <MediaPlayerElement.TransportControls>
-                <media:CustomMediaTransportControls
-                    x:Name="TransportControls"
-                    IsCompact="false"
-                    IsNextTrackButtonVisible="True"
-                    IsPreviousTrackButtonVisible="True"
-                    IsSkipBackwardButtonVisible="True"
-                    IsSkipBackwardEnabled="True"
-                    IsSkipForwardButtonVisible="True"
-                    IsSkipForwardEnabled="True"
-                    IsTextScaleFactorEnabled="True"
-                    Qualities="{x:Bind ViewModel.Qualities, Mode=OneWay}"
-                    SelectedQuality="{x:Bind ViewModel.SelectedQuality, Mode=OneWay}" />
-            </MediaPlayerElement.TransportControls>
-        </MediaPlayerElement>
+            IsDoubleTapEnabled="True"
+            TransportControls="{x:Bind (media:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
 
         <Expander
+            x:Name="EpisodesExpander"
             Grid.Row="1"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
             ExpandDirection="Up"
-            IsExpanded="True"
-            Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.IsFullWindow), Mode=OneWay}">
+            IsExpanded="True">
             <Expander.Header>
                 <StackPanel Orientation="Horizontal" Spacing="10">
                     <TextBlock
@@ -78,59 +62,30 @@
 
                 </StackPanel>
             </Expander.Header>
-            <Grid>
-                <ListView
-                    x:Name="EpisodeList"
-                    MaxHeight="80"
-                    Margin="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalContentAlignment="Top"
-                    ItemsSource="{x:Bind ViewModel.EpisodeModels, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="m:EpisodeModel">
-                            <TextBlock Text="{x:Bind DisplayName}" />
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment" Value="Center" />
-                            <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumBrush}" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                </ListView>
-
-                <!--<ListView
-                    MaxHeight="80"
-                    Margin="0,0,10,0"
-                    HorizontalAlignment="Stretch"
-                    VerticalContentAlignment="Top"
-                    ItemsSource="{x:Bind ViewModel.Links, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.SelectedLink, Mode=TwoWay}"
-                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.UseTorrents), Mode=OneWay}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="s:DirectDownloadLink">
-                            <TextBlock Text="{x:Bind Episode}" />
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment" Value="Center" />
-                            <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumBrush}" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                </ListView>-->
-            </Grid>
+            <ListView
+                MaxHeight="80"
+                Margin="0,0,10,0"
+                HorizontalAlignment="Stretch"
+                VerticalContentAlignment="Top"
+                ItemsSource="{x:Bind ViewModel.EpisodeModels, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="m:EpisodeModel">
+                        <TextBlock Text="{x:Bind DisplayName}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumBrush}" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
         </Expander>
     </Grid>
 </local:WatchPageBase>

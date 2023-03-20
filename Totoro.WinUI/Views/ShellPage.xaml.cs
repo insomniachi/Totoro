@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Totoro.Core;
+using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.ViewModels;
 using Windows.System;
@@ -22,13 +22,12 @@ public sealed partial class ShellPage : Page
         ViewModel.NavigationService.Frame = NavigationFrame;
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
 
-        MessageBus.Current
-            .Listen<RequestFullWindowMessage>()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(message =>
+        App.GetService<IWindowService>()
+            .IsFullWindowChanged
+            .Subscribe(isFullWindow =>
             {
-                App.MainWindow.PresenterKind = message.IsFullWindow ? Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen : Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped;
-                NavigationViewControl.IsPaneVisible = !message.IsFullWindow;
+                App.MainWindow.PresenterKind = isFullWindow ? Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen : Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped;
+                NavigationViewControl.IsPaneVisible = !isFullWindow;
             });
     }
 

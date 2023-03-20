@@ -1,25 +1,22 @@
-﻿using System.Reactive.Concurrency;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Totoro.Core;
+using Totoro.WinUI.Contracts;
 
 namespace Totoro.WinUI.Media;
 
-public class CustomMediaTransportControls : MediaTransportControls
+public class CustomMediaTransportControls : MediaTransportControls, IMediaTransportControls
 {
     private readonly Subject<Unit> _onNextTrack = new();
     private readonly Subject<Unit> _onPrevTrack = new();
     private readonly Subject<Unit> _onSkipIntro = new();
     private readonly Subject<string> _onQualityChanged = new();
     private readonly Subject<Unit> _onDynamicSkipIntro = new();
-    private readonly Subject<bool> _onFullWindowRequested = new();
     private readonly Subject<Unit> _onSubmitTimeStamp = new();
     private readonly Subject<Unit> _onAddCc = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
     private Button _dynamicSkipIntroButton;
-    private bool _isFullWindow;
     private SymbolIcon _fullWindowSymbol;
 
     public static readonly DependencyProperty QualitiesProperty =
@@ -30,6 +27,7 @@ public class CustomMediaTransportControls : MediaTransportControls
 
     public static readonly DependencyProperty SelectedQualityProperty =
         DependencyProperty.Register("SelectedQuality", typeof(string), typeof(CustomMediaTransportControls), new PropertyMetadata("", OnQualyChanged));
+    private readonly IWindowService _windowService;
 
     private static void OnQualyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -109,23 +107,28 @@ public class CustomMediaTransportControls : MediaTransportControls
 
     public IObservable<Unit> OnNextTrack => _onNextTrack;
     public IObservable<Unit> OnPrevTrack => _onPrevTrack;
-    public IObservable<Unit> OnSkipIntro => _onSkipIntro;
+    public IObservable<Unit> OnStaticSkip => _onSkipIntro;
     public IObservable<Unit> OnAddCc => _onAddCc;
     public IObservable<string> OnQualityChanged => _onQualityChanged;
     public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
 
-    public CustomMediaTransportControls()
+    public CustomMediaTransportControls(IWindowService windowService)
     {
-        DefaultStyleKey = typeof(CustomMediaTransportControls);
-        MessageBus.Current.RegisterMessageSource(_onFullWindowRequested.Select(x => new RequestFullWindowMessage(x)));                  
-    }
+        _windowService = windowService;
 
-    public void UpdateFullWindow(bool isFullWindow)
-    {
-        RxApp.MainThreadScheduler.Schedule(() =>
+        DefaultStyleKey = typeof(CustomMediaTransportControls);
+        IsCompact = false;
+        IsNextTrackButtonVisible = false;
+        IsPreviousTrackButtonVisible = false;
+        IsSkipBackwardButtonVisible = true;
+        IsSkipBackwardEnabled = true;
+        IsSkipForwardButtonVisible = true;
+        IsSkipForwardEnabled = true;
+        IsTextScaleFactorEnabled = true;
+
+        windowService?.IsFullWindowChanged?.Subscribe(isFullWindow =>
         {
-            _isFullWindow = isFullWindow;
             _fullWindowSymbol.Symbol = isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
         });
     }
@@ -148,12 +151,7 @@ public class CustomMediaTransportControls : MediaTransportControls
         skipIntroButton.Click += (_, _) => _onSkipIntro.OnNext(Unit.Default);
         submitTimeStamp.Click += (_, _) => _onSubmitTimeStamp.OnNext(Unit.Default);
         addccButon.Click += (_, _) => _onAddCc.OnNext(Unit.Default);
-        fullWindowButton.Click += (_, _) =>
-        {
-            _isFullWindow ^= true;
-            _fullWindowSymbol.Symbol = _isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
-            _onFullWindowRequested.OnNext(_isFullWindow);
-        };
+        fullWindowButton.Click += (_, _) => _windowService?.ToggleIsFullWindow();
         _dynamicSkipIntroButton.Click += (_, __) => _onDynamicSkipIntro.OnNext(Unit.Default);
 
         base.OnApplyTemplate();

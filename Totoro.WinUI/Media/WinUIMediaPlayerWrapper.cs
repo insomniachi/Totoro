@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
-using Windows.Media.ClosedCaptioning;
+using Totoro.WinUI.Contracts;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.Streaming.Adaptive;
@@ -12,14 +12,17 @@ namespace Totoro.WinUI.Media;
 
 public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {
-    private CustomMediaTransportControls _transportControls;
+    private readonly CustomMediaTransportControls _transportControls;
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
     private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
     private bool _isHardSub;
-    private readonly ScheduledSubject<Unit> _onDynamicSkip = new(RxApp.MainThreadScheduler);
-    private readonly ScheduledSubject<Unit> _onSkip = new(RxApp.MainThreadScheduler); 
     private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
+
+    public WinUIMediaPlayerWrapper(IWindowService windowService)
+    {
+        _transportControls = new CustomMediaTransportControls(windowService);
+    }
 
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -27,37 +30,12 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     public IObservable<Unit> PlaybackEnded => _player.Events().MediaEnded.Select(_ => Unit.Default);
     public IObservable<TimeSpan> PositionChanged => _player.PlaybackSession.Events().PositionChanged.Select(x => x.sender.Position);
     public IObservable<TimeSpan> DurationChanged => _player.PlaybackSession.Events().NaturalDurationChanged.Select(x => x.sender.NaturalDuration);
-    public IObservable<Unit> OnDynamicSkip => _onDynamicSkip;
-    public IObservable<Unit> OnStaticSkip => _onSkip;
-
-    public bool IsSkipButtonVisible 
-    {
-        get => _transportControls?.IsSkipButtonVisible ?? false;
-        set
-        {
-            if(_transportControls is null)
-            {
-                return;
-            }
-            _transportControls.DispatcherQueue.TryEnqueue(() =>
-            {
-                try
-                {
-                    _transportControls.IsSkipButtonVisible = value;
-                }
-                catch { }
-            });
-        }
-    }
-
+    public IMediaTransportControls TransportControls => _transportControls;
     public void Dispose() => _player.Pause();
-
     public void Pause() => _player.Pause();
-
     public void Play() => _player.Play();
-
     public void Seek(TimeSpan ts) => _player.Position = ts;
-
+    
     public void Play(double offsetInSeconds)
     {
         _player.Position = TimeSpan.FromSeconds(offsetInSeconds);
@@ -90,16 +68,6 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         }
 
     }
-
-    public async Task<Unit> SetMedia(VideoStream stream, Dictionary<string, string> AdditionalInformation = null)
-    {
-        var source = await GetMediaSource(stream.Url, stream.Headers);
-        _isHardSub = stream.Quality == "hardsub";
-        SetSubtitles(source, AdditionalInformation);
-        _player.Source = new MediaPlaybackItem(source);
-        return Unit.Default;
-    }
-
 
     public async Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation)
     {
@@ -138,20 +106,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         }
     }
 
-    public async Task<Unit> SetMediaFromFile(string localFile)
-    {
-        _player.Source = MediaSource.CreateFromStorageFile(await StorageFile.GetFileFromPathAsync(localFile));
-        return Unit.Default;
-    }
-
     public MediaPlayer GetMediaPlayer() => _player;
-
-    public void SetTransportControls(CustomMediaTransportControls transportControls)
-    {
-        _transportControls = transportControls;
-        _transportControls.OnDynamicSkip.Subscribe(_onDynamicSkip.OnNext);
-        _transportControls.OnSkipIntro.Subscribe(_onSkip.OnNext);
-    }
 
     private async Task<MediaSource> GetMediaSource(string url, Dictionary<string,string> headers)
     {
@@ -183,7 +138,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     }
 
-    public async ValueTask SetFFMpegMedia(string url)
+    public async Task<Unit> SetFFMpegMedia(string url)
     {
         _ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
         {
@@ -200,5 +155,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
         mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
         _player.Source = mediaSource;
+
+        return Unit.Default;
     }
 }

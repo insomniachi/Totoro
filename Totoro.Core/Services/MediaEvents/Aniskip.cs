@@ -1,4 +1,6 @@
-﻿namespace Totoro.Core.Services.MediaEvents;
+﻿using System.Reactive.Concurrency;
+
+namespace Totoro.Core.Services.MediaEvents;
 
 
 internal interface IAniskip
@@ -23,7 +25,18 @@ internal class Aniskip : MediaEventListener, IAniskip
     protected override void OnPositionChanged(TimeSpan position)
     {
         _position = position;
-        _mediaPlayer.IsSkipButtonVisible = IsOpeningOrEnding(position.TotalSeconds);
+
+        if(_timeStamps is null)
+        {
+            return;
+        }
+
+        RxApp.MainThreadScheduler.Schedule(() => _mediaPlayer.TransportControls.IsSkipButtonVisible = IsOpeningOrEnding(position.TotalSeconds));
+    }
+
+    protected override void OnDurationChanged(TimeSpan duration)
+    {
+        _duration = duration;
     }
 
     protected override void OnEpisodeChanged()

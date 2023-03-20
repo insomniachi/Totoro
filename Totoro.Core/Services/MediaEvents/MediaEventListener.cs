@@ -53,12 +53,24 @@ public abstract class MediaEventListener : IMediaEventListener
             .Subscribe(_ => OnPlay());
 
         _mediaPlayer
+            .TransportControls
             .OnDynamicSkip
             .Subscribe(_ => OnDynamicSkipped());
 
         _mediaPlayer
+            .TransportControls
             .OnStaticSkip
             .Subscribe(_ => OnStaticSkipped());
+
+        _mediaPlayer
+            .TransportControls
+            .OnNextTrack
+            .Subscribe(_ => OnNextTrack());
+
+        _mediaPlayer
+            .TransportControls
+            .OnPrevTrack
+            .Subscribe(_ => OnPrevTrack());
     }
 
     public void SetSearchResult(SearchResult searchResult)
@@ -82,5 +94,7 @@ public abstract class MediaEventListener : IMediaEventListener
     protected virtual void OnDynamicSkipped() { }
     protected virtual void OnStaticSkipped() { }
     protected virtual void OnTimestampsChanged() { }
+    protected virtual void OnNextTrack() { }
+    protected virtual void OnPrevTrack() { }
 }
 
