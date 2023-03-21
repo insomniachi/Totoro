@@ -4,89 +4,307 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:am="using:AnimDL.Core.Models"
+    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Totoro.Core.Models"
-    xmlns:root="using:Totoro.WinUI"
     xmlns:views="using:Totoro.WinUI.Views"
     Name="Page"
     Margin="24"
     mc:Ignorable="d">
     <ScrollViewer Grid.Row="1">
-        <Grid MaxWidth="1000">
+        <Grid Width="1000">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
 
-            <StackPanel Spacing="10">
-                <TextBlock
-                    Width="{Binding ElementName=SettingCard, Path=ActualWidth}"
-                    FontSize="30"
-                    FontWeight="SemiBold"
-                    Text="Settings" />
+            <BreadcrumbBar
+                x:Name="BreadCrumbBar"
+                Margin="0,0,0,10"
+                ItemClicked="BreadcrumbBar_ItemClicked"
+                ItemsSource="{x:Bind ViewModel.BreadCrumbBar.BreadCrumbs}">
+                <BreadcrumbBar.ItemTemplate>
+                    <DataTemplate>
+                        <BreadcrumbBarItem Content="{Binding}">
+                            <BreadcrumbBarItem.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Margin="5,0"
+                                        FontSize="30"
+                                        FontWeight="Medium"
+                                        Text="{Binding}" />
+                                </DataTemplate>
+                            </BreadcrumbBarItem.ContentTemplate>
+                        </BreadcrumbBarItem>
+                    </DataTemplate>
+                </BreadcrumbBar.ItemTemplate>
+            </BreadcrumbBar>
 
-                <labs:SettingsExpander
-                    Name="SettingCard"
-                    Description="Choose list service to update tracking"
-                    Header="List service"
-                    IsExpanded="True">
-                    <labs:SettingsExpander.HeaderIcon>
-                        <FontIcon Glyph="&#xe71b;" />
-                    </labs:SettingsExpander.HeaderIcon>
-                    <ComboBox
-                        Width="150"
-                        ItemsSource="{x:Bind ViewModel.ServiceTypes}"
-                        SelectedItem="{x:Bind ViewModel.Settings.DefaultListService, Mode=TwoWay}" />
-                    <labs:SettingsExpander.Items>
-                        <labs:SettingsCard Header="MyAnimeList">
+            <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.BreadCrumbBar.State, Mode=OneWay}">
+
+                <!--  Home  -->
+                <ctk:Case Value="Settings">
+                    <StackPanel Spacing="10">
+                        <labs:SettingsCard
+                            Description="Choose which page loads at startup"
+                            Header="Home Page"
+                            Tag="Home">
                             <labs:SettingsCard.HeaderIcon>
-                                <ImageIcon Source="/Assets/mal.png" />
+                                <SymbolIcon Symbol="Home" />
                             </labs:SettingsCard.HeaderIcon>
-                            <Button
-                                Name="MalButton"
+                            <ComboBox
                                 Width="150"
-                                Command="{x:Bind ViewModel.AuthenticateCommand}"
-                                CommandParameter="{x:Bind models:ListServiceType.MyAnimeList}"
-                                Content="Connect"
-                                Style="{StaticResource AccentButtonStyle}">
-                                <Interactivity:Interaction.Behaviors>
-                                    <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsMalConnected, Mode=OneWay}" Value="True">
-                                        <Interactions:ChangePropertyAction
-                                            PropertyName="Background"
-                                            TargetObject="{x:Bind MalButton}"
-                                            Value="Green" />
-                                        <Interactions:ChangePropertyAction
-                                            PropertyName="Content"
-                                            TargetObject="{x:Bind MalButton}"
-                                            Value="Connected" />
-                                    </Interactions:DataTriggerBehavior>
-                                </Interactivity:Interaction.Behaviors>
-                            </Button>
+                                ItemsSource="{x:Bind ViewModel.HomePages}"
+                                SelectedItem="{x:Bind ViewModel.Settings.HomePage, Mode=TwoWay}" />
                         </labs:SettingsCard>
-                        <labs:SettingsCard Header="AniList">
+
+                        <labs:SettingsCard
+                            Command="{x:Bind ViewModel.Navigate}"
+                            CommandParameter="Media Player"
+                            Description="Options for in-built media player"
+                            Header="Media Player"
+                            IsClickEnabled="True">
                             <labs:SettingsCard.HeaderIcon>
-                                <ImageIcon Source="/Assets/anilist.png" />
+                                <FontIcon Glyph="&#xEA69;" />
                             </labs:SettingsCard.HeaderIcon>
-                            <Button
-                                Name="AniListButton"
-                                Width="150"
-                                Command="{x:Bind ViewModel.AuthenticateCommand}"
-                                CommandParameter="{x:Bind models:ListServiceType.AniList}"
-                                Content="Connect"
-                                Style="{StaticResource AccentButtonStyle}">
-                                <Interactivity:Interaction.Behaviors>
-                                    <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsAniListConnected, Mode=OneWay}" Value="True">
-                                        <Interactions:ChangePropertyAction
-                                            PropertyName="Background"
-                                            TargetObject="{x:Bind AniListButton}"
-                                            Value="Green" />
-                                        <Interactions:ChangePropertyAction
-                                            PropertyName="Content"
-                                            TargetObject="{x:Bind AniListButton}"
-                                            Value="Connected" />
-                                    </Interactions:DataTriggerBehavior>
-                                </Interactivity:Interaction.Behaviors>
-                            </Button>
                         </labs:SettingsCard>
+
+                        <labs:SettingsCard
+                            Command="{x:Bind ViewModel.Navigate}"
+                            CommandParameter="Scrappers"
+                            Description="Options related to anime website scrapers"
+                            Header="Scrappers"
+                            IsClickEnabled="True">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xF6FA;" />
+                            </labs:SettingsCard.HeaderIcon>
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard
+                            Command="{x:Bind ViewModel.Navigate}"
+                            CommandParameter="Tracking"
+                            Description="Configure tracking services"
+                            Header="Tracking"
+                            IsClickEnabled="true">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEADF;" />
+                            </labs:SettingsCard.HeaderIcon>
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard
+                            Command="{x:Bind ViewModel.Navigate}"
+                            CommandParameter="Torrenting"
+                            Description="Option for torrenting"
+                            Header="Torrenting"
+                            IsClickEnabled="true">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xF080;" />
+                            </labs:SettingsCard.HeaderIcon>
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe7fc;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.UseDiscordRichPresense, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Contribute opening and ending timestamps to the community." Header="Contribute Timestamps">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe82e;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.ContributeTimeStamps, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Set the minumum log level." Header="Logging">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe9f9;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ComboBox
+                                Width="150"
+                                ItemsSource="{x:Bind ViewModel.LogLevels}"
+                                SelectedItem="{x:Bind ViewModel.Settings.MinimumLogLevel, Mode=TwoWay}" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Auto update application when available" Header="Upates">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xecc5;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.AutoUpdate, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard
+                            Command="{x:Bind ViewModel.ShowAbout}"
+                            Description="{x:Bind ViewModel.GetDescripton()}"
+                            Header="About"
+                            IsClickEnabled="True">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE946;" />
+                            </labs:SettingsCard.HeaderIcon>
+                        </labs:SettingsCard>
+
+                    </StackPanel>
+                </ctk:Case>
+
+                <!--  Media Player  -->
+                <ctk:Case Value="Settings&gt;Media Player">
+                    <StackPanel Spacing="10">
+                        <labs:SettingsCard Description="Decides how to choose stream qualitiy when multiple qualities as available" Header="Default Stream Quality">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe786;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ComboBox
+                                Width="150"
+                                ItemsSource="{x:Bind ViewModel.QualitySelections}"
+                                SelectedItem="{x:Bind ViewModel.Settings.DefaultStreamQualitySelection, Mode=TwoWay}" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Make the video player go fullscreen when it first starts playing if not already" Header="Auto Fullscreen">
+                            <labs:SettingsCard.HeaderIcon>
+                                <SymbolIcon Symbol="FullScreen" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.EnterFullScreenWhenPlaying, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Amount to seconds to skip when skip opening button is clicked during media playback" Header="Opening duration">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe916;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <NumberBox
+                                LargeChange="5"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Inline"
+                                Value="{x:Bind ViewModel.Settings.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
+                        </labs:SettingsCard>
+
+                    </StackPanel>
+                </ctk:Case>
+
+                <!--  Scrappers  -->
+                <ctk:Case Value="Settings&gt;Scrappers">
+                    <StackPanel Spacing="10">
+                        <labs:SettingsCard
+                            Command="{x:Bind ViewModel.ConfigureProvider}"
+                            Description="Default provider used to stream."
+                            Header="Default Stream Provider"
+                            IsClickEnabled="True">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe93e;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <labs:SettingsCard.ActionIcon>
+                                <SymbolIcon Symbol="Setting" />
+                            </labs:SettingsCard.ActionIcon>
+                            <ComboBox
+                                Width="150"
+                                DisplayMemberPath="DisplayName"
+                                ItemsSource="{x:Bind ViewModel.ProviderTypes}"
+                                SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Prefer subs for search result, excludes dubs from the result." Header="Prefer Subs over Dubs">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe986;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.PreferSubs, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
+                        </labs:SettingsCard>
+
+                        <labs:SettingsCard Description="Allow sideloading 3rd party provider plugins" Header="Sideload plugins">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe836;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.AllowSideLoadingPlugins, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
+                        </labs:SettingsCard>
+                    </StackPanel>
+                </ctk:Case>
+
+                <!--  Tracking  -->
+                <ctk:Case Value="Settings&gt;Tracking">
+                    <StackPanel Spacing="10">
+                        <labs:SettingsExpander
+                            Description="Choose default list service"
+                            Header="List service"
+                            IsExpanded="True">
+                            <labs:SettingsExpander.HeaderIcon>
+                                <FontIcon Glyph="&#xe71b;" />
+                            </labs:SettingsExpander.HeaderIcon>
+                            <ComboBox
+                                Width="150"
+                                ItemsSource="{x:Bind ViewModel.ServiceTypes}"
+                                SelectedItem="{x:Bind ViewModel.Settings.DefaultListService, Mode=TwoWay}" />
+                            <labs:SettingsExpander.Items>
+                                <labs:SettingsCard Header="MyAnimeList">
+                                    <labs:SettingsCard.HeaderIcon>
+                                        <ImageIcon Source="/Assets/mal.png" />
+                                    </labs:SettingsCard.HeaderIcon>
+                                    <Button
+                                        Name="MalButton"
+                                        Width="150"
+                                        Command="{x:Bind ViewModel.AuthenticateCommand}"
+                                        CommandParameter="{x:Bind models:ListServiceType.MyAnimeList}"
+                                        Content="Connect"
+                                        Style="{StaticResource AccentButtonStyle}">
+                                        <Interactivity:Interaction.Behaviors>
+                                            <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsMalConnected, Mode=OneWay}" Value="True">
+                                                <Interactions:ChangePropertyAction
+                                                    PropertyName="Background"
+                                                    TargetObject="{x:Bind MalButton}"
+                                                    Value="Green" />
+                                                <Interactions:ChangePropertyAction
+                                                    PropertyName="Content"
+                                                    TargetObject="{x:Bind MalButton}"
+                                                    Value="Connected" />
+                                            </Interactions:DataTriggerBehavior>
+                                        </Interactivity:Interaction.Behaviors>
+                                    </Button>
+                                </labs:SettingsCard>
+                                <labs:SettingsCard Header="AniList">
+                                    <labs:SettingsCard.HeaderIcon>
+                                        <ImageIcon Source="/Assets/anilist.png" />
+                                    </labs:SettingsCard.HeaderIcon>
+                                    <Button
+                                        Name="AniListButton"
+                                        Width="150"
+                                        Command="{x:Bind ViewModel.AuthenticateCommand}"
+                                        CommandParameter="{x:Bind models:ListServiceType.AniList}"
+                                        Content="Connect"
+                                        Style="{StaticResource AccentButtonStyle}">
+                                        <Interactivity:Interaction.Behaviors>
+                                            <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsAniListConnected, Mode=OneWay}" Value="True">
+                                                <Interactions:ChangePropertyAction
+                                                    PropertyName="Background"
+                                                    TargetObject="{x:Bind AniListButton}"
+                                                    Value="Green" />
+                                                <Interactions:ChangePropertyAction
+                                                    PropertyName="Content"
+                                                    TargetObject="{x:Bind AniListButton}"
+                                                    Value="Connected" />
+                                            </Interactions:DataTriggerBehavior>
+                                        </Interactivity:Interaction.Behaviors>
+                                    </Button>
+                                </labs:SettingsCard>
+                            </labs:SettingsExpander.Items>
+                        </labs:SettingsExpander>
+
                         <labs:SettingsCard Description="Show results which are not safe for work" Header="Include Nsfw">
                             <labs:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xe814;" />
@@ -96,72 +314,23 @@
                                 OffContent="Off"
                                 OnContent="On" />
                         </labs:SettingsCard>
-                    </labs:SettingsExpander.Items>
-                </labs:SettingsExpander>
 
-                <labs:SettingsCard Description="Choose which page loads at startup" Header="Home Page">
-                    <labs:SettingsCard.HeaderIcon>
-                        <SymbolIcon Symbol="Home" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ComboBox
-                        Width="150"
-                        ItemsSource="{x:Bind ViewModel.HomePages}"
-                        SelectedItem="{x:Bind ViewModel.Settings.HomePage, Mode=TwoWay}" />
-                </labs:SettingsCard>
+                        <labs:SettingsCard Description="Auto update tracking when configured number of seconds is remaining" Header="Auto update tracking">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xe930;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <NumberBox
+                                LargeChange="5"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Inline"
+                                Value="{x:Bind ViewModel.Settings.TimeRemainingWhenEpisodeCompletesInSeconds, Mode=TwoWay}" />
+                        </labs:SettingsCard>
 
-                <labs:SettingsCard Description="Prefer subs for search result, excludes dubs from the result." Header="Prefer Subs over Dubs">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe986;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.Settings.PreferSubs, Mode=TwoWay}"
-                        OffContent="Off"
-                        OnContent="On" />
-                </labs:SettingsCard>
+                    </StackPanel>
+                </ctk:Case>
 
-                <labs:SettingsCard Description="Decides how to choose stream qualitiy when multiple qualities as available" Header="Default Stream Quality">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe786;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ComboBox
-                        Width="150"
-                        ItemsSource="{x:Bind ViewModel.QualitySelections}"
-                        SelectedItem="{x:Bind ViewModel.Settings.DefaultStreamQualitySelection, Mode=TwoWay}" />
-                </labs:SettingsCard>
-
-                <labs:SettingsCard Description="Make the video player go fullscreen when it first starts playing if not already" Header="Auto Fullscreen">
-                    <labs:SettingsCard.HeaderIcon>
-                        <SymbolIcon Symbol="FullScreen" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.Settings.EnterFullScreenWhenPlaying, Mode=TwoWay}"
-                        OffContent="Off"
-                        OnContent="On" />
-                </labs:SettingsCard>
-
-                <labs:SettingsCard
-                    Command="{x:Bind ViewModel.ConfigureProvider}"
-                    Description="Default provider used to stream."
-                    Header="Default Stream Provider"
-                    IsClickEnabled="True">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe93e;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <labs:SettingsCard.ActionIcon>
-                        <SymbolIcon Symbol="Setting" />
-                    </labs:SettingsCard.ActionIcon>
-                    <ComboBox
-                        Width="150"
-                        DisplayMemberPath="DisplayName"
-                        ItemsSource="{x:Bind ViewModel.ProviderTypes}"
-                        SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
-                </labs:SettingsCard>
-
-                <labs:SettingsExpander Description="Options for torrenting" Header="Torrenting">
-                    <labs:SettingsExpander.HeaderIcon>
-                        <FontIcon Glyph="&#xe705;" />
-                    </labs:SettingsExpander.HeaderIcon>
-                    <labs:SettingsExpander.Items>
+                <ctk:Case Value="Settings&gt;Torrenting">
+                    <StackPanel Spacing="10">
                         <labs:SettingsCard
                             Command="{x:Bind ViewModel.ConfigureDebridService}"
                             Description="Select and cofigure debrid service"
@@ -170,6 +339,9 @@
                             <labs:SettingsCard.ActionIcon>
                                 <SymbolIcon Symbol="Setting" />
                             </labs:SettingsCard.ActionIcon>
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE78C;" />
+                            </labs:SettingsCard.HeaderIcon>
                             <ComboBox
                                 Width="150"
                                 ItemsSource="{x:Bind ViewModel.DebridServices}"
@@ -179,90 +351,18 @@
                             <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />
                         </labs:SettingsCard>
                         <labs:SettingsCard Description="Site to search for torrents" Header="Torrent Provider">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE93E;" />
+                            </labs:SettingsCard.HeaderIcon>
                             <ComboBox
                                 Width="150"
                                 ItemsSource="{x:Bind ViewModel.TorrentProviderTypes}"
                                 SelectedItem="{x:Bind ViewModel.Settings.TorrentProviderType, Mode=TwoWay}" />
                         </labs:SettingsCard>
-                    </labs:SettingsExpander.Items>
-                </labs:SettingsExpander>
+                    </StackPanel>
+                </ctk:Case>
 
-                <labs:SettingsCard Description="Allow sideloading 3rd party provider plugins" Header="Sideload plugins">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe836;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.Settings.AllowSideLoadingPlugins, Mode=TwoWay}"
-                        OffContent="Off"
-                        OnContent="On" />
-                </labs:SettingsCard>
-                <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe7fc;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.Settings.UseDiscordRichPresense, Mode=TwoWay}"
-                        OffContent="Off"
-                        OnContent="On" />
-                </labs:SettingsCard>
-                <labs:SettingsCard Description="Auto update tracking when configured number of seconds is remaining" Header="Auto update tracking">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe930;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <NumberBox
-                        LargeChange="5"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Inline"
-                        Value="{x:Bind ViewModel.Settings.TimeRemainingWhenEpisodeCompletesInSeconds, Mode=TwoWay}" />
-                </labs:SettingsCard>
-                <labs:SettingsCard Description="Amount to seconds to skip when skip opening button is clicked during media playback" Header="Opening duration">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe916;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <NumberBox
-                        LargeChange="5"
-                        SmallChange="1"
-                        SpinButtonPlacementMode="Inline"
-                        Value="{x:Bind ViewModel.Settings.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
-                </labs:SettingsCard>
-                <labs:SettingsCard Description="Contribute opening and ending timestamps to the community." Header="Contribute Timestamps">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe82e;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.Settings.ContributeTimeStamps, Mode=TwoWay}"
-                        OffContent="Off"
-                        OnContent="On" />
-                </labs:SettingsCard>
-                <labs:SettingsCard Description="Set the minumum log level." Header="Logging">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe9f9;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ComboBox
-                        Width="150"
-                        ItemsSource="{x:Bind ViewModel.LogLevels}"
-                        SelectedItem="{x:Bind ViewModel.Settings.MinimumLogLevel, Mode=TwoWay}" />
-                </labs:SettingsCard>
-                <labs:SettingsCard Description="Auto update application when available" Header="Upates">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xecc5;" />
-                    </labs:SettingsCard.HeaderIcon>
-                    <ToggleSwitch
-                        IsOn="{x:Bind ViewModel.Settings.AutoUpdate, Mode=TwoWay}"
-                        OffContent="Off"
-                        OnContent="On" />
-                </labs:SettingsCard>
-                <labs:SettingsCard
-                    Command="{x:Bind ViewModel.ShowAbout}"
-                    Description="{x:Bind ViewModel.GetDescripton()}"
-                    Header="About"
-                    IsClickEnabled="True">
-                    <labs:SettingsCard.HeaderIcon>
-                        <FontIcon Glyph="&#xe756;" />
-                    </labs:SettingsCard.HeaderIcon>
-                </labs:SettingsCard>
-            </StackPanel>
-
+            </ctk:SwitchPresenter>
         </Grid>
     </ScrollViewer>
 

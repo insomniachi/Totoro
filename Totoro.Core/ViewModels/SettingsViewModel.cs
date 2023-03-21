@@ -7,6 +7,19 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
 
+public class BreadCrumbBarModel : ReactiveObject
+{
+    public ObservableCollection<string> BreadCrumbs { get; } = new() { "Settings" };
+    [ObservableAsProperty] public string State { get; }
+
+    public BreadCrumbBarModel()
+    {
+        BreadCrumbs.ToObservableChangeSet()
+            .Select(_ => string.Join(">", BreadCrumbs))
+            .ToPropertyEx(this, x => x.State);
+    }
+}
+
 internal class SettingsModel : ReactiveObject, ISettings
 {
     public SettingsModel(ILocalSettingsService localSettingsService,
@@ -92,19 +105,6 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool EnterFullScreenWhenPlaying { get; set; }
     [Reactive] public DebridServiceType DebridServiceType { get; set; }
     [Reactive] public TorrentProviderType TorrentProviderType { get; set; }
-
-    public async Task<Unit> UpdateUrls()
-    {
-        using var client = new HttpClient();
-        using var response = await client.GetAsync(new Uri(string.IsNullOrEmpty(DefaultUrls.GogoAnime) ? AnimDL.Core.DefaultUrl.GogoAnime : DefaultUrls.GogoAnime));
-        if (response.StatusCode == System.Net.HttpStatusCode.MovedPermanently)
-        {
-            DefaultUrls.GogoAnime = response.Headers.Location.AbsoluteUri;
-        }
-
-        DefaultUrl.GogoAnime = DefaultUrls.GogoAnime;
-        return Unit.Default;
-    }
 }
 
 public class SettingsViewModel : NavigatableViewModel
@@ -132,6 +132,8 @@ public class SettingsViewModel : NavigatableViewModel
     public ICommand ShowAbout { get; }
     public ICommand ConfigureProvider { get; }
     public ICommand ConfigureDebridService { get; }
+    public ICommand Navigate { get; }
+    public BreadCrumbBarModel BreadCrumbBar { get; } = new();
 
     public SettingsViewModel(ISettings settings,
                              ITrackingServiceContext trackingServiceContext,
@@ -159,7 +161,8 @@ public class SettingsViewModel : NavigatableViewModel
         });
         ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));
         ConfigureDebridService = ReactiveCommand.CreateFromTask(() => viewService.ConfigureOptions(settings.DebridServiceType, t => debridOptions[t], (t, _) => debridOptions.Save(t)));
-        
+        Navigate = ReactiveCommand.Create<string>(BreadCrumbBar.BreadCrumbs.Add);
+
         NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
 
         this.ObservableForProperty(x => x.SelectedProvider, x => x)

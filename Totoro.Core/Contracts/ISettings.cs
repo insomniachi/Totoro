@@ -23,7 +23,6 @@ public interface ISettings
     bool EnterFullScreenWhenPlaying { get; set; }
     DebridServiceType DebridServiceType { get; set; }
     TorrentProviderType TorrentProviderType { get; set; }
-    Task<Unit> UpdateUrls();
 }
 
 public class DefaultUrls : ReactiveObject
