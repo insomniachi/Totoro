@@ -7,27 +7,27 @@ namespace Totoro.Core.Services;
 
 public class PluginManager : IPluginManager, IEnableLogger
 {
-    private readonly string _localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/AnimDL/master/Binaries";
-    private const string _defaultApplicationDataFolder = "Totoro/ApplicationData";
-    private readonly string _pluginFolder;
     private readonly HttpClient _httpClient;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly ISettings _settings;
+    private readonly IKnownFolders _knownFolders;
     private readonly Dictionary<string, ProviderOptions> _configs;
 
     record PluginInfo(string FileName, string Version);
 
     public PluginManager(HttpClient httpClient,
                          ILocalSettingsService localSettingsService,
-                         ISettings settings)
+                         ISettings settings,
+                         IKnownFolders knownFolders)
     {
-        _pluginFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder, "Plugins");
-        _configs = localSettingsService.ReadSetting("ProviderConfigs", new Dictionary<string, ProviderOptions>());
-        Directory.CreateDirectory(_pluginFolder);
+        var json = localSettingsService.ReadSetting("ProviderConfigs", "").Wait();
+        _configs = string.IsNullOrEmpty(json) ? new() : JsonSerializer.Deserialize<Dictionary<string, ProviderOptions>>(json);
+        Directory.CreateDirectory(knownFolders.Plugins);
         _httpClient = httpClient;
         _localSettingsService = localSettingsService;
         _settings = settings;
+        _knownFolders = knownFolders;
     }
 
     public void SaveConfig(string provider, ProviderOptions config)
@@ -39,7 +39,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
     public void SaveConfig()
     {
-        _localSettingsService.SaveSetting("ProviderConfigs", _configs);
+        _localSettingsService.SaveSetting("ProviderConfigs", JsonSerializer.Serialize(_configs));
     }
 
     private async Task<IEnumerable<PluginInfo>> GetListedPlugins()
@@ -67,13 +67,13 @@ public class PluginManager : IPluginManager, IEnableLogger
     {
         try
         {
-            var localPlugins = Directory.GetFiles(_pluginFolder).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
+            var localPlugins = Directory.GetFiles(_knownFolders.Plugins).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
             var listedPlugins = await GetListedPlugins();
             var newReleases = listedPlugins.Except(localPlugins).ToList();
             var hasNewConfig = false;
             foreach (var item in newReleases)
             {
-                var path = Path.Combine(_pluginFolder, item.FileName);
+                var path = Path.Combine(_knownFolders.Plugins, item.FileName);
                 if (File.Exists(path))
                 {
                     File.Delete(path);
@@ -88,15 +88,15 @@ public class PluginManager : IPluginManager, IEnableLogger
 
             if (!_settings.AllowSideLoadingPlugins && listedPlugins.Any())
             {
-                localPlugins = Directory.GetFiles(_pluginFolder).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
+                localPlugins = Directory.GetFiles(_knownFolders.Plugins).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
                 foreach (var item in localPlugins.Except(listedPlugins))
                 {
                     this.Log().Info($"Removing plugin : {item.FileName}");
-                    File.Delete(Path.Combine(_pluginFolder, item.FileName));
+                    File.Delete(Path.Combine(_knownFolders.Plugins, item.FileName));
                 }
             }
 
-            ProviderFactory.Instance.LoadPlugins(_pluginFolder);
+            ProviderFactory.Instance.LoadPlugins(_knownFolders.Plugins);
 
             foreach (var item in ProviderFactory.Instance.Providers)
             {

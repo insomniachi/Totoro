@@ -40,13 +40,6 @@
                         FontSize="15"
                         FontWeight="Bold"
                         Text="Episodes" />
-                    <ToggleSwitch
-                        Grid.Column="1"
-                        HorizontalAlignment="Right"
-                        IsOn="{x:Bind ViewModel.UseDub, Mode=TwoWay}"
-                        OffContent="Sub"
-                        OnContent="Dub"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasSubDub), Mode=OneWay}" />
 
                     <ComboBox
                         Width="150"

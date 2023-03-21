@@ -7,7 +7,7 @@ using Windows.Storage;
 
 namespace Totoro.WinUI.Services;
 
-public class LocalSettingsService : ILocalSettingsService
+public class LegacyLocalSettingsService : ILegacyLocalSettingsService
 {
     private const string _defaultApplicationDataFolder = "Totoro/ApplicationData";
     private const string _defaultLocalSettingsFile = "LocalSettings.json";
@@ -20,7 +20,7 @@ public class LocalSettingsService : ILocalSettingsService
     private IDictionary<string, object> _settings;
     private bool _isInitialized;
 
-    public LocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
+    public LegacyLocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
     {
         _fileService = fileService;
         _options = options.Value;
@@ -48,7 +48,7 @@ public class LocalSettingsService : ILocalSettingsService
         _isInitialized = true;
     }
 
-    public T ReadSetting<T>(string key, T defaultValue = default)
+    public IObservable<T> ReadSetting<T>(string key, T defaultValue = default)
     {
         if (RuntimeHelper.IsMSIX)
         {
@@ -56,11 +56,11 @@ public class LocalSettingsService : ILocalSettingsService
             {
                 try
                 {
-                    return Json.ToObject<T>((string)obj);
+                    return Observable.Return(Json.ToObject<T>((string)obj));
                 }
                 catch
                 {
-                    return defaultValue;
+                    return Observable.Return(defaultValue);
                 }
             }
         }
@@ -70,36 +70,16 @@ public class LocalSettingsService : ILocalSettingsService
             {
                 try
                 {
-                    return Json.ToObject<T>((string)obj);
+                    return Observable.Return(Json.ToObject<T>((string)obj));
                 }
                 catch
                 {
-                    return defaultValue;
+                    return Observable.Return(defaultValue);
                 }
             }
         }
 
-        return defaultValue;
-    }
-
-    public string ReadSettingString(string key, string defaultValue = default)
-    {
-        if (RuntimeHelper.IsMSIX)
-        {
-            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
-            {
-                return obj as string;
-            }
-        }
-        else
-        {
-            if (_settings != null && _settings.TryGetValue(key, out var obj))
-            {
-                return obj as string;
-            }
-        }
-
-        return defaultValue;
+        return Observable.Return(defaultValue);
     }
 
     public void SaveSetting<T>(string key, T value)
@@ -116,4 +96,6 @@ public class LocalSettingsService : ILocalSettingsService
     }
 
     public bool ContainsKey(string key) => _settings.ContainsKey(key);
+
+    public void RemoveSetting(string key) => throw new NotImplementedException();
 }

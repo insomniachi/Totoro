@@ -40,18 +40,21 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         _client = client;
         _anilistService = animeScheduleService;
 
-        var token = localSettingsService.ReadSetting<MalApi.OAuthToken>("MalToken");
-        var clientId = configuration["ClientId"];
-        if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
-        {
-            token = MalApi.MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
-            localSettingsService.SaveSetting("MalToken", token);
-        }
-        if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
-        {
-            client.SetAccessToken(token.AccessToken);
-        }
-        client.SetClientId(clientId);
+        var token = localSettingsService.ReadSetting<MalApi.OAuthToken>("MalToken")
+            .Subscribe(token =>
+            {
+                var clientId = configuration["ClientId"];
+                if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
+                {
+                    token = MalApi.MalAuthHelper.RefreshToken(clientId, token.RefreshToken).Result;
+                    localSettingsService.SaveSetting("MalToken", token);
+                }
+                if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
+                {
+                    client.SetAccessToken(token.AccessToken);
+                }
+                client.SetClientId(clientId);
+            });
     }
 
     public void SetAccessToken(string accessToken) => _client.SetAccessToken(accessToken);

@@ -26,7 +26,7 @@ public class TorrentsService : ITorrentsService, IEnableLogger
         _localSettingsService = localSettingsService;
         _viewService = viewService;
         _animeService = animeService;
-        _mediaFolder = _localSettingsService.ReadSetting("MediaFolder", Path.Combine(_localSettingsService.ApplicationDataFolder, "Media"));
+        _mediaFolder = _localSettingsService.ReadSetting("MediaFolder", Path.Combine(_localSettingsService.ApplicationDataFolder, "Media")).Wait();
     }
 
     public async Task Download(IDownloadableContent content)

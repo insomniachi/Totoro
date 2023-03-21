@@ -1,4 +1,5 @@
-﻿using MalApi;
+﻿using System.ComponentModel;
+using MalApi;
 using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Services;
@@ -22,7 +23,6 @@ namespace Totoro.Core
             services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
             services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
             services.AddSingleton<ITimestampsService, TimestampsService>();
-            services.AddSingleton<ITorrentsService, TorrentsService>();
             services.AddSingleton<ILocalMediaService, LocalMediaService>();
             services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
             services.AddSingleton<IUpdateService, WindowsUpdateService>();
@@ -30,6 +30,9 @@ namespace Totoro.Core
             services.AddSingleton<IAnimeServiceContext, AnimeServiceContext>();
             services.AddSingleton<ISettings, SettingsModel>();
             services.AddSingleton<IPluginManager, PluginManager>();
+            services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+            services.AddSingleton<IKnownFolders, KnownFolders>();
+            services.AddSingleton<IInitializer, Initalizer>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();
@@ -77,7 +80,6 @@ namespace Totoro.Core
             
             services.AddTransient<IDebridService, PremiumizeService>();
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
-            services.AddSingleton<IDebridServiceOptions, DebridServiceOptions>();
 
             return services;
         }

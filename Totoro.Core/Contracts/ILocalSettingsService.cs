@@ -3,8 +3,20 @@
 public interface ILocalSettingsService
 {
     string ApplicationDataFolder { get; }
-    T ReadSetting<T>(string key, T deafultValue = default);
-    string ReadSettingString(string key, string defaultValue = default);
+    IObservable<T> ReadSetting<T>(string key, T deafultValue = default);
     void SaveSetting<T>(string key, T value);
-    bool ContainsKey(string key);
+    void RemoveSetting(string key);
+}
+
+public interface ILegacyLocalSettingsService : ILocalSettingsService
+{
+
+}
+
+public static class LocalSettingsServiceExtensions
+{
+    public static IObservable<T> ReadSetting<T>(this ILocalSettingsService service, Key<T> key)
+    {
+        return service.ReadSetting(key.Name, key.Default.Value);
+    }
 }

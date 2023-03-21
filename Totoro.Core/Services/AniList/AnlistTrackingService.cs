@@ -12,8 +12,9 @@ public class AniListTrackingService : ITrackingService
 
     public AniListTrackingService(ILocalSettingsService localSettingsService)
     {
-        var token = localSettingsService.ReadSetting<AniListAuthToken>("AniListToken", new());
-        SetAccessToken(token.AccessToken);
+        var token = localSettingsService.ReadSetting<AniListAuthToken>("AniListToken", new())
+            .Select(x => x.AccessToken)
+            .Subscribe(SetAccessToken);
     }
 
     public bool IsAuthenticated { get; private set; }

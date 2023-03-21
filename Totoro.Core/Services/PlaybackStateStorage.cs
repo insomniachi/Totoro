@@ -10,7 +10,7 @@ public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
     public PlaybackStateStorage(ILocalSettingsService localSettingsService)
     {
         _localSettingsService = localSettingsService;
-        _recents = _localSettingsService.ReadSetting<Dictionary<long, Dictionary<int, double>>>("Recents", new());
+        _recents = _localSettingsService.ReadSetting<Dictionary<long, Dictionary<int, double>>>("Recents", new()).Wait();
     }
 
     public double GetTime(long id, int episode)

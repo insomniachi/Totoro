@@ -333,22 +333,23 @@
                 <!--  Torrenting  -->
                 <ctk:Case Value="Settings&gt;Torrenting">
                     <StackPanel Spacing="10">
-                        <labs:SettingsCard
-                            Command="{x:Bind ViewModel.ConfigureDebridService}"
-                            Description="Select and cofigure debrid service"
-                            Header="Debrid Service"
-                            IsClickEnabled="True">
-                            <labs:SettingsCard.ActionIcon>
-                                <SymbolIcon Symbol="Setting" />
-                            </labs:SettingsCard.ActionIcon>
-                            <labs:SettingsCard.HeaderIcon>
+                        <labs:SettingsExpander Description="Select and cofigure debrid service" Header="Debrid Service">
+                            <labs:SettingsExpander.HeaderIcon>
                                 <FontIcon Glyph="&#xE78C;" />
-                            </labs:SettingsCard.HeaderIcon>
+                            </labs:SettingsExpander.HeaderIcon>
                             <ComboBox
                                 Width="150"
                                 ItemsSource="{x:Bind ViewModel.DebridServices}"
                                 SelectedItem="{x:Bind ViewModel.Settings.DebridServiceType, Mode=TwoWay}" />
-                        </labs:SettingsCard>
+                            <labs:SettingsExpander.Items>
+                                <labs:SettingsCard Header="API Key">
+                                    <TextBox
+                                        Width="200"
+                                        PlaceholderText="API Key"
+                                        Text="{x:Bind ViewModel.Settings.PremiumizeApiKey, Mode=TwoWay}" />
+                                </labs:SettingsCard>
+                            </labs:SettingsExpander.Items>
+                        </labs:SettingsExpander>
                         <labs:SettingsCard Description="Url" Header="Nyaa">
                             <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />
                         </labs:SettingsCard>

@@ -57,7 +57,7 @@ public static partial class Converters
             }
         }
 
-        return type switch
+        return type.ToLower() switch
         {
             "sub" => "Sub",
             "dub" => "Dub",

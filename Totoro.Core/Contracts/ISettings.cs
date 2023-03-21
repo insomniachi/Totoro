@@ -15,7 +15,7 @@ public interface ISettings
     bool ContributeTimeStamps { get; set; }
     LogLevel MinimumLogLevel { get; set; }
     bool AutoUpdate { get; set; }
-    ListServiceType? DefaultListService { get; set; }
+    ListServiceType DefaultListService { get; set; }
     string HomePage { get; set; }
     bool AllowSideLoadingPlugins { get; set; }
     StreamQualitySelection DefaultStreamQualitySelection { get; set; }
@@ -23,6 +23,7 @@ public interface ISettings
     bool EnterFullScreenWhenPlaying { get; set; }
     DebridServiceType DebridServiceType { get; set; }
     TorrentProviderType TorrentProviderType { get; set; }
+    string PremiumizeApiKey { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

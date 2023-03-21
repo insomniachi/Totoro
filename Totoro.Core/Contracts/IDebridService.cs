@@ -21,10 +21,3 @@ public interface IDebridServiceContext
     IObservable<string> TransferCreated { get; }
     bool IsAuthenticated { get; }
 }
-
-public interface IDebridServiceOptions
-{
-    ProviderOptions this[DebridServiceType type] { get; }
-    void Save(DebridServiceType type);
-    IObservable<DebridServiceType> Changed { get; }
-}

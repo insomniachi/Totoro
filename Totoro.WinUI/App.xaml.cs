@@ -128,8 +128,8 @@ public partial class App : Application, IEnableLogger
 
     private static void ConfigureLogging()
     {
-        var appDataFolder = GetService<IOptions<LocalSettingsOptions>>().Value.ApplicationDataFolder;
-        var log = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appDataFolder, "Logs/log.txt");
+        var knownFolders = GetService<IKnownFolders>();
+        var log = System.IO.Path.Combine(knownFolders.Logs, "log.txt");
         var mimimumLogLevel = GetService<ISettings>().MinimumLogLevel;
         var configuration = new LoggerConfiguration()
                     .Enrich.FromLogContext()

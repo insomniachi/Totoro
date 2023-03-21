@@ -15,5 +15,5 @@ public interface IAnimeServiceContext
     IObservable<AnimeModel> GetInformation(long id);
     IObservable<IEnumerable<AnimeModel>> GetAnime(string name);
     IObservable<IEnumerable<AnimeModel>> GetAiringAnime();
-    ListServiceType? Current { get; }
+    ListServiceType Current { get; }
 }

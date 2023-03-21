@@ -8,17 +8,19 @@ namespace Totoro.Core.Services;
 public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogger
 {
     private readonly IObservable<VersionInfo> _onUpdate;
-    private readonly string _updateFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "ApplicationData", "Updates");
     private readonly HttpClient _httpClient;
+    private readonly IKnownFolders _knownFolders;
     private VersionInfo _current;
     private CancellationTokenSource _cts;
 
     public IObservable<VersionInfo> OnUpdateAvailable => _onUpdate;
 
     public WindowsUpdateService(HttpClient httpClient,
-                                ISettings settings)
+                                ISettings settings,
+                                IKnownFolders knownFolders)
     {
         _httpClient = httpClient;
+        _knownFolders = knownFolders;
         _onUpdate = Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
             .Where(_ => settings.AutoUpdate)
@@ -59,13 +61,13 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
 
     public async Task<VersionInfo> DownloadUpdate(VersionInfo versionInfo)
     {
-        Directory.CreateDirectory(_updateFolder);
+        Directory.CreateDirectory(_knownFolders.Updates);
         var ext = Path.GetExtension(versionInfo.Url);
         var fileName = $"Totoro_{versionInfo.Version}{ext}";
-        var fullPath = Path.Combine(_updateFolder, fileName);
+        var fullPath = Path.Combine(_knownFolders.Updates, fileName);
         versionInfo.FilePath = fullPath;
 
-        foreach (var file in Directory.GetFiles(_updateFolder).Where(x => x != fullPath))
+        foreach (var file in Directory.GetFiles(_knownFolders.Updates).Where(x => x != fullPath))
         {
             this.Log().Info($"Deleting file {file}");
             File.Delete(file);

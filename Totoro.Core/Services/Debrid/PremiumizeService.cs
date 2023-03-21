@@ -42,22 +42,20 @@ public class Transfer
 public class PremiumizeService : IDebridService
 {
     private readonly HttpClient _httpClient;
-    private readonly IDebridServiceOptions _options;
     private readonly string _api = @"https://www.premiumize.me/api";
     private string _apiKey;
 
     public PremiumizeService(HttpClient httpClient,
-                             IDebridServiceOptions options)
+                             ISettings settings)
     {
         _httpClient = httpClient;
-        _options = options;
 
-        options
-            .Changed
-            .Where(x => x == Type)
-            .Subscribe(_ => SetApiKey(ApiKey));
+        settings
+            .WhenAnyValue(x => x.PremiumizeApiKey)
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Subscribe(SetApiKey);
 
-        SetApiKey(ApiKey);
+        SetApiKey(settings.PremiumizeApiKey);
     }
 
     public void SetApiKey(string apiKey)
@@ -69,7 +67,6 @@ public class PremiumizeService : IDebridService
     }
 
     public bool IsAuthenticated { get; private set; }
-    public string ApiKey => _options[Type].GetString("Key", "");
 
     public DebridServiceType Type => DebridServiceType.Premiumize;
 

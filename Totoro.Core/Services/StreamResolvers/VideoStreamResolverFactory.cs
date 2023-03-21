@@ -22,6 +22,11 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
         return new AnimDLVideoStreamResolver(_providerFactory, _settings, baseUrl);
     }
 
+    public IVideoStreamModelResolver CreateGogoAnimDLResolver(string baseUrlSub, string baseUrlDub)
+    {
+        return new AnimDLVideoStreamResolver(_providerFactory, _settings, baseUrlSub, baseUrlDub);
+    }
+
     public async Task<IVideoStreamModelResolver> CreateDebridStreamResolver(string magnet)
     {
         var resolver = new DebridStreamModelResolver(_debridService, magnet);

@@ -14,45 +14,25 @@ public class AnimeServiceContext : IAnimeServiceContext
             : new();
     }
 
-    public ListServiceType? Current => _settings.DefaultListService;
+    public ListServiceType Current => _settings.DefaultListService;
 
     public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
     {
-        if (_settings.DefaultListService is not ListServiceType type)
-        {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
-        }
-
-        return _services[type].GetAiringAnime();
+        return _services[_settings.DefaultListService].GetAiringAnime();
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
     {
-        if (_settings.DefaultListService is not ListServiceType type)
-        {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
-        }
-
-        return _services[type].GetAnime(name);
+        return _services[_settings.DefaultListService].GetAnime(name);
     }
 
     public IObservable<AnimeModel> GetInformation(long id)
     {
-        if (_settings.DefaultListService is not ListServiceType type)
-        {
-            return Observable.Empty<AnimeModel>();
-        }
-
-        return _services[type].GetInformation(id);
+        return _services[_settings.DefaultListService].GetInformation(id);
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
     {
-        if (_settings.DefaultListService is not ListServiceType type)
-        {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
-        }
-
-        return _services[type].GetSeasonalAnime();
+        return _services[_settings.DefaultListService].GetSeasonalAnime();
     }
 }

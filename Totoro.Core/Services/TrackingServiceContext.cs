@@ -18,41 +18,17 @@ public class TrackingServiceContext : ITrackingServiceContext
             : new();
     }
 
-    public bool IsAuthenticated
-    {
-        get
-        {
-            if (_settings.DefaultListService is not ListServiceType type)
-            {
-                return false;
-            }
-
-            return _trackers[type].IsAuthenticated;
-        }
-    }
-
+    public bool IsAuthenticated => _trackers[_settings.DefaultListService].IsAuthenticated;
     public bool IsTrackerAuthenticated(ListServiceType type) => _trackers[type].IsAuthenticated;
-
     public IObservable<ListServiceType> Authenticated => _authenticatedSubject;
-
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
-        if (_settings.DefaultListService is not ListServiceType type)
-        {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
-        }
-
-        return _trackers[type].GetAnime();
+        return _trackers[_settings.DefaultListService].GetAnime();
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
     {
-        if (_settings.DefaultListService is not ListServiceType type)
-        {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
-        }
-
-        return _trackers[type].GetCurrentlyAiringTrackedAnime();
+        return _trackers[_settings.DefaultListService].GetCurrentlyAiringTrackedAnime();
     }
 
     public void SetAccessToken(string token, ListServiceType type)
@@ -63,11 +39,6 @@ public class TrackingServiceContext : ITrackingServiceContext
 
     public IObservable<Tracking> Update(long id, Tracking tracking)
     {
-        if (_settings.DefaultListService is not ListServiceType type)
-        {
-            return Observable.Return(tracking);
-        }
-
-        return _trackers[type].Update(id, tracking);
+        return _trackers[_settings.DefaultListService].Update(id, tracking);
     }
 }

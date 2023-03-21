@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Windowing;
+﻿using System.IO;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Splat;
 using Totoro.WinUI.Activation;
@@ -12,34 +13,23 @@ public class ActivationService : IActivationService, IEnableLogger
     private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
-    private readonly IPlaybackStateStorage _playbackStateStorage;
-    private readonly IPluginManager _pluginManager;
-    private readonly IUpdateService _updateService;
-    private readonly IAiredEpisodeToastService _toastService;
+    private readonly IInitializer _initializer;
     private readonly string _prevWebviewFolder;
-    private readonly string _tempPath = System.IO.Path.GetTempPath();
+    private readonly string _tempPath = Path.GetTempPath();
 
     public bool IsAuthenticated { get; set; } = true;
 
     public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
                              IEnumerable<IActivationHandler> activationHandlers,
                              IThemeSelectorService themeSelectorService,
-                             IPlaybackStateStorage playbackStateStorage,
-                             ITrackingServiceContext trackingService,
-                             IPluginManager pluginManager,
-                             IUpdateService updateService,
-                             IAiredEpisodeToastService toastService)
+                             IInitializer initializer)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
-        _playbackStateStorage = playbackStateStorage;
-        _pluginManager = pluginManager;
-        _updateService = updateService;
-        _toastService = toastService;
+        _initializer = initializer;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
         
-        IsAuthenticated = trackingService.IsAuthenticated;
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
     }
 
@@ -68,8 +58,7 @@ public class ActivationService : IActivationService, IEnableLogger
         {
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _prevWebviewFolder);
         }
-        _playbackStateStorage.StoreState();
-        _updateService.ShutDown();
+        _initializer.ShutDown();
         NativeMethods.AllowSleep();
         App.MainWindow.Closed -= MainWindow_Closed;
     }
@@ -92,8 +81,7 @@ public class ActivationService : IActivationService, IEnableLogger
     private async Task InitializeAsync()
     {
         _themeSelectorService.Initialize();
-        await _pluginManager.Initialize();
-        //_toastService.Start();
+        await _initializer.Initialize();
     }
 
     private Task StartupAsync()

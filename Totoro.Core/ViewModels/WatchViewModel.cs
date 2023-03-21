@@ -51,7 +51,6 @@ public partial class WatchViewModel : NavigatableViewModel
 
         SetMediaPlayer(mediaPlayer);
         MediaPlayer = mediaPlayer;
-        UseDub = !settings.PreferSubs;
         Provider = providerFactory.GetProvider(settings.DefaultProviderType);
         SelectedAudioStream = GetDefaultAudioStream();
         
@@ -82,22 +81,20 @@ public partial class WatchViewModel : NavigatableViewModel
             .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x =>
+            .Subscribe(async x =>
             {
-                HasSubDub = x is { Dub: { }, Sub: { } };
-                var searResult = UseDub ? x.Dub ?? x.Sub : x.Sub;
-                _ = CreateAnimDLResolver(searResult.Url);
-                if (HasSubDub)
+                var hasSubDub = x is { Dub: { }, Sub: { } };
+                var searResult = _settings.PreferSubs ? x.Dub ?? x.Sub : x.Sub;
+
+                if (hasSubDub)
                 {
-                    this.ObservableForProperty(x => x.UseDub, x => x)
-                        .Where(_ => HasSubDub)
-                        .Select(useDub => useDub ? x.Dub : x.Sub)
-                        .Subscribe(x =>
-                        {
-                            var currentEpNumber = EpisodeModels.Current.EpisodeNumber;
-                            EpisodeModels.Current = null;
-                            // TODO
-                        });
+                    await CreateAnimDLResolver(x.Sub.Url, x.Dub.Url);
+                    SubStreams = new List<string>() { "Sub", "Dub" };
+                    SelectedAudioStream = _settings.PreferSubs ? SubStreams.First() : SubStreams.Last();
+                }
+                else
+                {
+                    await CreateAnimDLResolver(searResult.Url);
                 }
             }, RxApp.DefaultExceptionHandler.OnError);
 
@@ -131,11 +128,19 @@ public partial class WatchViewModel : NavigatableViewModel
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(stream => Streams = stream);
 
+        this.WhenAnyValue(x => x.SelectedAudioStream)
+            .Where(_ => EpisodeModels?.Current is not null)
+            .SelectMany(selectedSubStream => _videoStreamResolver.ResolveEpisode(EpisodeModels.Current.EpisodeNumber, selectedSubStream))
+            .Subscribe(stream => Streams = stream);
+
         this.WhenAnyValue(x => x.Streams)
             .WhereNotNull()
             .Do(stream =>
             {
-                SubStreams = stream.StreamTypes;
+                if(settings.DefaultProviderType != "gogo")
+                {
+                    SubStreams = stream.StreamTypes;
+                }
                 Qualities = stream.Qualities;
             })
             .Select(stream => GetDefaultQuality(stream.Qualities))
@@ -226,19 +231,19 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(SetAnime);
 
         this.WhenAnyValue(x => x.SubStreams)
+            .WhereNotNull()
             .Select(x => x.Count() > 1)
+            .Log(this, "SubStreams :", x => string.Join(",", x))
             .ToPropertyEx(this, x => x.HasMultipleSubStreams);
 
         NativeMethods.PreventSleep();
     }
 
-    [Reactive] public bool UseDub { get; set; }
     [Reactive] public bool UseTorrents { get; set; }
     [Reactive] public string SelectedAudioStream { get; set; }
     [Reactive] public double CurrentPlayerTime { get; set; }
     [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     [Reactive] public IEnumerable<string> Qualities { get; set; }
-    [Reactive] public bool HasSubDub { get; set; }
     [Reactive] public IEnumerable<string> SubStreams { get; set; }
     [Reactive] public string SelectedQuality { get; set; }
     [Reactive] public VideoStreamsForEpisodeModel Streams { get; set; }
@@ -457,6 +462,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private string GetDefaultAudioStream()
     {
+        if(_settings.DefaultProviderType == "gogo")
+        {
+            return "Sub";
+        }
+
         var key = "StreamType";
         if (_settings.DefaultProviderType == "consumet" && _providerOptions?.GetString("Provider", "zoro") == "crunchyroll")
         {
@@ -536,6 +546,12 @@ public partial class WatchViewModel : NavigatableViewModel
     private async Task CreateAnimDLResolver(string url)
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(url);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+    }
+
+    private async Task CreateAnimDLResolver(string sub, string dub)
+    {
+        _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(sub, dub);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
     }
 }

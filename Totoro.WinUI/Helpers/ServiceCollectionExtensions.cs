@@ -9,6 +9,7 @@ using Totoro.WinUI.Media;
 using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;
+using Windows.Services.Maps;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -47,7 +48,8 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
-        services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+        services.AddSingleton<ILegacyLocalSettingsService, LegacyLocalSettingsService>();
+        services.AddSingleton<Func<ILegacyLocalSettingsService>>( x => () => x.GetRequiredService<LegacyLocalSettingsService>());
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<IActivationService, ActivationService>();

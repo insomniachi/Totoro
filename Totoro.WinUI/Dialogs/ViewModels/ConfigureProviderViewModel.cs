@@ -19,14 +19,6 @@ public class ConfigureProviderViewModel : DialogViewModel
         this.WhenAnyValue(x => x.ProviderType)
             .WhereNotNull()
             .Select(ProviderFactory.Instance.GetOptions)
-            .Do(x =>
-            {
-                x.WhenChanged()
-                 .Subscribe(y =>
-                 {
-                     ;
-                 });
-            })
             .ToPropertyEx(this, x => x.Config);
     }
 
