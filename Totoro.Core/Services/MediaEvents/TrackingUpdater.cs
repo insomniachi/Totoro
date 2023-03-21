@@ -4,6 +4,7 @@ internal class TrackingUpdater : MediaEventListener
 {
     private readonly ITrackingServiceContext _trackingService;
     private readonly ISettings _settings;
+    private readonly IViewService _viewService;
     private TimeSpan _updateAt = TimeSpan.MaxValue;
     private TimeSpan _position;
     private TimeSpan _duration;
@@ -11,10 +12,12 @@ internal class TrackingUpdater : MediaEventListener
     private bool _isUpdated;
 
     public TrackingUpdater(ITrackingServiceContext trackingService,
-                           ISettings settings)
+                           ISettings settings,
+                           IViewService viewService)
     {
         _trackingService = trackingService;
         _settings = settings;
+        _viewService = viewService;
     }
 
     protected override void OnDurationChanged(TimeSpan duration)
@@ -41,7 +44,7 @@ internal class TrackingUpdater : MediaEventListener
             return;
         }
 
-        UpdateTracking();
+        _ = UpdateTracking();
     }
 
     protected override void OnNextTrack()
@@ -52,7 +55,7 @@ internal class TrackingUpdater : MediaEventListener
             return;
         }
 
-        UpdateTracking();
+        _ = UpdateTracking();
     }
 
     protected override void OnEpisodeChanged()
@@ -60,7 +63,7 @@ internal class TrackingUpdater : MediaEventListener
         _isUpdated = false;
     }
 
-    private void UpdateTracking()
+    private async Task UpdateTracking()
     {
         _isUpdated = true;
         var tracking = new Tracking() { WatchedEpisodes = _currentEpisode };
@@ -69,6 +72,12 @@ internal class TrackingUpdater : MediaEventListener
         {
             tracking.Status = AnimeStatus.Completed;
             tracking.FinishDate = DateTime.Today;
+
+            if(_animeModel?.Tracking?.Score is null && await _viewService.RequestRating(_animeModel) is { } score && score > 0 )
+            {
+                tracking.Score = score;
+            }
+
         }
         else if (_currentEpisode == 1)
         {

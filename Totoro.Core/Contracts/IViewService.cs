@@ -3,6 +3,7 @@
 public interface IViewService
 {
     Task<Unit> UpdateTracking(IAnimeModel anime);
+    Task<int> RequestRating(IAnimeModel anime);
     Task<SearchResult> ChoooseSearchResult(SearchResult closesMatch, List<SearchResult> searchResults, string providerType);
     Task Authenticate(ListServiceType type);
     Task PlayVideo(string title, string url);

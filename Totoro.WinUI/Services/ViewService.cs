@@ -21,14 +21,14 @@ public class ViewService : IViewService, IEnableLogger
         _animeService = animeService;
     }
 
-    public async Task<Unit> UpdateTracking(IAnimeModel a)
+    public async Task<Unit> UpdateTracking(IAnimeModel anime)
     {
         var vm = App.GetService<UpdateAnimeStatusViewModel>();
-        vm.Anime = a;
+        vm.Anime = anime;
 
         var result = await _contentDialogService.ShowDialog(vm, d =>
         {
-            d.Title = a.Title;
+            d.Title = anime.Title;
             d.PrimaryButtonText = "Update";
             d.IsSecondaryButtonEnabled = false;
             d.CloseButtonText = "Cancel";
@@ -40,6 +40,26 @@ public class ViewService : IViewService, IEnableLogger
         }
 
         return Unit.Default;
+    }
+
+    public async Task<int> RequestRating(IAnimeModel anime)
+    {
+        var vm = new RequestRatingViewModel(anime);
+        var result = await _contentDialogService.ShowDialog(vm, d =>
+        {
+            d.Title = "Update Rating";
+            d.PrimaryButtonText = "Update";
+            d.IsSecondaryButtonEnabled = false;
+            d.CloseButtonText = "Cancel";
+            d.Width = 300;
+        });
+
+        if (result == ContentDialogResult.Primary)
+        {
+            return vm.Rating;
+        }
+
+        return 0;
     }
 
     public async Task<SearchResult> ChoooseSearchResult(SearchResult closestMatch, List<SearchResult> searchResults, string providerType)

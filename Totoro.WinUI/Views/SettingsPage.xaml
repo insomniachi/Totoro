@@ -47,6 +47,7 @@
                 <!--  Home  -->
                 <ctk:Case Value="Settings">
                     <StackPanel Spacing="10">
+
                         <labs:SettingsCard
                             Description="Choose which page loads at startup"
                             Header="Home Page"
@@ -329,6 +330,7 @@
                     </StackPanel>
                 </ctk:Case>
 
+                <!--  Torrenting  -->
                 <ctk:Case Value="Settings&gt;Torrenting">
                     <StackPanel Spacing="10">
                         <labs:SettingsCard
