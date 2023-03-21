@@ -129,9 +129,15 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(stream => Streams = stream);
 
         this.WhenAnyValue(x => x.SelectedAudioStream)
-            .Where(_ => EpisodeModels?.Current is not null)
-            .SelectMany(selectedSubStream => _videoStreamResolver.ResolveEpisode(EpisodeModels.Current.EpisodeNumber, selectedSubStream))
-            .Subscribe(stream => Streams = stream);
+            .Where(_ => EpisodeModels?.Current is not null && _videoStreamResolver is not null)
+            .SelectMany(type => _videoStreamResolver?.ResolveAllEpisodes(type))
+            .WhereNotNull()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(epModels =>
+            {
+                _episodeRequest = EpisodeModels.Current.EpisodeNumber;
+                EpisodeModels = epModels;
+            });
 
         this.WhenAnyValue(x => x.Streams)
             .WhereNotNull()
