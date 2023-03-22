@@ -32,6 +32,12 @@ namespace Totoro.Core.Models
             _streams.Add("default", VideoStreamModel.FromUrl(url));
         }
 
+        public VideoStreamsForEpisodeModel(Stream stream)
+        {
+            _qualities = new[] { "default" };
+            _streams.Add("default", VideoStreamModel.FromStream(stream));
+        }
+
         public VideoStreamModel GetStreamModel(string quality) => _streams[quality];
         public IEnumerable<string> StreamTypes => _streamTypes;
         public Dictionary<string, string> AdditionalInformation => _additionalInformation;

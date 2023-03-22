@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
+using SharpCompress.Compressors.Xz;
 using Totoro.WinUI.Contracts;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -16,6 +17,18 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
     private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
+    private readonly FFmpegInteropX.MediaSourceConfig _ffmpegOptions = new()
+    {
+        ReadAheadBufferEnabled = true,
+        ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
+        ReadAheadBufferSize = 50 * 1024 * 1024,
+        FFmpegOptions = new Windows.Foundation.Collections.PropertySet
+        {
+            { "reconnect", 1 },
+            { "reconnect_streamed", 1 },
+            { "reconnect_on_network_error", 1 },
+        }
+    };
     private bool _isHardSub;
     private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
 
@@ -135,23 +148,14 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         {
             return MediaSource.CreateFromUri(uri);
         }
-
     }
 
-    public async Task<Unit> SetFFMpegMedia(string url)
+    public async Task<Unit> SetFFMpegMedia(VideoStreamModel streamModel)
     {
-        _ffmpegMediaSource = await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(url, new FFmpegInteropX.MediaSourceConfig
-        {
-            ReadAheadBufferEnabled = true,
-            ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
-            ReadAheadBufferSize = 50 * 1024 * 1024,
-            FFmpegOptions = new Windows.Foundation.Collections.PropertySet
-        {
-            { "reconnect", 1 },
-            { "reconnect_streamed", 1 },
-            { "reconnect_on_network_error", 1 },
-        }
-        });
+        _ffmpegMediaSource = streamModel.Stream is null
+            ? await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(streamModel.StreamUrl, _ffmpegOptions)
+            : await FFmpegInteropX.FFmpegMediaSource.CreateFromStreamAsync(streamModel.Stream.AsRandomAccessStream(), _ffmpegOptions);
+
         var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
         mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
         _player.Source = mediaSource;

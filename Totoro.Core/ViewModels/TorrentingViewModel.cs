@@ -22,7 +22,6 @@ public class TorrentingViewModel : NavigatableViewModel
     private readonly ReadOnlyObservableCollection<Transfer> _transfers;
     private IDisposable _transfersSubscription;
     private bool _isSubscriptionDisposed;
-    private static readonly string _webTorrentsCliFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm", "node_modules", "webtorrent-cli");
 
     public TorrentingViewModel(IDebridServiceContext debridServiceContext,
                                ITorrentCatalogFactory catalogFactory,
@@ -33,7 +32,6 @@ public class TorrentingViewModel : NavigatableViewModel
         _catalog = catalogFactory.GetCatalog(settings.TorrentProviderType);
         _animeIdService = animeIdService;
 
-        CanUseTorrents = _debridServiceContext.IsAuthenticated || Directory.Exists(_webTorrentsCliFolder);
         ProviderType = settings.TorrentProviderType;
         var sort = this.WhenAnyValue(x => x.SortMode)
             .Select(sort => sort switch
@@ -84,7 +82,6 @@ public class TorrentingViewModel : NavigatableViewModel
     
     public TorrentProviderType ProviderType { get; }
     public TorrentModel PastedTorrent { get; } = new();
-    public bool CanUseTorrents { get; }
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
     public ReadOnlyObservableCollection<Transfer> Transfers => _transfers;
 
@@ -141,11 +138,6 @@ public class TorrentingViewModel : NavigatableViewModel
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if(!CanUseTorrents)
-        {
-            return;
-        }
-
         IsLoading = true;
         MonitorTransfers();
 

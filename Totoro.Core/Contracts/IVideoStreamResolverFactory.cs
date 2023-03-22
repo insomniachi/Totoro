@@ -1,6 +1,5 @@
 ﻿using AnitomySharp;
 using Totoro.Core.Services;
-using Totoro.Core.Services.Debrid;
 
 namespace Totoro.Core.Contracts;
 
@@ -10,5 +9,6 @@ public interface IVideoStreamResolverFactory
     Task<IVideoStreamModelResolver> CreateDebridStreamResolver(string magnet);
     IVideoStreamModelResolver CreateWebTorrentStreamResolver(IEnumerable<Element> parsedResults, string magnet);
     IVideoStreamModelResolver CreateGogoAnimDLResolver(string baseUrlSub, string baseUrlDub);
+    IVideoStreamModelResolver CreateMonoTorrentStreamResolver(IEnumerable<Element> parsedResults, string magnet);
 }
 

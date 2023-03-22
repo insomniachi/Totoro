@@ -28,6 +28,10 @@ public class Initalizer : IInitializer
         _updateService = updateService;
         _playbackStateStorage = playbackStateStorage;
         _legacyLocalSettingsServiceFactory = legacyLocalSettingsServiceFactory;
+        if (Directory.Exists(_knownFolders.Torrents))
+        {
+            Directory.Delete(_knownFolders.Torrents, true);
+        }
     }
 
     public async Task Initialize()

@@ -17,22 +17,7 @@
     </local:TorrentingViewBase.Resources>
 
     <Grid Margin="0,25,0,0">
-
-        <TextBlock
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontSize="30"
-            TextWrapping="Wrap"
-            Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.CanUseTorrents)}">
-            <TextBlock.Foreground>
-                <SolidColorBrush Opacity="0.3" Color="White" />
-            </TextBlock.Foreground>
-            <Run Text="Unable to use torrents. Either configure a" />
-            <Run FontWeight="Bold" Text="Debrid Service" />
-            <Run Text="or install" />
-            <Hyperlink NavigateUri="https://github.com/webtorrent/webtorrent-cli">WebTorrent</Hyperlink>
-        </TextBlock>
-        <Pivot Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.CanUseTorrents)}">
+        <Pivot>
             <PivotItem Header="Torrents">
                 <Grid>
                     <Grid.RowDefinitions>

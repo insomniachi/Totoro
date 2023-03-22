@@ -7,5 +7,6 @@
         string Updates { get; }
         string Plugins { get; }
         string Logs { get; }
+        string Torrents { get; }
     }
 }

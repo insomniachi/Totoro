@@ -5,7 +5,7 @@ namespace Totoro.Core.Models
     public class VideoStreamModel
     {
         private VideoStreamModel() { }
-
+        public Stream Stream { get; set; }
         public string StreamUrl { get; init; }
         public Dictionary<string, string> Headers { get; init; }
         public bool HasHeaders => Headers?.Any() == true;
@@ -34,6 +34,14 @@ namespace Totoro.Core.Models
             return new VideoStreamModel
             {
                 StreamUrl = url,
+            };
+        }
+
+        public static VideoStreamModel FromStream(Stream stream)
+        {
+            return new VideoStreamModel
+            {
+                Stream = stream
             };
         }
     }

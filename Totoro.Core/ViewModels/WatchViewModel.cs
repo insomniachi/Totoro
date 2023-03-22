@@ -163,7 +163,7 @@ public partial class WatchViewModel : NavigatableViewModel
                 SetVideoStreamModel(stream);
                 if(UseTorrents)
                 {
-                    await mediaPlayer.SetFFMpegMedia(stream.StreamUrl);
+                    await mediaPlayer.SetFFMpegMedia(stream);
                 }
                 else
                 {
@@ -306,11 +306,14 @@ public partial class WatchViewModel : NavigatableViewModel
         }
     }
 
-    public override Task OnNavigatedFrom()
+    public override async Task OnNavigatedFrom()
     {
         NativeMethods.AllowSleep();
+        if(_videoStreamResolver is IAsyncDisposable ad)
+        {
+            await ad.DisposeAsync();
+        }
         MediaPlayer.Pause();
-        return Task.CompletedTask;
     }
 
     private async Task<(SearchResult Sub, SearchResult Dub)> Find(long id, string title)
@@ -532,14 +535,15 @@ public partial class WatchViewModel : NavigatableViewModel
     private async Task InitializeFromTorrent(TorrentModel torrent, bool useDebrid)
     {
         var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
-        if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle) is { } title)
+        var titleObj = parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle);
+        if (titleObj is not null)
         {
-            await TrySetAnime(title.Value);
+            await TrySetAnime(titleObj.Value);
         }
 
         _videoStreamResolver = useDebrid
             ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.MagnetLink)
-            : _videoStreamResolverFactory.CreateWebTorrentStreamResolver(parsedResult, torrent.MagnetLink);
+            : _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(parsedResult, torrent.MagnetLink);
 
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes("");
 

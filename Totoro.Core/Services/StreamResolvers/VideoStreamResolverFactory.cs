@@ -7,14 +7,17 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
     private readonly IProviderFactory _providerFactory;
     private readonly ISettings _settings;
     private readonly IDebridServiceContext _debridService;
+    private readonly IKnownFolders _knownFolders;
 
     public VideoStreamResolverFactory(IProviderFactory providerFactory,
                                       ISettings settings,
-                                      IDebridServiceContext debridService)
+                                      IDebridServiceContext debridService,
+                                      IKnownFolders knownFolders)
     {
         _providerFactory = providerFactory;
         _settings = settings;
         _debridService = debridService;
+        _knownFolders = knownFolders;
     }
 
     public IVideoStreamModelResolver CreateAnimDLResolver(string baseUrl)
@@ -36,7 +39,12 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
 
     public IVideoStreamModelResolver CreateWebTorrentStreamResolver(IEnumerable<Element> parsedResults, string magnet)
     {
-        return new WebTorrentStreamModelResolver(parsedResults, magnet);
+        return new WebTorrentStreamModelResolver(_knownFolders, parsedResults, magnet);
+    }
+
+    public IVideoStreamModelResolver CreateMonoTorrentStreamResolver(IEnumerable<Element> parsedResults,string magnet)
+    {
+        return new MonoTorrentStreamModelResolver(_knownFolders, parsedResults, magnet);
     }
 }
 

@@ -18,7 +18,7 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
     {
         _httpClient = httpClient;
         _zipFile = Path.Combine(_subtitlesFolder, "subtitles.7z");
-        Directory.CreateDirectory(_subtitlesFolder);
+        //Directory.CreateDirectory(_subtitlesFolder);
     }
 
     public async IAsyncEnumerable<TorrentModel> Recents()

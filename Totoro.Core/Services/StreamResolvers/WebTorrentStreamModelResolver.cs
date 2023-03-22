@@ -9,10 +9,15 @@ public partial class WebTorrentStreamModelResolver : IVideoStreamModelResolver
 {
     private readonly IEnumerable<Element> _parsedResults;
     private readonly string _magnet;
+    private readonly string _folder;
 
-    public WebTorrentStreamModelResolver(IEnumerable<Element> parsedResults, string magnet)
+    public WebTorrentStreamModelResolver(IKnownFolders knownFolders,
+                                         IEnumerable<Element> parsedResults,
+                                         string magnet)
     {
         _parsedResults = parsedResults;
+        var folder = _parsedResults.First(x => x.Category == Element.ElementCategory.ElementEpisodeNumber).Value;
+        _folder = Path.Combine(knownFolders.Torrents, folder);
         _magnet = magnet;
     }
 
@@ -25,7 +30,7 @@ public partial class WebTorrentStreamModelResolver : IVideoStreamModelResolver
 
     public Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
     {
-        var result = Cli.Wrap("webtorrent").WithArguments(new[] { _magnet, "-s", "0" }).WithWorkingDirectory(@"C:\Users\athul\AppData\Local\Totoro\ApplicationData");
+        var result = Cli.Wrap("webtorrent").WithArguments(new[] { _magnet, "-s", "0" }).WithWorkingDirectory(_folder);
 
         var mre = new ManualResetEventSlim();
         string url = string.Empty;
