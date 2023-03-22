@@ -15,6 +15,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
     {
 
         _provider = providerFactory.GetProvider(settings.DefaultProviderType);
+        _settings = settings;
         _baseUrlSub = baseUrlSub;
     }
 
