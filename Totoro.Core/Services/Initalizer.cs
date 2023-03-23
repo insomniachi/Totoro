@@ -50,7 +50,7 @@ public class Initalizer : IInitializer
         _updateService.ShutDown();
         _playbackStateStorage.StoreState();
 
-        await BlobCache.LocalMachine.Shutdown();
+        await BlobCache.Shutdown();
     }
 
     private void RemoveObsoleteSettings()
