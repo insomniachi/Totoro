@@ -101,9 +101,6 @@
 		<Page Update="Dialogs\Views\SelectModelView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
-		<Page Update="Views\DownloadPage.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</Page>
 		<Page Update="Views\AboutAnimePage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

@@ -173,8 +173,6 @@ public partial class WatchViewModel : NavigatableViewModel
                 MediaPlayer.Play(GetPlayerTime());
             });
 
-        MediaPlayer.DisposeWith(Garbage);
-
         MediaPlayer
             .DurationChanged
             .Throttle(TimeSpan.FromSeconds(1))
@@ -308,12 +306,12 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public override async Task OnNavigatedFrom()
     {
+        MediaPlayer.Dispose();
         NativeMethods.AllowSleep();
         if(_videoStreamResolver is IAsyncDisposable ad)
         {
             await ad.DisposeAsync();
         }
-        MediaPlayer.Pause();
     }
 
     private async Task<(SearchResult Sub, SearchResult Dub)> Find(long id, string title)
@@ -543,7 +541,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         _videoStreamResolver = useDebrid
             ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.MagnetLink)
-            : _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(parsedResult, torrent.MagnetLink);
+            : _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(parsedResult, torrent.Link);
 
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes("");
 

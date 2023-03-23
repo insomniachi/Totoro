@@ -3,6 +3,7 @@
     public interface IInitializer
     {
         Task Initialize();
-        void ShutDown();
+        Task ShutDown();
+        IObservable<Unit> OnShutDown { get; }
     }
 }

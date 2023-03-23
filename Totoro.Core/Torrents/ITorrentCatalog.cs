@@ -63,5 +63,6 @@ public class TorrentModel : ReactiveObject
     public int Completed { get; set; }
     public string CategoryImage { get; set; }
     public string Category { get; set; }
+    public string Link2 { get; set; }
     [Reactive] public TorrentState State { get; set; }
 }

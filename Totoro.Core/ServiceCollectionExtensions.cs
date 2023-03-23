@@ -33,6 +33,7 @@ namespace Totoro.Core
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
             services.AddSingleton<IKnownFolders, KnownFolders>();
             services.AddSingleton<IInitializer, Initalizer>();
+            services.AddSingleton<ITorrentEngine, TorrentEngine>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();

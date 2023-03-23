@@ -142,7 +142,7 @@
                                             HorizontalAlignment="Left"
                                             Maximum="1"
                                             Minimum="0"
-                                            Value="{x:Bind ProgressValue, Mode=OneWay}" />
+                                            Value="{x:Bind ProgressValue}" />
                                         <TextBlock Margin="10,0" Text="{x:Bind Progress, Mode=OneWay}" />
                                     </StackPanel>
                                 </StackPanel>

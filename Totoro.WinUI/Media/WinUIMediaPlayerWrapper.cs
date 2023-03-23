@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
-using SharpCompress.Compressors.Xz;
 using Totoro.WinUI.Contracts;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -31,12 +30,19 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     };
     private bool _isHardSub;
     private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
+    private VideoStreamModel _videoStreamModel;
+    private bool _isDisposed;
 
-    public WinUIMediaPlayerWrapper(IWindowService windowService)
+    public WinUIMediaPlayerWrapper(IWindowService windowService,
+                                   IInitializer initializer)
     {
         _transportControls = new CustomMediaTransportControls(windowService);
+        initializer?
+            .OnShutDown
+            .Select(_ => _videoStreamModel?.Stream)
+            .WhereNotNull()
+            .Subscribe(_ => Dispose(), RxApp.DefaultExceptionHandler.OnError);
     }
-
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
     public IObservable<Unit> Playing => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Playing).Select(_ => Unit.Default);
@@ -44,13 +50,54 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     public IObservable<TimeSpan> PositionChanged => _player.PlaybackSession.Events().PositionChanged.Select(x => x.sender.Position);
     public IObservable<TimeSpan> DurationChanged => _player.PlaybackSession.Events().NaturalDurationChanged.Select(x => x.sender.NaturalDuration);
     public IMediaTransportControls TransportControls => _transportControls;
-    public void Dispose() => _player.Pause();
-    public void Pause() => _player.Pause();
-    public void Play() => _player.Play();
-    public void Seek(TimeSpan ts) => _player.Position = ts;
+    public void Dispose()
+    {
+        if(_isDisposed)
+        {
+            return;
+        }
+
+        _videoStreamModel?.Stream?.Dispose();
+        _ffmpegMediaSource?.Dispose();
+        _ffmpegMediaSource = null;
+        _player.Dispose();
+        _isDisposed = true;
+    }
+    public void Pause()
+    {
+        if(_isDisposed)
+        {
+            return;
+        }
+
+        _player.Pause();
+    }
+    public void Play()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _player.Play();
+    }
+    public void Seek(TimeSpan ts)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _player.Position = ts;
+    }
     
     public void Play(double offsetInSeconds)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         _player.Position = TimeSpan.FromSeconds(offsetInSeconds);
         _player.Play();
     }
@@ -152,6 +199,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     public async Task<Unit> SetFFMpegMedia(VideoStreamModel streamModel)
     {
+        _videoStreamModel = streamModel;
         _ffmpegMediaSource = streamModel.Stream is null
             ? await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(streamModel.StreamUrl, _ffmpegOptions)
             : await FFmpegInteropX.FFmpegMediaSource.CreateFromStreamAsync(streamModel.Stream.AsRandomAccessStream(), _ffmpegOptions);

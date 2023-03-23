@@ -45,22 +45,24 @@ public class ActivationService : IActivationService, IEnableLogger
         // Activate the MainWindow.
         App.MainWindow.Activate();
         App.MainWindow.Maximize();
-        App.MainWindow.Closed += MainWindow_Closed;
+        App.MainWindow.AppWindow.Closing += AppWindow_Closing;
 
         // Execute tasks after activation.
         await StartupAsync();
     }
 
-    private void MainWindow_Closed(object sender, WindowEventArgs args)
+    private async void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
     {
+        args.Cancel = true;
         this.Log().Info("Closing MainWindow");
         if (!string.IsNullOrEmpty(_prevWebviewFolder) && _prevWebviewFolder != _tempPath)
         {
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _prevWebviewFolder);
         }
-        _initializer.ShutDown();
+
+        await _initializer.ShutDown();
         NativeMethods.AllowSleep();
-        App.MainWindow.Closed -= MainWindow_Closed;
+        App.MainWindow.Close();
     }
 
     private async Task HandleActivationAsync(object activationArgs)

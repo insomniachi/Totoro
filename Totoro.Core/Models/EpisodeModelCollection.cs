@@ -71,6 +71,20 @@ namespace Totoro.Core.Models
             };
         }
 
+        public static EpisodeModelCollection FromEpisode(int start, int end)
+        {
+            var collecton = new EpisodeModelCollection();
+            collecton.AddRange(Enumerable.Range(start, end - start + 1).Select(ep => new EpisodeModel
+            {
+                EpisodeNumber = ep,
+                IsSpecial = false,
+                SpecialEpisodeNumber = string.Empty,
+                EpisodeTitle = string.Empty,
+            }));
+
+            return collecton;
+        }
+
         public static EpisodeModelCollection FromDirectDownloadLinks(IEnumerable<DirectDownloadLink> links)
         {
             var collecton = new EpisodeModelCollection();

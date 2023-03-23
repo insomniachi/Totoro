@@ -1,4 +1,5 @@
-﻿using Akavache;
+﻿using System.Reactive.Subjects;
+using Akavache;
 using MalApi;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Services.AniList;
@@ -14,12 +15,13 @@ public class Initalizer : IInitializer
     private readonly IUpdateService _updateService;
     private readonly IPlaybackStateStorage _playbackStateStorage;
     private readonly Func<ILegacyLocalSettingsService> _legacyLocalSettingsServiceFactory;
+    private readonly Subject<Unit> _onShutDown = new();
 
     public Initalizer(IPluginManager pluginManager,
                       IKnownFolders knownFolders,
-                      ILocalSettingsService localSettingsService,
                       IUpdateService updateService,
                       IPlaybackStateStorage playbackStateStorage,
+                      ILocalSettingsService localSettingsService,
                       Func<ILegacyLocalSettingsService> legacyLocalSettingsServiceFactory)
     {
         _pluginManager = pluginManager;
@@ -28,9 +30,10 @@ public class Initalizer : IInitializer
         _updateService = updateService;
         _playbackStateStorage = playbackStateStorage;
         _legacyLocalSettingsServiceFactory = legacyLocalSettingsServiceFactory;
-        if (Directory.Exists(_knownFolders.Torrents))
+
+        foreach (var folder in Directory.EnumerateDirectories(knownFolders.Torrents))
         {
-            Directory.Delete(_knownFolders.Torrents, true);
+            Directory.Delete(folder, true);
         }
     }
 
@@ -41,12 +44,13 @@ public class Initalizer : IInitializer
         RemoveObsoleteSettings();
     }
 
-    public void ShutDown()
+    public async Task ShutDown()
     {
+        _onShutDown.OnNext(Unit.Default);
         _updateService.ShutDown();
         _playbackStateStorage.StoreState();
-        BlobCache.LocalMachine.Flush();
-        BlobCache.Shutdown().Wait();
+
+        await BlobCache.LocalMachine.Shutdown();
     }
 
     private void RemoveObsoleteSettings()
@@ -58,6 +62,8 @@ public class Initalizer : IInitializer
             _localSettingsService.RemoveSetting(key);
         }
     }
+
+    public IObservable<Unit> OnShutDown => _onShutDown;
 
     private void MigrateLegacySettings()
     {

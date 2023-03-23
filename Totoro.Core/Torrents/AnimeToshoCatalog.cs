@@ -134,14 +134,16 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
             var node = item.QuerySelector(".link a");
             var title = node.InnerHtml;
             var link = node.Attributes["href"].Value;
+            var torrentLink = item.QuerySelector(".links").Descendants("a").First(x => x.InnerHtml.Contains("Torrent")).Attributes["href"].Value;
             var magnet = item.QuerySelector(".links").Descendants("a").First(x => x.InnerHtml.Contains("Magnet")).Attributes["href"].Value;
             var seedleech = item.QuerySelector(".links").SelectSingleNode("span[3]")?.Attributes["title"]?.Value;
 
             var model = new TorrentModel
             {
                 Name = title,
-                Link = link,
+                Link = torrentLink,
                 MagnetLink = magnet,
+                Link2 = link
             };
 
             if (seedleech is not null)

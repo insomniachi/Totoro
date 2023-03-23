@@ -1,49 +1,58 @@
 ﻿using AnitomySharp;
 using MonoTorrent;
-using MonoTorrent.Client;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
 public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, IAsyncDisposable
 {
-    private readonly ClientEngine _engine = new(new());
-    private readonly IEnumerable<Element> _parsedResults;
-    private readonly string _magnet;
-    private readonly string _folder;
+    private readonly ITorrentEngine _torrentEngine;
+    private readonly string _torrentUrl;
+    private readonly string _saveDirectory;
+    private readonly Dictionary<int, int> _episodeToTorrentFileMap = new();
     private Torrent _torrent;
-    private TorrentManager _torrentManager;
 
-    public MonoTorrentStreamModelResolver(IKnownFolders knownFolders,
+    public MonoTorrentStreamModelResolver(ITorrentEngine torrentEngine,
+                                          IKnownFolders knownFolders,
                                           IEnumerable<Element> parsedResults,
-                                          string magnet)
+                                          string torrentUrl)
     {
-        _parsedResults = parsedResults;
-        _magnet = magnet;
+        _torrentEngine = torrentEngine;
+        _torrentUrl = torrentUrl;
         var folder = parsedResults.First(x => x.Category == Element.ElementCategory.ElementAnimeTitle).Value;
-        _folder = Path.Combine(knownFolders.Torrents, folder);
-    }
-
-    public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
-    {
-        var magnet = MagnetLink.Parse(_magnet);
-        var bytes = await _engine.DownloadMetadataAsync(magnet, CancellationToken.None);
-        _torrent = Torrent.Load(bytes);
-        _torrentManager = await _engine.AddStreamingAsync(_torrent, _folder);
-        var epString = _parsedResults.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber)?.Value ?? "1";
-        var ep = int.Parse(epString);
-        return EpisodeModelCollection.FromEpisode(ep);
-    }
-
-    public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
-    {
-        await _torrentManager.StartAsync(); 
-        var stream = await _torrentManager.StreamProvider.CreateStreamAsync(_torrentManager.Files[0]);
-        return new VideoStreamsForEpisodeModel(stream);
+        _saveDirectory = Path.Combine(knownFolders.Torrents, folder);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await _torrentManager.StopAsync();
+        await _torrentEngine.ShutDown();
+    }
+
+    public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
+    {
+        _torrent = await _torrentEngine.Download(_torrentUrl, _saveDirectory);
+
+        var index = 0;
+        foreach (var file in _torrent.Files.Select(x => x.Path))
+        {
+            var result = AnitomySharp.AnitomySharp.Parse(file);
+            if(result.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epResult &&
+                int.TryParse(epResult.Value, out var ep))
+            {
+                _episodeToTorrentFileMap[ep] = index;
+            }
+
+            index++;
+        }
+
+        var start = _episodeToTorrentFileMap.Keys.Min();
+        var end = _episodeToTorrentFileMap.Keys.Max();
+
+        return EpisodeModelCollection.FromEpisode(start, end);
+    }
+
+    public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
+    {
+        return new VideoStreamsForEpisodeModel(await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode]));
     }
 }
 
