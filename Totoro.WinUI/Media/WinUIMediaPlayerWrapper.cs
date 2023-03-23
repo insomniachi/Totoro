@@ -199,15 +199,22 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     public async Task<Unit> SetFFMpegMedia(VideoStreamModel streamModel)
     {
-        _videoStreamModel = streamModel;
-        _ffmpegMediaSource = streamModel.Stream is null
-            ? await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(streamModel.StreamUrl, _ffmpegOptions)
-            : await FFmpegInteropX.FFmpegMediaSource.CreateFromStreamAsync(streamModel.Stream.AsRandomAccessStream(), _ffmpegOptions);
+        try
+        {
+            _videoStreamModel = streamModel;
+            _ffmpegMediaSource = streamModel.Stream is null
+                ? await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(streamModel.StreamUrl, _ffmpegOptions)
+                : await FFmpegInteropX.FFmpegMediaSource.CreateFromStreamAsync(streamModel.Stream.AsRandomAccessStream(), _ffmpegOptions);
 
-        var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
-        mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
-        _player.Source = mediaSource;
+            var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
+            mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
+            _player.Source = mediaSource;
 
-        return Unit.Default;
+            return Unit.Default;
+        }
+        catch
+        {
+            return Unit.Default;
+        }
     }
 }

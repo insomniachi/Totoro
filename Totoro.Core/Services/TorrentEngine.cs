@@ -6,13 +6,41 @@ namespace Totoro.Core.Services;
 
 public class TorrentEngine : ITorrentEngine, IEnableLogger
 {
-    private readonly ClientEngine _engine = new(new());
+    private ClientEngine _engine = new(new());
     private readonly Dictionary<string, TorrentManager> _torrentManagers = new();
     private readonly string _tempTorrent;
+    private readonly string _torrentEngineState;
 
     public TorrentEngine(IKnownFolders knownFolders)
     {
         _tempTorrent = Path.Combine(knownFolders.Torrents, "temp.torrent");
+        _torrentEngineState = Path.Combine(knownFolders.Torrents, "state.bin");
+    }
+
+    public async Task<bool> TryRestoreState()
+    {
+        if(!File.Exists(_torrentEngineState))
+        {
+            return false;
+        }
+
+        try
+        {
+            _engine = await ClientEngine.RestoreStateAsync(_torrentEngineState);
+            File.Delete(_torrentEngineState);
+            foreach (var item in _engine.Torrents)
+            {
+                await _engine.RemoveAsync(item, RemoveMode.CacheDataAndDownloadedData);
+
+                if (!Directory.GetFiles(item.ContainingDirectory, "*", SearchOption.AllDirectories).Any())
+                {
+                    Directory.Delete(item.ContainingDirectory, true);
+                }
+            }
+        }
+        catch { }
+
+        return true;
     }
 
     public async Task<Torrent> Download(string torrentUrl, string saveDirectory)
@@ -48,23 +76,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
     public async Task ShutDown()
     {
-        try
-        {
-            foreach (var manager in _torrentManagers.Values)
-            {
-                await manager.StopAsync();
-                await _engine.RemoveAsync(manager, RemoveMode.CacheDataAndDownloadedData);
-                if (!Directory.GetFiles(manager.ContainingDirectory, "*", SearchOption.AllDirectories).Any())
-                {
-                    Directory.Delete(manager.ContainingDirectory, true);
-                }
-            }
-            _torrentManagers.Clear();
-        }
-        catch (Exception ex)
-        {
-            this.Log().Error(ex);
-        }
+        await _engine.SaveStateAsync(_torrentEngineState);
     }
 
     private void TorrentManager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)

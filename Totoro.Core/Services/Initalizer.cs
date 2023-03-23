@@ -14,6 +14,7 @@ public class Initalizer : IInitializer
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IUpdateService _updateService;
     private readonly IPlaybackStateStorage _playbackStateStorage;
+    private readonly ITorrentEngine _torrentEngine;
     private readonly Func<ILegacyLocalSettingsService> _legacyLocalSettingsServiceFactory;
     private readonly Subject<Unit> _onShutDown = new();
 
@@ -21,6 +22,7 @@ public class Initalizer : IInitializer
                       IKnownFolders knownFolders,
                       IUpdateService updateService,
                       IPlaybackStateStorage playbackStateStorage,
+                      ITorrentEngine torrentEngine,
                       ILocalSettingsService localSettingsService,
                       Func<ILegacyLocalSettingsService> legacyLocalSettingsServiceFactory)
     {
@@ -29,17 +31,14 @@ public class Initalizer : IInitializer
         _localSettingsService = localSettingsService;
         _updateService = updateService;
         _playbackStateStorage = playbackStateStorage;
+        _torrentEngine = torrentEngine;
         _legacyLocalSettingsServiceFactory = legacyLocalSettingsServiceFactory;
-
-        foreach (var folder in Directory.EnumerateDirectories(knownFolders.Torrents))
-        {
-            Directory.Delete(folder, true);
-        }
     }
 
     public async Task Initialize()
     {
         await _pluginManager.Initialize();
+        await _torrentEngine.TryRestoreState();
         MigrateLegacySettings();
         RemoveObsoleteSettings();
     }
@@ -49,7 +48,7 @@ public class Initalizer : IInitializer
         _onShutDown.OnNext(Unit.Default);
         _updateService.ShutDown();
         _playbackStateStorage.StoreState();
-
+        await _torrentEngine.ShutDown();
         await BlobCache.Shutdown();
     }
 
