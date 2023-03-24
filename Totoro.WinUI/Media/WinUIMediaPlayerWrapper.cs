@@ -33,15 +33,9 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private VideoStreamModel _videoStreamModel;
     private bool _isDisposed;
 
-    public WinUIMediaPlayerWrapper(IWindowService windowService,
-                                   IInitializer initializer)
+    public WinUIMediaPlayerWrapper(IWindowService windowService)
     {
         _transportControls = new CustomMediaTransportControls(windowService);
-        initializer?
-            .OnShutDown
-            .Select(_ => _videoStreamModel?.Stream)
-            .WhereNotNull()
-            .Subscribe(_ => Dispose(), RxApp.DefaultExceptionHandler.OnError);
     }
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
@@ -56,10 +50,6 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         {
             return;
         }
-
-        _videoStreamModel?.Stream?.Dispose();
-        _ffmpegMediaSource?.Dispose();
-        _ffmpegMediaSource = null;
         _player.Dispose();
         _isDisposed = true;
     }
