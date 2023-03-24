@@ -61,7 +61,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
 
         this.WhenAnyValue(x => x.Stream)
             .WhereNotNull()
-            .Subscribe(async x => await MediaPlayer.SetMedia(x, new()));
+            .Subscribe(async x => await MediaPlayer.SetMedia(x));
     }
 
     [Reactive] public double StartPosition { get; set; }

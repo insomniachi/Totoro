@@ -8,6 +8,7 @@ namespace Totoro.Core.Models
         public Stream Stream { get; set; }
         public string StreamUrl { get; init; }
         public Dictionary<string, string> Headers { get; init; }
+        public Dictionary<string, string> AdditionalInformation { get; init; } = new();
         public bool HasHeaders => Headers?.Any() == true;
         public string Quality { get; init; }
 
@@ -25,7 +26,8 @@ namespace Totoro.Core.Models
         {
             return new VideoStreamModel
             {
-                StreamUrl = link.Link
+                StreamUrl = link.Link,
+                AdditionalInformation = new Dictionary<string, string> { ["IsMKV"] = "" }
             };
         }
 

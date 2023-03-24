@@ -11,8 +11,8 @@ public interface IMediaPlayer : IDisposable
     IObservable<Unit> PlaybackEnded { get; }
     IObservable<TimeSpan> PositionChanged { get; }
     IObservable<TimeSpan> DurationChanged { get; }
-    Task<Unit> SetFFMpegMedia(VideoStreamModel stream);
-    Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation);
+    //Task<Unit> SetFFMpegMedia(VideoStreamModel stream);
+    Task<Unit> SetMedia(VideoStreamModel stream);
     IMediaTransportControls TransportControls { get; }
 }
 

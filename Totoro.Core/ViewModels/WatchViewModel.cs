@@ -161,15 +161,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(async stream =>
             {
                 SetVideoStreamModel(stream);
-                if(UseTorrents)
-                {
-                    await mediaPlayer.SetFFMpegMedia(stream);
-                }
-                else
-                {
-                    await MediaPlayer.SetMedia(stream, Streams.AdditionalInformation);
-                }
-
+                await MediaPlayer.SetMedia(stream);
                 MediaPlayer.Play(GetPlayerTime());
             });
 

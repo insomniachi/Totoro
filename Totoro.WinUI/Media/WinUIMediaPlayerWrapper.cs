@@ -5,7 +5,9 @@ using Totoro.WinUI.Contracts;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.Streaming.Adaptive;
+using Windows.Networking.BackgroundTransfer;
 using Windows.Storage;
+using Windows.UI.WebUI;
 using Windows.Web.Http;
 
 namespace Totoro.WinUI.Media;
@@ -15,22 +17,22 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private readonly CustomMediaTransportControls _transportControls;
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
+    private readonly System.Net.Http.HttpClient _httpNew = new();
     private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
-    private readonly FFmpegInteropX.MediaSourceConfig _ffmpegOptions = new()
-    {
-        ReadAheadBufferEnabled = true,
-        ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
-        ReadAheadBufferSize = 50 * 1024 * 1024,
-        FFmpegOptions = new Windows.Foundation.Collections.PropertySet
-        {
-            { "reconnect", 1 },
-            { "reconnect_streamed", 1 },
-            { "reconnect_on_network_error", 1 },
-        }
-    };
+    //private readonly FFmpegInteropX.MediaSourceConfig _ffmpegOptions = new()
+    //{
+    //    ReadAheadBufferEnabled = true,
+    //    ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
+    //    ReadAheadBufferSize = 50 * 1024 * 1024,
+    //    FFmpegOptions = new Windows.Foundation.Collections.PropertySet
+    //    {
+    //        { "reconnect", 1 },
+    //        { "reconnect_streamed", 1 },
+    //        { "reconnect_on_network_error", 1 },
+    //    }
+    //};
     private bool _isHardSub;
-    private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
-    private VideoStreamModel _videoStreamModel;
+    //private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
     private bool _isDisposed;
 
     public WinUIMediaPlayerWrapper(IWindowService windowService)
@@ -50,7 +52,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         {
             return;
         }
-        _player.Dispose();
+        _player.Pause();
         _isDisposed = true;
     }
     public void Pause()
@@ -119,11 +121,21 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     }
 
-    public async Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation)
+    public async Task<Unit> SetMedia(VideoStreamModel stream)
     {
-        var source = await GetMediaSource(stream.StreamUrl, stream.Headers);
+        MediaSource source;
+
+        if(stream.Stream is not null)
+        {
+            source = MediaSource.CreateFromStream(stream.Stream.AsRandomAccessStream(), "video/x-matroska");
+        }
+        else
+        {
+            source = await GetMediaSource(stream.StreamUrl, stream.Headers);
+        }
+
         _isHardSub = stream.Quality == "hardsub";
-        SetSubtitles(source, AdditionalInformation);
+        SetSubtitles(source, stream.AdditionalInformation);
         _player.Source = new MediaPlaybackItem(source);
         return Unit.Default;
     }
@@ -187,24 +199,26 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
         }
     }
 
-    public async Task<Unit> SetFFMpegMedia(VideoStreamModel streamModel)
+    public Task<Unit> SetFFMpegMedia(VideoStreamModel streamModel)
     {
         try
         {
-            _videoStreamModel = streamModel;
-            _ffmpegMediaSource = streamModel.Stream is null
-                ? await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(streamModel.StreamUrl, _ffmpegOptions)
-                : await FFmpegInteropX.FFmpegMediaSource.CreateFromStreamAsync(streamModel.Stream.AsRandomAccessStream(), _ffmpegOptions);
+            _player.Source = MediaSource.CreateFromStream(streamModel.Stream.AsRandomAccessStream(), "video/x-matroska");
+            return Task.FromResult(Unit.Default);
+            //_videoStreamModel = streamModel;
+            //_ffmpegMediaSource = streamModel.Stream is null
+            //    ? await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(streamModel.StreamUrl, _ffmpegOptions)
+            //    : await FFmpegInteropX.FFmpegMediaSource.CreateFromStreamAsync(streamModel.Stream.AsRandomAccessStream(), _ffmpegOptions);
 
-            var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
-            mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
-            _player.Source = mediaSource;
+            //var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
+            //mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
+            //_player.Source = mediaSource;
 
-            return Unit.Default;
+            //return Unit.Default;
         }
         catch
         {
-            return Unit.Default;
+            return Task.FromResult(Unit.Default);
         }
     }
 }

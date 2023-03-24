@@ -7,16 +7,19 @@ namespace Totoro.Core.Models
         private readonly Dictionary<string, VideoStreamModel> _streams = new();
         private readonly IEnumerable<string> _streamTypes = Enumerable.Empty<string>();
         private readonly IEnumerable<string> _qualities = Enumerable.Empty<string>();
-        private readonly Dictionary<string, string> _additionalInformation = new();
 
         public VideoStreamsForEpisodeModel(VideoStreamsForEpisode streamsForEp)
         {
             _qualities = streamsForEp.Qualities.Select(x => x.Key);
             _streamTypes = streamsForEp.StreamTypes;
-            _additionalInformation = streamsForEp.AdditionalInformation;
             foreach (var item in streamsForEp.Qualities)
             {
-                _streams.Add(item.Key, VideoStreamModel.FromVideoStream(item.Value));
+                var model = VideoStreamModel.FromVideoStream(item.Value);
+                foreach (var kv in streamsForEp.AdditionalInformation)
+                {
+                    model.AdditionalInformation.Add(kv.Key, kv.Value);
+                }
+                _streams.Add(item.Key, model);
             }
         }
 
@@ -35,12 +38,13 @@ namespace Totoro.Core.Models
         public VideoStreamsForEpisodeModel(Stream stream)
         {
             _qualities = new[] { "default" };
-            _streams.Add("default", VideoStreamModel.FromStream(stream));
+            var model = VideoStreamModel.FromStream(stream);
+            model.AdditionalInformation.Add("IsMKV", "true");
+            _streams.Add("default", model);
         }
 
         public VideoStreamModel GetStreamModel(string quality) => _streams[quality];
         public IEnumerable<string> StreamTypes => _streamTypes;
-        public Dictionary<string, string> AdditionalInformation => _additionalInformation;
         public IEnumerable<string> Qualities => _qualities;
     }
 }
