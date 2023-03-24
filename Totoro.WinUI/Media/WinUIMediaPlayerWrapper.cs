@@ -5,9 +5,7 @@ using Totoro.WinUI.Contracts;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.Streaming.Adaptive;
-using Windows.Networking.BackgroundTransfer;
 using Windows.Storage;
-using Windows.UI.WebUI;
 using Windows.Web.Http;
 
 namespace Totoro.WinUI.Media;
@@ -17,7 +15,6 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     private readonly CustomMediaTransportControls _transportControls;
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
-    private readonly System.Net.Http.HttpClient _httpNew = new();
     private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
     //private readonly FFmpegInteropX.MediaSourceConfig _ffmpegOptions = new()
     //{
