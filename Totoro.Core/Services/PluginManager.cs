@@ -21,9 +21,7 @@ public class PluginManager : IPluginManager, IEnableLogger
                          ISettings settings,
                          IKnownFolders knownFolders)
     {
-        var json = localSettingsService.ReadSetting("ProviderConfigs", "");
-        _configs = string.IsNullOrEmpty(json) ? new() : JsonSerializer.Deserialize<Dictionary<string, ProviderOptions>>(json);
-        Directory.CreateDirectory(knownFolders.Plugins);
+        _configs = localSettingsService.ReadSetting<Dictionary<string, ProviderOptions>>("ProviderConfigs", new());
         _httpClient = httpClient;
         _localSettingsService = localSettingsService;
         _settings = settings;
@@ -39,7 +37,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
     public void SaveConfig()
     {
-        _localSettingsService.SaveSetting("ProviderConfigs", JsonSerializer.Serialize(_configs));
+        _localSettingsService.SaveSetting("ProviderConfigs", _configs);
     }
 
     private async Task<IEnumerable<PluginInfo>> GetListedPlugins()

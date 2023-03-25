@@ -17,6 +17,12 @@ internal class KnownFolders : IKnownFolders
         Plugins = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/Plugins");
         Logs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/Logs");
         Torrents = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/Torrents");
+
+        Directory.CreateDirectory(ApplicationData);
+        Directory.CreateDirectory(Plugins);
+        Directory.CreateDirectory(Logs);
+        Directory.CreateDirectory(Torrents);
+        Directory.CreateDirectory(Updates);
     }
 }
 
