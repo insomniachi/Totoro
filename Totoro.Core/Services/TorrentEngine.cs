@@ -6,7 +6,7 @@ namespace Totoro.Core.Services;
 
 public class TorrentEngine : ITorrentEngine, IEnableLogger
 {
-    private ClientEngine _engine = new(new());
+    private ClientEngine _engine;
     private readonly Dictionary<string, TorrentManager> _torrentManagers = new();
     private readonly string _tempTorrent;
     private readonly string _torrentEngineState;
@@ -15,6 +15,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     {
         _tempTorrent = Path.Combine(knownFolders.Torrents, "temp.torrent");
         _torrentEngineState = Path.Combine(knownFolders.Torrents, "state.bin");
+        _engine = new(new EngineSettingsBuilder() { CacheDirectory = Path.Combine(knownFolders.Torrents, "cache") }.ToSettings());
     }
 
     public async Task<bool> TryRestoreState()
