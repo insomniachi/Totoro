@@ -21,7 +21,7 @@ public class PluginManager : IPluginManager, IEnableLogger
                          ISettings settings,
                          IKnownFolders knownFolders)
     {
-        var json = localSettingsService.ReadSetting("ProviderConfigs", "").Wait();
+        var json = localSettingsService.ReadSetting("ProviderConfigs", "");
         _configs = string.IsNullOrEmpty(json) ? new() : JsonSerializer.Deserialize<Dictionary<string, ProviderOptions>>(json);
         Directory.CreateDirectory(knownFolders.Plugins);
         _httpClient = httpClient;

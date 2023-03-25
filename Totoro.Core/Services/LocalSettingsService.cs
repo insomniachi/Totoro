@@ -1,30 +1,30 @@
-﻿using Akavache;
+﻿//using Akavache;
 
-namespace Totoro.Core.Services;
+//namespace Totoro.Core.Services;
 
-public class LocalSettingsService : ILocalSettingsService
-{
-    public const string ApplicationName = @"Totoro";
+//public class LocalSettingsService : ILocalSettingsService
+//{
+//    public const string ApplicationName = @"Totoro";
 
-    public LocalSettingsService()
-    {
-        Akavache.Registrations.Start(ApplicationName);
-    }
+//    public LocalSettingsService()
+//    {
+//        Akavache.Registrations.Start(ApplicationName);
+//    }
 
-    public string ApplicationDataFolder => "";
+//    public string ApplicationDataFolder => "";
 
-    public IObservable<T> ReadSetting<T>(string key, T defaultValue = default)
-    {
-        return BlobCache.LocalMachine.GetOrCreateObject<T>(key, () => defaultValue);
-    }
+//    public IObservable<T> ReadSettingAsync<T>(string key, T defaultValue = default)
+//    {
+//        return BlobCache.LocalMachine.GetOrCreateObject<T>(key, () => defaultValue);
+//    }
 
-    public void SaveSetting<T>(string key, T value)
-    {
-        BlobCache.LocalMachine.InsertObject(key, value);
-    }
+//    public void SaveSetting<T>(string key, T value)
+//    {
+//        BlobCache.LocalMachine.InsertObject(key, value).Wait();
+//    }
 
-    public void RemoveSetting(string key)
-    {
-        BlobCache.LocalMachine.Invalidate(key);
-    }
-}
+//    public void RemoveSetting(string key)
+//    {
+//        BlobCache.LocalMachine.Invalidate(key).Wait();
+//    }
+//}

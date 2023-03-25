@@ -19,12 +19,11 @@ public class AnilistService : IAnimeService, IAnilistService
     {
         _animeIdService = animeIdService;
         _settings = settings;
-        var token = localSettingsSerivce.ReadSetting<AniListAuthToken>("AniListToken", new())
-            .Where(token => !string.IsNullOrEmpty(token.AccessToken))
-            .Subscribe(token =>
-            {
-                _anilistClient.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-            });
+        var token = localSettingsSerivce.ReadSetting<AniListAuthToken>("AniListToken", new());
+        if(!string.IsNullOrEmpty(token.AccessToken))
+        {
+            _anilistClient.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+        }
     }
 
     public ListServiceType Type => ListServiceType.AniList;

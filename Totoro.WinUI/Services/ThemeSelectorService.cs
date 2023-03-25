@@ -41,7 +41,7 @@ public class ThemeSelectorService : IThemeSelectorService
 
     private ElementTheme LoadThemeFromSettings()
     {
-        var themeName = _localSettingsService.ReadSetting<string>(_settingsKey).Wait();
+        var themeName = _localSettingsService.ReadSetting<string>(_settingsKey);
 
         if (Enum.TryParse(themeName, out ElementTheme cacheTheme))
         {

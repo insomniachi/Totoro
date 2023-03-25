@@ -1,41 +1,24 @@
-﻿using System.IO;
-using Microsoft.Extensions.Options;
-using Totoro.Core.Helpers;
+﻿using Totoro.Core.Helpers;
 using Totoro.WinUI.Helpers;
-using Totoro.WinUI.Models;
 using Windows.Storage;
 
 namespace Totoro.WinUI.Services;
 
 public class LegacyLocalSettingsService : ILegacyLocalSettingsService
 {
-    private const string _defaultApplicationDataFolder = "Totoro/ApplicationData";
-    private const string _defaultLocalSettingsFile = "LocalSettings.json";
 
     private readonly IFileService _fileService;
-    private readonly LocalSettingsOptions _options;
-    private readonly string _localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-    private readonly string _applicationDataFolder;
-    private readonly string _localsettingsFile;
+    private readonly IKnownFolders _knownFolders;
     private IDictionary<string, object> _settings;
     private bool _isInitialized;
 
-    public LegacyLocalSettingsService(IFileService fileService, IOptions<LocalSettingsOptions> options)
+    public LegacyLocalSettingsService(IFileService fileService,
+                                      IKnownFolders knownFolders)
     {
         _fileService = fileService;
-        _options = options.Value;
-        _applicationDataFolder = Path.Combine(_localApplicationData, _options.ApplicationDataFolder ?? _defaultApplicationDataFolder);
-        _localsettingsFile = _options.LocalSettingsFile ?? _defaultLocalSettingsFile;
-
-        if (!Directory.Exists(_applicationDataFolder))
-        {
-            Directory.CreateDirectory(_applicationDataFolder);
-        }
-
+        _knownFolders = knownFolders;
         Initialize();
     }
-
-    public string ApplicationDataFolder => _applicationDataFolder;
 
     private void Initialize()
     {
@@ -44,11 +27,11 @@ public class LegacyLocalSettingsService : ILegacyLocalSettingsService
             return;
         }
 
-        _settings = _fileService.Read<IDictionary<string, object>>(_applicationDataFolder, _localsettingsFile) ?? new Dictionary<string, object>();
+        _settings = _fileService.Read<IDictionary<string, object>>(_knownFolders.ApplicationData, "LocalSettings.json") ?? new Dictionary<string, object>();
         _isInitialized = true;
     }
 
-    public IObservable<T> ReadSetting<T>(string key, T defaultValue = default)
+    public T ReadSetting<T>(string key, T defaultValue = default)
     {
         if (RuntimeHelper.IsMSIX)
         {
@@ -56,11 +39,11 @@ public class LegacyLocalSettingsService : ILegacyLocalSettingsService
             {
                 try
                 {
-                    return Observable.Return(Json.ToObject<T>((string)obj));
+                    return Json.ToObject<T>((string)obj);
                 }
                 catch
                 {
-                    return Observable.Return(defaultValue);
+                    return defaultValue;
                 }
             }
         }
@@ -70,16 +53,16 @@ public class LegacyLocalSettingsService : ILegacyLocalSettingsService
             {
                 try
                 {
-                    return Observable.Return(Json.ToObject<T>((string)obj));
+                    return Json.ToObject<T>((string)obj);
                 }
                 catch
                 {
-                    return Observable.Return(defaultValue);
+                    return defaultValue;
                 }
             }
         }
 
-        return Observable.Return(defaultValue);
+        return defaultValue;
     }
 
     public void SaveSetting<T>(string key, T value)
@@ -91,11 +74,11 @@ public class LegacyLocalSettingsService : ILegacyLocalSettingsService
         else
         {
             _settings[key] = Json.Stringify(value);
-            _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings);
+            _fileService.Save(_knownFolders.ApplicationData, "LocalSettings.json", _settings);
         }
     }
 
     public bool ContainsKey(string key) => _settings.ContainsKey(key);
 
-    public void RemoveSetting(string key) => throw new NotImplementedException();
+    public void RemoveSetting(string key) => _settings.Remove(key);
 }

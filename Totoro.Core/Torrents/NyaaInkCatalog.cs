@@ -13,7 +13,7 @@ public class NyaaCatalog : ITorrentCatalog
                        ILocalSettingsService localSettingsService)
     {
         _httpClient = httpClient;
-        _baseUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/").Wait();
+        _baseUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
     }
 
     public IAsyncEnumerable<TorrentModel> Recents() => Search("");

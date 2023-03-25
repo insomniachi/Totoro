@@ -9,7 +9,7 @@
         public LocalMediaService(ILocalSettingsService localSettingsService)
         {
             _localSettingsService = localSettingsService;
-            _dirToIdlookup = _localSettingsService.ReadSetting<Dictionary<string, long>>("LocalMedia", new()).Wait();
+            _dirToIdlookup = _localSettingsService.ReadSetting<Dictionary<string, long>>("LocalMedia", new());
             _idToDirLookup = _dirToIdlookup.ToDictionary(x => x.Value, x => x.Key);
         }
 
@@ -80,6 +80,6 @@
             return string.Empty;
         }
 
-        public string GetDirectory() => _localSettingsService.ReadSetting<string>("MediaFolder").Wait();
+        public string GetDirectory() => _localSettingsService.ReadSetting<string>("MediaFolder");
     }
 }

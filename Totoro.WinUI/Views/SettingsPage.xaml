@@ -362,6 +362,23 @@
                                 ItemsSource="{x:Bind ViewModel.TorrentProviderTypes}"
                                 SelectedItem="{x:Bind ViewModel.Settings.TorrentProviderType, Mode=TwoWay}" />
                         </labs:SettingsCard>
+                        <labs:SettingsExpander Description="some filtering options to find your torrents better" Header="Advanced Search">
+                            <labs:SettingsExpander.HeaderIcon>
+                                <FontIcon Glyph="&#xE71C;" />
+                            </labs:SettingsExpander.HeaderIcon>
+                            <ToggleSwitch
+                                IsOn="{x:Bind ViewModel.Settings.TorrentSearchOptions.IsEnabled, Mode=TwoWay}"
+                                OffContent="Off"
+                                OnContent="On" />
+                            <labs:SettingsExpander.Items>
+                                <labs:SettingsCard Header="Subber">
+                                    <TextBox Text="{x:Bind ViewModel.Settings.TorrentSearchOptions.Subber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </labs:SettingsCard>
+                                <labs:SettingsCard Header="Quality">
+                                    <TextBox Text="{x:Bind ViewModel.Settings.TorrentSearchOptions.Quality, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </labs:SettingsCard>
+                            </labs:SettingsExpander.Items>
+                        </labs:SettingsExpander>
                     </StackPanel>
                 </ctk:Case>
 

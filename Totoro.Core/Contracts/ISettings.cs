@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Totoro.Core.Torrents;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Contracts;
 
@@ -24,6 +25,7 @@ public interface ISettings
     DebridServiceType DebridServiceType { get; set; }
     TorrentProviderType TorrentProviderType { get; set; }
     string PremiumizeApiKey { get; set; }
+    AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

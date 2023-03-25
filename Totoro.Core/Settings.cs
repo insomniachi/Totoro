@@ -1,7 +1,9 @@
 ﻿
+using System;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Torrents;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.Core;
 
@@ -26,6 +28,7 @@ public static class Settings
     public static Key<string> NyaUrl { get; } = new("NyaUrl", "https://nyaa.ink/");
     public static Key<bool> AutoUpdate { get; } = new("AutoUpdate", true);
     public static Key<string> PremiumizeApiKey { get; } = new("PremiumizeApiKey", "");
+    public static Key<AdvanceTorrentSearchOptions> TorrentSearchOptions { get; } = new("TorrentSearchOptions", () => AdvanceTorrentSearchOptions.Default);
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

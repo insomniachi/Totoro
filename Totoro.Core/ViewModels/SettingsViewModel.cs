@@ -1,5 +1,9 @@
-﻿using System.Reflection;
+﻿using System.Reactive.Subjects;
+using System.Reflection;
 using AnimDL.Core;
+using DynamicData;
+using Humanizer;
+using Splat;
 using Totoro.Core.Torrents;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -8,12 +12,13 @@ namespace Totoro.Core.ViewModels;
 public class SettingsViewModel : NavigatableViewModel
 {
     private readonly ITrackingServiceContext _trackingServiceContext;
+    private readonly ILocalSettingsService _localSettingsService;
 
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
     [Reactive] public string NyaaUrl { get; set; }
-
+    
     public ISettings Settings { get; }
     public Version Version { get; }
     public Version ScrapperVersion { get; }
@@ -38,7 +43,7 @@ public class SettingsViewModel : NavigatableViewModel
                              ILocalSettingsService localSettingsService)
     {
         _trackingServiceContext = trackingServiceContext;
-
+        _localSettingsService = localSettingsService;
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
         SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
@@ -56,7 +61,7 @@ public class SettingsViewModel : NavigatableViewModel
         ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));
         Navigate = ReactiveCommand.Create<string>(BreadCrumbBar.BreadCrumbs.Add);
 
-        NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/").Wait();
+        NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
 
         this.ObservableForProperty(x => x.SelectedProvider, x => x)
             .Subscribe(provider => settings.DefaultProviderType = provider.Name);
@@ -79,7 +84,26 @@ public class SettingsViewModel : NavigatableViewModel
         IsAniListConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
     }
 
+
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();
     public string GetDescripton() => $"Client - {Version}";
+
+}
+
+
+public class Dto<T> : ReactiveObject 
+{
+    public Dto(T model, Key<T> key, ILocalSettingsService localSettingService)
+    {
+        Changed
+            .Select(x => GetType().GetProperty(x.PropertyName))
+            .Subscribe(propInfo =>
+            {
+                var value = propInfo.GetValue(this);
+                typeof(T).GetProperty(propInfo.Name).SetValue(model, value);
+                this.Log().Debug($"""Setting Changed "{key.Name}.{propInfo.Name}" => {value}""");
+                localSettingService.SaveSetting(key, model);
+            });
+    }
 
 }

@@ -8,34 +8,45 @@ namespace Totoro.Core.ViewModels;
 
 internal class SettingsModel : ReactiveObject, ISettings
 {
+    private readonly ILocalSettingsService _localSettingsService;
+    private readonly IDiscordRichPresense _dRpc;
+
     public SettingsModel(ILocalSettingsService localSettingsService,
                          IDiscordRichPresense dRpc)
     {
+        _localSettingsService = localSettingsService;
+        _dRpc = dRpc;
+
         ElementTheme = ElementTheme.Dark;
+        DefaultProviderType = localSettingsService.ReadSetting(Settings.DefaultProviderType);
+        PreferSubs = localSettingsService.ReadSetting(Settings.PreferSubs);
+        UseDiscordRichPresense = localSettingsService.ReadSetting(Settings.UseDiscordRichPresense);
+        TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(Settings.TimeRemainingWhenEpisodeCompletesInSeconds);
+        OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(Settings.OpeningSkipDurationInSeconds);
+        ContributeTimeStamps = localSettingsService.ReadSetting(Settings.ContributeTimeStamps);
+        MinimumLogLevel = localSettingsService.ReadSetting(Settings.MinimumLogLevel);
+        AutoUpdate = localSettingsService.ReadSetting(Settings.AutoUpdate);
+        DefaultListService = localSettingsService.ReadSetting(Settings.DefaultListService);
+        HomePage = localSettingsService.ReadSetting(Settings.HomePage);
+        AllowSideLoadingPlugins = localSettingsService.ReadSetting(Settings.AllowSideLoadingPlugins);
+        DefaultStreamQualitySelection = localSettingsService.ReadSetting(Settings.DefaultStreamQualitySelection);
+        IncludeNsfw = localSettingsService.ReadSetting(Settings.IncludeNsfw);
+        EnterFullScreenWhenPlaying = localSettingsService.ReadSetting(Settings.EnterFullScreenWhenPlaying);
+        DebridServiceType = localSettingsService.ReadSetting(Settings.DebridServiceType);
+        TorrentProviderType = localSettingsService.ReadSetting(Settings.TorrentProviderType);
+        AniSkipId = localSettingsService.ReadSetting(Settings.AniSkipId);
+        PremiumizeApiKey = localSettingsService.ReadSetting(Settings.PremiumizeApiKey);
+        TorrentSearchOptions = localSettingsService.ReadSetting(Settings.TorrentSearchOptions);
 
-        localSettingsService.ReadSetting(Settings.DefaultProviderType).Subscribe(x => DefaultProviderType = x);
-        localSettingsService.ReadSetting(Settings.PreferSubs).Subscribe(x => PreferSubs = x);
-        localSettingsService.ReadSetting(Settings.UseDiscordRichPresense).Subscribe(x => UseDiscordRichPresense = x);
-        localSettingsService.ReadSetting(Settings.TimeRemainingWhenEpisodeCompletesInSeconds).Subscribe(x => TimeRemainingWhenEpisodeCompletesInSeconds = x);
-        localSettingsService.ReadSetting(Settings.OpeningSkipDurationInSeconds).Subscribe(x => OpeningSkipDurationInSeconds = x);
-        localSettingsService.ReadSetting(Settings.ContributeTimeStamps).Subscribe(x => ContributeTimeStamps = x);
-        localSettingsService.ReadSetting(Settings.MinimumLogLevel).Subscribe(x => MinimumLogLevel = x);
-        localSettingsService.ReadSetting(Settings.AutoUpdate).Subscribe(x => AutoUpdate = x);
-        localSettingsService.ReadSetting(Settings.DefaultListService).Subscribe(x => DefaultListService = x);
-        localSettingsService.ReadSetting(Settings.HomePage).Subscribe(x => HomePage = x);
-        localSettingsService.ReadSetting(Settings.AllowSideLoadingPlugins).Subscribe(x => AllowSideLoadingPlugins = x);
-        localSettingsService.ReadSetting(Settings.DefaultStreamQualitySelection).Subscribe(x => DefaultStreamQualitySelection = x);
-        localSettingsService.ReadSetting(Settings.IncludeNsfw).Subscribe(x => IncludeNsfw = x);
-        localSettingsService.ReadSetting(Settings.EnterFullScreenWhenPlaying).Subscribe(x => EnterFullScreenWhenPlaying = x);
-        localSettingsService.ReadSetting(Settings.DebridServiceType).Subscribe(x => DebridServiceType = x);
-        localSettingsService.ReadSetting(Settings.TorrentProviderType).Subscribe(x => TorrentProviderType = x);
-        localSettingsService.ReadSetting(Settings.AniSkipId).Subscribe(x => AniSkipId = x);
-        localSettingsService.ReadSetting(Settings.PremiumizeApiKey).Subscribe(x => PremiumizeApiKey = x);
+        ObserveChanges();
+    }
 
-        if (UseDiscordRichPresense && !dRpc.IsInitialized)
+    public void ObserveChanges()
+    {
+        if (UseDiscordRichPresense && !_dRpc.IsInitialized)
         {
-            dRpc.Initialize();
-            dRpc.SetPresence();
+            _dRpc.Initialize();
+            _dRpc.SetPresence();
         }
 
         Changed
@@ -46,17 +57,34 @@ internal class SettingsModel : ReactiveObject, ISettings
             {
                 var value = propInfo.GetValue(this);
                 this.Log().Debug($"""Setting Changed "{propInfo.Name}" => {value}""");
-                localSettingsService.SaveSetting(propInfo.Name, value);
+                _localSettingsService.SaveSetting(propInfo.Name, value);
             });
 
         this.ObservableForProperty(x => x.UseDiscordRichPresense, x => x)
-            .Where(x => x && !dRpc.IsInitialized)
+            .Where(x => x && !_dRpc.IsInitialized)
             .Subscribe(value =>
             {
-                dRpc.Initialize();
-                dRpc.SetPresence();
+                _dRpc.Initialize();
+                _dRpc.SetPresence();
             });
 
+        ObserveObject(TorrentSearchOptions, Settings.TorrentSearchOptions);
+    }
+
+    private void ObserveObject<T>(T target, Key<T> key)
+        where T : ReactiveObject
+    {
+        target
+            .Changed
+            .Select(x => target.GetType().GetProperty(x.PropertyName))
+            .Where(x => x.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+            .Throttle(TimeSpan.FromMilliseconds(500))
+            .Subscribe(propInfo =>
+            {
+                var value = propInfo.GetValue(target);
+                this.Log().Debug($"""Setting Changed "{key.Name}.{propInfo.Name}" => {value}""");
+                _localSettingsService.SaveSetting(key, target);
+            });
     }
 
     [Reactive] public ElementTheme ElementTheme { get; set; }
@@ -79,4 +107,20 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public DebridServiceType DebridServiceType { get; set; }
     [Reactive] public TorrentProviderType TorrentProviderType { get; set; }
     [Reactive] public string PremiumizeApiKey { get; set; }
+    [Reactive] public AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
+}
+
+
+public class AdvanceTorrentSearchOptions : ReactiveObject
+{
+    [Reactive] public bool IsEnabled { get; set; }
+    [Reactive] public string Subber { get; set; }
+    [Reactive] public string Quality { get; set; }
+
+    public static AdvanceTorrentSearchOptions Default => new()
+    {
+        IsEnabled = false,
+        Subber = "SubsPlease",
+        Quality = "1080",
+    };
 }
