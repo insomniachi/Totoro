@@ -1,8 +1,5 @@
-﻿using System.Reactive.Subjects;
-using System.Reflection;
+﻿using System.Reflection;
 using AnimDL.Core;
-using DynamicData;
-using Humanizer;
 using Splat;
 using Totoro.Core.Torrents;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -12,12 +9,12 @@ namespace Totoro.Core.ViewModels;
 public class SettingsViewModel : NavigatableViewModel
 {
     private readonly ITrackingServiceContext _trackingServiceContext;
-    private readonly ILocalSettingsService _localSettingsService;
 
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
     [Reactive] public string NyaaUrl { get; set; }
+    [Reactive] public ElementTheme Theme { get; set; }
     
     public ISettings Settings { get; }
     public Version Version { get; }
@@ -40,10 +37,10 @@ public class SettingsViewModel : NavigatableViewModel
                              ITrackingServiceContext trackingServiceContext,
                              IViewService viewService,
                              IUpdateService updateService,
-                             ILocalSettingsService localSettingsService)
+                             ILocalSettingsService localSettingsService,
+                             IThemeSelectorService themeSelectorService)
     {
         _trackingServiceContext = trackingServiceContext;
-        _localSettingsService = localSettingsService;
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
         SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
@@ -69,6 +66,9 @@ public class SettingsViewModel : NavigatableViewModel
         this.ObservableForProperty(x => x.NyaaUrl, x => x)
             .Where(x => !string.IsNullOrEmpty(x))
             .Subscribe(x => localSettingsService.SaveSetting("Nyaa", x));
+
+        this.WhenAnyValue(x => x.Theme)
+            .Subscribe(themeSelectorService.SetTheme);
 
         trackingServiceContext
             .Authenticated

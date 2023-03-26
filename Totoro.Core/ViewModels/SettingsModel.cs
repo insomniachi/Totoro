@@ -17,7 +17,6 @@ internal class SettingsModel : ReactiveObject, ISettings
         _localSettingsService = localSettingsService;
         _dRpc = dRpc;
 
-        ElementTheme = ElementTheme.Dark;
         DefaultProviderType = localSettingsService.ReadSetting(Settings.DefaultProviderType);
         PreferSubs = localSettingsService.ReadSetting(Settings.PreferSubs);
         UseDiscordRichPresense = localSettingsService.ReadSetting(Settings.UseDiscordRichPresense);

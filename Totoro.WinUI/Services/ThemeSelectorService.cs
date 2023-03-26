@@ -23,32 +23,31 @@ public class ThemeSelectorService : IThemeSelectorService
     public void SetTheme(ElementTheme theme)
     {
         Theme = theme;
-
         SetRequestedTheme();
-        SaveThemeInSettingsAsync(Theme);
+        SaveThemeInSettings(Theme);
     }
 
     public void SetRequestedTheme()
     {
-        if (App.MainWindow.Content is not Microsoft.UI.Xaml.FrameworkElement rootElement)
+        if (App.MainWindow.WindowContent is not Microsoft.UI.Xaml.FrameworkElement rootElement)
+        {
+            return;
+        }
+        
+        var convertedTheme = Convert(Theme);
+        
+        if(rootElement.RequestedTheme == convertedTheme)
         {
             return;
         }
 
-        rootElement.RequestedTheme = Convert(Theme);
+        rootElement.RequestedTheme = convertedTheme;
         TitleBarHelper.UpdateTitleBar(rootElement.RequestedTheme);
     }
 
     private ElementTheme LoadThemeFromSettings()
     {
-        var themeName = _localSettingsService.ReadSetting<string>(_settingsKey);
-
-        if (Enum.TryParse(themeName, out ElementTheme cacheTheme))
-        {
-            return cacheTheme;
-        }
-
-        return ElementTheme.Default;
+        return _localSettingsService.ReadSetting(_settingsKey, ElementTheme.Dark);
     }
 
     private static Microsoft.UI.Xaml.ElementTheme Convert(ElementTheme theme) => theme switch
@@ -59,8 +58,8 @@ public class ThemeSelectorService : IThemeSelectorService
         _ => throw new ArgumentException("invalid value", nameof(theme))
     };
 
-    private void SaveThemeInSettingsAsync(ElementTheme theme)
+    private void SaveThemeInSettings(ElementTheme theme)
     {
-        _localSettingsService.SaveSetting(_settingsKey, theme.ToString());
+        _localSettingsService.SaveSetting(_settingsKey, theme);
     }
 }

@@ -6,7 +6,6 @@ namespace Totoro.Core.Contracts;
 
 public interface ISettings
 {
-    ElementTheme ElementTheme { get; set; }
     bool PreferSubs { get; set; }
     string DefaultProviderType { get; set; }
     bool UseDiscordRichPresense { get; set; }
