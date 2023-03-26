@@ -333,7 +333,10 @@
                 <!--  Torrenting  -->
                 <ctk:Case Value="Settings&gt;Torrenting">
                     <StackPanel Spacing="10">
-                        <labs:SettingsExpander Description="Select and cofigure debrid service" Header="Debrid Service">
+                        <labs:SettingsExpander
+                            Description="Select and cofigure debrid service"
+                            Header="Debrid Service"
+                            IsExpanded="True">
                             <labs:SettingsExpander.HeaderIcon>
                                 <FontIcon Glyph="&#xE78C;" />
                             </labs:SettingsExpander.HeaderIcon>

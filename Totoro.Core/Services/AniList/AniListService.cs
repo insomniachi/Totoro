@@ -19,8 +19,8 @@ public class AnilistService : IAnimeService, IAnilistService
     {
         _animeIdService = animeIdService;
         _settings = settings;
-        var token = localSettingsSerivce.ReadSetting<AniListAuthToken>("AniListToken", new());
-        if(!string.IsNullOrEmpty(token.AccessToken))
+        var token = localSettingsSerivce.ReadSetting<AniListAuthToken>("AniListToken");
+        if(!string.IsNullOrEmpty(token?.AccessToken))
         {
             _anilistClient.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         }

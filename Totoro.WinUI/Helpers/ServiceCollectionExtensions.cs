@@ -48,7 +48,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
-        services.AddSingleton<ILocalSettingsService, LegacyLocalSettingsService>();
+        //services.AddSingleton<ILocalSettingsService, LegacyLocalSettingsService>();
         //services.AddSingleton<ILegacyLocalSettingsService, LegacyLocalSettingsService>();
         //services.AddSingleton<Func<ILegacyLocalSettingsService>>( x => () => x.GetRequiredService<ILegacyLocalSettingsService>());
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
