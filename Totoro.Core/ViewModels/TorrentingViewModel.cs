@@ -16,6 +16,7 @@ public class TorrentingViewModel : NavigatableViewModel
     private readonly IDebridServiceContext _debridServiceContext;
     private readonly ITorrentCatalog _catalog;
     private readonly IAnimeIdService _animeIdService;
+    private readonly ISettings _settings;
     private readonly SourceCache<TorrentModel, string> _torrentsCache = new(x => x.Link);
     private readonly SourceCache<Transfer, string> _transfersCache = new(x => x.Name);
     private readonly ReadOnlyObservableCollection<TorrentModel> _torrents;
@@ -31,7 +32,7 @@ public class TorrentingViewModel : NavigatableViewModel
         _debridServiceContext = debridServiceContext;
         _catalog = catalogFactory.GetCatalog(settings.TorrentProviderType);
         _animeIdService = animeIdService;
-
+        _settings = settings;
         ProviderType = settings.TorrentProviderType;
         var sort = this.WhenAnyValue(x => x.SortMode)
             .Select(sort => sort switch
@@ -175,15 +176,29 @@ public class TorrentingViewModel : NavigatableViewModel
         }
     }
 
-    private static string GetQueryText(AnimeModel anime)
+    private string GetQueryText(AnimeModel anime)
     {
         var watchedEpisodes = anime.Tracking?.WatchedEpisodes ?? 0;
+        var nextEpisode = (watchedEpisodes + 1).ToString().PadLeft(2, '0');
 
-        if(watchedEpisodes == anime.AiredEpisodes)
+        if (_settings.TorrentSearchOptions.IsEnabled)
         {
-            return anime.Title;
-        }
+            if (watchedEpisodes == anime.AiredEpisodes)
+            {
+                return $"[{_settings.TorrentSearchOptions.Subber}] {anime.Title} {_settings.TorrentSearchOptions.Quality}";
+            }
 
-        return $"{anime.Title} - {(watchedEpisodes + 1).ToString().PadLeft(2, '0')}";
+            return $"[{_settings.TorrentSearchOptions.Subber}] {anime.Title} - {nextEpisode} {_settings.TorrentSearchOptions.Quality}";
+        }
+        else
+        {
+
+            if (watchedEpisodes == anime.AiredEpisodes)
+            {
+                return anime.Title;
+            }
+
+            return $"{anime.Title} - {nextEpisode}";
+        }
     }
 }

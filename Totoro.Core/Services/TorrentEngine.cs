@@ -8,14 +8,15 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 {
     private ClientEngine _engine;
     private readonly Dictionary<string, TorrentManager> _torrentManagers = new();
-    private readonly string _tempTorrent;
     private readonly string _torrentEngineState;
+    private readonly HttpClient _httpClient;
 
-    public TorrentEngine(IKnownFolders knownFolders)
+    public TorrentEngine(IKnownFolders knownFolders,
+                         HttpClient httpClient)
     {
-        _tempTorrent = Path.Combine(knownFolders.Torrents, "temp.torrent");
         _torrentEngineState = Path.Combine(knownFolders.Torrents, "state.bin");
         _engine = new(new EngineSettingsBuilder() { CacheDirectory = Path.Combine(knownFolders.Torrents, "cache") }.ToSettings());
+        _httpClient = httpClient;
     }
 
     public async Task<bool> TryRestoreState()
@@ -33,9 +34,9 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             {
                 await _engine.RemoveAsync(item, RemoveMode.CacheDataAndDownloadedData);
 
-                if (!Directory.GetFiles(item.ContainingDirectory, "*", SearchOption.AllDirectories).Any())
+                if (!Directory.GetFiles(item.SavePath, "*", SearchOption.AllDirectories).Any())
                 {
-                    Directory.Delete(item.ContainingDirectory, true);
+                    Directory.Delete(item.SavePath, true);
                 }
             }
         }
@@ -53,8 +54,11 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 return value.Torrent;
             }
 
-            var torrent = await Torrent.LoadAsync(new Uri(torrentUrl), _tempTorrent);
-            File.Delete(_tempTorrent);
+            var stream = await _httpClient.GetStreamAsync(torrentUrl);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var torrent = await Torrent.LoadAsync(ms);
             var torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
             torrentManager.TorrentStateChanged += TorrentManager_TorrentStateChanged;
             await torrentManager.StartAsync();
@@ -72,7 +76,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     public async Task<Stream> GetStream(string torrentUrl, int fileIndex)
     {
         var torrentManager = _torrentManagers[torrentUrl];
-        return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], false);
+        return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex]);
     }
 
     public async Task ShutDown()
