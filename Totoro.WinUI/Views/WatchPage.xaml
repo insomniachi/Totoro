@@ -2,9 +2,11 @@
     x:Class="Totoro.WinUI.Views.WatchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
+    xmlns:lvs="using:LibVLCSharp.Platforms.Windows"
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
@@ -18,12 +20,18 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <MediaPlayerElement
-            x:Name="MediaPlayerElement"
-            Grid.Row="0"
-            AreTransportControlsEnabled="True"
-            IsDoubleTapEnabled="True"
-            TransportControls="{x:Bind (media:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
+        <ctk:SwitchPresenter Value="{x:Bind ViewModel.MediaPlayerType}">
+            <ctk:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
+                <MediaPlayerElement
+                    x:Name="MediaPlayerElement"
+                    AreTransportControlsEnabled="True"
+                    IsDoubleTapEnabled="True"
+                    TransportControls="{x:Bind (media:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
+            </ctk:Case>
+            <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
+                <lvs:VideoView x:Name="VideoView" Initialized="VideoView_Initialized" />
+            </ctk:Case>
+        </ctk:SwitchPresenter>
 
         <Expander
             x:Name="EpisodesExpander"

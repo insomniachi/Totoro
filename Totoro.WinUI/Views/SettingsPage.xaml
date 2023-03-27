@@ -171,6 +171,15 @@
                 <!--  Media Player  -->
                 <ctk:Case Value="Settings&gt;Media Player">
                     <StackPanel Spacing="10">
+                        <labs:SettingsCard Description="Media engine used to render videos, (choose vlc if playing streaming torrents)" Header="Media Player">
+                            <labs:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE955;" />
+                            </labs:SettingsCard.HeaderIcon>
+                            <ComboBox
+                                Width="180"
+                                ItemsSource="{x:Bind ViewModel.MediaPlayerTypes}"
+                                SelectedItem="{x:Bind ViewModel.Settings.MediaPlayerType, Mode=TwoWay}" />
+                        </labs:SettingsCard>
                         <labs:SettingsCard Description="Decides how to choose stream qualitiy when multiple qualities as available" Header="Default Stream Quality">
                             <labs:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xe786;" />

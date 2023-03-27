@@ -29,6 +29,7 @@ public static class Settings
     public static Key<bool> AutoUpdate { get; } = new("AutoUpdate", true);
     public static Key<string> PremiumizeApiKey { get; } = new("PremiumizeApiKey", "");
     public static Key<AdvanceTorrentSearchOptions> TorrentSearchOptions { get; } = new("TorrentSearchOptions", () => AdvanceTorrentSearchOptions.Default);
+    public static Key<MediaPlayerType> MediaPlayerType { get; } = new("MediaPlayerType", Models.MediaPlayerType.WindowsMediaPlayer);
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

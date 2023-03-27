@@ -15,7 +15,9 @@
 		<Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>
 		<PackageIcon>WindowIcon.png</PackageIcon>
 		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
-		<UserSecretsId>3acd16e3-3cb5-4a0c-a918-a5dbdafee947</UserSecretsId>
+		<EnablePreviewMsixTooling>false</EnablePreviewMsixTooling>
+		<WindowsPackageType>None</WindowsPackageType>
+		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="Dialogs\Views\ConfigureOptionsView.xaml" />
@@ -46,6 +48,8 @@
 		<PackageReference Include="ReactiveUI.WinUI" Version="18.4.26" />
 		<PackageReference Include="System.Reactive" Version="5.0.0" />
 		<PackageReference Include="WinUIEx" Version="2.1.0" />
+		<PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.18" />
+		<PackageReference Include="LibVLCSharp" Version="3.6.8-alpha-20230327-6638" />
 	</ItemGroup>
 
 	<ItemGroup>

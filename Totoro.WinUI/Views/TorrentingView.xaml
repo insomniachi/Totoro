@@ -143,7 +143,7 @@
                                             Maximum="1"
                                             Minimum="0"
                                             Value="{x:Bind ProgressValue}" />
-                                        <TextBlock Margin="10,0" Text="{x:Bind Progress, Mode=OneWay}" />
+                                        <TextBlock Margin="10,0" Text="{x:Bind Progress}" />
                                     </StackPanel>
                                 </StackPanel>
                             </Grid>

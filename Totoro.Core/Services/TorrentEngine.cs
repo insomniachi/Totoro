@@ -60,7 +60,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             ms.Position = 0;
             var torrent = await Torrent.LoadAsync(ms);
             var torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
-            torrentManager.TorrentStateChanged += TorrentManager_TorrentStateChanged;
+            SubscribeEvents(torrentManager);
             await torrentManager.StartAsync();
             _torrentManagers.Add(torrentUrl, torrentManager);
 
@@ -84,9 +84,40 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         await _engine.SaveStateAsync(_torrentEngineState);
     }
 
+    private void SubscribeEvents(TorrentManager torrentManager)
+    {
+        torrentManager.TorrentStateChanged += TorrentManager_TorrentStateChanged;
+        torrentManager.PeerConnected += TorrentManager_PeerConnected;
+        torrentManager.PeerDisconnected += TorrentManager_PeerDisconnected;
+    }
+
     private void TorrentManager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
     {
         this.Log().Info("Torrent State Changed : {0} -> {1}", e.OldState, e.NewState);
+
+        if(e.NewState is TorrentState.Seeding)
+        {
+            try
+            {
+                Task.Run(e.TorrentManager.StopAsync);
+            }
+            catch (Exception ex)
+            {
+
+                this.Log().Error(ex);
+            }
+        }
     }
+
+    private void TorrentManager_PeerDisconnected(object sender, PeerDisconnectedEventArgs e)
+    {
+        this.Log().Info($"Peer Disconnected : {e.Peer.Uri}");
+    }
+
+    private void TorrentManager_PeerConnected(object sender, PeerConnectedEventArgs e)
+    {
+        this.Log().Info($"Peer Connected : {e.Peer.Uri}");
+    }
+
 }
 

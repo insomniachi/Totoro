@@ -25,6 +25,7 @@ public interface ISettings
     TorrentProviderType TorrentProviderType { get; set; }
     string PremiumizeApiKey { get; set; }
     AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
+    MediaPlayerType MediaPlayerType { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

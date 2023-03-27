@@ -9,7 +9,6 @@ using Totoro.WinUI.Media;
 using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;
-using Windows.Services.Maps;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -48,9 +47,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
-        //services.AddSingleton<ILocalSettingsService, LegacyLocalSettingsService>();
-        //services.AddSingleton<ILegacyLocalSettingsService, LegacyLocalSettingsService>();
-        //services.AddSingleton<Func<ILegacyLocalSettingsService>>( x => () => x.GetRequiredService<ILegacyLocalSettingsService>());
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<IActivationService, ActivationService>();
@@ -63,8 +59,11 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IToastService, ToastService>();
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
-        services.AddTransient<IMediaPlayer, WinUIMediaPlayerWrapper>();
         services.AddSingleton<IWindowService, WindowService>();
+
+        services.AddTransient<IMediaPlayerFactory, MediaPlayerFactory>();
+        services.AddMediaPlayer<WinUIMediaPlayerWrapper>();
+        services.AddMediaPlayer<LibVLCMediaPlayerWrapper>();
 
 
         return services;
@@ -93,6 +92,14 @@ public static class ServiceCollectionExtensions
         services.AddPage<SubmitTimeStampsViewModel, SubmitTimeStampsView>();
         services.AddPage<ConfigureProviderViewModel, ConfigureProviderView>();
         services.AddPage<RequestRatingViewModel, RequestRatingView>();
+        return services;
+    }
+
+    private static IServiceCollection AddMediaPlayer<TMediaPlayer>(this IServiceCollection services)
+        where TMediaPlayer : class, IMediaPlayer
+    {
+        services.AddTransient<TMediaPlayer>();
+        services.AddTransient<Func<TMediaPlayer>>(x => () => x.GetRequiredService<TMediaPlayer>());
         return services;
     }
 }

@@ -19,6 +19,11 @@ public static class LocalSettingsServiceExtensions
         return service.ReadSetting(key.Name, key.Default.Value);
     }
 
+    public static T ReadSetting<T>(this ILocalSettingsService service, Key<T> key, T defaultValue)
+    {
+        return service.ReadSetting(key.Name, defaultValue);
+    }
+
     public static void SaveSetting<T>(this ILocalSettingsService service, Key<T> key, T value)
     {
         service.SaveSetting(key.Name, value);

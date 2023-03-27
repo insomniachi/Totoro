@@ -33,7 +33,7 @@ public partial class WatchViewModel : NavigatableViewModel
                           ITimestampsService timestampsService,
                           IPlaybackStateStorage playbackStateStorage,
                           IAnimeServiceContext animeService,
-                          IMediaPlayer mediaPlayer,
+                          IMediaPlayerFactory mediaPlayerFactory,
                           IStreamPageMapper streamPageMapper,
                           IVideoStreamResolverFactory videoStreamResolverFactory,
                           IEnumerable<IMediaEventListener> mediaEventListeners)
@@ -49,19 +49,21 @@ public partial class WatchViewModel : NavigatableViewModel
         _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
 
-        SetMediaPlayer(mediaPlayer);
-        MediaPlayer = mediaPlayer;
+        MediaPlayer = mediaPlayerFactory.Create(settings.MediaPlayerType);
         Provider = providerFactory.GetProvider(settings.DefaultProviderType);
         SelectedAudioStream = GetDefaultAudioStream();
+        MediaPlayerType = _settings.MediaPlayerType;
         
+        SetMediaPlayer(MediaPlayer);
+
         NextEpisode = ReactiveCommand.Create(() => 
         {
-            mediaPlayer.Pause(); 
+            MediaPlayer.Pause(); 
             EpisodeModels.SelectNext();
         }, HasNextEpisode(), RxApp.MainThreadScheduler);
         PrevEpisode = ReactiveCommand.Create(() => 
         {
-            mediaPlayer.Pause(); 
+            MediaPlayer.Pause(); 
             EpisodeModels.SelectPrevious();
         }, HasPrevEpisode(), RxApp.MainThreadScheduler);
         SkipOpening = ReactiveCommand.Create(() =>
@@ -111,14 +113,14 @@ public partial class WatchViewModel : NavigatableViewModel
             .SelectMany(x => x.WhenAnyValue(x => x.Current))
             .WhereNotNull()
             .Where(ep => ep.EpisodeNumber > 0)
-            .Do(_ => mediaPlayer.Pause())
+            .Do(_ => MediaPlayer.Pause())
             .Log(this, "Selected Episode :", ep => ep.EpisodeNumber.ToString())
             .Do(epModel =>
             {
                 if(EpisodeModels.Count > 1)
                 {
-                    mediaPlayer.TransportControls.IsNextTrackButtonVisible = epModel != EpisodeModels.Last();
-                    mediaPlayer.TransportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
+                    MediaPlayer.TransportControls.IsNextTrackButtonVisible = epModel != EpisodeModels.Last();
+                    MediaPlayer.TransportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
                 }
 
                 CurrentPlayerTime = 0;
@@ -246,6 +248,7 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public VideoStreamModel SelectedStream { get; set; }
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
+    public MediaPlayerType MediaPlayerType { get; }
     public IProvider Provider { get; }
     public IAnimeModel Anime
     {
