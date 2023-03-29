@@ -29,7 +29,7 @@
                     TransportControls="{x:Bind (media:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
             </ctk:Case>
             <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
-                <lvs:VideoView x:Name="VideoView" Initialized="VideoView_Initialized" />
+                <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" Initialized="VlcMediaPlayerElement_Initialized" />
             </ctk:Case>
         </ctk:SwitchPresenter>
 

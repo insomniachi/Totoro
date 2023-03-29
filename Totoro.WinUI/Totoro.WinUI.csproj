@@ -23,6 +23,7 @@
 	  <None Remove="Dialogs\Views\ConfigureOptionsView.xaml" />
 	  <None Remove="Dialogs\Views\ConfigureProviderView.xaml" />
 	  <None Remove="Dialogs\Views\RequestRatingView.xaml" />
+	  <None Remove="Media\VlcMediaPlayerElement.xaml" />
 	  <None Remove="Views\TorrentingView.xaml" />
 	</ItemGroup>
 
@@ -80,6 +81,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Media\VlcMediaPlayerElement.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Dialogs\Views\RequestRatingView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

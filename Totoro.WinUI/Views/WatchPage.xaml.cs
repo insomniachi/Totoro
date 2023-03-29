@@ -9,7 +9,6 @@ public class WatchPageBase : ReactivePage<WatchViewModel> { }
 
 public sealed partial class WatchPage : WatchPageBase
 {
-    private string[] _swapChainOptions;
     public WatchPage()
     {
         InitializeComponent();
@@ -39,10 +38,6 @@ public sealed partial class WatchPage : WatchPageBase
                         transportControls.WhenAnyValue(x => x.SelectedQuality)
                             .Subscribe(quality => ViewModel.SelectedQuality = quality);
                     }
-                    else if (mp is LibVLCMediaPlayerWrapper { IsInitialized: false } vlcWrapper && _swapChainOptions is not null)
-                    {
-                        vlcWrapper.Initialize(_swapChainOptions);
-                    }
 
                 })
                 .DisposeWith(d);
@@ -63,14 +58,14 @@ public sealed partial class WatchPage : WatchPageBase
         });
     }
 
-    private void VideoView_Initialized(object sender, LibVLCSharp.Platforms.Windows.InitializedEventArgs e)
+    private void VlcMediaPlayerElement_Initialized(object sender, EventArgs e)
     {
-        if(ViewModel.MediaPlayer is not LibVLCMediaPlayerWrapper { IsInitialized: false } wrapper)
+        if (ViewModel.MediaPlayer is not LibVLCMediaPlayerWrapper wrapper)
         {
             return;
         }
 
-        _swapChainOptions = e.SwapChainOptions;
-        wrapper.Initialize(e.SwapChainOptions);
+        wrapper.Initialize(VlcMediaPlayerElement.LibVLC, VlcMediaPlayerElement.MediaPlayer);
+        wrapper.SetTransportControls(VlcMediaPlayerElement.TransportControls);
     }
 }

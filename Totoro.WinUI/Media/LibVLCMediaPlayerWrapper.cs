@@ -30,13 +30,13 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public IObservable<TimeSpan> DurationChanged => _durationChanged;
 
-    public IMediaTransportControls TransportControls { get; }
+    public IMediaTransportControls TransportControls { get; private set; }
 
     public bool IsInitialized { get; private set; }
 
     public void Dispose()
     {
-        _mp.Dispose();
+        _mp?.Dispose();
     }
 
     public void Pause()
@@ -51,7 +51,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public void Play(double offsetInSeconds)
     {
-        _mp.Time = (long)TimeSpan.FromSeconds(offsetInSeconds).TotalMicroseconds;
+        _mp.SeekTo(TimeSpan.FromSeconds(offsetInSeconds));
         _mp.Play();
     }
 
@@ -66,15 +66,20 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
             ? new LibVLCSharp.Shared.Media(_vlc, stream.StreamUrl, FromType.FromLocation)
             : new LibVLCSharp.Shared.Media(_vlc, new StreamMediaInput(stream.Stream));
 
-        _mp.Play(media);
+        _mp.Media = media;
 
         return Task.FromResult(Unit.Default);
     }
 
-    public void Initialize(string[] swapChainOptions)
+    public void SetTransportControls(IMediaTransportControls transportControls)
     {
-        _vlc = new LibVLC(swapChainOptions);
-        _mp = new MediaPlayer(_vlc);
+        TransportControls = transportControls;
+    }
+
+    public void Initialize(LibVLC vlc, MediaPlayer mp)
+    {
+        _vlc = vlc;
+        _mp = mp;
 
         _mp.Events()
            .Paused

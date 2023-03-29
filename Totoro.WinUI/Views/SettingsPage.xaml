@@ -176,7 +176,7 @@
                                 <FontIcon Glyph="&#xE955;" />
                             </labs:SettingsCard.HeaderIcon>
                             <ComboBox
-                                Width="180"
+                                Width="200"
                                 ItemsSource="{x:Bind ViewModel.MediaPlayerTypes}"
                                 SelectedItem="{x:Bind ViewModel.Settings.MediaPlayerType, Mode=TwoWay}" />
                         </labs:SettingsCard>
