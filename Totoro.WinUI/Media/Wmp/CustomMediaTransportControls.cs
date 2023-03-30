@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
 
-namespace Totoro.WinUI.Media;
+namespace Totoro.WinUI.Media.Wmp;
 
 public class CustomMediaTransportControls : MediaTransportControls, IMediaTransportControls
 {

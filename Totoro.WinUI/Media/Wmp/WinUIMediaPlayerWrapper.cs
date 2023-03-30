@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.WinUI.Contracts;
@@ -8,7 +9,7 @@ using Windows.Media.Streaming.Adaptive;
 using Windows.Storage;
 using Windows.Web.Http;
 
-namespace Totoro.WinUI.Media;
+namespace Totoro.WinUI.Media.Wmp;
 
 public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 {
@@ -45,7 +46,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     public IMediaTransportControls TransportControls => _transportControls;
     public void Dispose()
     {
-        if(_isDisposed)
+        if (_isDisposed)
         {
             return;
         }
@@ -54,7 +55,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     }
     public void Pause()
     {
-        if(_isDisposed)
+        if (_isDisposed)
         {
             return;
         }
@@ -70,7 +71,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
         _player.Play();
     }
-    public void Seek(TimeSpan ts)
+    public void SeekTo(TimeSpan ts)
     {
         if (_isDisposed)
         {
@@ -79,7 +80,24 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
         _player.Position = ts;
     }
-    
+
+    public void Seek(TimeSpan ts, SeekDirection direction)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        var sign = direction switch
+        {
+            SeekDirection.Forward => 1,
+            SeekDirection.Backward => -1,
+            _ => throw new UnreachableException()
+        };
+
+        _player.Position += ts * sign;
+    }
+
     public void Play(double offsetInSeconds)
     {
         if (_isDisposed)
@@ -108,7 +126,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
         if (AdditionalInformation?.TryGetValue("subtitleFiles", out string jsonFiles) == true)
         {
-            var subtitles = JsonSerializer.Deserialize<List<KeyValuePair<string,string>>>(jsonFiles);
+            var subtitles = JsonSerializer.Deserialize<List<KeyValuePair<string, string>>>(jsonFiles);
             _ttsMap.Clear();
             foreach (var item in subtitles)
             {
@@ -122,7 +140,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
     {
         MediaSource source;
 
-        if(stream.Stream is not null)
+        if (stream.Stream is not null)
         {
             source = MediaSource.CreateFromStream(stream.Stream.AsRandomAccessStream(), "video/x-matroska");
         }
@@ -156,7 +174,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
         args.Tracks[0].Label = lang;
 
-        if (!_isHardSub && (lang == "en-US" || 
+        if (!_isHardSub && (lang == "en-US" ||
             lang.Contains("english") ||
             lang.Contains("eng")))
         {
@@ -167,12 +185,12 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
 
     public MediaPlayer GetMediaPlayer() => _player;
 
-    private async Task<MediaSource> GetMediaSource(string url, Dictionary<string,string> headers)
+    private async Task<MediaSource> GetMediaSource(string url, Dictionary<string, string> headers)
     {
         _httpClient.DefaultRequestHeaders.Clear();
         var hasHeaders = headers is { Count: > 0 };
         Uri uri = new(url);
-        
+
         if (hasHeaders)
         {
             foreach (var item in headers)

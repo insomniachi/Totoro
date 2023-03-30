@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using Totoro.WinUI.Media.Vlc;
+using Totoro.WinUI.Media.Wmp;
 
 namespace Totoro.WinUI.Media
 {

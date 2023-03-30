@@ -1,24 +1,22 @@
-﻿using System.Reactive.Subjects;
-using ReactiveMarbles.ObservableEvents;
+﻿using System.Diagnostics;
+using System.Net.WebSockets;
+using System.Reactive.Subjects;
+using System.Text.Json;
 using LibVLCSharp.Shared;
-using Totoro.WinUI.Contracts;
+using ReactiveMarbles.ObservableEvents;
+using Windows.Media.Core;
 
-namespace Totoro.WinUI.Media;
+namespace Totoro.WinUI.Media.Vlc;
 
 internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 {
     private LibVLC _vlc;
-    private MediaPlayer _mp; 
+    private MediaPlayer _mp;
     private readonly Subject<Unit> _paused = new();
     private readonly Subject<Unit> _playing = new();
     private readonly Subject<Unit> _ended = new();
     private readonly Subject<TimeSpan> _durationChanged = new();
     private readonly Subject<TimeSpan> _positionChanged = new();
-
-    public LibVLCMediaPlayerWrapper(IWindowService windowService)
-    {
-        TransportControls = new CustomMediaTransportControls(windowService);
-    }
 
     public IObservable<Unit> Paused => _paused;
 
@@ -51,13 +49,25 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public void Play(double offsetInSeconds)
     {
-        _mp.SeekTo(TimeSpan.FromSeconds(offsetInSeconds));
         _mp.Play();
+        _mp.SeekTo(TimeSpan.FromSeconds(offsetInSeconds));
     }
 
-    public void Seek(TimeSpan ts)
+    public void SeekTo(TimeSpan ts)
     {
-        _mp.Time = (long)ts.TotalMilliseconds;
+        _mp.SeekTo(ts);
+    }
+
+    public void Seek(TimeSpan ts, SeekDirection direction)
+    {
+        var sign = direction switch
+        {
+            SeekDirection.Forward => 1,
+            SeekDirection.Backward => -1,
+            _ => throw new UnreachableException()
+        };
+
+        _mp.Time += (sign * (long)ts.TotalMilliseconds);
     }
 
     public Task<Unit> SetMedia(VideoStreamModel stream)
@@ -67,6 +77,16 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
             : new LibVLCSharp.Shared.Media(_vlc, new StreamMediaInput(stream.Stream));
 
         _mp.Media = media;
+
+        if (stream.AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
+        {
+            var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+            var count = 0;
+            foreach (var item in subtitles)
+            {
+                _mp.AddSlave(MediaSlaveType.Subtitle, item.Value, count++ == 0);
+            }
+        }
 
         return Task.FromResult(Unit.Default);
     }
@@ -106,6 +126,4 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
         IsInitialized = true;
     }
-
-
 }

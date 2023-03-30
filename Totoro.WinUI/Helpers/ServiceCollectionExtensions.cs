@@ -6,6 +6,8 @@ using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
 using Totoro.WinUI.Dialogs.Views;
 using Totoro.WinUI.Media;
+using Totoro.WinUI.Media.Vlc;
+using Totoro.WinUI.Media.Wmp;
 using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;

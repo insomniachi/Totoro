@@ -5,7 +5,8 @@ public interface IMediaPlayer : IDisposable
     void Play();
     void Play(double offsetInSeconds);
     void Pause();
-    void Seek(TimeSpan ts);
+    void SeekTo(TimeSpan ts);
+    void Seek(TimeSpan ts, SeekDirection direction);
     IObservable<Unit> Paused { get; }
     IObservable<Unit> Playing { get; }
     IObservable<Unit> PlaybackEnded { get; }
@@ -13,5 +14,11 @@ public interface IMediaPlayer : IDisposable
     IObservable<TimeSpan> DurationChanged { get; }
     Task<Unit> SetMedia(VideoStreamModel stream);
     IMediaTransportControls TransportControls { get; }
+}
+
+public enum SeekDirection
+{
+    Forward,
+    Backward,
 }
 

@@ -1,4 +1,4 @@
-﻿using Totoro.WinUI.Media;
+﻿using Totoro.WinUI.Media.Wmp;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;
 
@@ -14,7 +14,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
         PlayRange = ReactiveCommand.Create(Play);
         SetStartPosition = ReactiveCommand.Create(() => StartPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
         SetEndPosition = ReactiveCommand.Create(() => EndPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
-        SkipNearEnd = ReactiveCommand.Create(() => MediaPlayer.Seek(TimeSpan.FromSeconds(EndPosition - 5)));
+        SkipNearEnd = ReactiveCommand.Create(() => MediaPlayer.SeekTo(TimeSpan.FromSeconds(EndPosition - 5)));
         Submit = ReactiveCommand.CreateFromTask(SubmitTimeStamp);
 
         var canVote = this.WhenAnyValue(x => x.SelectedTimeStampType, x => x.ExistingResult)
@@ -40,7 +40,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
 
         this.WhenAnyValue(x => x.StartPosition)
             .DistinctUntilChanged()
-            .Subscribe(x => MediaPlayer.Seek(TimeSpan.FromSeconds(x)));
+            .Subscribe(x => MediaPlayer.SeekTo(TimeSpan.FromSeconds(x)));
 
         this.WhenAnyValue(x => x.SelectedTimeStampType, x => x.ExistingResult)
             .Subscribe(tuple =>

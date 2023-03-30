@@ -4,6 +4,7 @@
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.WinUI.Media.Vlc;
 
 namespace Totoro.WinUI.Media;
 

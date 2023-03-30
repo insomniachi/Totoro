@@ -2,6 +2,8 @@
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Media;
 using ReactiveMarbles.ObservableEvents;
+using Totoro.WinUI.Media.Vlc;
+using Totoro.WinUI.Media.Wmp;
 
 namespace Totoro.WinUI.Views;
 
@@ -37,6 +39,16 @@ public sealed partial class WatchPage : WatchPageBase
 
                         transportControls.WhenAnyValue(x => x.SelectedQuality)
                             .Subscribe(quality => ViewModel.SelectedQuality = quality);
+
+                        ViewModel.SetMediaPlayer(ViewModel.MediaPlayer);
+                        ViewModel.SubscribeTransportControlEvents();
+                    }
+                    else if(mp is LibVLCMediaPlayerWrapper vlcWrapper)
+                    {
+                        VlcMediaPlayerElement.Events()
+                                             .DoubleTapped
+                                             .Subscribe(_ => windowService.ToggleIsFullWindow())
+                                             .DisposeWith(d);
                     }
 
                 })
@@ -67,5 +79,7 @@ public sealed partial class WatchPage : WatchPageBase
 
         wrapper.Initialize(VlcMediaPlayerElement.LibVLC, VlcMediaPlayerElement.MediaPlayer);
         wrapper.SetTransportControls(VlcMediaPlayerElement.TransportControls);
+        ViewModel.SetMediaPlayer(ViewModel.MediaPlayer);
+        ViewModel.SubscribeTransportControlEvents();
     }
 }

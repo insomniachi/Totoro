@@ -53,11 +53,11 @@ internal class Aniskip : MediaEventListener, IAniskip
         var position = _position.TotalSeconds;
         if (_ed is not null && position > _ed.Interval.StartTime)
         {
-            _mediaPlayer.Seek(TimeSpan.FromSeconds(_ed.Interval.EndTime));
+            _mediaPlayer.SeekTo(TimeSpan.FromSeconds(_ed.Interval.EndTime));
         }
         else if (_op is not null && position > _op.Interval.StartTime)
         {
-            _mediaPlayer.Seek(TimeSpan.FromSeconds(_op.Interval.EndTime));
+            _mediaPlayer.SeekTo(TimeSpan.FromSeconds(_op.Interval.EndTime));
         }
     }
 

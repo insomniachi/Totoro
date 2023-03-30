@@ -1,4 +1,5 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Reactive.Concurrency;
+using System.Reactive.Subjects;
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using LibVLCSharp.Shared.Structures;
@@ -7,9 +8,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Splat;
-using Totoro.WinUI.Media.Vlc;
+using Totoro.WinUI.Contracts;
 
-namespace Totoro.WinUI.Media;
+namespace Totoro.WinUI.Media.Vlc;
 
 public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransportControls
 {
@@ -92,6 +93,13 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         AddHandler(PointerMovedEvent, new PointerEventHandler(OnPointerMoved), true);
         AddHandler(TappedEvent, new TappedEventHandler(OnPointerMoved), true);
         AddHandler(PointerExitedEvent, new PointerEventHandler((sender, e) => Show()), true);
+
+        App.GetService<IWindowService>()?
+           .IsFullWindowChanged
+           .Subscribe(isFullWindwow =>
+           {
+               FullWindowSymbol.Symbol = isFullWindwow ? Symbol.BackToWindow : Symbol.FullScreen;
+           });
     }
 
     /// <summary>
@@ -114,9 +122,45 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     public IObservable<string> OnQualityChanged => _onQualityChanged;
     public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
-    public bool IsSkipButtonVisible { get; set; }
-    public bool IsNextTrackButtonVisible { get; set; }
-    public bool IsPreviousTrackButtonVisible { get; set; }
+    public bool IsSkipButtonVisible
+    {
+        get => DynamicSkipButton?.Visibility == Visibility.Visible;
+        set
+        {
+            if(DynamicSkipButton is null)
+            {
+                return;
+            }
+
+            RxApp.MainThreadScheduler.Schedule(() => DynamicSkipButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed);
+        }
+    }
+    public bool IsNextTrackButtonVisible 
+    {
+        get => NextTrackButton.Visibility == Visibility.Visible;
+        set
+        {
+            if (NextTrackButton is null)
+            {
+                return;
+            }
+
+            RxApp.MainThreadScheduler.Schedule(() => NextTrackButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed);
+        }
+    }
+    public bool IsPreviousTrackButtonVisible
+    {
+        get => PreviousTrackButton.Visibility == Visibility.Visible;
+        set
+        {
+            if (PreviousTrackButton is null)
+            {
+                return;
+            }
+
+            RxApp.MainThreadScheduler.Schedule(() => PreviousTrackButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed);
+        }
+    }
     private TextBlock ErrorTextBlock { get; set; }
     private Slider VolumeSlider { get; set; }
     private Slider ProgressSlider { get; set; }
@@ -124,6 +168,10 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     private TextBlock TimeRemainingElement { get; set; }
     private DependencyObject PlayPauseButton { get; set; }
     private DependencyObject PlayPauseButtonOnLeft { get; set; }
+    private SymbolIcon FullWindowSymbol { get; set; }
+    private ButtonBase NextTrackButton { get; set; }
+    private ButtonBase PreviousTrackButton { get; set; }
+    private ButtonBase DynamicSkipButton { get; set; }
     private AvailabilityCommand SeekBarAvailabilityCommand { get; set; }
     private AvailabilityCommand VolumeMuteButtonAvailabilityCommand { get; set; }
     private AvailabilityCommand MuteStateCommand { get; set; }
@@ -136,7 +184,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     public VideoView VideoView { get; set; }
     public LibVLC LibVLC { get; set; }
     public MediaPlayer MediaPlayer { get; set; }
-    
+
     /// <summary>
     /// Identifies the <see cref="ShowAndHideAutomatically"/> dependency property
     /// </summary>
@@ -589,6 +637,17 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         }
 
         VisualStateManager.GoToState(this, Manager.Get<StateManager>().IsPlaying ? PauseState : PlayState, true);
+
+        Initialize("SubmitTimeStampsButton", "Submit Timestamps", (_, _) => _onSubmitTimeStamp.OnNext(Unit.Default));
+        PreviousTrackButton = Initialize("PreviousTrackButton", "Previous Episode", (_, _) => _onPrevTrack.OnNext(Unit.Default)) as ButtonBase;
+        NextTrackButton = Initialize("NextTrackButton", "Next Episode", (_, _) => _onNextTrack.OnNext(Unit.Default)) as ButtonBase;
+        Initialize("SkipForwardButton", "Skip forward", (_, _) => MediaPlayer.Time += 30000);
+        Initialize("SkipBackwardButton", "skip backward", (_, _) => MediaPlayer.Time -= 10000);
+        Initialize("SkipIntroButton", "Skip intro", (_, _) => _onSkipIntro.OnNext(Unit.Default));
+        DynamicSkipButton = Initialize("DynamicSkipIntroButton", "", (_, _) => _onDynamicSkipIntro.OnNext(Unit.Default)) as ButtonBase;
+        Initialize("FullWindowButton", "", (_, _) => App.GetService<IWindowService>().ToggleIsFullWindow());
+        FullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
+
         UpdateVolumeSlider();
         UpdateTime();
     }
@@ -599,7 +658,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         {
             return null;
         }
-        var control = GetTemplateChild(controlName) as DependencyObject;
+        var control = GetTemplateChild(controlName);
         if (clickEventHandler != null && control is ButtonBase button)
         {
             button.Click += clickEventHandler;
@@ -786,7 +845,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
 
     private void TrackMenuItemClick(int? trackId)
     {
-        var menu = TracksMenus.SelectMany(kvp => kvp.Key.Items.OfType<ToggleMenuFlyoutItem>().Where(i => ((int?)i.CommandParameter) == trackId)
+        var menu = TracksMenus.SelectMany(kvp => kvp.Key.Items.OfType<ToggleMenuFlyoutItem>().Where(i => (int?)i.CommandParameter == trackId)
             .Select(i => new { Menu = kvp, MenuItem = i })).FirstOrDefault();
         if (menu != null)
         {

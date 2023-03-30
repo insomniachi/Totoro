@@ -6,11 +6,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
-    xmlns:lvs="using:LibVLCSharp.Platforms.Windows"
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
+    xmlns:wmp="using:Totoro.WinUI.Media.Wmp"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
 
@@ -26,7 +26,7 @@
                     x:Name="MediaPlayerElement"
                     AreTransportControlsEnabled="True"
                     IsDoubleTapEnabled="True"
-                    TransportControls="{x:Bind (media:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
+                    TransportControls="{x:Bind (wmp:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
             </ctk:Case>
             <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
                 <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" Initialized="VlcMediaPlayerElement_Initialized" />

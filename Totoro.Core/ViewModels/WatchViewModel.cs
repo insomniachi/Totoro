@@ -53,8 +53,6 @@ public partial class WatchViewModel : NavigatableViewModel
         Provider = providerFactory.GetProvider(settings.DefaultProviderType);
         SelectedAudioStream = GetDefaultAudioStream();
         MediaPlayerType = _settings.MediaPlayerType;
-        
-        SetMediaPlayer(MediaPlayer);
 
         NextEpisode = ReactiveCommand.Create(() => 
         {
@@ -66,10 +64,6 @@ public partial class WatchViewModel : NavigatableViewModel
             MediaPlayer.Pause(); 
             EpisodeModels.SelectPrevious();
         }, HasPrevEpisode(), RxApp.MainThreadScheduler);
-        SkipOpening = ReactiveCommand.Create(() =>
-        {
-            MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds));
-        }, outputScheduler: RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality =>
         {
             SelectedQuality = null;
@@ -123,7 +117,6 @@ public partial class WatchViewModel : NavigatableViewModel
                     MediaPlayer.TransportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
                 }
 
-                CurrentPlayerTime = 0;
                 SetEpisode(epModel.EpisodeNumber);
             })
             .SelectMany(epModel => _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, SelectedAudioStream))
@@ -190,40 +183,6 @@ public partial class WatchViewModel : NavigatableViewModel
                 }
             });
 
-        MediaPlayer
-            .TransportControls
-            .OnNextTrack
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => EpisodeModels.SelectNext());
-
-        MediaPlayer
-            .TransportControls
-            .OnPrevTrack
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => EpisodeModels.SelectPrevious());
-
-        MediaPlayer
-            .TransportControls
-            .OnStaticSkip
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => MediaPlayer.Seek(TimeSpan.FromSeconds(CurrentPlayerTime + settings.OpeningSkipDurationInSeconds)));
-
-        MediaPlayer
-            .TransportControls
-            .OnQualityChanged
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(quality =>
-            {
-                SelectedQuality = null;
-                SelectedQuality = quality;
-            });
-
-        MediaPlayer
-            .TransportControls
-            .OnSubmitTimeStamp
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => OnSubmitTimeStamps());
-
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .Subscribe(SetAnime);
@@ -239,7 +198,6 @@ public partial class WatchViewModel : NavigatableViewModel
 
     [Reactive] public bool UseTorrents { get; set; }
     [Reactive] public string SelectedAudioStream { get; set; }
-    [Reactive] public double CurrentPlayerTime { get; set; }
     [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     [Reactive] public IEnumerable<string> Qualities { get; set; }
     [Reactive] public IEnumerable<string> SubStreams { get; set; }
@@ -262,9 +220,45 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public ICommand NextEpisode { get; }
     public ICommand PrevEpisode { get; }
-    public ICommand SkipOpening { get; }
     public ICommand ChangeQuality { get; }
     public ICommand SubmitTimeStamp { get; }
+
+    public void SubscribeTransportControlEvents()
+    {
+        MediaPlayer
+            .TransportControls
+            .OnNextTrack
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => EpisodeModels.SelectNext());
+
+        MediaPlayer
+            .TransportControls
+            .OnPrevTrack
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => EpisodeModels.SelectPrevious());
+
+        MediaPlayer
+            .TransportControls
+            .OnStaticSkip
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => MediaPlayer.Seek(TimeSpan.FromSeconds(_settings.OpeningSkipDurationInSeconds), SeekDirection.Forward));
+
+        MediaPlayer
+            .TransportControls
+            .OnQualityChanged
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(quality =>
+            {
+                SelectedQuality = null;
+                SelectedQuality = quality;
+            });
+
+        MediaPlayer
+            .TransportControls
+            .OnSubmitTimeStamp
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => OnSubmitTimeStamps());
+    }
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
@@ -482,7 +476,7 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         if (Anime is null)
         {
-            return CurrentPlayerTime;
+            return 0;
         }
 
         return _playbackStateStorage.GetTime(Anime.Id, EpisodeModels.Current.EpisodeNumber);
