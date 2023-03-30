@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Concurrency;
 using AnitomySharp;
 using FuzzySharp;
+using Humanizer;
 using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services;
@@ -204,6 +205,9 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public string SelectedQuality { get; set; }
     [Reactive] public VideoStreamsForEpisodeModel Streams { get; set; }
     [Reactive] public VideoStreamModel SelectedStream { get; set; }
+    [Reactive] public string DownloadSpeed { get; set; }
+    [Reactive] public string TotalDownloaded { get; set; }
+    [Reactive] public bool ShowDownloadStats { get; set; }
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
     public MediaPlayerType MediaPlayerType { get; }
@@ -531,6 +535,17 @@ public partial class WatchViewModel : NavigatableViewModel
         _videoStreamResolver = useDebrid
             ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.MagnetLink)
             : _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(parsedResult, torrent.Link);
+
+        if(_videoStreamResolver is INotifyDownloadStatus inds)
+        {
+            ShowDownloadStats = true;
+            inds.Status
+                .Subscribe(x =>
+                {
+                    DownloadSpeed = $"{x.DownloadSpeed.Bytes().Humanize()}/s";
+                    TotalDownloaded = x.DataBytesDownloaded.Bytes().Humanize();
+                });
+        }
 
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes("");
 

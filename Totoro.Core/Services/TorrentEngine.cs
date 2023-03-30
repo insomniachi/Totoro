@@ -9,13 +9,16 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     private ClientEngine _engine;
     private readonly Dictionary<string, TorrentManager> _torrentManagers = new();
     private readonly string _torrentEngineState;
+    private readonly ISettings _settings;
     private readonly HttpClient _httpClient;
 
     public TorrentEngine(IKnownFolders knownFolders,
+                         ISettings settings,
                          HttpClient httpClient)
     {
         _torrentEngineState = Path.Combine(knownFolders.Torrents, "state.bin");
         _engine = new(new EngineSettingsBuilder() { CacheDirectory = Path.Combine(knownFolders.Torrents, "cache") }.ToSettings());
+        _settings = settings;
         _httpClient = httpClient;
     }
 
@@ -45,13 +48,13 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         return true;
     }
 
-    public async Task<Torrent> Download(string torrentUrl, string saveDirectory)
+    public async Task<TorrentManager> Download(string torrentUrl, string saveDirectory)
     {
         try
         {
             if(_torrentManagers.TryGetValue(torrentUrl, out TorrentManager value))
             {
-                return value.Torrent;
+                return value;
             }
 
             var stream = await _httpClient.GetStreamAsync(torrentUrl);
@@ -64,7 +67,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             await torrentManager.StartAsync();
             _torrentManagers.Add(torrentUrl, torrentManager);
 
-            return torrentManager.Torrent;
+            return torrentManager;
         }
         catch (Exception ex)
         {
@@ -76,7 +79,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     public async Task<Stream> GetStream(string torrentUrl, int fileIndex)
     {
         var torrentManager = _torrentManagers[torrentUrl];
-        return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex]);
+        return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
     }
 
     public async Task ShutDown()

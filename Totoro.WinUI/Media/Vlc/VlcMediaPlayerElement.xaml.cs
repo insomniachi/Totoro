@@ -22,7 +22,7 @@ public sealed partial class VlcMediaPlayerElement : UserControl
 
     private void VideoView_Initialized(object sender, InitializedEventArgs e)
     {
-        LibVLC = new LibVLC(enableDebugLogs: true, e.SwapChainOptions);
+        LibVLC = new LibVLC(e.SwapChainOptions);
         MediaPlayer = new MediaPlayer(LibVLC);
         TransportControls.VideoView = VideoView;
         TransportControls.LibVLC = LibVLC;

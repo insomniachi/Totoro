@@ -1,0 +1,71 @@
+<Page
+    x:Class="Totoro.WinUI.Views.SettingsSections.TorrentingSection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="10">
+        <labs:SettingsExpander
+            Description="Select and cofigure debrid service"
+            Header="Debrid Service"
+            IsExpanded="True">
+            <labs:SettingsExpander.HeaderIcon>
+                <FontIcon Glyph="&#xE78C;" />
+            </labs:SettingsExpander.HeaderIcon>
+            <ComboBox
+                Width="150"
+                ItemsSource="{x:Bind ViewModel.DebridServices}"
+                SelectedItem="{x:Bind ViewModel.Settings.DebridServiceType, Mode=TwoWay}" />
+            <labs:SettingsExpander.Items>
+                <labs:SettingsCard Header="API Key">
+                    <TextBox
+                        Width="200"
+                        PlaceholderText="API Key"
+                        Text="{x:Bind ViewModel.Settings.PremiumizeApiKey, Mode=TwoWay}" />
+                </labs:SettingsCard>
+            </labs:SettingsExpander.Items>
+        </labs:SettingsExpander>
+        <labs:SettingsCard Description="Url" Header="Nyaa">
+            <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />
+        </labs:SettingsCard>
+        <labs:SettingsCard Description="Site to search for torrents" Header="Torrent Provider">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE93E;" />
+            </labs:SettingsCard.HeaderIcon>
+            <ComboBox
+                Width="150"
+                ItemsSource="{x:Bind ViewModel.TorrentProviderTypes}"
+                SelectedItem="{x:Bind ViewModel.Settings.TorrentProviderType, Mode=TwoWay}" />
+        </labs:SettingsCard>
+        <labs:SettingsExpander Description="some filtering options to find your torrents better" Header="Advanced Search">
+            <labs:SettingsExpander.HeaderIcon>
+                <FontIcon Glyph="&#xE71C;" />
+            </labs:SettingsExpander.HeaderIcon>
+            <ToggleSwitch
+                IsOn="{x:Bind ViewModel.Settings.TorrentSearchOptions.IsEnabled, Mode=TwoWay}"
+                OffContent="Off"
+                OnContent="On" />
+            <labs:SettingsExpander.Items>
+                <labs:SettingsCard Header="Subber">
+                    <TextBox Text="{x:Bind ViewModel.Settings.TorrentSearchOptions.Subber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                </labs:SettingsCard>
+                <labs:SettingsCard Header="Quality">
+                    <TextBox Text="{x:Bind ViewModel.Settings.TorrentSearchOptions.Quality, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                </labs:SettingsCard>
+            </labs:SettingsExpander.Items>
+        </labs:SettingsExpander>
+        <labs:SettingsCard Description="Downloads first and last piece before the stream is created." Header="Prebuffer Torrents">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE9F5;" />
+            </labs:SettingsCard.HeaderIcon>
+            <ToggleSwitch
+                IsOn="{x:Bind ViewModel.Settings.PreBufferTorrents, Mode=TwoWay}"
+                OffContent="Off"
+                OnContent="On" />
+        </labs:SettingsCard>
+    </StackPanel>
+
+</Page>

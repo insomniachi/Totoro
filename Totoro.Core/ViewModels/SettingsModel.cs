@@ -37,6 +37,8 @@ internal class SettingsModel : ReactiveObject, ISettings
         PremiumizeApiKey = localSettingsService.ReadSetting(Settings.PremiumizeApiKey);
         TorrentSearchOptions = localSettingsService.ReadSetting(Settings.TorrentSearchOptions);
         MediaPlayerType = localSettingsService.ReadSetting(Settings.MediaPlayerType);
+        PreBufferTorrents = localSettingsService.ReadSetting(Settings.PreBufferTorrents);
+
 
         ObserveChanges();
     }
@@ -109,6 +111,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public string PremiumizeApiKey { get; set; }
     [Reactive] public AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
     [Reactive] public MediaPlayerType MediaPlayerType { get; set; }
+    [Reactive] public bool PreBufferTorrents { get; set; }
 }
 
 

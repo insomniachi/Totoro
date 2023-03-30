@@ -26,6 +26,7 @@ public interface ISettings
     string PremiumizeApiKey { get; set; }
     AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
     MediaPlayerType MediaPlayerType { get; set; }
+    bool PreBufferTorrents { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

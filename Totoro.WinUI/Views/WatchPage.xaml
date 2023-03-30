@@ -41,27 +41,51 @@
             ExpandDirection="Up"
             IsExpanded="True">
             <Expander.Header>
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <TextBlock
-                        Margin="0,0,50,0"
-                        VerticalAlignment="Center"
-                        FontSize="15"
-                        FontWeight="Bold"
-                        Text="Episodes" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel
+                        HorizontalAlignment="Left"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <TextBlock
+                            Margin="0,0,50,0"
+                            VerticalAlignment="Center"
+                            FontSize="15"
+                            FontWeight="Bold"
+                            Text="Episodes" />
 
-                    <ComboBox
-                        Width="150"
-                        ItemsSource="{x:Bind ViewModel.SubStreams, Mode=OneWay}"
-                        SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasMultipleSubStreams), Mode=OneWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
-                                <TextBlock Text="{x:Bind help:Converters.ConvertStreamType((x:String))}" TextTrimming="CharacterEllipsis" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        <ComboBox
+                            Width="150"
+                            ItemsSource="{x:Bind ViewModel.SubStreams, Mode=OneWay}"
+                            SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}"
+                            Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasMultipleSubStreams), Mode=OneWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <TextBlock Text="{x:Bind help:Converters.ConvertStreamType((x:String))}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                </StackPanel>
+                    </StackPanel>
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="10"
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.ShowDownloadStats), Mode=OneWay}">
+                        <TextBlock>
+                            <Run Text="Download : " />
+                            <Run Text="{x:Bind ViewModel.DownloadSpeed, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock>
+                            <Run Text="Total : " />
+                            <Run Text="{x:Bind ViewModel.TotalDownloaded, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
             </Expander.Header>
             <ListView
                 MaxHeight="80"

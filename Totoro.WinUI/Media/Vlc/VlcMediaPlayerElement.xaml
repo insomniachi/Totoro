@@ -11,6 +11,5 @@
         <vlc:VideoView x:Name="VideoView" Initialized="VideoView_Initialized" />
 
         <ContentPresenter Content="{x:Bind TransportControls}" />
-
     </Grid>
 </UserControl>

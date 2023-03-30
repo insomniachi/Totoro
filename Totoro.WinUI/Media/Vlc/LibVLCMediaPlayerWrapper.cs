@@ -55,7 +55,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public void SeekTo(TimeSpan ts)
     {
-        _mp.SeekTo(ts);
+        _mp?.SeekTo(ts);
     }
 
     public void Seek(TimeSpan ts, SeekDirection direction)

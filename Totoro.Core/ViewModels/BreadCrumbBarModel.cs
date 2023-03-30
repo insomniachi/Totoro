@@ -10,6 +10,6 @@ public class BreadCrumbBarModel : ReactiveObject
         BreadCrumbs = new() { root };
         BreadCrumbs.ToObservableChangeSet()
             .Select(_ => string.Join(">", BreadCrumbs))
-            .ToPropertyEx(this, x => x.State);
+            .ToPropertyEx(this, x => x.State, initialValue: root);
     }
 }

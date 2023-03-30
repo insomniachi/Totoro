@@ -24,6 +24,10 @@
 	  <None Remove="Dialogs\Views\ConfigureProviderView.xaml" />
 	  <None Remove="Dialogs\Views\RequestRatingView.xaml" />
 	  <None Remove="Media\VlcMediaPlayerElement.xaml" />
+	  <None Remove="Views\SettingsSections\DefaultSection.xaml" />
+	  <None Remove="Views\SettingsSections\MediaPlayerSection.xaml" />
+	  <None Remove="Views\SettingsSections\TorrentingSection.xaml" />
+	  <None Remove="Views\SettingsSections\TrackingSection.xaml" />
 	  <None Remove="Views\TorrentingView.xaml" />
 	</ItemGroup>
 
@@ -81,6 +85,13 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Views\SettingsSections\MediaPlayerSection.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\SettingsSections\DefaultSection.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Media\VlcMediaPlayerElement.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -88,6 +99,14 @@
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="Dialogs\Views\ConfigureOptionsView.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\SettingsSections\TorrentingSection.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\SettingsSections\TrackingSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>
