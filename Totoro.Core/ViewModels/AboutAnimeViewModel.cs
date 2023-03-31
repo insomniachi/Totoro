@@ -2,9 +2,13 @@
 
 public class AboutAnimeViewModel : NavigatableViewModel
 {
-    private readonly ObservableAsPropertyHelper<AnimeModel> _anime;
-    private readonly ObservableAsPropertyHelper<bool> _hasTracking;
-    private readonly ObservableAsPropertyHelper<IList<AnimeSound>> _sounds;
+    public ObservableCollection<PivotItemModel> Pages { get; } = new()
+    {
+        new PivotItemModel { Header = "Previews" },
+        new PivotItemModel { Header = "Related" },
+        new PivotItemModel { Header = "Recommended" },
+        new PivotItemModel { Header = "OST"}
+    };
 
     public AboutAnimeViewModel(IAnimeServiceContext animeService,
                                INavigationService navigationService,
@@ -23,23 +27,61 @@ public class AboutAnimeViewModel : NavigatableViewModel
         this.ObservableForProperty(x => x.Id, x => x)
             .Where(id => id > 0)
             .SelectMany(animeService.GetInformation)
-            .ToProperty(this, nameof(Anime), out _anime, scheduler: RxApp.MainThreadScheduler);
+            .ToPropertyEx(this, x => x.Anime, scheduler: RxApp.MainThreadScheduler);
 
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .Select(anime => anime.Tracking is { })
-            .ToProperty(this, nameof(HasTracking), out _hasTracking, scheduler: RxApp.MainThreadScheduler);
+            .ToPropertyEx(this, x => x.HasTracking, scheduler: RxApp.MainThreadScheduler);
 
         this.ObservableForProperty(x => x.Id, x => x)
             .Where(id => id > 0)
             .Select(animeSoundService.GetThemes)
-            .ToProperty(this, nameof(Sounds), out _sounds, scheduler: RxApp.MainThreadScheduler);
+            .ToPropertyEx(this, x => x.Sounds, scheduler: RxApp.MainThreadScheduler);
+
+        this.WhenAnyValue(x => x.Sounds)
+            .WhereNotNull()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(sounds =>
+            {
+                if (sounds is { Count: > 0 })
+                {
+                    return;
+                }
+
+                Pages.Remove(Pages.First(x => x.Header == "OST"));
+
+            });
+
+        this.WhenAnyValue(x => x.Anime)
+            .WhereNotNull()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(anime =>
+            {
+                if(anime.Videos is not { Count : >0})
+                {
+                    Pages.Remove(Pages.First(x => x.Header == "Previews"));
+                }
+                if(anime.Related is not { Length: > 0 })
+                {
+                    Pages.Remove(Pages.First(x => x.Header == "Related"));
+                }
+                if (anime.Recommended is not { Length: > 0 })
+                {
+                    Pages.Remove(Pages.First(x => x.Header == "Recommended"));
+                }
+            });
+
+        this.WhenAnyValue(x => x.SelectedPage)
+            .Where(x => x is null && Pages.Any(x => x.Visible))
+            .Subscribe(_ => SelectedPage = Pages.First(x => x.Visible));
     }
 
     [Reactive] public long Id { get; set; }
-    public AnimeModel Anime => _anime.Value;
-    public bool HasTracking => _hasTracking.Value;
-    public IList<AnimeSound> Sounds => _sounds.Value;
+    [Reactive] public PivotItemModel SelectedPage { get; set; }
+    [ObservableAsProperty] public AnimeModel Anime { get; }
+    [ObservableAsProperty] public bool HasTracking { get; }
+    [ObservableAsProperty] public IList<AnimeSound> Sounds { get; }
     public ICommand WatchEpidoes { get; }
     public ICommand UpdateStatus { get; }
     public ICommand PlaySound { get; }
@@ -52,3 +94,10 @@ public class AboutAnimeViewModel : NavigatableViewModel
     }
 
 }
+
+public class PivotItemModel : ReactiveObject
+{
+    public string Header { get; set; }
+    [Reactive] public bool Visible { get; set; } = true;
+}
+

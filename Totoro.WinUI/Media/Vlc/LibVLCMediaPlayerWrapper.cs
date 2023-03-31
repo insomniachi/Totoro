@@ -32,7 +32,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public void Dispose()
     {
-        _mp?.Dispose();
+        _mp?.Pause();
     }
 
     public void Pause()

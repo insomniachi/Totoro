@@ -6,6 +6,7 @@
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
@@ -13,8 +14,17 @@
     xmlns:root="using:Totoro.WinUI"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:usercontrols="using:Totoro.WinUI.UserControls"
+    xmlns:vm="using:Totoro.Core.ViewModels"
     Name="Page"
     mc:Ignorable="d">
+
+    <local:AboutAnimePageBase.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.Labs.WinUI.SegmentedControl/Segmented/Segmented.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </local:AboutAnimePageBase.Resources>
 
     <Grid Margin="0,25,0,0">
         <Grid.ColumnDefinitions>
@@ -196,9 +206,19 @@
 
                         </Grid>
                     </Grid>
-
-                    <Pivot>
-                        <PivotItem Header="Previews">
+                    <labs:Segmented
+                        DisplayMemberPath="Header"
+                        ItemsSource="{x:Bind ViewModel.Pages}"
+                        SelectedItem="{x:Bind ViewModel.SelectedPage, Mode=TwoWay}"
+                        Style="{StaticResource PivotSegmentedStyle}">
+                        <labs:Segmented.ItemContainerStyle>
+                            <Style TargetType="labs:SegmentedItem">
+                                <Setter Property="FontSize" Value="20" />
+                            </Style>
+                        </labs:Segmented.ItemContainerStyle>
+                    </labs:Segmented>
+                    <ctk:SwitchPresenter Value="{x:Bind ViewModel.SelectedPage.Header, Mode=OneWay}">
+                        <ctk:Case Value="Previews">
                             <ctk:AdaptiveGridView
                                 Margin="0,10"
                                 ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
@@ -225,8 +245,8 @@
                                     </DataTemplate>
                                 </GridView.ItemTemplate>
                             </ctk:AdaptiveGridView>
-                        </PivotItem>
-                        <PivotItem Header="Related">
+                        </ctk:Case>
+                        <ctk:Case Value="Related">
                             <ctk:AdaptiveGridView
                                 Margin="0,10"
                                 animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
@@ -241,8 +261,8 @@
                                     </DataTemplate>
                                 </ctk:AdaptiveGridView.ItemTemplate>
                             </ctk:AdaptiveGridView>
-                        </PivotItem>
-                        <PivotItem Header="Recommended">
+                        </ctk:Case>
+                        <ctk:Case Value="Recommended">
                             <ctk:AdaptiveGridView
                                 Margin="0,10"
                                 animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
@@ -257,8 +277,8 @@
                                     </DataTemplate>
                                 </ctk:AdaptiveGridView.ItemTemplate>
                             </ctk:AdaptiveGridView>
-                        </PivotItem>
-                        <PivotItem Header="OST">
+                        </ctk:Case>
+                        <ctk:Case Value="OST">
                             <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:AnimeSound">
@@ -276,8 +296,8 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </PivotItem>
-                    </Pivot>
+                        </ctk:Case>
+                    </ctk:SwitchPresenter>
                 </StackPanel>
             </Grid>
         </ScrollViewer>
