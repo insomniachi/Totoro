@@ -38,7 +38,7 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
 
     public async IAsyncEnumerable<TorrentModel> Search(string query)
     {
-        var stream = await _httpClient.GetStreamAsync(_baseUrl.TrimEnd('/') + "/search" , new Dictionary<string, string>
+        var stream = await _httpClient.GetStreamAsync(_baseUrl.TrimEnd('/') + "/search", new Dictionary<string, string>
         {
             ["q"] = query,
         });
@@ -56,7 +56,7 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
             ["q"] = query,
         };
 
-        if(id.AniDb > 0)
+        if (id.AniDb > 0)
         {
             @params["aids"] = id.AniDb.ToString();
         }
@@ -71,7 +71,7 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
 
     public async Task<IEnumerable<KeyValuePair<string, string>>> DownloadSubtitles(string url)
     {
-        if(File.Exists(_zipFile))
+        if (File.Exists(_zipFile))
         {
             foreach (var item in Directory.EnumerateFileSystemEntries(_subtitlesFolder))
             {
@@ -81,7 +81,7 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
 
         var zip = await GetSubtitles(url);
 
-        if(string.IsNullOrEmpty(zip))
+        if (string.IsNullOrEmpty(zip))
         {
             return Enumerable.Empty<KeyValuePair<string, string>>();
         }
@@ -92,7 +92,7 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
         {
             await s.CopyToAsync(fs);
             fs.Dispose();
-            var result = new List<KeyValuePair<string,string>>();
+            var result = new List<KeyValuePair<string, string>>();
             using var archive = SevenZipArchive.Open(_zipFile);
             foreach (var item in archive.Entries.Where(x => x.Key.EndsWith(".ass") || x.Key.EndsWith(".srt") || x.Key.EndsWith(".vtt")))
             {
@@ -115,7 +115,7 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
 
         foreach (var item in doc.DocumentNode.Descendants("a"))
         {
-            if(item.InnerHtml?.Contains("All Attachments") == true)
+            if (item.InnerHtml?.Contains("All Attachments") == true)
             {
                 return item.Attributes["href"].Value;
             }

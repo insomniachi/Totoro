@@ -38,7 +38,7 @@ public partial class WebTorrentStreamModelResolver : IVideoStreamModelResolver
         {
             await foreach (var @event in result.ListenAsync())
             {
-                if(!string.IsNullOrEmpty(url))
+                if (!string.IsNullOrEmpty(url))
                 {
                     continue;
                 }
@@ -58,7 +58,7 @@ public partial class WebTorrentStreamModelResolver : IVideoStreamModelResolver
 
         if (string.IsNullOrEmpty(url))
         {
-            mre.Wait(); 
+            mre.Wait();
         }
         return Task.FromResult(new VideoStreamsForEpisodeModel(url));
     }

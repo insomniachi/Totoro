@@ -13,7 +13,7 @@ public sealed partial class ConfigureOptionsView : Page, IViewFor
         InitializeComponent();
     }
 
-    public object ViewModel 
+    public object ViewModel
     {
         get => DataContext;
         set => DataContext = value;

@@ -127,7 +127,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         get => DynamicSkipButton?.Visibility == Visibility.Visible;
         set
         {
-            if(DynamicSkipButton is null)
+            if (DynamicSkipButton is null)
             {
                 return;
             }
@@ -135,7 +135,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
             RxApp.MainThreadScheduler.Schedule(() => DynamicSkipButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed);
         }
     }
-    public bool IsNextTrackButtonVisible 
+    public bool IsNextTrackButtonVisible
     {
         get => NextTrackButton.Visibility == Visibility.Visible;
         set

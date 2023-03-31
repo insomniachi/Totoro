@@ -107,7 +107,7 @@ internal class AspectRatioManager : MediaPlayerElementManagerBase
                 videoTrack = media.Tracks?.FirstOrDefault(t => t.Id == selectedVideoTrack);
                 media.Dispose();
             }
-            return videoTrack == null ? (VideoTrack?)null : ((MediaTrack)videoTrack).Data.Video;
+            return videoTrack == null ? null : ((MediaTrack)videoTrack).Data.Video;
         }
         catch (Exception)
         {

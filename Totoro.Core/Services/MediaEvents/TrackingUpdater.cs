@@ -28,7 +28,7 @@ internal class TrackingUpdater : MediaEventListener
 
     protected override void OnTimestampsChanged()
     {
-        if(_timeStamps.Ending is not { } ed)
+        if (_timeStamps.Ending is not { } ed)
         {
             return;
         }
@@ -39,7 +39,7 @@ internal class TrackingUpdater : MediaEventListener
     protected override void OnPositionChanged(TimeSpan position)
     {
         _position = position;
-        if(!IsEnabled || position < _updateAt || _isUpdated || _animeModel.Tracking.WatchedEpisodes >= _currentEpisode)
+        if (!IsEnabled || position < _updateAt || _isUpdated || _animeModel.Tracking.WatchedEpisodes >= _currentEpisode)
         {
             return;
         }
@@ -50,7 +50,7 @@ internal class TrackingUpdater : MediaEventListener
     protected override void OnNextTrack()
     {
         // if less than 3 minutes remaining when clicking next episode, update tracking
-        if(_duration - _position > _nextBuffer)
+        if (_duration - _position > _nextBuffer)
         {
             return;
         }
@@ -73,7 +73,7 @@ internal class TrackingUpdater : MediaEventListener
             tracking.Status = AnimeStatus.Completed;
             tracking.FinishDate = DateTime.Today;
 
-            if(_animeModel?.Tracking?.Score is null && await _viewService.RequestRating(_animeModel) is { } score && score > 0 )
+            if (_animeModel?.Tracking?.Score is null && await _viewService.RequestRating(_animeModel) is { } score && score > 0)
             {
                 tracking.Score = score;
             }

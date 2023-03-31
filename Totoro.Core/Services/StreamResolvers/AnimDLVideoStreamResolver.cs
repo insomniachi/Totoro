@@ -48,7 +48,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         try
         {
             var url = _baseUrlSub;
-            if(_settings.DefaultProviderType == "gogo")
+            if (_settings.DefaultProviderType == "gogo")
             {
                 url = subStream == "Dub" ? _baseUrlDub : _baseUrlSub;
             }

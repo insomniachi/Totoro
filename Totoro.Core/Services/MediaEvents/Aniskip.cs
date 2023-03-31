@@ -26,7 +26,7 @@ internal class Aniskip : MediaEventListener, IAniskip
     {
         _position = position;
 
-        if(_timeStamps is null)
+        if (_timeStamps is null)
         {
             return;
         }

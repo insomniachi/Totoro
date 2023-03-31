@@ -45,7 +45,7 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
         return new WebTorrentStreamModelResolver(_knownFolders, parsedResults, magnet);
     }
 
-    public IVideoStreamModelResolver CreateMonoTorrentStreamResolver(IEnumerable<Element> parsedResults,string magnet)
+    public IVideoStreamModelResolver CreateMonoTorrentStreamResolver(IEnumerable<Element> parsedResults, string magnet)
     {
         return new MonoTorrentStreamModelResolver(_torrentEngine, _knownFolders, parsedResults, magnet);
     }

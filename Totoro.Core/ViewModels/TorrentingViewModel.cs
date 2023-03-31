@@ -80,7 +80,7 @@ public class TorrentingViewModel : NavigatableViewModel
     [Reactive] public string Query { get; set; }
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public SortMode SortMode { get; set; } = SortMode.Seeders;
-    
+
     public TorrentProviderType ProviderType { get; }
     public TorrentModel PastedTorrent { get; } = new();
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
@@ -97,7 +97,7 @@ public class TorrentingViewModel : NavigatableViewModel
             .Subscribe(list =>
             {
                 _transfersCache.Clear();
-                
+
                 if (!list.Any())
                 {
                     DisposeSubscription();
@@ -117,7 +117,7 @@ public class TorrentingViewModel : NavigatableViewModel
         _isSubscriptionDisposed = true;
     }
 
-    
+
     private void OnSearch()
     {
         IsLoading = true;

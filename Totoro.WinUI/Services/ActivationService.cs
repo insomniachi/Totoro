@@ -29,7 +29,7 @@ public class ActivationService : IActivationService, IEnableLogger
         _themeSelectorService = themeSelectorService;
         _initializer = initializer;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
-        
+
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
     }
 

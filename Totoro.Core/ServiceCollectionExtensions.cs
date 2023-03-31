@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using MalApi;
+﻿using MalApi;
 using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Services;
@@ -78,7 +77,7 @@ namespace Totoro.Core
             services.AddTransient<ITorrentCatalog, NyaaCatalog>();
             services.AddTransient<ITorrentCatalog, AnimeToshoCatalog>();
             services.AddSingleton<ITorrentCatalogFactory, TorrentCatalogFactory>();
-            
+
             services.AddTransient<IDebridService, PremiumizeService>();
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
 

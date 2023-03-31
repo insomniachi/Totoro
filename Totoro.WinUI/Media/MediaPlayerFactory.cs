@@ -10,7 +10,7 @@ namespace Totoro.WinUI.Media
         private readonly Func<LibVLCMediaPlayerWrapper> _vlcMediaPlayerCreator;
 
         public MediaPlayerFactory(Func<WinUIMediaPlayerWrapper> windowMediaPlayerCreator,
-                                  Func<LibVLCMediaPlayerWrapper> vlcMediaPlayerCreator) 
+                                  Func<LibVLCMediaPlayerWrapper> vlcMediaPlayerCreator)
         {
             _windowMediaPlayerCreator = windowMediaPlayerCreator;
             _vlcMediaPlayerCreator = vlcMediaPlayerCreator;

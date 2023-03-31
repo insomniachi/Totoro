@@ -1,6 +1,6 @@
 ﻿using MonoTorrent.Client;
 
-namespace Totoro.Core.Services;
+namespace Totoro.Core.Contracts;
 
 
 public interface IVideoStreamModelResolver

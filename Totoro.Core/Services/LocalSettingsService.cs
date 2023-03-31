@@ -22,7 +22,7 @@ public class LocalSettingsService : ILocalSettingsService
         };
 
         _file = Path.Combine(knownFolders.ApplicationData, "LocalSettings.json");
-        if(File.Exists(_file))
+        if (File.Exists(_file))
         {
             _settings = JsonNode.Parse(File.ReadAllText(_file)).AsObject();
         }
@@ -30,7 +30,7 @@ public class LocalSettingsService : ILocalSettingsService
 
     public T ReadSetting<T>(string key, T deafultValue = default)
     {
-        if(!_settings.ContainsKey(key))
+        if (!_settings.ContainsKey(key))
         {
             SaveSetting(key, deafultValue);
             return deafultValue;
@@ -73,7 +73,7 @@ public class TotoroTypeResolver : DefaultJsonTypeInfoResolver
                 }
             };
         }
-        if(type.IsAssignableTo(typeof(ReactiveObject)))
+        if (type.IsAssignableTo(typeof(ReactiveObject)))
         {
             jsonTypeInfo.Properties.RemoveAll(x => _reactiveObjectIgnoredProperties.Contains(x.Name));
         }

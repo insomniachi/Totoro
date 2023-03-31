@@ -15,7 +15,7 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
     [Reactive] public string NyaaUrl { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
-    
+
     public ISettings Settings { get; }
     public Version Version { get; }
     public Version ScrapperVersion { get; }
@@ -92,7 +92,7 @@ public class SettingsViewModel : NavigatableViewModel
 }
 
 
-public class Dto<T> : ReactiveObject 
+public class Dto<T> : ReactiveObject
 {
     public Dto(T model, Key<T> key, ILocalSettingsService localSettingService)
     {

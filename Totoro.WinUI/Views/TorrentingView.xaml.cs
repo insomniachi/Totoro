@@ -1,14 +1,14 @@
 
 using System.Diagnostics;
+using CommunityToolkit.WinUI.UI.Controls;
+using Humanizer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
-using ReactiveMarbles.ObservableEvents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
-using Humanizer;
-using CommunityToolkit.WinUI.UI.Controls;
 
 namespace Totoro.WinUI.Views;
 
@@ -44,7 +44,7 @@ public sealed partial class TorrentingView : TorrentingViewBase
     private void TorrentAction(object sender, RoutedEventArgs e)
     {
         var button = sender as Button;
-        if(button.DataContext is not TorrentModel m)
+        if (button.DataContext is not TorrentModel m)
         {
             return;
         }
@@ -58,7 +58,7 @@ public sealed partial class TorrentingView : TorrentingViewBase
         {
             ViewModel.SortMode = SortMode.Date;
         }
-        else if(e.Column.Tag is "Seeders")
+        else if (e.Column.Tag is "Seeders")
         {
             ViewModel.SortMode = SortMode.Seeders;
         }
@@ -69,7 +69,7 @@ public class TorrentStateConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if(value is not TorrentState state)
+        if (value is not TorrentState state)
         {
             return DependencyProperty.UnsetValue;
         }

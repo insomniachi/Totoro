@@ -24,7 +24,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
     public async Task<bool> TryRestoreState()
     {
-        if(!File.Exists(_torrentEngineState))
+        if (!File.Exists(_torrentEngineState))
         {
             return false;
         }
@@ -52,7 +52,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     {
         try
         {
-            if(_torrentManagers.TryGetValue(torrentUrl, out TorrentManager value))
+            if (_torrentManagers.TryGetValue(torrentUrl, out TorrentManager value))
             {
                 return value;
             }
@@ -98,7 +98,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     {
         this.Log().Info("Torrent State Changed : {0} -> {1}", e.OldState, e.NewState);
 
-        if(e.NewState is TorrentState.Seeding)
+        if (e.NewState is TorrentState.Seeding)
         {
             try
             {

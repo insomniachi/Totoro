@@ -33,10 +33,10 @@ public class ThemeSelectorService : IThemeSelectorService
         {
             return;
         }
-        
+
         var convertedTheme = Convert(Theme);
-        
-        if(rootElement.RequestedTheme == convertedTheme)
+
+        if (rootElement.RequestedTheme == convertedTheme)
         {
             return;
         }

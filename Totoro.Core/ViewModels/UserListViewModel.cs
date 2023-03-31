@@ -69,7 +69,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public Task SetInitialState()
     {
-        if(!IsAuthenticated)
+        if (!IsAuthenticated)
         {
             return Task.CompletedTask;
         }
@@ -92,7 +92,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public void StoreState(IState state)
     {
-        if(_animeCache.Count == 0)
+        if (_animeCache.Count == 0)
         {
             return;
         }

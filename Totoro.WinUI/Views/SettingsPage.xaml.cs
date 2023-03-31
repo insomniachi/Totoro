@@ -1,5 +1,4 @@
-﻿using System.Windows.Media.Effects;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using Splat;
 using Totoro.Core.ViewModels;

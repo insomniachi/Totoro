@@ -1,6 +1,4 @@
 ﻿using Totoro.Core.Tests.Helpers;
-using Totoro.Core.Torrents;
-using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Tests.Builders;
 

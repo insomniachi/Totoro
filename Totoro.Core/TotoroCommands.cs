@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using MalApi;
 using Splat;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
@@ -62,7 +61,7 @@ public class TotoroCommands : IEnableLogger
 
         TorrentCommand = ReactiveCommand.CreateFromTask<TorrentModel>(async model =>
         {
-            if(debridServiceContext.IsAuthenticated)
+            if (debridServiceContext.IsAuthenticated)
             {
                 switch (model.State)
                 {
@@ -71,7 +70,7 @@ public class TotoroCommands : IEnableLogger
                         model.State = isCached ? TorrentState.Unknown : TorrentState.NotCached;
                         if (isCached)
                         {
-                            navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() 
+                            navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                             {
                                 ["Torrent"] = model,
                                 ["UseDebrid"] = true,

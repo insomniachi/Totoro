@@ -20,7 +20,7 @@ public class AnilistService : IAnimeService, IAnilistService
         _animeIdService = animeIdService;
         _settings = settings;
         var token = localSettingsSerivce.ReadSetting<AniListAuthToken>("AniListToken");
-        if(!string.IsNullOrEmpty(token?.AccessToken))
+        if (!string.IsNullOrEmpty(token?.AccessToken))
         {
             _anilistClient.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         }
@@ -115,7 +115,7 @@ public class AnilistService : IAnimeService, IAnilistService
     {
         var animeId = await _animeIdService.GetId(id);
 
-        if(animeId is null)
+        if (animeId is null)
         {
             return string.Empty;
         }

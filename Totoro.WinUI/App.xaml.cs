@@ -3,7 +3,6 @@ using AnimDL.Core;
 using AnimDL.Core.Api;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.UI.Xaml;
 using Serilog;
 using Splat;

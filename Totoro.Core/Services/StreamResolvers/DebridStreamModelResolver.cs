@@ -1,9 +1,5 @@
 ﻿using AnitomySharp;
-using MalApi;
-using MonoTorrent;
 using Splat;
-using Totoro.Core.Contracts;
-using Totoro.Core.Models;
 using Totoro.Core.Services.Debrid;
 
 namespace Totoro.Core.Services.StreamResolvers;

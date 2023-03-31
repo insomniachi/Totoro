@@ -17,7 +17,7 @@ namespace Totoro.Core.Models
             get => _current;
             set
             {
-                if(_current == value)
+                if (_current == value)
                 {
                     return;
                 }
@@ -37,13 +37,13 @@ namespace Totoro.Core.Models
             Current = this.FirstOrDefault(x => x.EpisodeNumber == Current.EpisodeNumber + 1);
         }
 
-        public void SelectPrevious() 
+        public void SelectPrevious()
         {
             Current = this.FirstOrDefault(x => x.EpisodeNumber == Current.EpisodeNumber - 1);
         }
 
 
-        public static EpisodeModelCollection FromEpisodeCount(int count) 
+        public static EpisodeModelCollection FromEpisodeCount(int count)
         {
             var collection = new EpisodeModelCollection();
             collection.AddRange(Enumerable.Range(1, count).Select(ep => new EpisodeModel
@@ -101,7 +101,7 @@ namespace Totoro.Core.Models
                 if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epNumberResult)
                 {
                     epString = epNumberResult.Value;
-                    if(int.TryParse(epNumberResult.Value, out int ep))
+                    if (int.TryParse(epNumberResult.Value, out int ep))
                     {
                         return new EpisodeModel
                         {

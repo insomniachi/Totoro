@@ -1,5 +1,4 @@
-﻿using System;
-using LibVLCSharp.Shared;
+﻿using LibVLCSharp.Shared;
 
 namespace Totoro.WinUI.Media.Vlc;
 

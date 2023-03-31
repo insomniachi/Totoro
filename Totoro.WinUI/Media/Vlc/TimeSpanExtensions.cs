@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Totoro.WinUI.Media.Vlc;
+﻿namespace Totoro.WinUI.Media.Vlc;
 
 /// <summary>
 /// Extensions methods for <see cref="TimeSpan"/>

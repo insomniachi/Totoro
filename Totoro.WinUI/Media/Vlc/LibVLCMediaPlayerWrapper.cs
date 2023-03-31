@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics;
-using System.Net.WebSockets;
 using System.Reactive.Subjects;
 using System.Text.Json;
 using LibVLCSharp.Shared;
 using ReactiveMarbles.ObservableEvents;
-using Windows.Media.Core;
 
 namespace Totoro.WinUI.Media.Vlc;
 

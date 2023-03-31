@@ -1,8 +1,6 @@
 ﻿using System.Net.Http;
 using CommunityToolkit.WinUI.Notifications;
 using Totoro.Core;
-using System.Reactive;
-using System;
 
 namespace Totoro.WinUI.Services;
 
@@ -33,7 +31,7 @@ public class AiredEpisodeToastService : IAiredEpisodeToastService
 
     public void Start()
     {
-        if(_isStarted)
+        if (_isStarted)
         {
             return;
         }

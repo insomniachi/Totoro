@@ -21,7 +21,7 @@ public class AiredEpisodeNotifier : IAiredEpisodeNotifier
 
     public void Start()
     {
-        if(_isStarted)
+        if (_isStarted)
         {
             return;
         }

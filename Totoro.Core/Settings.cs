@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;

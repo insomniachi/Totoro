@@ -9,7 +9,7 @@ namespace Totoro.WinUI.Services
         public IObservable<bool> IsFullWindowChanged => _isFullWindowChanged;
         public void SetIsFullWindow(bool isFullWindow)
         {
-            if(_isFullWindow == isFullWindow)
+            if (_isFullWindow == isFullWindow)
             {
                 return;
             }

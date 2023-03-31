@@ -4,7 +4,6 @@ using FuzzySharp;
 using Humanizer;
 using Splat;
 using Totoro.Core.Helpers;
-using Totoro.Core.Services;
 using Totoro.Core.Services.MediaEvents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 
@@ -55,14 +54,14 @@ public partial class WatchViewModel : NavigatableViewModel
         SelectedAudioStream = GetDefaultAudioStream();
         MediaPlayerType = _settings.MediaPlayerType;
 
-        NextEpisode = ReactiveCommand.Create(() => 
+        NextEpisode = ReactiveCommand.Create(() =>
         {
-            MediaPlayer.Pause(); 
+            MediaPlayer.Pause();
             EpisodeModels.SelectNext();
         }, HasNextEpisode(), RxApp.MainThreadScheduler);
-        PrevEpisode = ReactiveCommand.Create(() => 
+        PrevEpisode = ReactiveCommand.Create(() =>
         {
-            MediaPlayer.Pause(); 
+            MediaPlayer.Pause();
             EpisodeModels.SelectPrevious();
         }, HasPrevEpisode(), RxApp.MainThreadScheduler);
         ChangeQuality = ReactiveCommand.Create<string>(quality =>
@@ -112,7 +111,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Log(this, "Selected Episode :", ep => ep.EpisodeNumber.ToString())
             .Do(epModel =>
             {
-                if(EpisodeModels.Count > 1)
+                if (EpisodeModels.Count > 1)
                 {
                     MediaPlayer.TransportControls.IsNextTrackButtonVisible = epModel != EpisodeModels.Last();
                     MediaPlayer.TransportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
@@ -139,7 +138,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Do(stream =>
             {
-                if(settings.DefaultProviderType != "gogo")
+                if (settings.DefaultProviderType != "gogo")
                 {
                     SubStreams = stream.StreamTypes;
                 }
@@ -166,14 +165,14 @@ public partial class WatchViewModel : NavigatableViewModel
             .Throttle(TimeSpan.FromSeconds(1))
             .Subscribe(async duration =>
             {
-                if(Anime is null)
+                if (Anime is null)
                 {
                     return;
                 }
 
                 var timeStamps = await timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds);
 
-                if(!timeStamps.Success)
+                if (!timeStamps.Success)
                 {
                     return;
                 }
@@ -288,7 +287,7 @@ public partial class WatchViewModel : NavigatableViewModel
             _ = CreateAnimDLResolver(searchResult.Url);
             _ = TrySetAnime(searchResult.Url, searchResult.Title);
         }
-        else if(parameters.ContainsKey("Torrent"))
+        else if (parameters.ContainsKey("Torrent"))
         {
             UseTorrents = true;
             Torrent = (TorrentModel)parameters["Torrent"];
@@ -301,7 +300,7 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         MediaPlayer.Dispose();
         NativeMethods.AllowSleep();
-        if(_videoStreamResolver is IAsyncDisposable ad)
+        if (_videoStreamResolver is IAsyncDisposable ad)
         {
             await ad.DisposeAsync();
         }
@@ -462,7 +461,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private string GetDefaultAudioStream()
     {
-        if(_settings.DefaultProviderType == "gogo")
+        if (_settings.DefaultProviderType == "gogo")
         {
             return "Sub";
         }
@@ -536,7 +535,7 @@ public partial class WatchViewModel : NavigatableViewModel
             ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.MagnetLink)
             : _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(parsedResult, torrent.Link);
 
-        if(_videoStreamResolver is INotifyDownloadStatus inds)
+        if (_videoStreamResolver is INotifyDownloadStatus inds)
         {
             ShowDownloadStats = true;
             inds.Status

@@ -1,7 +1,7 @@
-﻿using Totoro.Core.ViewModels;
+﻿using ReactiveMarbles.ObservableEvents;
+using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Media;
-using ReactiveMarbles.ObservableEvents;
 using Totoro.WinUI.Media.Vlc;
 using Totoro.WinUI.Media.Wmp;
 
@@ -43,7 +43,7 @@ public sealed partial class WatchPage : WatchPageBase
                         ViewModel.SetMediaPlayer(ViewModel.MediaPlayer);
                         ViewModel.SubscribeTransportControlEvents();
                     }
-                    else if(mp is LibVLCMediaPlayerWrapper vlcWrapper)
+                    else if (mp is LibVLCMediaPlayerWrapper vlcWrapper)
                     {
                         VlcMediaPlayerElement.Events()
                                              .DoubleTapped

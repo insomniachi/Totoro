@@ -1,5 +1,4 @@
 ﻿using AnitomySharp;
-using MonoTorrent;
 using MonoTorrent.Client;
 
 namespace Totoro.Core.Services.StreamResolvers;
@@ -46,7 +45,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
         foreach (var file in tm.Torrent.Files.Select(x => x.Path))
         {
             var result = AnitomySharp.AnitomySharp.Parse(file);
-            if(result.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epResult &&
+            if (result.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epResult &&
                 int.TryParse(epResult.Value, out var ep))
             {
                 _episodeToTorrentFileMap[ep] = index;
