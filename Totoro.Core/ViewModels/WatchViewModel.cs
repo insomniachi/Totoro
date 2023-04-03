@@ -158,7 +158,8 @@ public partial class WatchViewModel : NavigatableViewModel
                 SetVideoStreamModel(stream);
                 await MediaPlayer.SetMedia(stream);
                 MediaPlayer.Play(GetPlayerTime());
-            });
+
+            }, RxApp.DefaultExceptionHandler.OnError);
 
         MediaPlayer
             .DurationChanged
@@ -189,8 +190,8 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.WhenAnyValue(x => x.SubStreams)
             .WhereNotNull()
-            .Select(x => x.Count() > 1)
             .Log(this, "SubStreams :", x => string.Join(",", x))
+            .Select(x => x.Count() > 1)
             .ToPropertyEx(this, x => x.HasMultipleSubStreams);
 
         NativeMethods.PreventSleep();

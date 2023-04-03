@@ -15,21 +15,23 @@ public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
 
     public double GetTime(long id, int episode)
     {
-        this.Log().Debug($"Checking saved time for Anime: {id}, Episode: {episode}");
+        this.Log().Info($"Checking saved time for Anime: {id}, Episode: {episode}");
 
         if (!_recents.ContainsKey(id))
         {
+            this.Log().Info("Saved time not found");
             return 0;
         }
 
         if (!_recents[id].ContainsKey(episode))
         {
+            this.Log().Info("Saved time not found");
             return 0;
         }
 
         var time = _recents[id][episode];
 
-        this.Log().Debug($"Saved time found {time}");
+        this.Log().Info($"Saved time found {time}");
         return time;
     }
 
@@ -45,6 +47,8 @@ public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
             return;
         }
 
+        this.Log().Info("Reset time for Id:{0} Ep:{1}", id, episode);
+        
         _recents[id].Remove(episode);
 
         if (_recents[id].Count == 0)

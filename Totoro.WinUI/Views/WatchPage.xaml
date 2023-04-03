@@ -21,7 +21,7 @@
         </Grid.RowDefinitions>
 
         <ctk:SwitchPresenter Value="{x:Bind ViewModel.MediaPlayerType}">
-            <ctk:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
+            <ctk:Case IsDefault="True" Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
                 <MediaPlayerElement
                     x:Name="MediaPlayerElement"
                     AreTransportControlsEnabled="True"

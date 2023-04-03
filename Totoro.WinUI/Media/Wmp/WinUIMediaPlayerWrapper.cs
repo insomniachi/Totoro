@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
+using Splat;
 using Totoro.WinUI.Contracts;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -11,26 +12,13 @@ using Windows.Web.Http;
 
 namespace Totoro.WinUI.Media.Wmp;
 
-public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
+public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 {
     private readonly CustomMediaTransportControls _transportControls;
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
     private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
-    //private readonly FFmpegInteropX.MediaSourceConfig _ffmpegOptions = new()
-    //{
-    //    ReadAheadBufferEnabled = true,
-    //    ReadAheadBufferDuration = TimeSpan.FromSeconds(30),
-    //    ReadAheadBufferSize = 50 * 1024 * 1024,
-    //    FFmpegOptions = new Windows.Foundation.Collections.PropertySet
-    //    {
-    //        { "reconnect", 1 },
-    //        { "reconnect_streamed", 1 },
-    //        { "reconnect_on_network_error", 1 },
-    //    }
-    //};
     private bool _isHardSub;
-    //private FFmpegInteropX.FFmpegMediaSource _ffmpegMediaSource;
     private bool _isDisposed;
 
     public WinUIMediaPlayerWrapper(IWindowService windowService)
@@ -197,43 +185,27 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer
             {
                 _httpClient.DefaultRequestHeaders.Add(item.Key, item.Value);
             }
+
             var result = await AdaptiveMediaSource.CreateFromUriAsync(uri, _httpClient);
             if (result.Status == AdaptiveMediaSourceCreationStatus.Success)
             {
+                this.Log().Info("Creating adaptive media from {0}", uri);
+                this.Log().Info("With headers {0}", string.Join(";", headers.Select(x => $"{x.Key}={x.Value}")));
+
                 return MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
             }
             else
             {
+                this.Log().Info("Creating media from http stream");
                 HttpRandomAccessStream httpStream = await HttpRandomAccessStream.CreateAsync(_httpClient, uri);
                 return MediaSource.CreateFromStream(httpStream, httpStream.ContentType);
             }
         }
         else
         {
+            this.Log().Info("Creating media from : {0}", uri);
+
             return MediaSource.CreateFromUri(uri);
-        }
-    }
-
-    public Task<Unit> SetFFMpegMedia(VideoStreamModel streamModel)
-    {
-        try
-        {
-            _player.Source = MediaSource.CreateFromStream(streamModel.Stream.AsRandomAccessStream(), "video/x-matroska");
-            return Task.FromResult(Unit.Default);
-            //_videoStreamModel = streamModel;
-            //_ffmpegMediaSource = streamModel.Stream is null
-            //    ? await FFmpegInteropX.FFmpegMediaSource.CreateFromUriAsync(streamModel.StreamUrl, _ffmpegOptions)
-            //    : await FFmpegInteropX.FFmpegMediaSource.CreateFromStreamAsync(streamModel.Stream.AsRandomAccessStream(), _ffmpegOptions);
-
-            //var mediaSource = _ffmpegMediaSource.CreateMediaPlaybackItem();
-            //mediaSource.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
-            //_player.Source = mediaSource;
-
-            //return Unit.Default;
-        }
-        catch
-        {
-            return Task.FromResult(Unit.Default);
         }
     }
 }

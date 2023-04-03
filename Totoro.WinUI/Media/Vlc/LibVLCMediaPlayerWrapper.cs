@@ -17,15 +17,10 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
     private readonly Subject<TimeSpan> _positionChanged = new();
 
     public IObservable<Unit> Paused => _paused;
-
     public IObservable<Unit> Playing => _playing;
-
     public IObservable<Unit> PlaybackEnded => _ended;
-
     public IObservable<TimeSpan> PositionChanged => _positionChanged;
-
     public IObservable<TimeSpan> DurationChanged => _durationChanged;
-
     public IMediaTransportControls TransportControls { get; private set; }
 
     public bool IsInitialized { get; private set; }
@@ -37,18 +32,18 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public void Pause()
     {
-        _mp.Pause();
+        _mp?.Pause();
     }
 
     public void Play()
     {
-        _mp.Play();
+        _mp?.Play();
     }
 
     public void Play(double offsetInSeconds)
     {
-        _mp.Play();
-        _mp.SeekTo(TimeSpan.FromSeconds(offsetInSeconds));
+        _mp?.Play();
+        _mp?.SeekTo(TimeSpan.FromSeconds(offsetInSeconds));
     }
 
     public void SeekTo(TimeSpan ts)
