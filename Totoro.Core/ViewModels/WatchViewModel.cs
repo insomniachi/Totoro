@@ -155,34 +155,31 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Subscribe(async stream =>
             {
-                SetVideoStreamModel(stream);
-                await MediaPlayer.SetMedia(stream);
-                MediaPlayer.Play(GetPlayerTime());
-
-            }, RxApp.DefaultExceptionHandler.OnError);
+                try
+                {
+                    SetVideoStreamModel(stream);
+                    await MediaPlayer.SetMedia(stream);
+                    MediaPlayer.Play(GetPlayerTime());
+                }
+                catch (Exception ex)
+                {
+                    this.Log().Error(ex);
+                }
+            });
 
         MediaPlayer
             .DurationChanged
+            .Where(_ => Anime is not null)
             .Throttle(TimeSpan.FromSeconds(1))
-            .Subscribe(async duration =>
+            .SelectMany(duration => timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds))
+            .Where(timeStamp => timeStamp.Success)
+            .Subscribe(timeStamps =>
             {
-                if (Anime is null)
-                {
-                    return;
-                }
-
-                var timeStamps = await timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds);
-
-                if (!timeStamps.Success)
-                {
-                    return;
-                }
-
                 foreach (var item in mediaEventListeners)
                 {
                     item.SetTimeStamps(timeStamps);
                 }
-            });
+            }, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
