@@ -33,7 +33,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
                 Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue(),
                 Body = jsonNode?["body"]?.ToString()
             })
-            .Where(vi => vi.Version > Assembly.GetEntryAssembly().GetName().Version)
+            .Where(vi => vi.Version < Assembly.GetEntryAssembly().GetName().Version)
             .Log(this, "New Version", vi => vi.Version.ToString())
             .Throttle(TimeSpan.FromSeconds(3));
     }
@@ -61,7 +61,6 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
 
     public async Task<VersionInfo> DownloadUpdate(VersionInfo versionInfo)
     {
-        Directory.CreateDirectory(_knownFolders.Updates);
         var ext = Path.GetExtension(versionInfo.Url);
         var fileName = $"Totoro_{versionInfo.Version}{ext}";
         var fullPath = Path.Combine(_knownFolders.Updates, fileName);
@@ -108,6 +107,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
 
     public void InstallUpdate(VersionInfo versionInfo)
     {
+        this.Log().Info(@$"Executing command : msiexec /i ""{versionInfo.FilePath}""");
         Process.Start(new ProcessStartInfo
         {
             FileName = "msiexec",

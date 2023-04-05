@@ -100,7 +100,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Select(_ => GetQueuedEpisode())
             .Where(RequestedEpisodeIsValid)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => EpisodeModels.SelectEpisode(x)); // .Subcribe(EpisodeModels.SelecteEpisode) throws exception
+            .Subscribe(x => EpisodeModels.SelectEpisode(x), RxApp.DefaultExceptionHandler.OnError); // .Subcribe(EpisodeModels.SelecteEpisode) throws exception
 
         this.WhenAnyValue(x => x.EpisodeModels)
             .WhereNotNull()
@@ -121,7 +121,7 @@ public partial class WatchViewModel : NavigatableViewModel
             })
             .SelectMany(epModel => _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, SelectedAudioStream))
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(stream => Streams = stream);
+            .Subscribe(stream => Streams = stream, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.SelectedAudioStream)
             .Where(_ => EpisodeModels?.Current is not null && _videoStreamResolver is not null)
@@ -132,7 +132,7 @@ public partial class WatchViewModel : NavigatableViewModel
             {
                 _episodeRequest = EpisodeModels.Current.EpisodeNumber;
                 EpisodeModels = epModels;
-            });
+            }, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.Streams)
             .WhereNotNull()
@@ -187,7 +187,6 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.WhenAnyValue(x => x.SubStreams)
             .WhereNotNull()
-            .Log(this, "SubStreams :", x => string.Join(",", x))
             .Select(x => x.Count() > 1)
             .ToPropertyEx(this, x => x.HasMultipleSubStreams);
 

@@ -25,6 +25,7 @@
                 <MediaPlayerElement
                     x:Name="MediaPlayerElement"
                     AreTransportControlsEnabled="True"
+                    AutoPlay="False"
                     IsDoubleTapEnabled="True"
                     TransportControls="{x:Bind (wmp:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
             </ctk:Case>

@@ -11,12 +11,12 @@ internal class KnownFolders : IKnownFolders
 
     public KnownFolders()
     {
-        ApplicationDataLegacy = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/ApplicationData");
+        ApplicationDataLegacy = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro\ApplicationData");
         ApplicationData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro");
-        Updates = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/Updates");
-        Plugins = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/Plugins");
-        Logs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/Logs");
-        Torrents = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro/Torrents");
+        Updates = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro\Updates");
+        Plugins = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro\Plugins");
+        Logs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro\Logs");
+        Torrents = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Totoro\Torrents");
 
         Directory.CreateDirectory(ApplicationData);
         Directory.CreateDirectory(Plugins);
