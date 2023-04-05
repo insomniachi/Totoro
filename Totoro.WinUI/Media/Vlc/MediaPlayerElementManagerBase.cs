@@ -11,7 +11,7 @@ internal abstract class MediaPlayerElementManagerBase : IDisposable
     /// <summary>
     /// Occurs when <see cref="VideoView"/> property changed
     /// </summary>
-    protected EventHandler VideoViewChanged;
+    //protected EventHandler VideoViewChanged;
 
     /// <summary>
     /// Occurs when <see cref="LibVLC"/> property changed
@@ -103,7 +103,7 @@ internal abstract class MediaPlayerElementManagerBase : IDisposable
     /// <param name="newValue">new value</param>
     protected virtual void OnVideoViewChanged(VideoView oldValue, VideoView newValue)
     {
-        VideoViewChanged?.Invoke(this, EventArgs.Empty);
+        //VideoViewChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

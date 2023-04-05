@@ -33,7 +33,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
                 Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue(),
                 Body = jsonNode?["body"]?.ToString()
             })
-            .Where(vi => vi.Version < Assembly.GetEntryAssembly().GetName().Version)
+            .Where(vi => vi.Version > Assembly.GetEntryAssembly().GetName().Version)
             .Log(this, "New Version", vi => vi.Version.ToString())
             .Throttle(TimeSpan.FromSeconds(3));
     }

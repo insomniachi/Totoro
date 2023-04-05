@@ -95,8 +95,9 @@ public partial class WatchViewModel : NavigatableViewModel
             }, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.EpisodeModels)
-            .Where(_ => !UseTorrents)
             .WhereNotNull()
+            .Log(this, "Episodes :", x => string.Join(",", x.Select(e => e.EpisodeNumber)))
+            .Where(_ => !UseTorrents)
             .Select(_ => GetQueuedEpisode())
             .Where(RequestedEpisodeIsValid)
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -111,7 +112,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Log(this, "Selected Episode :", ep => ep.EpisodeNumber.ToString())
             .Do(epModel =>
             {
-                if (EpisodeModels.Count > 1)
+                if (EpisodeModels?.Count > 1)
                 {
                     MediaPlayer.TransportControls.IsNextTrackButtonVisible = epModel != EpisodeModels.Last();
                     MediaPlayer.TransportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
