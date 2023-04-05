@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
+    xmlns:vlc="using:Totoro.WinUI.Media.Vlc"
     xmlns:wmp="using:Totoro.WinUI.Media.Wmp"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
@@ -26,11 +27,10 @@
                     x:Name="MediaPlayerElement"
                     AreTransportControlsEnabled="True"
                     AutoPlay="False"
-                    IsDoubleTapEnabled="True"
-                    TransportControls="{x:Bind (wmp:CustomMediaTransportControls)ViewModel.MediaPlayer.TransportControls}" />
+                    IsDoubleTapEnabled="True" />
             </ctk:Case>
             <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
-                <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" Initialized="VlcMediaPlayerElement_Initialized" />
+                <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" />
             </ctk:Case>
         </ctk:SwitchPresenter>
 

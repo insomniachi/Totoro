@@ -96,6 +96,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
 
         App.GetService<IWindowService>()?
            .IsFullWindowChanged
+           .Where(_ => FullWindowSymbol is not null)
            .Subscribe(isFullWindwow =>
            {
                FullWindowSymbol.Symbol = isFullWindwow ? Symbol.BackToWindow : Symbol.FullScreen;
@@ -572,11 +573,15 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         set => SetValue(IsSeekBarEnabledProperty, value);
     }
 
-    public void Initialize()
+    public bool IsInitialized { get; set; }
+
+    public void Initialize(LibVLC vlc, MediaPlayer mediaPlayer, VideoView videoView)
     {
-        Manager.LibVLC = LibVLC;
-        Manager.MediaPlayer = MediaPlayer;
-        Manager.VideoView = VideoView;
+        Manager.LibVLC = LibVLC = vlc;
+        Manager.MediaPlayer = MediaPlayer = mediaPlayer;
+        Manager.VideoView = VideoView = videoView;
+
+        IsInitialized = true;
     }
 
     /// <summary>

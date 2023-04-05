@@ -1,4 +1,5 @@
-﻿using ReactiveMarbles.ObservableEvents;
+﻿using System.Data;
+using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Media;
@@ -31,6 +32,8 @@ public sealed partial class WatchPage : WatchPageBase
                                           .DisposeWith(d);
 
                         var transportControls = wmpWrapper.TransportControls as CustomMediaTransportControls;
+                        MediaPlayerElement.TransportControls = transportControls;
+
                         this.WhenAnyValue(x => x.ViewModel.Qualities)
                             .Subscribe(qualities => transportControls.Qualities = qualities);
 
@@ -39,9 +42,6 @@ public sealed partial class WatchPage : WatchPageBase
 
                         transportControls.WhenAnyValue(x => x.SelectedQuality)
                             .Subscribe(quality => ViewModel.SelectedQuality = quality);
-
-                        ViewModel.SetMediaPlayer(ViewModel.MediaPlayer);
-                        ViewModel.SubscribeTransportControlEvents();
                     }
                     else if (mp is LibVLCMediaPlayerWrapper vlcWrapper)
                     {
@@ -49,8 +49,12 @@ public sealed partial class WatchPage : WatchPageBase
                                              .DoubleTapped
                                              .Subscribe(_ => windowService.ToggleIsFullWindow())
                                              .DisposeWith(d);
+
+                        VlcMediaPlayerElement.MediaPlayer = vlcWrapper;
                     }
 
+                    ViewModel.SetMediaPlayer(mp);
+                    ViewModel.SubscribeTransportControlEvents();
                 })
                 .DisposeWith(d);
 
@@ -68,18 +72,5 @@ public sealed partial class WatchPage : WatchPageBase
             .DisposeWith(d);
 
         });
-    }
-
-    private void VlcMediaPlayerElement_Initialized(object sender, EventArgs e)
-    {
-        if (ViewModel.MediaPlayer is not LibVLCMediaPlayerWrapper wrapper)
-        {
-            return;
-        }
-
-        wrapper.Initialize(VlcMediaPlayerElement.LibVLC, VlcMediaPlayerElement.MediaPlayer);
-        wrapper.SetTransportControls(VlcMediaPlayerElement.TransportControls);
-        ViewModel.SetMediaPlayer(ViewModel.MediaPlayer);
-        ViewModel.SubscribeTransportControlEvents();
     }
 }

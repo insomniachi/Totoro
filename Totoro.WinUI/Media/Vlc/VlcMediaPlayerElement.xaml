@@ -10,6 +10,6 @@
     <Grid>
         <vlc:VideoView x:Name="VideoView" Initialized="VideoView_Initialized" />
 
-        <ContentPresenter Content="{x:Bind TransportControls}" />
+        <ContentPresenter Content="{x:Bind TransportControls, Mode=OneWay}" />
     </Grid>
 </UserControl>

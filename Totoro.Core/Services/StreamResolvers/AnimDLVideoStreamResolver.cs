@@ -33,7 +33,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
 
     public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
     {
-        this.Log().Debug("Getting stream link for episode {0} ({1})", episode, subStream);
+        this.Log().Debug("resolving stream link for episode {0}", episode);
 
         var results = await GetStreams(episode, subStream);
 

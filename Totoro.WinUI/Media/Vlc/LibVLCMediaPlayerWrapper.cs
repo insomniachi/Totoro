@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Text.Json;
+using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using ReactiveMarbles.ObservableEvents;
 
@@ -21,8 +22,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
     public IObservable<Unit> PlaybackEnded => _ended;
     public IObservable<TimeSpan> PositionChanged => _positionChanged;
     public IObservable<TimeSpan> DurationChanged => _durationChanged;
-    public IMediaTransportControls TransportControls { get; private set; }
-
+    public IMediaTransportControls TransportControls { get; } = new VlcMediaTransportControls();
     public bool IsInitialized { get; private set; }
 
     public void Dispose()
@@ -84,15 +84,13 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
         return Task.FromResult(Unit.Default);
     }
 
-    public void SetTransportControls(IMediaTransportControls transportControls)
-    {
-        TransportControls = transportControls;
-    }
-
-    public void Initialize(LibVLC vlc, MediaPlayer mp)
+    public void Initialize(LibVLC vlc, MediaPlayer mp, VideoView videoView)
     {
         _vlc = vlc;
         _mp = mp;
+
+        var vlcTransport = TransportControls as VlcMediaTransportControls;
+        vlcTransport.Initialize(vlc, mp, videoView);
 
         _mp.Events()
            .Paused
