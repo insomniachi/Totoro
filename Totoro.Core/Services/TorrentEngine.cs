@@ -90,8 +90,8 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     private void SubscribeEvents(TorrentManager torrentManager)
     {
         torrentManager.TorrentStateChanged += TorrentManager_TorrentStateChanged;
-        torrentManager.PeerConnected += TorrentManager_PeerConnected;
-        torrentManager.PeerDisconnected += TorrentManager_PeerDisconnected;
+        //torrentManager.PeerConnected += TorrentManager_PeerConnected;
+        //torrentManager.PeerDisconnected += TorrentManager_PeerDisconnected;
     }
 
     private void TorrentManager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
@@ -112,15 +112,15 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         }
     }
 
-    private void TorrentManager_PeerDisconnected(object sender, PeerDisconnectedEventArgs e)
-    {
-        this.Log().Info($"Peer Disconnected : {e.Peer.Uri}");
-    }
+    //private void TorrentManager_PeerDisconnected(object sender, PeerDisconnectedEventArgs e)
+    //{
+    //    this.Log().Info($"Peer Disconnected : {e.Peer.Uri}");
+    //}
 
-    private void TorrentManager_PeerConnected(object sender, PeerConnectedEventArgs e)
-    {
-        this.Log().Info($"Peer Connected : {e.Peer.Uri}");
-    }
+    //private void TorrentManager_PeerConnected(object sender, PeerConnectedEventArgs e)
+    //{
+    //    this.Log().Info($"Peer Connected : {e.Peer.Uri}");
+    //}
 
 }
 

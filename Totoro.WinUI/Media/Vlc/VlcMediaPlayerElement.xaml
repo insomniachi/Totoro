@@ -8,8 +8,37 @@
     mc:Ignorable="d">
 
     <Grid>
-        <vlc:VideoView x:Name="VideoView" Initialized="VideoView_Initialized" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <ContentPresenter Content="{x:Bind TransportControls, Mode=OneWay}" />
+        <vlc:VideoView
+            x:Name="VideoView"
+            Grid.RowSpan="2"
+            Initialized="VideoView_Initialized" />
+
+        <Grid>
+            <Button
+                x:Name="DynamicSkipIntroButton"
+                Width="150"
+                Height="50"
+                Margin="10,40"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                VerticalContentAlignment="Center"
+                Content="Skip"
+                FontSize="20"
+                FontWeight="Bold"
+                Foreground="White"
+                Visibility="Collapsed">
+                <Button.Background>
+                    <SolidColorBrush Opacity="0.5" Color="Black" />
+                </Button.Background>
+            </Button>
+        </Grid>
+
+        <ContentPresenter Grid.Row="1" Content="{x:Bind TransportControls, Mode=OneWay}" />
+
     </Grid>
 </UserControl>

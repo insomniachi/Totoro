@@ -63,8 +63,13 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
         _mp.Time += (sign * (long)ts.TotalMilliseconds);
     }
 
-    public Task<Unit> SetMedia(VideoStreamModel stream)
+    public async Task<Unit> SetMedia(VideoStreamModel stream)
     {
+        while(_vlc is null)
+        {
+            await Task.Delay(10);
+        }
+
         var media = stream.Stream is null
             ? new LibVLCSharp.Shared.Media(_vlc, stream.StreamUrl, FromType.FromLocation)
             : new LibVLCSharp.Shared.Media(_vlc, new StreamMediaInput(stream.Stream));
@@ -81,7 +86,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
             }
         }
 
-        return Task.FromResult(Unit.Default);
+        return Unit.Default;
     }
 
     public void Initialize(LibVLC vlc, MediaPlayer mp, VideoView videoView)

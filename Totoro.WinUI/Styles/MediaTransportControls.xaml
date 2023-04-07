@@ -657,23 +657,6 @@
                                 BasedOn="{StaticResource DefaultAppBarButtonStyle}"
                                 TargetType="AppBarButton" />
                         </Grid.Resources>
-                        <Button
-                            x:Name="DynamicSkipIntroButton"
-                            Width="150"
-                            Height="50"
-                            Margin="10,40"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            VerticalContentAlignment="Center"
-                            Content="Skip"
-                            FontSize="20"
-                            FontWeight="Bold"
-                            Foreground="White"
-                            Visibility="Collapsed">
-                            <Button.Background>
-                                <SolidColorBrush Opacity="0.5" Color="Black" />
-                            </Button.Background>
-                        </Button>
                         <Border
                             x:Name="ControlPanel_ControlPanelVisibilityStates_Border"
                             MaxWidth="{StaticResource MediaTransportControlsMaxWidth}"

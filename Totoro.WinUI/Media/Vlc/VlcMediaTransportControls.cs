@@ -584,6 +584,12 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         IsInitialized = true;
     }
 
+    public void SetDynamicSkipButton(ButtonBase button)
+    {
+        DynamicSkipButton = button;
+        DynamicSkipButton.Click += (_, _) => _onDynamicSkipIntro.OnNext(Unit.Default);
+    }
+
     /// <summary>
     /// Invoked whenever application code or internal processes (such as a rebuilding layout pass) call ApplyTemplate. 
     /// In simplest terms, this means the method is called just before a UI element displays in your app.
@@ -649,7 +655,6 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         Initialize("SkipForwardButton", "Skip forward", (_, _) => MediaPlayer.Time += 30000);
         Initialize("SkipBackwardButton", "skip backward", (_, _) => MediaPlayer.Time -= 10000);
         Initialize("SkipIntroButton", "Skip intro", (_, _) => _onSkipIntro.OnNext(Unit.Default));
-        DynamicSkipButton = Initialize("DynamicSkipIntroButton", "", (_, _) => _onDynamicSkipIntro.OnNext(Unit.Default)) as ButtonBase;
         Initialize("FullWindowButton", "", (_, _) => App.GetService<IWindowService>().ToggleIsFullWindow());
         FullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
 

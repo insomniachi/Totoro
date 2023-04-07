@@ -37,6 +37,7 @@ public sealed partial class VlcMediaPlayerElement : UserControl
         {
             _mediaPlayer = value;
             TransportControls = _mediaPlayer?.TransportControls as VlcMediaTransportControls;
+            TransportControls?.SetDynamicSkipButton(DynamicSkipIntroButton);
             if (_libVlc is null || _mediaPlayer is null)
             {
                 return;

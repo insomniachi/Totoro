@@ -22,8 +22,19 @@ namespace Totoro.Core.Tests.Helpers
         public void Pause() { }
         public void Play() { }
         public void Play(double offsetInSeconds) { }
+
+        public void Seek(TimeSpan ts, SeekDirection direction)
+        {
+            throw new NotImplementedException();
+        }
+
         public void SeekTo(TimeSpan ts) { }
         public Task<Unit> SetFFMpegMedia(string url) => Task.FromResult(Unit.Default);
         public Task<Unit> SetMedia(VideoStreamModel stream, Dictionary<string, string> AdditionalInformation) => Task.FromResult(Unit.Default);
+
+        public Task<Unit> SetMedia(VideoStreamModel stream)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
