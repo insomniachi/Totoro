@@ -11,32 +11,45 @@ internal interface IAniskip
 internal class Aniskip : MediaEventListener, IAniskip
 {
     private readonly IViewService _viewService;
+    private readonly ISettings _settings;
     private TimeSpan? _duration;
     private TimeSpan _position;
     private AniSkipResultItem _op;
     private AniSkipResultItem _ed;
     private double _staticSkipPosition;
+    private TimeSpan _endTime;
+    private bool _isDialogShown;
 
-    public Aniskip(IViewService viewService)
+    public Aniskip(IViewService viewService,
+                   ISettings settings)
     {
         _viewService = viewService;
+        _settings = settings;
     }
 
     protected override void OnPositionChanged(TimeSpan position)
     {
         _position = position;
 
-        if (_timeStamps is null)
+        if (_timeStamps is not null)
         {
-            return;
+            RxApp.MainThreadScheduler.Schedule(() => _mediaPlayer.TransportControls.IsSkipButtonVisible = IsOpeningOrEnding(position.TotalSeconds));
         }
 
-        RxApp.MainThreadScheduler.Schedule(() => _mediaPlayer.TransportControls.IsSkipButtonVisible = IsOpeningOrEnding(position.TotalSeconds));
+        if (_op is null && position > _endTime && !_isDialogShown)
+        {
+            _isDialogShown = true;
+            RxApp.MainThreadScheduler.Schedule(async () =>
+            {
+                await SubmitTimeStamp();
+            });
+        }
     }
 
     protected override void OnDurationChanged(TimeSpan duration)
     {
         _duration = duration;
+        _endTime = duration - TimeSpan.FromSeconds(_settings.TimeRemainingWhenEpisodeCompletesInSeconds);
     }
 
     protected override void OnEpisodeChanged()
@@ -46,6 +59,7 @@ internal class Aniskip : MediaEventListener, IAniskip
         _op = null;
         _ed = null;
         _staticSkipPosition = 0;
+        _isDialogShown = false;
     }
 
     protected override void OnDynamicSkipped()
@@ -82,6 +96,8 @@ internal class Aniskip : MediaEventListener, IAniskip
 
     public async Task SubmitTimeStamp()
     {
+        _mediaPlayer.Pause();
         await _viewService.SubmitTimeStamp(_animeModel.Id, _currentEpisode, _videoStreamModel, _timeStamps, _duration.Value.TotalSeconds, _staticSkipPosition);
+        _mediaPlayer.Play();
     }
 }

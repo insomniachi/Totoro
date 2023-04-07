@@ -340,9 +340,7 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         RxApp.MainThreadScheduler.Schedule(async () =>
         {
-            MediaPlayer.Pause();
             await GetMediaEventListener<IAniskip>()?.SubmitTimeStamp();
-            MediaPlayer.Play();
         });
     }
 
