@@ -7,10 +7,12 @@ namespace Totoro.Core.Services;
 public class TorrentEngine : ITorrentEngine, IEnableLogger
 {
     private ClientEngine _engine;
-    private readonly Dictionary<string, TorrentManager> _torrentManagers = new();
+    private readonly Dictionary<InfoHash, TorrentManager> _torrentManagers = new();
+    private readonly Dictionary<string, TorrentManager> _torrentManagerToMagnetMap = new();
     private readonly string _torrentEngineState;
     private readonly ISettings _settings;
     private readonly HttpClient _httpClient;
+    private readonly ScheduledSubject<string> _torrentRemoved = new(RxApp.MainThreadScheduler);
 
     public TorrentEngine(IKnownFolders knownFolders,
                          ISettings settings,
@@ -20,6 +22,26 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         _engine = new(new EngineSettingsBuilder() { CacheDirectory = Path.Combine(knownFolders.Torrents, "cache") }.ToSettings());
         _settings = settings;
         _httpClient = httpClient;
+    }
+
+    public IEnumerable<string> ActiveTorrents => _engine.Torrents.Select(x => x.Torrent.Name);
+    
+    public IObservable<string> TorrentRemoved => _torrentRemoved;
+
+    public async Task RemoveTorrent(string torrentName)
+    {
+        if(_engine.Torrents.FirstOrDefault(x => x.Torrent.Name == torrentName) is not { } tm)
+        {
+            return;
+        }
+
+        if(tm.State == TorrentState.Downloading)
+        {
+            await tm.StopAsync();
+        }
+
+        await RemoveTorrent(tm);
+        _torrentRemoved.OnNext(tm.Torrent.Name);
     }
 
     public async Task<bool> TryRestoreState()
@@ -33,13 +55,16 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         {
             _engine = await ClientEngine.RestoreStateAsync(_torrentEngineState);
             File.Delete(_torrentEngineState);
+
             foreach (var item in _engine.Torrents)
             {
-                await _engine.RemoveAsync(item, RemoveMode.CacheDataAndDownloadedData);
-
-                if (!Directory.GetFiles(item.SavePath, "*", SearchOption.AllDirectories).Any())
+                if(item.Complete && _settings.AutoRemoveCompletedTorrents)
                 {
-                    Directory.Delete(item.SavePath, true);
+                    await RemoveTorrent(item);
+                }
+                else if(item.Complete == false)
+                {
+                    _torrentManagers.Add(item.InfoHash, item);
                 }
             }
         }
@@ -52,38 +77,46 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     {
         try
         {
-            if (_torrentManagers.TryGetValue(torrentUrl, out TorrentManager value))
-            {
-                return value;
-            }
-
             var stream = await _httpClient.GetStreamAsync(torrentUrl);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
             ms.Position = 0;
             var torrent = await Torrent.LoadAsync(ms);
-            var torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
-            SubscribeEvents(torrentManager);
+
+            TorrentManager torrentManager = null;
+            if (_torrentManagers.TryGetValue(torrent.InfoHash, out TorrentManager value))
+            {
+                torrentManager = value;
+                _torrentManagerToMagnetMap.TryAdd(torrentUrl, torrentManager);
+            }
+            else
+            {
+                torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
+                _torrentManagers.Add(torrent.InfoHash, torrentManager);
+                _torrentManagerToMagnetMap.Add(torrentUrl, torrentManager);
+                SubscribeEvents(torrentManager);
+            }
+
             await torrentManager.StartAsync();
-            _torrentManagers.Add(torrentUrl, torrentManager);
 
             return torrentManager;
         }
         catch (Exception ex)
         {
             this.Log().Error(ex);
-            throw;
+            return null;
         }
     }
 
     public async Task<Stream> GetStream(string torrentUrl, int fileIndex)
     {
-        var torrentManager = _torrentManagers[torrentUrl];
+        var torrentManager = _torrentManagerToMagnetMap[torrentUrl];
         return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
     }
 
     public async Task ShutDown()
     {
+        await _engine.StopAllAsync();
         await _engine.SaveStateAsync(_torrentEngineState);
     }
 
@@ -112,6 +145,16 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         }
     }
 
+    private async Task RemoveTorrent(TorrentManager torrentManager)
+    {
+        await _engine.RemoveAsync(torrentManager, RemoveMode.CacheDataAndDownloadedData);
+
+        if (!Directory.GetFiles(torrentManager.SavePath, "*", SearchOption.AllDirectories).Any())
+        {
+            Directory.Delete(torrentManager.SavePath, true);
+        }
+    }
+
     //private void TorrentManager_PeerDisconnected(object sender, PeerDisconnectedEventArgs e)
     //{
     //    this.Log().Info($"Peer Disconnected : {e.Peer.Uri}");
@@ -123,4 +166,3 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     //}
 
 }
-

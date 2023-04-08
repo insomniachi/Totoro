@@ -36,7 +36,7 @@ internal class Aniskip : MediaEventListener, IAniskip
             RxApp.MainThreadScheduler.Schedule(() => _mediaPlayer.TransportControls.IsSkipButtonVisible = IsOpeningOrEnding(position.TotalSeconds));
         }
 
-        if (_op is null && position > _endTime && !_isDialogShown)
+        if (_op is null && position > _endTime && !_isDialogShown && _duration is not null)
         {
             _isDialogShown = true;
             RxApp.MainThreadScheduler.Schedule(async () =>

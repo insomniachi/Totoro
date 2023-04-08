@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Contracts;
 
-public interface ISettings
+public interface ISettings : INotifyPropertyChanged
 {
     bool PreferSubs { get; set; }
     string DefaultProviderType { get; set; }
@@ -27,6 +28,8 @@ public interface ISettings
     AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
     MediaPlayerType MediaPlayerType { get; set; }
     bool PreBufferTorrents { get; set; }
+    bool AutoRemoveCompletedTorrents { get; set; }
+    string UserTorrentsDownloadDirectory { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

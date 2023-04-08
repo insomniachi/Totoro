@@ -16,7 +16,8 @@ public class TotoroCommands : IEnableLogger
 
     public TotoroCommands(IViewService viewService,
                           INavigationService navigationService,
-                          IDebridServiceContext debridServiceContext)
+                          IDebridServiceContext debridServiceContext,
+                          ITorrentEngine torrentEngine)
     {
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
 
@@ -99,6 +100,14 @@ public class TotoroCommands : IEnableLogger
         });
 
         ConfigureProvider = ReactiveCommand.CreateFromTask<ProviderInfo>(viewService.ConfigureProvider);
+        RemoveTorrent = ReactiveCommand.CreateFromTask<string>(async name =>
+        {
+            var result = await viewService.Question(name, $"Are you sure you want to remove torrent with downloaded files?");
+            if(result)
+            {
+                await torrentEngine.RemoveTorrent(name);
+            }
+        });
     }
 
     public ICommand UpdateTracking { get; }
@@ -108,6 +117,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand ConfigureProvider { get; }
     public ICommand TorrentCommand { get; }
     public ICommand SearchTorrent { get; }
+    public ICommand RemoveTorrent { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

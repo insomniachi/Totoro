@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddCommonPages(this IServiceCollection services)
     {
-        services.AddSingleton<SettingsViewModel>();
+        services.AddTransient<SettingsViewModel>();
         services.AddTransient<SettingsPage>();
         services.AddTransient<ViewType<SettingsViewModel>>(x => new(typeof(SettingsPage)));
         services.AddTransient<ViewType>(x => x.GetService<ViewType<SettingsViewModel>>());

@@ -12,7 +12,8 @@ internal class SettingsModel : ReactiveObject, ISettings
     private readonly IDiscordRichPresense _dRpc;
 
     public SettingsModel(ILocalSettingsService localSettingsService,
-                         IDiscordRichPresense dRpc)
+                         IDiscordRichPresense dRpc,
+                         IKnownFolders knownFolders)
     {
         _localSettingsService = localSettingsService;
         _dRpc = dRpc;
@@ -38,6 +39,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         TorrentSearchOptions = localSettingsService.ReadSetting(Settings.TorrentSearchOptions);
         MediaPlayerType = localSettingsService.ReadSetting(Settings.MediaPlayerType);
         PreBufferTorrents = localSettingsService.ReadSetting(Settings.PreBufferTorrents);
+        UserTorrentsDownloadDirectory = localSettingsService.ReadSetting(nameof(UserTorrentsDownloadDirectory), knownFolders.Torrents);
 
 
         ObserveChanges();
@@ -112,6 +114,8 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
     [Reactive] public MediaPlayerType MediaPlayerType { get; set; }
     [Reactive] public bool PreBufferTorrents { get; set; }
+    [Reactive] public bool AutoRemoveCompletedTorrents { get; set; }
+    [Reactive] public string UserTorrentsDownloadDirectory { get; set; }
 }
 
 

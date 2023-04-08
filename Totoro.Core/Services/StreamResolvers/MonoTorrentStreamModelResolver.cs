@@ -11,16 +11,17 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
     private readonly Dictionary<int, int> _episodeToTorrentFileMap = new();
     private readonly ScheduledSubject<ConnectionMonitor> _downloadStatus = new(RxApp.MainThreadScheduler);
     private readonly CompositeDisposable _disposable = new();
+    private static Stream _prevStream;
 
     public MonoTorrentStreamModelResolver(ITorrentEngine torrentEngine,
-                                          IKnownFolders knownFolders,
                                           IEnumerable<Element> parsedResults,
-                                          string torrentUrl)
+                                          string torrentUrl,
+                                          string saveDirectory)
     {
         _torrentEngine = torrentEngine;
         _torrentUrl = torrentUrl;
         var folder = parsedResults.First(x => x.Category == Element.ElementCategory.ElementAnimeTitle).Value;
-        _saveDirectory = Path.Combine(knownFolders.Torrents, folder);
+        _saveDirectory = Path.Combine(saveDirectory, folder);
     }
 
     public async ValueTask DisposeAsync()
@@ -34,6 +35,11 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
     public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
     {
         var tm = await _torrentEngine.Download(_torrentUrl, _saveDirectory);
+
+        if(tm is null)
+        {
+            return EpisodeModelCollection.Empty;
+        }
 
         Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromSeconds(3))
@@ -62,7 +68,9 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
 
     public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
     {
-        return new VideoStreamsForEpisodeModel(await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode]));
+        _prevStream?.Dispose();
+        _prevStream = await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode]);
+        return new VideoStreamsForEpisodeModel(_prevStream);
     }
 }
 

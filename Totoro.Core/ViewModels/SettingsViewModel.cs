@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Reactive.Concurrency;
+using System.Reflection;
 using AnimDL.Core;
 using Splat;
 using Totoro.Core.Torrents;
@@ -15,6 +16,8 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
     [Reactive] public string NyaaUrl { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
+    [ObservableAsProperty] public bool HasActiveTorrents { get; }
+    public ObservableCollection<string> ActiveTorrents { get; }
 
     public ISettings Settings { get; }
     public Version Version { get; }
@@ -32,6 +35,7 @@ public class SettingsViewModel : NavigatableViewModel
     public ICommand ShowAbout { get; }
     public ICommand ConfigureProvider { get; }
     public ICommand Navigate { get; }
+    public ICommand EditUserTorrentDirectory { get; }
     public BreadCrumbBarModel BreadCrumbBar { get; } = new("Settings");
 
     public SettingsViewModel(ISettings settings,
@@ -39,9 +43,11 @@ public class SettingsViewModel : NavigatableViewModel
                              IViewService viewService,
                              IUpdateService updateService,
                              ILocalSettingsService localSettingsService,
-                             IThemeSelectorService themeSelectorService)
+                             IThemeSelectorService themeSelectorService,
+                             ITorrentEngine torrentEngine)
     {
         _trackingServiceContext = trackingServiceContext;
+
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
         SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
@@ -58,6 +64,17 @@ public class SettingsViewModel : NavigatableViewModel
         });
         ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));
         Navigate = ReactiveCommand.Create<string>(BreadCrumbBar.BreadCrumbs.Add);
+        EditUserTorrentDirectory = ReactiveCommand.Create(async () =>
+        {
+            var folder = await viewService.BrowseFolder();
+            if(string.IsNullOrEmpty(folder))
+            {
+                return;
+            }
+
+            RxApp.MainThreadScheduler.Schedule(() => Settings.UserTorrentsDownloadDirectory = folder);
+        });
+        ActiveTorrents = new(torrentEngine.ActiveTorrents);
 
         NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
 
@@ -71,10 +88,21 @@ public class SettingsViewModel : NavigatableViewModel
         this.WhenAnyValue(x => x.Theme)
             .Subscribe(themeSelectorService.SetTheme);
 
+        ActiveTorrents
+            .ToObservableChangeSet()
+            .Select(_ => ActiveTorrents.Count > 0)
+            .ToPropertyEx(this, x => x.HasActiveTorrents);
+
         trackingServiceContext
             .Authenticated
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ => UpdateConnectionStatus());
+
+        torrentEngine
+            .TorrentRemoved
+            .Log(this, "Torrent Removed")
+            .Do(name => ActiveTorrents.Remove(name))
+            .Subscribe();
 
         UpdateConnectionStatus();
     }

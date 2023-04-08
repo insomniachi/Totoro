@@ -6,6 +6,10 @@ using Splat;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
 using Totoro.WinUI.Dialogs.Views;
+using Windows.Storage.AccessCache;
+using Windows.Storage.Pickers;
+using Windows.Storage;
+using WinUIEx;
 
 namespace Totoro.WinUI.Services;
 
@@ -269,5 +273,23 @@ public class ViewService : IViewService, IEnableLogger
         });
 
         return Unit.Default;
+    }
+
+    public async Task<string> BrowseFolder()
+    {
+        // Create a folder picker
+        FolderPicker openPicker = new();
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+
+        // Set options for your folder picker
+        openPicker.SuggestedStartLocation = PickerLocationId.Desktop;
+        openPicker.FileTypeFilter.Add("*");
+
+        // Open the picker for the user to pick a folder
+        StorageFolder folder = await openPicker.PickSingleFolderAsync();
+
+        return folder is null
+            ? string.Empty
+            : folder.Path;
     }
 }

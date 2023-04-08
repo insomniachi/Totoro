@@ -29,6 +29,7 @@ public static class Settings
     public static Key<AdvanceTorrentSearchOptions> TorrentSearchOptions { get; } = new("TorrentSearchOptions", () => AdvanceTorrentSearchOptions.Default);
     public static Key<MediaPlayerType> MediaPlayerType { get; } = new("MediaPlayerType", Models.MediaPlayerType.WindowsMediaPlayer);
     public static Key<bool> PreBufferTorrents { get; } = new("PreBufferTorrents", false);
+    public static Key<bool> AutoRemoveCompletedTorrents { get; } = new("AutoRemoveCompletedTorrents", true);
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

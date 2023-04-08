@@ -122,5 +122,7 @@ namespace Totoro.Core.Models
 
             return collecton;
         }
+
+        public static EpisodeModelCollection Empty { get; } = new EpisodeModelCollection();
     }
 }
