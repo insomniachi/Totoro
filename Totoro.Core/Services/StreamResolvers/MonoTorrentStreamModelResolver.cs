@@ -26,6 +26,8 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
 
     public async ValueTask DisposeAsync()
     {
+        _prevStream?.Dispose();
+        _prevStream = null;
         _disposable.Dispose();
         await _torrentEngine.ShutDown();
     }
@@ -69,6 +71,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
     public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
     {
         _prevStream?.Dispose();
+        _prevStream = null;
         _prevStream = await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode]);
         return new VideoStreamsForEpisodeModel(_prevStream);
     }

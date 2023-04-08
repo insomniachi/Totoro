@@ -36,7 +36,7 @@ internal class Aniskip : MediaEventListener, IAniskip
             RxApp.MainThreadScheduler.Schedule(() => _mediaPlayer.TransportControls.IsSkipButtonVisible = IsOpeningOrEnding(position.TotalSeconds));
         }
 
-        if (_op is null && position > _endTime && !_isDialogShown && _duration is not null)
+        if (CanSubmitTimeStamp())
         {
             _isDialogShown = true;
             RxApp.MainThreadScheduler.Schedule(async () =>
@@ -45,6 +45,12 @@ internal class Aniskip : MediaEventListener, IAniskip
             });
         }
     }
+
+    private bool CanSubmitTimeStamp() => _op is null &&
+                                         _position > _endTime &&
+                                         _isDialogShown == false &&
+                                         _duration is not null &&
+                                         _animeModel is not null;
 
     protected override void OnDurationChanged(TimeSpan duration)
     {

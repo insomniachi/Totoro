@@ -836,9 +836,9 @@
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="QualitiesButton"
-                                                IsEnabled="False"
                                                 Style="{StaticResource AppBarButtonStyle}"
-                                                ToolTipService.ToolTip="Quality">
+                                                ToolTipService.ToolTip="Quality"
+                                                Visibility="Collapsed">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xe93e;" />
                                                 </AppBarButton.Icon>

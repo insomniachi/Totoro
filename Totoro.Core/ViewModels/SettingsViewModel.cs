@@ -16,8 +16,8 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public ProviderInfo SelectedProvider { get; set; }
     [Reactive] public string NyaaUrl { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
-    [ObservableAsProperty] public bool HasActiveTorrents { get; }
-    public ObservableCollection<string> ActiveTorrents { get; }
+    [ObservableAsProperty] public bool HasInactiveTorrents { get; }
+    public ObservableCollection<string> InactiveTorrents { get; }
 
     public ISettings Settings { get; }
     public Version Version { get; }
@@ -74,7 +74,7 @@ public class SettingsViewModel : NavigatableViewModel
 
             RxApp.MainThreadScheduler.Schedule(() => Settings.UserTorrentsDownloadDirectory = folder);
         });
-        ActiveTorrents = new(torrentEngine.ActiveTorrents);
+        InactiveTorrents = new(torrentEngine.InactiveTorrents);
 
         NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
 
@@ -88,10 +88,10 @@ public class SettingsViewModel : NavigatableViewModel
         this.WhenAnyValue(x => x.Theme)
             .Subscribe(themeSelectorService.SetTheme);
 
-        ActiveTorrents
+        InactiveTorrents
             .ToObservableChangeSet()
-            .Select(_ => ActiveTorrents.Count > 0)
-            .ToPropertyEx(this, x => x.HasActiveTorrents);
+            .Select(_ => InactiveTorrents.Count > 0)
+            .ToPropertyEx(this, x => x.HasInactiveTorrents);
 
         trackingServiceContext
             .Authenticated
@@ -101,7 +101,7 @@ public class SettingsViewModel : NavigatableViewModel
         torrentEngine
             .TorrentRemoved
             .Log(this, "Torrent Removed")
-            .Do(name => ActiveTorrents.Remove(name))
+            .Do(name => InactiveTorrents.Remove(name))
             .Subscribe();
 
         UpdateConnectionStatus();

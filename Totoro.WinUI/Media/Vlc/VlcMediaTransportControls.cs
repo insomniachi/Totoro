@@ -1104,16 +1104,16 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         }
         flyout.Items.Clear();
 
-        if (e.NewValue is IEnumerable<string> values)
+        if (e.NewValue is IEnumerable<string> values && mtc.QualitiesButton is { } btn)
         {
             var qualities = values.ToList();
             if (qualities.Count == 1)
             {
-                mtc.QualitiesButton.Visibility = Visibility.Collapsed;
+                btn.Visibility = Visibility.Collapsed;
             }
             else if (qualities.Count > 1)
             {
-                mtc.QualitiesButton.IsEnabled = true;
+                btn.Visibility = Visibility.Visible;
                 foreach (var item in qualities)
                 {
                     var flyoutItem = new ToggleMenuFlyoutItem { Text = item };

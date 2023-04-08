@@ -415,12 +415,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType);
-
-        if (_trackingService.IsAuthenticated)
-        {
-            id ??= await TryGetId(title);
-        }
+        var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType) ?? await TryGetId(title);
 
         if (id is null)
         {
@@ -443,6 +438,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         _anime = await _animeService.GetInformation(id.Value);
+        SetAnime(_anime);
     }
 
     private async Task<long?> TryGetId(string title)

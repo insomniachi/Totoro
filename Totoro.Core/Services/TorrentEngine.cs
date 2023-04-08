@@ -24,7 +24,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         _httpClient = httpClient;
     }
 
-    public IEnumerable<string> ActiveTorrents => _engine.Torrents.Select(x => x.Torrent.Name);
+    public IEnumerable<string> InactiveTorrents => _engine.Torrents.Where(x => x.State is TorrentState.Stopped).Select(x => x.Torrent.Name);
     
     public IObservable<string> TorrentRemoved => _torrentRemoved;
 

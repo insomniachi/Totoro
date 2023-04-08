@@ -94,9 +94,13 @@
                 ToolTipService.ToolTip="{x:Bind ViewModel.Settings.UserTorrentsDownloadDirectory, Mode=OneWay}" />
         </labs:SettingsCard>
         <labs:SettingsExpander
-            Header="Active Torrents"
-            ItemsSource="{x:Bind ViewModel.ActiveTorrents, Mode=OneWay}"
-            Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasActiveTorrents), Mode=OneWay}">
+            Description="Torrents which are not completed or not downloading"
+            Header="Inactive Torrents"
+            ItemsSource="{x:Bind ViewModel.InactiveTorrents, Mode=OneWay}"
+            Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasInactiveTorrents), Mode=OneWay}">
+            <labs:SettingsExpander.HeaderIcon>
+                <FontIcon Glyph="&#xE896;" />
+            </labs:SettingsExpander.HeaderIcon>
             <labs:SettingsExpander.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
                     <labs:SettingsCard

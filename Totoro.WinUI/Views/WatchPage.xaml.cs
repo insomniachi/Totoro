@@ -54,7 +54,7 @@ public sealed partial class WatchPage : WatchPageBase
 
             windowService
             .IsFullWindowChanged
-            .Subscribe(isFullWindow => EpisodesExpander.Visibility = isFullWindow ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible);
+            .Subscribe(isFullWindow => EpisodesExpander.Visibility = isFullWindow ? Visibility.Collapsed : Visibility.Visible);
 
             ViewModel
             .MediaPlayer
@@ -68,7 +68,7 @@ public sealed partial class WatchPage : WatchPageBase
         });
     }
 
-    private void SubscribeDoubleTap(FrameworkElement mediaPlayerElement, IWindowService windowService)
+    private static void SubscribeDoubleTap(FrameworkElement mediaPlayerElement, IWindowService windowService)
     {
         mediaPlayerElement
             .Events()
