@@ -49,6 +49,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     private readonly Subject<Unit> _onDynamicSkipIntro = new();
     private readonly Subject<Unit> _onSubmitTimeStamp = new();
     private readonly Subject<Unit> _onAddCc = new();
+    private readonly MenuFlyout _qualitiesFlyout = new() { Placement = FlyoutPlacementMode.Top };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VlcMediaTransportControls"/> class
@@ -112,10 +113,8 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     }
 
     private MediaPlayerElementManager Manager { get; }
-
     private MenuFlyout ZoomMenu { get; set; }
     private IDictionary<MenuFlyout, TracksMenu> TracksMenus { get; } = new Dictionary<MenuFlyout, TracksMenu>();
-
     public IObservable<Unit> OnNextTrack => _onNextTrack;
     public IObservable<Unit> OnPrevTrack => _onPrevTrack;
     public IObservable<Unit> OnStaticSkip => _onSkipIntro;
@@ -173,6 +172,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     private ButtonBase NextTrackButton { get; set; }
     private ButtonBase PreviousTrackButton { get; set; }
     private ButtonBase DynamicSkipButton { get; set; }
+    private AppBarButton QualitiesButton { get; set; }
     private AvailabilityCommand SeekBarAvailabilityCommand { get; set; }
     private AvailabilityCommand VolumeMuteButtonAvailabilityCommand { get; set; }
     private AvailabilityCommand MuteStateCommand { get; set; }
@@ -185,6 +185,26 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     public VideoView VideoView { get; set; }
     public LibVLC LibVLC { get; set; }
     public MediaPlayer MediaPlayer { get; set; }
+
+
+    public IEnumerable<string> Resolutions
+    {
+        get { return (IEnumerable<string>)GetValue(ResolutionsProperty); }
+        set { SetValue(ResolutionsProperty, value); }
+    }
+
+    public static readonly DependencyProperty ResolutionsProperty =
+        DependencyProperty.Register("Resolutions", typeof(IEnumerable<string>), typeof(VlcMediaTransportControls), new PropertyMetadata(Enumerable.Empty<string>(), OnResolutionsChanged));
+
+    public string SelectedResolution
+    {
+        get { return (string)GetValue(SelectedResolutionProperty); }
+        set { SetValue(SelectedResolutionProperty, value); }
+    }
+
+    public static readonly DependencyProperty SelectedResolutionProperty =
+        DependencyProperty.Register("SelectedResolution", typeof(string), typeof(VlcMediaTransportControls), new PropertyMetadata("", OnSelectedResolutionChanged));
+
 
     /// <summary>
     /// Identifies the <see cref="ShowAndHideAutomatically"/> dependency property
@@ -658,6 +678,9 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         Initialize("FullWindowButton", "", (_, _) => App.GetService<IWindowService>().ToggleIsFullWindow());
         FullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
 
+        QualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
+        QualitiesButton.Flyout = _qualitiesFlyout;
+
         UpdateVolumeSlider();
         UpdateTime();
     }
@@ -1069,6 +1092,60 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     private void VolumeSlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
         Manager.Get<VolumeManager>().Volume = (int)e.NewValue;
+    }
+
+    private static void OnResolutionsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var mtc = d as VlcMediaTransportControls;
+        var flyout = mtc._qualitiesFlyout;
+        foreach (var item in flyout.Items.OfType<MenuFlyoutItem>())
+        {
+            item.Click -= mtc.FlyoutItem_Click;
+        }
+        flyout.Items.Clear();
+
+        if (e.NewValue is IEnumerable<string> values)
+        {
+            var qualities = values.ToList();
+            if (qualities.Count == 1)
+            {
+                mtc.QualitiesButton.Visibility = Visibility.Collapsed;
+            }
+            else if (qualities.Count > 1)
+            {
+                mtc.QualitiesButton.IsEnabled = true;
+                foreach (var item in qualities)
+                {
+                    var flyoutItem = new ToggleMenuFlyoutItem { Text = item };
+                    flyoutItem.Click += mtc.FlyoutItem_Click;
+                    flyout.Items.Add(flyoutItem);
+                }
+            }
+        }
+    }
+
+    private void FlyoutItem_Click(object sender, RoutedEventArgs e)
+    {
+        _onQualityChanged.OnNext((sender as MenuFlyoutItem).Text);
+    }
+
+    private static void OnSelectedResolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is not string s)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(s))
+        {
+            return;
+        }
+
+        var mtc = d as VlcMediaTransportControls;
+        foreach (var item in mtc._qualitiesFlyout.Items.OfType<ToggleMenuFlyoutItem>())
+        {
+            item.IsChecked = item.Text == s;
+        }
     }
 }
 

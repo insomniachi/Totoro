@@ -19,17 +19,17 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     private Button _dynamicSkipIntroButton;
     private SymbolIcon _fullWindowSymbol;
 
-    public static readonly DependencyProperty QualitiesProperty =
-        DependencyProperty.Register("Qualities", typeof(IEnumerable<string>), typeof(CustomMediaTransportControls), new PropertyMetadata(null, OnQualitiesChanged));
+    public static readonly DependencyProperty ResolutionsProperty =
+        DependencyProperty.Register(nameof(Resolutions), typeof(IEnumerable<string>), typeof(CustomMediaTransportControls), new PropertyMetadata(null, OnResolutionsChanged));
 
     public static readonly DependencyProperty IsSkipButtonVisibleProperty =
         DependencyProperty.Register("IsSkipButtonVisible", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false, OnSkipIntroVisibleChanged));
 
-    public static readonly DependencyProperty SelectedQualityProperty =
-        DependencyProperty.Register("SelectedQuality", typeof(string), typeof(CustomMediaTransportControls), new PropertyMetadata("", OnQualyChanged));
+    public static readonly DependencyProperty SelectedResolutionProperty =
+        DependencyProperty.Register(nameof(SelectedResolution), typeof(string), typeof(CustomMediaTransportControls), new PropertyMetadata("", OnSelectedResolutionChanged));
     private readonly IWindowService _windowService;
 
-    private static void OnQualyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnSelectedResolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue is not string s)
         {
@@ -57,7 +57,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         }
     }
 
-    private static void OnQualitiesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnResolutionsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var mtc = d as CustomMediaTransportControls;
         var flyout = mtc._qualitiesFlyout;
@@ -87,10 +87,10 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         }
     }
 
-    public IEnumerable<string> Qualities
+    public IEnumerable<string> Resolutions
     {
-        get { return (IEnumerable<string>)GetValue(QualitiesProperty); }
-        set { SetValue(QualitiesProperty, value); }
+        get { return (IEnumerable<string>)GetValue(ResolutionsProperty); }
+        set { SetValue(ResolutionsProperty, value); }
     }
 
     public bool IsSkipButtonVisible
@@ -99,10 +99,10 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         set { SetValue(IsSkipButtonVisibleProperty, value); }
     }
 
-    public string SelectedQuality
+    public string SelectedResolution
     {
-        get { return (string)GetValue(SelectedQualityProperty); }
-        set { SetValue(SelectedQualityProperty, value); }
+        get { return (string)GetValue(SelectedResolutionProperty); }
+        set { SetValue(SelectedResolutionProperty, value); }
     }
 
     public IObservable<Unit> OnNextTrack => _onNextTrack;

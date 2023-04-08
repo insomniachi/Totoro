@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using Microsoft.UI.Xaml;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
@@ -21,39 +22,32 @@ public sealed partial class WatchPage : WatchPageBase
             var windowService = App.GetService<IWindowService>();
             this.WhenAnyValue(x => x.ViewModel.MediaPlayer)
                 .WhereNotNull()
-                .Subscribe(mp =>
+                .Subscribe(wrapper =>
                 {
-                    if (mp is WinUIMediaPlayerWrapper wmpWrapper)
+                    if (wrapper is WinUIMediaPlayerWrapper wmpWrapper)
                     {
+                        SubscribeDoubleTap(MediaPlayerElement, windowService);
                         MediaPlayerElement.SetMediaPlayer(wmpWrapper.GetMediaPlayer());
-                        MediaPlayerElement.Events()
-                                          .DoubleTapped
-                                          .Subscribe(_ => windowService.ToggleIsFullWindow())
-                                          .DisposeWith(d);
-
-                        var transportControls = wmpWrapper.TransportControls as CustomMediaTransportControls;
-                        MediaPlayerElement.TransportControls = transportControls;
-
-                        this.WhenAnyValue(x => x.ViewModel.Qualities)
-                            .Subscribe(qualities => transportControls.Qualities = qualities);
-
-                        this.WhenAnyValue(x => x.ViewModel.SelectedQuality)
-                            .Subscribe(quality => transportControls.SelectedQuality = quality);
-
-                        transportControls.WhenAnyValue(x => x.SelectedQuality)
-                            .Subscribe(quality => ViewModel.SelectedQuality = quality);
+                        MediaPlayerElement.TransportControls = wmpWrapper.TransportControls as CustomMediaTransportControls;
                     }
-                    else if (mp is LibVLCMediaPlayerWrapper vlcWrapper)
+                    else if (wrapper is LibVLCMediaPlayerWrapper vlcWrapper)
                     {
-                        VlcMediaPlayerElement.Events()
-                                             .DoubleTapped
-                                             .Subscribe(_ => windowService.ToggleIsFullWindow())
-                                             .DisposeWith(d);
-
+                        SubscribeDoubleTap(VlcMediaPlayerElement, windowService);
                         VlcMediaPlayerElement.MediaPlayer = vlcWrapper;
                     }
 
-                    ViewModel.SetMediaPlayer(mp);
+                    this.WhenAnyValue(x => x.ViewModel.Qualities)
+                        .Subscribe(resolutions => wrapper.TransportControls.Resolutions = resolutions);
+
+                    this.WhenAnyValue(x => x.ViewModel.SelectedQuality)
+                        .Subscribe(resolution => wrapper.TransportControls.SelectedResolution = resolution);
+
+                    wrapper
+                        .TransportControls
+                        .WhenAnyValue(x => x.SelectedResolution)
+                        .Subscribe(resolution => ViewModel.SelectedQuality = resolution);
+
+                    ViewModel.SetMediaPlayer(wrapper);
                     ViewModel.SubscribeTransportControlEvents();
                 })
                 .DisposeWith(d);
@@ -72,5 +66,13 @@ public sealed partial class WatchPage : WatchPageBase
             .DisposeWith(d);
 
         });
+    }
+
+    private void SubscribeDoubleTap(FrameworkElement mediaPlayerElement, IWindowService windowService)
+    {
+        mediaPlayerElement
+            .Events()
+            .DoubleTapped
+            .Subscribe(_ => windowService.ToggleIsFullWindow());
     }
 }

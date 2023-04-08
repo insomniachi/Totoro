@@ -17,7 +17,7 @@ internal class Aniskip : MediaEventListener, IAniskip
     private AniSkipResultItem _op;
     private AniSkipResultItem _ed;
     private double _staticSkipPosition;
-    private TimeSpan _endTime;
+    private TimeSpan _endTime = TimeSpan.MaxValue;
     private bool _isDialogShown;
 
     public Aniskip(IViewService viewService,
