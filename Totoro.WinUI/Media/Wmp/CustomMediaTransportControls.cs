@@ -127,10 +127,13 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         IsSkipForwardEnabled = true;
         IsTextScaleFactorEnabled = true;
 
-        windowService?.IsFullWindowChanged?.Subscribe(isFullWindow =>
-        {
-            _fullWindowSymbol.Symbol = isFullWindow ? Symbol.BackToWindow : Symbol.FullScreen;
-        });
+        windowService?
+           .IsFullWindowChanged
+           .Where(_ => _fullWindowSymbol is not null)
+           .Subscribe(isFullWindwow =>
+           {
+               _fullWindowSymbol.Symbol = isFullWindwow ? Symbol.BackToWindow : Symbol.FullScreen;
+           });
     }
 
     protected override void OnApplyTemplate()
