@@ -62,7 +62,7 @@
                         <labs:Segmented.ItemContainerStyle>
                             <Style TargetType="labs:SegmentedItem">
                                 <Setter Property="MinWidth" Value="200" />
-                                <Setter Property="FontSize" Value="20" />
+                                <Setter Property="FontSize" Value="{StaticResource SubtitleTextBlockFontSize}" />
                             </Style>
                         </labs:Segmented.ItemContainerStyle>
                     </labs:Segmented>

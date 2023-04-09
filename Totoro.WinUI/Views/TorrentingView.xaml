@@ -59,12 +59,14 @@
                         x:Name="DataGrid"
                         Grid.Row="1"
                         Margin="20"
+                        AlternatingRowBackground="{ThemeResource SubtleFillColorTransparentBrush}"
                         AutoGenerateColumns="False"
                         CanUserReorderColumns="False"
                         CanUserResizeColumns="False"
                         CanUserSortColumns="True"
                         IsReadOnly="true"
                         ItemsSource="{x:Bind ViewModel.Torrents}"
+                        RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
                         SelectionMode="Single"
                         Sorting="DataGrid_Sorting">
                         <ctk:DataGrid.Columns>

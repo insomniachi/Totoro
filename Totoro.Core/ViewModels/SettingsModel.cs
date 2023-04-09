@@ -41,7 +41,6 @@ internal class SettingsModel : ReactiveObject, ISettings
         PreBufferTorrents = localSettingsService.ReadSetting(Settings.PreBufferTorrents);
         UserTorrentsDownloadDirectory = localSettingsService.ReadSetting(nameof(UserTorrentsDownloadDirectory), knownFolders.Torrents);
 
-
         ObserveChanges();
     }
 
@@ -91,7 +90,6 @@ internal class SettingsModel : ReactiveObject, ISettings
             });
     }
 
-    [Reactive] public ElementTheme ElementTheme { get; set; }
     [Reactive] public bool PreferSubs { get; set; }
     [Reactive] public string DefaultProviderType { get; set; }
     [Reactive] public bool UseDiscordRichPresense { get; set; }

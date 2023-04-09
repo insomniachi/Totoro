@@ -75,6 +75,7 @@ public class SettingsViewModel : NavigatableViewModel
             RxApp.MainThreadScheduler.Schedule(() => Settings.UserTorrentsDownloadDirectory = folder);
         });
         InactiveTorrents = new(torrentEngine.InactiveTorrents);
+        Theme = themeSelectorService.Theme;
 
         NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
 
