@@ -50,7 +50,7 @@ internal class TrackingUpdater : MediaEventListener
     protected override void OnNextTrack()
     {
         // if less than 3 minutes remaining when clicking next episode, update tracking
-        if (_duration - _position > _nextBuffer)
+        if (_duration - _position > _nextBuffer || _isUpdated)
         {
             return;
         }
@@ -61,6 +61,7 @@ internal class TrackingUpdater : MediaEventListener
     protected override void OnEpisodeChanged()
     {
         _isUpdated = false;
+        _updateAt = TimeSpan.MaxValue;
     }
 
     private async Task UpdateTracking()
