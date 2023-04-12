@@ -7,21 +7,24 @@ public class Initalizer : IInitializer
     private readonly IPluginManager _pluginManager;
     private readonly IKnownFolders _knownFolders;
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly IRssDownloader _rssDownloader;
     private readonly IUpdateService _updateService;
-    private readonly IPlaybackStateStorage _playbackStateStorage;
+    private readonly IResumePlaybackService _playbackStateStorage;
     private readonly ITorrentEngine _torrentEngine;
     private readonly Subject<Unit> _onShutDown = new();
 
     public Initalizer(IPluginManager pluginManager,
                       IKnownFolders knownFolders,
                       IUpdateService updateService,
-                      IPlaybackStateStorage playbackStateStorage,
+                      IResumePlaybackService playbackStateStorage,
                       ITorrentEngine torrentEngine,
-                      ILocalSettingsService localSettingsService)
+                      ILocalSettingsService localSettingsService,
+                      IRssDownloader rssDownloader)
     {
         _pluginManager = pluginManager;
         _knownFolders = knownFolders;
         _localSettingsService = localSettingsService;
+        _rssDownloader = rssDownloader;
         _updateService = updateService;
         _playbackStateStorage = playbackStateStorage;
         _torrentEngine = torrentEngine;
@@ -31,7 +34,7 @@ public class Initalizer : IInitializer
     {
         await _pluginManager.Initialize();
         await _torrentEngine.TryRestoreState();
-        //MigrateLegacySettings();
+        await _rssDownloader.Initialize();
         RemoveObsoleteSettings();
     }
 
@@ -39,7 +42,8 @@ public class Initalizer : IInitializer
     {
         _onShutDown.OnNext(Unit.Default);
         _updateService.ShutDown();
-        _playbackStateStorage.StoreState();
+        _playbackStateStorage.SaveState();
+        _rssDownloader.SaveState();
         await _torrentEngine.ShutDown();
     }
 

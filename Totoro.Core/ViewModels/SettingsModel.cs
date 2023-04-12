@@ -40,6 +40,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         MediaPlayerType = localSettingsService.ReadSetting(Settings.MediaPlayerType);
         PreBufferTorrents = localSettingsService.ReadSetting(Settings.PreBufferTorrents);
         UserTorrentsDownloadDirectory = localSettingsService.ReadSetting(nameof(UserTorrentsDownloadDirectory), knownFolders.Torrents);
+        AutoDownloadTorrents = localSettingsService.ReadSetting(Settings.AutoDownloadTorrents);
 
         ObserveChanges();
     }
@@ -114,6 +115,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool PreBufferTorrents { get; set; }
     [Reactive] public bool AutoRemoveCompletedTorrents { get; set; }
     [Reactive] public string UserTorrentsDownloadDirectory { get; set; }
+    [Reactive] public bool AutoDownloadTorrents { get; set; }
 }
 
 

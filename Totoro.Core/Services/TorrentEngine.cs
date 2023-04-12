@@ -25,6 +25,8 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     }
 
     public IEnumerable<string> InactiveTorrents => _engine.Torrents.Where(x => x.State is TorrentState.Stopped).Select(x => x.Torrent.Name);
+
+    public IEnumerable<TorrentManager> TorrentManagers => _engine.Torrents;
     
     public IObservable<string> TorrentRemoved => _torrentRemoved;
 
@@ -71,6 +73,34 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         catch { }
 
         return true;
+    }
+
+    public async Task<TorrentManager> DownloadFromMagnet(string magnet, string saveDirectory)
+    {
+        try
+        {
+            var magnetLink = MagnetLink.Parse(magnet);
+            TorrentManager torrentManager = null;
+            if (_torrentManagers.TryGetValue(magnetLink.InfoHash, out TorrentManager value))
+            {
+                torrentManager = value;
+            }
+            else
+            {
+                torrentManager = await _engine.AddStreamingAsync(magnetLink, saveDirectory);
+                _torrentManagers.Add(magnetLink.InfoHash, torrentManager);
+                SubscribeEvents(torrentManager);
+            }
+
+            await torrentManager.StartAsync();
+
+            return torrentManager;
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+            return null;
+        }
     }
 
     public async Task<TorrentManager> Download(string torrentUrl, string saveDirectory)

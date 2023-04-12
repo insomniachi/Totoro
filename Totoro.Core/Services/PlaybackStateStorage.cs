@@ -2,7 +2,7 @@
 
 namespace Totoro.Core.Services;
 
-public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
+public class PlaybackStateStorage : IResumePlaybackService, IEnableLogger
 {
     private readonly Dictionary<long, Dictionary<int, double>> _recents;
     private readonly ILocalSettingsService _localSettingsService;
@@ -57,7 +57,7 @@ public class PlaybackStateStorage : IPlaybackStateStorage, IEnableLogger
         }
     }
 
-    public void StoreState()
+    public void SaveState()
     {
         _localSettingsService.SaveSetting("Recents", _recents);
         this.Log().Info("Saved playback state");

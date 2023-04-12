@@ -19,7 +19,7 @@ namespace Totoro.Core
         public static IServiceCollection AddTotoro(this IServiceCollection services)
         {
             services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
-            services.AddSingleton<IPlaybackStateStorage, PlaybackStateStorage>();
+            services.AddSingleton<IResumePlaybackService, PlaybackStateStorage>();
             services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
             services.AddSingleton<ITimestampsService, TimestampsService>();
             services.AddSingleton<ILocalMediaService, LocalMediaService>();
@@ -33,6 +33,7 @@ namespace Totoro.Core
             services.AddSingleton<IKnownFolders, KnownFolders>();
             services.AddSingleton<IInitializer, Initalizer>();
             services.AddSingleton<ITorrentEngine, TorrentEngine>();
+            services.AddSingleton<IRssDownloader, RssDownloader>();
 
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();

@@ -93,6 +93,26 @@
                 TextTrimming="CharacterEllipsis"
                 ToolTipService.ToolTip="{x:Bind ViewModel.Settings.UserTorrentsDownloadDirectory, Mode=OneWay}" />
         </labs:SettingsCard>
+        <labs:SettingsCard Description="Auto download currently watching airing anime" Header="Auto Download">
+            <labs:SettingsCard.HeaderIcon>
+                <SymbolIcon Symbol="Download" />
+            </labs:SettingsCard.HeaderIcon>
+            <ToggleSwitch
+                IsOn="{x:Bind ViewModel.Settings.AutoDownloadTorrents, Mode=TwoWay}"
+                OffContent="Off"
+                OnContent="On" />
+        </labs:SettingsCard>
+        <labs:SettingsCard
+            Command="{x:Bind ViewModel.Navigate}"
+            CommandParameter="RSS"
+            Description="Configure RSS feeds"
+            Header="RSS"
+            IsClickEnabled="True"
+            Visibility="Collapsed">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xF657;" />
+            </labs:SettingsCard.HeaderIcon>
+        </labs:SettingsCard>
         <labs:SettingsExpander
             Description="Torrents which are not completed or not downloading"
             Header="Inactive Torrents"

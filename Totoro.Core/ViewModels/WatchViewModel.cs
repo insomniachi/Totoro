@@ -14,7 +14,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
-    private readonly IPlaybackStateStorage _playbackStateStorage;
+    private readonly IResumePlaybackService _playbackStateStorage;
     private readonly IAnimeServiceContext _animeService;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
@@ -31,7 +31,7 @@ public partial class WatchViewModel : NavigatableViewModel
                           IViewService viewService,
                           ISettings settings,
                           ITimestampsService timestampsService,
-                          IPlaybackStateStorage playbackStateStorage,
+                          IResumePlaybackService playbackStateStorage,
                           IAnimeServiceContext animeService,
                           IMediaPlayerFactory mediaPlayerFactory,
                           IStreamPageMapper streamPageMapper,

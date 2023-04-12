@@ -26,6 +26,7 @@
 	  <None Remove="Media\VlcMediaPlayerElement.xaml" />
 	  <None Remove="Views\SettingsSections\DefaultSection.xaml" />
 	  <None Remove="Views\SettingsSections\MediaPlayerSection.xaml" />
+	  <None Remove="Views\SettingsSections\RssSection.xaml" />
 	  <None Remove="Views\SettingsSections\TorrentingSection.xaml" />
 	  <None Remove="Views\SettingsSections\TrackingSection.xaml" />
 	  <None Remove="Views\TorrentingView.xaml" />
@@ -103,6 +104,10 @@
 		  <SubType>Designer</SubType>
 		</Page>
 		<Page Update="Views\SettingsSections\TorrentingSection.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\SettingsSections\RssSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>

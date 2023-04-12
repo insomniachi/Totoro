@@ -5,7 +5,7 @@ namespace Totoro.Core.Tests.Builders;
 internal class WatchViewModelBuilder
 {
     private readonly Mock<IDiscordRichPresense> _discordRpcMock = new();
-    private readonly Mock<IPlaybackStateStorage> _playbackStateStorageMock = new();
+    private readonly Mock<IResumePlaybackService> _playbackStateStorageMock = new();
     private readonly Mock<ITrackingServiceContext> _trackingServiceMock = new();
     private readonly Mock<IProviderFactory> _providerFactoryMock = new();
     private readonly Mock<IViewService> _viewServiceMock = new();
@@ -60,7 +60,7 @@ internal class WatchViewModelBuilder
         return this;
     }
 
-    internal WatchViewModelBuilder WithPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> configure)
+    internal WatchViewModelBuilder WithPlaybackStateStorage(Action<Mock<IResumePlaybackService>> configure)
     {
         configure(_playbackStateStorageMock);
         return this;
@@ -85,7 +85,7 @@ internal class WatchViewModelBuilder
     }
 
     internal void VerifyDiscordRpc(Action<Mock<IDiscordRichPresense>> verify) => verify(_discordRpcMock);
-    internal void VerifyPlaybackStateStorage(Action<Mock<IPlaybackStateStorage>> verify) => verify(_playbackStateStorageMock);
+    internal void VerifyPlaybackStateStorage(Action<Mock<IResumePlaybackService>> verify) => verify(_playbackStateStorageMock);
     internal void VerifyTrackingService(Action<Mock<ITrackingServiceContext>> verify) => verify(_trackingServiceMock);
 
 }

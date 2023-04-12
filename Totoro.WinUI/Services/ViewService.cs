@@ -254,12 +254,12 @@ public class ViewService : IViewService, IEnableLogger
         return Unit.Default;
     }
 
-    public async Task<Unit> ConfigureOptions<T>(T debridServiceType, Func<T, ProviderOptions> getFunc, Action<T, ProviderOptions> saveFunc)
+    public async Task<Unit> ConfigureOptions<T>(T type, Func<T, ProviderOptions> getFunc, Action<T, ProviderOptions> saveFunc)
     {
         var vm = new ConfigureOptionsViewModel<T>(getFunc, saveFunc)
         {
-            Type = debridServiceType,
-            Title = debridServiceType.ToString()
+            Type = type,
+            Title = type.ToString()
         };
 
         var result = await _contentDialogService.ShowDialog<ConfigureOptionsView, object>(vm, d =>
@@ -273,6 +273,12 @@ public class ViewService : IViewService, IEnableLogger
         });
 
         return Unit.Default;
+    }
+
+
+    public Task AddRssFeed()
+    {
+        return Task.CompletedTask;
     }
 
     public async Task<string> BrowseFolder()

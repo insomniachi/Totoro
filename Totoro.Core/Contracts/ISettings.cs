@@ -30,6 +30,7 @@ public interface ISettings : INotifyPropertyChanged
     bool PreBufferTorrents { get; set; }
     bool AutoRemoveCompletedTorrents { get; set; }
     string UserTorrentsDownloadDirectory { get; set; }
+    bool AutoDownloadTorrents { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject
