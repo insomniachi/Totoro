@@ -77,6 +77,8 @@ public partial class App : Application, IEnableLogger
         AppDomain.CurrentDomain.ProcessExit += OnExit;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         UnhandledException += App_UnhandledException;
+        DebugSettings.XamlResourceReferenceFailed += (_, e) => this.Log().Fatal(e.Message);
+        DebugSettings.BindingFailed += (_, e) => this.Log().Warn(e.Message);
     }
 
     private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
