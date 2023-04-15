@@ -2,6 +2,7 @@
     x:Class="Totoro.WinUI.Views.SettingsSections.TorrentingSection"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:client="using:MonoTorrent.Client"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
@@ -102,7 +103,7 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
-        <labs:SettingsCard
+        <!--<labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="RSS"
             Description="Configure RSS feeds"
@@ -112,7 +113,7 @@
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xF657;" />
             </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+        </labs:SettingsCard>-->
         <labs:SettingsExpander
             Description="Torrents which are not completed or not downloading"
             Header="Inactive Torrents"
@@ -122,15 +123,43 @@
                 <FontIcon Glyph="&#xE896;" />
             </labs:SettingsExpander.HeaderIcon>
             <labs:SettingsExpander.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <labs:SettingsCard
-                        Command="{x:Bind root:App.Commands.RemoveTorrent}"
-                        CommandParameter="{x:Bind}"
-                        Header="{x:Bind}"
-                        IsClickEnabled="True">
+                <DataTemplate x:DataType="client:TorrentManager">
+                    <labs:SettingsCard Header="{x:Bind Torrent.Name}">
                         <labs:SettingsCard.ActionIcon>
                             <FontIcon Glyph="&#xE74D;" />
                         </labs:SettingsCard.ActionIcon>
+                        <Button>
+                            <SymbolIcon Symbol="More" />
+                            <Button.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem
+                                        Command="{x:Bind root:App.Commands.RemoveTorrent}"
+                                        CommandParameter="{x:Bind Torrent.Name}"
+                                        Text="Delete">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Remove" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        Command="{x:Bind root:App.Commands.RemoveTorrentWithFiles}"
+                                        CommandParameter="{x:Bind Torrent.Name}"
+                                        Text="Delete with files">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Delete" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        Command="{x:Bind root:App.Commands.PlayLocalFolder}"
+                                        CommandParameter="{x:Bind SavePath}"
+                                        Text="Play"
+                                        Visibility="{x:Bind help:Converters.BooleanToVisibility(Complete)}">
+                                        <MenuFlyoutItem.Icon>
+                                            <SymbolIcon Symbol="Play" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Button.Flyout>
+                        </Button>
                     </labs:SettingsCard>
                 </DataTemplate>
             </labs:SettingsExpander.ItemTemplate>

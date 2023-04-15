@@ -9,8 +9,8 @@ public interface ITorrentEngine
     Task<Stream> GetStream(string torrentUrl, int fileIndex);
     Task ShutDown();
     Task<bool> TryRestoreState();
-    Task RemoveTorrent(string torrentName);
-    IEnumerable<string> InactiveTorrents { get; }
+    Task RemoveTorrent(string torrentName, bool removeFiles);
+    IEnumerable<TorrentManager> InactiveTorrents { get; }
     IObservable<string> TorrentRemoved { get; }
     IEnumerable<TorrentManager> TorrentManagers { get; }
 }

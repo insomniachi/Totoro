@@ -49,5 +49,10 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
     {
         return new MonoTorrentStreamModelResolver(_torrentEngine, parsedResults, magnet, _settings.UserTorrentsDownloadDirectory);
     }
+
+    public IVideoStreamModelResolver CreateLocalStreamResolver(string directory)
+    {
+        return new FileSystemStreamResolver(directory);
+    }
 }
 

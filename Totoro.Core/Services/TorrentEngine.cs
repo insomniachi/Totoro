@@ -24,13 +24,13 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         _httpClient = httpClient;
     }
 
-    public IEnumerable<string> InactiveTorrents => _engine.Torrents.Where(x => x.State is TorrentState.Stopped).Select(x => x.Torrent.Name);
+    public IEnumerable<TorrentManager> InactiveTorrents => _engine.Torrents.Where(x => x.State is TorrentState.Stopped);
 
     public IEnumerable<TorrentManager> TorrentManagers => _engine.Torrents;
     
     public IObservable<string> TorrentRemoved => _torrentRemoved;
 
-    public async Task RemoveTorrent(string torrentName)
+    public async Task RemoveTorrent(string torrentName, bool removeFiles = false)
     {
         if(_engine.Torrents.FirstOrDefault(x => x.Torrent.Name == torrentName) is not { } tm)
         {
@@ -42,7 +42,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             await tm.StopAsync();
         }
 
-        await RemoveTorrent(tm);
+        await RemoveTorrent(tm, removeFiles);
         _torrentRemoved.OnNext(tm.Torrent.Name);
     }
 
@@ -62,7 +62,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             {
                 if(item.Complete && _settings.AutoRemoveCompletedTorrents)
                 {
-                    await RemoveTorrent(item);
+                    await RemoveTorrent(item.Torrent.Name, true);
                 }
                 else if(item.Complete == false)
                 {
@@ -175,9 +175,14 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         }
     }
 
-    private async Task RemoveTorrent(TorrentManager torrentManager)
+    private async Task RemoveTorrent(TorrentManager torrentManager, bool removeFiles)
     {
-        await _engine.RemoveAsync(torrentManager, RemoveMode.CacheDataAndDownloadedData);
+        await _engine.RemoveAsync(torrentManager, removeFiles ? RemoveMode.CacheDataAndDownloadedData : RemoveMode.CacheDataOnly);
+
+        if (!removeFiles)
+        {
+            return;
+        }
 
         if (!Directory.GetFiles(torrentManager.SavePath, "*", SearchOption.AllDirectories).Any())
         {

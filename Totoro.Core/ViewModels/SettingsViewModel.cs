@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Concurrency;
 using System.Reflection;
 using AnimDL.Core;
+using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.Torrents;
 using Totoro.Core.Torrents.Rss;
@@ -18,7 +19,7 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public string NyaaUrl { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
     [ObservableAsProperty] public bool HasInactiveTorrents { get; }
-    public ObservableCollection<string> InactiveTorrents { get; }
+    public ObservableCollection<TorrentManager> InactiveTorrents { get; }
 
     public ISettings Settings { get; }
     public Version Version { get; }
@@ -114,6 +115,8 @@ public class SettingsViewModel : NavigatableViewModel
         torrentEngine
             .TorrentRemoved
             .Log(this, "Torrent Removed")
+            .Select(name => InactiveTorrents.FirstOrDefault(x => x.Torrent.Name == name))
+            .WhereNotNull()
             .Do(name => InactiveTorrents.Remove(name))
             .Subscribe();
 

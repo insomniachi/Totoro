@@ -271,8 +271,8 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
             _episodeRequest = epInfo.Episode;
-            _ = CreateAnimDLResolver(epInfo.Url);
-            _ = TrySetAnime(epInfo.Url, epInfo.Title);
+            await TrySetAnime(epInfo.Url, epInfo.Title);
+            await CreateAnimDLResolver(epInfo.Url);
         }
         else if (parameters.ContainsKey("Id"))
         {
@@ -282,15 +282,21 @@ public partial class WatchViewModel : NavigatableViewModel
         else if (parameters.ContainsKey("SearchResult"))
         {
             var searchResult = (SearchResult)parameters["SearchResult"];
-            _ = CreateAnimDLResolver(searchResult.Url);
-            _ = TrySetAnime(searchResult.Url, searchResult.Title);
+            await TrySetAnime(searchResult.Url, searchResult.Title);
+            await CreateAnimDLResolver(searchResult.Url);
         }
         else if (parameters.ContainsKey("Torrent"))
         {
             UseTorrents = true;
             Torrent = (TorrentModel)parameters["Torrent"];
             var useDebrid = (bool)parameters["UseDebrid"];
-            _ = InitializeFromTorrent(Torrent, useDebrid);
+            await InitializeFromTorrentModel(Torrent, useDebrid);
+        }
+        else if(parameters.ContainsKey("LocalFolder"))
+        {
+            var folder = (string)parameters["LocalFolder"];
+            await TrySetAnime(Path.GetFileName(folder));
+            await CreateLocalStreamResolver(folder);
         }
     }
 
@@ -301,6 +307,10 @@ public partial class WatchViewModel : NavigatableViewModel
         if (_videoStreamResolver is IAsyncDisposable ad)
         {
             await ad.DisposeAsync();
+        }
+        else if(_videoStreamResolver is IDisposable d)
+        {
+            d.Dispose();
         }
     }
 
@@ -514,7 +524,7 @@ public partial class WatchViewModel : NavigatableViewModel
         return (TEventListener)_mediaEventListeners.FirstOrDefault(x => x is TEventListener);
     }
 
-    private async Task InitializeFromTorrent(TorrentModel torrent, bool useDebrid)
+    private async Task InitializeFromTorrentModel(TorrentModel torrent, bool useDebrid)
     {
         var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
         var titleObj = parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle);
@@ -555,6 +565,12 @@ public partial class WatchViewModel : NavigatableViewModel
     private async Task CreateAnimDLResolver(string sub, string dub)
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(sub, dub);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+    }
+
+    private async Task CreateLocalStreamResolver(string directory)
+    {
+        _videoStreamResolver = _videoStreamResolverFactory.CreateLocalStreamResolver(directory);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
     }
 }

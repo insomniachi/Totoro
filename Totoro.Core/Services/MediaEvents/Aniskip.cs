@@ -50,7 +50,8 @@ internal class Aniskip : MediaEventListener, IAniskip
                                          _position > _endTime &&
                                          _isDialogShown == false &&
                                          _duration is not null &&
-                                         _animeModel is not null;
+                                         _animeModel is not null &&
+                                         _settings.ContributeTimeStamps;
 
     protected override void OnDurationChanged(TimeSpan duration)
     {

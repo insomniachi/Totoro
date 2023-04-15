@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.X509Certificates;
 using Splat;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
@@ -100,14 +101,19 @@ public class TotoroCommands : IEnableLogger
         });
 
         ConfigureProvider = ReactiveCommand.CreateFromTask<ProviderInfo>(viewService.ConfigureProvider);
-        RemoveTorrent = ReactiveCommand.CreateFromTask<string>(async name =>
+        RemoveTorrent = ReactiveCommand.CreateFromTask<string>(async name => await torrentEngine.RemoveTorrent(name, false));
+        RemoveTorrentWithFiles = ReactiveCommand.CreateFromTask<string>(async name =>
         {
             var result = await viewService.Question(name, $"Are you sure you want to remove torrent with downloaded files?");
-            if(result)
+            if (result)
             {
-                await torrentEngine.RemoveTorrent(name);
+                await torrentEngine.RemoveTorrent(name, true);
             }
         });
+        PlayLocalFolder = ReactiveCommand.Create<string>(file => navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
+        {
+            ["LocalFolder"] = file
+        }));
     }
 
     public ICommand UpdateTracking { get; }
@@ -118,6 +124,8 @@ public class TotoroCommands : IEnableLogger
     public ICommand TorrentCommand { get; }
     public ICommand SearchTorrent { get; }
     public ICommand RemoveTorrent { get; }
+    public ICommand RemoveTorrentWithFiles { get; }
+    public ICommand PlayLocalFolder { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {
