@@ -1,0 +1,51 @@
+<Page
+    x:Class="Totoro.WinUI.Views.SettingsSections.DownloadsSection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:client="using:MonoTorrent.Client"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Totoro.WinUI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:root="using:Totoro.WinUI"
+    mc:Ignorable="d">
+
+    <ItemsControl ItemsSource="{x:Bind ViewModel.EngineTorrents, Mode=OneWay}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="client:TorrentManager">
+                <StackPanel
+                    Margin="10,20,10,10"
+                    Padding="20"
+                    HorizontalAlignment="Left"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultSolidBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind Torrent.Name}"
+                            ToolTipService.ToolTip="{x:Bind Progress, Mode=OneWay}" />
+                        <Button Command="{x:Bind root:App.Commands.RemoveTorrent}" CommandParameter="{x:Bind Torrent.Name}">
+                            <SymbolIcon Symbol="Remove" />
+                        </Button>
+                        <Button Command="{x:Bind root:App.Commands.RemoveTorrentWithFiles}" CommandParameter="{x:Bind Torrent.Name}">
+                            <SymbolIcon Symbol="Delete" />
+                        </Button>
+                        <Button Command="{x:Bind root:App.Commands.PlayLocalFolder}" CommandParameter="{x:Bind}">
+                            <SymbolIcon Symbol="Play" />
+                        </Button>
+                    </StackPanel>
+                    <ProgressBar
+                        Margin="0,10,0,0"
+                        Maximum="100"
+                        Minimum="0"
+                        Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(Complete)}"
+                        Value="{x:Bind Progress}" />
+                </StackPanel>
+
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+</Page>

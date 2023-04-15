@@ -29,6 +29,9 @@
 	  <None Remove="Views\SettingsSections\RssSection.xaml" />
 	  <None Remove="Views\SettingsSections\TorrentingSection.xaml" />
 	  <None Remove="Views\SettingsSections\TrackingSection.xaml" />
+	  <None Remove="Views\TorrentingSections\DownloadsSection.xaml" />
+	  <None Remove="Views\TorrentingSections\SearchSection.xaml" />
+	  <None Remove="Views\TorrentingSections\TransfersSection.xaml" />
 	  <None Remove="Views\TorrentingView.xaml" />
 	</ItemGroup>
 
@@ -112,6 +115,18 @@
 		  <SubType>Designer</SubType>
 		</Page>
 		<Page Update="Views\SettingsSections\TrackingSection.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\TorrentingSections\DownloadsSection.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\TorrentingSections\TransfersSection.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\TorrentingSections\SearchSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>

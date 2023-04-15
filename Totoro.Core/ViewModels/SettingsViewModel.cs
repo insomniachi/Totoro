@@ -38,8 +38,7 @@ public class SettingsViewModel : NavigatableViewModel
     public ICommand ConfigureProvider { get; }
     public ICommand Navigate { get; }
     public ICommand EditUserTorrentDirectory { get; }
-    //public ICommand AddRssFilter { get; }
-    //public ICommand RemoveRssFilter { get; }
+
     public BreadCrumbBarModel BreadCrumbBar { get; } = new("Settings");
 
     public SettingsViewModel(ISettings settings,
@@ -78,16 +77,8 @@ public class SettingsViewModel : NavigatableViewModel
 
             RxApp.MainThreadScheduler.Schedule(() => Settings.UserTorrentsDownloadDirectory = folder);
         });
-        //AddRssFilter = ReactiveCommand.Create(() =>
-        //{
-        //    RxApp.MainThreadScheduler.Schedule(() => Settings.RssOptions.Filters.Add(new()));
-        //});
-        //RemoveRssFilter = ReactiveCommand.Create<TorrentNameFilter>(filter =>
-        //{
-        //    Settings.RssOptions.Filters.Remove(filter);
-        //});
 
-        InactiveTorrents = new(torrentEngine.InactiveTorrents);
+        InactiveTorrents = new(torrentEngine.TorrentManagers.Where(x => x.State == MonoTorrent.Client.TorrentState.Stopped));
         Theme = themeSelectorService.Theme;
 
         NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");

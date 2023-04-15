@@ -204,6 +204,7 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public VideoStreamModel SelectedStream { get; set; }
     [Reactive] public string DownloadSpeed { get; set; }
     [Reactive] public string TotalDownloaded { get; set; }
+    [Reactive] public string DownloadProgress { get; set; }
     [Reactive] public bool ShowDownloadStats { get; set; }
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
@@ -285,10 +286,10 @@ public partial class WatchViewModel : NavigatableViewModel
             await TrySetAnime(searchResult.Url, searchResult.Title);
             await CreateAnimDLResolver(searchResult.Url);
         }
-        else if (parameters.ContainsKey("Torrent"))
+        else if (parameters.ContainsKey("TorrentModel"))
         {
             UseTorrents = true;
-            Torrent = (TorrentModel)parameters["Torrent"];
+            Torrent = (TorrentModel)parameters["TorrentModel"];
             var useDebrid = (bool)parameters["UseDebrid"];
             await InitializeFromTorrentModel(Torrent, useDebrid);
         }
@@ -297,6 +298,13 @@ public partial class WatchViewModel : NavigatableViewModel
             var folder = (string)parameters["LocalFolder"];
             await TrySetAnime(Path.GetFileName(folder));
             await CreateLocalStreamResolver(folder);
+        }
+        else if(parameters.ContainsKey("Torrent"))
+        {
+            UseTorrents = true;
+            var torrent = (MonoTorrent.Torrent)parameters["Torrent"];
+            await TrySetAnime(torrent.Name);
+            await CreateMonoTorrentStreamResolver(torrent);
         }
     }
 
@@ -479,7 +487,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private double GetPlayerTime()
     {
-        if (Anime is null)
+        if (Anime is null || EpisodeModels.Current is null)
         {
             return 0;
         }
@@ -537,16 +545,7 @@ public partial class WatchViewModel : NavigatableViewModel
             ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.MagnetLink)
             : _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(parsedResult, torrent.Link);
 
-        if (_videoStreamResolver is INotifyDownloadStatus inds)
-        {
-            ShowDownloadStats = true;
-            inds.Status
-                .Subscribe(x =>
-                {
-                    DownloadSpeed = $"{x.DownloadSpeed.Bytes().Humanize()}/s";
-                    TotalDownloaded = x.DataBytesDownloaded.Bytes().Humanize();
-                });
-        }
+        ObserveDownload();
 
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes("");
 
@@ -572,5 +571,33 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateLocalStreamResolver(directory);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+    }
+
+    private async Task CreateMonoTorrentStreamResolver(MonoTorrent.Torrent torrent)
+    {
+        _videoStreamResolver = _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(torrent);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+        if (EpisodeModels.Count == 1)
+        {
+            EpisodeModels.Current = EpisodeModels.FirstOrDefault();
+        }
+        ObserveDownload();
+    }
+
+    private void ObserveDownload()
+    {
+        if (_videoStreamResolver is not INotifyDownloadStatus inds)
+        {
+            return;
+        }
+
+        ShowDownloadStats = true;
+        inds.Status
+            .Subscribe(x =>
+            {
+                DownloadSpeed = $"{x.Item2.DownloadSpeed.Bytes().Humanize()}/s";
+                TotalDownloaded = x.Item2.DataBytesDownloaded.Bytes().Humanize();
+                DownloadProgress = x.Item1.ToString("N2");
+            });
     }
 }

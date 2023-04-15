@@ -11,6 +11,6 @@ public interface IVideoStreamModelResolver
 
 public interface INotifyDownloadStatus
 {
-    IObservable<ConnectionMonitor> Status { get; }
+    IObservable<(double, ConnectionMonitor)> Status { get; }
 }
 

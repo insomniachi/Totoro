@@ -212,7 +212,7 @@
                         SelectedItem="{x:Bind ViewModel.SelectedPage, Mode=TwoWay}"
                         Style="{StaticResource PivotSegmentedStyle}">
                         <labs:Segmented.ItemContainerStyle>
-                            <Style TargetType="labs:SegmentedItem">
+                            <Style BasedOn="{StaticResource PivotSegmentedItemStyle}" TargetType="labs:SegmentedItem">
                                 <Setter Property="FontSize" Value="20" />
                             </Style>
                         </labs:Segmented.ItemContainerStyle>

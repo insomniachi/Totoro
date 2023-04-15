@@ -1,11 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
+using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
+using TorrentState = Totoro.Core.Torrents.TorrentState;
 using Video = Totoro.Core.Models.Video;
 
 namespace Totoro.Core;
@@ -74,7 +76,7 @@ public class TotoroCommands : IEnableLogger
                         {
                             navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                             {
-                                ["Torrent"] = model,
+                                ["TorrentModel"] = model,
                                 ["UseDebrid"] = true,
                             });
                         }
@@ -89,7 +91,7 @@ public class TotoroCommands : IEnableLogger
             {
                 navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                 {
-                    ["Torrent"] = model,
+                    ["TorrentModel"] = model,
                     ["UseDebrid"] = false,
                 });
             }
@@ -110,10 +112,23 @@ public class TotoroCommands : IEnableLogger
                 await torrentEngine.RemoveTorrent(name, true);
             }
         });
-        PlayLocalFolder = ReactiveCommand.Create<string>(file => navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
+        PlayLocalFolder = ReactiveCommand.Create<TorrentManager>(torrentManager =>
         {
-            ["LocalFolder"] = file
-        }));
+            if(torrentManager.Complete)
+            {
+                navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
+                {
+                    ["LocalFolder"] = torrentManager.SavePath
+                });
+            }
+            else
+            {
+                navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
+                {
+                    ["Torrent"] = torrentManager.Torrent
+                });
+            }
+        });
     }
 
     public ICommand UpdateTracking { get; }

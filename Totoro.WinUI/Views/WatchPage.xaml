@@ -84,6 +84,9 @@
                         <TextBlock>
                             <Run Text="Total : " />
                             <Run Text="{x:Bind ViewModel.TotalDownloaded, Mode=OneWay}" />
+                            <Run Text="(" />
+                            <Run Text="{x:Bind ViewModel.DownloadProgress, Mode=OneWay}" />
+                            <Run Text="%)" />
                         </TextBlock>
                     </StackPanel>
                 </Grid>

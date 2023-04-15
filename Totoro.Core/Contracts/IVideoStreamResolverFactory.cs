@@ -1,4 +1,5 @@
 ﻿using AnitomySharp;
+using MonoTorrent;
 
 namespace Totoro.Core.Contracts;
 
@@ -9,6 +10,7 @@ public interface IVideoStreamResolverFactory
     IVideoStreamModelResolver CreateWebTorrentStreamResolver(IEnumerable<Element> parsedResults, string magnet);
     IVideoStreamModelResolver CreateGogoAnimDLResolver(string baseUrlSub, string baseUrlDub);
     IVideoStreamModelResolver CreateMonoTorrentStreamResolver(IEnumerable<Element> parsedResults, string magnet);
+    IVideoStreamModelResolver CreateMonoTorrentStreamResolver(Torrent torrent);
     IVideoStreamModelResolver CreateLocalStreamResolver(string directory);
 
 }

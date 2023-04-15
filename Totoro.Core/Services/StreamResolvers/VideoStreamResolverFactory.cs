@@ -1,4 +1,5 @@
 ﻿using AnitomySharp;
+using MonoTorrent;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
@@ -48,6 +49,11 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
     public IVideoStreamModelResolver CreateMonoTorrentStreamResolver(IEnumerable<Element> parsedResults, string magnet)
     {
         return new MonoTorrentStreamModelResolver(_torrentEngine, parsedResults, magnet, _settings.UserTorrentsDownloadDirectory);
+    }
+
+    public IVideoStreamModelResolver CreateMonoTorrentStreamResolver(Torrent torrent)
+    {
+        return new MonoTorrentStreamModelResolver(_torrentEngine, torrent, _settings.UserTorrentsDownloadDirectory);
     }
 
     public IVideoStreamModelResolver CreateLocalStreamResolver(string directory)

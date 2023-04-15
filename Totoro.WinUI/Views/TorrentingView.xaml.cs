@@ -3,12 +3,11 @@ using System.Diagnostics;
 using CommunityToolkit.WinUI.UI.Controls;
 using Humanizer;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using ReactiveMarbles.ObservableEvents;
+using Microsoft.UI.Xaml.Media.Animation;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
-using TorrentModel = Totoro.Core.Torrents.TorrentModel;
+using Totoro.WinUI.Views.SettingsSections;
 
 namespace Totoro.WinUI.Views;
 
@@ -16,52 +15,42 @@ public class TorrentingViewBase : ReactivePage<TorrentingViewModel> { }
 
 public sealed partial class TorrentingView : TorrentingViewBase
 {
+    private static readonly NavigationTransitionInfo _fromLeft = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
+    private static readonly NavigationTransitionInfo _fromRight = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
+    private int _prevIndex = -1;
+
     public TorrentingView()
     {
         InitializeComponent();
 
         this.WhenActivated(d =>
         {
-            SearchBox
-            .Events()
-            .QuerySubmitted
-            .Select(_ => Unit.Default)
-            .InvokeCommand(ViewModel.Search)
-            .DisposeWith(d);
-
-            switch (ViewModel.ProviderType)
-            {
-                case TorrentProviderType.Nya:
-                    foreach (var item in DataGrid.Columns)
-                    {
-                        item.Visibility = Visibility.Visible;
-                    }
-                    break;
-            }
+            this.WhenAnyValue(x => x.ViewModel.SelectedSection)
+                .WhereNotNull()
+                .Subscribe(Navigate);
         });
     }
 
-    private void TorrentAction(object sender, RoutedEventArgs e)
+    private void Navigate(PivotItemModel section)
     {
-        var button = sender as Button;
-        if (button.DataContext is not TorrentModel m)
+        var type = section.Header switch
+        {
+            "Torrents" => typeof(SearchSection),
+            "Downloads" => typeof(DownloadsSection),
+            "Transfers" => typeof(TransfersSection),
+            _ => null
+        };
+
+        if (type is null)
         {
             return;
         }
 
-        App.Commands.TorrentCommand.Execute(m);
-    }
+        var index = ViewModel.Sections.IndexOf(section);
+        var transition = index > _prevIndex ? _fromLeft : _fromRight;
+        _prevIndex = index;
 
-    private void DataGrid_Sorting(object sender, DataGridColumnEventArgs e)
-    {
-        if (e.Column.Tag is "Time")
-        {
-            ViewModel.SortMode = SortMode.Date;
-        }
-        else if (e.Column.Tag is "Seeders")
-        {
-            ViewModel.SortMode = SortMode.Seeders;
-        }
+        NavFrame.Navigate(type, ViewModel, transition);
     }
 }
 

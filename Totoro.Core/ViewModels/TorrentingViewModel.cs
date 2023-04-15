@@ -1,4 +1,6 @@
-﻿using System.Reactive.Concurrency;
+﻿using System;
+using System.Reactive.Concurrency;
+using MonoTorrent.Client;
 using Totoro.Core.Services.Debrid;
 using Totoro.Core.Torrents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
@@ -27,7 +29,8 @@ public class TorrentingViewModel : NavigatableViewModel
     public TorrentingViewModel(IDebridServiceContext debridServiceContext,
                                ITorrentCatalogFactory catalogFactory,
                                IAnimeIdService animeIdService,
-                               ISettings settings)
+                               ISettings settings,
+                               ITorrentEngine torrentEngine)
     {
         _debridServiceContext = debridServiceContext;
         _catalog = catalogFactory.GetCatalog(settings.TorrentProviderType);
@@ -70,21 +73,44 @@ public class TorrentingViewModel : NavigatableViewModel
             })
             .DisposeWith(Garbage);
 
-        this.WhenAnyValue(x => x.PastedTorrent.MagnetLink)
-            .Where(x => !string.IsNullOrEmpty(x))
-            .Subscribe(_ => PastedTorrent.State = TorrentState.Unknown);
+        torrentEngine
+            .TorrentRemoved
+            .Select(name => EngineTorrents.FirstOrDefault(x => x.Torrent.Name == name))
+            .WhereNotNull()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => EngineTorrents.Remove(x));
 
         Search = ReactiveCommand.Create(OnSearch);
+
+        if(_debridServiceContext.IsAuthenticated)
+        {
+            Sections.Add(new PivotItemModel { Header = "Transfers" });
+        }
+
+        EngineTorrents = new(torrentEngine.TorrentManagers);
+        
+        this.WhenAnyValue(x => x.PastedTorrent.MagnetLink)
+            .Where(x => !string.IsNullOrEmpty(x))
+            .Subscribe(_ => PastedTorrent.State = Core.Torrents.TorrentState.Unknown);
+
     }
 
     [Reactive] public string Query { get; set; }
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public SortMode SortMode { get; set; } = SortMode.Seeders;
+    [Reactive] public PivotItemModel SelectedSection { get; set; }
 
     public TorrentProviderType ProviderType { get; }
     public TorrentModel PastedTorrent { get; } = new();
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
     public ReadOnlyObservableCollection<Transfer> Transfers => _transfers;
+    public ObservableCollection<PivotItemModel> Sections { get; } = new()
+    {
+        new PivotItemModel{ Header = "Torrents" },
+        new PivotItemModel{ Header = "Downloads" }
+    };
+
+    public ObservableCollection<TorrentManager> EngineTorrents { get; }
 
     public ICommand Search { get; }
 

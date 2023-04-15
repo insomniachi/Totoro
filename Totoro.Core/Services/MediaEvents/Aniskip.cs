@@ -46,13 +46,13 @@ internal class Aniskip : MediaEventListener, IAniskip
         }
     }
 
-    private bool CanSubmitTimeStamp() => _op is null &&
+    private bool CanSubmitTimeStamp() => _settings.ContributeTimeStamps &&
+                                         _op is null &&
                                          _position > _endTime &&
                                          _isDialogShown == false &&
                                          _duration is not null &&
-                                         _animeModel is not null &&
-                                         _settings.ContributeTimeStamps;
-
+                                         _animeModel is not null;
+    
     protected override void OnDurationChanged(TimeSpan duration)
     {
         _duration = duration;
@@ -104,7 +104,7 @@ internal class Aniskip : MediaEventListener, IAniskip
     public async Task SubmitTimeStamp()
     {
         _mediaPlayer.Pause();
-        await _viewService.SubmitTimeStamp(_animeModel.Id, _currentEpisode, _videoStreamModel, _timeStamps, _duration.Value.TotalSeconds, _staticSkipPosition);
+        await _viewService.SubmitTimeStamp(_animeModel.Id, _currentEpisode, _videoStreamModel, _timeStamps, _duration.Value.TotalSeconds, _staticSkipPosition - 8);
         _mediaPlayer.Play();
     }
 }

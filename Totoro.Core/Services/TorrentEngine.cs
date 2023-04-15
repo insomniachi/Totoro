@@ -24,8 +24,6 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         _httpClient = httpClient;
     }
 
-    public IEnumerable<TorrentManager> InactiveTorrents => _engine.Torrents.Where(x => x.State is TorrentState.Stopped);
-
     public IEnumerable<TorrentManager> TorrentManagers => _engine.Torrents;
     
     public IObservable<string> TorrentRemoved => _torrentRemoved;
@@ -56,7 +54,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         try
         {
             _engine = await ClientEngine.RestoreStateAsync(_torrentEngineState);
-            File.Delete(_torrentEngineState);
+            //File.Delete(_torrentEngineState);
 
             foreach (var item in _engine.Torrents)
             {
@@ -64,13 +62,13 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 {
                     await RemoveTorrent(item.Torrent.Name, true);
                 }
-                else if(item.Complete == false)
-                {
-                    _torrentManagers.Add(item.InfoHash, item);
-                }
+                _torrentManagers.Add(item.InfoHash, item);
             }
         }
-        catch { }
+        catch (Exception ex) 
+        {
+            this.Log().Error(ex);
+        }
 
         return true;
     }
@@ -138,15 +136,50 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         }
     }
 
+    public async Task<TorrentManager> Download(Torrent torrent, string saveDirectory)
+    {
+        try
+        {
+            TorrentManager torrentManager = null;
+            if (_torrentManagers.TryGetValue(torrent.InfoHash, out TorrentManager value))
+            {
+                torrentManager = value;
+            }
+            else
+            {
+                torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
+                _torrentManagers.Add(torrent.InfoHash, torrentManager);
+            }
+
+            if (torrentManager.State != TorrentState.Downloading)
+            {
+                SubscribeEvents(torrentManager);
+                await torrentManager.StartAsync();
+            }
+
+            return torrentManager;
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+            return null;
+        }
+    }
+
     public async Task<Stream> GetStream(string torrentUrl, int fileIndex)
     {
         var torrentManager = _torrentManagerToMagnetMap[torrentUrl];
         return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
     }
 
+    public async Task<Stream> GetStream(Torrent torrent, int fileIndex)
+    {
+        var torrentManager = _torrentManagers[torrent.InfoHash];
+        return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
+    }
+
     public async Task ShutDown()
     {
-        await _engine.StopAllAsync();
         await _engine.SaveStateAsync(_torrentEngineState);
     }
 

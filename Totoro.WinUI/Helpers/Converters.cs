@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml;
+using MonoTorrent.Client;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -65,6 +66,8 @@ public static partial class Converters
             _ => getDubedName(type)
         };
     }
+
+    public static string TorrentToPercent(TorrentManager torrentManager) => $"{torrentManager.Progress:N2}";
 
     [GeneratedRegex(@"(\d+)")]
     private static partial Regex GetNumber();

@@ -1,4 +1,5 @@
 ﻿using AnitomySharp;
+using MonoTorrent;
 using MonoTorrent.Client;
 
 namespace Totoro.Core.Services.StreamResolvers;
@@ -6,10 +7,11 @@ namespace Totoro.Core.Services.StreamResolvers;
 public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, INotifyDownloadStatus, IAsyncDisposable
 {
     private readonly ITorrentEngine _torrentEngine;
+    private readonly Torrent _torrent;
     private readonly string _torrentUrl;
     private readonly string _saveDirectory;
     private readonly Dictionary<int, int> _episodeToTorrentFileMap = new();
-    private readonly ScheduledSubject<ConnectionMonitor> _downloadStatus = new(RxApp.MainThreadScheduler);
+    private readonly ScheduledSubject<(double, ConnectionMonitor)> _downloadStatus = new(RxApp.MainThreadScheduler);
     private readonly CompositeDisposable _disposable = new();
     private static Stream _prevStream;
 
@@ -24,6 +26,17 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
         _saveDirectory = Path.Combine(saveDirectory, folder);
     }
 
+    public MonoTorrentStreamModelResolver(ITorrentEngine torrentEngine,
+                                          Torrent torrent,
+                                          string saveDirectory)
+    {
+        _torrentEngine = torrentEngine;
+        _torrent = torrent;
+        var parsedResults = AnitomySharp.AnitomySharp.Parse(torrent.Name);
+        var folder = parsedResults.First(x => x.Category == Element.ElementCategory.ElementAnimeTitle).Value;
+        _saveDirectory = Path.Combine(saveDirectory, folder);
+    }
+
     public async ValueTask DisposeAsync()
     {
         _prevStream?.Dispose();
@@ -32,11 +45,13 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
         await _torrentEngine.ShutDown();
     }
 
-    public IObservable<ConnectionMonitor> Status => _downloadStatus;
+    public IObservable<(double,ConnectionMonitor)> Status => _downloadStatus;
 
     public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
     {
-        var tm = await _torrentEngine.Download(_torrentUrl, _saveDirectory);
+        var tm = _torrent is null
+            ? await _torrentEngine.Download(_torrentUrl, _saveDirectory)
+            : await _torrentEngine.Download(_torrent, _saveDirectory);
 
         if(tm is null)
         {
@@ -45,7 +60,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
 
         Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromSeconds(3))
-            .Select(_ => tm.Monitor)
+            .Select(_ => (tm.Progress, tm.Monitor))
             .Subscribe(_downloadStatus.OnNext)
             .DisposeWith(_disposable);
 
@@ -72,7 +87,10 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
     {
         _prevStream?.Dispose();
         _prevStream = null;
-        _prevStream = await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode]);
+        _prevStream = _torrent is null
+            ? await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode])
+            : await _torrentEngine.GetStream(_torrent, _episodeToTorrentFileMap[episode]);
+
         return new VideoStreamsForEpisodeModel(_prevStream);
     }
 }
