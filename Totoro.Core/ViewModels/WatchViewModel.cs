@@ -97,7 +97,6 @@ public partial class WatchViewModel : NavigatableViewModel
         this.WhenAnyValue(x => x.EpisodeModels)
             .WhereNotNull()
             .Log(this, "Episodes :", x => string.Join(",", x.Select(e => e.EpisodeNumber)))
-            .Where(_ => !UseTorrents)
             .Select(_ => GetQueuedEpisode())
             .Where(RequestedEpisodeIsValid)
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -421,6 +420,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private int GetQueuedEpisode()
     {
+        if(UseTorrents && EpisodeModels is { Count : 1 })
+        {
+            return _episodeRequest ?? EpisodeModels.First().EpisodeNumber;
+        }
+
         return _isCrunchyroll
             ? EpisodeModels.Current?.EpisodeNumber ?? 0
             : _episodeRequest ?? EpisodeModels.Current?.EpisodeNumber ?? ((Anime?.Tracking?.WatchedEpisodes ?? 0) + 1);
@@ -548,11 +552,6 @@ public partial class WatchViewModel : NavigatableViewModel
         ObserveDownload();
 
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes("");
-
-        if (EpisodeModels.Count == 1)
-        {
-            EpisodeModels.Current = EpisodeModels.FirstOrDefault();
-        }
     }
 
     private async Task CreateAnimDLResolver(string url)
@@ -577,10 +576,6 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(torrent);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
-        if (EpisodeModels.Count == 1)
-        {
-            EpisodeModels.Current = EpisodeModels.FirstOrDefault();
-        }
         ObserveDownload();
     }
 
