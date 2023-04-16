@@ -5,7 +5,7 @@ namespace Totoro.Core.Contracts;
 
 public interface ITorrentEngine
 {
-    Task<TorrentManager> Download(string torrentUrl, string saveDirectory);
+    Task<TorrentManager> DownloadFromUrl(string torrentUrl, string saveDirectory);
     Task<TorrentManager> Download(Torrent torrent, string saveDirectory);
     Task<TorrentManager> DownloadFromMagnet(string magnet, string saveDirectory);
     Task<Stream> GetStream(string torrentUrl, int fileIndex);
@@ -14,5 +14,6 @@ public interface ITorrentEngine
     Task<bool> TryRestoreState();
     Task RemoveTorrent(string torrentName, bool removeFiles);
     IObservable<string> TorrentRemoved { get; }
+    IObservable<TorrentManager> TorrentAdded { get; }
     IEnumerable<TorrentManager> TorrentManagers { get; }
 }

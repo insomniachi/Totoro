@@ -66,6 +66,12 @@
                             Visibility="{x:Bind help:Converters.BooleanToVisibility(CanPause), Mode=OneWay}">
                             <SymbolIcon Symbol="Pause" />
                         </Button>
+                        <Button
+                            Command="{x:Bind Stop}"
+                            ToolTipService.ToolTip="Stop"
+                            Visibility="{x:Bind help:Converters.BooleanToVisibility(CanStop), Mode=OneWay}">
+                            <SymbolIcon Symbol="Stop" />
+                        </Button>
                     </StackPanel>
                     <Grid Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(Complete), Mode=OneWay}">
                         <Grid.ColumnDefinitions>

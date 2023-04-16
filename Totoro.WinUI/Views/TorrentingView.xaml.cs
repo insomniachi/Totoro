@@ -66,7 +66,7 @@ public class TorrentStateConverter : IValueConverter
         return state switch
         {
             TorrentState.Unknown => "Try Play",
-            TorrentState.NotCached => "Download",
+            TorrentState.NotCached => "Cache",
             TorrentState.Requested => "Caching",
             _ => throw new UnreachableException()
         };

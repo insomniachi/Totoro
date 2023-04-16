@@ -113,12 +113,18 @@
                 <ctk:DataGridTemplateColumn Width="200" Header="Actions">
                     <ctk:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button
-                                x:Name="Button"
-                                Margin="3"
-                                HorizontalAlignment="Stretch"
-                                Click="TorrentAction"
-                                Content="{Binding State, Converter={StaticResource StateConverter}}" />
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <Button
+                                    x:Name="Button"
+                                    Margin="3"
+                                    HorizontalAlignment="Stretch"
+                                    Click="TorrentAction"
+                                    Content="{Binding State, Converter={StaticResource StateConverter}}" />
+                                <Button
+                                    x:Name="DownloadButton"
+                                    Click="DownloadButton_Click"
+                                    Content="Download" />
+                            </StackPanel>
                         </DataTemplate>
                     </ctk:DataGridTemplateColumn.CellTemplate>
                 </ctk:DataGridTemplateColumn>

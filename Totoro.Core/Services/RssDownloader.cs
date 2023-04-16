@@ -101,7 +101,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
 
         var torrentManager = item switch
         {
-            TorrentRssFeedItem trfi => await _torrentEngine.Download(trfi.Torrent, saveDirectory),
+            TorrentRssFeedItem trfi => await _torrentEngine.DownloadFromUrl(trfi.Torrent, saveDirectory),
             MagnetRssFeedItem mrfi => await _torrentEngine.DownloadFromMagnet(mrfi.Magnet, saveDirectory),
             _ => throw new UnreachableException()
         };

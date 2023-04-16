@@ -86,6 +86,11 @@ public class TorrentingViewModel : NavigatableViewModel
                 x.Dispose();
             });
 
+        torrentEngine
+            .TorrentAdded
+            .Do(_ => SelectedSection = Sections.First(x => x.Header == "Downloads"))
+            .Subscribe(x => EngineTorrents.Add(new TorrentManagerModel(mediator, x)));
+
         Search = ReactiveCommand.Create(OnSearch);
 
         if(_debridServiceContext.IsAuthenticated)

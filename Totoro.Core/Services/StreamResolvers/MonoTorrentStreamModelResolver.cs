@@ -52,7 +52,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
     public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
     {
         _torrentManager = _torrent is null
-            ? await _torrentEngine.Download(_torrentUrl, _saveDirectory)
+            ? await _torrentEngine.DownloadFromUrl(_torrentUrl, _saveDirectory)
             : await _torrentEngine.Download(_torrent, _saveDirectory);
 
         if(_torrentManager is null)

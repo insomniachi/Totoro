@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography.X509Certificates;
 using MonoTorrent.Client;
 using Splat;
-using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 using YoutubeExplode;
 using YoutubeExplode.Videos;

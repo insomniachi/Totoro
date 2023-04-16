@@ -9,6 +9,8 @@ using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.Torrents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 using CommunityToolkit.WinUI.UI.Controls;
+using MediatR;
+using Totoro.Core.Commands;
 
 namespace Totoro.WinUI.Views.SettingsSections;
 
@@ -35,7 +37,7 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
             SearchBox
             .Events()
             .QuerySubmitted
-            .Select(_ => Unit.Default)
+            .Select(_ => System.Reactive.Unit.Default)
             .InvokeCommand(ViewModel.Search)
             .DisposeWith(d);
 
@@ -77,5 +79,22 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         ViewModel = e.Parameter as TorrentingViewModel;
+    }
+
+    private void DownloadButton_Click(object sender, RoutedEventArgs e)
+    {
+        var button = sender as Button;
+        if (button.DataContext is not TorrentModel m)
+        {
+            return;
+        }
+
+        var command = new DownloadTorrentFromMagnetCommand
+        {
+            Title = m.Name,
+            Magnet = m.MagnetLink
+        };
+
+        App.GetService<IMediator>().Send(command);
     }
 }

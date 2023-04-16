@@ -13,6 +13,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     private readonly ISettings _settings;
     private readonly HttpClient _httpClient;
     private readonly ScheduledSubject<string> _torrentRemoved = new(RxApp.MainThreadScheduler);
+    private readonly ScheduledSubject<TorrentManager> _torrentAdded = new(RxApp.MainThreadScheduler);
 
     public TorrentEngine(IKnownFolders knownFolders,
                          ISettings settings,
@@ -25,8 +26,8 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     }
 
     public IEnumerable<TorrentManager> TorrentManagers => _engine.Torrents;
-    
     public IObservable<string> TorrentRemoved => _torrentRemoved;
+    public IObservable<TorrentManager> TorrentAdded => _torrentAdded;
 
     public async Task RemoveTorrent(string torrentName, bool removeFiles = false)
     {
@@ -54,7 +55,6 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         try
         {
             _engine = await ClientEngine.RestoreStateAsync(_torrentEngineState);
-            //File.Delete(_torrentEngineState);
 
             foreach (var item in _engine.Torrents)
             {
@@ -81,6 +81,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     {
         try
         {
+            var isNew = false;
             var magnetLink = MagnetLink.Parse(magnet);
             TorrentManager torrentManager = null;
             if (_torrentManagers.TryGetValue(magnetLink.InfoHash, out TorrentManager value))
@@ -89,12 +90,21 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             }
             else
             {
+                isNew = true;
                 torrentManager = await _engine.AddStreamingAsync(magnetLink, saveDirectory);
                 _torrentManagers.Add(magnetLink.InfoHash, torrentManager);
                 SubscribeEvents(torrentManager);
             }
 
             await torrentManager.StartAsync();
+            if(!torrentManager.HasMetadata)
+            {
+                await torrentManager.WaitForMetadataAsync();
+            }
+            if(isNew)
+            {
+                _torrentAdded.OnNext(torrentManager);
+            }
 
             return torrentManager;
         }
@@ -105,7 +115,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         }
     }
 
-    public async Task<TorrentManager> Download(string torrentUrl, string saveDirectory)
+    public async Task<TorrentManager> DownloadFromUrl(string torrentUrl, string saveDirectory)
     {
         try
         {
@@ -126,6 +136,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
                 _torrentManagers.Add(torrent.InfoHash, torrentManager);
                 _torrentManagerToMagnetMap.Add(torrentUrl, torrentManager);
+                _torrentAdded.OnNext(torrentManager);
                 SubscribeEvents(torrentManager);
             }
 
@@ -153,6 +164,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             {
                 torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
                 _torrentManagers.Add(torrent.InfoHash, torrentManager);
+                _torrentAdded.OnNext(torrentManager);
             }
 
             if (torrentManager.State != TorrentState.Downloading)
@@ -196,7 +208,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
     private void TorrentManager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
     {
-        this.Log().Info("{0} : {1} -> {2}", e.TorrentManager.Torrent.Name, e.OldState, e.NewState);
+        this.Log().Info("{0} : {1} -> {2}", e.TorrentManager.Torrent?.Name ?? "Torrent State Changed", e.OldState, e.NewState);
 
         if (e.NewState is TorrentState.Seeding)
         {
@@ -217,6 +229,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         try
         {
             await _engine.RemoveAsync(torrentManager, removeFiles ? RemoveMode.CacheDataAndDownloadedData : RemoveMode.CacheDataOnly);
+            _torrentManagers.Remove(torrentManager.InfoHash);
         }
         catch (Exception ex)
         {
