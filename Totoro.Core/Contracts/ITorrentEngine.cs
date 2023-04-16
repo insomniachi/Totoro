@@ -10,7 +10,7 @@ public interface ITorrentEngine
     Task<TorrentManager> DownloadFromMagnet(string magnet, string saveDirectory);
     Task<Stream> GetStream(string torrentUrl, int fileIndex);
     Task<Stream> GetStream(Torrent torrent, int fileIndex);
-    Task ShutDown();
+    Task SaveState();
     Task<bool> TryRestoreState();
     Task RemoveTorrent(string torrentName, bool removeFiles);
     IObservable<string> TorrentRemoved { get; }

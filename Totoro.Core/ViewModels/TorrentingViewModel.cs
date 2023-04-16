@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Concurrency;
+using MediatR;
 using MonoTorrent.Client;
 using Totoro.Core.Services.Debrid;
 using Totoro.Core.Torrents;
@@ -30,7 +31,8 @@ public class TorrentingViewModel : NavigatableViewModel
                                ITorrentCatalogFactory catalogFactory,
                                IAnimeIdService animeIdService,
                                ISettings settings,
-                               ITorrentEngine torrentEngine)
+                               ITorrentEngine torrentEngine,
+                               IMediator mediator)
     {
         _debridServiceContext = debridServiceContext;
         _catalog = catalogFactory.GetCatalog(settings.TorrentProviderType);
@@ -75,10 +77,14 @@ public class TorrentingViewModel : NavigatableViewModel
 
         torrentEngine
             .TorrentRemoved
-            .Select(name => EngineTorrents.FirstOrDefault(x => x.Torrent.Name == name))
+            .Select(name => EngineTorrents.FirstOrDefault(x => x.Name == name))
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => EngineTorrents.Remove(x));
+            .Subscribe(x =>
+            {
+                EngineTorrents.Remove(x);
+                x.Dispose();
+            });
 
         Search = ReactiveCommand.Create(OnSearch);
 
@@ -87,7 +93,7 @@ public class TorrentingViewModel : NavigatableViewModel
             Sections.Add(new PivotItemModel { Header = "Transfers" });
         }
 
-        EngineTorrents = new(torrentEngine.TorrentManagers);
+        EngineTorrents = new(torrentEngine.TorrentManagers.Select(x => new TorrentManagerModel(mediator, x)));
         
         this.WhenAnyValue(x => x.PastedTorrent.MagnetLink)
             .Where(x => !string.IsNullOrEmpty(x))
@@ -110,7 +116,7 @@ public class TorrentingViewModel : NavigatableViewModel
         new PivotItemModel{ Header = "Downloads" }
     };
 
-    public ObservableCollection<TorrentManager> EngineTorrents { get; }
+    public ObservableCollection<TorrentManagerModel> EngineTorrents { get; }
 
     public ICommand Search { get; }
 

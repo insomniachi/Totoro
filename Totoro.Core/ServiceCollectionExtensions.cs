@@ -52,6 +52,7 @@ namespace Totoro.Core
 
             services.AddMemoryCache();
             services.AddHttpClient();
+            services.AddMediatR(x => x.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly));
 
             return services;
         }

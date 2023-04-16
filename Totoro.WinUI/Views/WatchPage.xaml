@@ -21,8 +21,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ctk:SwitchPresenter Value="{x:Bind ViewModel.MediaPlayerType}">
-            <ctk:Case IsDefault="True" Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
+        <ctk:SwitchPresenter Value="{x:Bind ViewModel.MediaPlayerType, Mode=OneWay}">
+            <ctk:Case IsDefault="True" Value="{x:Null}" />
+            <ctk:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
                 <MediaPlayerElement
                     x:Name="MediaPlayerElement"
                     AreTransportControlsEnabled="True"

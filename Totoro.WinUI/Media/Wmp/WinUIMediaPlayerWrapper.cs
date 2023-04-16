@@ -32,6 +32,8 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
     public IObservable<TimeSpan> PositionChanged => _player.PlaybackSession.Events().PositionChanged.Select(x => x.sender.Position);
     public IObservable<TimeSpan> DurationChanged => _player.PlaybackSession.Events().NaturalDurationChanged.Select(x => x.sender.NaturalDuration);
     public IMediaTransportControls TransportControls => _transportControls;
+    public MediaPlayerType Type => MediaPlayerType.WindowsMediaPlayer;
+
     public void Dispose()
     {
         if (_isDisposed)

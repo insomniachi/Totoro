@@ -44,7 +44,7 @@ public class Initalizer : IInitializer
         _updateService.ShutDown();
         _playbackStateStorage.SaveState();
         _rssDownloader.SaveState();
-        await _torrentEngine.ShutDown();
+        await _torrentEngine.SaveState();
     }
 
     private void RemoveObsoleteSettings()

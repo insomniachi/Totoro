@@ -14,6 +14,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
     private readonly ScheduledSubject<(double, ConnectionMonitor)> _downloadStatus = new(RxApp.MainThreadScheduler);
     private readonly CompositeDisposable _disposable = new();
     private static Stream _prevStream;
+    private TorrentManager _torrentManager;
 
     public MonoTorrentStreamModelResolver(ITorrentEngine torrentEngine,
                                           IEnumerable<Element> parsedResults,
@@ -42,30 +43,31 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
         _prevStream?.Dispose();
         _prevStream = null;
         _disposable.Dispose();
-        await _torrentEngine.ShutDown();
+        await _torrentManager?.StopAsync();
+        await _torrentEngine.SaveState();
     }
 
     public IObservable<(double,ConnectionMonitor)> Status => _downloadStatus;
 
     public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
     {
-        var tm = _torrent is null
+        _torrentManager = _torrent is null
             ? await _torrentEngine.Download(_torrentUrl, _saveDirectory)
             : await _torrentEngine.Download(_torrent, _saveDirectory);
 
-        if(tm is null)
+        if(_torrentManager is null)
         {
             return EpisodeModelCollection.Empty;
         }
 
         Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromSeconds(3))
-            .Select(_ => (tm.Progress, tm.Monitor))
+            .Select(_ => (_torrentManager.Progress, _torrentManager.Monitor))
             .Subscribe(_downloadStatus.OnNext)
             .DisposeWith(_disposable);
 
         var index = 0;
-        foreach (var file in tm.Torrent.Files.Select(x => x.Path))
+        foreach (var file in _torrentManager.Torrent.Files.Select(x => x.Path))
         {
             var result = AnitomySharp.AnitomySharp.Parse(file);
             if (result.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epResult &&

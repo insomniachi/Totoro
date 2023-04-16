@@ -62,7 +62,11 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 {
                     await RemoveTorrent(item.Torrent.Name, true);
                 }
-                _torrentManagers.Add(item.InfoHash, item);
+                else
+                {
+                    SubscribeEvents(item);
+                    _torrentManagers.Add(item.InfoHash, item);
+                }
             }
         }
         catch (Exception ex) 
@@ -178,7 +182,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
     }
 
-    public async Task ShutDown()
+    public async Task SaveState()
     {
         await _engine.SaveStateAsync(_torrentEngineState);
     }
@@ -192,7 +196,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
     private void TorrentManager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
     {
-        this.Log().Info("Torrent State Changed : {0} -> {1}", e.OldState, e.NewState);
+        this.Log().Info("{0} : {1} -> {2}", e.TorrentManager.Torrent.Name, e.OldState, e.NewState);
 
         if (e.NewState is TorrentState.Seeding)
         {
@@ -210,7 +214,15 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
     private async Task RemoveTorrent(TorrentManager torrentManager, bool removeFiles)
     {
-        await _engine.RemoveAsync(torrentManager, removeFiles ? RemoveMode.CacheDataAndDownloadedData : RemoveMode.CacheDataOnly);
+        try
+        {
+            await _engine.RemoveAsync(torrentManager, removeFiles ? RemoveMode.CacheDataAndDownloadedData : RemoveMode.CacheDataOnly);
+        }
+        catch (Exception ex)
+        {
+
+            this.Log().Error(ex);
+        }
 
         if (!removeFiles)
         {

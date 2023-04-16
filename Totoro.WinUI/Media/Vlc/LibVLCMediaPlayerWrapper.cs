@@ -24,6 +24,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
     public IObservable<TimeSpan> DurationChanged => _durationChanged;
     public IMediaTransportControls TransportControls { get; } = new VlcMediaTransportControls();
     public bool IsInitialized { get; private set; }
+    public MediaPlayerType Type => MediaPlayerType.Vlc;
 
     public void Dispose()
     {

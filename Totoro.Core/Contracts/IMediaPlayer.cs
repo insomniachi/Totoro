@@ -14,6 +14,7 @@ public interface IMediaPlayer : IDisposable
     IObservable<TimeSpan> DurationChanged { get; }
     Task<Unit> SetMedia(VideoStreamModel stream);
     IMediaTransportControls TransportControls { get; }
+    MediaPlayerType Type { get; }
 }
 
 public enum SeekDirection

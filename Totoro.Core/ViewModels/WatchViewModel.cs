@@ -14,8 +14,10 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
+    private readonly ITimestampsService _timestampsService;
     private readonly IResumePlaybackService _playbackStateStorage;
     private readonly IAnimeServiceContext _animeService;
+    private readonly IMediaPlayerFactory _mediaPlayerFactory;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
     private readonly List<IMediaEventListener> _mediaEventListeners;
@@ -41,18 +43,18 @@ public partial class WatchViewModel : NavigatableViewModel
         _trackingService = trackingService;
         _viewService = viewService;
         _settings = settings;
+        _timestampsService = timestampsService;
         _playbackStateStorage = playbackStateStorage;
         _animeService = animeService;
+        _mediaPlayerFactory = mediaPlayerFactory;
         _streamPageMapper = streamPageMapper;
         _videoStreamResolverFactory = videoStreamResolverFactory;
         _mediaEventListeners = mediaEventListeners.ToList();
         _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
 
-        MediaPlayer = mediaPlayerFactory.Create(settings.MediaPlayerType);
         Provider = providerFactory.GetProvider(settings.DefaultProviderType);
         SelectedAudioStream = GetDefaultAudioStream();
-        MediaPlayerType = _settings.MediaPlayerType;
 
         NextEpisode = ReactiveCommand.Create(() =>
         {
@@ -70,6 +72,11 @@ public partial class WatchViewModel : NavigatableViewModel
             SelectedQuality = quality;
         }, outputScheduler: RxApp.MainThreadScheduler);
         SubmitTimeStamp = ReactiveCommand.Create(OnSubmitTimeStamps);
+
+        this.WhenAnyValue(x => x.MediaPlayerType)
+            .WhereNotNull()
+            .Select(x => mediaPlayerFactory.Create(x.Value))
+            .ToPropertyEx(this, x => x.MediaPlayer, initialValue: null);
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
@@ -167,20 +174,6 @@ public partial class WatchViewModel : NavigatableViewModel
                 }
             });
 
-        MediaPlayer
-            .DurationChanged
-            .Where(_ => Anime is not null)
-            .Throttle(TimeSpan.FromSeconds(1))
-            .SelectMany(duration => timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds))
-            .Where(timeStamp => timeStamp.Success)
-            .Subscribe(timeStamps =>
-            {
-                foreach (var item in mediaEventListeners)
-                {
-                    item.SetTimeStamps(timeStamps);
-                }
-            }, RxApp.DefaultExceptionHandler.OnError);
-
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .Subscribe(SetAnime);
@@ -205,9 +198,11 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public string TotalDownloaded { get; set; }
     [Reactive] public string DownloadProgress { get; set; }
     [Reactive] public bool ShowDownloadStats { get; set; }
+    [Reactive] public MediaPlayerType? MediaPlayerType { get; private set; }
+    [ObservableAsProperty] public IMediaPlayer MediaPlayer { get; }
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
-    public MediaPlayerType MediaPlayerType { get; }
+
     public IProvider Provider { get; }
     public IAnimeModel Anime
     {
@@ -215,7 +210,6 @@ public partial class WatchViewModel : NavigatableViewModel
         set => this.RaiseAndSetIfChanged(ref _anime, value);
     }
 
-    public IMediaPlayer MediaPlayer { get; }
     public bool AutoFullScreen => _settings.EnterFullScreenWhenPlaying;
     public TorrentModel Torrent { get; private set; }
 
@@ -226,6 +220,20 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public void SubscribeTransportControlEvents()
     {
+        MediaPlayer
+            .DurationChanged
+            .Where(_ => Anime is not null)
+            .Throttle(TimeSpan.FromSeconds(1))
+            .SelectMany(duration => _timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds))
+            .Where(timeStamp => timeStamp.Success)
+            .Subscribe(timeStamps =>
+            {
+                foreach (var item in _mediaEventListeners)
+                {
+                    item.SetTimeStamps(timeStamps);
+                }
+            }, RxApp.DefaultExceptionHandler.OnError);
+
         MediaPlayer
             .TransportControls
             .OnNextTrack
@@ -305,6 +313,8 @@ public partial class WatchViewModel : NavigatableViewModel
             await TrySetAnime(torrent.Name);
             await CreateMonoTorrentStreamResolver(torrent);
         }
+
+        MediaPlayerType = UseTorrents ? Models.MediaPlayerType.Vlc : _settings.MediaPlayerType;
     }
 
     public override async Task OnNavigatedFrom()

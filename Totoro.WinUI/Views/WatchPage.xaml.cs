@@ -47,6 +47,14 @@ public sealed partial class WatchPage : WatchPageBase
                         .WhenAnyValue(x => x.SelectedResolution)
                         .Subscribe(resolution => ViewModel.SelectedQuality = resolution);
 
+                    wrapper
+                        .DurationChanged
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Where(x => x > TimeSpan.Zero && ViewModel.AutoFullScreen)
+                        .Throttle(TimeSpan.FromMilliseconds(100))
+                        .Subscribe(x => windowService.SetIsFullWindow(true))
+                        .DisposeWith(d);
+
                     ViewModel.SetMediaPlayer(wrapper);
                     ViewModel.SubscribeTransportControlEvents();
                 })
@@ -55,15 +63,6 @@ public sealed partial class WatchPage : WatchPageBase
             windowService
             .IsFullWindowChanged
             .Subscribe(isFullWindow => EpisodesExpander.Visibility = isFullWindow ? Visibility.Collapsed : Visibility.Visible);
-
-            ViewModel
-            .MediaPlayer
-            .DurationChanged
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Where(x => x > TimeSpan.Zero && ViewModel.AutoFullScreen)
-            .Throttle(TimeSpan.FromMilliseconds(100))
-            .Subscribe(x => windowService.SetIsFullWindow(true))
-            .DisposeWith(d);
 
         });
     }
@@ -75,4 +74,6 @@ public sealed partial class WatchPage : WatchPageBase
             .DoubleTapped
             .Subscribe(_ => windowService.ToggleIsFullWindow());
     }
+
+
 }

@@ -61,10 +61,17 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     {
         var mtc = d as CustomMediaTransportControls;
         var flyout = mtc._qualitiesFlyout;
+
+        if(mtc._qualitiesButton is null)
+        {
+            return;
+        }
+
         foreach (var item in flyout.Items.OfType<MenuFlyoutItem>())
         {
             item.Click -= mtc.FlyoutItem_Click;
         }
+
         flyout.Items.Clear();
 
         if (e.NewValue is IEnumerable<string> values)
