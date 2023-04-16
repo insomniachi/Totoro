@@ -11,13 +11,11 @@ namespace Totoro.Core.ViewModels;
 
 public partial class WatchViewModel : NavigatableViewModel
 {
-    private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly ITimestampsService _timestampsService;
     private readonly IResumePlaybackService _playbackStateStorage;
     private readonly IAnimeServiceContext _animeService;
-    private readonly IMediaPlayerFactory _mediaPlayerFactory;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
     private readonly List<IMediaEventListener> _mediaEventListeners;
@@ -29,7 +27,6 @@ public partial class WatchViewModel : NavigatableViewModel
     private IAnimeModel _anime;
 
     public WatchViewModel(IProviderFactory providerFactory,
-                          ITrackingServiceContext trackingService,
                           IViewService viewService,
                           ISettings settings,
                           ITimestampsService timestampsService,
@@ -40,13 +37,11 @@ public partial class WatchViewModel : NavigatableViewModel
                           IVideoStreamResolverFactory videoStreamResolverFactory,
                           IEnumerable<IMediaEventListener> mediaEventListeners)
     {
-        _trackingService = trackingService;
         _viewService = viewService;
         _settings = settings;
         _timestampsService = timestampsService;
         _playbackStateStorage = playbackStateStorage;
         _animeService = animeService;
-        _mediaPlayerFactory = mediaPlayerFactory;
         _streamPageMapper = streamPageMapper;
         _videoStreamResolverFactory = videoStreamResolverFactory;
         _mediaEventListeners = mediaEventListeners.ToList();

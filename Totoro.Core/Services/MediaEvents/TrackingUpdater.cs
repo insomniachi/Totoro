@@ -1,8 +1,11 @@
-﻿namespace Totoro.Core.Services.MediaEvents;
+﻿using MediatR;
+using Totoro.Core.Commands;
+
+namespace Totoro.Core.Services.MediaEvents;
 
 internal class TrackingUpdater : MediaEventListener
 {
-    private readonly ITrackingServiceContext _trackingService;
+    private readonly ISender _sender;
     private readonly ISettings _settings;
     private readonly IViewService _viewService;
     private TimeSpan _updateAt = TimeSpan.MaxValue;
@@ -11,11 +14,11 @@ internal class TrackingUpdater : MediaEventListener
     private static readonly TimeSpan _nextBuffer = TimeSpan.FromMinutes(3);
     private bool _isUpdated;
 
-    public TrackingUpdater(ITrackingServiceContext trackingService,
+    public TrackingUpdater(ISender sender,
                            ISettings settings,
                            IViewService viewService)
     {
-        _trackingService = trackingService;
+        _sender = sender;
         _settings = settings;
         _viewService = viewService;
     }
@@ -68,7 +71,6 @@ internal class TrackingUpdater : MediaEventListener
     {
         _isUpdated = true;
         var tracking = new Tracking() { WatchedEpisodes = _currentEpisode };
-
         if (_currentEpisode == _animeModel.TotalEpisodes)
         {
             tracking.Status = AnimeStatus.Completed;
@@ -86,9 +88,13 @@ internal class TrackingUpdater : MediaEventListener
             tracking.StartDate = DateTime.Today;
         }
 
-        _trackingService
-            .Update(_animeModel.Id, tracking)
-            .Subscribe(tracking => _animeModel.Tracking = tracking);
+        var command = new UpdateTrackingCommand
+        {
+            Anime = _animeModel,
+            Tracking = tracking
+        };
+
+        await _sender.Send(command);
     }
 
     public bool IsEnabled => _animeModel is not null;

@@ -95,6 +95,6 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
             Magnet = m.MagnetLink
         };
 
-        App.GetService<IMediator>().Send(command);
+        App.GetService<ISender>().Send(command);
     }
 }

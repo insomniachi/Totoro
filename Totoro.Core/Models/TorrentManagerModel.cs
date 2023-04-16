@@ -7,14 +7,14 @@ namespace Totoro.Core.Models;
 
 public sealed class TorrentManagerModel : ReactiveObject, IDisposable
 {
-    private readonly IMediator _mediator;
+    private readonly ISender _sender;
     private readonly TorrentManager _torrentManager;
     private IDisposable _subscription;
 
-    public TorrentManagerModel(IMediator mediator,
+    public TorrentManagerModel(ISender sender,
                                TorrentManager torrentManager)
     {
-        _mediator = mediator;
+        _sender = sender;
         _torrentManager = torrentManager;
 
         torrentManager.TorrentStateChanged += TorrentManager_TorrentStateChanged;
@@ -96,7 +96,7 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
             DeleteFiles = deleteFiles
         };
 
-        _mediator.Send(command);
+        _sender.Send(command);
     }
 
     public void Dispose()
