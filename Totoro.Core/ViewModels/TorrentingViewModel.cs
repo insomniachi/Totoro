@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reactive.Concurrency;
-using MediatR;
-using MonoTorrent.Client;
+﻿using System.Reactive.Concurrency;
 using Totoro.Core.Services.Debrid;
 using Totoro.Core.Torrents;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
@@ -31,8 +28,7 @@ public class TorrentingViewModel : NavigatableViewModel
                                ITorrentCatalogFactory catalogFactory,
                                IAnimeIdService animeIdService,
                                ISettings settings,
-                               ITorrentEngine torrentEngine,
-                               IMediator mediator)
+                               ITorrentEngine torrentEngine)
     {
         _debridServiceContext = debridServiceContext;
         _catalog = catalogFactory.GetCatalog(settings.TorrentProviderType);
@@ -89,7 +85,7 @@ public class TorrentingViewModel : NavigatableViewModel
         torrentEngine
             .TorrentAdded
             .Do(_ => SelectedSection = Sections.First(x => x.Header == "Downloads"))
-            .Subscribe(x => EngineTorrents.Add(new TorrentManagerModel(mediator, x)));
+            .Subscribe(x => EngineTorrents.Add(new TorrentManagerModel(torrentEngine, x)));
 
         Search = ReactiveCommand.Create(OnSearch);
 
@@ -98,7 +94,7 @@ public class TorrentingViewModel : NavigatableViewModel
             Sections.Add(new PivotItemModel { Header = "Transfers" });
         }
 
-        EngineTorrents = new(torrentEngine.TorrentManagers.Select(x => new TorrentManagerModel(mediator, x)));
+        EngineTorrents = new(torrentEngine.TorrentManagers.Select(x => new TorrentManagerModel(torrentEngine, x)));
         
         this.WhenAnyValue(x => x.PastedTorrent.MagnetLink)
             .Where(x => !string.IsNullOrEmpty(x))

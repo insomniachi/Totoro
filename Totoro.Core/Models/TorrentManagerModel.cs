@@ -1,27 +1,22 @@
 ﻿using System.Reactive.Concurrency;
-using MediatR;
+using Humanizer;
 using MonoTorrent.Client;
-using Totoro.Core.Commands;
 
 namespace Totoro.Core.Models;
 
 public sealed class TorrentManagerModel : ReactiveObject, IDisposable
 {
-    private readonly ISender _sender;
-    private readonly TorrentManager _torrentManager;
     private IDisposable _subscription;
 
-    public TorrentManagerModel(ISender sender,
+    public TorrentManagerModel(ITorrentEngine engine,
                                TorrentManager torrentManager)
     {
-        _sender = sender;
-        _torrentManager = torrentManager;
-
+        Manager = torrentManager;
         torrentManager.TorrentStateChanged += TorrentManager_TorrentStateChanged;
 
         var canDelete = this.WhenAnyValue(x => x.CanDelete);
-        Remove = ReactiveCommand.Create(() => DeleteTorrent(false), canDelete);
-        Delete = ReactiveCommand.Create(() => DeleteTorrent(true), canDelete);
+        Remove = ReactiveCommand.CreateFromTask(() => engine.RemoveTorrent(Name, false), canDelete);
+        Delete = ReactiveCommand.CreateFromTask(() => engine.RemoveTorrent(Name, true), canDelete);
         Resume = ReactiveCommand.CreateFromTask(torrentManager.StartAsync, this.WhenAnyValue(x => x.CanResume));
         Pause = ReactiveCommand.CreateFromTask(torrentManager.PauseAsync, this.WhenAnyValue(x => x.CanPause));
         Stop = ReactiveCommand.CreateFromTask(torrentManager.StopAsync, this.WhenAnyValue(x => x.CanStop));
@@ -39,10 +34,11 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
     [Reactive] public bool Complete { get; private set; }
     [Reactive] public bool CanStop { get; private set; }
     [Reactive] public string Progress { get; private set; }
-    [Reactive] public double Speed { get; private set; }
+    [Reactive] public string Speed { get; private set; }
 
-    public string Name => _torrentManager.Torrent.Name;
-
+    public TorrentManager Manager { get; }
+    public string Name => Manager.Torrent.Name;
+    
     public ICommand Remove { get; }
     public ICommand Delete { get; }
     public ICommand Resume { get; }
@@ -61,12 +57,12 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
             Monitor();
         }
 
-        CanResume = state is TorrentState.Paused or TorrentState.Stopped && !_torrentManager.Complete;
+        CanResume = state is TorrentState.Paused or TorrentState.Stopped && !Manager.Complete;
         CanDelete = state is TorrentState.Stopped or TorrentState.Paused;
         CanPause = state is TorrentState.Downloading;
         CanStop = state is not (TorrentState.Stopping or TorrentState.Stopped);
-        Complete = _torrentManager.Complete;
-        Progress = _torrentManager.Progress.ToString("N2");
+        Complete = Manager.Complete;
+        Progress = Manager.Progress.ToString("N2");
     }
 
     private void Monitor()
@@ -81,22 +77,10 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
-                Progress = _torrentManager.Progress.ToString("N2");
-                Speed = _torrentManager.Monitor.DownloadSpeed;
-                Complete = _torrentManager.Complete;
-            });
-    }
-
-
-    private void DeleteTorrent(bool deleteFiles)
-    {
-        var command = new DeleteTorrentCommand
-        {
-            Name = Name,
-            DeleteFiles = deleteFiles
-        };
-
-        _sender.Send(command);
+                Progress = Manager.Progress.ToString("N2");
+                Speed = $"({Manager.Monitor.DownloadSpeed.Bytes().Humanize()}/s)";
+                Complete = Manager.Complete;
+            }); 
     }
 
     public void Dispose()

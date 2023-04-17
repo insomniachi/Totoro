@@ -1,16 +1,14 @@
 // Copyright (c) Microsoft Corporation and Contributors.
 // Licensed under the MIT License.
 
+using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using Totoro.Core.ViewModels;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.Torrents;
+using Totoro.Core.ViewModels;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
-using CommunityToolkit.WinUI.UI.Controls;
-using MediatR;
-using Totoro.Core.Commands;
 
 namespace Totoro.WinUI.Views.SettingsSections;
 
@@ -89,12 +87,6 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
             return;
         }
 
-        var command = new DownloadTorrentFromMagnetCommand
-        {
-            Title = m.Name,
-            Magnet = m.MagnetLink
-        };
-
-        App.GetService<ISender>().Send(command);
+        App.Commands.DownloadTorrentCommand.Execute(m);
     }
 }

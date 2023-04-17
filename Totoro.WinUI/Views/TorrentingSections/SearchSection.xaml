@@ -30,7 +30,11 @@
                 PlaceholderText="Search"
                 QueryIcon="Find"
                 Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
-            <Button Content="Paste Magnet Link">
+            <Button>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <SymbolIcon Symbol="Paste" />
+                    <TextBlock Text="Paste Magnet Link" />
+                </StackPanel>
                 <Button.Flyout>
                     <Flyout>
                         <StackPanel Spacing="10">

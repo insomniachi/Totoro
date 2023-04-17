@@ -18,7 +18,8 @@ public class TotoroCommands : IEnableLogger
     public TotoroCommands(IViewService viewService,
                           INavigationService navigationService,
                           IDebridServiceContext debridServiceContext,
-                          ITorrentEngine torrentEngine)
+                          ITorrentEngine torrentEngine,
+                          ISettings settings)
     {
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
 
@@ -127,6 +128,17 @@ public class TotoroCommands : IEnableLogger
                 });
             }
         });
+        DownloadTorrentCommand = ReactiveCommand.Create<TorrentModel>(torrent =>
+        {
+            var title = AnitomySharp.AnitomySharp.Parse(torrent.Name).FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle).Value;
+
+            if (string.IsNullOrEmpty(title))
+            {
+                return;
+            }
+
+            torrentEngine.DownloadFromMagnet(torrent.MagnetLink, Path.Combine(settings.UserTorrentsDownloadDirectory, title));
+        });
     }
 
     public ICommand UpdateTracking { get; }
@@ -135,6 +147,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand PlayVideo { get; }
     public ICommand ConfigureProvider { get; }
     public ICommand TorrentCommand { get; }
+    public ICommand DownloadTorrentCommand { get; }
     public ICommand SearchTorrent { get; }
     public ICommand RemoveTorrent { get; }
     public ICommand RemoveTorrentWithFiles { get; }
