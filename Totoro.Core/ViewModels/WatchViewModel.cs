@@ -2,7 +2,7 @@
 using AnitomySharp;
 using FuzzySharp;
 using Humanizer;
-using MonoTorrent;
+using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services.MediaEvents;
@@ -312,12 +312,12 @@ public partial class WatchViewModel : NavigatableViewModel
             await TrySetAnime(Path.GetFileName(folder));
             await CreateLocalStreamResolver(folder);
         }
-        else if(parameters.ContainsKey("Torrent"))
+        else if(parameters.ContainsKey("TorrentManager"))
         {
             UseTorrents = true;
-            var torrent = (Torrent)parameters["Torrent"];
-            await TrySetAnime(torrent.Name);
-            await CreateMonoTorrentStreamResolver(torrent);
+            var torrentManager = (TorrentManager)parameters["TorrentManager"];
+            await TrySetAnime(torrentManager.Torrent.Name);
+            await CreateMonoTorrentStreamResolver(torrentManager.Torrent);
         }
 
         MediaPlayerType = UseTorrents ? Models.MediaPlayerType.Vlc : _settings.MediaPlayerType;

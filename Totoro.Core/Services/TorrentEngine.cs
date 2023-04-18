@@ -120,11 +120,16 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 SubscribeEvents(torrentManager);
             }
 
-            await torrentManager.StartAsync();
-            if(!torrentManager.HasMetadata)
+            if(!torrentManager.Complete)
+            {
+                await torrentManager.StartAsync();
+            }
+
+            if (!torrentManager.HasMetadata)
             {
                 await torrentManager.WaitForMetadataAsync();
             }
+
             if(isNew)
             {
                 _torrentAdded.OnNext(torrentManager);
@@ -164,7 +169,10 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 SubscribeEvents(torrentManager);
             }
 
-            await torrentManager.StartAsync();
+            if (!torrentManager.Complete)
+            {
+                await torrentManager.StartAsync();
+            }
 
             return torrentManager;
         }
@@ -194,7 +202,10 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             if (torrentManager.State != TorrentState.Downloading)
             {
                 SubscribeEvents(torrentManager);
-                await torrentManager.StartAsync();
+                if (!torrentManager.Complete)
+                {
+                    await torrentManager.StartAsync();
+                }
             }
 
             return torrentManager;
@@ -209,13 +220,17 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     public async Task<Stream> GetStream(string torrentUrl, int fileIndex)
     {
         var torrentManager = _torrentManagerToMagnetMap[torrentUrl];
-        return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
+        return torrentManager.Complete
+            ? File.OpenRead(Path.Combine(torrentManager.Files[fileIndex].FullPath))
+            : await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
     }
 
     public async Task<Stream> GetStream(Torrent torrent, int fileIndex)
     {
         var torrentManager = _torrentManagers[torrent.InfoHash];
-        return await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
+        return torrentManager.Complete
+            ? File.OpenRead(Path.Combine(torrentManager.Files[fileIndex].FullPath))
+            : await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
     }
 
     public async Task SaveState()

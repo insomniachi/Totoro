@@ -115,23 +115,8 @@ public class TotoroCommands : IEnableLogger
         {
             navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
             {
-                ["Torrent"] = torrentManager.Torrent,
+                ["TorrentManager"] = torrentManager,
             });
-
-            //if(torrentManager.Complete)
-            //{
-            //    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
-            //    {
-            //        ["LocalFolder"] = torrentManager.SavePath
-            //    });
-            //}
-            //else
-            //{
-            //    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
-            //    {
-            //        ["Torrent"] = torrentManager.Torrent,
-            //    });
-            //}
         });
         DownloadTorrentCommand = ReactiveCommand.Create<TorrentModel>(torrent =>
         {
