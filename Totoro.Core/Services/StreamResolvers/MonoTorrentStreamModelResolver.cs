@@ -4,7 +4,10 @@ using MonoTorrent.Client;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
-public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, INotifyDownloadStatus, IAsyncDisposable
+public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
+                                                     INotifyDownloadStatus,
+                                                     ICompletionAware,
+                                                     IAsyncDisposable
 {
     private readonly ITorrentEngine _torrentEngine;
     private readonly Torrent _torrent;
@@ -94,6 +97,21 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
             : await _torrentEngine.GetStream(_torrent, _episodeToTorrentFileMap[episode]);
 
         return new VideoStreamsForEpisodeModel(_prevStream);
+    }
+
+    public void OnCompleted()
+    {
+        if(_torrentManager is null)
+        {
+            return;
+        }
+
+        if(_torrentManager.Torrent.Files.Count > 1)
+        {
+            return;
+        }
+
+        _torrentEngine.MarkForDeletion(_torrentManager.InfoHash);
     }
 }
 

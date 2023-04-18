@@ -69,12 +69,12 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
-        <labs:SettingsCard Description="Remove completely downloaded torrents to save space." Header="Auto Remove Completed">
+        <labs:SettingsCard Description="Remove torrents which you have watched already to save space." Header="Auto Remove Completed">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE74D;" />
             </labs:SettingsCard.HeaderIcon>
             <ToggleSwitch
-                IsOn="{x:Bind ViewModel.Settings.AutoRemoveCompletedTorrents, Mode=TwoWay}"
+                IsOn="{x:Bind ViewModel.Settings.AutoRemoveWatchedTorrents, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>

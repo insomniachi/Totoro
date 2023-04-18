@@ -28,7 +28,7 @@ public interface ISettings : INotifyPropertyChanged
     AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
     MediaPlayerType MediaPlayerType { get; set; }
     bool PreBufferTorrents { get; set; }
-    bool AutoRemoveCompletedTorrents { get; set; }
+    bool AutoRemoveWatchedTorrents { get; set; }
     string UserTorrentsDownloadDirectory { get; set; }
     bool AutoDownloadTorrents { get; set; }
 }

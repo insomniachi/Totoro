@@ -1,6 +1,11 @@
 ﻿namespace Totoro.Core.Services.MediaEvents;
 
-internal class TrackingUpdater : MediaEventListener
+public interface ITrackingUpdater
+{
+    public event EventHandler TrackingUpdated;
+}
+
+internal class TrackingUpdater : MediaEventListener, ITrackingUpdater
 {
     private readonly ITrackingServiceContext _trackingService;
     private readonly ISettings _settings;
@@ -10,6 +15,8 @@ internal class TrackingUpdater : MediaEventListener
     private TimeSpan _duration;
     private static readonly TimeSpan _nextBuffer = TimeSpan.FromMinutes(3);
     private bool _isUpdated;
+
+    public event EventHandler TrackingUpdated;
 
     public TrackingUpdater(ITrackingServiceContext trackingService,
                            ISettings settings,
@@ -86,6 +93,7 @@ internal class TrackingUpdater : MediaEventListener
         }
 
         _animeModel.Tracking = await _trackingService.Update(_animeModel.Id, tracking);
+        TrackingUpdated?.Invoke(this, EventArgs.Empty);
     }
 
     public bool IsEnabled => _animeModel is not null;

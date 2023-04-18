@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Torrents;
-using Totoro.Core.Torrents.Rss;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core;
@@ -30,8 +29,7 @@ public static class Settings
     public static Key<AdvanceTorrentSearchOptions> TorrentSearchOptions { get; } = new("TorrentSearchOptions", () => AdvanceTorrentSearchOptions.Default);
     public static Key<MediaPlayerType> MediaPlayerType { get; } = new("MediaPlayerType", Models.MediaPlayerType.WindowsMediaPlayer);
     public static Key<bool> PreBufferTorrents { get; } = new("PreBufferTorrents", false);
-    public static Key<bool> AutoRemoveCompletedTorrents { get; } = new("AutoRemoveCompletedTorrents", true);
-    [Obsolete] public static Key<RssFeedOptions> RssOptions { get; } = new("RssOptions", () => RssFeedOptions.Default);
+    public static Key<bool> AutoRemoveWatchedTorrents { get; } = new("AutoRemoveWatchedTorrents", false);
     public static Key<bool> AutoDownloadTorrents { get; } = new("AutoDownloadTorrents", false);
 
     public static IEnumerable<string> GetObsoleteKeys()

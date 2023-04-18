@@ -11,18 +11,23 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     private readonly Dictionary<string, TorrentManager> _torrentManagerToMagnetMap = new();
     private readonly string _torrentEngineState;
     private readonly ISettings _settings;
+    private readonly ILocalSettingsService _localSettingsService;
     private readonly HttpClient _httpClient;
     private readonly ScheduledSubject<string> _torrentRemoved = new(RxApp.MainThreadScheduler);
     private readonly ScheduledSubject<TorrentManager> _torrentAdded = new(RxApp.MainThreadScheduler);
+    private readonly List<InfoHash> _torrentDeleteRequests = new();
 
     public TorrentEngine(IKnownFolders knownFolders,
                          ISettings settings,
+                         ILocalSettingsService localSettingsService,
                          HttpClient httpClient)
     {
         _torrentEngineState = Path.Combine(knownFolders.Torrents, "state.bin");
         _engine = new(new EngineSettingsBuilder() { CacheDirectory = Path.Combine(knownFolders.Torrents, "cache") }.ToSettings());
         _settings = settings;
+        _localSettingsService = localSettingsService;
         _httpClient = httpClient;
+        _torrentDeleteRequests = localSettingsService.ReadSetting("TorrentDeleteRequests", new List<string>()).Select(InfoHash.FromHex).ToList();
     }
 
     public IEnumerable<TorrentManager> TorrentManagers => _engine.Torrents;
@@ -45,6 +50,17 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         _torrentRemoved.OnNext(tm.Torrent.Name);
     }
 
+    public void MarkForDeletion(InfoHash infoHash)
+    {
+        if(!_settings.AutoRemoveWatchedTorrents)
+        {
+            return;
+        }
+
+        _torrentDeleteRequests.Add(infoHash);
+        _localSettingsService.SaveSetting("TorrentDeleteRequests", _torrentDeleteRequests.Select(x => x.ToHex()));
+    }
+
     public async Task<bool> TryRestoreState()
     {
         if (!File.Exists(_torrentEngineState))
@@ -55,18 +71,26 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
         try
         {
             _engine = await ClientEngine.RestoreStateAsync(_torrentEngineState);
+            var torrentsRemoved = false;
 
             foreach (var item in _engine.Torrents)
             {
-                if(item.Complete && _settings.AutoRemoveCompletedTorrents)
+                if(_settings.AutoRemoveWatchedTorrents && _torrentDeleteRequests.Contains(item.InfoHash))
                 {
                     await RemoveTorrent(item.Torrent.Name, true);
+                    torrentsRemoved = true;
                 }
                 else
                 {
                     SubscribeEvents(item);
                     _torrentManagers.Add(item.InfoHash, item);
                 }
+            }
+
+            if(torrentsRemoved)
+            {
+                _torrentDeleteRequests.Clear();
+                _localSettingsService.SaveSetting("TorrentDeleteRequests", _torrentDeleteRequests.Select(x => x.ToHex()));
             }
         }
         catch (Exception ex) 

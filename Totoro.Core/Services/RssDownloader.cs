@@ -15,7 +15,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
     private readonly IToastService _toastService;
     private readonly ITrackingServiceContext _trackingServiceContext;
     private readonly List<InfoHash> _infoHashes;
-    private List<AnimeModel> _watchingAnime = new();
+    private readonly List<AnimeModel> _watchingAnime = new();
 
     public IList<RssFeed> Feeds { get; }
 

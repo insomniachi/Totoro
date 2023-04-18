@@ -2,6 +2,7 @@
 using AnitomySharp;
 using FuzzySharp;
 using Humanizer;
+using MonoTorrent;
 using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services.MediaEvents;
@@ -178,6 +179,16 @@ public partial class WatchViewModel : NavigatableViewModel
             .Select(x => x.Count() > 1)
             .ToPropertyEx(this, x => x.HasMultipleSubStreams);
 
+        GetMediaEventListener<ITrackingUpdater>().TrackingUpdated += (_, _) =>
+        {
+            if (_videoStreamResolver is not ICompletionAware completionAware)
+            {
+                return;
+            }
+
+            completionAware.OnCompleted();
+        };
+
         NativeMethods.PreventSleep();
     }
 
@@ -304,7 +315,7 @@ public partial class WatchViewModel : NavigatableViewModel
         else if(parameters.ContainsKey("Torrent"))
         {
             UseTorrents = true;
-            var torrent = (MonoTorrent.Torrent)parameters["Torrent"];
+            var torrent = (Torrent)parameters["Torrent"];
             await TrySetAnime(torrent.Name);
             await CreateMonoTorrentStreamResolver(torrent);
         }

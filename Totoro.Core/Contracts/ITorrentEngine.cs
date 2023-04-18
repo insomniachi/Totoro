@@ -13,6 +13,7 @@ public interface ITorrentEngine
     Task SaveState();
     Task<bool> TryRestoreState();
     Task RemoveTorrent(string torrentName, bool removeFiles);
+    void MarkForDeletion(InfoHash infoHash);
     IObservable<string> TorrentRemoved { get; }
     IObservable<TorrentManager> TorrentAdded { get; }
     IEnumerable<TorrentManager> TorrentManagers { get; }

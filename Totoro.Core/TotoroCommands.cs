@@ -113,20 +113,25 @@ public class TotoroCommands : IEnableLogger
         });
         PlayLocalFolder = ReactiveCommand.Create<TorrentManager>(torrentManager =>
         {
-            if(torrentManager.Complete)
+            navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
             {
-                navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
-                {
-                    ["LocalFolder"] = torrentManager.SavePath
-                });
-            }
-            else
-            {
-                navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
-                {
-                    ["Torrent"] = torrentManager.Torrent
-                });
-            }
+                ["Torrent"] = torrentManager.Torrent,
+            });
+
+            //if(torrentManager.Complete)
+            //{
+            //    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
+            //    {
+            //        ["LocalFolder"] = torrentManager.SavePath
+            //    });
+            //}
+            //else
+            //{
+            //    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
+            //    {
+            //        ["Torrent"] = torrentManager.Torrent,
+            //    });
+            //}
         });
         DownloadTorrentCommand = ReactiveCommand.Create<TorrentModel>(torrent =>
         {

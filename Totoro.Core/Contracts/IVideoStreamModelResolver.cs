@@ -9,6 +9,11 @@ public interface IVideoStreamModelResolver
     Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream);
 }
 
+public interface ICompletionAware
+{
+    void OnCompleted();
+}
+
 public interface INotifyDownloadStatus
 {
     IObservable<(double, ConnectionMonitor)> Status { get; }

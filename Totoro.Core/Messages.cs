@@ -1,5 +1,5 @@
 ﻿namespace Totoro.Core;
 
-public class MalAuthenticatedMessage { }
-public class MinuteTick { }
-public record RequestFullWindowMessage(bool IsFullWindow);
+public struct MalAuthenticatedMessage { }
+public struct MinuteTick { }
+public record struct RequestFullWindowMessage(bool IsFullWindow);
