@@ -8,11 +8,15 @@
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
+    xmlns:settingssections="using:Totoro.WinUI.Views.SettingsSections"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
+    x:Name="Page"
     mc:Ignorable="d">
 
     <Page.Resources>
         <local:TorrentStateConverter x:Key="StateConverter" />
         <local:HumanizeConverter x:Key="HumanizeConverter" />
+        <settingssections:BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
     </Page.Resources>
 
     <Grid>
@@ -68,7 +72,8 @@
             ItemsSource="{x:Bind ViewModel.Torrents}"
             RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
             SelectionMode="Single"
-            Sorting="DataGrid_Sorting">
+            Sorting="DataGrid_Sorting"
+            Tag="{x:Bind ViewModel.IsDebridAuthenticated}">
             <ctk:DataGrid.Columns>
                 <ctk:DataGridTemplateColumn Header="Category" Visibility="Collapsed">
                     <ctk:DataGridTemplateColumn.CellTemplate>
@@ -114,21 +119,35 @@
                     Binding="{Binding Completed}"
                     Header="Completed"
                     Visibility="Collapsed" />
-                <ctk:DataGridTemplateColumn Width="200" Header="Actions">
+                <ctk:DataGridTemplateColumn Width="230" Header="Actions">
                     <ctk:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ctk:UniformGrid
+                                Margin="3,0"
+                                ColumnSpacing="3"
+                                Rows="1">
                                 <Button
                                     x:Name="Button"
-                                    Margin="3"
                                     HorizontalAlignment="Stretch"
+                                    ui:FrameworkElementExtensions.AncestorType="ctk:DataGrid"
                                     Click="TorrentAction"
-                                    Content="{Binding State, Converter={StaticResource StateConverter}}" />
+                                    Content="{Binding State, Converter={StaticResource StateConverter}}"
+                                    Visibility="{Binding (ui:FrameworkElementExtensions.Ancestor).Tag, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource BooleanToVisibility}}" />
+                                <Button
+                                    x:Name="StreamButton"
+                                    HorizontalAlignment="Stretch"
+                                    Click="StreamButton_Click"
+                                    ToolTipService.ToolTip="Stream">
+                                    <FontIcon Glyph="&#xE93E;" />
+                                </Button>
                                 <Button
                                     x:Name="DownloadButton"
+                                    HorizontalAlignment="Stretch"
                                     Click="DownloadButton_Click"
-                                    Content="Download" />
-                            </StackPanel>
+                                    ToolTipService.ToolTip="Download">
+                                    <SymbolIcon Symbol="Download" />
+                                </Button>
+                            </ctk:UniformGrid>
                         </DataTemplate>
                     </ctk:DataGridTemplateColumn.CellTemplate>
                 </ctk:DataGridTemplateColumn>

@@ -62,38 +62,36 @@ public class TotoroCommands : IEnableLogger
             }
         });
 
+        StreamWithDebrid = ReactiveCommand.CreateFromTask<TorrentModel>(async model =>
+        {
+            switch (model.State)
+            {
+                case TorrentState.Unknown:
+                    var isCached = await debridServiceContext.Check(model.MagnetLink);
+                    model.State = isCached ? TorrentState.Unknown : TorrentState.NotCached;
+                    if (isCached)
+                    {
+                        navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
+                        {
+                            ["TorrentModel"] = model,
+                            ["UseDebrid"] = true,
+                        });
+                    }
+                    break;
+                case TorrentState.NotCached:
+                    _ = await debridServiceContext.CreateTransfer(model.MagnetLink);
+                    model.State = TorrentState.Requested;
+                    break;
+            }
+        });
+
         TorrentCommand = ReactiveCommand.CreateFromTask<TorrentModel>(async model =>
         {
-            if (debridServiceContext.IsAuthenticated)
+            navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
             {
-                switch (model.State)
-                {
-                    case TorrentState.Unknown:
-                        var isCached = await debridServiceContext.Check(model.MagnetLink);
-                        model.State = isCached ? TorrentState.Unknown : TorrentState.NotCached;
-                        if (isCached)
-                        {
-                            navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
-                            {
-                                ["TorrentModel"] = model,
-                                ["UseDebrid"] = true,
-                            });
-                        }
-                        break;
-                    case TorrentState.NotCached:
-                        _ = await debridServiceContext.CreateTransfer(model.MagnetLink);
-                        model.State = TorrentState.Requested;
-                        break;
-                }
-            }
-            else
-            {
-                navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
-                {
-                    ["TorrentModel"] = model,
-                    ["UseDebrid"] = false,
-                });
-            }
+                ["TorrentModel"] = model,
+                ["UseDebrid"] = false,
+            });
         });
 
         SearchTorrent = ReactiveCommand.Create<AnimeModel>(model =>
@@ -137,6 +135,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand PlayVideo { get; }
     public ICommand ConfigureProvider { get; }
     public ICommand TorrentCommand { get; }
+    public ICommand StreamWithDebrid { get; }
     public ICommand DownloadTorrentCommand { get; }
     public ICommand SearchTorrent { get; }
     public ICommand RemoveTorrent { get; }

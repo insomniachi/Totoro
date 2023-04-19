@@ -34,6 +34,9 @@ public class TorrentingViewModel : NavigatableViewModel
         _catalog = catalogFactory.GetCatalog(settings.TorrentProviderType);
         _animeIdService = animeIdService;
         _settings = settings;
+
+
+        IsDebridAuthenticated = _debridServiceContext.IsAuthenticated;
         ProviderType = settings.TorrentProviderType;
         var sort = this.WhenAnyValue(x => x.SortMode)
             .Select(sort => sort switch
@@ -89,7 +92,7 @@ public class TorrentingViewModel : NavigatableViewModel
 
         Search = ReactiveCommand.Create(OnSearch);
 
-        if(_debridServiceContext.IsAuthenticated)
+        if(IsDebridAuthenticated)
         {
             Sections.Add(new PivotItemModel { Header = "Transfers" });
         }
@@ -106,6 +109,7 @@ public class TorrentingViewModel : NavigatableViewModel
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public SortMode SortMode { get; set; } = SortMode.Seeders;
     [Reactive] public PivotItemModel SelectedSection { get; set; }
+    public bool IsDebridAuthenticated { get; }
 
     public TorrentProviderType ProviderType { get; }
     public TorrentModel PastedTorrent { get; } = new();

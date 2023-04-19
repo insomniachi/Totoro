@@ -18,6 +18,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
     private readonly CompositeDisposable _disposable = new();
     private static Stream _prevStream;
     private TorrentManager _torrentManager;
+    private int _lastResolvedEp;
 
     public MonoTorrentStreamModelResolver(ITorrentEngine torrentEngine,
                                           IEnumerable<Element> parsedResults,
@@ -90,6 +91,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
 
     public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
     {
+        _lastResolvedEp = episode;
         _prevStream?.Dispose();
         _prevStream = null;
         _prevStream = _torrent is null
@@ -107,6 +109,12 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         }
 
         if(_torrentManager.Torrent.Files.Count > 1)
+        {
+            return;
+        }
+
+        // if torrent contains multiple episodes, then only mark for delete when the final episode is completed.
+        if(_lastResolvedEp < _episodeToTorrentFileMap.Keys.Max())
         {
             return;
         }

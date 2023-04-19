@@ -59,7 +59,7 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
             return;
         }
 
-        App.Commands.TorrentCommand.Execute(m);
+        App.Commands.StreamWithDebrid.Execute(m);
     }
 
     private void DataGrid_Sorting(object sender, DataGridColumnEventArgs e)
@@ -88,5 +88,16 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
         }
 
         App.Commands.DownloadTorrentCommand.Execute(m);
+    }
+
+    private void StreamButton_Click(object sender, RoutedEventArgs e)
+    {
+        var button = sender as Button;
+        if (button.DataContext is not TorrentModel m)
+        {
+            return;
+        }
+
+        App.Commands.TorrentCommand.Execute(m);
     }
 }
