@@ -241,6 +241,12 @@ public partial class WatchViewModel : NavigatableViewModel
             }, RxApp.DefaultExceptionHandler.OnError);
 
         MediaPlayer
+            .PlaybackEnded
+            .Where(_ => EpisodeModels.Current != EpisodeModels.Last())
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => EpisodeModels.SelectNext());
+
+        MediaPlayer
             .TransportControls
             .OnNextTrack
             .ObserveOn(RxApp.MainThreadScheduler)

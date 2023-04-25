@@ -5,6 +5,7 @@ public interface IAnimeModel
     public string Title { get; set; }
     public long Id { get; set; }
     public int? TotalEpisodes { get; set; }
+    public string Image { get; set; }
     public Tracking Tracking { get; set; }
 }
 

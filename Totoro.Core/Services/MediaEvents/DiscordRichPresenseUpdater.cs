@@ -77,6 +77,11 @@ internal class DiscordRichPresenseUpdater : MediaEventListener
             return ihi.Image;
         }
 
+        if(_animeModel is not null)
+        {
+            return _animeModel.Image;
+        }
+
         return "icon";
     }
 

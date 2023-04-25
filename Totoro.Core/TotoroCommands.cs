@@ -85,7 +85,7 @@ public class TotoroCommands : IEnableLogger
             }
         });
 
-        TorrentCommand = ReactiveCommand.CreateFromTask<TorrentModel>(async model =>
+        TorrentCommand = ReactiveCommand.Create<TorrentModel>(model =>
         {
             navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
             {
