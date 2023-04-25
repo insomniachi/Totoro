@@ -73,7 +73,7 @@
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.WatchViewModel"
                     Content="Watch"
-                    Icon="Play"
+                    Icon="Video"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsWatchView), Mode=OneWay}" />
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.AboutAnimeViewModel"
