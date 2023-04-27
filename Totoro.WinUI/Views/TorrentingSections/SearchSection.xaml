@@ -119,7 +119,7 @@
                     Binding="{Binding Completed}"
                     Header="Completed"
                     Visibility="Collapsed" />
-                <ctk:DataGridTemplateColumn Width="230" Header="Actions">
+                <ctk:DataGridTemplateColumn Header="Actions">
                     <ctk:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ctk:UniformGrid

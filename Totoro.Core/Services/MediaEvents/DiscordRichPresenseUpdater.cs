@@ -19,6 +19,7 @@ internal class DiscordRichPresenseUpdater : MediaEventListener
     protected override void OnDurationChanged(TimeSpan duration)
     {
         _duration = duration;
+        _discordRichPresense.UpdateTimer(_duration - _currentTime);
     }
 
     protected override void OnPositionChanged(TimeSpan position)
