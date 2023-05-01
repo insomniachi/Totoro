@@ -6,14 +6,16 @@ namespace Totoro.Core.Tests.Helpers
 {
     internal class MockMediaPlayer : IMediaPlayer
     {
-        private readonly Mock<IMediaTransportControls> _tranport = new();
+        public Mock<IMediaTransportControls> TransportControlsMock { get; } = new();
+        private readonly Subject<Unit> _onDynamicSkip = new();
 
         public MockMediaPlayer()
         {
-            _tranport.Setup(x => x.OnDynamicSkip).Returns(Observable.Empty<Unit>);
-            _tranport.Setup(x => x.OnStaticSkip).Returns(Observable.Empty<Unit>);
-            _tranport.Setup(x => x.OnNextTrack).Returns(Observable.Empty<Unit>);
-            _tranport.Setup(x => x.OnPrevTrack).Returns(Observable.Empty<Unit>);
+            TransportControlsMock.SetupSet(x => x.IsSkipButtonVisible = It.IsAny<bool>()).Verifiable();
+            TransportControlsMock.Setup(x => x.OnDynamicSkip).Returns(_onDynamicSkip);
+            TransportControlsMock.Setup(x => x.OnStaticSkip).Returns(Observable.Empty<Unit>);
+            TransportControlsMock.Setup(x => x.OnNextTrack).Returns(Observable.Empty<Unit>);
+            TransportControlsMock.Setup(x => x.OnPrevTrack).Returns(Observable.Empty<Unit>);
         }
 
         public Subject<Unit> PausedSubject { get; } = new();
@@ -21,10 +23,7 @@ namespace Totoro.Core.Tests.Helpers
         public Subject<Unit> PlaybackEndedSubject { get; } = new();
         private Subject<TimeSpan> PositionChangedSubject { get; } = new();
         private Subject<TimeSpan> DurationChangedSubject { get; } = new();
-        public void ConfigureTransportControls(Action<Mock<IMediaTransportControls>> configure)
-        {
-            configure(_tranport);
-        }
+        public TimeSpan LastSeekedTime { get; private set; }
 
         public async Task SetDuration(TimeSpan ts)
         {
@@ -38,12 +37,14 @@ namespace Totoro.Core.Tests.Helpers
             await Task.Delay(10);
         }
 
+        public void PressDynamicSkip() => _onDynamicSkip.OnNext(Unit.Default);
+
         public IObservable<Unit> Paused => PausedSubject;
         public IObservable<Unit> Playing => PlayingSubject;
         public IObservable<Unit> PlaybackEnded => PlaybackEndedSubject;
         public IObservable<TimeSpan> PositionChanged => PositionChangedSubject;
         public IObservable<TimeSpan> DurationChanged => DurationChangedSubject;
-        public IMediaTransportControls TransportControls => _tranport.Object;
+        public IMediaTransportControls TransportControls => TransportControlsMock.Object;
         public MediaPlayerType Type => MediaPlayerType.Vlc;
 
         public void Dispose() { }
@@ -51,7 +52,10 @@ namespace Totoro.Core.Tests.Helpers
         public void Play() { }
         public void Play(double offsetInSeconds) { }
         public void Seek(TimeSpan ts, SeekDirection direction) { }
-        public void SeekTo(TimeSpan ts) { }
+        public void SeekTo(TimeSpan ts)
+        {
+            LastSeekedTime = ts;
+        }
         public Task<Unit> SetMedia(VideoStreamModel stream) => Task.FromResult(Unit.Default);
     }
 }

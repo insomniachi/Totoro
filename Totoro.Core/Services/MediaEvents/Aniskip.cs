@@ -72,11 +72,11 @@ internal class Aniskip : MediaEventListener, IAniskip
     protected override void OnDynamicSkipped()
     {
         var position = _position.TotalSeconds;
-        if (_ed is not null && position > _ed.Interval.StartTime)
+        if (_ed is not null && position >= _ed.Interval.StartTime)
         {
             _mediaPlayer.SeekTo(TimeSpan.FromSeconds(_ed.Interval.EndTime));
         }
-        else if (_op is not null && position > _op.Interval.StartTime)
+        else if (_op is not null && position >= _op.Interval.StartTime)
         {
             _mediaPlayer.SeekTo(TimeSpan.FromSeconds(_op.Interval.EndTime));
         }
@@ -95,8 +95,8 @@ internal class Aniskip : MediaEventListener, IAniskip
 
     private bool IsOpeningOrEnding(double position)
     {
-        var isOpening = _op is not null && position > _op.Interval.StartTime && position < _op.Interval.EndTime;
-        var isEnding = _ed is not null && position > _ed.Interval.StartTime && position < _ed.Interval.EndTime;
+        var isOpening = _op is not null && position >= _op.Interval.StartTime && position <= _op.Interval.EndTime;
+        var isEnding = _ed is not null && position >= _ed.Interval.StartTime && position <= _ed.Interval.EndTime;
 
         return isOpening || isEnding;
     }
