@@ -62,43 +62,48 @@ public class ContentDialogService : IContentDialogService
     public async Task<ContentDialogResult> ShowDialog<TViewModel>(TViewModel viewModel, Action<ContentDialog> configure)
         where TViewModel : class
     {
-        var view = App.GetService<IViewFor<TViewModel>>();
-        view.ViewModel = viewModel;
-        var dialog = new ContentDialog()
+        var result = await Observable.Start(async () =>
         {
-            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-            XamlRoot = App.MainWindow.Content.XamlRoot,
-            DefaultButton = ContentDialogButton.Primary,
-            Content = view,
-            ManipulationMode = Microsoft.UI.Xaml.Input.ManipulationModes.All
-        };
-
-        dialog.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            if (!e.IsInertial)
+            var view = App.GetService<IViewFor<TViewModel>>();
+            view.ViewModel = viewModel;
+            var dialog = new ContentDialog()
             {
-                dialog.Margin = new Thickness(dialog.Margin.Left + e.Delta.Translation.X,
-                                              dialog.Margin.Top + e.Delta.Translation.Y,
-                                              dialog.Margin.Left - e.Delta.Translation.X,
-                                              dialog.Margin.Top - e.Delta.Translation.Y);
+                Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+                XamlRoot = App.MainWindow.Content.XamlRoot,
+                DefaultButton = ContentDialogButton.Primary,
+                Content = view,
+                ManipulationMode = Microsoft.UI.Xaml.Input.ManipulationModes.All
+            };
+
+            dialog.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
+            {
+                if (!e.IsInertial)
+                {
+                    dialog.Margin = new Thickness(dialog.Margin.Left + e.Delta.Translation.X,
+                                                  dialog.Margin.Top + e.Delta.Translation.Y,
+                                                  dialog.Margin.Left - e.Delta.Translation.X,
+                                                  dialog.Margin.Top - e.Delta.Translation.Y);
+                }
+            };
+
+            IDisposable disposable = null;
+            if (viewModel is IClosable closeable)
+            {
+                disposable = closeable.Close.Subscribe(x => dialog.Hide());
             }
-        };
 
-        IDisposable disposable = null;
-        if (viewModel is IClosable closeable)
-        {
-            disposable = closeable.Close.Subscribe(x => dialog.Hide());
-        }
+            configure(dialog);
+            var result = await dialog.ShowAsync();
+            disposable?.Dispose();
+            if (viewModel is IDisposable d)
+            {
+                d.Dispose();
+            }
 
-        configure(dialog);
-        var result = await dialog.ShowAsync();
-        disposable?.Dispose();
-        if (viewModel is IDisposable d)
-        {
-            d.Dispose();
-        }
-
-        return result;
+            return result;
+        }, RxApp.MainThreadScheduler);
+        
+        return await result;
     }
 
     public Task<ContentDialogResult> ShowDialog<TViewModel>(Action<ContentDialog> configure, Action<TViewModel> configureVm) where TViewModel : class

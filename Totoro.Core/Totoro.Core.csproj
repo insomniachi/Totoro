@@ -18,7 +18,13 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Totoro.Core.Tests</_Parameter1>
+		</AssemblyAttribute>
+    </ItemGroup>
+
+	<ItemGroup>
     <PackageReference Include="CliWrap" Version="3.6.0" />
     <PackageReference Include="FuzzySharp" Version="2.0.2" />
     <PackageReference Include="GraphQL.Client" Version="6.0.0" />

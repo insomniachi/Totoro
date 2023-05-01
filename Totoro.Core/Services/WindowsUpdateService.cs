@@ -21,6 +21,10 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
     {
         _httpClient = httpClient;
         _knownFolders = knownFolders;
+
+#if DEBUG
+        _onUpdate = Observable.Empty<VersionInfo>();
+#else
         _onUpdate = Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
             .Where(_ => settings.AutoUpdate)
@@ -36,6 +40,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             .Where(vi => vi.Version > Assembly.GetEntryAssembly().GetName().Version)
             .Log(this, "New Version", vi => vi.Version.ToString())
             .Throttle(TimeSpan.FromSeconds(3));
+#endif
     }
 
     public async ValueTask<VersionInfo> GetCurrentVersionInfo()
