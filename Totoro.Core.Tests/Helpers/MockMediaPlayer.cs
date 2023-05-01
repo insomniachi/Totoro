@@ -48,14 +48,11 @@ namespace Totoro.Core.Tests.Helpers
         public MediaPlayerType Type => MediaPlayerType.Vlc;
 
         public void Dispose() { }
-        public void Pause() { }
-        public void Play() { }
-        public void Play(double offsetInSeconds) { }
-        public void Seek(TimeSpan ts, SeekDirection direction) { }
-        public void SeekTo(TimeSpan ts)
-        {
-            LastSeekedTime = ts;
-        }
+        public void Pause() { PausedSubject.OnNext(Unit.Default); }
+        public void Play() { PlayingSubject.OnNext(Unit.Default); }
+        public void Play(double offsetInSeconds) { PlayingSubject.OnNext(Unit.Default); }
+        public void Seek(TimeSpan ts, SeekDirection direction) { LastSeekedTime = ts; }
+        public void SeekTo(TimeSpan ts) { LastSeekedTime = ts; }
         public Task<Unit> SetMedia(VideoStreamModel stream) => Task.FromResult(Unit.Default);
     }
 }
