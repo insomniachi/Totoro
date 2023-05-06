@@ -19,10 +19,12 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IAnimeServiceContext _animeService;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
+    private readonly IMyAnimeListService _myAnimeListService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
     private readonly ProviderOptions _providerOptions;
     private readonly bool _isCrunchyroll;
 
+    private IEnumerable<EpisodeModel> _episodeMetadata;
     private int? _episodeRequest;
     private IVideoStreamModelResolver _videoStreamResolver;
     private IAnimeModel _anime;
@@ -36,7 +38,8 @@ public partial class WatchViewModel : NavigatableViewModel
                           IMediaPlayerFactory mediaPlayerFactory,
                           IStreamPageMapper streamPageMapper,
                           IVideoStreamResolverFactory videoStreamResolverFactory,
-                          IEnumerable<IMediaEventListener> mediaEventListeners)
+                          IEnumerable<IMediaEventListener> mediaEventListeners,
+                          IMyAnimeListService myAnimeListService)
     {
         _viewService = viewService;
         _settings = settings;
@@ -45,6 +48,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
         _videoStreamResolverFactory = videoStreamResolverFactory;
+        _myAnimeListService = myAnimeListService;
         _mediaEventListeners = mediaEventListeners.ToList();
         _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
@@ -76,6 +80,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
+            .Do(async model => _episodeMetadata ??= await myAnimeListService.GetEpisodes(model.Id))
             .SelectMany(model => Find(model.Id, model.Title))
             .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
@@ -106,6 +111,22 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(x => EpisodeModels.SelectEpisode(x), RxApp.DefaultExceptionHandler.OnError); // .Subcribe(EpisodeModels.SelecteEpisode) throws exception
 
         this.WhenAnyValue(x => x.EpisodeModels)
+            .Where(x => x is not null && Anime is not null && _episodeMetadata is not null)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ =>
+            {
+                foreach (var item in _episodeMetadata)
+                {
+                    if(EpisodeModels.FirstOrDefault(x => x.EpisodeNumber == item.EpisodeNumber) is not { } ep)
+                    {
+                        continue;
+                    }
+
+                    ep.EpisodeTitle = item.EpisodeTitle;
+                }
+            });
+
+        this.WhenAnyValue(x => x.EpisodeModels)
             .WhereNotNull()
             .SelectMany(x => x.WhenAnyValue(x => x.Current))
             .WhereNotNull()
@@ -127,13 +148,15 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(stream => Streams = stream, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.SelectedAudioStream)
+            .WhereNotNull()
+            .DistinctUntilChanged()
             .Where(_ => EpisodeModels?.Current is not null && _videoStreamResolver is not null)
             .SelectMany(type => _videoStreamResolver?.ResolveAllEpisodes(type))
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(epModels =>
             {
-                _episodeRequest = EpisodeModels.Current.EpisodeNumber;
+                _episodeRequest = EpisodeModels.Current?.EpisodeNumber;
                 EpisodeModels = epModels;
             }, RxApp.DefaultExceptionHandler.OnError);
 
@@ -143,7 +166,9 @@ public partial class WatchViewModel : NavigatableViewModel
             {
                 if (settings.DefaultProviderType != "gogo")
                 {
+                    var selectedAudioStream = SelectedAudioStream;
                     SubStreams = stream.StreamTypes;
+                    SelectedAudioStream = SubStreams.FirstOrDefault(x => x == selectedAudioStream);
                 }
                 Qualities = stream.Qualities;
             })
@@ -468,6 +493,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         _anime = await _animeService.GetInformation(id.Value);
+        _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
         SetAnime(_anime);
     }
 
@@ -482,6 +508,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         _anime = await _animeService.GetInformation(id.Value);
+        _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
         SetAnime(_anime);
     }
 
