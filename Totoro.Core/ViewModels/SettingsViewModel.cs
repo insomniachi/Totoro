@@ -4,7 +4,6 @@ using AnimDL.Core;
 using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.Torrents;
-using Totoro.Core.Torrents.Rss;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
@@ -29,6 +28,7 @@ public class SettingsViewModel : NavigatableViewModel
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
+    public List<string> AnimeActions { get; } = new List<string> { "Watch", "Info" };
     public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
     public List<DebridServiceType> DebridServices { get; } = Enum.GetValues<DebridServiceType>().Cast<DebridServiceType>().ToList();
     public List<TorrentProviderType> TorrentProviderTypes { get; } = Enum.GetValues<TorrentProviderType>().Cast<TorrentProviderType>().ToList();

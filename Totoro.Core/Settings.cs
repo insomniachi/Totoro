@@ -31,6 +31,7 @@ public static class Settings
     public static Key<bool> PreBufferTorrents { get; } = new("PreBufferTorrents", false);
     public static Key<bool> AutoRemoveWatchedTorrents { get; } = new("AutoRemoveWatchedTorrents", false);
     public static Key<bool> AutoDownloadTorrents { get; } = new("AutoDownloadTorrents", false);
+    public static Key<string> AnimeCardClickAction { get; } = new("AnimeCardClickAction", "Watch");
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

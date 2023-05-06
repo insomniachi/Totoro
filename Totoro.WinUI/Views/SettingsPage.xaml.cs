@@ -38,6 +38,7 @@ public sealed partial class SettingsPage : SettingsPageBase, IEnableLogger
             "Settings>Tracking" => Navigate<TrackingSection>(),
             "Settings>Torrenting" => Navigate<TorrentingSection>(),
             "Settings>Torrenting>RSS" => Navigate<RssSection>(),
+            "Settings>Preferences" => Navigate<PreferencesSection>(),
             _ => false
         };
     }

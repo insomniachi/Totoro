@@ -1,13 +1,15 @@
-﻿using MalApi.Interfaces;
+﻿using JikanDotNet;
+using MalApi.Interfaces;
 using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
 namespace Totoro.Core.Services.MyAnimeList;
 
-public class MyAnimeListService : IAnimeService
+public class MyAnimeListService : IAnimeService, IMyAnimeListService
 {
     private readonly IMalClient _client;
     private readonly IAnilistService _anilistService;
     private readonly ISettings _settings;
+    private readonly IJikan _jikan = new Jikan();
 
     public MyAnimeListService(IMalClient client,
                               IAnilistService anilistService,
@@ -32,13 +34,19 @@ public class MyAnimeListService : IAnimeService
                                         .Find();
 
             var model = ConvertModel(malModel);
-            observer.OnNext(model);
+            
+            GetAiredEpisodes(model)
+            .ToObservable()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => model.AiredEpisodes = x);
 
             _anilistService
                 .GetBannerImage(id)
                 .ToObservable()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(x => model.BannerImage = x);
+
+            observer.OnNext(model);
         });
     }
 
@@ -116,6 +124,17 @@ public class MyAnimeListService : IAnimeService
         return request.Find()
                       .ToObservable()
                       .Select(x => x.Data.Select(x => ConvertModel(x.Anime)));
+    }
+
+    public async Task<IEnumerable<EpisodeModel>> GetEpisodes(long id)
+    {
+        var response = await _jikan.GetAnimeEpisodesAsync(id);
+
+        return response.Data.Select((x, index) => new EpisodeModel
+        {
+            EpisodeNumber = index + 1,
+            EpisodeTitle = x.Title
+        });
     }
 
     private static MalApi.Season PrevSeason()
@@ -199,4 +218,9 @@ public class MyAnimeListService : IAnimeService
         MalApi.AnimeFieldNames.Videos,
         MalApi.AnimeFieldNames.StartDate
     };
+    private async Task<int> GetAiredEpisodes(AnimeModel model)
+    {
+        var nextEp = await _anilistService.GetNextAiringEpisode(model.Id);
+        return nextEp - 1 ?? 0;
+    }
 }

@@ -26,6 +26,7 @@
 	  <None Remove="Media\VlcMediaPlayerElement.xaml" />
 	  <None Remove="Views\SettingsSections\DefaultSection.xaml" />
 	  <None Remove="Views\SettingsSections\MediaPlayerSection.xaml" />
+	  <None Remove="Views\SettingsSections\PreferencesSection.xaml" />
 	  <None Remove="Views\SettingsSections\RssSection.xaml" />
 	  <None Remove="Views\SettingsSections\TorrentingSection.xaml" />
 	  <None Remove="Views\SettingsSections\TrackingSection.xaml" />
@@ -101,6 +102,10 @@
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="Dialogs\Views\ConfigureOptionsView.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <SubType>Designer</SubType>
+		</Page>
+		<Page Update="Views\SettingsSections\PreferencesSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>

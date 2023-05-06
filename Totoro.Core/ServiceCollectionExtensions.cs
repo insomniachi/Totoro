@@ -43,6 +43,7 @@ namespace Totoro.Core
             services.AddTransient<ISchedulerProvider, SchedulerProvider>();
             services.AddTransient<IStreamPageMapper, StreamPageMapper>();
             services.AddTransient<IAnilistService, AnilistService>();
+            services.AddTransient<IMyAnimeListService, MyAnimeListService>();
             services.AddTransient<IVideoStreamResolverFactory, VideoStreamResolverFactory>();
 
             services.AddTransient<IMediaEventListener, MediaSessionStateStorage>();

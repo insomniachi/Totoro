@@ -1,4 +1,7 @@
-﻿namespace Totoro.Core.ViewModels;
+﻿using System.Reactive.Concurrency;
+using Totoro.Core.Torrents;
+
+namespace Totoro.Core.ViewModels;
 
 public class AboutAnimeViewModel : NavigatableViewModel
 {
@@ -7,13 +10,18 @@ public class AboutAnimeViewModel : NavigatableViewModel
         new PivotItemModel { Header = "Previews" },
         new PivotItemModel { Header = "Related" },
         new PivotItemModel { Header = "Recommended" },
-        new PivotItemModel { Header = "OST"}
+        new PivotItemModel { Header = "OST" },
+        new PivotItemModel { Header = "Torrents" }
     };
 
     public AboutAnimeViewModel(IAnimeServiceContext animeService,
                                INavigationService navigationService,
                                IViewService viewService,
-                               IAnimeSoundsService animeSoundService)
+                               IAnimeSoundsService animeSoundService,
+                               ITorrentCatalogFactory torrentCatalogFactory,
+                               ISettings settings,
+                               IMyAnimeListService myAnimeListService,
+                               IAnimeIdService animeIdService)
     {
         WatchEpidoes = ReactiveCommand.Create(() => navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
         {
@@ -27,14 +35,16 @@ public class AboutAnimeViewModel : NavigatableViewModel
         this.ObservableForProperty(x => x.Id, x => x)
             .Where(id => id > 0)
             .SelectMany(animeService.GetInformation)
-            .ToPropertyEx(this, x => x.Anime, scheduler: RxApp.MainThreadScheduler);
+            .Subscribe(x => Anime = x);
 
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .Select(anime => anime.Tracking is { })
             .ToPropertyEx(this, x => x.HasTracking, scheduler: RxApp.MainThreadScheduler);
 
-        this.ObservableForProperty(x => x.Id, x => x)
+        this.WhenAnyValue(x => x.Anime)
+            .WhereNotNull()
+            .Select(anime => anime.Id)
             .Where(id => id > 0)
             .Select(animeSoundService.GetThemes)
             .ToPropertyEx(this, x => x.Sounds, scheduler: RxApp.MainThreadScheduler);
@@ -56,7 +66,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(anime =>
+            .Subscribe(async anime =>
             {
                 if(anime.Videos is not { Count : >0})
                 {
@@ -70,16 +80,51 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 {
                     Pages.Remove(Pages.First(x => x.Header == "Recommended"));
                 }
+
+                Episodes = new ((await myAnimeListService.GetEpisodes((await animeIdService.GetId(anime.Id)).MyAnimeList)));
+
+                if(Episodes is { Count : > 0 })
+                {
+                    var last = Episodes.Last();
+                    var count = anime.AiredEpisodes - last.EpisodeNumber;
+
+                    if(count > 0)
+                    {
+                        foreach (var ep in Enumerable.Range(last.EpisodeNumber + 1, count))
+                        {
+                            Episodes.Add(new EpisodeModel { EpisodeNumber = ep });
+                        }
+                    }
+                }
+
+                SelectedEpisode = Episodes.FirstOrDefault(x => x.EpisodeNumber == (anime.Tracking?.WatchedEpisodes ?? 0) + 1) ?? Episodes.Last();
             });
 
         this.WhenAnyValue(x => x.SelectedPage)
             .Where(x => x is null && Pages.Any(x => x.Visible))
             .Subscribe(_ => SelectedPage = Pages.First(x => x.Visible));
+
+        this.WhenAnyValue(x => x.SelectedEpisode)
+            .WhereNotNull()
+            .Subscribe(episode =>
+            {
+                var catalog = torrentCatalogFactory.GetCatalog(settings.TorrentProviderType);
+                RxApp.MainThreadScheduler.Schedule(async () =>
+                {
+                    IsLoading = true;
+                    Torrents = await catalog.Search($"{Anime.Title} - {(episode.EpisodeNumber).ToString().PadLeft(2, '0')}").ToListAsync();
+                    IsLoading = false;
+                });
+            });
     }
 
     [Reactive] public long Id { get; set; }
     [Reactive] public PivotItemModel SelectedPage { get; set; }
-    [ObservableAsProperty] public AnimeModel Anime { get; }
+    [Reactive] public EpisodeModel SelectedEpisode { get; set; }
+    [Reactive] public ObservableCollection<EpisodeModel> Episodes { get; set; }
+    [Reactive] public List<TorrentModel> Torrents { get; set; }
+    [Reactive] public bool IsLoading { get; set; }
+    [Reactive] public AnimeModel Anime { get; set; }
     [ObservableAsProperty] public bool HasTracking { get; }
     [ObservableAsProperty] public IList<AnimeSound> Sounds { get; }
     public ICommand WatchEpidoes { get; }
@@ -89,7 +134,15 @@ public class AboutAnimeViewModel : NavigatableViewModel
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        Id = (long)parameters.GetValueOrDefault("Id", (long)0);
+        if(parameters.ContainsKey("Id"))
+        {
+            Id = (long)parameters.GetValueOrDefault("Id", (long)0);
+        }
+        else if(parameters.ContainsKey("Anime"))
+        {
+            Anime = (AnimeModel)parameters.GetValueOrDefault("Anime", null);
+        }
+
         return Task.CompletedTask;
     }
 

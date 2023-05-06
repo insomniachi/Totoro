@@ -54,7 +54,7 @@ public class TotoroCommands : IEnableLogger
             switch (param)
             {
                 case AnimeModel anime:
-                    navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = anime.Id });
+                    navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });
                     break;
                 case long id:
                     navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
@@ -127,6 +127,17 @@ public class TotoroCommands : IEnableLogger
 
             torrentEngine.DownloadFromMagnet(torrent.MagnetLink, Path.Combine(settings.UserTorrentsDownloadDirectory, title));
         });
+        AnimeCard = ReactiveCommand.Create<AnimeModel>(anime =>
+        {
+            if (settings.AnimeCardClickAction == "Watch")
+            {
+                Watch.Execute(anime);
+            }
+            else
+            {
+                More.Execute(anime.Id);
+            }
+        });
     }
 
     public ICommand UpdateTracking { get; }
@@ -141,6 +152,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand RemoveTorrent { get; }
     public ICommand RemoveTorrentWithFiles { get; }
     public ICommand PlayLocalFolder { get; }
+    public ICommand AnimeCard { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

@@ -31,6 +31,7 @@ public interface ISettings : INotifyPropertyChanged
     bool AutoRemoveWatchedTorrents { get; set; }
     string UserTorrentsDownloadDirectory { get; set; }
     bool AutoDownloadTorrents { get; set; }
+    string AnimeCardClickAction { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

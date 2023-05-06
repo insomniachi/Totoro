@@ -11,27 +11,16 @@
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
-        <labs:SettingsCard Description="Set color scheme of application" Header="Theme">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE790;" />
-            </labs:SettingsCard.HeaderIcon>
-            <ComboBox
-                Width="150"
-                ItemsSource="{x:Bind ViewModel.Themes}"
-                SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}" />
-        </labs:SettingsCard>
 
         <labs:SettingsCard
-            Description="Choose which page loads at startup"
-            Header="Home Page"
-            Tag="Home">
+            Command="{x:Bind ViewModel.Navigate}"
+            CommandParameter="Preferences"
+            Description="User preferences for how the application behaves"
+            Header="User Preferences"
+            IsClickEnabled="True">
             <labs:SettingsCard.HeaderIcon>
-                <SymbolIcon Symbol="Home" />
+                <FontIcon Glyph="&#xE771;" />
             </labs:SettingsCard.HeaderIcon>
-            <ComboBox
-                Width="150"
-                ItemsSource="{x:Bind ViewModel.HomePages}"
-                SelectedItem="{x:Bind ViewModel.Settings.HomePage, Mode=TwoWay}" />
         </labs:SettingsCard>
 
         <labs:SettingsCard

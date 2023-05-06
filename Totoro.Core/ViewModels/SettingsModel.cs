@@ -42,6 +42,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         UserTorrentsDownloadDirectory = localSettingsService.ReadSetting(nameof(UserTorrentsDownloadDirectory), knownFolders.Torrents);
         AutoDownloadTorrents = localSettingsService.ReadSetting(Settings.AutoDownloadTorrents);
         AutoRemoveWatchedTorrents = localSettingsService.ReadSetting(Settings.AutoRemoveWatchedTorrents);
+        AnimeCardClickAction = localSettingsService.ReadSetting(Settings.AnimeCardClickAction);
 
         ObserveChanges();
     }
@@ -117,6 +118,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool AutoRemoveWatchedTorrents { get; set; }
     [Reactive] public string UserTorrentsDownloadDirectory { get; set; }
     [Reactive] public bool AutoDownloadTorrents { get; set; }
+    [Reactive] public string AnimeCardClickAction { get; set; }
 }
 
 
