@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Concurrency;
+using AnimDL.Core;
 using Totoro.Core.Torrents;
 
 namespace Totoro.Core.ViewModels;
@@ -24,12 +25,12 @@ public class AboutAnimeViewModel : NavigatableViewModel
                                IAnimeIdService animeIdService,
                                IDebridServiceContext debridServiceContext)
     {
-        WatchEpidoes = ReactiveCommand.Create(() => navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
-        {
-            ["Anime"] = Anime
-        }));
 
-        UpdateStatus = ReactiveCommand.CreateFromTask<IAnimeModel>(viewService.UpdateTracking);
+        if(ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
+        {
+            DefaultProviderType = $"({provider.DisplayName})";
+        }
+
         PlaySound = ReactiveCommand.Create<AnimeSound>(sound => viewService.PlayVideo(sound.SongName, sound.Url));
         Pause = ReactiveCommand.Create(animeSoundService.Pause);
 
@@ -133,8 +134,8 @@ public class AboutAnimeViewModel : NavigatableViewModel
     [Reactive] public AnimeModel Anime { get; set; }
     [ObservableAsProperty] public bool HasTracking { get; }
     [ObservableAsProperty] public IList<AnimeSound> Sounds { get; }
-    public ICommand WatchEpidoes { get; }
-    public ICommand UpdateStatus { get; }
+
+    public string DefaultProviderType { get; }
     public ICommand PlaySound { get; }
     public ICommand Pause { get; }
 

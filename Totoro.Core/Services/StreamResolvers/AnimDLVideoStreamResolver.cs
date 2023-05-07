@@ -9,23 +9,23 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
     private readonly string _baseUrlSub;
     private readonly string _baseUrlDub;
 
-    public AnimDLVideoStreamResolver(IProviderFactory providerFactory,
+    public AnimDLVideoStreamResolver(IProvider provider,
                                      ISettings settings,
                                      string baseUrlSub)
     {
 
-        _provider = providerFactory.GetProvider(settings.DefaultProviderType);
+        _provider = provider;
         _settings = settings;
         _baseUrlSub = baseUrlSub;
     }
 
-    public AnimDLVideoStreamResolver(IProviderFactory providerFactory,
-                                 ISettings settings,
-                                 string baseUrlSub,
-                                 string baseUrlDub)
+    public AnimDLVideoStreamResolver(IProvider provider,
+                                     ISettings settings,
+                                     string baseUrlSub,
+                                     string baseUrlDub)
     {
 
-        _provider = providerFactory.GetProvider(settings.DefaultProviderType);
+        _provider = provider;
         _settings = settings;
         _baseUrlSub = baseUrlSub;
         _baseUrlDub = baseUrlDub;

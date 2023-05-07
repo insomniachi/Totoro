@@ -10,6 +10,9 @@ public sealed partial class AnimeCard : UserControl
 {
     public static readonly DependencyProperty AnimeProperty =
         DependencyProperty.Register("Anime", typeof(AnimeModel), typeof(AnimeCard), new PropertyMetadata(null));
+    public static readonly DependencyProperty FlyoutProperty =
+        DependencyProperty.Register("Flyout", typeof(MenuFlyout), typeof(AnimeCard), new PropertyMetadata(null));
+
 
     public AnimeModel Anime
     {
@@ -17,9 +20,12 @@ public sealed partial class AnimeCard : UserControl
         set { SetValue(AnimeProperty, value); }
     }
 
-    public MenuFlyout Flyout { get; set; }
-    public ICommand WatchCommand { get; }
-    public ICommand MoreCommand { get; }
+    public MenuFlyout Flyout
+    {
+        get { return (MenuFlyout)GetValue(FlyoutProperty); }
+        set { SetValue(FlyoutProperty, value); }
+    }
+
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
     public bool ShowNextEpisodeTime { get; set; } = false;
     public bool ShowAddToList { get; set; } = true;
@@ -56,8 +62,6 @@ public sealed partial class AnimeCard : UserControl
             : (airingAt.Value - DateTime.Now).Humanize(2);
     }
 
-    private static string ToString(TimeSpan ts) => ts.Humanize(2);
-
     public Brush GetBorderBrush(AiringStatus status)
     {
         return status switch
@@ -86,6 +90,7 @@ public sealed partial class AnimeCard : UserControl
     }
 
     public Visibility InfoBadgeVisibillity(int value) => value > 0 ? Visibility.Visible : Visibility.Collapsed;
+    
     public int UnwatchedEpisodes(int airedEpisodes)
     {
         if (Anime is null)

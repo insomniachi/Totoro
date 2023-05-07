@@ -24,14 +24,14 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
         _torrentEngine = torrentEngine;
     }
 
-    public IVideoStreamModelResolver CreateAnimDLResolver(string baseUrl)
+    public IVideoStreamModelResolver CreateAnimDLResolver(string providerType, string baseUrl)
     {
-        return new AnimDLVideoStreamResolver(_providerFactory, _settings, baseUrl);
+        return new AnimDLVideoStreamResolver(_providerFactory.GetProvider(providerType), _settings, baseUrl);
     }
 
-    public IVideoStreamModelResolver CreateGogoAnimDLResolver(string baseUrlSub, string baseUrlDub)
+    public IVideoStreamModelResolver CreateGogoAnimDLResolver(string providerType, string baseUrlSub, string baseUrlDub)
     {
-        return new AnimDLVideoStreamResolver(_providerFactory, _settings, baseUrlSub, baseUrlDub);
+        return new AnimDLVideoStreamResolver(_providerFactory.GetProvider(providerType), _settings, baseUrlSub, baseUrlDub);
     }
 
     public async Task<IVideoStreamModelResolver> CreateDebridStreamResolver(string magnet)

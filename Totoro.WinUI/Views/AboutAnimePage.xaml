@@ -55,17 +55,21 @@
                     Source="{x:Bind ViewModel.Anime.Image, Mode=OneWay}"
                     Stretch="Uniform" />
 
-                <Button
+                <SplitButton
                     Width="{Binding ElementName=Container, Path=ActualWidth}"
                     Command="{x:Bind root:App.Commands.Watch}"
-                    CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}">
+                    CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}"
+                    Flyout="{x:Bind help:Converters.GetProvidersFlyout(ViewModel.Anime), Mode=OneWay}">
                     <Grid>
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <SymbolIcon Symbol="Video" />
-                            <TextBlock Text="Watch" />
+                            <TextBlock>
+                                <Run Text="Watch" />
+                                <Run Text="{x:Bind ViewModel.DefaultProviderType}" />
+                            </TextBlock>
                         </StackPanel>
                     </Grid>
-                </Button>
+                </SplitButton>
 
                 <Button
                     Width="{Binding ElementName=Container, Path=ActualWidth}"
@@ -151,234 +155,251 @@
         </ScrollViewer>
 
 
-        <ScrollViewer Grid.Column="1" Margin="20">
-            <Grid>
-                <StackPanel Spacing="10">
-                    <Grid Height="400" CornerRadius="10">
-                        <ctk:ImageEx Source="{x:Bind ViewModel.Anime.BannerImage, Mode=OneWay}" Stretch="UniformToFill" />
-                        <Grid Padding="20">
-                            <Grid.Background>
-                                <media:PipelineBrush Source="{media:BackdropSource}">
-                                    <media:LuminanceToAlphaEffect />
-                                    <media:OpacityEffect Value="0.4" />
-                                    <media:BlendEffect Mode="Multiply" Source="{media:BackdropSource}" />
-                                    <media:BlurEffect Amount="5" />
-                                    <media:ShadeEffect Intensity="0.2" Color="#FF222222" />
-                                </media:PipelineBrush>
-                            </Grid.Background>
+        <Grid
+            Grid.Column="1"
+            Margin="20"
+            RowSpacing="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="400" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid CornerRadius="10">
+                <ctk:ImageEx Source="{x:Bind ViewModel.Anime.BannerImage, Mode=OneWay}" Stretch="UniformToFill" />
+                <Grid Padding="20">
+                    <Grid.Background>
+                        <media:PipelineBrush Source="{media:BackdropSource}">
+                            <media:LuminanceToAlphaEffect />
+                            <media:OpacityEffect Value="0.4" />
+                            <media:BlendEffect Mode="Multiply" Source="{media:BackdropSource}" />
+                            <media:BlurEffect Amount="5" />
+                            <media:ShadeEffect Intensity="0.2" Color="#FF222222" />
+                        </media:PipelineBrush>
+                    </Grid.Background>
 
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="0" Spacing="10">
-                                <Border>
+                    <StackPanel Grid.Row="0" Spacing="10">
+                        <Border>
+                            <TextBlock
+                                FontSize="30"
+                                FontWeight="Bold"
+                                Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
+                        </Border>
+
+
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Margin="3"
+                                        Padding="15,5"
+                                        Background="{StaticResource CardBackgroundFillColorDefault}"
+                                        CornerRadius="5">
+                                        <TextBlock FontWeight="Bold" Text="{Binding}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ctk:WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1">
+                        <TextBlock
+                            FontSize="20"
+                            Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </ScrollViewer>
+
+                </Grid>
+            </Grid>
+            <labs:Segmented
+                Grid.Row="1"
+                DisplayMemberPath="Header"
+                ItemsSource="{x:Bind ViewModel.Pages}"
+                SelectedItem="{x:Bind ViewModel.SelectedPage, Mode=TwoWay}"
+                Style="{StaticResource PivotSegmentedStyle}">
+                <labs:Segmented.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource PivotSegmentedItemStyle}" TargetType="labs:SegmentedItem">
+                        <Setter Property="FontSize" Value="20" />
+                    </Style>
+                </labs:Segmented.ItemContainerStyle>
+            </labs:Segmented>
+            <ctk:SwitchPresenter Grid.Row="2" Value="{x:Bind ViewModel.SelectedPage.Header, Mode=OneWay}">
+                <ctk:Case Value="Previews">
+                    <ctk:AdaptiveGridView
+                        Margin="0,10"
+                        ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
+                        DesiredWidth="360"
+                        IsItemClickEnabled="True"
+                        ItemHeight="240"
+                        ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}"
+                        StretchContentForSingleRow="False">
+                        <GridView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Video">
+                                <Grid Margin="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Image Source="{x:Bind Thumbnail}" Stretch="UniformToFill" />
                                     <TextBlock
-                                        FontSize="30"
+                                        Grid.Row="1"
+                                        FontSize="18"
                                         FontWeight="Bold"
-                                        Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
-                                </Border>
+                                        Text="{x:Bind Title}"
+                                        TextWrapping="WrapWholeWords" />
+                                </Grid>
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </ctk:AdaptiveGridView>
+                </ctk:Case>
+                <ctk:Case Value="Related">
+                    <ctk:AdaptiveGridView
+                        Margin="0,10"
+                        animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+                        ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
+                        DesiredWidth="180"
+                        IsItemClickEnabled="True"
+                        ItemsSource="{x:Bind ViewModel.Anime.Related, Mode=OneWay}"
+                        StretchContentForSingleRow="False">
+                        <ctk:AdaptiveGridView.ItemTemplate>
+                            <DataTemplate x:DataType="models:AnimeModel">
+                                <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
+                            </DataTemplate>
+                        </ctk:AdaptiveGridView.ItemTemplate>
+                    </ctk:AdaptiveGridView>
+                </ctk:Case>
+                <ctk:Case Value="Recommended">
+                    <ctk:AdaptiveGridView
+                        Margin="0,10"
+                        animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
+                        ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
+                        DesiredWidth="180"
+                        IsItemClickEnabled="True"
+                        ItemsSource="{x:Bind ViewModel.Anime.Recommended, Mode=OneWay}"
+                        StretchContentForSingleRow="False">
+                        <ctk:AdaptiveGridView.ItemTemplate>
+                            <DataTemplate x:DataType="models:AnimeModel">
+                                <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
+                            </DataTemplate>
+                        </ctk:AdaptiveGridView.ItemTemplate>
+                    </ctk:AdaptiveGridView>
+                </ctk:Case>
+                <ctk:Case Value="OST">
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:AnimeSound">
+                                    <StackPanel
+                                        Margin="5"
+                                        Orientation="Horizontal"
+                                        Spacing="10">
+                                        <HyperlinkButton
+                                            Command="{x:Bind root:App.Commands.PlayVideo}"
+                                            CommandParameter="{x:Bind}"
+                                            Content="{x:Bind SongName}"
+                                            FontSize="18"
+                                            FontWeight="Bold" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </ctk:Case>
+                <ctk:Case Value="Torrents">
+                    <Grid Margin="{StaticResource SmallTopMargin}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
+                        <ctk:Expander
+                            Margin="0,0,36,0"
+                            VerticalAlignment="Stretch"
+                            VerticalContentAlignment="Top"
+                            ExpandDirection="Right"
+                            Header="Episodes"
+                            IsExpanded="True">
+                            <ListView ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedEpisode, Mode=TwoWay}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="models:EpisodeModel">
+                                        <TextBlock Text="{x:Bind DisplayName}" />
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </ctk:Expander>
 
-                                <ItemsControl ItemsSource="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border
-                                                Margin="3"
-                                                Padding="15,5"
-                                                Background="{StaticResource CardBackgroundFillColorDefault}"
-                                                CornerRadius="5">
-                                                <TextBlock FontWeight="Bold" Text="{Binding}" />
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <ctk:WrapPanel Orientation="Horizontal" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                </ItemsControl>
-                            </StackPanel>
-
-                            <ScrollViewer Grid.Row="1">
-                                <TextBlock
-                                    FontSize="20"
-                                    Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}"
-                                    TextWrapping="Wrap" />
-                            </ScrollViewer>
-
-                        </Grid>
-                    </Grid>
-                    <labs:Segmented
-                        DisplayMemberPath="Header"
-                        ItemsSource="{x:Bind ViewModel.Pages}"
-                        SelectedItem="{x:Bind ViewModel.SelectedPage, Mode=TwoWay}"
-                        Style="{StaticResource PivotSegmentedStyle}">
-                        <labs:Segmented.ItemContainerStyle>
-                            <Style BasedOn="{StaticResource PivotSegmentedItemStyle}" TargetType="labs:SegmentedItem">
-                                <Setter Property="FontSize" Value="20" />
-                            </Style>
-                        </labs:Segmented.ItemContainerStyle>
-                    </labs:Segmented>
-                    <ctk:SwitchPresenter Value="{x:Bind ViewModel.SelectedPage.Header, Mode=OneWay}">
-                        <ctk:Case Value="Previews">
-                            <ctk:AdaptiveGridView
-                                Margin="0,10"
-                                ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
-                                DesiredWidth="360"
-                                IsItemClickEnabled="True"
-                                ItemHeight="240"
-                                ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}"
-                                StretchContentForSingleRow="False">
-                                <GridView.ItemTemplate>
-                                    <DataTemplate x:DataType="models:Video">
-                                        <Grid Margin="3">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="*" />
-                                                <RowDefinition Height="Auto" />
-                                            </Grid.RowDefinitions>
-                                            <Image Source="{x:Bind Thumbnail}" Stretch="UniformToFill" />
+                        <Grid Grid.Column="1">
+                            <ListView ItemsSource="{x:Bind ViewModel.Torrents, Mode=OneWay}" SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="torrents:TorrentModel">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Name}" />
                                             <TextBlock
-                                                Grid.Row="1"
-                                                FontSize="18"
-                                                FontWeight="Bold"
-                                                Text="{x:Bind Title}"
-                                                TextWrapping="WrapWholeWords" />
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                FontSize="20"
+                                                Foreground="Green"
+                                                Text="{x:Bind Seeders}" />
+                                            <TextBlock
+                                                Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                FontSize="20"
+                                                Foreground="Red"
+                                                Text="{x:Bind Leeches}" />
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                <StackPanel.Resources>
+                                                    <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                                                        <Setter Property="Margin" Value="5,0" />
+                                                    </Style>
+                                                </StackPanel.Resources>
+                                                <Button
+                                                    Width="100"
+                                                    Command="{x:Bind root:App.Commands.StreamWithDebrid}"
+                                                    CommandParameter="{x:Bind}"
+                                                    Content="{Binding State, Converter={StaticResource StateConverter}}" />
+                                                <Button
+                                                    Command="{x:Bind root:App.Commands.TorrentCommand}"
+                                                    CommandParameter="{x:Bind}"
+                                                    ToolTipService.ToolTip="Stream">
+                                                    <FontIcon Glyph="&#xE93E;" />
+                                                </Button>
+                                                <Button
+                                                    Command="{x:Bind root:App.Commands.DownloadTorrentCommand}"
+                                                    CommandParameter="{x:Bind}"
+                                                    ToolTipService.ToolTip="Download">
+                                                    <SymbolIcon Symbol="Download" />
+                                                </Button>
+                                            </StackPanel>
                                         </Grid>
                                     </DataTemplate>
-                                </GridView.ItemTemplate>
-                            </ctk:AdaptiveGridView>
-                        </ctk:Case>
-                        <ctk:Case Value="Related">
-                            <ctk:AdaptiveGridView
-                                Margin="0,10"
-                                animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                                ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
-                                DesiredWidth="180"
-                                IsItemClickEnabled="True"
-                                ItemsSource="{x:Bind ViewModel.Anime.Related, Mode=OneWay}"
-                                StretchContentForSingleRow="False">
-                                <ctk:AdaptiveGridView.ItemTemplate>
-                                    <DataTemplate x:DataType="models:AnimeModel">
-                                        <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
-                                    </DataTemplate>
-                                </ctk:AdaptiveGridView.ItemTemplate>
-                            </ctk:AdaptiveGridView>
-                        </ctk:Case>
-                        <ctk:Case Value="Recommended">
-                            <ctk:AdaptiveGridView
-                                Margin="0,10"
-                                animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                                ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
-                                DesiredWidth="180"
-                                IsItemClickEnabled="True"
-                                ItemsSource="{x:Bind ViewModel.Anime.Recommended, Mode=OneWay}"
-                                StretchContentForSingleRow="False">
-                                <ctk:AdaptiveGridView.ItemTemplate>
-                                    <DataTemplate x:DataType="models:AnimeModel">
-                                        <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
-                                    </DataTemplate>
-                                </ctk:AdaptiveGridView.ItemTemplate>
-                            </ctk:AdaptiveGridView>
-                        </ctk:Case>
-                        <ctk:Case Value="OST">
-                            <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="models:AnimeSound">
-                                        <StackPanel
-                                            Margin="5"
-                                            Orientation="Horizontal"
-                                            Spacing="10">
-                                            <HyperlinkButton
-                                                Command="{x:Bind root:App.Commands.PlayVideo}"
-                                                CommandParameter="{x:Bind}"
-                                                Content="{x:Bind SongName}"
-                                                FontSize="18"
-                                                FontWeight="Bold" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ctk:Case>
-                        <ctk:Case Value="Torrents">
-                            <Grid Margin="{StaticResource SmallTopMargin}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <ListView ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedEpisode, Mode=TwoWay}">
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate x:DataType="models:EpisodeModel">
-                                            <TextBlock Text="{x:Bind DisplayName}" />
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-                                <Grid Grid.Column="1">
-                                    <ListView ItemsSource="{x:Bind ViewModel.Torrents, Mode=OneWay}" SelectionMode="None">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="torrents:TorrentModel">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="100" />
-                                                        <ColumnDefinition Width="100" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="{x:Bind Name}" />
-                                                    <TextBlock
-                                                        Grid.Column="1"
-                                                        VerticalAlignment="Center"
-                                                        FontSize="20"
-                                                        Foreground="Green"
-                                                        Text="{x:Bind Seeders}" />
-                                                    <TextBlock
-                                                        Grid.Column="2"
-                                                        VerticalAlignment="Center"
-                                                        FontSize="20"
-                                                        Foreground="Red"
-                                                        Text="{x:Bind Leeches}" />
-                                                    <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                                        <StackPanel.Resources>
-                                                            <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
-                                                                <Setter Property="Margin" Value="5,0" />
-                                                            </Style>
-                                                        </StackPanel.Resources>
-                                                        <Button
-                                                            Width="100"
-                                                            Command="{x:Bind root:App.Commands.StreamWithDebrid}"
-                                                            CommandParameter="{x:Bind}"
-                                                            Content="{Binding State, Converter={StaticResource StateConverter}}" />
-                                                        <Button
-                                                            Command="{x:Bind root:App.Commands.TorrentCommand}"
-                                                            CommandParameter="{x:Bind}"
-                                                            ToolTipService.ToolTip="Stream">
-                                                            <FontIcon Glyph="&#xE93E;" />
-                                                        </Button>
-                                                        <Button
-                                                            Command="{x:Bind root:App.Commands.DownloadTorrentCommand}"
-                                                            CommandParameter="{x:Bind}"
-                                                            ToolTipService.ToolTip="Download">
-                                                            <SymbolIcon Symbol="Download" />
-                                                        </Button>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
-                                    <ctk:Loading
-                                        x:Name="LoadingControl"
-                                        Grid.Row="1"
-                                        IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-                                        <ProgressRing Margin="0,0,12,0" IsActive="True" />
-                                    </ctk:Loading>
-                                </Grid>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                            <ctk:Loading
+                                x:Name="LoadingControl"
+                                Grid.Row="1"
+                                IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
+                                <ProgressRing Margin="0,0,12,0" IsActive="True" />
+                            </ctk:Loading>
+                        </Grid>
 
-                            </Grid>
-                        </ctk:Case>
-                    </ctk:SwitchPresenter>
-                </StackPanel>
-            </Grid>
-        </ScrollViewer>
+                    </Grid>
+                </ctk:Case>
+            </ctk:SwitchPresenter>
+        </Grid>
     </Grid>
 </local:AboutAnimePageBase>

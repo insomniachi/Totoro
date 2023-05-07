@@ -93,6 +93,11 @@ public class PremiumizeService : IDebridService
             yield break;
         }
 
+        if(!magnetLinks.Any())
+        {
+            yield break;
+        }
+
         using FormUrlEncodedContent content = new(magnetLinks.Select(x => new KeyValuePair<string, string>("items[]", x)));
         content.Headers.Clear();
         content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");

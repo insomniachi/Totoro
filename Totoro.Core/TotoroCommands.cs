@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using MonoTorrent.Client;
 using Splat;
+using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -28,10 +29,25 @@ public class TotoroCommands : IEnableLogger
             switch (param)
             {
                 case AnimeModel anime:
-                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() 
+                    {
+                        ["Anime"] = anime ,
+                        ["Provider"] = settings.DefaultProviderType
+                    });
                     break;
                 case long id:
-                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() 
+                    {
+                        ["Id"] = id,
+                        ["Provider"] = settings.DefaultProviderType
+                    });
+                    break;
+                case (AnimeModel anime, string providerType):
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
+                    {
+                        ["Anime"] = anime,
+                        ["Provider"] = providerType
+                    });
                     break;
             }
         });
@@ -94,9 +110,26 @@ public class TotoroCommands : IEnableLogger
             });
         });
 
-        SearchTorrent = ReactiveCommand.Create<AnimeModel>(model =>
+        SearchTorrent = ReactiveCommand.Create<object>(param =>
         {
-            navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = model });
+            switch (param)
+            {
+                case AnimeModel model:
+                    navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>() 
+                    {
+                        ["Anime"] = model,
+                        ["Indexer"] = settings.TorrentProviderType
+                    });
+                    break;
+                case (AnimeModel model, TorrentProviderType indexer):
+                    navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>()
+                    {
+                        ["Anime"] = model,
+                        ["Indexer"] = indexer
+                    });
+                    break;
+            }
+
         });
 
         ConfigureProvider = ReactiveCommand.CreateFromTask<ProviderInfo>(viewService.ConfigureProvider);

@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Concurrency;
+using AnimDL.Core;
 using AnitomySharp;
 using FuzzySharp;
 using Humanizer;
@@ -12,6 +13,7 @@ namespace Totoro.Core.ViewModels;
 
 public partial class WatchViewModel : NavigatableViewModel
 {
+    private readonly IProviderFactory _providerFactory;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly ITimestampsService _timestampsService;
@@ -21,9 +23,10 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
     private readonly IMyAnimeListService _myAnimeListService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
-    private readonly ProviderOptions _providerOptions;
-    private readonly bool _isCrunchyroll;
-
+    
+    private ProviderOptions _providerOptions;
+    private bool _isCrunchyroll;
+    private string _providerType;
     private IEnumerable<EpisodeModel> _episodeMetadata;
     private int? _episodeRequest;
     private IVideoStreamModelResolver _videoStreamResolver;
@@ -41,6 +44,7 @@ public partial class WatchViewModel : NavigatableViewModel
                           IEnumerable<IMediaEventListener> mediaEventListeners,
                           IMyAnimeListService myAnimeListService)
     {
+        _providerFactory = providerFactory;
         _viewService = viewService;
         _settings = settings;
         _timestampsService = timestampsService;
@@ -50,11 +54,6 @@ public partial class WatchViewModel : NavigatableViewModel
         _videoStreamResolverFactory = videoStreamResolverFactory;
         _myAnimeListService = myAnimeListService;
         _mediaEventListeners = mediaEventListeners.ToList();
-        _providerOptions = providerFactory.GetOptions(_settings.DefaultProviderType);
-        _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
-
-        Provider = providerFactory.GetProvider(settings.DefaultProviderType);
-        SelectedAudioStream = GetDefaultAudioStream();
 
         NextEpisode = ReactiveCommand.Create(() =>
         {
@@ -164,7 +163,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Do(stream =>
             {
-                if (settings.DefaultProviderType != "gogo")
+                if (_providerType != "gogo")
                 {
                     var selectedAudioStream = SelectedAudioStream;
                     SubStreams = stream.StreamTypes;
@@ -234,7 +233,7 @@ public partial class WatchViewModel : NavigatableViewModel
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
 
-    public IProvider Provider { get; }
+    public IProvider Provider { get; private set; }
     public IAnimeModel Anime
     {
         get => _anime;
@@ -308,6 +307,12 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        _providerType = parameters.GetValueOrDefault("Provider", _settings.DefaultProviderType) as string;
+        _providerOptions = _providerFactory.GetOptions(_providerType);
+        _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
+        Provider = _providerFactory.GetProvider(_providerType);
+        SelectedAudioStream = GetDefaultAudioStream();
+
         if (parameters.ContainsKey("Anime"))
         {
             Anime = parameters["Anime"] as IAnimeModel;
@@ -379,7 +384,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return await malCatalog.SearchByMalId(id);
         }
-        return await _streamPageMapper.GetStreamPage(id, _settings.DefaultProviderType) ?? await SearchProvider(title);
+        return await _streamPageMapper.GetStreamPage(id, _providerType) ?? await SearchProvider(title);
     }
 
     private IObservable<bool> HasNextEpisode()
@@ -421,7 +426,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return (results[0], null);
         }
-        else if (results.Count == 2 && _settings.DefaultProviderType is "gogo") // gogo anime has separate listing for sub/dub
+        else if (results.Count == 2 && _providerType is "gogo") // gogo anime has separate listing for sub/dub
         {
             return (results[0], results[1]);
         }
@@ -433,7 +438,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             var suggested = results.MaxBy(x => Fuzz.PartialRatio(x.Title, title));
             this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {Fuzz.PartialRatio(suggested.Title, title)}");
-            return (await _viewService.ChoooseSearchResult(suggested, results, _settings.DefaultProviderType), null);
+            return (await _viewService.ChoooseSearchResult(suggested, results, _providerType), null);
         }
     }
 
@@ -484,7 +489,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        var id = await _streamPageMapper.GetIdFromUrl(url, _settings.DefaultProviderType) ?? await TryGetId(title);
+        var id = await _streamPageMapper.GetIdFromUrl(url, _providerType) ?? await TryGetId(title);
 
         if (id is null)
         {
@@ -514,7 +519,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task<long?> TryGetId(string title)
     {
-        if (_settings.DefaultProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
+        if (_providerType == "kamy") // kamy combines seasons to single series, had to update tracking 
         {
             return 0;
         }
@@ -524,13 +529,13 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private string GetDefaultAudioStream()
     {
-        if (_settings.DefaultProviderType == "gogo")
+        if (_providerType == "gogo")
         {
             return "Sub";
         }
 
         var key = "StreamType";
-        if (_settings.DefaultProviderType == "consumet" && _providerOptions?.GetString("Provider", "zoro") == "crunchyroll")
+        if (_providerType == "consumet" && _providerOptions?.GetString("Provider", "zoro") == "crunchyroll")
         {
             key = "CrunchyrollStreamType";
         }
@@ -605,13 +610,13 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task CreateAnimDLResolver(string url)
     {
-        _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(url);
+        _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(_providerType, url);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
     }
 
     private async Task CreateAnimDLResolver(string sub, string dub)
     {
-        _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(sub, dub);
+        _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(_providerType, sub, dub);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
     }
 

@@ -67,12 +67,11 @@
                     Margin="0"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
-                    Background="{ThemeResource ControlOnImageFillColorDefaultBrush}"
-                    Visibility="{x:Bind help:Converters.NullToVisibility(Flyout)}">
+                    Background="{ThemeResource ControlOnImageFillColorDefaultBrush}">
                     <Button
                         Width="45"
                         Height="45"
-                        Flyout="{x:Bind Flyout}"
+                        Flyout="{x:Bind help:Converters.AnimeToFlyout(Anime), Mode=OneWay}"
                         UseSystemFocusVisuals="False">
                         <SymbolIcon Symbol="More" />
                     </Button>

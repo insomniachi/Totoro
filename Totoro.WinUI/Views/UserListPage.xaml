@@ -97,7 +97,7 @@
                                         x:Name="Card"
                                         Margin="3"
                                         Anime="{x:Bind}">
-                                        <uc:AnimeCard.Flyout>
+                                        <!--<uc:AnimeCard.Flyout>
                                             <MenuFlyout>
                                                 <MenuFlyoutItem
                                                     Command="{x:Bind root:App.Commands.UpdateTracking}"
@@ -124,7 +124,7 @@
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                             </MenuFlyout>
-                                        </uc:AnimeCard.Flyout>
+                                        </uc:AnimeCard.Flyout>-->
                                     </uc:AnimeCard>
                                 </DataTemplate>
                             </ctk:AdaptiveGridView.ItemTemplate>
