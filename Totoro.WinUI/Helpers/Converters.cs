@@ -102,14 +102,17 @@ public static partial class Converters
                 CommandParameter = (anime, item.Name)
             });
         }
+        scrapersFlyoutItem.Tapped += (_, _) => App.Commands.Watch.Execute(anime);
         flyout.Items.Add(scrapersFlyoutItem);
 
 
         var torrentFlyoutItem = new MenuFlyoutSubItem
         {
             Text = @"Search Torrents",
-            Icon = new SymbolIcon { Symbol = Symbol.Globe }
+            Icon = new SymbolIcon { Symbol = Symbol.Globe },
         };
+        torrentFlyoutItem.Tapped += (_, _) => App.Commands.SearchTorrent.Execute(anime);
+
         foreach (var item in Enum.GetValues<TorrentProviderType>().Cast<TorrentProviderType>())
         {
             torrentFlyoutItem.Items.Add(new MenuFlyoutItem

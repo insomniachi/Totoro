@@ -14,30 +14,30 @@ public enum SortMode
 public class TorrentingViewModel : NavigatableViewModel
 {
     private readonly IDebridServiceContext _debridServiceContext;
-    private readonly ITorrentCatalog _catalog;
+    private readonly ITorrentCatalogFactory _indexerFactory;
     private readonly IAnimeIdService _animeIdService;
     private readonly ISettings _settings;
     private readonly SourceCache<TorrentModel, string> _torrentsCache = new(x => x.Link);
     private readonly SourceCache<Transfer, string> _transfersCache = new(x => x.Name);
     private readonly ReadOnlyObservableCollection<TorrentModel> _torrents;
     private readonly ReadOnlyObservableCollection<Transfer> _transfers;
+    private ITorrentCatalog _catalog;
     private IDisposable _transfersSubscription;
     private bool _isSubscriptionDisposed;
 
     public TorrentingViewModel(IDebridServiceContext debridServiceContext,
-                               ITorrentCatalogFactory catalogFactory,
+                               ITorrentCatalogFactory indexerFactory,
                                IAnimeIdService animeIdService,
                                ISettings settings,
                                ITorrentEngine torrentEngine)
     {
         _debridServiceContext = debridServiceContext;
-        _catalog = catalogFactory.GetCatalog(settings.TorrentProviderType);
+        _indexerFactory = indexerFactory;
         _animeIdService = animeIdService;
         _settings = settings;
 
-
         IsDebridAuthenticated = _debridServiceContext.IsAuthenticated;
-        ProviderType = settings.TorrentProviderType;
+        
         var sort = this.WhenAnyValue(x => x.SortMode)
             .Select(sort => sort switch
             {
@@ -111,7 +111,7 @@ public class TorrentingViewModel : NavigatableViewModel
     [Reactive] public PivotItemModel SelectedSection { get; set; }
     public bool IsDebridAuthenticated { get; }
 
-    public TorrentProviderType ProviderType { get; }
+    [Reactive] public TorrentProviderType? ProviderType { get; private set; }
     public TorrentModel PastedTorrent { get; } = new();
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
     public ReadOnlyObservableCollection<Transfer> Transfers => _transfers;
@@ -184,6 +184,9 @@ public class TorrentingViewModel : NavigatableViewModel
         IsLoading = true;
         MonitorTransfers();
 
+        var indexer = (TorrentProviderType)parameters.GetValueOrDefault("Indexer", _settings.TorrentProviderType);
+        _catalog = _indexerFactory.GetCatalog(indexer);
+        ProviderType = indexer;
 
         if (parameters.ContainsKey("Anime"))
         {

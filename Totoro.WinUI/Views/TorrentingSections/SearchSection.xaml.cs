@@ -35,19 +35,24 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
             SearchBox
             .Events()
             .QuerySubmitted
-            .Select(_ => System.Reactive.Unit.Default)
+            .Select(_ => Unit.Default)
             .InvokeCommand(ViewModel.Search)
             .DisposeWith(d);
 
-            switch (ViewModel.ProviderType)
-            {
-                case TorrentProviderType.Nya:
-                    foreach (var item in DataGrid.Columns)
+            this.WhenAnyValue(x => x.ViewModel.ProviderType)
+                .WhereNotNull()
+                .Subscribe(type =>
+                {
+                    switch (type)
                     {
-                        item.Visibility = Visibility.Visible;
+                        case TorrentProviderType.Nya:
+                            foreach (var item in DataGrid.Columns)
+                            {
+                                item.Visibility = Visibility.Visible;
+                            }
+                            break;
                     }
-                    break;
-            }
+                });
         });
     }
 
