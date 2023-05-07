@@ -21,16 +21,18 @@ internal class DebridServiceContext : IDebridServiceContext
 
     public IObservable<string> TransferCreated => _onNewTransfer;
 
-    public Task<bool> Check(string magneticLink) => _services[_settings.DebridServiceType].Check(magneticLink);
+    public Task<bool> Check(string magnetLink) => _services[_settings.DebridServiceType].Check(magnetLink);
 
-    public async Task<string> CreateTransfer(string magneticLink)
+    public IAsyncEnumerable<bool> Check(IEnumerable<string> magnetLinks) => _services[_settings.DebridServiceType].Check(magnetLinks);
+
+    public async Task<string> CreateTransfer(string magnetLink)
     {
-        var id = await _services[_settings.DebridServiceType].CreateTransfer(magneticLink);
+        var id = await _services[_settings.DebridServiceType].CreateTransfer(magnetLink);
         _onNewTransfer.OnNext(id);
         return id;
     }
 
-    public Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magneticLink) => _services[_settings.DebridServiceType].GetDirectDownloadLinks(magneticLink);
+    public Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magnetLink) => _services[_settings.DebridServiceType].GetDirectDownloadLinks(magnetLink);
 
     public Task<IEnumerable<Transfer>> GetTransfers() => _services[_settings.DebridServiceType].GetTransfers();
 }

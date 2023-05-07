@@ -6,7 +6,7 @@ namespace Totoro.Core.Models
     public class EpisodeModel : ReactiveObject
     {
 
-        public int EpisodeNumber { get; init; }
+        [Reactive] public int EpisodeNumber { get; init; }
         public string SpecialEpisodeNumber { get; init; }
         public bool IsSpecial { get; init; }
         [Reactive] public string EpisodeTitle { get; set; }
@@ -14,12 +14,12 @@ namespace Totoro.Core.Models
 
         public EpisodeModel()
         {
-            this.WhenAnyValue(x => x.EpisodeTitle)
-                .Select(title =>
+            this.WhenAnyValue(x => x.EpisodeTitle, x => x.EpisodeNumber)
+                .Select(_ =>
                 {
-                    return string.IsNullOrEmpty(title)
+                    return string.IsNullOrEmpty(EpisodeTitle)
                             ? $"{EpisodeNumber}"
-                            : $"{EpisodeNumber} - {title}";
+                            : $"{EpisodeNumber} - {EpisodeTitle}";
                 })
                 .ToPropertyEx(this, x => x.DisplayName);
         }

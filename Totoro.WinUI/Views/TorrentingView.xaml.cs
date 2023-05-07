@@ -1,6 +1,5 @@
 
 using System.Diagnostics;
-using CommunityToolkit.WinUI.UI.Controls;
 using Humanizer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
@@ -65,6 +64,7 @@ public class TorrentStateConverter : IValueConverter
 
         return state switch
         {
+            TorrentState.Cached => "Play",
             TorrentState.Unknown => "Try Play",
             TorrentState.NotCached => "Cache",
             TorrentState.Requested => "Caching",

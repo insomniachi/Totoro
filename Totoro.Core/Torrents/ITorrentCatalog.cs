@@ -48,7 +48,8 @@ public enum TorrentState
 {
     Unknown,
     NotCached,
-    Requested
+    Requested,
+    Cached
 }
 
 public class TorrentModel : ReactiveObject

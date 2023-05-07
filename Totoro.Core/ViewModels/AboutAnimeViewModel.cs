@@ -21,7 +21,8 @@ public class AboutAnimeViewModel : NavigatableViewModel
                                ITorrentCatalogFactory torrentCatalogFactory,
                                ISettings settings,
                                IMyAnimeListService myAnimeListService,
-                               IAnimeIdService animeIdService)
+                               IAnimeIdService animeIdService,
+                               IDebridServiceContext debridServiceContext)
     {
         WatchEpidoes = ReactiveCommand.Create(() => navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
         {
@@ -113,6 +114,11 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 {
                     IsLoading = true;
                     Torrents = await catalog.Search($"{Anime.Title} - {(episode.EpisodeNumber).ToString().PadLeft(2, '0')}").ToListAsync();
+                    var index = 0;
+                    await foreach (var item in debridServiceContext.Check(Torrents.Select(x => x.MagnetLink)))
+                    {
+                        Torrents[index++].State = item ? TorrentState.Cached : TorrentState.NotCached;
+                    }
                     IsLoading = false;
                 });
             });

@@ -165,7 +165,12 @@ public class TorrentingViewModel : NavigatableViewModel
                 .ToObservable()
                 .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
+                .Subscribe(async list =>
+                {
+                    await UpdateCachedState(list);
+                    _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
+
+                }, RxApp.DefaultExceptionHandler.OnError);
     }
 
     public override Task OnNavigatedFrom()
@@ -194,7 +199,11 @@ public class TorrentingViewModel : NavigatableViewModel
                    .ToObservable()
                    .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
                    .ObserveOn(RxApp.MainThreadScheduler)
-                   .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
+                   .Subscribe(async list =>
+                   {
+                       await UpdateCachedState(list);
+                       _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
+                   }, RxApp.DefaultExceptionHandler.OnError);
             }
             else
             {
@@ -209,7 +218,20 @@ public class TorrentingViewModel : NavigatableViewModel
                     .ToObservable()
                     .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
                     .ObserveOn(RxApp.MainThreadScheduler)
-                    .Subscribe(list => _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link), RxApp.DefaultExceptionHandler.OnError);
+                    .Subscribe(async list =>
+                    {
+                        await UpdateCachedState(list);
+                        _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
+                    }, RxApp.DefaultExceptionHandler.OnError);
+        }
+    }
+
+    private async Task UpdateCachedState(List<TorrentModel> torrents)
+    {
+        var index = 0;
+        await foreach (var item in _debridServiceContext.Check(torrents.Select(x => x.MagnetLink)))
+        {
+            torrents[index++].State = item ? TorrentState.Cached : TorrentState.NotCached;
         }
     }
 

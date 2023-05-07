@@ -345,6 +345,7 @@
                                                             </Style>
                                                         </StackPanel.Resources>
                                                         <Button
+                                                            Width="100"
                                                             Command="{x:Bind root:App.Commands.StreamWithDebrid}"
                                                             CommandParameter="{x:Bind}"
                                                             Content="{Binding State, Converter={StaticResource StateConverter}}" />

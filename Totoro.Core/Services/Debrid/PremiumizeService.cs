@@ -70,9 +70,9 @@ public class PremiumizeService : IDebridService
 
     public DebridServiceType Type => DebridServiceType.Premiumize;
 
-    public async Task<bool> Check(string magneticLink)
+    public async Task<bool> Check(string magnetLink)
     {
-        if (string.IsNullOrEmpty(_apiKey))
+        if (string.IsNullOrEmpty(_apiKey) || !IsAuthenticated)
         {
             return false;
         }
@@ -80,15 +80,34 @@ public class PremiumizeService : IDebridService
         var json = await _httpClient.GetStringAsync(_api + "/cache/check", new Dictionary<string, string>
         {
             ["apikey"] = _apiKey,
-            ["items[]"] = magneticLink
+            ["items[]"] = magnetLink
         });
         var jObject = JsonNode.Parse(json);
         return jObject?["response"]?.AsArray()?.Any(x => (bool)x.AsValue()) ?? false;
     }
 
+    public async IAsyncEnumerable<bool> Check(IEnumerable<string> magnetLinks)
+    {
+        if (string.IsNullOrEmpty(_apiKey) || !IsAuthenticated)
+        {
+            yield break;
+        }
+
+        using FormUrlEncodedContent content = new(magnetLinks.Select(x => new KeyValuePair<string, string>("items[]", x)));
+        content.Headers.Clear();
+        content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
+        var json =  await (await _httpClient.PostAsync(_api + $"/cache/check?apikey={_apiKey}", content)).Content.ReadAsStringAsync();
+        var jObject = JsonNode.Parse(json);
+
+        foreach (var item in jObject?["response"]?.AsArray())
+        {
+            yield return item.GetValue<bool>();
+        }
+    }
+
     public async Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magneticLink)
     {
-        if (string.IsNullOrEmpty(_apiKey))
+        if (string.IsNullOrEmpty(_apiKey) || !IsAuthenticated)
         {
             return Enumerable.Empty<DirectDownloadLink>();
         }
@@ -104,7 +123,7 @@ public class PremiumizeService : IDebridService
 
     public async Task<string> CreateTransfer(string magneticLink)
     {
-        if (string.IsNullOrEmpty(_apiKey))
+        if (string.IsNullOrEmpty(_apiKey) || !IsAuthenticated)
         {
             return string.Empty;
         }
@@ -121,7 +140,7 @@ public class PremiumizeService : IDebridService
 
     public async Task<IEnumerable<Transfer>> GetTransfers()
     {
-        if (string.IsNullOrEmpty(_apiKey))
+        if (string.IsNullOrEmpty(_apiKey) || !IsAuthenticated)
         {
             return Enumerable.Empty<Transfer>();
         }
