@@ -16,7 +16,6 @@ public class AboutAnimeViewModel : NavigatableViewModel
     };
 
     public AboutAnimeViewModel(IAnimeServiceContext animeService,
-                               INavigationService navigationService,
                                IViewService viewService,
                                IAnimeSoundsService animeSoundService,
                                ITorrentCatalogFactory torrentCatalogFactory,
