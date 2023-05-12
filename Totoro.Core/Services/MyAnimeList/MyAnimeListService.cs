@@ -128,13 +128,19 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
 
     public async Task<IEnumerable<EpisodeModel>> GetEpisodes(long id)
     {
-        var response = await _jikan.GetAnimeEpisodesAsync(id);
-
-        return response.Data.Select((x, index) => new EpisodeModel
+        try
         {
-            EpisodeNumber = index + 1,
-            EpisodeTitle = x.Title
-        });
+            var response = await _jikan.GetAnimeEpisodesAsync(id);
+            return response.Data.Select((x, index) => new EpisodeModel
+            {
+                EpisodeNumber = index + 1,
+                EpisodeTitle = x.Title
+            });
+        }
+        catch
+        {
+            return Enumerable.Empty<EpisodeModel>();
+        }
     }
 
     private static MalApi.Season PrevSeason()
