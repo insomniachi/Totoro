@@ -361,7 +361,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public override async Task OnNavigatedFrom()
     {
-        MediaPlayer.Dispose();
+        MediaPlayer?.Dispose();
         NativeMethods.AllowSleep();
         if (_videoStreamResolver is IAsyncDisposable ad)
         {
@@ -497,9 +497,13 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        _anime = await _animeService.GetInformation(id.Value);
-        _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
-        SetAnime(_anime);
+        _animeService.GetInformation(id.Value)
+            .Subscribe(async anime =>
+            {
+                _anime = anime;
+                _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
+                SetAnime(_anime);
+            }, RxApp.DefaultExceptionHandler.OnError);
     }
 
     private async Task TrySetAnime(string title)
@@ -512,9 +516,13 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        _anime = await _animeService.GetInformation(id.Value);
-        _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
-        SetAnime(_anime);
+        _animeService.GetInformation(id.Value)
+            .Subscribe(async anime =>
+            {
+                _anime = anime;
+                _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
+                SetAnime(_anime);
+            }, RxApp.DefaultExceptionHandler.OnError);
     }
 
     private async Task<long?> TryGetId(string title)
