@@ -70,7 +70,7 @@ public class TotoroCommands : IEnableLogger
             switch (param)
             {
                 case AnimeModel anime:
-                    navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Anime"] = anime });
+                    navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = anime.Id });
                     break;
                 case long id:
                     navigationService.NavigateTo<AboutAnimeViewModel>(parameter: new Dictionary<string, object>() { ["Id"] = id });

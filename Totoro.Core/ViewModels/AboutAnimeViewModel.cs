@@ -97,8 +97,12 @@ public class AboutAnimeViewModel : NavigatableViewModel
                         }
                     }
                 }
+                else
+                {
+                    Pages.Remove(Pages.First(x => x.Header == "Torrents"));
+                }
 
-                SelectedEpisode = Episodes.FirstOrDefault(x => x.EpisodeNumber == (anime.Tracking?.WatchedEpisodes ?? 0) + 1) ?? Episodes.Last();
+                SelectedEpisode = Episodes.FirstOrDefault(x => x.EpisodeNumber == (anime.Tracking?.WatchedEpisodes ?? 0) + 1) ?? Episodes.LastOrDefault();
             });
 
         this.WhenAnyValue(x => x.SelectedPage)
