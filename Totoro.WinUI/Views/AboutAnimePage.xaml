@@ -59,7 +59,8 @@
                     Width="{Binding ElementName=Container, Path=ActualWidth}"
                     Command="{x:Bind root:App.Commands.Watch}"
                     CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}"
-                    Flyout="{x:Bind help:Converters.GetProvidersFlyout(ViewModel.Anime), Mode=OneWay}">
+                    Flyout="{x:Bind help:Converters.GetProvidersFlyout(ViewModel.Anime), Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.CanWatch, Mode=OneWay}">
                     <Grid>
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <SymbolIcon Symbol="Video" />

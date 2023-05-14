@@ -50,6 +50,11 @@ public class AboutAnimeViewModel : NavigatableViewModel
             .Select(animeSoundService.GetThemes)
             .ToPropertyEx(this, x => x.Sounds, scheduler: RxApp.MainThreadScheduler);
 
+        this.WhenAnyValue (x => x.Episodes, x => x.Anime)
+            .Where(x => x is not (_, null))
+            .Select(x => x.Item1 is { Count : > 0} || x.Item2.AiringStatus is not AiringStatus.NotYetAired)
+            .ToPropertyEx(this, x => x.CanWatch, scheduler: RxApp.MainThreadScheduler);
+
         this.WhenAnyValue(x => x.Sounds)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -82,26 +87,23 @@ public class AboutAnimeViewModel : NavigatableViewModel
                     Pages.Remove(Pages.First(x => x.Header == "Recommended"));
                 }
 
-                Episodes = new ((await myAnimeListService.GetEpisodes((await animeIdService.GetId(anime.Id)).MyAnimeList)));
-
-                if(Episodes is { Count : > 0 })
+                ObservableCollection<EpisodeModel> episodes = new ((await myAnimeListService.GetEpisodes((await animeIdService.GetId(anime.Id)).MyAnimeList)));
+                var lastEpisodeNumber = episodes.LastOrDefault()?.EpisodeNumber ?? 0;
+                var count = anime.AiredEpisodes - lastEpisodeNumber;
+                if(count > 0)
                 {
-                    var last = Episodes.Last();
-                    var count = anime.AiredEpisodes - last.EpisodeNumber;
-
-                    if(count > 0)
+                    foreach (var ep in Enumerable.Range(lastEpisodeNumber + 1, count))
                     {
-                        foreach (var ep in Enumerable.Range(last.EpisodeNumber + 1, count))
-                        {
-                            Episodes.Add(new EpisodeModel { EpisodeNumber = ep });
-                        }
+                        episodes.Add(new EpisodeModel { EpisodeNumber = ep });
                     }
                 }
-                else
+
+                if(episodes.Count == 0)
                 {
                     Pages.Remove(Pages.First(x => x.Header == "Torrents"));
                 }
 
+                Episodes = episodes;
                 SelectedEpisode = Episodes.FirstOrDefault(x => x.EpisodeNumber == (anime.Tracking?.WatchedEpisodes ?? 0) + 1) ?? Episodes.LastOrDefault();
             });
 
@@ -135,6 +137,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
     [Reactive] public List<TorrentModel> Torrents { get; set; }
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public AnimeModel Anime { get; set; }
+    [ObservableAsProperty] public bool CanWatch { get; }
     [ObservableAsProperty] public bool HasTracking { get; }
     [ObservableAsProperty] public IList<AnimeSound> Sounds { get; }
 
