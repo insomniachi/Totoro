@@ -1,0 +1,104 @@
+﻿using System.Diagnostics;
+using System.Net.Http.Json;
+using Splat;
+using Totoro.Plugins.Contracts;
+
+namespace Totoro.Plugins;
+
+public class PluginManager : IPluginManager, IEnableLogger
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/AnimDL/master/Binaries";
+    private readonly PluginLoader _pluginLoadContext = new();
+    private List<PluginInfoSlim> _localAnimePlugins = new();
+    private string _folder = "";
+
+    public static bool AllowSideLoadingPlugins { get; set; } = false;
+
+    class PluginIndex
+    {
+        public List<PluginInfoSlim> Anime { get; set; } = new();
+        public List<PluginInfoSlim> Manga { get; set; } = new();
+        public List<PluginInfoSlim> Torrent { get; set; } = new();
+    }
+
+    public PluginManager(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
+
+    public async Task Initialize(string folder)
+    {
+        _folder = folder;
+        _localAnimePlugins = Directory
+            .GetFiles(Path.Combine(folder, "Anime"))
+            .Select(x =>
+            {
+                var name = Path.GetFileName(x);
+                var version = FileVersionInfo.GetVersionInfo(x).FileVersion!;
+                return new PluginInfoSlim(name, version);
+            })
+            .ToList();
+
+        var listedPlugins = await GetListedPlugins();
+        await InitializeAnimePlugins(listedPlugins.Anime);
+    }
+
+    private async Task InitializeAnimePlugins(List<PluginInfoSlim> plugins)
+    {
+        if(plugins is not { Count : > 0})
+        {
+            return;
+        }
+
+        var folder = Path.Combine(_folder, "Anime");
+        var newReleases = plugins.Except(_localAnimePlugins).ToList();
+        foreach (var item in newReleases)
+        {
+            var path = Path.Combine(folder, item.FileName);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            var url = $"{_baseUrl}/{item.FileName}";
+            using var s = await _httpClient.GetStreamAsync(url);
+            using var fs = new FileStream(path, FileMode.OpenOrCreate);
+            await s.CopyToAsync(fs);
+        }
+
+        if (AllowSideLoadingPlugins)
+        {
+            var localPlugins = Directory.GetFiles(folder).Select(x => new PluginInfoSlim(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion!)).ToList();
+            foreach (var item in localPlugins.Except(plugins))
+            {
+                this.Log().Info($"Removing plugin : {item.FileName}");
+                File.Delete(Path.Combine(folder, item.FileName));
+            }
+        }
+
+        _pluginLoadContext.LoadPlugins(folder);
+    }
+
+
+    private async Task<PluginIndex> GetListedPlugins()
+    {
+        try
+        {
+            var resonse = await _httpClient.GetAsync($"{_baseUrl}/plugins.json");
+
+            if(!resonse.IsSuccessStatusCode)
+            {
+                return new();
+            }
+
+            var index = await resonse.Content.ReadFromJsonAsync<PluginIndex>() ?? new();
+            return index;
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+            return new();
+        }
+    }
+}
