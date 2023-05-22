@@ -7,6 +7,6 @@ public interface IAnimeCatalog
 
 public interface ICatalogItem
 {
-    public string Title { get; set; }
-    public string Url { get; set; }
+    public string Title { get; }
+    public string Url { get; }
 }

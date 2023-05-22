@@ -1,4 +1,5 @@
-﻿using Totoro.Plugins.Anime.Models;
+﻿using LanguageExt.Common;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Plugins.Anime.Contracts;
 
@@ -17,23 +18,23 @@ public interface IMultiLanguageAnimeStreamProvider
 
 public static class StreamProviderExtensions
 {
-    public static async Task<VideoStreamsForEpisode?> GetStream(this IAnimeStreamProvider provider, string url, int episode)
+    public static async Task<Result<VideoStreamsForEpisode>> GetStream(this IAnimeStreamProvider provider, string url, int episode)
     {
-        await foreach(var item in provider.GetStreams(url, episode..episode))
+        await foreach (var item in provider.GetStreams(url, episode..episode))
         {
             return item;
         }
 
-        return null;
+        return new(new Exception("Episode not found"));
     }
 
-    public static async Task<VideoStreamsForEpisode?> GetStream(this IMultiLanguageAnimeStreamProvider provider, string url, int episode, Language language)
+    public static async Task<Result<VideoStreamsForEpisode>> GetStream(this IMultiLanguageAnimeStreamProvider provider, string url, int episode, Language language)
     {
         await foreach (var item in provider.GetStreams(url, episode..episode, language))
         {
             return item;
         }
 
-        return null;
+        return new(new Exception("Episode not found"));
     }
 }
