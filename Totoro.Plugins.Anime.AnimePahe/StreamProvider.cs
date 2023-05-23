@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Text.RegularExpressions;
 using Flurl;
 using Flurl.Http;
 using ReactiveUI;
@@ -33,10 +34,11 @@ public partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
     private static partial Regex StreamsRegex();
 
     public const string CHARACTER_MAP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/";
+    private readonly IFlurlClient _client = new FlurlClient(new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }));
 
     public async Task<int> GetNumberOfStreams(string url)
     {
-        var html = await url.WithAutoRedirect(false).GetStringAsync();
+        var html = await url.WithClient(_client).GetStringAsync();
         var releaseId = IdRegex().Match(html).Groups[1].Value;
         return (await GetSessionPage(releaseId, 1)).total;
     }
@@ -150,9 +152,9 @@ public partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     private async Task<string> GetDirectLink(string kwikPahewin)
     {
-        var response = await kwikPahewin.WithAutoRedirect(false).GetStringAsync();
+        var response = await kwikPahewin.WithClient(_client).GetStringAsync();
         var url = KwikRedirectionRegex().Match(response).Groups[1].Value;
-        var downloadPage = await url.WithAutoRedirect(false).GetStringAsync();
+        var downloadPage = await url.WithClient(_client).GetStringAsync();
         var match = KwikParamsRegex().Match(downloadPage);
 
         if (!match.Success)
@@ -170,17 +172,16 @@ public partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
         var postUrl = KwikDecryptUrlRegex().Match(decrypted).Groups[1].Value;
         var token = KwikDecryptTokenRegex().Match(decrypted).Groups[1].Value;
 
-        var httpResponse = await postUrl
-            .WithReferer("https://kwik.cx/")
-            .WithDefaultUserAgent()
-            .PostUrlEncodedAsync(new
-            {
-                _token = token
-            });
-
-        if(httpResponse.StatusCode == (int)System.Net.HttpStatusCode.Found)
+        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
         {
-            return httpResponse!.Headers!.FirstOrDefault(HeaderNames.Location)!;
+            ["_token"] = token
+        });
+        _client.HttpClient.DefaultRequestHeaders.Referrer = new("https://kwik.cx/");
+        _client.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd(FlurlExtensions.USER_AGENT);
+        var httpResponse = await _client.HttpClient.PostAsync(postUrl, content);
+        if (httpResponse.StatusCode == HttpStatusCode.Found)
+        {
+            return httpResponse!.Headers!.Location!.AbsoluteUri;
         }
 
         return string.Empty;

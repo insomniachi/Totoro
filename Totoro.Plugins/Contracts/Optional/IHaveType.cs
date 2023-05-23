@@ -2,5 +2,5 @@
 
 public interface IHaveType
 {
-    public string Type { get; }
+    string Type { get; }
 }

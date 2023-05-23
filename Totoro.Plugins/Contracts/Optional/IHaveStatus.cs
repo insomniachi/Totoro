@@ -2,5 +2,5 @@
 
 public interface IHaveStatus
 {
-    public string Status { get; }
+    string Status { get; }
 }

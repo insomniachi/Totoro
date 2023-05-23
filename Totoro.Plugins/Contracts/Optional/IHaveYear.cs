@@ -2,5 +2,5 @@
 
 public interface IHaveYear
 {
-    public string Year { get; }
+    string Year { get; }
 }

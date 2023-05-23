@@ -2,5 +2,5 @@
 
 public interface IHaveEpisodes
 {
-    public string Episodes { get; }
+    string Episodes { get; }
 }

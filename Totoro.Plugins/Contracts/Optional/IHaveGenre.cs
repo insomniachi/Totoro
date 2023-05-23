@@ -2,5 +2,5 @@
 
 public interface IHaveGenre
 {
-    public string Genre { get; }
+    string Genre { get; }
 }

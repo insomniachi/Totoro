@@ -2,5 +2,5 @@
 
 public interface IHaveImage
 {
-    public string Image { get; }
+    string Image { get; }
 }

@@ -2,5 +2,5 @@
 
 public interface IHaveRating
 {
-    public string Rating { get; }
+    string Rating { get; }
 }
