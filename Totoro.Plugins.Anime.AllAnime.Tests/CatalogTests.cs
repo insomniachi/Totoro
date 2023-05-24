@@ -1,10 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
+using Plugin.AllAnime;
 using Xunit.Abstractions;
 
-namespace Totoro.Plugins.Anime.AnimePahe.Tests;
+namespace Totoro.Plugins.Anime.AllAnime.Tests;
 
-[ExcludeFromCodeCoverage]
 public class CatalogTests
 {
     private readonly ITestOutputHelper _output;
