@@ -2,6 +2,6 @@
 
 public class AdditionalVideoStreamInformation
 {
-    public string? Title { get; init; }
+    public string? Title { get; set; }
     public List<Subtitle> Subtitles { get; } = new();
 }

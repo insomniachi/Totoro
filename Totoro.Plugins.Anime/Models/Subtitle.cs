@@ -1,3 +1,3 @@
 ﻿namespace Totoro.Plugins.Anime.Models;
 
-public record Subtitle(Language Language, string Url);
+public record Subtitle(StreamType Language, string Url);

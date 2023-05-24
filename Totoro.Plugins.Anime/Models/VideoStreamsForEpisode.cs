@@ -50,5 +50,5 @@ public class VideoStreamsForEpisode
 
     public VideoStreams Streams { get; } = new();
     public AdditionalVideoStreamInformation AdditionalInformation { get; set; } = new();
-    public List<Language> Audio { get; } = new() { Language.Japanese };
+    public List<StreamType> StreamTypes { get; } = new();
 }

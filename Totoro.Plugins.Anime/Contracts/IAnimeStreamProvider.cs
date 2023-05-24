@@ -11,8 +11,8 @@ public interface IAnimeStreamProvider
 
 public interface IMultiLanguageAnimeStreamProvider
 {
-    public IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range episodeRange, Language language);
-    public Task<int> GetNumberOfStreams(string url, Language language);
+    public IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range episodeRange, StreamType streamType);
+    public Task<int> GetNumberOfStreams(string url, StreamType streamType);
 }
 
 
@@ -28,9 +28,9 @@ public static class StreamProviderExtensions
         return new(new Exception("Episode not found"));
     }
 
-    public static async Task<Result<VideoStreamsForEpisode>> GetStream(this IMultiLanguageAnimeStreamProvider provider, string url, int episode, Language language)
+    public static async Task<Result<VideoStreamsForEpisode>> GetStream(this IMultiLanguageAnimeStreamProvider provider, string url, int episode, StreamType streamType)
     {
-        await foreach (var item in provider.GetStreams(url, episode..episode, language))
+        await foreach (var item in provider.GetStreams(url, episode..episode, streamType))
         {
             return item;
         }

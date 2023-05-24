@@ -5,26 +5,26 @@ using Xunit.Abstractions;
 namespace Totoro.Plugins.Anime.AllAnime.Tests;
 
 [ExcludeFromCodeCoverage]
-public class CatalogTests
+public class AiredEpisodesProviderTests
 {
     private readonly ITestOutputHelper _output;
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
 
-    public CatalogTests(ITestOutputHelper output)
+    public AiredEpisodesProviderTests(ITestOutputHelper output)
     {
         _output = output;
     }
 
-    [Theory]
-    [InlineData("hyouka")]
-    public async Task Search(string query)
+    [Fact]
+    public async void GetRecentlyAiredEpisodes()
     {
         // arrange
-        var sut = new Catalog();
+        var sut = new AiredEpisodesProvider();
 
-        // act
-        var result = await sut.Search(query).ToListAsync();
+        // act 
+        var result = await sut.GetRecentlyAiredEpisodes(1).ToListAsync();
 
+        //assert
         Assert.NotEmpty(result);
         foreach (var item in result)
         {

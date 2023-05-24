@@ -1,11 +1,10 @@
 ﻿using Flurl;
-using Flurl.Http;
 using FlurlGraphQL.Querying;
 using Newtonsoft.Json.Linq;
-using Totoro.Plugins.Anime.AllAnime;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts.Optional;
 
-namespace Plugin.AllAnime;
+namespace Totoro.Plugins.Anime.AllAnime;
 
 public class Catalog : IAnimeCatalog
 {
@@ -35,10 +34,24 @@ public class Catalog : IAnimeCatalog
                     season,
                     score,
                     thumbnail,
+                    malId,
+                    aniListId
                 }
             }
         }
         """;
+
+    class SearchResult : ICatalogItem, IHaveImage, IHaveSeason, IHaveRating, IHaveMalId, IHaveAnilistId
+    {
+        required public string Season { get; init; }
+        required public string Year { get; init; }
+        required public string Image { get; init; }
+        required public string Rating { get; init; }
+        required public string Title { get; init; }
+        required public string Url { get; init; }
+        required public long MalId { get; init; }
+        required public long AnilistId { get; init; }
+    }
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
@@ -59,6 +72,9 @@ public class Catalog : IAnimeCatalog
 
         foreach (var item in jObject?["shows"]?["edges"] ?? new JArray())
         {
+            var malId = long.Parse($"{item?["malId"]}");
+            var aniListId = long.Parse($"{item?["aniListId"]}");
+
             yield return new SearchResult
             {
                 Title = $"{item?["name"]}",
@@ -66,7 +82,9 @@ public class Catalog : IAnimeCatalog
                 Season = $"{item?["season"]?["quarter"]}",
                 Year = $"{item?["season"]?["year"]}",
                 Rating = $"{item?["score"]}",
-                Image = $"{item?["thumbnail"]}"
+                Image = $"{item?["thumbnail"]}",
+                MalId = malId,
+                AnilistId = aniListId,
             };
         }
     }

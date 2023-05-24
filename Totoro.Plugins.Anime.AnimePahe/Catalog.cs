@@ -3,11 +3,22 @@ using Flurl;
 using Flurl.Http;
 using Splat;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts.Optional;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
 public class Catalog : IAnimeCatalog, IEnableLogger
 {
+    class SearchResult : ICatalogItem, IHaveSeason, IHaveImage, IHaveStatus
+    {
+        required public string Season { get; init; }
+        required public string Status { get; init; }
+        required public string Image { get; init; }
+        required public string Year { get; init; }
+        required public string Title { get; init; }
+        required public string Url { get; init; }
+    }
+
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
         var json = await Config.Url
