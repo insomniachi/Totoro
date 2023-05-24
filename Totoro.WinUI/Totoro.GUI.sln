@@ -37,9 +37,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Anime", "Anime", "{9F7BCE27
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimePahe.Tests", "..\Totoro.Plugins.Anime.AnimePahe.Tests\Totoro.Plugins.Anime.AnimePahe.Tests.csproj", "{2FE52236-DF8B-40C6-96FF-914434118044}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.AllAnime", "..\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj", "{235E5957-AC87-4323-8E3B-64A948BB6621}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AllAnime", "..\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj", "{235E5957-AC87-4323-8E3B-64A948BB6621}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.AllAnime.Tests", "..\Totoro.Plugins.Anime.AllAnime.Tests\Totoro.Plugins.Anime.AllAnime.Tests.csproj", "{B727DAB9-0169-4733-9CB3-CB75BC8F9FA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AllAnime.Tests", "..\Totoro.Plugins.Anime.AllAnime.Tests\Totoro.Plugins.Anime.AllAnime.Tests.csproj", "{B727DAB9-0169-4733-9CB3-CB75BC8F9FA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
