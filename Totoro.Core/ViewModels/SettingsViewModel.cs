@@ -1,9 +1,10 @@
 ﻿using System.Reactive.Concurrency;
 using System.Reflection;
-using AnimDL.Core;
 using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.Torrents;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
@@ -14,7 +15,7 @@ public class SettingsViewModel : NavigatableViewModel
 
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
-    [Reactive] public ProviderInfo SelectedProvider { get; set; }
+    [Reactive] public PluginInfo SelectedProvider { get; set; }
     [Reactive] public string NyaaUrl { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
     [ObservableAsProperty] public bool HasInactiveTorrents { get; }
@@ -24,7 +25,7 @@ public class SettingsViewModel : NavigatableViewModel
     public Version Version { get; }
     public Version ScrapperVersion { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public IEnumerable<ProviderInfo> ProviderTypes => ProviderFactory.Instance.Providers;
+    public IEnumerable<PluginInfo> ProviderTypes => PluginFactory<AnimePlugin>.Instance.Plugins;
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
@@ -53,8 +54,8 @@ public class SettingsViewModel : NavigatableViewModel
 
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
-        SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
-            ?? ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == "allanime");
+        SelectedProvider = PluginFactory<AnimePlugin>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
+            ?? PluginFactory<AnimePlugin>.Instance.Plugins.FirstOrDefault(x => x.Name == "allanime");
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {

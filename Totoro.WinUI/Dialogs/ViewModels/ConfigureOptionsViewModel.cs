@@ -1,15 +1,17 @@
-﻿namespace Totoro.WinUI.Dialogs.ViewModels;
+﻿using Totoro.Plugins.Options;
+
+namespace Totoro.WinUI.Dialogs.ViewModels;
 
 public class ConfigureOptionsViewModel<T> : DialogViewModel
 {
-    private readonly Action<T, ProviderOptions> _saveFunc;
+    private readonly Action<T, PluginOptions> _saveFunc;
 
     [Reactive] public T Type { get; set; }
-    [ObservableAsProperty] public ProviderOptions Options { get; }
+    [ObservableAsProperty] public PluginOptions Options { get; }
 
     public ICommand Save { get; }
 
-    public ConfigureOptionsViewModel(Func<T, ProviderOptions> getOptionsFunc, Action<T, ProviderOptions> saveFunc)
+    public ConfigureOptionsViewModel(Func<T, PluginOptions> getOptionsFunc, Action<T, PluginOptions> saveFunc)
     {
         _saveFunc = saveFunc;
 

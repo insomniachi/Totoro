@@ -1,22 +1,21 @@
 ﻿using System.Reactive.Subjects;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
 
 namespace Totoro.Core.Services;
 
 public class AiredEpisodeNotifier : IAiredEpisodeNotifier
 {
-    private List<AiredEpisode> _previousState = new();
-    private readonly Subject<AiredEpisode> _onNewEpisode = new();
+    private List<IAiredAnimeEpisode> _previousState = new();
+    private readonly Subject<IAiredAnimeEpisode> _onNewEpisode = new();
     private readonly ISettings _settings;
-    private readonly IProviderFactory _providerFactory;
     private bool _isStarted;
 
-    public IObservable<AiredEpisode> OnNewEpisode => _onNewEpisode;
+    public IObservable<IAiredAnimeEpisode> OnNewEpisode => _onNewEpisode;
 
-    public AiredEpisodeNotifier(ISettings settings,
-                                IProviderFactory providerFactory)
+    public AiredEpisodeNotifier(ISettings settings)
     {
         _settings = settings;
-        _providerFactory = providerFactory;
     }
 
     public void Start()
@@ -28,12 +27,11 @@ public class AiredEpisodeNotifier : IAiredEpisodeNotifier
 
         _isStarted = true;
 
-        var provider = _providerFactory.GetProvider(_settings.DefaultProviderType);
+        var provider = PluginFactory<AnimePlugin>.Instance.CreatePlugin(_settings.DefaultProviderType);
 
         Observable
         .Timer(TimeSpan.Zero, TimeSpan.FromMinutes(30))
-        .SelectMany(_ => provider.AiredEpisodesProvider.GetRecentlyAiredEpisodes())
-        .Select(enumerable => enumerable.ToList())
+        .SelectMany(_ => provider.AiredAnimeEpisodeProvider.GetRecentlyAiredEpisodes().ToListAsync().AsTask())
         .Do(list =>
         {
             list.RemoveAll(_previousState.Contains);

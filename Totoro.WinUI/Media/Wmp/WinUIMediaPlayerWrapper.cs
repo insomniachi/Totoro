@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using ReactiveMarbles.ObservableEvents;
 using Splat;
+using Totoro.Plugins.Anime.Models;
 using Totoro.WinUI.Contracts;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -99,30 +100,30 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
         _player.Play();
     }
 
-    private void SetSubtitles(MediaSource source, Dictionary<string, string> AdditionalInformation)
+    private void SetSubtitles(MediaSource source, AdditionalVideoStreamInformation additionalVideoStreamInformation)
     {
-        if (AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
-        {
-            var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-            _ttsMap.Clear();
-            foreach (var item in subtitles)
-            {
-                var tts = TimedTextSource.CreateFromUri(new Uri(item.Value));
-                tts.Resolved += OnTtsResolved;
-                source.ExternalTimedTextSources.Add(tts);
-                _ttsMap[tts] = item.Key;
-            }
-        }
+        //if (AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
+        //{
+        //    var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+        //    _ttsMap.Clear();
+        //    foreach (var item in subtitles)
+        //    {
+        //        var tts = TimedTextSource.CreateFromUri(new Uri(item.Value));
+        //        tts.Resolved += OnTtsResolved;
+        //        source.ExternalTimedTextSources.Add(tts);
+        //        _ttsMap[tts] = item.Key;
+        //    }
+        //}
 
-        if (AdditionalInformation?.TryGetValue("subtitleFiles", out string jsonFiles) == true)
-        {
-            var subtitles = JsonSerializer.Deserialize<List<KeyValuePair<string, string>>>(jsonFiles);
-            _ttsMap.Clear();
-            foreach (var item in subtitles)
-            {
-                _ = SetSubtitleFromFile(source, item.Value);
-            }
-        }
+        //if (AdditionalInformation?.TryGetValue("subtitleFiles", out string jsonFiles) == true)
+        //{
+        //    var subtitles = JsonSerializer.Deserialize<List<KeyValuePair<string, string>>>(jsonFiles);
+        //    _ttsMap.Clear();
+        //    foreach (var item in subtitles)
+        //    {
+        //        _ = SetSubtitleFromFile(source, item.Value);
+        //    }
+        //}
 
     }
 
@@ -139,7 +140,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
             source = await GetMediaSource(stream.StreamUrl, stream.Headers);
         }
 
-        _isHardSub = stream.Quality == "hardsub";
+        _isHardSub = stream.Resolution == "hardsub";
         SetSubtitles(source, stream.AdditionalInformation);
         _player.Source = new MediaPlaybackItem(source);
         return Unit.Default;

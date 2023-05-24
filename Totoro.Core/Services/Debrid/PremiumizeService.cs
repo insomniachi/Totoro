@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using AnimDL.Core.Helpers;
+using Flurl;
+using Flurl.Http;
 
 namespace Totoro.Core.Services.Debrid;
 
@@ -77,11 +78,11 @@ public class PremiumizeService : IDebridService
             return false;
         }
 
-        var json = await _httpClient.GetStringAsync(_api + "/cache/check", new Dictionary<string, string>
-        {
-            ["apikey"] = _apiKey,
-            ["items[]"] = magnetLink
-        });
+        var json = await _api.AppendPathSegment("/cache/check")
+            .SetQueryParam("apikey", _apiKey)
+            .SetQueryParam("items[]", magnetLink)
+            .GetStringAsync();
+
         var jObject = JsonNode.Parse(json);
         return jObject?["response"]?.AsArray()?.Any(x => (bool)x.AsValue()) ?? false;
     }
@@ -117,10 +118,13 @@ public class PremiumizeService : IDebridService
             return Enumerable.Empty<DirectDownloadLink>();
         }
 
-        var json = await _httpClient.PostFormUrlEncoded(_api + $"/transfer/directdl?apikey={_apiKey}", new Dictionary<string, string>
-        {
-            ["src"] = magneticLink,
-        });
+        var json = await _api.AppendPathSegment("/transfer/directdl")
+            .SetQueryParam("apiKey", _apiKey)
+            .PostUrlEncodedAsync(new
+            {
+                src = magneticLink
+            })
+            .ReceiveString();
 
         var jObject = JsonNode.Parse(json);
         return jObject?["content"]?.Deserialize<List<DirectDownloadLink>>() ?? Enumerable.Empty<DirectDownloadLink>();
@@ -133,10 +137,13 @@ public class PremiumizeService : IDebridService
             return string.Empty;
         }
 
-        var json = await _httpClient.PostFormUrlEncoded(_api + $"/transfer/create?apikey={_apiKey}", new Dictionary<string, string>
-        {
-            ["src"] = magneticLink,
-        });
+        var json = await _api.AppendPathSegment("/transfer/create")
+            .SetQueryParam("apiKey", _apiKey)
+            .PostUrlEncodedAsync(new
+            {
+                src = magneticLink
+            })
+            .ReceiveString();
 
         var jObject = JsonNode.Parse(json);
 
@@ -150,10 +157,10 @@ public class PremiumizeService : IDebridService
             return Enumerable.Empty<Transfer>();
         }
 
-        var json = await _httpClient.GetStringAsync(_api + "/transfer/list", new Dictionary<string, string>
-        {
-            ["apikey"] = _apiKey,
-        });
+        var json = await _api.AppendPathSegment("/transfer/list")
+            .SetQueryParam("apiKey", _apiKey)
+            .GetStringAsync();
+
         var jObject = JsonNode.Parse(json);
 
         return jObject?["transfers"]?.Deserialize<List<Transfer>>() ?? Enumerable.Empty<Transfer>();
@@ -166,10 +173,10 @@ public class PremiumizeService : IDebridService
             return false;
         }
 
-        var json = await _httpClient.GetStringAsync(_api + "/account/info", new Dictionary<string, string>
-        {
-            ["apikey"] = _apiKey,
-        });
+        var json = await _api.AppendPathSegment("/account/info")
+            .SetQueryParam("apiKey", _apiKey)
+            .GetStringAsync();
+;
         var jObject = JsonNode.Parse(json);
         long premiumUntil = ((long?)jObject?["premium_until"]?.AsValue()) ?? 0;
         return premiumUntil > 0;

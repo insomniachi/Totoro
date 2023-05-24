@@ -1,7 +1,8 @@
 ﻿namespace Totoro.Plugins.Anime.Contracts;
 
-public interface IAnimePlugin
+public class AnimePlugin
 {
-    IAnimeStreamProvider StreamProvider { get; }
-    IAnimeCatalog Catalog { get; }
+    required public IAnimeStreamProvider StreamProvider { get; init; }
+    required public  IAnimeCatalog Catalog { get; init; }
+    public IAiredAnimeEpisodeProvider? AiredAnimeEpisodeProvider { get; init; }
 }

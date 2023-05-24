@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Subjects;
+using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core.Services;
 
@@ -32,7 +33,7 @@ public class Initalizer : IInitializer
 
     public async Task Initialize()
     {
-        await _pluginManager.Initialize();
+        await _pluginManager.Initialize(_knownFolders.Plugins);
         await _torrentEngine.TryRestoreState();
         await _rssDownloader.Initialize();
         RemoveObsoleteSettings();

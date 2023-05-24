@@ -5,7 +5,8 @@
     xmlns:api="using:AnimDL.Core.Api"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:AnimDL.Core.Models"
+    xmlns:pac="using:Totoro.Plugins.Anime.Contracts"
+    xmlns:po="using:Totoro.Plugins.Options"
     xmlns:views="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -39,7 +40,7 @@
                 ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
                 SelectedItem="{x:Bind ViewModel.SelectedSearchResult, Mode=TwoWay}">
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:SearchResult">
+                    <DataTemplate x:DataType="pac:ICatalogItem">
                         <TextBlock Text="{x:Bind Title}" ToolTipService.ToolTip="{x:Bind Title}" />
                     </DataTemplate>
                 </ListView.ItemTemplate>

@@ -1,8 +1,10 @@
-﻿namespace Totoro.Core.Contracts;
+﻿using Totoro.Plugins.Options;
 
-public interface IPluginManager
-{
-    Task Initialize();
-    void SaveConfig();
-    void SaveConfig(string provider, ProviderOptions config);
-}
+namespace Totoro.Core.Contracts;
+
+//public interface IPluginManager
+//{
+//    Task Initialize();
+//    void SaveConfig();
+//    void SaveConfig(string provider, PluginOptions config);
+//}

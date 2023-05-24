@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using CommunityToolkit.WinUI.Notifications;
 using Totoro.Core;
+using Totoro.Plugins.Anime.Contracts;
 
 namespace Totoro.WinUI.Services;
 
@@ -47,7 +48,7 @@ public class AiredEpisodeToastService : IAiredEpisodeToastService
         });
     }
 
-    private async Task ShowToast(AiredEpisode epInfo)
+    private async Task ShowToast(IAiredAnimeEpisode epInfo)
     {
         var id = await _streamPageMapper.GetIdFromUrl(epInfo.Url, _settings.DefaultProviderType);
 

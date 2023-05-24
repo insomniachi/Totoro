@@ -1,15 +1,16 @@
 ﻿using System.Text;
-using AnimDL.Core.Models.Interfaces;
 using Humanizer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts.Optional;
 
 namespace Totoro.WinUI.Helpers;
 
 public static class ModelHelpers
 {
-    public static string GetTimeOfAiring(this AiredEpisode episode)
+    public static string GetTimeOfAiring(this IAiredAnimeEpisode episode)
     {
         if (episode is IHaveCreatedTime ihct)
         {
@@ -19,10 +20,10 @@ public static class ModelHelpers
         return string.Empty;
     }
 
-    public static Visibility GetTimeOfAiringVisibility(this AiredEpisode episode) => Converters.BooleanToVisibility(episode is IHaveCreatedTime);
+    public static Visibility GetTimeOfAiringVisibility(this IAiredAnimeEpisode episode) => Converters.BooleanToVisibility(episode is IHaveCreatedTime);
 
-    public static string GetImage(this SearchResult searchResult) => searchResult is IHaveImage ihi ? ihi.Image : string.Empty;
-    public static ImageSource GetImageSource(this SearchResult searchResult)
+    public static string GetImage(this ICatalogItem searchResult) => searchResult is IHaveImage ihi ? ihi.Image : string.Empty;
+    public static ImageSource GetImageSource(this ICatalogItem searchResult)
     {
         if (searchResult is not IHaveImage ihi)
         {
@@ -41,7 +42,7 @@ public static class ModelHelpers
         }
     }
 
-    public static string GetAdditionalInformation(this SearchResult searchResult)
+    public static string GetAdditionalInformation(this ICatalogItem searchResult)
     {
         StringBuilder sb = new();
         if (searchResult is IHaveSeason ihs)
@@ -55,5 +56,5 @@ public static class ModelHelpers
 
         return sb.ToString();
     }
-    public static string GetRating(this SearchResult searchResult) => searchResult is IHaveRating ihr ? ihr.Rating : string.Empty;
+    public static string GetRating(this ICatalogItem searchResult) => searchResult is IHaveRating ihr ? ihr.Rating : string.Empty;
 }

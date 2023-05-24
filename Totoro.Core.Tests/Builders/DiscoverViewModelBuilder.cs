@@ -1,4 +1,6 @@
 ﻿using Totoro.Core.ViewModels;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core.Tests.Builders;
 
@@ -8,7 +10,7 @@ internal class DiscoverViewModelBuilder
     private readonly Mock<INavigationService> _navigationServiceMock = new();
     private readonly Mock<ITrackingService> _trackingServiceMock = new();
     private Mock<ISchedulerProvider> _schedulerProvider;
-    private readonly Mock<IProviderFactory> _providerFactoryMock = new();
+    private readonly Mock<IPluginFactory<AnimePlugin>> _providerFactoryMock = new();
     private readonly Mock<ISettings> _settingsMock = new();
 
 
@@ -25,7 +27,7 @@ internal class DiscoverViewModelBuilder
         return this;
     }
 
-    internal DiscoverViewModelBuilder WithProviderFacotry(Action<Mock<IProviderFactory>> configure)
+    internal DiscoverViewModelBuilder WithProviderFacotry(Action<Mock<IPluginFactory<AnimePlugin>>> configure)
     {
         configure(_providerFactoryMock);
         return this;

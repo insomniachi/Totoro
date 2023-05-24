@@ -1,25 +1,23 @@
 ﻿using Totoro.Core.Services.Debrid;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Models
 {
     public class VideoStreamsForEpisodeModel
     {
         private readonly Dictionary<string, VideoStreamModel> _streams = new();
-        private readonly IEnumerable<string> _streamTypes = Enumerable.Empty<string>();
+        private readonly IEnumerable<StreamType> _streamTypes = Enumerable.Empty<StreamType>();
         private readonly IEnumerable<string> _qualities = Enumerable.Empty<string>();
 
         public VideoStreamsForEpisodeModel(VideoStreamsForEpisode streamsForEp)
         {
-            _qualities = streamsForEp.Qualities.Select(x => x.Key);
+            _qualities = streamsForEp.Streams.Select(x => x.Resolution);
             _streamTypes = streamsForEp.StreamTypes;
-            foreach (var item in streamsForEp.Qualities)
+            foreach (var item in _qualities)
             {
-                var model = VideoStreamModel.FromVideoStream(item.Value);
-                foreach (var kv in streamsForEp.AdditionalInformation)
-                {
-                    model.AdditionalInformation.Add(kv.Key, kv.Value);
-                }
-                _streams.Add(item.Key, model);
+                var model = VideoStreamModel.FromVideoStream(streamsForEp.Streams.GetStream(item));
+                model.AdditionalInformation = streamsForEp.AdditionalInformation;
+                _streams.Add(item, model);
             }
         }
 
@@ -39,12 +37,12 @@ namespace Totoro.Core.Models
         {
             _qualities = new[] { "default" };
             var model = VideoStreamModel.FromStream(stream);
-            model.AdditionalInformation.Add("IsMKV", "true");
+            model.AdditionalInformation.IsMkv = true;
             _streams.Add("default", model);
         }
 
         public VideoStreamModel GetStreamModel(string quality) => _streams[quality];
-        public IEnumerable<string> StreamTypes => _streamTypes;
+        public IEnumerable<StreamType> StreamTypes => _streamTypes;
         public IEnumerable<string> Qualities => _qualities;
     }
 }

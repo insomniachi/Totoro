@@ -3,6 +3,7 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Plugins.Options;
 using Totoro.WinUI.Dialogs.ViewModels;
 
 namespace Totoro.WinUI.Dialogs.Views;
@@ -26,7 +27,7 @@ public class ProviderOptionDataTemplateSelector : DataTemplateSelector
     {
         return item switch
         {
-            SelectableProviderOption => ComboBoxTemplate,
+            SelectablePluginOption => ComboBoxTemplate,
             _ => TextBoxTemplate
         };
     }

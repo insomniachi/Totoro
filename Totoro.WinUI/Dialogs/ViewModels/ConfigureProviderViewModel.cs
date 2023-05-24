@@ -1,4 +1,6 @@
-﻿using AnimDL.Core;
+﻿using Totoro.Plugins;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Options;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;
 
@@ -7,7 +9,7 @@ public class ConfigureProviderViewModel : DialogViewModel
     private readonly IPluginManager _pluginManager;
 
     [Reactive] public string ProviderType { get; set; }
-    [ObservableAsProperty] public ProviderOptions Config { get; }
+    [ObservableAsProperty] public PluginOptions Config { get; }
     public ICommand Save { get; }
 
     public ConfigureProviderViewModel(IPluginManager pluginManager)
@@ -18,12 +20,12 @@ public class ConfigureProviderViewModel : DialogViewModel
 
         this.WhenAnyValue(x => x.ProviderType)
             .WhereNotNull()
-            .Select(ProviderFactory.Instance.GetOptions)
+            .Select(PluginFactory<AnimeModel>.Instance.GetOptions)
             .ToPropertyEx(this, x => x.Config);
     }
 
     void OnSave()
     {
-        _pluginManager.SaveConfig(ProviderType, Config);
+        //_pluginManager.SaveConfig(ProviderType, Config);
     }
 }

@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using AnimDL.Core;
-using AnimDL.Core.Api;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -35,14 +33,13 @@ public partial class App : Application, IEnableLogger
 
             services.AddPlatformServices()
                     .AddTotoro()
-                    .AddAnimDL()
+                    .AddPlugins()
                     .AddMyAnimeList()
                     .AddAniList()
                     .AddTorrenting()
                     .AddTopLevelPages()
                     .AddDialogPages();
 
-            services.AddSingleton<IProviderFactory>(ProviderFactory.Instance);
             services.AddSingleton(MessageBus.Current);
             services.AddTransient<DefaultExceptionHandler>();
 

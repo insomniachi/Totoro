@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
-using AnimDL.Core.Helpers;
+using Flurl;
+using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using SharpCompress.Archives;
@@ -23,12 +24,11 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
 
     public async IAsyncEnumerable<TorrentModel> Recents()
     {
-        var stream = await _httpClient.GetStreamAsync(_baseUrl, new Dictionary<string, string>
-        {
-            ["filter[0][t]"] = "nyaa_class",
-            ["filter[0][v]"] = "trusted",
-            ["order"] = ""
-        });
+        var stream = await _baseUrl
+            .SetQueryParam("filter[0][t]", "nyaa_class")
+            .SetQueryParam("filter[0][v]", "trusted")
+            .SetQueryParam("order", "")
+            .GetStreamAsync();
 
         foreach (var item in Parse(stream))
         {
@@ -38,10 +38,10 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
 
     public async IAsyncEnumerable<TorrentModel> Search(string query)
     {
-        var stream = await _httpClient.GetStreamAsync(_baseUrl.TrimEnd('/') + "/search", new Dictionary<string, string>
-        {
-            ["q"] = query,
-        });
+        var stream = await _baseUrl
+            .AppendPathSegment("search")
+            .SetQueryParam("q", query)
+            .GetStreamAsync();
 
         foreach (var item in Parse(stream))
         {
@@ -61,7 +61,10 @@ public partial class AnimeToshoCatalog : ITorrentCatalog, ISubtitlesDownloader, 
             @params["aids"] = id.AniDb.ToString();
         }
 
-        var stream = await _httpClient.GetStreamAsync(_baseUrl.TrimEnd('/') + "/search", @params);
+        var stream = await _baseUrl
+            .AppendPathSegment("search")
+            .SetQueryParams(@params)
+            .GetStreamAsync();
 
         foreach (var item in Parse(stream))
         {

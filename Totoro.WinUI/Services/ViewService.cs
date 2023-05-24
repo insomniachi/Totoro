@@ -10,6 +10,10 @@ using Windows.Storage.AccessCache;
 using Windows.Storage.Pickers;
 using Windows.Storage;
 using WinUIEx;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Options;
+using Totoro.Plugins;
+using Totoro.Plugins.Contracts;
 
 namespace Totoro.WinUI.Services;
 
@@ -66,7 +70,7 @@ public class ViewService : IViewService, IEnableLogger
         return 0;
     }
 
-    public async Task<SearchResult> ChoooseSearchResult(SearchResult closestMatch, List<SearchResult> searchResults, string providerType)
+    public async Task<ICatalogItem> ChoooseSearchResult(ICatalogItem closestMatch, List<ICatalogItem> searchResults, string providerType)
     {
         var vm = App.GetService<ChooseSearchResultViewModel>();
         vm.SetValues(searchResults);
@@ -234,7 +238,7 @@ public class ViewService : IViewService, IEnableLogger
         return Unit.Default;
     }
 
-    public async Task<Unit> ConfigureProvider(ProviderInfo provider)
+    public async Task<Unit> ConfigureProvider(PluginInfo provider)
     {
         var vm = new ConfigureProviderViewModel(App.GetService<IPluginManager>())
         {
@@ -254,7 +258,7 @@ public class ViewService : IViewService, IEnableLogger
         return Unit.Default;
     }
 
-    public async Task<Unit> ConfigureOptions<T>(T type, Func<T, ProviderOptions> getFunc, Action<T, ProviderOptions> saveFunc)
+    public async Task<Unit> ConfigureOptions<T>(T type, Func<T, PluginOptions> getFunc, Action<T, PluginOptions> saveFunc)
     {
         var vm = new ConfigureOptionsViewModel<T>(getFunc, saveFunc)
         {

@@ -8,8 +8,8 @@ namespace Totoro.Plugins;
 public class PluginManager : IPluginManager, IEnableLogger
 {
     private readonly HttpClient _httpClient;
+    private readonly IPluginFactory _animePluginFactory;
     private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/AnimDL/master/Binaries";
-    private readonly PluginLoader _pluginLoadContext = new();
     private List<PluginInfoSlim> _localAnimePlugins = new();
     private string _folder = "";
 
@@ -22,23 +22,31 @@ public class PluginManager : IPluginManager, IEnableLogger
         public List<PluginInfoSlim> Torrent { get; set; } = new();
     }
 
-    public PluginManager(HttpClient httpClient)
+    public PluginManager(HttpClient httpClient,
+                         IPluginFactory animePluginFactory)
     {
         _httpClient = httpClient;
+        _animePluginFactory = animePluginFactory;
     }
 
     public async Task Initialize(string folder)
     {
         _folder = folder;
-        _localAnimePlugins = Directory
-            .GetFiles(Path.Combine(folder, "Anime"))
-            .Select(x =>
-            {
-                var name = Path.GetFileName(x);
-                var version = FileVersionInfo.GetVersionInfo(x).FileVersion!;
-                return new PluginInfoSlim(name, version);
-            })
-            .ToList();
+
+        var animeFolder = Path.Combine(folder, "Anime");
+
+        if(Directory.Exists(animeFolder))
+        {
+            _localAnimePlugins = Directory
+                .GetFiles(animeFolder)
+                .Select(x =>
+                {
+                    var name = Path.GetFileName(x);
+                    var version = FileVersionInfo.GetVersionInfo(x).FileVersion!;
+                    return new PluginInfoSlim(name, version);
+                })
+                .ToList();
+        }
 
         var listedPlugins = await GetListedPlugins();
         await InitializeAnimePlugins(listedPlugins.Anime);
@@ -77,7 +85,7 @@ public class PluginManager : IPluginManager, IEnableLogger
             }
         }
 
-        _pluginLoadContext.LoadPlugins(folder);
+        _animePluginFactory.LoadPlugins(folder);
     }
 
 

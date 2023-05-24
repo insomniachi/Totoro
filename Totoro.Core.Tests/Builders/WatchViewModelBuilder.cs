@@ -1,4 +1,6 @@
 ﻿using Totoro.Core.Tests.Helpers;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core.Tests.Builders;
 
@@ -7,7 +9,7 @@ internal class WatchViewModelBuilder
     private readonly Mock<IDiscordRichPresense> _discordRpcMock = new();
     private readonly Mock<IResumePlaybackService> _playbackStateStorageMock = new();
     private readonly Mock<ITrackingServiceContext> _trackingServiceMock = new();
-    private readonly Mock<IProviderFactory> _providerFactoryMock = new();
+    private readonly Mock<IPluginFactory<AnimePlugin>> _providerFactoryMock = new();
     private readonly Mock<IViewService> _viewServiceMock = new();
     private readonly Mock<ISettings> _settingsMock = new();
     private readonly Mock<IAnimeServiceContext> _animeServiceMock = new();
@@ -36,7 +38,7 @@ internal class WatchViewModelBuilder
     //                              Mock.Of<ITorrentCatalog>());
     //}
 
-    internal WatchViewModelBuilder WithProviderFactory(Action<Mock<IProviderFactory>> configure)
+    internal WatchViewModelBuilder WithProviderFactory(Action<Mock<IPluginFactory<AnimePlugin>>> configure)
     {
         configure(_providerFactoryMock);
         return this;

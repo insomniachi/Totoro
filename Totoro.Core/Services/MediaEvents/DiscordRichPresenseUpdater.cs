@@ -1,4 +1,4 @@
-﻿using AnimDL.Core.Models.Interfaces;
+﻿using Totoro.Plugins.Contracts.Optional;
 
 namespace Totoro.Core.Services.MediaEvents;
 

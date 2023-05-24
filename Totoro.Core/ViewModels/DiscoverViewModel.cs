@@ -1,28 +1,30 @@
 ﻿using System.Reactive.Concurrency;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core.ViewModels;
 
 public class DiscoverViewModel : NavigatableViewModel
 {
     private readonly INavigationService _navigationService;
-    private readonly SourceCache<AiredEpisode, string> _episodesCache = new(x => x.Url);
-    private readonly SourceCache<SearchResult, string> _animeSearchResultCache = new(x => x.Url);
-    private readonly ReadOnlyObservableCollection<AiredEpisode> _episodes;
-    private readonly ReadOnlyObservableCollection<SearchResult> _animeSearchResults;
-    private readonly IProvider _provider;
+    private readonly SourceCache<IAiredAnimeEpisode, string> _episodesCache = new(x => x.Url);
+    private readonly SourceCache<ICatalogItem, string> _animeSearchResultCache = new(x => x.Url);
+    private readonly ReadOnlyObservableCollection<IAiredAnimeEpisode> _episodes;
+    private readonly ReadOnlyObservableCollection<ICatalogItem> _animeSearchResults;
+    private readonly AnimePlugin _provider;
 
-    public DiscoverViewModel(IProviderFactory providerFacotory,
+    public DiscoverViewModel(IPluginFactory<AnimePlugin> providerFacotory,
                              ISettings settings,
                              INavigationService navigationService)
     {
-        _provider = providerFacotory.GetProvider(settings.DefaultProviderType);
+        _provider = providerFacotory.CreatePlugin(settings.DefaultProviderType);
         _navigationService = navigationService;
 
         _episodesCache
             .Connect()
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.FilterText).Select(FilterByTitle))
-            .Sort(SortExpressionComparer<AiredEpisode>.Ascending(x => _episodesCache.Items.IndexOf(x)))
+            .Sort(SortExpressionComparer<IAiredAnimeEpisode>.Ascending(x => _episodesCache.Items.IndexOf(x)))
             .Bind(out _episodes)
             .DisposeMany()
             .Subscribe()
@@ -31,7 +33,7 @@ public class DiscoverViewModel : NavigatableViewModel
         _animeSearchResultCache
             .Connect()
             .RefCount()
-            .Sort(SortExpressionComparer<SearchResult>.Ascending(x => x.Title))
+            .Sort(SortExpressionComparer<ICatalogItem>.Ascending(x => x.Title))
             .Bind(out _animeSearchResults)
             .DisposeMany()
             .Subscribe()
@@ -40,8 +42,8 @@ public class DiscoverViewModel : NavigatableViewModel
         CardWidth = settings.DefaultProviderType is "animepahe" or "marin" ? 480 : 190; // animepahe image is thumbnail
         DontUseImageEx = settings.DefaultProviderType is "yugen"; // using imagex for yugen is crashing
 
-        SelectEpisode = ReactiveCommand.CreateFromTask<AiredEpisode>(OnEpisodeSelected);
-        SelectSearchResult = ReactiveCommand.CreateFromTask<SearchResult>(OnSearchResultSelected);
+        SelectEpisode = ReactiveCommand.CreateFromTask<IAiredAnimeEpisode>(OnEpisodeSelected);
+        SelectSearchResult = ReactiveCommand.CreateFromTask<ICatalogItem>(OnSearchResultSelected);
         LoadMore = ReactiveCommand.Create(LoadMoreEpisodes, this.WhenAnyValue(x => x.IsLoading).Select(x => !x));
         SearchProvider = ReactiveCommand.Create<string>(query =>
         {
@@ -79,8 +81,8 @@ public class DiscoverViewModel : NavigatableViewModel
 
     public bool IsAuthenticated { get; }
     public double CardWidth { get; }
-    public ReadOnlyObservableCollection<AiredEpisode> Episodes => _episodes;
-    public ReadOnlyObservableCollection<SearchResult> AnimeSearchResults => _animeSearchResults;
+    public ReadOnlyObservableCollection<IAiredAnimeEpisode> Episodes => _episodes;
+    public ReadOnlyObservableCollection<ICatalogItem> AnimeSearchResults => _animeSearchResults;
 
     public ICommand SelectEpisode { get; }
     public ICommand SelectFeaturedAnime { get; }
@@ -100,7 +102,7 @@ public class DiscoverViewModel : NavigatableViewModel
         .Finally(() => TotalPages++)
         .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
 
-    private Task OnEpisodeSelected(AiredEpisode episode)
+    private Task OnEpisodeSelected(IAiredAnimeEpisode episode)
     {
         var navigationParameters = new Dictionary<string, object>
         {
@@ -112,7 +114,7 @@ public class DiscoverViewModel : NavigatableViewModel
         return Task.CompletedTask;
     }
 
-    private Task OnSearchResultSelected(SearchResult searchResult)
+    private Task OnSearchResultSelected(ICatalogItem searchResult)
     {
         var navigationParameters = new Dictionary<string, object>
         {
@@ -125,17 +127,17 @@ public class DiscoverViewModel : NavigatableViewModel
     }
 
 
-    private IObservable<IEnumerable<AiredEpisode>> LoadPage(int page)
+    private IObservable<IAiredAnimeEpisode> LoadPage(int page)
     {
-        if (_provider?.AiredEpisodesProvider is null)
+        if (_provider?.AiredAnimeEpisodeProvider is null)
         {
-            return Observable.Empty<IEnumerable<AiredEpisode>>();
+            return Observable.Empty<IAiredAnimeEpisode>();
         }
 
         IsLoading = true;
 
         return _provider?
-             .AiredEpisodesProvider
+             .AiredAnimeEpisodeProvider
              .GetRecentlyAiredEpisodes(page)
              .ToObservable()
              .ObserveOn(RxApp.MainThreadScheduler)
@@ -151,15 +153,15 @@ public class DiscoverViewModel : NavigatableViewModel
         RxApp.MainThreadScheduler.Schedule(() => IsLoading = isLoading);
     }
 
-    private Task<List<SearchResult>> Search(string term)
+    private Task<List<ICatalogItem>> Search(string term)
     {
         if (_provider is null)
         {
-            return Task.FromResult(new List<SearchResult>());
+            return Task.FromResult(new List<ICatalogItem>());
         }
 
         return _provider.Catalog.Search(term).ToListAsync().AsTask();
     }
 
-    private static Func<AiredEpisode, bool> FilterByTitle(string title) => (AiredEpisode ae) => string.IsNullOrEmpty(title) || ae.Title.ToLower().Contains(title.ToLower());
+    private static Func<IAiredAnimeEpisode, bool> FilterByTitle(string title) => (IAiredAnimeEpisode ae) => string.IsNullOrEmpty(title) || ae.Title.ToLower().Contains(title.ToLower());
 }

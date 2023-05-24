@@ -1,9 +1,11 @@
-﻿namespace Totoro.Core.Contracts;
+﻿using Totoro.Plugins.Anime.Contracts;
+
+namespace Totoro.Core.Contracts;
 
 public interface IRecentEpisodesProvider
 {
-    IObservable<IEnumerable<AiredEpisode>> GetRecentlyAiredEpisodes();
-    IObservable<long> GetMalId(AiredEpisode ep);
+    IObservable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes();
+    IObservable<long> GetMalId(IAiredAnimeEpisode ep);
 }
 
 

@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using AnimDL.Core;
 using AnitomySharp;
 using FuzzySharp;
 using Humanizer;
@@ -7,13 +6,17 @@ using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.Helpers;
 using Totoro.Core.Services.MediaEvents;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Anime.Models;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Options;
 using TorrentModel = Totoro.Core.Torrents.TorrentModel;
 
 namespace Totoro.Core.ViewModels;
 
 public partial class WatchViewModel : NavigatableViewModel
 {
-    private readonly IProviderFactory _providerFactory;
+    private readonly IPluginFactory<AnimePlugin> _providerFactory;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly ITimestampsService _timestampsService;
@@ -24,7 +27,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IMyAnimeListService _myAnimeListService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
     
-    private ProviderOptions _providerOptions;
+    private PluginOptions _providerOptions;
     private bool _isCrunchyroll;
     private string _providerType;
     private IEnumerable<EpisodeModel> _episodeMetadata;
@@ -32,7 +35,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private IVideoStreamModelResolver _videoStreamResolver;
     private IAnimeModel _anime;
 
-    public WatchViewModel(IProviderFactory providerFactory,
+    public WatchViewModel(IPluginFactory<AnimePlugin> providerFactory,
                           IViewService viewService,
                           ISettings settings,
                           ITimestampsService timestampsService,
@@ -92,7 +95,7 @@ public partial class WatchViewModel : NavigatableViewModel
                 if (hasSubDub)
                 {
                     await CreateAnimDLResolver(x.Sub.Url, x.Dub.Url);
-                    SubStreams = new List<string>() { "Sub", "Dub" };
+                    SubStreams = new List<StreamType>() { StreamType.EnglishSubbed, StreamType.EnglishDubbed };
                     SelectedAudioStream = _settings.PreferSubs ? SubStreams.First() : SubStreams.Last();
                 }
                 else
@@ -217,10 +220,10 @@ public partial class WatchViewModel : NavigatableViewModel
     }
 
     [Reactive] public bool UseTorrents { get; set; }
-    [Reactive] public string SelectedAudioStream { get; set; }
+    [Reactive] public StreamType SelectedAudioStream { get; set; }
     [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     [Reactive] public IEnumerable<string> Qualities { get; set; }
-    [Reactive] public IEnumerable<string> SubStreams { get; set; }
+    [Reactive] public IEnumerable<StreamType> SubStreams { get; set; }
     [Reactive] public string SelectedQuality { get; set; }
     [Reactive] public VideoStreamsForEpisodeModel Streams { get; set; }
     [Reactive] public VideoStreamModel SelectedStream { get; set; }
@@ -233,7 +236,7 @@ public partial class WatchViewModel : NavigatableViewModel
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
 
-    public IProvider Provider { get; private set; }
+    public AnimePlugin Provider { get; private set; }
     public IAnimeModel Anime
     {
         get => _anime;
@@ -310,7 +313,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _providerType = parameters.GetValueOrDefault("Provider", _settings.DefaultProviderType) as string;
         _providerOptions = _providerFactory.GetOptions(_providerType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
-        Provider = _providerFactory.GetProvider(_providerType);
+        Provider = _providerFactory.CreatePlugin(_providerType);
         SelectedAudioStream = GetDefaultAudioStream();
 
         if (parameters.ContainsKey("Anime"))
@@ -319,7 +322,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
-            var epInfo = parameters["EpisodeInfo"] as AiredEpisode;
+            var epInfo = parameters["EpisodeInfo"] as IAiredAnimeEpisode;
             _episodeRequest = epInfo.Episode;
             await TrySetAnime(epInfo.Url, epInfo.Title);
             await CreateAnimDLResolver(epInfo.Url);
@@ -331,7 +334,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else if (parameters.ContainsKey("SearchResult"))
         {
-            var searchResult = (SearchResult)parameters["SearchResult"];
+            var searchResult = (ICatalogItem)parameters["SearchResult"];
             await TrySetAnime(searchResult.Url, searchResult.Title);
             await CreateAnimDLResolver(searchResult.Url);
         }
@@ -373,17 +376,18 @@ public partial class WatchViewModel : NavigatableViewModel
         }
     }
 
-    private async Task<(SearchResult Sub, SearchResult Dub)> Find(long id, string title)
+    private async Task<(ICatalogItem Sub, ICatalogItem Dub)> Find(long id, string title)
     {
         if (Provider is null)
         {
             return (null, null);
         }
 
-        if (Provider.Catalog is IMalCatalog malCatalog)
-        {
-            return await malCatalog.SearchByMalId(id);
-        }
+        //if (Provider.Catalog is IMalCatalog malCatalog)
+        //{
+        //    return await malCatalog.SearchByMalId(id);
+        //}
+
         return await _streamPageMapper.GetStreamPage(id, _providerType) ?? await SearchProvider(title);
     }
 
@@ -413,7 +417,7 @@ public partial class WatchViewModel : NavigatableViewModel
         });
     }
 
-    private async Task<(SearchResult Sub, SearchResult Dub)> SearchProvider(string title)
+    private async Task<(ICatalogItem Sub, ICatalogItem Dub)> SearchProvider(string title)
     {
         var results = await Provider.Catalog.Search(title).ToListAsync();
 
@@ -535,20 +539,20 @@ public partial class WatchViewModel : NavigatableViewModel
         return await _viewService.TryGetId(title);
     }
 
-    private string GetDefaultAudioStream()
+    private StreamType GetDefaultAudioStream()
     {
         if (_providerType == "gogo")
         {
-            return "Sub";
+            return StreamType.EnglishSubbed;
         }
 
         var key = "StreamType";
-        if (_providerType == "consumet" && _providerOptions?.GetString("Provider", "zoro") == "crunchyroll")
+        if (_providerType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll")
         {
             key = "CrunchyrollStreamType";
         }
 
-        return _providerOptions?.GetString(key, "");
+        return _providerOptions.GetEnum(key, StreamType.EnglishSubbed);
     }
 
     private double GetPlayerTime()
@@ -613,7 +617,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         ObserveDownload();
 
-        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes("");
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(StreamType.EnglishSubbed);
     }
 
     private async Task CreateAnimDLResolver(string url)

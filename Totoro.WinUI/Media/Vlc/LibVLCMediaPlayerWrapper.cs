@@ -77,15 +77,15 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
         _mp.Media = media;
 
-        if (stream.AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
-        {
-            var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-            var count = 0;
-            foreach (var item in subtitles)
-            {
-                _mp.AddSlave(MediaSlaveType.Subtitle, item.Value, count++ == 0);
-            }
-        }
+        //if (stream.AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
+        //{
+        //    var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+        //    var count = 0;
+        //    foreach (var item in subtitles)
+        //    {
+        //        _mp.AddSlave(MediaSlaveType.Subtitle, item.Value, count++ == 0);
+        //    }
+        //}
 
         return Unit.Default;
     }

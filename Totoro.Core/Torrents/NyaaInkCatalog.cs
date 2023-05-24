@@ -1,4 +1,5 @@
-﻿using AnimDL.Core.Helpers;
+﻿using Flurl;
+using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 
@@ -23,14 +24,15 @@ public class NyaaCatalog : ITorrentCatalog
         Stream stream;
         try
         {
-            stream = await _httpClient.GetStreamAsync(_baseUrl, new Dictionary<string, string>
+            stream = await _baseUrl.SetQueryParams(new
             {
-                ["f"] = "2",
-                ["c"] = "1_0",
-                ["q"] = query,
-                ["s"] = "seeders",
-                ["o"] = "desc"
-            });
+                f = 2,
+                c = "1_0",
+                q = query,
+                s = "seeders",
+                o = "desc"
+            })
+            .GetStreamAsync();
         }
         catch
         {

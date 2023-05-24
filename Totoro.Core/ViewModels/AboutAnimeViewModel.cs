@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Concurrency;
-using AnimDL.Core;
 using Totoro.Core.Torrents;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
 
 namespace Totoro.Core.ViewModels;
 
@@ -25,7 +26,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
                                IDebridServiceContext debridServiceContext)
     {
 
-        if(ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
+        if(PluginFactory<AnimePlugin>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
         {
             DefaultProviderType = $"({provider.DisplayName})";
         }

@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
-using AnimDL.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MonoTorrent.Client;
 using Totoro.Core.Torrents;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -93,7 +94,7 @@ public static partial class Converters
             Text = @"Watch",
             Icon = new SymbolIcon { Symbol = Symbol.Video }
         };
-        foreach (var item in ProviderFactory.Instance.Providers)
+        foreach (var item in PluginFactory<AnimePlugin>.Instance.Plugins)
         {
             scrapersFlyoutItem.Items.Add(new MenuFlyoutItem
             {
@@ -140,7 +141,7 @@ public static partial class Converters
         }
 
         var flyout = new MenuFlyout();
-        foreach (var item in ProviderFactory.Instance.Providers)
+        foreach (var item in PluginFactory<AnimePlugin>.Instance.Plugins)
         {
             flyout.Items.Add(new MenuFlyoutItem
             {

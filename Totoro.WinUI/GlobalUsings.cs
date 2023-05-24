@@ -7,7 +7,6 @@ global using System.Reactive.Disposables;
 global using System.Reactive.Linq;
 global using System.Threading.Tasks;
 global using System.Windows.Input;
-global using AnimDL.Core.Models;
 global using DynamicData;
 global using DynamicData.Binding;
 global using Microsoft.Extensions.Configuration;

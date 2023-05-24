@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Splat;
+using Totoro.Plugins.Anime.Contracts;
 
 namespace Totoro.Core.Services
 {
@@ -9,6 +10,12 @@ namespace Totoro.Core.Services
         private readonly HttpClient _httpClient;
         private readonly IAnimeIdService _animeIdService;
         private readonly ISettings _settings;
+
+        class SearchResult : ICatalogItem
+        {
+            required public string Title { get; init; }
+            required public string Url { get; init; }
+        }
 
         public StreamPageMapper(HttpClient httpClient,
                                 IAnimeIdService animeIdService,
@@ -153,7 +160,7 @@ namespace Totoro.Core.Services
             };
         }
 
-        public async Task<(SearchResult Sub, SearchResult Dub)?> GetStreamPage(long id, string provider)
+        public async Task<(ICatalogItem Sub, ICatalogItem Dub)?> GetStreamPage(long id, string provider)
         {
             var listService = _settings.DefaultListService switch
             {
@@ -213,7 +220,7 @@ namespace Totoro.Core.Services
 
         }
 
-        private static SearchResult GetSearchResult(JsonNode node)
+        private static ICatalogItem GetSearchResult(JsonNode node)
         {
             return new SearchResult
             {

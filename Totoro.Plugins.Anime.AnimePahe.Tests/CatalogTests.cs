@@ -26,7 +26,7 @@ public class CatalogTests
         var result = await sut.Search(query).ToListAsync();
 
         Assert.NotEmpty(result);
-        foreach (var item in result.Cast<SearchResult>())
+        foreach (var item in result)
         {
             _output.WriteLine(JsonSerializer.Serialize(item, item.GetType(), _searializerOption));
         }

@@ -10,6 +10,9 @@ using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.Services.StreamResolvers;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core
 {
@@ -82,6 +85,14 @@ namespace Totoro.Core
 
             services.AddTransient<IDebridService, PremiumizeService>();
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddPlugins(this IServiceCollection services)
+        {
+            services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(), PluginFactory<AnimePlugin>.Instance));
+            services.AddSingleton<IPluginFactory<AnimePlugin>>(PluginFactory<AnimePlugin>.Instance);
 
             return services;
         }

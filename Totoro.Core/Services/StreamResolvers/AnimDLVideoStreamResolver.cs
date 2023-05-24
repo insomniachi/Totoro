@@ -1,15 +1,17 @@
 ﻿using Splat;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
 public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogger
 {
-    private readonly IProvider _provider;
+    private readonly AnimePlugin _provider;
     private readonly ISettings _settings;
     private readonly string _baseUrlSub;
     private readonly string _baseUrlDub;
 
-    public AnimDLVideoStreamResolver(IProvider provider,
+    public AnimDLVideoStreamResolver(AnimePlugin provider,
                                      ISettings settings,
                                      string baseUrlSub)
     {
@@ -19,7 +21,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         _baseUrlSub = baseUrlSub;
     }
 
-    public AnimDLVideoStreamResolver(IProvider provider,
+    public AnimDLVideoStreamResolver(AnimePlugin provider,
                                      ISettings settings,
                                      string baseUrlSub,
                                      string baseUrlDub)
@@ -31,11 +33,11 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         _baseUrlDub = baseUrlDub;
     }
 
-    public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
+    public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, StreamType streamType)
     {
         this.Log().Debug("resolving stream link for episode {0}", episode);
 
-        var results = await GetStreams(episode, subStream);
+        var results = await GetStreams(episode, streamType);
 
         if (!results.Any())
         {
@@ -46,20 +48,20 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         return new VideoStreamsForEpisodeModel(results.First());
     }
 
-    private async Task<List<VideoStreamsForEpisode>> GetStreams(int episode, string subStream)
+    private async Task<List<VideoStreamsForEpisode>> GetStreams(int episode, StreamType streamType)
     {
         try
         {
             var url = _baseUrlSub;
             if (_settings.DefaultProviderType == "gogo")
             {
-                url = subStream == "Dub" ? _baseUrlDub : _baseUrlSub;
+                url = streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub;
             }
 
             return _provider?.StreamProvider switch
             {
-                IMultiAudioStreamProvider mp => await mp.GetStreams(url, episode..episode, subStream).ToListAsync(),
-                IStreamProvider sp => await sp.GetStreams(url, episode..episode).ToListAsync(),
+                IMultiLanguageAnimeStreamProvider mp => await mp.GetStreams(url, episode..episode, streamType).ToListAsync(),
+                IAnimeStreamProvider sp => await sp.GetStreams(url, episode..episode).ToListAsync(),
                 _ => new List<VideoStreamsForEpisode>()
             };
         }
@@ -70,20 +72,20 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         }
     }
 
-    public async Task<int> GetNumberOfEpisodes(string subStream)
+    public async Task<int> GetNumberOfEpisodes(StreamType streamType)
     {
         try
         {
             var url = _baseUrlSub;
             if (_settings.DefaultProviderType == "gogo")
             {
-                url = subStream == "Dub" ? _baseUrlDub : _baseUrlSub;
+                url = streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub;
             }
 
             var count = _provider?.StreamProvider switch
             {
-                IMultiAudioStreamProvider mp => await mp.GetNumberOfStreams(url, subStream),
-                IStreamProvider sp => await sp.GetNumberOfStreams(url),
+                IMultiLanguageAnimeStreamProvider mp => await mp.GetNumberOfStreams(url, streamType),
+                IAnimeStreamProvider sp => await sp.GetNumberOfStreams(url),
                 _ => 0
             };
 
@@ -96,9 +98,9 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         }
     }
 
-    public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
+    public async Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
-        return EpisodeModelCollection.FromEpisodeCount(await GetNumberOfEpisodes(subStream));
+        return EpisodeModelCollection.FromEpisodeCount(await GetNumberOfEpisodes(streamType));
     }
 }
 

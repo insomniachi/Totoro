@@ -8,8 +8,8 @@ public class PluginInfo
 
     required public string Name { get; init; }
     required public string DisplayName { get; init; }
-    public string? Description { get; init; }
     required public Version Version { get; init; }
+    public string? Description { get; init; }
     public Stream? Icon { get; init; }
 }
 

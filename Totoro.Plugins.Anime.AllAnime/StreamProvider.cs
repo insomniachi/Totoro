@@ -13,7 +13,7 @@ using Totoro.Plugins.Helpers;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
-public partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IEnableLogger
+public partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnimeStreamProvider, IEnableLogger
 {
     public const string SHOW_QUERY =
         """
@@ -50,6 +50,8 @@ public partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IEnable
     [GeneratedRegex("\\\\u(?<Value>[a-zA-Z0-9]{4})")]
     private static partial Regex UtfEncodedStringRegex();
 
+    public Task<int> GetNumberOfStreams(string url) => GetNumberOfStreams(url, Config.StreamType);
+
     public async Task<int> GetNumberOfStreams(string url, StreamType streamType)
     {
         var jObject = await Config.Api
@@ -71,6 +73,8 @@ public partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IEnable
 
         return total;
     }
+
+    public IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range) => GetStreams(url, range, Config.StreamType);
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range, StreamType streamType)
     {

@@ -1,7 +1,9 @@
-﻿namespace Totoro.Core.Contracts;
+﻿using Totoro.Plugins.Anime.Contracts;
+
+namespace Totoro.Core.Contracts;
 
 public interface IAiredEpisodeNotifier
 {
-    IObservable<AiredEpisode> OnNewEpisode { get; }
+    IObservable<IAiredAnimeEpisode> OnNewEpisode { get; }
     void Start();
 }
