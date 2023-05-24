@@ -35,7 +35,7 @@ public class PluginFactory<T> : IPluginFactory<T>
     {
         if (_plugins.FirstOrDefault(x => x.Info.Name == name) is not { } plugin)
         {
-            return default;
+            return false;
         }
 
         plugin.Module.SetOptions(options);
@@ -50,6 +50,16 @@ public class PluginFactory<T> : IPluginFactory<T>
         }
 
         return plugin.Module.GetOptions();
+    }
+
+    public void LoadPlugin(IPlugin<T> plugIn)
+    {
+        _plugins.Add(new Plugin
+        {
+            Info = plugIn.GetInfo(),
+            Module = plugIn,
+            Instance = new(plugIn.Create)
+        });
     }
 
     public void LoadPlugins(string folder)

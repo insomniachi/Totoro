@@ -2,6 +2,7 @@
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
+#nullable disable
 
 class GetVersionResponse
 {
