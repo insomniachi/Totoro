@@ -8,8 +8,8 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
     public readonly CompositeDisposable Garbage = new();
     private readonly SourceCache<ICatalogItem, string> _searchResultCache = new(x => x.Title);
     private readonly ReadOnlyObservableCollection<ICatalogItem> _searchResults;
-    private readonly ObservableAsPropertyHelper<AnimePlugin> _provider;
-    public ChooseSearchResultViewModel(IPluginFactory<AnimePlugin> providerFactory)
+    private readonly ObservableAsPropertyHelper<AnimeProvider> _provider;
+    public ChooseSearchResultViewModel(IPluginFactory<AnimeProvider> providerFactory)
     {
 
         this.WhenAnyValue(x => x.SelectedProviderType)
@@ -39,7 +39,7 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
     [Reactive] public string SelectedProviderType { get; set; } = "allanime";
     public IEnumerable<ICatalogItem> SearchResults => _searchResults;
     public List<string> Providers { get; set; } = new List<string>();
-    public AnimePlugin Provider => _provider.Value;
+    public AnimeProvider Provider => _provider.Value;
     public void SetValues(IEnumerable<ICatalogItem> values)
     {
         _searchResultCache.Clear();

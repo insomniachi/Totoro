@@ -7,13 +7,13 @@ namespace Totoro.Core.Services.StreamResolvers;
 
 public class VideoStreamResolverFactory : IVideoStreamResolverFactory
 {
-    private readonly IPluginFactory<AnimePlugin> _providerFactory;
+    private readonly IPluginFactory<AnimeProvider> _providerFactory;
     private readonly ISettings _settings;
     private readonly IDebridServiceContext _debridService;
     private readonly IKnownFolders _knownFolders;
     private readonly ITorrentEngine _torrentEngine;
 
-    public VideoStreamResolverFactory(IPluginFactory<AnimePlugin> providerFactory,
+    public VideoStreamResolverFactory(IPluginFactory<AnimeProvider> providerFactory,
                                       ISettings settings,
                                       IDebridServiceContext debridService,
                                       IKnownFolders knownFolders,

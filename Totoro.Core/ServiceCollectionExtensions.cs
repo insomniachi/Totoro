@@ -93,11 +93,13 @@ namespace Totoro.Core
         {
 
 #if DEBUG
-            PluginFactory<AnimePlugin>.Instance.LoadPlugin(new Plugins.Anime.AnimePahe.Plugin());
-            PluginFactory<AnimePlugin>.Instance.LoadPlugin(new Plugins.Anime.AllAnime.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AnimePahe.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AllAnime.Plugin());
 #endif
-            services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(), PluginFactory<AnimePlugin>.Instance));
-            services.AddSingleton<IPluginFactory<AnimePlugin>>(PluginFactory<AnimePlugin>.Instance);
+            services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(), PluginFactory<AnimeProvider>.Instance));
+            services.AddSingleton<IPluginFactory<AnimeProvider>>(PluginFactory<AnimeProvider>.Instance);
+            services.AddSingleton(typeof(IPluginOptionsStorage<>), typeof(PluginOptionStorage<>));
+            services.AddSingleton<PluginOptionsStorage>();
 
             return services;
         }

@@ -16,7 +16,7 @@ namespace Totoro.Core.ViewModels;
 
 public partial class WatchViewModel : NavigatableViewModel
 {
-    private readonly IPluginFactory<AnimePlugin> _providerFactory;
+    private readonly IPluginFactory<AnimeProvider> _providerFactory;
     private readonly IViewService _viewService;
     private readonly ISettings _settings;
     private readonly ITimestampsService _timestampsService;
@@ -35,7 +35,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private IVideoStreamModelResolver _videoStreamResolver;
     private IAnimeModel _anime;
 
-    public WatchViewModel(IPluginFactory<AnimePlugin> providerFactory,
+    public WatchViewModel(IPluginFactory<AnimeProvider> providerFactory,
                           IViewService viewService,
                           ISettings settings,
                           ITimestampsService timestampsService,
@@ -236,7 +236,7 @@ public partial class WatchViewModel : NavigatableViewModel
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
 
-    public AnimePlugin Provider { get; private set; }
+    public AnimeProvider Provider { get; private set; }
     public IAnimeModel Anime
     {
         get => _anime;

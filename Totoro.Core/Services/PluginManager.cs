@@ -1,138 +1,104 @@
-﻿using System.Diagnostics;
-using System.Text.Json.Nodes;
-using Splat;
+﻿using Splat;
+using Totoro.Plugins;
 using Totoro.Plugins.Options;
 
 namespace Totoro.Core.Services;
 
-//public class PluginManager : IPluginManager, IEnableLogger
-//{
-//    private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/AnimDL/master/Binaries";
-//    private readonly HttpClient _httpClient;
-//    private readonly ILocalSettingsService _localSettingsService;
-//    private readonly ISettings _settings;
-//    private readonly IKnownFolders _knownFolders;
-//    private readonly Dictionary<string, PluginOptions> _configs;
+public class PluginOptionWrapper : ReactiveObject
+{
+    [Reactive] required public PluginOptions Options { get; init; }
+    required public string PluginName { get; init; }
+    public event EventHandler<string> OptionsChaged;
 
-//    record PluginInfo(string FileName, string Version);
+    public PluginOptionWrapper()
+    {
+        this.WhenAnyValue(x => x.Options)
+            .WhereNotNull()
+            .SelectMany(x => x.WhenChanged())
+            .Subscribe(_ => OptionsChaged?.Invoke(Options, PluginName));
 
-//    public PluginManager(HttpClient httpClient,
-//                         ILocalSettingsService localSettingsService,
-//                         ISettings settings,
-//                         IKnownFolders knownFolders)
-//    {
-//        _configs = localSettingsService.ReadSetting<Dictionary<string, PluginOptions>>("ProviderConfigs", new());
-//        _httpClient = httpClient;
-//        _localSettingsService = localSettingsService;
-//        _settings = settings;
-//        _knownFolders = knownFolders;
-//    }
+    }
+}
 
-//    public void SaveConfig(string provider, PluginOptions config)
-//    {
-//        ProviderFactory.Instance.SetOptions(provider, config);
-//        _configs[provider] = config;
-//        SaveConfig();
-//    }
+public interface IPluginOptionsStorage<T>
+{
+    void Initialize();
+    PluginOptionWrapper GetOptions(string pluginName);
+}
 
-//    public void SaveConfig()
-//    {
-//        _localSettingsService.SaveSetting("ProviderConfigs", _configs);
-//    }
+internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
+{
+    private readonly Dictionary<string, PluginOptionWrapper> _configs = new();
+    private readonly Dictionary<string, Dictionary<string, string>> _configValues = new();
+    private readonly ISettings _settings;
+    private readonly ILocalSettingsService _localSettingsService;
 
-//    private async Task<IEnumerable<PluginInfo>> GetListedPlugins()
-//    {
-//        try
-//        {
-//            var json = await _httpClient.GetStringAsync($"{_baseUrl}/plugins.json");
-//            var pluginInfos = new List<PluginInfo>();
-//            foreach (var item in JsonNode.Parse(json)?.AsArray())
-//            {
-//                var version = $"{item?["Version"]}";
-//                var name = Path.GetFileName($"{item?["Url"]}");
-//                pluginInfos.Add(new PluginInfo(name, version));
-//            }
-//            return pluginInfos;
-//        }
-//        catch (Exception ex)
-//        {
-//            this.Log().Error(ex);
-//            return Enumerable.Empty<PluginInfo>();
-//        }
-//    }
+    public PluginOptionStorage(ISettings settings,
+                               ILocalSettingsService localSettingsService)
+    {
+        _settings = settings;
+        _localSettingsService = localSettingsService;
+        _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>("AnimePluginConfigs", new());
+    }
 
-//    public async Task Initialize()
-//    {
-//        try
-//        {
-//            var localPlugins = Directory.GetFiles(_knownFolders.Plugins).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
-//            var listedPlugins = await GetListedPlugins();
-//            var newReleases = listedPlugins.Except(localPlugins).ToList();
-//            var hasNewConfig = false;
-//            foreach (var item in newReleases)
-//            {
-//                var path = Path.Combine(_knownFolders.Plugins, item.FileName);
-//                if (File.Exists(path))
-//                {
-//                    File.Delete(path);
-//                }
+    public PluginOptionWrapper GetOptions(string pluginName) => _configs[pluginName];
 
-//                var url = $"{_baseUrl}/{item.FileName}";
-//                using var s = await _httpClient.GetStreamAsync(url);
-//                using var fs = new FileStream(path, FileMode.OpenOrCreate);
-//                await s.CopyToAsync(fs);
-//                hasNewConfig = true;
-//            }
+    public void Initialize()
+    {
+        var hasNewConfig = false;
+        foreach (var item in PluginFactory<T>.Instance.Plugins)
+        {
+            var baseConfig = PluginFactory<T>.Instance.GetOptions(item.Name);
+            _configs.Add(item.Name, new PluginOptionWrapper
+            {
+                Options = baseConfig,
+                PluginName = item.Name
+            });
+            
+            if (!_configValues.ContainsKey(item.Name))
+            {
+                hasNewConfig = true;
+            }
+            else
+            {
+                foreach (var option in _configValues[item.Name])
+                {
+                    baseConfig.TrySetValue(option.Key, option.Value);
+                }
 
-//            if (!_settings.AllowSideLoadingPlugins && listedPlugins.Any())
-//            {
-//                localPlugins = Directory.GetFiles(_knownFolders.Plugins).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
-//                foreach (var item in localPlugins.Except(listedPlugins))
-//                {
-//                    this.Log().Info($"Removing plugin : {item.FileName}");
-//                    File.Delete(Path.Combine(_knownFolders.Plugins, item.FileName));
-//                }
-//            }
+                PluginFactory<T>.Instance.SetOptions(item.Name, baseConfig);
+            }
 
-//            ProviderFactory.Instance.LoadPlugins(_knownFolders.Plugins);
+            this.Log().Info($"Loaded plugin {item.DisplayName}");
+        }
 
-//            foreach (var item in ProviderFactory.Instance.Providers)
-//            {
-//                var baseConfig = ProviderFactory.Instance.GetOptions(item.Name);
-//                if (!_configs.ContainsKey(item.Name))
-//                {
-//                    _configs.Add(item.Name, baseConfig);
-//                    hasNewConfig = true;
-//                }
-//                else
-//                {
-//                    foreach (var option in _configs[item.Name].Where(x => baseConfig.FirstOrDefault(y => y.Name == x.Name) is { }))
-//                    {
-//                        baseConfig.TrySetValue(option.Name, option.Value);
-//                    }
+        if (!_settings.AllowSideLoadingPlugins)
+        {
+            foreach (var key in _configValues.Keys.Except(PluginFactory<T>.Instance.Plugins.Select(x => x.Name)))
+            {
+                _configValues.Remove(key);
+                hasNewConfig = true;
+            }
+        }
 
-//                    ProviderFactory.Instance.SetOptions(item.Name, baseConfig);
-//                }
-//                this.Log().Info($"Loaded plugin {item.DisplayName}");
-//            }
+        if (hasNewConfig)
+        {
+            SaveConfig();
+        }
 
-//            if (!_settings.AllowSideLoadingPlugins)
-//            {
-//                foreach (var key in _configs.Keys.Except(ProviderFactory.Instance.Providers.Select(x => x.Name)))
-//                {
-//                    _configs.Remove(key);
-//                    hasNewConfig = true;
-//                }
-//            }
+        foreach (var item in _configs.Values)
+        {
+            item.OptionsChaged += (option, name) =>
+            {
+                PluginFactory<T>.Instance.SetOptions(name, (PluginOptions)option);
+                SaveConfig();
+            };
+        }
+    }
 
-//            if (hasNewConfig)
-//            {
-//                SaveConfig();
-//            }
-//        }
-//        catch (Exception ex)
-//        {
-//            this.Log().Error(ex);
-//        }
-//    }
-//}
+    private void SaveConfig()
+    {
+        var configValues = _configs.ToDictionary(x => x.Key, x => x.Value.Options.ToDictionary(x => x.Name, x => x.Value));
+        _localSettingsService.SaveSetting("AnimePluginConfigs", configValues);
+    }
+}

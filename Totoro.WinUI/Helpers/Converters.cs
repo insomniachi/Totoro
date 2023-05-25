@@ -1,11 +1,16 @@
 ﻿using System.ComponentModel;
+using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using MonoTorrent.Client;
+using Totoro.Core.Services;
 using Totoro.Core.Torrents;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Options;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -94,7 +99,7 @@ public static partial class Converters
             Text = @"Watch",
             Icon = new SymbolIcon { Symbol = Symbol.Video }
         };
-        foreach (var item in PluginFactory<AnimePlugin>.Instance.Plugins)
+        foreach (var item in PluginFactory<AnimeProvider>.Instance.Plugins)
         {
             scrapersFlyoutItem.Items.Add(new MenuFlyoutItem
             {
@@ -141,7 +146,7 @@ public static partial class Converters
         }
 
         var flyout = new MenuFlyout();
-        foreach (var item in PluginFactory<AnimePlugin>.Instance.Plugins)
+        foreach (var item in PluginFactory<AnimeProvider>.Instance.Plugins)
         {
             flyout.Items.Add(new MenuFlyoutItem
             {
@@ -155,6 +160,24 @@ public static partial class Converters
     }
 
     public static string TorrentToPercent(TorrentManager torrentManager) => $"{torrentManager.Progress:N2}";
+
+    public static ImageSource StreamToImage(Stream stream)
+    {
+        if(stream is null)
+        {
+            return null;
+        }
+
+        var bmp = new BitmapImage();
+        bmp.SetSource(stream.AsRandomAccessStream());
+        return bmp;
+    }
+
+    public static PluginOptions GetAnimeOptions(string pluginName)
+    {
+        var options = App.GetService<IPluginOptionsStorage<AnimeProvider>>().GetOptions(pluginName).Options;
+        return options;
+    }
 
     [GeneratedRegex(@"(\d+)")]
     private static partial Regex GetNumber();

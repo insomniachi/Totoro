@@ -26,7 +26,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
                                IDebridServiceContext debridServiceContext)
     {
 
-        if(PluginFactory<AnimePlugin>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
+        if(PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
         {
             DefaultProviderType = $"({provider.DisplayName})";
         }

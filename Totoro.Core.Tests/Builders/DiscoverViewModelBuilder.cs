@@ -10,7 +10,7 @@ internal class DiscoverViewModelBuilder
     private readonly Mock<INavigationService> _navigationServiceMock = new();
     private readonly Mock<ITrackingService> _trackingServiceMock = new();
     private Mock<ISchedulerProvider> _schedulerProvider;
-    private readonly Mock<IPluginFactory<AnimePlugin>> _providerFactoryMock = new();
+    private readonly Mock<IPluginFactory<AnimeProvider>> _providerFactoryMock = new();
     private readonly Mock<ISettings> _settingsMock = new();
 
 
@@ -27,7 +27,7 @@ internal class DiscoverViewModelBuilder
         return this;
     }
 
-    internal DiscoverViewModelBuilder WithProviderFacotry(Action<Mock<IPluginFactory<AnimePlugin>>> configure)
+    internal DiscoverViewModelBuilder WithProviderFacotry(Action<Mock<IPluginFactory<AnimeProvider>>> configure)
     {
         configure(_providerFactoryMock);
         return this;

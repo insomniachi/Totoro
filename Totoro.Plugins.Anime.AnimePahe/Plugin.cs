@@ -6,9 +6,9 @@ using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
-public class Plugin : IPlugin<AnimePlugin>
+public class Plugin : IPlugin<AnimeProvider>
 {
-    public AnimePlugin Create() => new()
+    public AnimeProvider Create() => new()
     {
         Catalog = new Catalog(),
         StreamProvider = new StreamProvider(),
@@ -19,12 +19,23 @@ public class Plugin : IPlugin<AnimePlugin>
     {
         DisplayName = "Anime Pahe",
         Name = "anime-pahe",
-        Version = Assembly.GetExecutingAssembly().GetName().Version!
+        Version = Assembly.GetExecutingAssembly().GetName().Version!,
+        Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.AnimePahe.anime-pahe-logo.png"),
+        Description = "AnimePahe is an encode \"group\", was founded in July 2014. encodes on-going anime, completed anime and anime movie."
     };
 
     public PluginOptions GetOptions()
     {
-        return new PluginOptions().AddOption(nameof(Config.Url), "Url", Config.Url);
+        return new PluginOptions()
+            .AddOption(x =>
+            {
+               return x.WithName(nameof(Config.Url))
+                       .WithDisplayName("Url")
+                       .WithDescription("Url to home page")
+                       .WithValue(Config.Url)
+                       .WithGlyph("\uE71B")
+                       .ToPluginOption();
+            });
     }
 
     public void SetOptions(PluginOptions options)

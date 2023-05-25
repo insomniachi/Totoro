@@ -25,7 +25,7 @@ public class SettingsViewModel : NavigatableViewModel
     public Version Version { get; }
     public Version ScrapperVersion { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public IEnumerable<PluginInfo> ProviderTypes => PluginFactory<AnimePlugin>.Instance.Plugins;
+    public IEnumerable<PluginInfo> ProviderTypes => PluginFactory<AnimeProvider>.Instance.Plugins;
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
@@ -54,8 +54,8 @@ public class SettingsViewModel : NavigatableViewModel
 
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
-        SelectedProvider = PluginFactory<AnimePlugin>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
-            ?? PluginFactory<AnimePlugin>.Instance.Plugins.FirstOrDefault(x => x.Name == "allanime");
+        SelectedProvider = PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
+            ?? PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "allanime");
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {

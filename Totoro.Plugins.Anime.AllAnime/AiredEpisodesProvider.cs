@@ -77,8 +77,8 @@ public class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
             _ = int.TryParse(ep, out int epInt);
             var datetime = new DateTime(year, month, day, hour, min, 0).ToLocalTime();
             var animeUrl = Url.Combine(Config.Url, $"/anime/{item?["_id"]}");
-            var malId = long.Parse($"{item?["malId"]}");
-            var aniListId = long.Parse($"{item?["aniListId"]}");
+            var malId = $"{item?["malId"]}";
+            var aniListId = $"{item?["aniListId"]}";
 
             yield return new AiredEpisode
             {
@@ -88,8 +88,8 @@ public class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
                 Episode = epInt,
                 EpisodeString = ep,
                 Url = animeUrl,
-                MalId = malId,
-                AnilistId = aniListId
+                MalId = string.IsNullOrEmpty(malId) ? 0 : long.Parse(malId),
+                AnilistId = string.IsNullOrEmpty(aniListId) ? 0 : long.Parse(aniListId),
             };
         }
     }

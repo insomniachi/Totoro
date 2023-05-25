@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Subjects;
+using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core.Services;
@@ -9,6 +10,7 @@ public class Initalizer : IInitializer
     private readonly IKnownFolders _knownFolders;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IRssDownloader _rssDownloader;
+    private readonly PluginOptionsStorage _pluginOptionsStorage;
     private readonly IUpdateService _updateService;
     private readonly IResumePlaybackService _playbackStateStorage;
     private readonly ITorrentEngine _torrentEngine;
@@ -20,12 +22,14 @@ public class Initalizer : IInitializer
                       IResumePlaybackService playbackStateStorage,
                       ITorrentEngine torrentEngine,
                       ILocalSettingsService localSettingsService,
-                      IRssDownloader rssDownloader)
+                      IRssDownloader rssDownloader,
+                      PluginOptionsStorage pluginOptionsStorage)
     {
         _pluginManager = pluginManager;
         _knownFolders = knownFolders;
         _localSettingsService = localSettingsService;
         _rssDownloader = rssDownloader;
+        _pluginOptionsStorage = pluginOptionsStorage;
         _updateService = updateService;
         _playbackStateStorage = playbackStateStorage;
         _torrentEngine = torrentEngine;
@@ -33,9 +37,12 @@ public class Initalizer : IInitializer
 
     public async Task Initialize()
     {
-        await _pluginManager.Initialize(_knownFolders.Plugins);
+#if !DEBUG
+        await _pluginManager.Initialize(_knownFolders.Plugins); 
+#endif
         await _torrentEngine.TryRestoreState();
         await _rssDownloader.Initialize();
+        _pluginOptionsStorage.Initialize();
         RemoveObsoleteSettings();
     }
 

@@ -6,12 +6,12 @@ namespace Totoro.Core.Services.StreamResolvers;
 
 public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogger
 {
-    private readonly AnimePlugin _provider;
+    private readonly AnimeProvider _provider;
     private readonly ISettings _settings;
     private readonly string _baseUrlSub;
     private readonly string _baseUrlDub;
 
-    public AnimDLVideoStreamResolver(AnimePlugin provider,
+    public AnimDLVideoStreamResolver(AnimeProvider provider,
                                      ISettings settings,
                                      string baseUrlSub)
     {
@@ -21,7 +21,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         _baseUrlSub = baseUrlSub;
     }
 
-    public AnimDLVideoStreamResolver(AnimePlugin provider,
+    public AnimDLVideoStreamResolver(AnimeProvider provider,
                                      ISettings settings,
                                      string baseUrlSub,
                                      string baseUrlDub)

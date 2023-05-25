@@ -6,15 +6,10 @@ namespace Totoro.Plugins.Options;
 
 public class PluginOptions : Collection<PluginOption>
 {
-    public PluginOptions AddOption(string name, string displayName, string value)
+    public PluginOptions AddOption(Func<PluginOptionBuilder, PluginOption> creator)
     {
-        Add(new PluginOption
-        {
-            Name = name,
-            DisplayName = displayName,
-            Value = value
-        });
-
+        var builder = new PluginOptionBuilder();
+        Add(creator(builder));
         return this;
     }
 
@@ -59,11 +54,16 @@ public class PluginOptions : Collection<PluginOption>
     public string GetString(string name, string defaultValue) => this.FirstOrDefault(x => x.Name == name)?.Value ?? defaultValue;
     public int GetInt32(string name, int defaultValue) => GetValue(name, defaultValue, int.Parse);
     public double GetDouble(string name, double defaultValue) => GetValue(name, defaultValue, double.Parse);
-    public TEnum GetEnum<TEnum>(string name, TEnum defaultValue) => GetValue(name, defaultValue, x => (TEnum)Enum.Parse(typeof(TEnum), x));
+    public TEnum GetEnum<TEnum>(string name, TEnum defaultValue) where TEnum: Enum => GetValue(name, defaultValue, x => (TEnum)Enum.Parse(typeof(TEnum), x));
 
     private T GetValue<T>(string name, T defaultValue, Func<string, T> parser)
     {
         if (this.FirstOrDefault(x => x.Name == name) is not { } option)
+        {
+            return defaultValue;
+        }
+
+        if(string.IsNullOrEmpty(option.Value))
         {
             return defaultValue;
         }

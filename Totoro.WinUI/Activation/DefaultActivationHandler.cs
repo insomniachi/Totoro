@@ -41,7 +41,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
             _navigationService.NavigateTo<DiscoverViewModel>();
         }
 
-        if (!PluginFactory<AnimePlugin>.Instance.Plugins.Any())
+        if (!PluginFactory<AnimeProvider>.Instance.Plugins.Any())
         {
             _viewService.Information("Ops...", "There has been a breaking change, please wait till application downloads update");
         }

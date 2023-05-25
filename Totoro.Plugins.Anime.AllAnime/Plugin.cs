@@ -6,9 +6,9 @@ using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
-public class Plugin : IPlugin<AnimePlugin>
+public class Plugin : IPlugin<AnimeProvider>
 {
-    public AnimePlugin Create() => new()
+    public AnimeProvider Create() => new()
     {
         Catalog = new Catalog(),
         StreamProvider = new StreamProvider(),
@@ -17,23 +17,43 @@ public class Plugin : IPlugin<AnimePlugin>
 
     public PluginInfo GetInfo() => new()
     {
-        DisplayName = "Allanime",
+        DisplayName = "AllAnime",
         Name = "allanime",
-        Version = Assembly.GetExecutingAssembly().GetName().Version!
+        Version = Assembly.GetExecutingAssembly().GetName().Version!,
+        Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.AllAnime.allanime-icon.png"),
+        Description = "AllAnime's goal is to provide you with the highest possible amount of daily anime episodes/manga chapters for free and without any kind of limitation."
     };
 
     public PluginOptions GetOptions()
     {
         return new PluginOptions()
-            .AddOption(nameof(Config.Url), "Url", Config.Url)
-            .AddSelectableOption(nameof(Config.StreamType), "Stream Type", Config.StreamType, new[] { StreamType.EnglishSubbed, StreamType.EnglishDubbed, StreamType.Raw })
-            .AddSelectableOption(nameof(Config.CountryOfOrigin), "Country of Origin", Config.CountryOfOrigin, new[] { "ALL", "JP", "CN", "KR" });
+            .AddOption(x => x.WithName(nameof(Config.Url))
+                             .WithDisplayName("Url")
+                             .WithDescription("Url to home page")
+                             .WithValue(Config.Url)
+                             .WithGlyph("\uE71B")
+                             .ToPluginOption())
+            .AddOption(x => x.WithName(nameof(Config.StreamType))
+                             .WithDisplayName("Stream Type")
+                             .WithDescription("Choose what to play by default, sub/dub")
+                             .WithGlyph("\uF2B7")
+                             .WithValue(Config.StreamType)
+                             .WithAllowedValues(new[] { StreamType.EnglishSubbed, StreamType.EnglishDubbed, StreamType.Raw })
+                             .ToSelectablePluginOption())
+            .AddOption(x => x.WithName(nameof(Config.CountryOfOrigin))
+                             .WithDisplayName("Country Of Origin")
+                             .WithDescription("Filter anime by country")
+                             .WithGlyph("\uE909")
+                             .WithValue(Config.CountryOfOrigin)
+                             .WithAllowedValues(new[] { "ALL", "JP", "CN", "KR" })
+                             .ToSelectablePluginOption());
     }
 
     public void SetOptions(PluginOptions options)
     {
         Config.Url = options.GetString(nameof(Config.Url), Config.Url);
         Config.StreamType = options.GetEnum(nameof(Config.StreamType), Config.StreamType);
+        Config.CountryOfOrigin = options.GetString(nameof(Config.CountryOfOrigin), Config.CountryOfOrigin);
     }
 
     object IPlugin.Create() => Create();

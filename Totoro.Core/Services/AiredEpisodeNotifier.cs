@@ -27,7 +27,7 @@ public class AiredEpisodeNotifier : IAiredEpisodeNotifier
 
         _isStarted = true;
 
-        var provider = PluginFactory<AnimePlugin>.Instance.CreatePlugin(_settings.DefaultProviderType);
+        var provider = PluginFactory<AnimeProvider>.Instance.CreatePlugin(_settings.DefaultProviderType);
 
         Observable
         .Timer(TimeSpan.Zero, TimeSpan.FromMinutes(30))

@@ -11,9 +11,9 @@ public class DiscoverViewModel : NavigatableViewModel
     private readonly SourceCache<ICatalogItem, string> _animeSearchResultCache = new(x => x.Url);
     private readonly ReadOnlyObservableCollection<IAiredAnimeEpisode> _episodes;
     private readonly ReadOnlyObservableCollection<ICatalogItem> _animeSearchResults;
-    private readonly AnimePlugin _provider;
+    private readonly AnimeProvider _provider;
 
-    public DiscoverViewModel(IPluginFactory<AnimePlugin> providerFacotory,
+    public DiscoverViewModel(IPluginFactory<AnimeProvider> providerFacotory,
                              ISettings settings,
                              INavigationService navigationService)
     {
