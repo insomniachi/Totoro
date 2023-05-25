@@ -48,12 +48,13 @@
   </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
 		<ProjectReference Include="..\Totoro.Plugins.Anime.AnimePahe\Totoro.Plugins.Anime.AnimePahe.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.Anime.YugenAnime\Totoro.Plugins.Anime.YugenAnime.csproj" />
 	</ItemGroup>
 	
 </Project>

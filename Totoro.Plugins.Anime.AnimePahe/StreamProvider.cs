@@ -45,7 +45,7 @@ public partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range)
     {
-        var doc = await url.GetHtmlDocument();
+        var doc = await url.GetHtmlDocumentAsync();
 
         var releaseId = IdRegex().Match(doc.Text).Groups[1].Value;
         var firstPage = await GetSessionPage(releaseId, 1);

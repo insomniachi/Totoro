@@ -8,7 +8,23 @@ public static class FlurlExtensions
 {
     public const string USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36 Edg/104.0.1293.54";
     
-    public static async Task<HtmlDocument> GetHtmlDocument(this string url)
+    public static async Task<HtmlDocument> GetHtmlDocumentAsync(this string url)
+    {
+        var stream = await url.GetStreamAsync();
+        var doc = new HtmlDocument();
+        doc.Load(stream);
+        return doc;
+    }
+
+    public static async Task<HtmlDocument> GetHtmlDocumentAsync(this IFlurlRequest request)
+    {
+        var stream = await request.GetStreamAsync();
+        var doc = new HtmlDocument();
+        doc.Load(stream);
+        return doc;
+    }
+
+    public static async Task<HtmlDocument> GetHtmlDocumentAsync(this Url url)
     {
         var stream = await url.GetStreamAsync();
         var doc = new HtmlDocument();
