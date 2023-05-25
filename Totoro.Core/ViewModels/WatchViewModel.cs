@@ -145,12 +145,13 @@ public partial class WatchViewModel : NavigatableViewModel
 
                 SetEpisode(epModel.EpisodeNumber);
             })
-            .SelectMany(epModel => _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, SelectedAudioStream))
+            .SelectMany(epModel => _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, SelectedAudioStream.Value))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(stream => Streams = stream, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.SelectedAudioStream)
             .WhereNotNull()
+            .Select(x => x.Value)
             .DistinctUntilChanged()
             .Where(_ => EpisodeModels?.Current is not null && _videoStreamResolver is not null)
             .SelectMany(type => _videoStreamResolver?.ResolveAllEpisodes(type))
@@ -170,7 +171,7 @@ public partial class WatchViewModel : NavigatableViewModel
                 {
                     var selectedAudioStream = SelectedAudioStream;
                     SubStreams = stream.StreamTypes;
-                    SelectedAudioStream = SubStreams.FirstOrDefault(x => x == selectedAudioStream);
+                    SelectedAudioStream = selectedAudioStream;
                 }
                 Qualities = stream.Qualities;
             })
@@ -220,7 +221,7 @@ public partial class WatchViewModel : NavigatableViewModel
     }
 
     [Reactive] public bool UseTorrents { get; set; }
-    [Reactive] public StreamType SelectedAudioStream { get; set; }
+    [Reactive] public StreamType? SelectedAudioStream { get; set; }
     [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     [Reactive] public IEnumerable<string> Qualities { get; set; }
     [Reactive] public IEnumerable<StreamType> SubStreams { get; set; }
@@ -623,25 +624,25 @@ public partial class WatchViewModel : NavigatableViewModel
     private async Task CreateAnimDLResolver(string url)
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(_providerType, url);
-        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream.Value);
     }
 
     private async Task CreateAnimDLResolver(string sub, string dub)
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(_providerType, sub, dub);
-        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream.Value);
     }
 
     private async Task CreateLocalStreamResolver(string directory)
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateLocalStreamResolver(directory);
-        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream.Value);
     }
 
     private async Task CreateMonoTorrentStreamResolver(MonoTorrent.Torrent torrent)
     {
         _videoStreamResolver = _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(torrent);
-        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream);
+        EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream.Value);
         ObserveDownload();
     }
 

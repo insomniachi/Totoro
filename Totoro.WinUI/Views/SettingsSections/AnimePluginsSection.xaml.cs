@@ -8,7 +8,7 @@ using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views.SettingsSections;
 
-public sealed partial class ScrappersSection : Page
+public sealed partial class AnimePluginsSection : Page
 {
     public SettingsViewModel ViewModel
     {
@@ -17,10 +17,10 @@ public sealed partial class ScrappersSection : Page
     }
 
     public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register("ViewModel", typeof(SettingsViewModel), typeof(ScrappersSection), new PropertyMetadata(null));
+        DependencyProperty.Register("ViewModel", typeof(SettingsViewModel), typeof(AnimePluginsSection), new PropertyMetadata(null));
 
 
-    public ScrappersSection()
+    public AnimePluginsSection()
     {
         InitializeComponent();
     }

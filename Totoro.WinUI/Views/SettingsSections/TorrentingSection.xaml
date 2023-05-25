@@ -11,6 +11,10 @@
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
+        <StackPanel.ChildrenTransitions>
+            <EntranceThemeTransition FromVerticalOffset="50" />
+            <RepositionThemeTransition IsStaggeringEnabled="False" />
+        </StackPanel.ChildrenTransitions>
         <labs:SettingsExpander
             Description="Select and cofigure debrid service"
             Header="Debrid Service"
