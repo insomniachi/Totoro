@@ -37,7 +37,7 @@ public class Initalizer : IInitializer
 
     public async Task Initialize()
     {
-#if DEBUG
+#if RELEASE
         await _pluginManager.Initialize(_knownFolders.Plugins); 
 #endif
         await _torrentEngine.TryRestoreState();

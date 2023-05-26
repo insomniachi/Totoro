@@ -90,9 +90,16 @@ public class PluginFactory<T> : IPluginFactory<T>
                     continue;
                 }
 
+                var pluginInfo = plugIn.GetInfo();
+
+                if(_plugins.FirstOrDefault(x => x.Info.Name == pluginInfo.Name) is { })
+                {
+                    continue;
+                }
+
                 _plugins.Add(new Plugin
                 {
-                    Info = plugIn.GetInfo(),
+                    Info = pluginInfo,
                     Module = plugIn,
                     Instance = new(plugIn.Create) 
                 });

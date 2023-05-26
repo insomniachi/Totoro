@@ -61,6 +61,7 @@ public class PluginManager : IPluginManager, IEnableLogger
         }
 
         var folder = Path.Combine(_folder, "Anime");
+        Directory.CreateDirectory(folder);
         var newReleases = plugins.Except(_localAnimePlugins).ToList();
         foreach (var item in newReleases)
         {
