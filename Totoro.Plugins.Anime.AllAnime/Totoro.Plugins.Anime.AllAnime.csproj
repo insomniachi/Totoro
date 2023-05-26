@@ -5,12 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
+	<Version>2.0</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="allanime-icon.png" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
   </ItemGroup>

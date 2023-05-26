@@ -5,11 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
+	<Version>1.5</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="anime-pahe-logo.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />

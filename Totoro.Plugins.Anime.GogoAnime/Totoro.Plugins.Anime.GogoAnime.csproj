@@ -5,11 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
+	<Version>1.2</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="gogo-anime-logo.png" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />

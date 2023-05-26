@@ -9,7 +9,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 {
     private readonly HttpClient _httpClient;
     private readonly IPluginFactory _animePluginFactory;
-    private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/AnimDL/master/Binaries";
+    private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/feature/plugin_refactor/Plugins";
     private List<PluginInfoSlim> _localAnimePlugins = new();
     private string _folder = "";
 

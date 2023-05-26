@@ -1,0 +1,22 @@
+﻿{
+  "Anime": [
+    {
+      "Version": "1.2.0.0",
+      "Url": "https://raw.githubusercontent.com/insomniachi/Totoro/master/Plugins/Totoro.Plugins.Anime.YugenAnime.dll"
+    },
+    {
+      "Version": "2.0.0.0",
+      "Url": "https://raw.githubusercontent.com/insomniachi/Totoro/master/Plugins/Totoro.Plugins.Anime.AllAnime.dll"
+    },
+    {
+      "Version": "1.5.0.0",
+      "Url": "https://raw.githubusercontent.com/insomniachi/Totoro/master/Plugins/Totoro.Plugins.Anime.AnimePahe.dll"
+    },
+    {
+      "Version": "1.2.0.0",
+      "Url": "https://raw.githubusercontent.com/insomniachi/Totoro/master/Plugins/Totoro.Plugins.Anime.GogoAnime.dll"
+    }
+  ],
+  "Manga": [],
+  "Torrent": []
+}

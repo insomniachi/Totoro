@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.github\workflows\Deploy.yml = ..\.github\workflows\Deploy.yml
 		..\LICENSE = ..\LICENSE
 		..\nuget.config = ..\nuget.config
+		plugins.json = plugins.json
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
