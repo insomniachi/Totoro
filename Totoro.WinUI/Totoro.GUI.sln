@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\.github\workflows\Deploy.yml = ..\.github\workflows\Deploy.yml
 		..\LICENSE = ..\LICENSE
 		..\nuget.config = ..\nuget.config
-		plugins.json = plugins.json
+		..\plugins.json = ..\plugins.json
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
@@ -46,9 +46,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.YugenA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.YugenAnime.Tests", "..\Totoro.Plugins.Anime.YugenAnime.Tests\Totoro.Plugins.Anime.YugenAnime.Tests.csproj", "{C4E006E2-7A89-4E80-8F54-9D5391BE2D14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.GogoAnime", "..\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj", "{282BACC8-47D0-4923-9CBA-E499E68CA81B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAnime", "..\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj", "{282BACC8-47D0-4923-9CBA-E499E68CA81B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.GogoAnime.Tests", "..\Totoro.Plugins.Anime.GogoAnime.Tests\Totoro.Plugins.Anime.GogoAnime.Tests.csproj", "{0303576B-6099-416C-8F32-F7A131E8EDFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAnime.Tests", "..\Totoro.Plugins.Anime.GogoAnime.Tests\Totoro.Plugins.Anime.GogoAnime.Tests.csproj", "{0303576B-6099-416C-8F32-F7A131E8EDFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
