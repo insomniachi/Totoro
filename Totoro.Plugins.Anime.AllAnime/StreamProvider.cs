@@ -13,7 +13,7 @@ using Totoro.Plugins.Helpers;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
-public partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnimeStreamProvider, IEnableLogger
+internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnimeStreamProvider, IEnableLogger
 {
     public const string SHOW_QUERY =
         """

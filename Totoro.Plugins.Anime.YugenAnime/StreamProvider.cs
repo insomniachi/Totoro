@@ -11,7 +11,7 @@ using Totoro.Plugins.Helpers;
 
 namespace Totoro.Plugins.Anime.YugenAnime;
 
-public partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnimeStreamProvider, IEnableLogger
+internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnimeStreamProvider, IEnableLogger
 {
     public Task<int> GetNumberOfStreams(string url) => GetNumberOfStreams(url, Config.StreamType);
 

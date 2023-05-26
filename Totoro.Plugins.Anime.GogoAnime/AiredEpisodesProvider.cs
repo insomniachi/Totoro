@@ -2,17 +2,16 @@
 using Flurl;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
-using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Helpers;
 
-namespace Totoro.Plugins.Anime.YugenAnime;
+namespace Totoro.Plugins.Anime.GogoAnime;
 
 internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 {
+    public const string AJAX_URL = "https://ajax.gogo-load.com/ajax/page-recent-release.html";
 
-    class AiredEpisode : IAiredAnimeEpisode, IHaveCreatedTime
+    class AiredEpisode : IAiredAnimeEpisode
     {
-        required public DateTime CreatedAt { get; set; }
         required public string Title { get; set; }
         required public string Url { get; init; }
         required public string Image { get; init; }
@@ -22,26 +21,25 @@ internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)
     {
-        var doc = await Config.Url.AppendPathSegment("latest")
-            .SetQueryParam("page", page.ToString())
-            .GetHtmlDocumentAsync();
+        var doc = await AJAX_URL.SetQueryParams(new
+        {
+            page,
+            type = 1
+        }).GetHtmlDocumentAsync();
 
-        var nodes = doc.QuerySelectorAll(".ep-card");
-
+        var nodes = doc.QuerySelectorAll(".items li");
         foreach (var item in nodes)
         {
-            var title = item.QuerySelector(".ep-origin-name").InnerText.Trim();
-            var path = item.QuerySelector(".ep-thumbnail").Attributes["href"].Value;
-            var url =  Url.Combine(Config.Url, path);
-            var img = item.QuerySelector("img").Attributes["data-src"].Value;
-            var time = item.QuerySelector("time").Attributes["datetime"].Value;
+            var title = item.SelectSingleNode("div/a").Attributes["title"].Value;
+            var path = item.SelectSingleNode("div/a").Attributes["href"].Value;
+            var url = Url.Combine(Config.Url, path);
+            var img = item.SelectSingleNode("div/a/img").Attributes["src"].Value;
             var epString = EpisodeRegex().Match(url).Groups[1].Value;
             yield return new AiredEpisode
             {
                 Title = title,
                 Url = url,
                 Image = img,
-                CreatedAt = DateTime.Parse(time).ToLocalTime(),
                 Episode = int.Parse(epString),
                 EpisodeString = epString
             };

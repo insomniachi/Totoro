@@ -2,22 +2,21 @@
 using System.Text.Json.Nodes;
 using Flurl;
 using Flurl.Http;
-using Totoro.Plugins.Anime.AnimePahe;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
 
-namespace Plugin.AnimePahe;
+namespace Totoro.Plugins.Anime.AnimePahe;
 
-public class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
+internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 {
     class AiredEpisode : IAiredAnimeEpisode, IHaveCreatedTime
     {
-       required public DateTime CreatedAt { get; init; }
-       required public string Title { get; set; }
-       required public string Url { get; init; }
-       required public string Image { get; init; }
-       required public int Episode { get; init; }
-       required public string EpisodeString { get; init; }
+        required public DateTime CreatedAt { get; init; }
+        required public string Title { get; set; }
+        required public string Url { get; init; }
+        required public string Image { get; init; }
+        required public int Episode { get; init; }
+        required public string EpisodeString { get; init; }
     }
 
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)

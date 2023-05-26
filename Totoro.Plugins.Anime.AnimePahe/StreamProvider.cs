@@ -10,7 +10,7 @@ using Totoro.Plugins.Helpers;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
-public partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
+internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 {
     [GeneratedRegex("let id = \"(.+?)\"", RegexOptions.Compiled)]
     private static partial Regex IdRegex();

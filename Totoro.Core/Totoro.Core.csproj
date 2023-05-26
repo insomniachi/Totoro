@@ -55,6 +55,7 @@
 		<ProjectReference Include="..\Totoro.Plugins.Anime.AnimePahe\Totoro.Plugins.Anime.AnimePahe.csproj" />
 		<ProjectReference Include="..\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj" />
 		<ProjectReference Include="..\Totoro.Plugins.Anime.YugenAnime\Totoro.Plugins.Anime.YugenAnime.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj" />
 	</ItemGroup>
 	
 </Project>

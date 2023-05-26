@@ -6,7 +6,7 @@ using Totoro.Plugins.Contracts.Optional;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
-public class Catalog : IAnimeCatalog
+internal class Catalog : IAnimeCatalog
 {
     public const string SEARCH_QUERY =
         $$"""

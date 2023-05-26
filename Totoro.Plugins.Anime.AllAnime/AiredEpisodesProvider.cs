@@ -6,7 +6,7 @@ using Totoro.Plugins.Contracts.Optional;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
-public class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
+internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 {
     public const string SHOWS_QUERY =
         """

@@ -7,7 +7,7 @@ using Totoro.Plugins.Contracts.Optional;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
-public class Catalog : IAnimeCatalog, IEnableLogger
+internal class Catalog : IAnimeCatalog, IEnableLogger
 {
     class SearchResult : ICatalogItem, IHaveSeason, IHaveImage, IHaveStatus
     {
