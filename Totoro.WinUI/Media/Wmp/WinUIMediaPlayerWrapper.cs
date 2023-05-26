@@ -102,29 +102,13 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     private void SetSubtitles(MediaSource source, AdditionalVideoStreamInformation additionalVideoStreamInformation)
     {
-        //if (AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
-        //{
-        //    var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-        //    _ttsMap.Clear();
-        //    foreach (var item in subtitles)
-        //    {
-        //        var tts = TimedTextSource.CreateFromUri(new Uri(item.Value));
-        //        tts.Resolved += OnTtsResolved;
-        //        source.ExternalTimedTextSources.Add(tts);
-        //        _ttsMap[tts] = item.Key;
-        //    }
-        //}
-
-        //if (AdditionalInformation?.TryGetValue("subtitleFiles", out string jsonFiles) == true)
-        //{
-        //    var subtitles = JsonSerializer.Deserialize<List<KeyValuePair<string, string>>>(jsonFiles);
-        //    _ttsMap.Clear();
-        //    foreach (var item in subtitles)
-        //    {
-        //        _ = SetSubtitleFromFile(source, item.Value);
-        //    }
-        //}
-
+        foreach (var item in additionalVideoStreamInformation.Subtitles)
+        {
+            var tts = TimedTextSource.CreateFromUri(new Uri(item.Url));
+            tts.Resolved += OnTtsResolved;
+            source.ExternalTimedTextSources.Add(tts);
+            _ttsMap[tts] = item.Language;
+        }
     }
 
     public async Task<Unit> SetMedia(VideoStreamModel stream)
@@ -162,8 +146,9 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
         {
             return;
         }
-
+        
         args.Tracks[0].Label = lang;
+        lang = lang.ToLower();
 
         if (!_isHardSub && (lang == "en-US" ||
             lang.Contains("english") ||

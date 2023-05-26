@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Totoro.Plugins.Anime.Marin\Totoro.Plugins.Anime.Zoro.csproj" />
+    <ProjectReference Include="..\Totoro.Plugins.Anime.Zoro\Totoro.Plugins.Anime.Zoro.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,10 +1,9 @@
 ﻿using System.Reflection;
 using Totoro.Plugins.Anime.Contracts;
-using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
 
-namespace Totoro.Plugins.Anime.YugenAnime;
+namespace Totoro.Plugins.Anime.Zoro;
 
 public class Plugin : IPlugin<AnimeProvider>
 {
@@ -17,11 +16,11 @@ public class Plugin : IPlugin<AnimeProvider>
 
     public PluginInfo GetInfo() => new()
     {
-        DisplayName = "Yugen Anime",
-        Name = "yugen-anime",
+        DisplayName = "Zoro",
+        Name = "zoro",
         Version = Assembly.GetExecutingAssembly().GetName().Version!,
-        Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.YugenAnime.yugen-anime-icon.png"),
-        Description = "A gogo anime scrapper site"
+        Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.Zoro.zoro-logo.png"),
+        Description = "Zoro is a free site to watch anime and you can even download subbed or dubbed anime in ultra HD quality without any registration or payment."
     };
 
     public PluginOptions GetOptions()
@@ -32,20 +31,12 @@ public class Plugin : IPlugin<AnimeProvider>
                              .WithDescription("Url to home page")
                              .WithGlyph("\uE71B")
                              .WithValue(Config.Url)
-                             .ToPluginOption())
-            .AddOption(x => x.WithName(nameof(Config.StreamType))
-                             .WithDisplayName("Default Stream Type")
-                             .WithDescription("Choose what to play by default, sub/dub")
-                             .WithGlyph("\uF2B7")
-                             .WithValue(Config.StreamType)
-                             .WithAllowedValues(new[] { StreamType.EnglishSubbed, StreamType.EnglishDubbed })
-                             .ToSelectablePluginOption());
+                             .ToPluginOption());
     }
 
     public void SetOptions(PluginOptions options)
     {
         Config.Url = options.GetString(nameof(Config.Url), Config.Url);
-        Config.StreamType = options.GetEnum(nameof(Config.StreamType), Config.StreamType);
     }
 
     object IPlugin.Create() => Create();

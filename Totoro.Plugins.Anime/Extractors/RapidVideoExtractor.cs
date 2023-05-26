@@ -46,7 +46,7 @@ public static class RapidVideoExtractor
 
                 var file = item!["file"]!.ToString();
                 var label = item!["label"]!.ToString();
-                stream.AdditionalInformation.Subtitles.Add(new Subtitle(file, label));
+                stream.AdditionalInformation.Subtitles.Add(new Subtitle(label, file));
 
                 return stream;
             }
