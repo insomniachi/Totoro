@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Net.Http.Json;
+using Flurl;
+using Flurl.Http;
 using Splat;
 using Totoro.Plugins.Contracts;
 
@@ -93,15 +94,8 @@ public class PluginManager : IPluginManager, IEnableLogger
     {
         try
         {
-            var resonse = await _httpClient.GetAsync($"{_baseUrl}/plugins.json");
-
-            if(!resonse.IsSuccessStatusCode)
-            {
-                return new();
-            }
-
-            var index = await resonse.Content.ReadFromJsonAsync<PluginIndex>() ?? new();
-            return index;
+            var str = await _baseUrl.AppendPathSegment("plugins.json").GetStringAsync();
+            return await _baseUrl.AppendPathSegment("plugins.json").GetJsonAsync<PluginIndex>();
         }
         catch (Exception ex)
         {

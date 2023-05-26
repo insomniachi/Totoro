@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Plugin.AnimePahe;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
