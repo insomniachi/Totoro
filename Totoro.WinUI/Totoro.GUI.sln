@@ -50,6 +50,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAn
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAnime.Tests", "..\Totoro.Plugins.Anime.GogoAnime.Tests\Totoro.Plugins.Anime.GogoAnime.Tests.csproj", "{0303576B-6099-416C-8F32-F7A131E8EDFD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.Zoro", "..\Totoro.Plugins.Anime.Marin\Totoro.Plugins.Anime.Zoro.csproj", "{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.Zoro.Tests", "..\Totoro.Plugins.Anime.Marin.Tests\Totoro.Plugins.Anime.Zoro.Tests.csproj", "{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -175,6 +179,22 @@ Global
 		{0303576B-6099-416C-8F32-F7A131E8EDFD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0303576B-6099-416C-8F32-F7A131E8EDFD}.Release|x64.ActiveCfg = Release|x64
 		{0303576B-6099-416C-8F32-F7A131E8EDFD}.Release|x64.Build.0 = Release|x64
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Debug|x64.ActiveCfg = Debug|x64
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Debug|x64.Build.0 = Debug|x64
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Release|x64.ActiveCfg = Release|Any CPU
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79}.Release|x64.Build.0 = Release|Any CPU
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Debug|x64.ActiveCfg = Debug|x64
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Debug|x64.Build.0 = Debug|x64
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Release|x64.ActiveCfg = Release|Any CPU
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -193,6 +213,8 @@ Global
 		{C4E006E2-7A89-4E80-8F54-9D5391BE2D14} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 		{282BACC8-47D0-4923-9CBA-E499E68CA81B} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 		{0303576B-6099-416C-8F32-F7A131E8EDFD} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
+		{C00AE091-43A2-4EA9-A31F-0A34FC4E6C79} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
+		{EE86C384-BD10-4DFC-BC7F-5782E7328BF1} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98BB8C58-726D-4AB8-A113-D44B55413B79}
