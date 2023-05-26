@@ -348,3 +348,9 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Totoro Plugins folder
+Plugins/*.json
+Plugins/Totoro.Plugins.dll
+Plguins/Totoro.Plugins.Anime.dll
+/Plugins/Totoro.Plugins.Anime.dll
