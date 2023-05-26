@@ -6,10 +6,14 @@
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
 	<Version>2.0</Version>
+	<OutputPath Condition="$(Configuration) == Release">..\Plugins\</OutputPath>
+	<AppendTargetFrameworkToOutputPath Condition="$(Configuration) == Release">false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath Condition="$(Configuration) == Release">false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 	
+	
   <ItemGroup>
-    <ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
+    <ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj"/>
   </ItemGroup>
 
 	<ItemGroup>

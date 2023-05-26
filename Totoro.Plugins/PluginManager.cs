@@ -10,7 +10,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 {
     private readonly HttpClient _httpClient;
     private readonly IPluginFactory _animePluginFactory;
-    private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/feature/plugin_refactor/Plugins";
+    private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/feature/plugin_refactor";
     private List<PluginInfoSlim> _localAnimePlugins = new();
     private string _folder = "";
 
@@ -70,7 +70,7 @@ public class PluginManager : IPluginManager, IEnableLogger
                 File.Delete(path);
             }
 
-            var url = $"{_baseUrl}/{item.FileName}";
+            var url = Url.Combine(_baseUrl, "Plugins", item.FileName);
             using var s = await _httpClient.GetStreamAsync(url);
             using var fs = new FileStream(path, FileMode.OpenOrCreate);
             await s.CopyToAsync(fs);
@@ -78,7 +78,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
         if (AllowSideLoadingPlugins)
         {
-            var localPlugins = Directory.GetFiles(folder).Select(x => new PluginInfoSlim(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion!)).ToList();
+            var localPlugins = Directory.GetFiles(folder).Select(x => new PluginInfoSlim(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion!));
             foreach (var item in localPlugins.Except(plugins))
             {
                 this.Log().Info($"Removing plugin : {item.FileName}");
@@ -94,8 +94,8 @@ public class PluginManager : IPluginManager, IEnableLogger
     {
         try
         {
-            var str = await _baseUrl.AppendPathSegment("plugins.json").GetStringAsync();
-            return await _baseUrl.AppendPathSegment("plugins.json").GetJsonAsync<PluginIndex>();
+            var plugins = await _baseUrl.AppendPathSegment("plugins.json").GetJsonAsync<PluginIndex>();
+            return plugins;
         }
         catch (Exception ex)
         {
@@ -103,4 +103,6 @@ public class PluginManager : IPluginManager, IEnableLogger
             return new();
         }
     }
+
+
 }

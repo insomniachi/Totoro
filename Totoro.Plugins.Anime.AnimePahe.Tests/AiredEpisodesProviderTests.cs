@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Plugin.AnimePahe;
 using Xunit.Abstractions;
 
 namespace Totoro.Plugins.Anime.AnimePahe.Tests;
