@@ -19,22 +19,6 @@
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Remove="Dialogs\Views\ConfigureOptionsView.xaml" />
-	  <None Remove="Dialogs\Views\ConfigureProviderView.xaml" />
-	  <None Remove="Dialogs\Views\RequestRatingView.xaml" />
-	  <None Remove="Media\VlcMediaPlayerElement.xaml" />
-	  <None Remove="Views\SettingsSections\DefaultSection.xaml" />
-	  <None Remove="Views\SettingsSections\MediaPlayerSection.xaml" />
-	  <None Remove="Views\SettingsSections\PreferencesSection.xaml" />
-	  <None Remove="Views\SettingsSections\RssSection.xaml" />
-	  <None Remove="Views\SettingsSections\TorrentingSection.xaml" />
-	  <None Remove="Views\SettingsSections\TrackingSection.xaml" />
-	  <None Remove="Views\TorrentingSections\DownloadsSection.xaml" />
-	  <None Remove="Views\TorrentingSections\SearchSection.xaml" />
-	  <None Remove="Views\TorrentingSections\TransfersSection.xaml" />
-	  <None Remove="Views\TorrentingView.xaml" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" Version="0.0.3" />

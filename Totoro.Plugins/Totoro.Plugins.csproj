@@ -12,7 +12,6 @@
     <PackageReference Include="FlurlGraphQL.Querying" Version="1.2.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
-    <PackageReference Include="LanguageExt.Core" Version="4.4.3" />
     <PackageReference Include="ReactiveUI.Fody" Version="18.4.44" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
