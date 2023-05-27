@@ -17,7 +17,7 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public PluginInfo SelectedProvider { get; set; }
-    [Reactive] public string NyaaUrl { get; set; }
+    [Reactive] public PluginInfo SelectedTracker { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
     [ObservableAsProperty] public bool HasInactiveTorrents { get; }
     public ObservableCollection<TorrentManager> InactiveTorrents { get; }
@@ -56,7 +56,9 @@ public class SettingsViewModel : NavigatableViewModel
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
         SelectedProvider = PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
-            ?? PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "allanime");
+            ?? PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "anime-pahe");
+        SelectedTracker = PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultTorrentTrackerType)
+            ?? PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == "nya");
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -83,14 +85,11 @@ public class SettingsViewModel : NavigatableViewModel
         InactiveTorrents = new(torrentEngine.TorrentManagers.Where(x => x.State == MonoTorrent.Client.TorrentState.Stopped));
         Theme = themeSelectorService.Theme;
 
-        NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
-
         this.ObservableForProperty(x => x.SelectedProvider, x => x)
             .Subscribe(provider => settings.DefaultProviderType = provider.Name);
 
-        this.ObservableForProperty(x => x.NyaaUrl, x => x)
-            .Where(x => !string.IsNullOrEmpty(x))
-            .Subscribe(x => localSettingsService.SaveSetting("Nyaa", x));
+        this.ObservableForProperty(x => x.SelectedTracker, x => x)
+            .Subscribe(tracker => settings.DefaultTorrentTrackerType = tracker.Name);
 
         this.WhenAnyValue(x => x.Theme)
             .Subscribe(themeSelectorService.SetTheme);

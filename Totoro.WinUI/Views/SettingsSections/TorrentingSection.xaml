@@ -70,18 +70,16 @@
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
 
-        <!--<labs:SettingsCard Description="Url" Header="Nyaa">
-            <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />
-        </labs:SettingsCard>
         <labs:SettingsCard Description="Site to search for torrents" Header="Torrent Provider">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE93E;" />
             </labs:SettingsCard.HeaderIcon>
             <ComboBox
                 Width="150"
-                ItemsSource="{x:Bind ViewModel.TorrentProviderTypes}"
-                SelectedItem="{x:Bind ViewModel.Settings.TorrentProviderType, Mode=TwoWay}" />
-        </labs:SettingsCard>-->
+                DisplayMemberPath="DisplayName"
+                ItemsSource="{x:Bind ViewModel.TrackerTypes}"
+                SelectedItem="{x:Bind ViewModel.SelectedTracker, Mode=TwoWay}" />
+        </labs:SettingsCard>
 
         <labs:SettingsExpander Description="some filtering options to find your torrents better" Header="Advanced Search">
             <labs:SettingsExpander.HeaderIcon>
@@ -100,7 +98,7 @@
                 </labs:SettingsCard>
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
-        
+
         <labs:SettingsCard Description="Downloads first and last piece before the stream is created." Header="Prebuffer Torrents">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE9F5;" />
@@ -110,7 +108,7 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
-        
+
         <labs:SettingsCard Description="Remove torrents which you have watched already to save space." Header="Auto Remove Completed">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE74D;" />
@@ -120,7 +118,7 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
-        
+
         <labs:SettingsCard
             Command="{x:Bind ViewModel.EditUserTorrentDirectory}"
             Description="Directory to save torrent downloads"
@@ -137,7 +135,7 @@
                 TextTrimming="CharacterEllipsis"
                 ToolTipService.ToolTip="{x:Bind ViewModel.Settings.UserTorrentsDownloadDirectory, Mode=OneWay}" />
         </labs:SettingsCard>
-        
+
         <labs:SettingsCard Description="Auto download currently watching airing anime" Header="Auto Download">
             <labs:SettingsCard.HeaderIcon>
                 <SymbolIcon Symbol="Download" />
@@ -147,7 +145,7 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
-        
+
         <labs:SettingsExpander
             Description="Torrents which are not completed or not downloading"
             Header="Inactive Torrents"
