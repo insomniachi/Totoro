@@ -1,11 +1,13 @@
-﻿namespace Totoro.Core.Services.MediaEvents;
+﻿using Totoro.Plugins.Anime.Contracts;
+
+namespace Totoro.Core.Services.MediaEvents;
 
 public abstract class MediaEventListener : IMediaEventListener
 {
     protected IAnimeModel _animeModel;
     protected IMediaPlayer _mediaPlayer;
     protected int _currentEpisode;
-    protected SearchResult _searchResult;
+    protected ICatalogItem _searchResult;
     protected VideoStreamModel _videoStreamModel;
     protected AniSkipResult _timeStamps;
 
@@ -73,7 +75,7 @@ public abstract class MediaEventListener : IMediaEventListener
             .Subscribe(_ => OnPrevTrack());
     }
 
-    public void SetSearchResult(SearchResult searchResult)
+    public void SetSearchResult(ICatalogItem searchResult)
     {
         _searchResult = searchResult;
     }

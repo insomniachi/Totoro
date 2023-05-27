@@ -7,8 +7,8 @@
     xmlns:views="using:Totoro.WinUI.Views"
     xmlns:winex="using:WinUIEx"
     mc:Ignorable="d">
-    <winex:WindowEx.Backdrop>
-        <winex:MicaSystemBackdrop />
-    </winex:WindowEx.Backdrop>
+    <winex:WindowEx.SystemBackdrop>
+        <MicaBackdrop />
+    </winex:WindowEx.SystemBackdrop>
     <views:ShellPage />
 </winex:WindowEx>

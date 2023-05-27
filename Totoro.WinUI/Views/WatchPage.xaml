@@ -62,13 +62,7 @@
                     <ComboBox
                         Width="150"
                         ItemsSource="{x:Bind ViewModel.SubStreams, Mode=OneWay}"
-                        SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
-                                <TextBlock Text="{x:Bind help:Converters.ConvertStreamType((x:String))}" TextTrimming="CharacterEllipsis" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}" />
                 </StackPanel>
 
                 <StackPanel

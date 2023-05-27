@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Core.Services;
 
@@ -59,7 +60,7 @@ public class TotoroTypeResolver : DefaultJsonTypeInfoResolver
     {
         JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
 
-        Type basePointType = typeof(ProviderOption);
+        Type basePointType = typeof(PluginOption);
         if (jsonTypeInfo.Type == basePointType)
         {
             jsonTypeInfo.PolymorphismOptions = new JsonPolymorphismOptions
@@ -69,7 +70,7 @@ public class TotoroTypeResolver : DefaultJsonTypeInfoResolver
                 UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType,
                 DerivedTypes =
                 {
-                    new JsonDerivedType(typeof(SelectableProviderOption), "selectable"),
+                    new JsonDerivedType(typeof(SelectablePluginOption), "selectable"),
                 }
             };
         }

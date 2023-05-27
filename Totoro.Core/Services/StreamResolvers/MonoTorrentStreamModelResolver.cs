@@ -1,6 +1,7 @@
 ﻿using AnitomySharp;
 using MonoTorrent;
 using MonoTorrent.Client;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
@@ -53,7 +54,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
 
     public IObservable<(double,ConnectionMonitor)> Status => _downloadStatus;
 
-    public async Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
+    public async Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
         _torrentManager = _torrent is null
             ? await _torrentEngine.DownloadFromUrl(_torrentUrl, _saveDirectory)
@@ -89,7 +90,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         return EpisodeModelCollection.FromEpisode(start, end);
     }
 
-    public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
+    public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, StreamType streamType)
     {
         _lastResolvedEp = episode;
         _prevStream?.Dispose();

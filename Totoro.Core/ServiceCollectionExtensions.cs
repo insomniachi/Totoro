@@ -10,6 +10,10 @@ using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.Services.StreamResolvers;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Torrents.Contracts;
 
 namespace Totoro.Core
 {
@@ -76,12 +80,36 @@ namespace Totoro.Core
 
         public static IServiceCollection AddTorrenting(this IServiceCollection services)
         {
-            services.AddTransient<ITorrentCatalog, NyaaCatalog>();
-            services.AddTransient<ITorrentCatalog, AnimeToshoCatalog>();
-            services.AddSingleton<ITorrentCatalogFactory, TorrentCatalogFactory>();
-
             services.AddTransient<IDebridService, PremiumizeService>();
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddPlugins(this IServiceCollection services)
+        {
+
+#if DEBUG
+            // anime
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AnimePahe.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AllAnime.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.YugenAnime.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.GogoAnime.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.Zoro.Plugin());
+
+            // torrents
+            PluginFactory<ITorrentTracker>.Instance.LoadPlugin(new Plugins.Torrents.Nya.Plugin());
+            PluginFactory<ITorrentTracker>.Instance.LoadPlugin(new Plugins.Torrents.AnimeTosho.Plugin());
+
+#endif
+            services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(),
+                                                                         PluginFactory<AnimeProvider>.Instance,
+                                                                         PluginFactory<ITorrentTracker>.Instance));
+            services.AddSingleton(typeof(IPluginOptionsStorage<>), typeof(PluginOptionStorage<>));
+            services.AddSingleton<PluginOptionsStorage>();
+            
+            services.AddSingleton<IPluginFactory<AnimeProvider>>(PluginFactory<AnimeProvider>.Instance);
+            services.AddSingleton<IPluginFactory<ITorrentTracker>>(PluginFactory<ITorrentTracker>.Instance);
 
             return services;
         }

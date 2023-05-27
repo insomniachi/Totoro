@@ -12,7 +12,7 @@
     xmlns:media="using:CommunityToolkit.WinUI.UI.Media"
     xmlns:models="using:Totoro.Core.Models"
     xmlns:root="using:Totoro.WinUI"
-    xmlns:torrents="using:Totoro.Core.Torrents"
+    xmlns:torrents="using:Totoro.Plugins.Torrents.Models"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:usercontrols="using:Totoro.WinUI.UserControls"
     Name="Page"

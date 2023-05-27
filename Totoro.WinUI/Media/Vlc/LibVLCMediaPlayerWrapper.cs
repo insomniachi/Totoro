@@ -4,6 +4,7 @@ using System.Text.Json;
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using ReactiveMarbles.ObservableEvents;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.WinUI.Media.Vlc;
 
@@ -76,18 +77,17 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
             : new LibVLCSharp.Shared.Media(_vlc, new StreamMediaInput(stream.Stream));
 
         _mp.Media = media;
-
-        if (stream.AdditionalInformation?.TryGetValue("subtitles", out string json) == true)
-        {
-            var subtitles = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-            var count = 0;
-            foreach (var item in subtitles)
-            {
-                _mp.AddSlave(MediaSlaveType.Subtitle, item.Value, count++ == 0);
-            }
-        }
-
+        SetSubtitles(stream.AdditionalInformation.Subtitles);
         return Unit.Default;
+    }
+
+    private void SetSubtitles(List<Subtitle> subtitles)
+    {
+        var count = 0;
+        foreach (var item in subtitles)
+        {
+            _mp.AddSlave(MediaSlaveType.Subtitle, item.Url, count++ == 0);
+        }
     }
 
     public void Initialize(LibVLC vlc, MediaPlayer mp, VideoView videoView)

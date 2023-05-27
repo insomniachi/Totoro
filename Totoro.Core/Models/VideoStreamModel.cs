@@ -1,4 +1,5 @@
 ﻿using Totoro.Core.Services.Debrid;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Models
 {
@@ -8,9 +9,9 @@ namespace Totoro.Core.Models
         public Stream Stream { get; set; }
         public string StreamUrl { get; init; }
         public Dictionary<string, string> Headers { get; init; }
-        public Dictionary<string, string> AdditionalInformation { get; init; } = new();
+        public AdditionalVideoStreamInformation AdditionalInformation { get; set; } = new();
         public bool HasHeaders => Headers?.Any() == true;
-        public string Quality { get; init; }
+        public string Resolution { get; init; }
 
         public static VideoStreamModel FromVideoStream(VideoStream stream)
         {
@@ -18,7 +19,7 @@ namespace Totoro.Core.Models
             {
                 StreamUrl = stream.Url,
                 Headers = stream.Headers,
-                Quality = stream.Quality,
+                Resolution = stream.Resolution,
             };
         }
 
@@ -27,7 +28,10 @@ namespace Totoro.Core.Models
             return new VideoStreamModel
             {
                 StreamUrl = link.Link,
-                AdditionalInformation = new Dictionary<string, string> { ["IsMKV"] = "" }
+                AdditionalInformation = new()
+                {
+                    IsMkv = true
+                }
             };
         }
 

@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using MonoTorrent.Client;
 using Splat;
-using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins;
+using Totoro.Plugins.Torrents.Models;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
-using TorrentModel = Totoro.Core.Torrents.TorrentModel;
-using TorrentState = Totoro.Core.Torrents.TorrentState;
+using TorrentState = Totoro.Plugins.Torrents.Models.TorrentState;
 using Video = Totoro.Core.Models.Video;
 
 namespace Totoro.Core;
@@ -83,7 +83,7 @@ public class TotoroCommands : IEnableLogger
             switch (model.State)
             {
                 case TorrentState.Unknown:
-                    var isCached = await debridServiceContext.Check(model.MagnetLink);
+                    var isCached = await debridServiceContext.Check(model.Magnet);
                     model.State = isCached ? TorrentState.Unknown : TorrentState.NotCached;
                     if (isCached)
                     {
@@ -95,7 +95,7 @@ public class TotoroCommands : IEnableLogger
                     }
                     break;
                 case TorrentState.NotCached:
-                    _ = await debridServiceContext.CreateTransfer(model.MagnetLink);
+                    _ = await debridServiceContext.CreateTransfer(model.Magnet);
                     model.State = TorrentState.Requested;
                     break;
             }
@@ -118,10 +118,10 @@ public class TotoroCommands : IEnableLogger
                     navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>() 
                     {
                         ["Anime"] = model,
-                        ["Indexer"] = settings.TorrentProviderType
+                        ["Indexer"] = settings.DefaultTorrentTrackerType
                     });
                     break;
-                case (AnimeModel model, TorrentProviderType indexer):
+                case (AnimeModel model, string indexer):
                     navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>()
                     {
                         ["Anime"] = model,
@@ -132,7 +132,7 @@ public class TotoroCommands : IEnableLogger
 
         });
 
-        ConfigureProvider = ReactiveCommand.CreateFromTask<ProviderInfo>(viewService.ConfigureProvider);
+        ConfigureProvider = ReactiveCommand.CreateFromTask<PluginInfo>(viewService.ConfigureProvider);
         RemoveTorrent = ReactiveCommand.CreateFromTask<string>(async name => await torrentEngine.RemoveTorrent(name, false));
         RemoveTorrentWithFiles = ReactiveCommand.CreateFromTask<string>(async name =>
         {
@@ -158,7 +158,7 @@ public class TotoroCommands : IEnableLogger
                 return;
             }
 
-            torrentEngine.DownloadFromMagnet(torrent.MagnetLink, Path.Combine(settings.UserTorrentsDownloadDirectory, title));
+            torrentEngine.DownloadFromMagnet(torrent.Magnet, Path.Combine(settings.UserTorrentsDownloadDirectory, title));
         });
         AnimeCard = ReactiveCommand.Create<AnimeModel>(anime =>
         {

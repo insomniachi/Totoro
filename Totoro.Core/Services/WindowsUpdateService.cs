@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using System.Text.Json.Nodes;
+using Flurl.Http;
 using Splat;
 
 namespace Totoro.Core.Services;
@@ -29,7 +30,8 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
             .Where(_ => settings.AutoUpdate)
             .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(_ => httpClient.GetStreamAsync("https://api.github.com/repos/insomniachi/totoro/releases/latest"))
+            .SelectMany(_ => TryGetStreamAsync())
+            .Where(x => !string.IsNullOrEmpty(x))
             .Select(x => JsonNode.Parse(x))
             .Select(jsonNode => new VersionInfo()
             {
@@ -41,6 +43,20 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             .Log(this, "New Version", vi => vi.Version.ToString())
             .Throttle(TimeSpan.FromSeconds(3));
 #endif
+    }
+
+    private async Task<string> TryGetStreamAsync()
+    {
+        var response = await "https://api.github.com/repos/insomniachi/totoro/releases/latest"
+            .AllowAnyHttpStatus()
+            .GetAsync();
+
+        if(response.StatusCode > 300)
+        {
+            return "";
+        }
+
+        return await response.GetStringAsync();
     }
 
     public async ValueTask<VersionInfo> GetCurrentVersionInfo()

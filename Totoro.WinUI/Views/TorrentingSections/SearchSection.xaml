@@ -46,7 +46,7 @@
                                 Width="400"
                                 Height="200"
                                 AcceptsReturn="True"
-                                Text="{x:Bind ViewModel.PastedTorrent.MagnetLink, Mode=TwoWay}"
+                                Text="{x:Bind ViewModel.PastedTorrent.Magnet, Mode=TwoWay}"
                                 TextWrapping="Wrap" />
                             <Button
                                 Command="{x:Bind root:App.Commands.TorrentCommand}"

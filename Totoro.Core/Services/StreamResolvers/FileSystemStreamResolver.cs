@@ -1,4 +1,6 @@
-﻿namespace Totoro.Core.Services.StreamResolvers;
+﻿using Totoro.Plugins.Anime.Models;
+
+namespace Totoro.Core.Services.StreamResolvers;
 
 internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
 {
@@ -12,7 +14,7 @@ internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
         _directory = new(directory);
     }
 
-    public Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
+    public Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
         foreach (var fileInfo in _directory.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
         {
@@ -35,7 +37,7 @@ internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
         return Task.FromResult(EpisodeModelCollection.FromEpisodes(_episodes.Keys.Order()));
     }
 
-    public Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
+    public Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, StreamType streamType)
     {
         _prevStream?.Dispose();
         _prevStream = null;

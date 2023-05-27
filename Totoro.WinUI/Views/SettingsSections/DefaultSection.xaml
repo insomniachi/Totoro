@@ -11,6 +11,10 @@
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
+        <StackPanel.ChildrenTransitions>
+            <EntranceThemeTransition FromVerticalOffset="50" />
+            <RepositionThemeTransition IsStaggeringEnabled="False" />
+        </StackPanel.ChildrenTransitions>
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
@@ -36,12 +40,12 @@
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
-            CommandParameter="Scrappers"
+            CommandParameter="Anime Plugins"
             Description="Options related to anime website scrapers"
-            Header="Scrappers"
+            Header="Anime Plugins"
             IsClickEnabled="True">
             <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xF6FA;" />
+                <FontIcon Glyph="&#xE8B2;" />
             </labs:SettingsCard.HeaderIcon>
         </labs:SettingsCard>
 

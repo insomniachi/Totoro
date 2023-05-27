@@ -7,10 +7,48 @@
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:plugins="using:Totoro.Plugins"
+    xmlns:po="using:Totoro.Plugins.Options"
     xmlns:root="using:Totoro.WinUI"
+    xmlns:view="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <view:ProviderOptionDataTemplateSelector
+            x:Key="DataTemplateSelector"
+            ComboBoxTemplate="{StaticResource ComboBoxTemplate}"
+            TextBoxTemplate="{StaticResource TextBoxTemplate}" />
+
+        <DataTemplate x:Key="TextBoxTemplate" x:DataType="po:PluginOption">
+            <labs:SettingsCard Description="{x:Bind Description}" Header="{x:Bind DisplayName}">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="{x:Bind Glyph}" />
+                </labs:SettingsCard.HeaderIcon>
+                <TextBox MaxWidth="300" Text="{x:Bind Value, Mode=TwoWay}" />
+            </labs:SettingsCard>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ComboBoxTemplate" x:DataType="po:SelectablePluginOption">
+            <labs:SettingsCard Description="{x:Bind Description}" Header="{x:Bind DisplayName}">
+                <labs:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="{x:Bind Glyph}" />
+                </labs:SettingsCard.HeaderIcon>
+                <ComboBox ItemsSource="{x:Bind AllowedValues, Mode=OneWay}" SelectedItem="{x:Bind Value, Mode=TwoWay}" />
+            </labs:SettingsCard>
+        </DataTemplate>
+    </Page.Resources>
+
     <StackPanel Spacing="10">
+        <StackPanel.ChildrenTransitions>
+            <EntranceThemeTransition FromVerticalOffset="50" />
+            <RepositionThemeTransition IsStaggeringEnabled="False" />
+        </StackPanel.ChildrenTransitions>
+
+        <TextBlock
+            FontSize="16"
+            FontWeight="SemiBold"
+            Text="General" />
+
         <labs:SettingsExpander
             Description="Select and cofigure debrid service"
             Header="Debrid Service"
@@ -31,18 +69,18 @@
                 </labs:SettingsCard>
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
-        <labs:SettingsCard Description="Url" Header="Nyaa">
-            <TextBox Width="200" Text="{x:Bind ViewModel.NyaaUrl, Mode=TwoWay}" />
-        </labs:SettingsCard>
+
         <labs:SettingsCard Description="Site to search for torrents" Header="Torrent Provider">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE93E;" />
             </labs:SettingsCard.HeaderIcon>
             <ComboBox
                 Width="150"
-                ItemsSource="{x:Bind ViewModel.TorrentProviderTypes}"
-                SelectedItem="{x:Bind ViewModel.Settings.TorrentProviderType, Mode=TwoWay}" />
+                DisplayMemberPath="DisplayName"
+                ItemsSource="{x:Bind ViewModel.TrackerTypes}"
+                SelectedItem="{x:Bind ViewModel.SelectedTracker, Mode=TwoWay}" />
         </labs:SettingsCard>
+
         <labs:SettingsExpander Description="some filtering options to find your torrents better" Header="Advanced Search">
             <labs:SettingsExpander.HeaderIcon>
                 <FontIcon Glyph="&#xE71C;" />
@@ -60,6 +98,7 @@
                 </labs:SettingsCard>
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
+
         <labs:SettingsCard Description="Downloads first and last piece before the stream is created." Header="Prebuffer Torrents">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE9F5;" />
@@ -69,6 +108,7 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
+
         <labs:SettingsCard Description="Remove torrents which you have watched already to save space." Header="Auto Remove Completed">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE74D;" />
@@ -78,6 +118,7 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
+
         <labs:SettingsCard
             Command="{x:Bind ViewModel.EditUserTorrentDirectory}"
             Description="Directory to save torrent downloads"
@@ -94,6 +135,7 @@
                 TextTrimming="CharacterEllipsis"
                 ToolTipService.ToolTip="{x:Bind ViewModel.Settings.UserTorrentsDownloadDirectory, Mode=OneWay}" />
         </labs:SettingsCard>
+
         <labs:SettingsCard Description="Auto download currently watching airing anime" Header="Auto Download">
             <labs:SettingsCard.HeaderIcon>
                 <SymbolIcon Symbol="Download" />
@@ -103,17 +145,7 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
-        <!--<labs:SettingsCard
-            Command="{x:Bind ViewModel.Navigate}"
-            CommandParameter="RSS"
-            Description="Configure RSS feeds"
-            Header="RSS"
-            IsClickEnabled="True"
-            Visibility="Collapsed">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xF657;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>-->
+
         <labs:SettingsExpander
             Description="Torrents which are not completed or not downloading"
             Header="Inactive Torrents"
@@ -164,6 +196,41 @@
                 </DataTemplate>
             </labs:SettingsExpander.ItemTemplate>
         </labs:SettingsExpander>
+
+        <TextBlock
+            Margin="0,20,0,0"
+            FontSize="16"
+            FontWeight="SemiBold"
+            Text="Trackers" />
+
+        <ItemsControl ItemsSource="{x:Bind ViewModel.TrackerTypes}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="plugins:PluginInfo">
+                    <labs:SettingsExpander
+                        Description="{x:Bind Description}"
+                        Header="{x:Bind DisplayName}"
+                        ItemTemplate="{StaticResource DataTemplateSelector}"
+                        ItemsSource="{x:Bind help:Converters.GetTorrentsOptions(Name)}">
+                        <labs:SettingsExpander.HeaderIcon>
+                            <ImageIcon Source="{x:Bind help:Converters.StreamToImage(Icon)}" />
+                        </labs:SettingsExpander.HeaderIcon>
+                    </labs:SettingsExpander>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Spacing="10">
+                        <StackPanel.ChildrenTransitions>
+                            <EntranceThemeTransition FromVerticalOffset="50" />
+                            <RepositionThemeTransition IsStaggeringEnabled="False" />
+                        </StackPanel.ChildrenTransitions>
+                    </StackPanel>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+
+
     </StackPanel>
 
 </Page>

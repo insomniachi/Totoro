@@ -1,9 +1,11 @@
 ﻿using System.Reactive.Concurrency;
 using System.Reflection;
-using AnimDL.Core;
 using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.Torrents;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Torrents.Contracts;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
@@ -14,8 +16,8 @@ public class SettingsViewModel : NavigatableViewModel
 
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
-    [Reactive] public ProviderInfo SelectedProvider { get; set; }
-    [Reactive] public string NyaaUrl { get; set; }
+    [Reactive] public PluginInfo SelectedProvider { get; set; }
+    [Reactive] public PluginInfo SelectedTracker { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
     [ObservableAsProperty] public bool HasInactiveTorrents { get; }
     public ObservableCollection<TorrentManager> InactiveTorrents { get; }
@@ -24,14 +26,14 @@ public class SettingsViewModel : NavigatableViewModel
     public Version Version { get; }
     public Version ScrapperVersion { get; }
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
-    public IEnumerable<ProviderInfo> ProviderTypes => ProviderFactory.Instance.Providers;
+    public IEnumerable<PluginInfo> ProviderTypes => PluginFactory<AnimeProvider>.Instance.Plugins;
+    public IEnumerable<PluginInfo> TrackerTypes => PluginFactory<ITorrentTracker>.Instance.Plugins;
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
     public List<string> AnimeActions { get; } = new List<string> { "Watch", "Info" };
     public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
     public List<DebridServiceType> DebridServices { get; } = Enum.GetValues<DebridServiceType>().Cast<DebridServiceType>().ToList();
-    public List<TorrentProviderType> TorrentProviderTypes { get; } = Enum.GetValues<TorrentProviderType>().Cast<TorrentProviderType>().ToList();
     public List<MediaPlayerType> MediaPlayerTypes { get; } = Enum.GetValues<MediaPlayerType>().Cast<MediaPlayerType>().ToList();
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }
@@ -53,8 +55,10 @@ public class SettingsViewModel : NavigatableViewModel
 
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
-        SelectedProvider = ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
-            ?? ProviderFactory.Instance.Providers.FirstOrDefault(x => x.Name == "allanime");
+        SelectedProvider = PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
+            ?? PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "anime-pahe");
+        SelectedTracker = PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultTorrentTrackerType)
+            ?? PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == "nya");
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -81,14 +85,11 @@ public class SettingsViewModel : NavigatableViewModel
         InactiveTorrents = new(torrentEngine.TorrentManagers.Where(x => x.State == MonoTorrent.Client.TorrentState.Stopped));
         Theme = themeSelectorService.Theme;
 
-        NyaaUrl = localSettingsService.ReadSetting("Nyaa", "https://nyaa.ink/");
-
         this.ObservableForProperty(x => x.SelectedProvider, x => x)
             .Subscribe(provider => settings.DefaultProviderType = provider.Name);
 
-        this.ObservableForProperty(x => x.NyaaUrl, x => x)
-            .Where(x => !string.IsNullOrEmpty(x))
-            .Subscribe(x => localSettingsService.SaveSetting("Nyaa", x));
+        this.ObservableForProperty(x => x.SelectedTracker, x => x)
+            .Subscribe(tracker => settings.DefaultTorrentTrackerType = tracker.Name);
 
         this.WhenAnyValue(x => x.Theme)
             .Subscribe(themeSelectorService.SetTheme);

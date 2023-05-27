@@ -2,12 +2,12 @@
     x:Class="Totoro.WinUI.Views.DiscoverPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:am="using:AnimDL.Core.Models"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pc="using:Totoro.Plugins.Anime.Contracts"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     xmlns:views="using:Totoro.WinUI.Views"
     x:Name="Page"
@@ -78,7 +78,7 @@
                         ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
                         StretchContentForSingleRow="False">
                         <ctk:AdaptiveGridView.ItemTemplate>
-                            <DataTemplate x:DataType="am:AiredEpisode">
+                            <DataTemplate x:DataType="pc:IAiredAnimeEpisode">
                                 <Grid
                                     x:Name="MainGrid"
                                     Margin="3"
@@ -119,8 +119,8 @@
                                         <TextBlock
                                             FontSize="20"
                                             Foreground="White"
-                                            Text="{x:Bind help:ModelHelpers.GetTimeOfAiring((am:AiredEpisode))}"
-                                            Visibility="{x:Bind help:ModelHelpers.GetTimeOfAiringVisibility((am:AiredEpisode))}" />
+                                            Text="{x:Bind help:ModelHelpers.GetTimeOfAiring((pc:IAiredAnimeEpisode))}"
+                                            Visibility="{x:Bind help:ModelHelpers.GetTimeOfAiringVisibility((pc:IAiredAnimeEpisode))}" />
                                     </Grid>
 
                                     <Border
@@ -187,7 +187,7 @@
                         ItemsSource="{x:Bind ViewModel.AnimeSearchResults, Mode=OneWay}"
                         StretchContentForSingleRow="False">
                         <ctk:AdaptiveGridView.ItemTemplate>
-                            <DataTemplate x:DataType="am:SearchResult">
+                            <DataTemplate x:DataType="pc:ICatalogItem">
                                 <Grid x:Name="MainGrid" Margin="3">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
@@ -202,13 +202,13 @@
                                                 IsCacheEnabled="True"
                                                 PlaceholderSource="/Assets/placeholder.jpg"
                                                 PlaceholderStretch="Fill"
-                                                Source="{x:Bind help:ModelHelpers.GetImage((am:SearchResult))}"
+                                                Source="{x:Bind help:ModelHelpers.GetImage((pc:ICatalogItem))}"
                                                 Stretch="UniformToFill" />
                                         </ctk:Case>
                                         <ctk:Case Value="{StaticResource True}">
                                             <Image
                                                 Grid.Row="0"
-                                                Source="{x:Bind help:ModelHelpers.GetImageSource((am:SearchResult))}"
+                                                Source="{x:Bind help:ModelHelpers.GetImageSource((pc:ICatalogItem))}"
                                                 Stretch="UniformToFill" />
                                         </ctk:Case>
                                     </ctk:SwitchPresenter>
@@ -224,7 +224,7 @@
                                         <TextBlock
                                             FontSize="20"
                                             Foreground="White"
-                                            Text="{x:Bind help:ModelHelpers.GetRating((am:SearchResult))}" />
+                                            Text="{x:Bind help:ModelHelpers.GetRating((pc:ICatalogItem))}" />
                                     </Grid>
 
                                     <Border
@@ -244,7 +244,7 @@
                                                 TextTrimming="WordEllipsis"
                                                 TextWrapping="NoWrap"
                                                 ToolTipService.ToolTip="{x:Bind Title}" />
-                                            <TextBlock HorizontalAlignment="Center" Text="{x:Bind help:ModelHelpers.GetAdditionalInformation((am:SearchResult))}" />
+                                            <TextBlock HorizontalAlignment="Center" Text="{x:Bind help:ModelHelpers.GetAdditionalInformation((pc:ICatalogItem))}" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>

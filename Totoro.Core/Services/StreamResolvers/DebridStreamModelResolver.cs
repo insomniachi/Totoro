@@ -1,6 +1,7 @@
 ﻿using AnitomySharp;
 using Splat;
 using Totoro.Core.Services.Debrid;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
@@ -32,12 +33,12 @@ public class DebridStreamModelResolver : IVideoStreamModelResolver, IEnableLogge
         }
     }
 
-    public Task<EpisodeModelCollection> ResolveAllEpisodes(string subStream)
+    public Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
         return Task.FromResult(EpisodeModelCollection.FromDirectDownloadLinks(_links));
     }
 
-    public Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, string subStream)
+    public Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, StreamType streamType)
     {
         var ddl = _links.FirstOrDefault(x => x.Episode == episode);
         return Task.FromResult(new VideoStreamsForEpisodeModel(ddl));

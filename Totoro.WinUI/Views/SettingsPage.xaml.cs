@@ -34,7 +34,7 @@ public sealed partial class SettingsPage : SettingsPageBase, IEnableLogger
         {
             "Settings" => Navigate<DefaultSection>(),
             "Settings>Media Player" => Navigate<MediaPlayerSection>(),
-            "Settings>Scrappers" => Navigate<ScrappersSection>(),
+            "Settings>Anime Plugins" => Navigate<AnimePluginsSection>(),
             "Settings>Tracking" => Navigate<TrackingSection>(),
             "Settings>Torrenting" => Navigate<TorrentingSection>(),
             "Settings>Torrenting>RSS" => Navigate<RssSection>(),

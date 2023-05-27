@@ -1,138 +1,104 @@
-﻿using System.Diagnostics;
-using System.Text.Json.Nodes;
-using AnimDL.Core;
-using Splat;
+﻿using Splat;
+using Totoro.Plugins;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Core.Services;
 
-public class PluginManager : IPluginManager, IEnableLogger
+public class PluginOptionWrapper : ReactiveObject
 {
-    private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/AnimDL/master/Binaries";
-    private readonly HttpClient _httpClient;
-    private readonly ILocalSettingsService _localSettingsService;
+    [Reactive] required public PluginOptions Options { get; init; }
+    required public string PluginName { get; init; }
+    public event EventHandler<string> OptionsChaged;
+
+    public PluginOptionWrapper()
+    {
+        this.WhenAnyValue(x => x.Options)
+            .WhereNotNull()
+            .SelectMany(x => x.WhenChanged())
+            .Subscribe(_ => OptionsChaged?.Invoke(Options, PluginName));
+
+    }
+}
+
+public interface IPluginOptionsStorage<T>
+{
+    void Initialize();
+    PluginOptionWrapper GetOptions(string pluginName);
+}
+
+internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
+{
+    private readonly Dictionary<string, PluginOptionWrapper> _configs = new();
+    private readonly Dictionary<string, Dictionary<string, string>> _configValues = new();
     private readonly ISettings _settings;
-    private readonly IKnownFolders _knownFolders;
-    private readonly Dictionary<string, ProviderOptions> _configs;
+    private readonly ILocalSettingsService _localSettingsService;
 
-    record PluginInfo(string FileName, string Version);
-
-    public PluginManager(HttpClient httpClient,
-                         ILocalSettingsService localSettingsService,
-                         ISettings settings,
-                         IKnownFolders knownFolders)
+    public PluginOptionStorage(ISettings settings,
+                               ILocalSettingsService localSettingsService)
     {
-        _configs = localSettingsService.ReadSetting<Dictionary<string, ProviderOptions>>("ProviderConfigs", new());
-        _httpClient = httpClient;
-        _localSettingsService = localSettingsService;
         _settings = settings;
-        _knownFolders = knownFolders;
+        _localSettingsService = localSettingsService;
+        _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>("AnimePluginConfigs", new());
     }
 
-    public void SaveConfig(string provider, ProviderOptions config)
-    {
-        ProviderFactory.Instance.SetOptions(provider, config);
-        _configs[provider] = config;
-        SaveConfig();
-    }
+    public PluginOptionWrapper GetOptions(string pluginName) => _configs[pluginName];
 
-    public void SaveConfig()
+    public void Initialize()
     {
-        _localSettingsService.SaveSetting("ProviderConfigs", _configs);
-    }
-
-    private async Task<IEnumerable<PluginInfo>> GetListedPlugins()
-    {
-        try
+        var hasNewConfig = false;
+        foreach (var item in PluginFactory<T>.Instance.Plugins)
         {
-            var json = await _httpClient.GetStringAsync($"{_baseUrl}/plugins.json");
-            var pluginInfos = new List<PluginInfo>();
-            foreach (var item in JsonNode.Parse(json)?.AsArray())
+            var baseConfig = PluginFactory<T>.Instance.GetOptions(item.Name);
+            _configs.Add(item.Name, new PluginOptionWrapper
             {
-                var version = $"{item?["Version"]}";
-                var name = Path.GetFileName($"{item?["Url"]}");
-                pluginInfos.Add(new PluginInfo(name, version));
-            }
-            return pluginInfos;
-        }
-        catch (Exception ex)
-        {
-            this.Log().Error(ex);
-            return Enumerable.Empty<PluginInfo>();
-        }
-    }
-
-    public async Task Initialize()
-    {
-        try
-        {
-            var localPlugins = Directory.GetFiles(_knownFolders.Plugins).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
-            var listedPlugins = await GetListedPlugins();
-            var newReleases = listedPlugins.Except(localPlugins).ToList();
-            var hasNewConfig = false;
-            foreach (var item in newReleases)
+                Options = baseConfig,
+                PluginName = item.Name
+            });
+            
+            if (!_configValues.ContainsKey(item.Name))
             {
-                var path = Path.Combine(_knownFolders.Plugins, item.FileName);
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-
-                var url = $"{_baseUrl}/{item.FileName}";
-                using var s = await _httpClient.GetStreamAsync(url);
-                using var fs = new FileStream(path, FileMode.OpenOrCreate);
-                await s.CopyToAsync(fs);
                 hasNewConfig = true;
             }
-
-            if (!_settings.AllowSideLoadingPlugins && listedPlugins.Any())
+            else
             {
-                localPlugins = Directory.GetFiles(_knownFolders.Plugins).Select(x => new PluginInfo(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion)).ToList();
-                foreach (var item in localPlugins.Except(listedPlugins))
+                foreach (var option in _configValues[item.Name])
                 {
-                    this.Log().Info($"Removing plugin : {item.FileName}");
-                    File.Delete(Path.Combine(_knownFolders.Plugins, item.FileName));
+                    baseConfig.TrySetValue(option.Key, option.Value);
                 }
+
+                PluginFactory<T>.Instance.SetOptions(item.Name, baseConfig);
             }
 
-            ProviderFactory.Instance.LoadPlugins(_knownFolders.Plugins);
-
-            foreach (var item in ProviderFactory.Instance.Providers)
-            {
-                var baseConfig = ProviderFactory.Instance.GetOptions(item.Name);
-                if (!_configs.ContainsKey(item.Name))
-                {
-                    _configs.Add(item.Name, baseConfig);
-                    hasNewConfig = true;
-                }
-                else
-                {
-                    foreach (var option in _configs[item.Name].Where(x => baseConfig.FirstOrDefault(y => y.Name == x.Name) is { }))
-                    {
-                        baseConfig.TrySetValue(option.Name, option.Value);
-                    }
-
-                    ProviderFactory.Instance.SetOptions(item.Name, baseConfig);
-                }
-                this.Log().Info($"Loaded plugin {item.DisplayName}");
-            }
-
-            if (!_settings.AllowSideLoadingPlugins)
-            {
-                foreach (var key in _configs.Keys.Except(ProviderFactory.Instance.Providers.Select(x => x.Name)))
-                {
-                    _configs.Remove(key);
-                    hasNewConfig = true;
-                }
-            }
-
-            if (hasNewConfig)
-            {
-                SaveConfig();
-            }
+            this.Log().Info($"Loaded plugin {item.DisplayName}");
         }
-        catch (Exception ex)
+
+        if (!_settings.AllowSideLoadingPlugins)
         {
-            this.Log().Error(ex);
+            foreach (var key in _configValues.Keys.Except(PluginFactory<T>.Instance.Plugins.Select(x => x.Name)))
+            {
+                _configValues.Remove(key);
+                hasNewConfig = true;
+            }
         }
+
+        if (hasNewConfig)
+        {
+            SaveConfig();
+        }
+
+        foreach (var item in _configs.Values)
+        {
+            item.OptionsChaged += (option, name) =>
+            {
+                PluginFactory<T>.Instance.SetOptions(name, (PluginOptions)option);
+                SaveConfig();
+            };
+        }
+    }
+
+    private void SaveConfig()
+    {
+        var configValues = _configs.ToDictionary(x => x.Key, x => x.Value.Options.ToDictionary(x => x.Name, x => x.Value));
+        _localSettingsService.SaveSetting("AnimePluginConfigs", configValues);
     }
 }

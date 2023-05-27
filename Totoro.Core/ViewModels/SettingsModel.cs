@@ -33,7 +33,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         IncludeNsfw = localSettingsService.ReadSetting(Settings.IncludeNsfw);
         EnterFullScreenWhenPlaying = localSettingsService.ReadSetting(Settings.EnterFullScreenWhenPlaying);
         DebridServiceType = localSettingsService.ReadSetting(Settings.DebridServiceType);
-        TorrentProviderType = localSettingsService.ReadSetting(Settings.TorrentProviderType);
+        DefaultTorrentTrackerType = localSettingsService.ReadSetting(Settings.DefaultTorrentTrackerType);
         AniSkipId = localSettingsService.ReadSetting(Settings.AniSkipId);
         PremiumizeApiKey = localSettingsService.ReadSetting(Settings.PremiumizeApiKey);
         TorrentSearchOptions = localSettingsService.ReadSetting(Settings.TorrentSearchOptions);
@@ -110,7 +110,6 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool IncludeNsfw { get; set; }
     [Reactive] public bool EnterFullScreenWhenPlaying { get; set; }
     [Reactive] public DebridServiceType DebridServiceType { get; set; }
-    [Reactive] public TorrentProviderType TorrentProviderType { get; set; }
     [Reactive] public string PremiumizeApiKey { get; set; }
     [Reactive] public AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
     [Reactive] public MediaPlayerType MediaPlayerType { get; set; }
@@ -119,6 +118,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public string UserTorrentsDownloadDirectory { get; set; }
     [Reactive] public bool AutoDownloadTorrents { get; set; }
     [Reactive] public string AnimeCardClickAction { get; set; }
+    [Reactive] public string DefaultTorrentTrackerType { get; set; }
 }
 
 

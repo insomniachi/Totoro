@@ -1,6 +1,7 @@
-﻿using AnimDL.Core;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
 using Totoro.WinUI.Contracts;
 
 namespace Totoro.WinUI.Activation;
@@ -40,7 +41,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
             _navigationService.NavigateTo<DiscoverViewModel>();
         }
 
-        if (!ProviderFactory.Instance.Providers.Any())
+        if (!PluginFactory<AnimeProvider>.Instance.Plugins.Any())
         {
             _viewService.Information("Ops...", "There has been a breaking change, please wait till application downloads update");
         }
