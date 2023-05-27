@@ -5,7 +5,7 @@ namespace Totoro.Plugins.Torrents.Models;
 
 public class TorrentModel : ReactiveObject
 {
-    required public string Name { get; init; }
+    public string? Name { get; init; }
     public string? Link { get; set; }
     public string? Magnet { get; set; }
     public string? Size { get; set; }

@@ -10,7 +10,7 @@ using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
-using TorrentModel = Totoro.Core.Torrents.TorrentModel;
+using Totoro.Plugins.Torrents.Models;
 
 namespace Totoro.Core.ViewModels;
 
@@ -613,7 +613,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         _videoStreamResolver = useDebrid
-            ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.MagnetLink)
+            ? await _videoStreamResolverFactory.CreateDebridStreamResolver(torrent.Magnet)
             : _videoStreamResolverFactory.CreateMonoTorrentStreamResolver(parsedResult, torrent.Link);
 
         ObserveDownload();

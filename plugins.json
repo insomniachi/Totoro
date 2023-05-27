@@ -26,6 +26,10 @@
     {
       "Version": "1.0.0.0",
       "FileName": "Totoro.Plugins.Torrents.Nya.dll"
+    },
+    {
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.Torrents.AnimeTosho.dll"
     }
   ]
 }

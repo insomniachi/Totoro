@@ -2,6 +2,9 @@
 using Totoro.Core.Torrents;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Torrents.Contracts;
+using Totoro.Plugins.Torrents.Models;
 
 namespace Totoro.Core.ViewModels;
 
@@ -19,7 +22,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
     public AboutAnimeViewModel(IAnimeServiceContext animeService,
                                IViewService viewService,
                                IAnimeSoundsService animeSoundService,
-                               ITorrentCatalogFactory torrentCatalogFactory,
+                               IPluginFactory<ITorrentTracker> torrentCatalogFactory,
                                ISettings settings,
                                IMyAnimeListService myAnimeListService,
                                IAnimeIdService animeIdService,
@@ -116,13 +119,13 @@ public class AboutAnimeViewModel : NavigatableViewModel
             .WhereNotNull()
             .Subscribe(episode =>
             {
-                var catalog = torrentCatalogFactory.GetCatalog(settings.TorrentProviderType);
+                var catalog = torrentCatalogFactory.CreatePlugin(settings.DefaultTorrentTrackerType);
                 RxApp.MainThreadScheduler.Schedule(async () =>
                 {
                     IsLoading = true;
                     Torrents = await catalog.Search($"{Anime.Title} - {(episode.EpisodeNumber).ToString().PadLeft(2, '0')}").ToListAsync();
                     var index = 0;
-                    await foreach (var item in debridServiceContext.Check(Torrents.Select(x => x.MagnetLink)))
+                    await foreach (var item in debridServiceContext.Check(Torrents.Select(x => x.Magnet)))
                     {
                         Torrents[index++].State = item ? TorrentState.Cached : TorrentState.NotCached;
                     }

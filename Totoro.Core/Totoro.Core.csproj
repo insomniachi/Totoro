@@ -62,6 +62,7 @@
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
 		<ProjectReference Include="..\Totoro.Plugins.Torrents.Nya\Totoro.Plugins.Torrents.Nya.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.Torrents.AnimeTosho\Totoro.Plugins.Torrents.AnimeTosho.csproj" />
 	</ItemGroup>
 	
 </Project>

@@ -4,8 +4,8 @@ using Humanizer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media.Animation;
-using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins.Torrents.Models;
 using Totoro.WinUI.Views.SettingsSections;
 
 namespace Totoro.WinUI.Views;

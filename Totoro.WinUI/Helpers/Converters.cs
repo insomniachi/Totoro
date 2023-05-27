@@ -118,13 +118,13 @@ public static partial class Converters
             Icon = new SymbolIcon { Symbol = Symbol.Globe },
         };
 
-        foreach (var item in Enum.GetValues<TorrentProviderType>().Cast<TorrentProviderType>())
+        foreach (var item in PluginFactory<ITorrentTracker>.Instance.Plugins)
         {
             torrentFlyoutItem.Items.Add(new MenuFlyoutItem
             {
-                Text = item == _settings.TorrentProviderType ? $"{item} (default)" : item.ToString(),
+                Text = item.Name == _settings.DefaultTorrentTrackerType ? $"{item.DisplayName} (default)" : item.DisplayName,
                 Command = App.Commands.SearchTorrent,
-                CommandParameter = (anime, item)
+                CommandParameter = (anime, item.Name)
             });
         }
         flyout.Items.Add(torrentFlyoutItem);

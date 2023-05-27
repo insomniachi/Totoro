@@ -8,7 +8,7 @@ namespace Totoro.Core;
 public static class Settings
 {
     public static Key<bool> PreferSubs { get; } = new("PreferSubs", true);
-    public static Key<string> DefaultProviderType { get; } = new("DefaultProviderType", "animepahe");
+    public static Key<string> DefaultProviderType { get; } = new("DefaultProviderType", "anime-pahe");
     public static Key<bool> UseDiscordRichPresense { get; } = new("UseDiscordRichPresense", false);
     public static Key<int> TimeRemainingWhenEpisodeCompletesInSeconds { get; } = new("TimeRemainingWhenEpisodeCompletesInSeconds", 120);
     public static Key<int> OpeningSkipDurationInSeconds { get; } = new("OpeningSkipDurationInSeconds", 85);
@@ -22,8 +22,8 @@ public static class Settings
     public static Key<bool> IncludeNsfw { get; } = new("IncludeNsfw", false);
     public static Key<bool> EnterFullScreenWhenPlaying { get; } = new("EnterFullScreenWhenPlaying", false);
     public static Key<DebridServiceType> DebridServiceType { get; } = new("DebridServiceType", Models.DebridServiceType.Premiumize);
-    public static Key<TorrentProviderType> TorrentProviderType { get; } = new("TorrentProviderType", Torrents.TorrentProviderType.AnimeTosho);
-    public static Key<string> NyaUrl { get; } = new("NyaUrl", "https://nyaa.ink/");
+    [Obsolete("Removed")] public static Key<string> TorrentProviderType { get; } = new("TorrentProviderType", "<>");
+    [Obsolete("Removed")] public static Key<string> NyaUrl { get; } = new("NyaUrl", "https://nyaa.ink/");
     public static Key<bool> AutoUpdate { get; } = new("AutoUpdate", true);
     public static Key<string> PremiumizeApiKey { get; } = new("PremiumizeApiKey", "");
     public static Key<AdvanceTorrentSearchOptions> TorrentSearchOptions { get; } = new("TorrentSearchOptions", () => AdvanceTorrentSearchOptions.Default);
@@ -32,6 +32,7 @@ public static class Settings
     public static Key<bool> AutoRemoveWatchedTorrents { get; } = new("AutoRemoveWatchedTorrents", false);
     public static Key<bool> AutoDownloadTorrents { get; } = new("AutoDownloadTorrents", false);
     public static Key<string> AnimeCardClickAction { get; } = new("AnimeCardClickAction", "Watch");
+    public static Key<string> DefaultTorrentTrackerType { get; } = new("DefaultTorrentTrackerType", "nya");
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

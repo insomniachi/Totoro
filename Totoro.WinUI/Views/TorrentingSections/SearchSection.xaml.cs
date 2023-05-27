@@ -6,9 +6,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using ReactiveMarbles.ObservableEvents;
-using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
-using TorrentModel = Totoro.Core.Torrents.TorrentModel;
+using TorrentModel = Totoro.Plugins.Torrents.Models.TorrentModel;
 
 namespace Totoro.WinUI.Views.SettingsSections;
 
@@ -45,7 +44,7 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
                 {
                     switch (type)
                     {
-                        case TorrentProviderType.Nya:
+                        case "nya":
                             foreach (var item in DataGrid.Columns)
                             {
                                 item.Visibility = Visibility.Visible;

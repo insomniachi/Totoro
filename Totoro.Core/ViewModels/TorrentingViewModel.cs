@@ -1,7 +1,8 @@
 ﻿using System.Reactive.Concurrency;
 using Totoro.Core.Services.Debrid;
-using Totoro.Core.Torrents;
-using TorrentModel = Totoro.Core.Torrents.TorrentModel;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Torrents.Contracts;
+using Totoro.Plugins.Torrents.Models;
 
 namespace Totoro.Core.ViewModels;
 
@@ -14,19 +15,19 @@ public enum SortMode
 public class TorrentingViewModel : NavigatableViewModel
 {
     private readonly IDebridServiceContext _debridServiceContext;
-    private readonly ITorrentCatalogFactory _indexerFactory;
+    private readonly IPluginFactory<ITorrentTracker> _indexerFactory;
     private readonly IAnimeIdService _animeIdService;
     private readonly ISettings _settings;
     private readonly SourceCache<TorrentModel, string> _torrentsCache = new(x => x.Link);
     private readonly SourceCache<Transfer, string> _transfersCache = new(x => x.Name);
     private readonly ReadOnlyObservableCollection<TorrentModel> _torrents;
     private readonly ReadOnlyObservableCollection<Transfer> _transfers;
-    private ITorrentCatalog _catalog;
+    private ITorrentTracker _catalog;
     private IDisposable _transfersSubscription;
     private bool _isSubscriptionDisposed;
 
     public TorrentingViewModel(IDebridServiceContext debridServiceContext,
-                               ITorrentCatalogFactory indexerFactory,
+                               IPluginFactory<ITorrentTracker> indexerFactory,
                                IAnimeIdService animeIdService,
                                ISettings settings,
                                ITorrentEngine torrentEngine)
@@ -99,9 +100,9 @@ public class TorrentingViewModel : NavigatableViewModel
 
         EngineTorrents = new(torrentEngine.TorrentManagers.Select(x => new TorrentManagerModel(torrentEngine, x)));
         
-        this.WhenAnyValue(x => x.PastedTorrent.MagnetLink)
+        this.WhenAnyValue(x => x.PastedTorrent.Magnet)
             .Where(x => !string.IsNullOrEmpty(x))
-            .Subscribe(_ => PastedTorrent.State = Core.Torrents.TorrentState.Unknown);
+            .Subscribe(_ => PastedTorrent.State = TorrentState.Unknown);
 
     }
 
@@ -111,7 +112,7 @@ public class TorrentingViewModel : NavigatableViewModel
     [Reactive] public PivotItemModel SelectedSection { get; set; }
     public bool IsDebridAuthenticated { get; }
 
-    [Reactive] public TorrentProviderType? ProviderType { get; private set; }
+    [Reactive] public string ProviderType { get; private set; }
     public TorrentModel PastedTorrent { get; } = new();
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
     public ReadOnlyObservableCollection<Transfer> Transfers => _transfers;
@@ -179,13 +180,13 @@ public class TorrentingViewModel : NavigatableViewModel
         return Task.CompletedTask;
     }
 
-    public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
+    public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         IsLoading = true;
         MonitorTransfers();
 
-        var indexer = (TorrentProviderType)parameters.GetValueOrDefault("Indexer", _settings.TorrentProviderType);
-        _catalog = _indexerFactory.GetCatalog(indexer);
+        var indexer = (string)parameters.GetValueOrDefault("Indexer", _settings.DefaultTorrentTrackerType);
+        _catalog = _indexerFactory.CreatePlugin(indexer);
         ProviderType = indexer;
 
         if (parameters.ContainsKey("Anime"))
@@ -193,25 +194,26 @@ public class TorrentingViewModel : NavigatableViewModel
             SortMode = SortMode.Seeders;
             var anime = (AnimeModel)parameters["Anime"];
             Query = GetQueryText(anime);
-            if (_catalog is IIndexedTorrentCatalog itc && anime is not null)
-            {
-                var id = await _animeIdService.GetId(anime.Id);
-                itc.Search(Query, id)
-                   .ToListAsync()
-                   .AsTask()
-                   .ToObservable()
-                   .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
-                   .ObserveOn(RxApp.MainThreadScheduler)
-                   .Subscribe(async list =>
-                   {
-                       await UpdateCachedState(list);
-                       _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
-                   }, RxApp.DefaultExceptionHandler.OnError);
-            }
-            else
-            {
-                OnSearch();
-            }
+            OnSearch();
+            //if (_catalog is IIndexedTorrentCatalog itc && anime is not null)
+            //{
+            //    var id = await _animeIdService.GetId(anime.Id);
+            //    itc.Search(Query, id)
+            //       .ToListAsync()
+            //       .AsTask()
+            //       .ToObservable()
+            //       .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
+            //       .ObserveOn(RxApp.MainThreadScheduler)
+            //       .Subscribe(async list =>
+            //       {
+            //           await UpdateCachedState(list);
+            //           _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
+            //       }, RxApp.DefaultExceptionHandler.OnError);
+            //}
+            //else
+            //{
+            //    OnSearch();
+            //}
         }
         else
         {
@@ -227,12 +229,14 @@ public class TorrentingViewModel : NavigatableViewModel
                         _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
                     }, RxApp.DefaultExceptionHandler.OnError);
         }
+
+        return Task.CompletedTask;
     }
 
     private async Task UpdateCachedState(List<TorrentModel> torrents)
     {
         var index = 0;
-        await foreach (var item in _debridServiceContext.Check(torrents.Select(x => x.MagnetLink)))
+        await foreach (var item in _debridServiceContext.Check(torrents.Select(x => x.Magnet)))
         {
             torrents[index++].State = item ? TorrentState.Cached : TorrentState.NotCached;
         }

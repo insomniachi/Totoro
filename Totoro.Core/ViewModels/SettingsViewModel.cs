@@ -34,7 +34,6 @@ public class SettingsViewModel : NavigatableViewModel
     public List<string> AnimeActions { get; } = new List<string> { "Watch", "Info" };
     public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
     public List<DebridServiceType> DebridServices { get; } = Enum.GetValues<DebridServiceType>().Cast<DebridServiceType>().ToList();
-    public List<TorrentProviderType> TorrentProviderTypes { get; } = Enum.GetValues<TorrentProviderType>().Cast<TorrentProviderType>().ToList();
     public List<MediaPlayerType> MediaPlayerTypes { get; } = Enum.GetValues<MediaPlayerType>().Cast<MediaPlayerType>().ToList();
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }

@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Xunit.Abstractions;
 
-namespace Totoro.Plugins.Torrents.Nya.Tests;
+namespace Totoro.Plugins.Torrents.AnimeTosho.Tests;
 
 [ExcludeFromCodeCoverage]
 public class TrackerTests

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Contracts;
@@ -9,6 +8,7 @@ public interface ISettings : INotifyPropertyChanged
 {
     bool PreferSubs { get; set; }
     string DefaultProviderType { get; set; }
+    string DefaultTorrentTrackerType { get; set; }
     bool UseDiscordRichPresense { get; set; }
     int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     int OpeningSkipDurationInSeconds { get; set; }
@@ -23,7 +23,6 @@ public interface ISettings : INotifyPropertyChanged
     bool IncludeNsfw { get; set; }
     bool EnterFullScreenWhenPlaying { get; set; }
     DebridServiceType DebridServiceType { get; set; }
-    TorrentProviderType TorrentProviderType { get; set; }
     string PremiumizeApiKey { get; set; }
     AdvanceTorrentSearchOptions TorrentSearchOptions { get; set; }
     MediaPlayerType MediaPlayerType { get; set; }

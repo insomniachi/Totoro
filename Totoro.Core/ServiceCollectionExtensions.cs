@@ -80,10 +80,6 @@ namespace Totoro.Core
 
         public static IServiceCollection AddTorrenting(this IServiceCollection services)
         {
-            services.AddTransient<ITorrentCatalog, NyaaCatalog>();
-            services.AddTransient<ITorrentCatalog, AnimeToshoCatalog>();
-            services.AddSingleton<ITorrentCatalogFactory, TorrentCatalogFactory>();
-
             services.AddTransient<IDebridService, PremiumizeService>();
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
 
@@ -103,6 +99,8 @@ namespace Totoro.Core
 
             // torrents
             PluginFactory<ITorrentTracker>.Instance.LoadPlugin(new Plugins.Torrents.Nya.Plugin());
+            PluginFactory<ITorrentTracker>.Instance.LoadPlugin(new Plugins.Torrents.AnimeTosho.Plugin());
+
 #endif
             services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(),
                                                                          PluginFactory<AnimeProvider>.Instance,
