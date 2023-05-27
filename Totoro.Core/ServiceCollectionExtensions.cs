@@ -13,6 +13,7 @@ using Totoro.Core.ViewModels;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Torrents.Contracts;
 
 namespace Totoro.Core
 {
@@ -93,16 +94,24 @@ namespace Totoro.Core
         {
 
 #if DEBUG
+            // anime
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AnimePahe.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AllAnime.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.YugenAnime.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.GogoAnime.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.Zoro.Plugin());
+
+            // torrents
+            PluginFactory<ITorrentTracker>.Instance.LoadPlugin(new Plugins.Torrents.Nya.Plugin());
 #endif
-            services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(), PluginFactory<AnimeProvider>.Instance));
-            services.AddSingleton<IPluginFactory<AnimeProvider>>(PluginFactory<AnimeProvider>.Instance);
+            services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(),
+                                                                         PluginFactory<AnimeProvider>.Instance,
+                                                                         PluginFactory<ITorrentTracker>.Instance));
             services.AddSingleton(typeof(IPluginOptionsStorage<>), typeof(PluginOptionStorage<>));
             services.AddSingleton<PluginOptionsStorage>();
+            
+            services.AddSingleton<IPluginFactory<AnimeProvider>>(PluginFactory<AnimeProvider>.Instance);
+            services.AddSingleton<IPluginFactory<ITorrentTracker>>(PluginFactory<ITorrentTracker>.Instance);
 
             return services;
         }

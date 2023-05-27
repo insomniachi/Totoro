@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
@@ -15,7 +16,6 @@ public class PluginOption : ReactiveObject
     public string Glyph { get; set; }
     [Reactive] public string Value { get; set; }
 }
-
 
 public class PluginOptionBuilder
 {
@@ -62,6 +62,14 @@ public class PluginOptionBuilder
         return this;
     }
 
+    public PluginOptionBuilder WithNameAndValue<T>(T value, [CallerArgumentExpression(nameof(value))] string valueExpression = "")
+    {
+        _value = value.ToString();
+        _name = valueExpression.Split('.').LastOrDefault();
+        _displayName = _name;
+        return this;
+    }
+
     public PluginOptionBuilder WithAllowedValues(IEnumerable<string> allowedValues)
     {
         _allowedValues = allowedValues;
@@ -71,6 +79,13 @@ public class PluginOptionBuilder
     public PluginOptionBuilder WithAllowedValues<T>(IEnumerable<T> allowedValues)
     {
         _allowedValues = allowedValues.Select(x => x.ToString());
+        return this;
+    }
+
+    public PluginOptionBuilder WithAllowedValues<T>()
+        where T: struct, Enum
+    {
+        _allowedValues = Enum.GetNames<T>();
         return this;
     }
 

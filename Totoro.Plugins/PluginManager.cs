@@ -10,9 +10,8 @@ public class PluginManager : IPluginManager, IEnableLogger
 {
     private readonly HttpClient _httpClient;
     private readonly IPluginFactory _animePluginFactory;
+    private readonly IPluginFactory _torrentPluginFactory;
     private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/main";
-    private List<PluginInfoSlim> _localAnimePlugins = new();
-    private string _folder = "";
 
     public static bool AllowSideLoadingPlugins { get; set; } = false;
 
@@ -24,45 +23,58 @@ public class PluginManager : IPluginManager, IEnableLogger
     }
 
     public PluginManager(HttpClient httpClient,
-                         IPluginFactory animePluginFactory)
+                         IPluginFactory animePluginFactory,
+                         IPluginFactory torrentPluginFactory)
     {
         _httpClient = httpClient;
         _animePluginFactory = animePluginFactory;
+        _torrentPluginFactory = torrentPluginFactory;
     }
 
     public async Task Initialize(string folder)
     {
-        _folder = folder;
-
         var animeFolder = Path.Combine(folder, "Anime");
+        var torrentsFolder = Path.Combine(folder, "Torrents");
 
-        if(Directory.Exists(animeFolder))
-        {
-            _localAnimePlugins = Directory
-                .GetFiles(animeFolder)
-                .Select(x =>
-                {
-                    var name = Path.GetFileName(x);
-                    var version = FileVersionInfo.GetVersionInfo(x).FileVersion!;
-                    return new PluginInfoSlim(name, version);
-                })
-                .ToList();
-        }
-
+        var localAnimePlugins = GetLocalPlugins(animeFolder);
+        var localTorrentsPlugins = GetLocalPlugins(torrentsFolder);
         var listedPlugins = await GetListedPlugins();
-        await InitializeAnimePlugins(listedPlugins.Anime);
+        
+        await DownloadOrUpdatePlugins(listedPlugins.Anime, localAnimePlugins, animeFolder);
+        await DownloadOrUpdatePlugins(listedPlugins.Torrent, localTorrentsPlugins, torrentsFolder);
+
+         _animePluginFactory.LoadPlugins(animeFolder);
+        _torrentPluginFactory.LoadPlugins(torrentsFolder);
     }
 
-    private async Task InitializeAnimePlugins(List<PluginInfoSlim> plugins)
+    private static List<PluginInfoSlim> GetLocalPlugins(string folder)
     {
-        if(plugins is not { Count : > 0})
+        if (!Directory.Exists(folder))
+        {
+            return new();
+        }
+
+        return Directory
+            .GetFiles(folder)
+            .Select(x =>
+            {
+                var name = Path.GetFileName(x);
+                var version = FileVersionInfo.GetVersionInfo(x).FileVersion!;
+                return new PluginInfoSlim(name, version);
+            })
+            .ToList();
+    }
+
+    private async Task DownloadOrUpdatePlugins(List<PluginInfoSlim> listedPlugins, IEnumerable<PluginInfoSlim> localPlugins, string folder)
+    {
+        if(listedPlugins is not { Count : > 0})
         {
             return;
         }
 
-        var folder = Path.Combine(_folder, "Anime");
         Directory.CreateDirectory(folder);
-        var newReleases = plugins.Except(_localAnimePlugins).ToList();
+
+        var newReleases = listedPlugins.Except(localPlugins).ToList();
         foreach (var item in newReleases)
         {
             var path = Path.Combine(folder, item.FileName);
@@ -79,15 +91,14 @@ public class PluginManager : IPluginManager, IEnableLogger
 
         if (AllowSideLoadingPlugins)
         {
-            var localPlugins = Directory.GetFiles(folder).Select(x => new PluginInfoSlim(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion!));
-            foreach (var item in localPlugins.Except(plugins))
+            localPlugins = Directory.GetFiles(folder).Select(x => new PluginInfoSlim(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion!));
+            foreach (var item in localPlugins.Except(listedPlugins))
             {
                 this.Log().Info($"Removing plugin : {item.FileName}");
                 File.Delete(Path.Combine(folder, item.FileName));
             }
         }
 
-        _animePluginFactory.LoadPlugins(folder);
     }
 
 

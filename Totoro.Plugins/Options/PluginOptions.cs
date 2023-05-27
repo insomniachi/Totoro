@@ -13,33 +13,6 @@ public class PluginOptions : Collection<PluginOption>
         return this;
     }
 
-    public PluginOptions AddSelectableOption(string name, string displayName, string value, IEnumerable<string> options)
-    {
-        Add(new SelectablePluginOption
-        {
-            Name = name,
-            DisplayName = displayName,
-            Value = value,
-            AllowedValues = options
-        });
-
-        return this;
-    }
-
-    public PluginOptions AddSelectableOption<T>(string name, string displayName, T value, IEnumerable<T>? options = null)
-        where T : struct, Enum
-    {
-        Add(new SelectablePluginOption
-        {
-            Name = name,
-            DisplayName = displayName,
-            Value = value.ToString(),
-            AllowedValues = (options ?? Enum.GetValues<T>()).Select(x => Enum.GetName(x)!)
-        });
-
-        return this;
-    }
-
     public bool TrySetValue(string name, string value)
     {
         if (this.FirstOrDefault(x => x.Name == name) is not { } option)

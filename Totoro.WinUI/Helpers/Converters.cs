@@ -11,6 +11,7 @@ using Totoro.Core.Torrents;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Options;
+using Totoro.Plugins.Torrents.Contracts;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -173,9 +174,12 @@ public static partial class Converters
         return bmp;
     }
 
-    public static PluginOptions GetAnimeOptions(string pluginName)
+    public static PluginOptions GetAnimeOptions(string pluginName) => GetOptions<AnimeProvider>(pluginName);
+    public static PluginOptions GetTorrentsOptions(string pluginName) => GetOptions<ITorrentTracker>(pluginName);
+
+    private static PluginOptions GetOptions<T>(string pluginName)
     {
-        var options = App.GetService<IPluginOptionsStorage<AnimeProvider>>().GetOptions(pluginName).Options;
+        var options = App.GetService<IPluginOptionsStorage<T>>().GetOptions(pluginName).Options;
         return options;
     }
 

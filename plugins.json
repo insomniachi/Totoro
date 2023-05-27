@@ -22,5 +22,10 @@
     }
   ],
   "Manga": [],
-  "Torrent": []
+  "Torrent": [
+    {
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.Torrents.Nya.dll"
+    }
+  ]
 }

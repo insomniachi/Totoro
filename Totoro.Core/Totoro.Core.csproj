@@ -49,6 +49,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.Torrents\Totoro.Plugins.Torrents.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -57,6 +58,10 @@
 		<ProjectReference Include="..\Totoro.Plugins.Anime.YugenAnime\Totoro.Plugins.Anime.YugenAnime.csproj" />
 		<ProjectReference Include="..\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj" />
 		<ProjectReference Include="..\Totoro.Plugins.Anime.Zoro\Totoro.Plugins.Anime.Zoro.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<ProjectReference Include="..\Totoro.Plugins.Torrents.Nya\Totoro.Plugins.Torrents.Nya.csproj" />
 	</ItemGroup>
 	
 </Project>
