@@ -7,6 +7,7 @@ public interface IMediaPlayer : IDisposable
     void Pause();
     void SeekTo(TimeSpan ts);
     void Seek(TimeSpan ts, SeekDirection direction);
+    ValueTask AddSubtitle(string file);
     IObservable<Unit> Paused { get; }
     IObservable<Unit> Playing { get; }
     IObservable<Unit> PlaybackEnded { get; }

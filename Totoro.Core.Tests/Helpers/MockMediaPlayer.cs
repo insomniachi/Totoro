@@ -54,5 +54,7 @@ namespace Totoro.Core.Tests.Helpers
         public void Seek(TimeSpan ts, SeekDirection direction) { LastSeekedTime = ts; }
         public void SeekTo(TimeSpan ts) { LastSeekedTime = ts; }
         public Task<Unit> SetMedia(VideoStreamModel stream) => Task.FromResult(Unit.Default);
+
+        public ValueTask AddSubtitle(string file) => ValueTask.CompletedTask;
     }
 }

@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
-using System.Text.Json;
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Plugins.Anime.Models;
+using Totoro.Plugins.Helpers;
 
 namespace Totoro.WinUI.Media.Vlc;
 
@@ -76,13 +77,35 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
             ? new LibVLCSharp.Shared.Media(_vlc, stream.StreamUrl, FromType.FromLocation)
             : new LibVLCSharp.Shared.Media(_vlc, new StreamMediaInput(stream.Stream));
 
+        if(stream.Headers.ContainsKey(HeaderNames.Referer))
+        {
+            media.AddOption($":http-referer={stream.Headers[HeaderNames.Referer]}");
+        }
+
         _mp.Media = media;
         SetSubtitles(stream.AdditionalInformation.Subtitles);
         return Unit.Default;
     }
 
+    public ValueTask AddSubtitle(string file)
+    {
+        if(!System.IO.File.Exists(file))
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        _mp.AddSlave(MediaSlaveType.Subtitle, new Uri(file).AbsoluteUri, true);
+
+        return ValueTask.CompletedTask;
+    }
+
     private void SetSubtitles(List<Subtitle> subtitles)
     {
+        if(!subtitles.Any())
+        {
+            return;
+        }
+
         var count = 0;
         foreach (var item in subtitles)
         {

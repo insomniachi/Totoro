@@ -29,7 +29,6 @@ public partial class WatchViewModel : NavigatableViewModel
     
     private PluginOptions _providerOptions;
     private bool _isCrunchyroll;
-    private string _providerType;
     private IEnumerable<EpisodeModel> _episodeMetadata;
     private int? _episodeRequest;
     private IVideoStreamModelResolver _videoStreamResolver;
@@ -79,6 +78,15 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Select(x => mediaPlayerFactory.Create(x.Value))
             .ToPropertyEx(this, x => x.MediaPlayer, initialValue: null);
+
+
+        this.WhenAnyValue(x => x.ProviderType)
+            .WhereNotNull()
+            .Subscribe(type =>
+            {
+                Provider = _providerFactory.CreatePlugin(type);
+                RxApp.MainThreadScheduler.Schedule(() => MediaPlayer.TransportControls.IsAddCCButtonVisibile = UseTorrents || type == "zoro");
+            });
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
@@ -167,7 +175,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Do(stream =>
             {
-                if (_providerType != "gogo")
+                if (ProviderType != "gogo")
                 {
                     var selectedAudioStream = SelectedAudioStream;
                     SubStreams = stream.StreamTypes;
@@ -233,9 +241,9 @@ public partial class WatchViewModel : NavigatableViewModel
     [Reactive] public string DownloadProgress { get; set; }
     [Reactive] public bool ShowDownloadStats { get; set; }
     [Reactive] public MediaPlayerType? MediaPlayerType { get; private set; }
+    [Reactive] public string ProviderType { get; set; }
     [ObservableAsProperty] public IMediaPlayer MediaPlayer { get; }
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
-
 
     public AnimeProvider Provider { get; private set; }
     public IAnimeModel Anime
@@ -311,10 +319,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        _providerType = parameters.GetValueOrDefault("Provider", _settings.DefaultProviderType) as string;
-        _providerOptions = _providerFactory.GetOptions(_providerType);
+        UseTorrents = parameters.ContainsKey("TorrentModel") || parameters.ContainsKey("TorrentManager");
+        MediaPlayerType = UseTorrents ? Models.MediaPlayerType.Vlc : _settings.MediaPlayerType;
+        ProviderType = parameters.GetValueOrDefault("Provider", _settings.DefaultProviderType) as string;
+        _providerOptions = _providerFactory.GetOptions(ProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
-        Provider = _providerFactory.CreatePlugin(_providerType);
         SelectedAudioStream = GetDefaultAudioStream();
 
         if (parameters.ContainsKey("Anime"))
@@ -341,7 +350,6 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else if (parameters.ContainsKey("TorrentModel"))
         {
-            UseTorrents = true;
             Torrent = (TorrentModel)parameters["TorrentModel"];
             var useDebrid = (bool)parameters["UseDebrid"];
             await InitializeFromTorrentModel(Torrent, useDebrid);
@@ -354,13 +362,10 @@ public partial class WatchViewModel : NavigatableViewModel
         }
         else if(parameters.ContainsKey("TorrentManager"))
         {
-            UseTorrents = true;
             var torrentManager = (TorrentManager)parameters["TorrentManager"];
             await TrySetAnime(torrentManager.Torrent.Name);
             await CreateMonoTorrentStreamResolver(torrentManager.Torrent);
         }
-
-        MediaPlayerType = UseTorrents ? Models.MediaPlayerType.Vlc : _settings.MediaPlayerType;
     }
 
     public override async Task OnNavigatedFrom()
@@ -389,7 +394,7 @@ public partial class WatchViewModel : NavigatableViewModel
         //    return await malCatalog.SearchByMalId(id);
         //}
 
-        return await _streamPageMapper.GetStreamPage(id, _providerType) ?? await SearchProvider(title);
+        return await _streamPageMapper.GetStreamPage(id, ProviderType) ?? await SearchProvider(title);
     }
 
     private IObservable<bool> HasNextEpisode()
@@ -431,7 +436,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return (results[0], null);
         }
-        else if (results.Count == 2 && _providerType is "gogo") // gogo anime has separate listing for sub/dub
+        else if (results.Count == 2 && ProviderType is "gogo") // gogo anime has separate listing for sub/dub
         {
             return (results[0], results[1]);
         }
@@ -443,7 +448,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             var suggested = results.MaxBy(x => Fuzz.PartialRatio(x.Title, title));
             this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {Fuzz.PartialRatio(suggested.Title, title)}");
-            return (await _viewService.ChoooseSearchResult(suggested, results, _providerType), null);
+            return (await _viewService.ChoooseSearchResult(suggested, results, ProviderType), null);
         }
     }
 
@@ -494,7 +499,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        var id = await _streamPageMapper.GetIdFromUrl(url, _providerType) ?? await TryGetId(title);
+        var id = await _streamPageMapper.GetIdFromUrl(url, ProviderType) ?? await TryGetId(title);
 
         if (id is null)
         {
@@ -532,7 +537,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task<long?> TryGetId(string title)
     {
-        if (_providerType == "kamy") // kamy combines seasons to single series, had to update tracking 
+        if (ProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
         {
             return 0;
         }
@@ -542,13 +547,13 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private StreamType GetDefaultAudioStream()
     {
-        if (_providerType == "gogo")
+        if (ProviderType == "gogo")
         {
             return StreamType.EnglishSubbed;
         }
 
         var key = "StreamType";
-        if (_providerType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll")
+        if (ProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll")
         {
             key = "CrunchyrollStreamType";
         }
@@ -623,13 +628,13 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task CreateAnimDLResolver(string url)
     {
-        _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(_providerType, url);
+        _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(ProviderType, url);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream.Value);
     }
 
     private async Task CreateAnimDLResolver(string sub, string dub)
     {
-        _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(_providerType, sub, dub);
+        _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(ProviderType, sub, dub);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream.Value);
     }
 

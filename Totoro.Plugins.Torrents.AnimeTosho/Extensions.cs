@@ -13,7 +13,7 @@ internal static class Extensions
         return filter switch
         {
             Filter.None => "",
-            Filter.NoRemake => "remake",
+            Filter.NoRemakes => "remake",
             Filter.TrustedOnly => "trusted",
             _ => ""
         };

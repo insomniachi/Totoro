@@ -161,6 +161,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
             RxApp.MainThreadScheduler.Schedule(() => PreviousTrackButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed);
         }
     }
+
     private TextBlock ErrorTextBlock { get; set; }
     private Slider VolumeSlider { get; set; }
     private Slider ProgressSlider { get; set; }
@@ -173,6 +174,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     private ButtonBase PreviousTrackButton { get; set; }
     private ButtonBase DynamicSkipButton { get; set; }
     private AppBarButton QualitiesButton { get; set; }
+    private ButtonBase AddCCButton { get; set; }
     private AvailabilityCommand SeekBarAvailabilityCommand { get; set; }
     private AvailabilityCommand VolumeMuteButtonAvailabilityCommand { get; set; }
     private AvailabilityCommand MuteStateCommand { get; set; }
@@ -593,6 +595,16 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         set => SetValue(IsSeekBarEnabledProperty, value);
     }
 
+    public static readonly DependencyProperty IsCCSelectionVisibleProperty =
+        DependencyProperty.Register("IsCCSelectionVisible", typeof(bool), typeof(VlcMediaTransportControls), new PropertyMetadata(false));
+
+    public bool IsCCSelectionVisible
+    {
+        get { return (bool)GetValue(IsCCSelectionVisibleProperty); }
+        set { SetValue(IsCCSelectionVisibleProperty, value); }
+    }
+
+
     public bool IsInitialized { get; set; }
 
     public void Initialize(LibVLC vlc, MediaPlayer mediaPlayer, VideoView videoView)
@@ -609,6 +621,15 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         DynamicSkipButton = button;
         DynamicSkipButton.Click += (_, _) => _onDynamicSkipIntro.OnNext(Unit.Default);
     }
+
+    public bool IsAddCCButtonVisibile
+    {
+        get { return (bool)GetValue(IsAddCCButtonVisibileProperty); }
+        set { SetValue(IsAddCCButtonVisibileProperty, value); }
+    }
+
+    public static readonly DependencyProperty IsAddCCButtonVisibileProperty =
+    DependencyProperty.Register("IsAddCCButtonVisibile", typeof(bool), typeof(VlcMediaTransportControls), new PropertyMetadata(false));
 
     /// <summary>
     /// Invoked whenever application code or internal processes (such as a rebuilding layout pass) call ApplyTemplate. 
@@ -676,6 +697,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         Initialize("SkipBackwardButton", "skip backward", (_, _) => MediaPlayer.Time -= 10000);
         Initialize("SkipIntroButton", "Skip intro", (_, _) => _onSkipIntro.OnNext(Unit.Default));
         Initialize("FullWindowButton", "", (_, _) => App.GetService<IWindowService>().ToggleIsFullWindow());
+        AddCCButton = Initialize("AddCCButton", "Add Subtitle", (_, _) => _onAddCc.OnNext(Unit.Default)) as ButtonBase;
         FullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
 
         QualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;

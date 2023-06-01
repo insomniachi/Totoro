@@ -23,7 +23,7 @@ internal class Catalog : IAnimeCatalog
         var doc = new HtmlDocument();
         doc.LoadHtml(json.html);
 
-        foreach (var item in doc.QuerySelectorAll("a").SkipLast())
+        foreach (var item in doc.QuerySelectorAll("a").SkipLast(1))
         {
             var image = item.QuerySelector(".film-poster img").Attributes["data-src"].Value;
             var title = item.QuerySelector(".srp-detail h3").InnerHtml;

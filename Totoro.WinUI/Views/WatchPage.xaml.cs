@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Reactive.Concurrency;
 using Microsoft.UI.Xaml;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
@@ -20,6 +21,7 @@ public sealed partial class WatchPage : WatchPageBase
         this.WhenActivated(d =>
         {
             var windowService = App.GetService<IWindowService>();
+            var viewService = App.GetService<IViewService>();
             this.WhenAnyValue(x => x.ViewModel.MediaPlayer)
                 .WhereNotNull()
                 .Subscribe(wrapper =>
@@ -46,6 +48,19 @@ public sealed partial class WatchPage : WatchPageBase
                         .TransportControls
                         .WhenAnyValue(x => x.SelectedResolution)
                         .Subscribe(resolution => ViewModel.SelectedQuality = resolution);
+
+                    wrapper
+                        .TransportControls
+                        .OnAddCc
+                        .Subscribe(async _ =>
+                        {
+                            var subtitleFile = await viewService.BrowseSubtitle();
+                            if (string.IsNullOrEmpty(subtitleFile))
+                            {
+                                return;
+                            }
+                            await wrapper.AddSubtitle(subtitleFile);
+                        });
 
                     wrapper
                         .DurationChanged
