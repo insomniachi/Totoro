@@ -20,4 +20,5 @@ public interface IViewService
     Task<Unit> ConfigureOptions<T>(T keyType, Func<T, PluginOptions> getFunc, Action<T, PluginOptions> saveFunc);
     Task<string> BrowseFolder();
     Task<string> BrowseSubtitle();
+    Task UnhandledException(Exception ex);
 }

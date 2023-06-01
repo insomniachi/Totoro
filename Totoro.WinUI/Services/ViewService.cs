@@ -3,17 +3,17 @@ using FuzzySharp;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Splat;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Options;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
 using Totoro.WinUI.Dialogs.Views;
-using Windows.Storage.AccessCache;
-using Windows.Storage.Pickers;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
+using Windows.Storage.Pickers;
 using WinUIEx;
-using Totoro.Plugins.Anime.Contracts;
-using Totoro.Plugins.Options;
-using Totoro.Plugins;
-using Totoro.Plugins.Contracts;
 
 namespace Totoro.WinUI.Services;
 
@@ -21,12 +21,20 @@ public class ViewService : IViewService, IEnableLogger
 {
     private readonly IContentDialogService _contentDialogService;
     private readonly IAnimeServiceContext _animeService;
+    private readonly ICommand _copyToClipboard;
+
 
     public ViewService(IContentDialogService contentDialogService,
                        IAnimeServiceContext animeService)
     {
         _contentDialogService = contentDialogService;
         _animeService = animeService;
+        _copyToClipboard = ReactiveCommand.Create<Exception>(ex =>
+        {
+            var package = new DataPackage();
+            package.SetText(ex.ToString());
+            Clipboard.SetContent(package);
+        });
     }
 
     public async Task<Unit> UpdateTracking(IAnimeModel anime)
@@ -222,6 +230,37 @@ public class ViewService : IViewService, IEnableLogger
         return result == ContentDialogResult.Primary;
     }
 
+    public async Task UnhandledException(Exception ex)
+    {
+        var content = new Grid()
+        {
+            Padding = new Thickness(10),
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = ex.ToString(),
+                    TextWrapping = TextWrapping.WrapWholeWords
+                }
+            }
+        };
+
+        var dialog = new ContentDialog()
+        {
+            Title = "Unhandled Exception",
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            DefaultButton = ContentDialogButton.Primary,
+            Content = content,
+            PrimaryButtonText = "Okay",
+            SecondaryButtonText = "Copy To Clipboard",
+            SecondaryButtonCommand = _copyToClipboard,
+            SecondaryButtonCommandParameter = ex
+        };
+
+        await dialog.ShowAsync();
+    }
+
     public async Task<Unit> Information(string title, string message)
     {
         var dialog = new ContentDialog()
@@ -279,11 +318,6 @@ public class ViewService : IViewService, IEnableLogger
         return Unit.Default;
     }
 
-
-    public Task AddRssFeed()
-    {
-        return Task.CompletedTask;
-    }
 
     public async Task<string> BrowseFolder()
     {
