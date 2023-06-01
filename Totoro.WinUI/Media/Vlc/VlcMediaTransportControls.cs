@@ -161,6 +161,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
             RxApp.MainThreadScheduler.Schedule(() => PreviousTrackButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed);
         }
     }
+
     private TextBlock ErrorTextBlock { get; set; }
     private Slider VolumeSlider { get; set; }
     private Slider ProgressSlider { get; set; }
@@ -593,6 +594,16 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         get => (bool)GetValue(IsSeekBarEnabledProperty);
         set => SetValue(IsSeekBarEnabledProperty, value);
     }
+
+    public static readonly DependencyProperty IsCCSelectionVisibleProperty =
+        DependencyProperty.Register("IsCCSelectionVisible", typeof(bool), typeof(VlcMediaTransportControls), new PropertyMetadata(false));
+
+    public bool IsCCSelectionVisible
+    {
+        get { return (bool)GetValue(IsCCSelectionVisibleProperty); }
+        set { SetValue(IsCCSelectionVisibleProperty, value); }
+    }
+
 
     public bool IsInitialized { get; set; }
 

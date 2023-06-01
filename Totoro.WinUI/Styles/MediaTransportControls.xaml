@@ -279,7 +279,7 @@
                                             <AppBarButton
                                                 x:Name="CCSelectionButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
-                                                Visibility="Visible">
+                                                Visibility="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsCCSelectionVisible, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xED1E;" />
                                                 </AppBarButton.Icon>
@@ -551,15 +551,6 @@
 
                             </VisualStateGroup>
                             <!--  FullWindow states  -->
-                            <!--  TODO 39683362: Uncomment once Full Screen is supported  -->
-                            <!-- <VisualStateGroup x:Name="FullWindowStates">
-                <VisualState x:Name="NonFullWindowState" />
-                <VisualState x:Name="FullWindowState">
-                  <VisualState.Setters>
-                    <Setter Target="FullWindowSymbol.Symbol" Value="BackToWindow" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>-->
                             <!--  Repeat states  -->
                             <VisualStateGroup x:Name="RepeatStates">
                                 <VisualState x:Name="RepeatNoneState" />
@@ -833,7 +824,7 @@
                                             <AppBarButton
                                                 x:Name="CCSelectionButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
-                                                Visibility="Visible">
+                                                Visibility="Collapsed">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xED1E;" />
                                                 </AppBarButton.Icon>

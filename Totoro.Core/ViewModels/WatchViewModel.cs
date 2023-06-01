@@ -85,7 +85,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(type =>
             {
                 Provider = _providerFactory.CreatePlugin(type);
-                RxApp.MainThreadScheduler.Schedule(() => MediaPlayer.TransportControls.IsAddCCButtonVisibile = type == "zoro" || UseTorrents);
+                RxApp.MainThreadScheduler.Schedule(() => MediaPlayer.TransportControls.IsAddCCButtonVisibile = UseTorrents || type == "zoro");
             });
 
         this.ObservableForProperty(x => x.Anime, x => x)

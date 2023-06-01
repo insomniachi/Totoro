@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using System.Text.Json;
+using System.Reactive.Concurrency;
 using CommunityToolkit.Common;
-using Microsoft.UI.Xaml;
 using ReactiveMarbles.ObservableEvents;
 using Splat;
 using Totoro.Plugins.Anime.Models;
@@ -104,6 +103,13 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     private void SetSubtitles(MediaSource source, AdditionalVideoStreamInformation additionalVideoStreamInformation)
     {
+        if(!additionalVideoStreamInformation.Subtitles.Any())
+        {
+            return;
+        }
+
+        ShowCCSelectionButton();
+
         foreach (var item in additionalVideoStreamInformation.Subtitles)
         {
             var tts = TimedTextSource.CreateFromUri(new Uri(item.Url));
@@ -123,6 +129,11 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
         SetSubtitles(source, stream.AdditionalInformation);
         var playbackItem = new MediaPlaybackItem(source);
 
+        if(playbackItem.TimedMetadataTracks.Count > 0)
+        {
+            ShowCCSelectionButton();
+        }
+
         playbackItem.TimedMetadataTracksChanged += (sender, args) =>
         {
             playbackItem.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
@@ -139,7 +150,9 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
             return;
         }
 
-        var fileName = Path.GetFileNameWithoutExtension(file).Truncate(10);
+        ShowCCSelectionButton();
+
+        var fileName = Path.GetFileNameWithoutExtension(file).Truncate(15);
         var sf = await StorageFile.GetFileFromPathAsync(file);
         var tts = TimedTextSource.CreateFromStream(await sf.OpenReadAsync());
         _ttsMap[tts] = fileName.ToLower();
@@ -203,4 +216,6 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
             return MediaSource.CreateFromUri(uri);
         }
     }
+
+    private void ShowCCSelectionButton() => RxApp.MainThreadScheduler.Schedule(() => TransportControls.IsAddCCButtonVisibile = true);
 }

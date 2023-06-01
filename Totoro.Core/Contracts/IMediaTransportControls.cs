@@ -13,6 +13,7 @@ public interface IMediaTransportControls
     bool IsNextTrackButtonVisible { get; set; }
     bool IsPreviousTrackButtonVisible { get; set; }
     bool IsAddCCButtonVisibile { get; set; }
+    bool IsCCSelectionVisible { get; set; }
     string SelectedResolution { get; set; }
     IEnumerable<string> Resolutions { get; set; }
 }

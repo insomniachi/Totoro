@@ -33,6 +33,9 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     public static readonly DependencyProperty IsAddCCButtonVisibileProperty =
         DependencyProperty.Register("IsAddCCButtonVisibile", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false));
 
+    public static readonly DependencyProperty IsCCSelectionVisibleProperty =
+        DependencyProperty.Register("IsCCSelectionVisible", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false));
+
 
     private static void OnSelectedResolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -125,6 +128,13 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         get { return (bool)GetValue(IsAddCCButtonVisibileProperty); }
         set { SetValue(IsAddCCButtonVisibileProperty, value); }
     }
+
+    public bool IsCCSelectionVisible
+    {
+        get { return (bool)GetValue(IsCCSelectionVisibleProperty); }
+        set { SetValue(IsCCSelectionVisibleProperty, value); }
+    }
+
 
     public IObservable<Unit> OnNextTrack => _onNextTrack;
     public IObservable<Unit> OnPrevTrack => _onPrevTrack;
