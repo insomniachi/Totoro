@@ -57,8 +57,9 @@ public partial class App : Application, IEnableLogger
         {
             return _host.Services.GetService(typeof(T)) as T;
         }
-        catch
+        catch (Exception ex)
         {
+            LogHost.Default.Error(ex, ex.Message);
             throw;
         }
     }

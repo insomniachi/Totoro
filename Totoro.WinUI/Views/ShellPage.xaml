@@ -66,10 +66,6 @@
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.TorrentingViewModel"
                     Content="Torrenting"
                     Icon="People" />
-                <!--<NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DownloadViewModel"
-                    Content="Download"
-                    Icon="Download" />-->
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.WatchViewModel"
                     Content="Watch"

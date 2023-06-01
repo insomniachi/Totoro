@@ -16,8 +16,10 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     private readonly Subject<Unit> _onAddCc = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
+    private AppBarButton _addCCButton;
     private Button _dynamicSkipIntroButton;
     private SymbolIcon _fullWindowSymbol;
+    private readonly IWindowService _windowService;
 
     public static readonly DependencyProperty ResolutionsProperty =
         DependencyProperty.Register(nameof(Resolutions), typeof(IEnumerable<string>), typeof(CustomMediaTransportControls), new PropertyMetadata(null, OnResolutionsChanged));
@@ -27,7 +29,10 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
 
     public static readonly DependencyProperty SelectedResolutionProperty =
         DependencyProperty.Register(nameof(SelectedResolution), typeof(string), typeof(CustomMediaTransportControls), new PropertyMetadata("", OnSelectedResolutionChanged));
-    private readonly IWindowService _windowService;
+
+    public static readonly DependencyProperty IsAddCCButtonVisibileProperty =
+        DependencyProperty.Register("IsAddCCButtonVisibile", typeof(bool), typeof(CustomMediaTransportControls), new PropertyMetadata(false));
+
 
     private static void OnSelectedResolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -53,7 +58,10 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         var mtc = d as CustomMediaTransportControls;
         if (mtc._dynamicSkipIntroButton is Button btn && e.NewValue is bool b)
         {
-            btn.Visibility = b ? Visibility.Visible : Visibility.Collapsed;
+            btn.DispatcherQueue.TryEnqueue(() =>
+            {
+                btn.Visibility = b ? Visibility.Visible : Visibility.Collapsed;
+            });
         }
     }
 
@@ -112,6 +120,12 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         set { SetValue(SelectedResolutionProperty, value); }
     }
 
+    public bool IsAddCCButtonVisibile
+    {
+        get { return (bool)GetValue(IsAddCCButtonVisibileProperty); }
+        set { SetValue(IsAddCCButtonVisibileProperty, value); }
+    }
+
     public IObservable<Unit> OnNextTrack => _onNextTrack;
     public IObservable<Unit> OnPrevTrack => _onPrevTrack;
     public IObservable<Unit> OnStaticSkip => _onSkipIntro;
@@ -150,19 +164,19 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
         var submitTimeStamp = GetTemplateChild("SubmitTimeStampsButton") as AppBarButton;
         var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
-        var addccButon = GetTemplateChild("AddCCButton") as AppBarButton;
         _fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;
         _dynamicSkipIntroButton = GetTemplateChild("DynamicSkipIntroButton") as Button;
+        _addCCButton = GetTemplateChild("AddCCButton") as AppBarButton;
 
         prevTrackButton.Click += (_, _) => _onPrevTrack.OnNext(Unit.Default);
         nextTrackButton.Click += (_, _) => _onNextTrack.OnNext(Unit.Default);
         skipIntroButton.Click += (_, _) => _onSkipIntro.OnNext(Unit.Default);
         submitTimeStamp.Click += (_, _) => _onSubmitTimeStamp.OnNext(Unit.Default);
-        addccButon.Click += (_, _) => _onAddCc.OnNext(Unit.Default);
         fullWindowButton.Click += (_, _) => _windowService?.ToggleIsFullWindow();
-        _dynamicSkipIntroButton.Click += (_, __) => _onDynamicSkipIntro.OnNext(Unit.Default);
+        _dynamicSkipIntroButton.Click += (_, _) => _onDynamicSkipIntro.OnNext(Unit.Default);
+        _addCCButton.Click += (_, _) => _onAddCc.OnNext(Unit.Default); 
 
         base.OnApplyTemplate();
     }

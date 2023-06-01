@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using CommunityToolkit.Common;
+using Microsoft.UI.Xaml;
 using ReactiveMarbles.ObservableEvents;
 using Splat;
 using Totoro.Plugins.Anime.Models;
@@ -113,31 +115,36 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     public async Task<Unit> SetMedia(VideoStreamModel stream)
     {
-        MediaSource source;
-
-        if (stream.Stream is not null)
-        {
-            source = MediaSource.CreateFromStream(stream.Stream.AsRandomAccessStream(), "video/x-matroska");
-        }
-        else
-        {
-            source = await GetMediaSource(stream.StreamUrl, stream.Headers);
-        }
+        MediaSource source = stream.Stream is not null
+            ? MediaSource.CreateFromStream(stream.Stream.AsRandomAccessStream(), "video/x-matroska")
+            : await GetMediaSource(stream.StreamUrl, stream.Headers);
 
         _isHardSub = stream.Resolution == "hardsub";
         SetSubtitles(source, stream.AdditionalInformation);
-        _player.Source = new MediaPlaybackItem(source);
+        var playbackItem = new MediaPlaybackItem(source);
+
+        playbackItem.TimedMetadataTracksChanged += (sender, args) =>
+        {
+            playbackItem.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
+        };
+
+        _player.Source = playbackItem;
         return Unit.Default;
     }
 
-    public async Task SetSubtitleFromFile(MediaSource source, string file)
+    public async ValueTask AddSubtitle(string file)
     {
-        var fileName = Path.GetFileName(file);
+        if(_player.Source is not MediaPlaybackItem playbackItem)
+        {
+            return;
+        }
+
+        var fileName = Path.GetFileNameWithoutExtension(file).Truncate(10);
         var sf = await StorageFile.GetFileFromPathAsync(file);
         var tts = TimedTextSource.CreateFromStream(await sf.OpenReadAsync());
         _ttsMap[tts] = fileName.ToLower();
         tts.Resolved += OnTtsResolved;
-        source.ExternalTimedTextSources.Add(tts);
+        playbackItem.Source.ExternalTimedTextSources.Add(tts);
     }
 
     private void OnTtsResolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)

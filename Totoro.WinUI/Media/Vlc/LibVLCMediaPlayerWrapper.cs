@@ -81,6 +81,18 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
         return Unit.Default;
     }
 
+    public ValueTask AddSubtitle(string file)
+    {
+        if(!System.IO.File.Exists(file))
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        _mp.AddSlave(MediaSlaveType.Subtitle, new Uri(file).AbsoluteUri, true);
+
+        return ValueTask.CompletedTask;
+    }
+
     private void SetSubtitles(List<Subtitle> subtitles)
     {
         var count = 0;

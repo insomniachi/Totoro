@@ -302,4 +302,25 @@ public class ViewService : IViewService, IEnableLogger
             ? string.Empty
             : folder.Path;
     }
+
+    public async Task<string> BrowseSubtitle()
+    {
+        // Create a file picker
+        var openPicker = new FileOpenPicker();
+
+        // Initialize the file picker with the window handle (HWND).
+        WinRT.Interop.InitializeWithWindow.Initialize(openPicker, App.MainWindow.GetWindowHandle());
+
+        // Set options for your file picker
+        openPicker.ViewMode = PickerViewMode.Thumbnail;
+        openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+        openPicker.FileTypeFilter.Add(".srt");
+        openPicker.FileTypeFilter.Add(".vtt");
+        openPicker.FileTypeFilter.Add(".ssa");
+        openPicker.FileTypeFilter.Add(".ass");
+
+        // Open the picker for the user to pick a file
+        var file = await openPicker.PickSingleFileAsync();
+        return file?.Path ?? string.Empty;
+    }
 }
