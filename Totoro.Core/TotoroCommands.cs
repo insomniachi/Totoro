@@ -94,6 +94,13 @@ public class TotoroCommands : IEnableLogger
                         });
                     }
                     break;
+                case TorrentState.Cached:
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
+                    {
+                        ["TorrentModel"] = model,
+                        ["UseDebrid"] = true,
+                    });
+                    break;
                 case TorrentState.NotCached:
                     _ = await debridServiceContext.CreateTransfer(model.Magnet);
                     model.State = TorrentState.Requested;

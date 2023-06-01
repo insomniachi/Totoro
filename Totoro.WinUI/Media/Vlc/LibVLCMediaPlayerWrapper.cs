@@ -77,11 +77,6 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
             ? new LibVLCSharp.Shared.Media(_vlc, stream.StreamUrl, FromType.FromLocation)
             : new LibVLCSharp.Shared.Media(_vlc, new StreamMediaInput(stream.Stream));
 
-        if(stream.Headers.ContainsKey(HeaderNames.Referer))
-        {
-            media.AddOption($":http-referer={stream.Headers[HeaderNames.Referer]}");
-        }
-
         _mp.Media = media;
         SetSubtitles(stream.AdditionalInformation.Subtitles);
         return Unit.Default;

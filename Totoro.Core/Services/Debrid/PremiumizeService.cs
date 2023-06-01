@@ -119,7 +119,7 @@ public class PremiumizeService : IDebridService
         }
 
         var json = await _api.AppendPathSegment("/transfer/directdl")
-            .SetQueryParam("apiKey", _apiKey)
+            .SetQueryParam("apikey", _apiKey)
             .PostUrlEncodedAsync(new
             {
                 src = magneticLink
@@ -138,7 +138,7 @@ public class PremiumizeService : IDebridService
         }
 
         var json = await _api.AppendPathSegment("/transfer/create")
-            .SetQueryParam("apiKey", _apiKey)
+            .SetQueryParam("apikey", _apiKey)
             .PostUrlEncodedAsync(new
             {
                 src = magneticLink
@@ -158,7 +158,7 @@ public class PremiumizeService : IDebridService
         }
 
         var json = await _api.AppendPathSegment("/transfer/list")
-            .SetQueryParam("apiKey", _apiKey)
+            .SetQueryParam("apikey", _apiKey)
             .GetStringAsync();
 
         var jObject = JsonNode.Parse(json);
@@ -174,7 +174,7 @@ public class PremiumizeService : IDebridService
         }
 
         var json = await _api.AppendPathSegment("/account/info")
-            .SetQueryParam("apiKey", _apiKey)
+            .SetQueryParam("apikey", _apiKey)
             .GetStringAsync();
 ;
         var jObject = JsonNode.Parse(json);
