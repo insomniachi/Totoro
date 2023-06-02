@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -117,6 +118,10 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
                     break;
                 }
             }
+            else 
+            {
+                continue;
+            }
 
             var streamTypes = new List<StreamType>() { StreamType.EnglishSubbed };
 
@@ -147,30 +152,18 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
 
             var sourceArray = jsonNode?["episode"]?["sourceUrls"];
             var sourceObjs = sourceArray?.ToObject<List<SourceUrlObj>>() ?? new List<SourceUrlObj>();
-
-            var source = sourceObjs.Where(x => x.type == "iframe").OrderByDescending(x => x.priority).First();
-            var parsedUrl = DecodeEncodedNonAsciiCharacters(HttpUtility.UrlDecode(source.sourceUrl.Replace("clock", "clock.json")));
-            var uri = new Uri(parsedUrl, UriKind.RelativeOrAbsolute);
-
-            var streamUrl = parsedUrl;
-            if (!uri.IsAbsoluteUri)
+            var source = sourceObjs.Where(x => x.type == "player").OrderByDescending(x => x.priority).First();
+            var stream = new VideoStreamsForEpisode
             {
-                streamUrl = apiEndPoint.Host + parsedUrl;
-            }
-
-            var stream = await Extract(streamUrl);
-            if (stream is { })
+                Episode = e,
+            };
+            stream.StreamTypes.AddRange(streamTypes);
+            stream.Streams.Add(new VideoStream
             {
-                if (jsonNode?["episode"]?["notes"]?.ToString() is { } note)
-                {
-                    stream.AdditionalInformation.Title = note;
-                }
-
-                stream.Episode = e;
-                stream.EpisodeString = ep;
-                stream.StreamTypes.AddRange(streamTypes);
-                yield return stream;
-            }
+                Url = source.sourceUrl,
+                Resolution = "default"
+            });
+            yield return stream;
         }
     }
 
