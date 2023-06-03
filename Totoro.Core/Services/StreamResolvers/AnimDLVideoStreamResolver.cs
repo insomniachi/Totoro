@@ -53,7 +53,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         try
         {
             var url = _baseUrlSub;
-            if (_settings.DefaultProviderType == "gogo")
+            if (_settings.DefaultProviderType == "gogo-anime")
             {
                 url = streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub;
             }
@@ -77,7 +77,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         try
         {
             var url = _baseUrlSub;
-            if (_settings.DefaultProviderType == "gogo")
+            if (_settings.DefaultProviderType == "gogo-anime")
             {
                 url = streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub;
             }

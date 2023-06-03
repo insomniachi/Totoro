@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Flurl.Http;
 using Splat;
 using Totoro.Plugins.Anime.Contracts;
 
@@ -57,37 +58,37 @@ namespace Totoro.Core.Services
 
         public async Task<long?> GetIdFromUrl(string url, string provider)
         {
-            if (provider == "yugen")
+            try
             {
-                var regex = _settings.DefaultListService switch
+                if (provider == "yugen-anime")
                 {
-                    ListServiceType.MyAnimeList => YugenMalIdRegex(),
-                    ListServiceType.AniList => YugenAnilistIdRegex(),
-                    _ => null
-                };
+                    var regex = _settings.DefaultListService switch
+                    {
+                        ListServiceType.MyAnimeList => YugenMalIdRegex(),
+                        ListServiceType.AniList => YugenAnilistIdRegex(),
+                        _ => null
+                    };
 
-                return await GetIdFromSource(url, regex);
-            }
-            else if (provider == "gogo")
-            {
-                var uri = new Uri(url);
-                var path = uri.Segments[^1];
+                    return await GetIdFromSource(url, regex);
+                }
+                else if (provider == "gogo-anime")
+                {
+                    var uri = new Uri(url);
+                    var path = uri.Segments[^1];
 
-                if (path.Contains("-episode-"))
-                {
-                    return await GetId(path.Split("-episode").FirstOrDefault(), provider);
+                    if (path.Contains("-episode-"))
+                    {
+                        return await GetId(path.Split("-episode").FirstOrDefault(), provider);
+                    }
+                    else
+                    {
+                        return await GetId(path, provider);
+                    }
                 }
-                else
-                {
-                    return await GetId(path, provider);
-                }
-            }
-            else if (provider == "animepahe")
-            {
-                try
+                else if (provider == "anime-pahe")
                 {
                     var html = await _httpClient.GetStringAsync(url);
-                    var result = new AnimeId();
+                    var animeId = new AnimeId();
 
                     foreach (var match in AnimePaheAnimeIdRegex().Matches(html).Cast<Match>().Where(x => x.Success))
                     {
@@ -95,40 +96,60 @@ namespace Totoro.Core.Services
                         switch (match.Groups["Type"].Value)
                         {
                             case "anidb":
-                                result.AniDb = id;
+                                animeId.AniDb = id;
                                 break;
                             case "anilist":
-                                result.AniList = id;
+                                animeId.AniList = id;
                                 break;
                             case "kitsu":
-                                result.Kitsu = id;
+                                animeId.Kitsu = id;
                                 break;
                             case "myanimelist":
-                                result.MyAnimeList = id;
+                                animeId.MyAnimeList = id;
                                 break;
                         }
                     }
 
-                    return GetId(result);
+                    return GetId(animeId);
                 }
-                catch (Exception ex)
+                else if (provider == "allanime")
                 {
-                    this.Log().Error(ex);
+                    var aniListId = await GetIdFromSource(url, AllAnimeAniListIdRegex());
+                    if (aniListId == 0)
+                    {
+                        return null;
+                    }
+                    var animeId = await _animeIdService.GetId(ListServiceType.AniList, aniListId);
+                    return GetId(animeId);
+                }
+                else if (provider == "zoro")
+                {
+                    var html = await url.GetStringAsync();
+                    var animeId = new AnimeId();
+
+                    foreach (var match in ZoroAnimeIdRegex().Matches(html).Cast<Match>().Where(x => x.Success))
+                    {
+                        var id = long.Parse(match.Groups["Id"].Value);
+                        switch (match.Groups["Type"].Value)
+                        {
+                            case "anilist_id":
+                                animeId.AniList = id;
+                                break;
+                            case "mal_id":
+                                animeId.MyAnimeList = id;
+                                break;
+                        }
+                    }
+                    return GetId(animeId);
+                }
+                else
+                {
                     return null;
                 }
             }
-            else if (provider == "allanime")
+            catch (Exception ex)
             {
-                var aniListId = await GetIdFromSource(url, AllAnimeAniListIdRegex());
-                if (aniListId == 0)
-                {
-                    return null;
-                }
-                var animeId = await _animeIdService.GetId(ListServiceType.AniList, aniListId);
-                return GetId(animeId);
-            }
-            else
-            {
+                this.Log().Warn(ex);
                 return null;
             }
         }
@@ -233,10 +254,10 @@ namespace Totoro.Core.Services
         {
             return provider switch
             {
-                "gogo" => "Gogoanime",
-                "yugen" => "YugenAnime",
+                "gogo-anime" => "Gogoanime",
+                "yugen-anime" => "YugenAnime",
                 "zoro" => "Zoro",
-                "animepahe" => "animepahe",
+                "anime-pahe" => "animepahe",
                 _ => string.Empty
             };
         }
@@ -245,7 +266,7 @@ namespace Totoro.Core.Services
         {
             return provider switch
             {
-                "gogo" => "Gogoanime",
+                "gogo-anime" => "Gogoanime",
                 _ => throw new NotSupportedException()
             };
         }
@@ -262,5 +283,8 @@ namespace Totoro.Core.Services
 
         [GeneratedRegex(@"banner/(\d+)")]
         private static partial Regex AllAnimeAniListIdRegex();
+
+        [GeneratedRegex(@"""(?<Type>mal_id|anilist_id)"":""(?<Id>\d+)""")]
+        private static partial Regex ZoroAnimeIdRegex();
     }
 }

@@ -35,7 +35,7 @@ internal class StreamProvider : IAnimeStreamProvider
         }
     }
 
-    private async Task<VideoStreamsForEpisode> GetEpStream(string url)
+    private static async Task<VideoStreamsForEpisode> GetEpStream(string url)
     {
         var version = await Config.GetInertiaVersion();
         var jar = Config.GetCookieJar();

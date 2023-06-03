@@ -40,7 +40,7 @@ public class DiscoverViewModel : NavigatableViewModel
             .DisposeWith(Garbage);
 
         CardWidth = settings.DefaultProviderType is "anime-pahe" ? 480 : 190; // animepahe image is thumbnail
-        DontUseImageEx = settings.DefaultProviderType is "yugen"; // using imagex for yugen is crashing
+        DontUseImageEx = settings.DefaultProviderType is "yugen-anime"; // using imagex for yugen is crashing
 
         SelectEpisode = ReactiveCommand.CreateFromTask<IAiredAnimeEpisode>(OnEpisodeSelected);
         SelectSearchResult = ReactiveCommand.CreateFromTask<ICatalogItem>(OnSearchResultSelected);

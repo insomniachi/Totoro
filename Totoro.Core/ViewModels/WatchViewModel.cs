@@ -9,6 +9,7 @@ using Totoro.Core.Services.MediaEvents;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Models;
 
@@ -174,7 +175,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Do(stream =>
             {
-                if (ProviderType != "gogo")
+                if (ProviderType != "gogo-anime")
                 {
                     var selectedAudioStream = SelectedAudioStream;
                     SubStreams = stream.StreamTypes;
@@ -343,7 +344,19 @@ public partial class WatchViewModel : NavigatableViewModel
         else if (parameters.ContainsKey("SearchResult"))
         {
             var searchResult = (ICatalogItem)parameters["SearchResult"];
-            await TrySetAnime(searchResult.Url, searchResult.Title);
+            if(searchResult is IHaveMalId ihmid && _settings.DefaultListService == ListServiceType.MyAnimeList)
+            {
+                SetAnime(ihmid.MalId);
+            }
+            else if(searchResult is IHaveAnilistId ihaid && _settings.DefaultListService == ListServiceType.AniList)
+            {
+                SetAnime(ihaid.AnilistId);
+            }
+            else
+            {
+                await TrySetAnime(searchResult.Url, searchResult.Title);
+            }
+
             await CreateAnimDLResolver(searchResult.Url);
         }
         else if (parameters.ContainsKey("TorrentModel"))
@@ -434,7 +447,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return (results[0], null);
         }
-        else if (results.Count == 2 && ProviderType is "gogo") // gogo anime has separate listing for sub/dub
+        else if (results.Count == 2 && ProviderType is "gogo-anime") // gogo anime has separate listing for sub/dub
         {
             return (results[0], results[1]);
         }
@@ -505,13 +518,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        _animeService.GetInformation(id.Value)
-            .Subscribe(async anime =>
-            {
-                _anime = anime;
-                _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
-                SetAnime(_anime);
-            }, RxApp.DefaultExceptionHandler.OnError);
+        SetAnime(id.Value);
     }
 
     private async Task TrySetAnime(string title)
@@ -524,11 +531,16 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        _animeService.GetInformation(id.Value)
+        SetAnime(id.Value);
+    }
+
+    private void SetAnime(long id)
+    {
+        _animeService.GetInformation(id)
             .Subscribe(async anime =>
             {
                 _anime = anime;
-                _episodeMetadata = await _myAnimeListService.GetEpisodes(id.Value);
+                _episodeMetadata = await _myAnimeListService.GetEpisodes(id);
                 SetAnime(_anime);
             }, RxApp.DefaultExceptionHandler.OnError);
     }
@@ -545,7 +557,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private StreamType GetDefaultAudioStream()
     {
-        if (ProviderType == "gogo")
+        if (ProviderType == "gogo-anime")
         {
             return StreamType.EnglishSubbed;
         }
