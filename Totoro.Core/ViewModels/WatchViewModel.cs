@@ -72,7 +72,6 @@ public partial class WatchViewModel : NavigatableViewModel
             SelectedQuality = null;
             SelectedQuality = quality;
         }, outputScheduler: RxApp.MainThreadScheduler);
-        SubmitTimeStamp = ReactiveCommand.Create(OnSubmitTimeStamps);
 
         this.WhenAnyValue(x => x.MediaPlayerType)
             .WhereNotNull()
@@ -258,7 +257,6 @@ public partial class WatchViewModel : NavigatableViewModel
     public ICommand NextEpisode { get; }
     public ICommand PrevEpisode { get; }
     public ICommand ChangeQuality { get; }
-    public ICommand SubmitTimeStamp { get; }
 
     public void SubscribeTransportControlEvents()
     {
@@ -286,13 +284,13 @@ public partial class WatchViewModel : NavigatableViewModel
             .TransportControls
             .OnNextTrack
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => EpisodeModels.SelectNext());
+            .InvokeCommand(NextEpisode);
 
         MediaPlayer
             .TransportControls
             .OnPrevTrack
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => EpisodeModels.SelectPrevious());
+            .InvokeCommand(PrevEpisode);
 
         MediaPlayer
             .TransportControls
