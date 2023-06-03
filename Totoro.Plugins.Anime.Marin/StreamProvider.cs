@@ -20,7 +20,7 @@ internal class StreamProvider : IAnimeStreamProvider
             .GetStringAsync();
 
         var jObject = JsonNode.Parse(animeData);
-        return int.Parse(jObject?["props"]?["anime"]?["last_episode"]?.ToString() ?? "0");
+        return (int)double.Parse(jObject?["props"]?["anime"]?["last_episode"]?.ToString() ?? "0");
     }
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range episodeRange)

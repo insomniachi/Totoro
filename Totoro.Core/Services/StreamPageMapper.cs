@@ -258,6 +258,7 @@ namespace Totoro.Core.Services
                 "yugen-anime" => "YugenAnime",
                 "zoro" => "Zoro",
                 "anime-pahe" => "animepahe",
+                "marin" => "Marin",
                 _ => string.Empty
             };
         }
