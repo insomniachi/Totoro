@@ -1,16 +1,14 @@
 ﻿using System.Diagnostics;
+using Flurl.Http;
 
 namespace Totoro.Core.Services;
 
 public class AnimeIdService : IAnimeIdService
 {
-    private readonly HttpClient _httpClient;
     private readonly ISettings _settings;
 
-    public AnimeIdService(HttpClient httpClient,
-                          ISettings settings)
+    public AnimeIdService(ISettings settings)
     {
-        _httpClient = httpClient;
         _settings = settings;
     }
 
@@ -29,9 +27,9 @@ public class AnimeIdService : IAnimeIdService
         };
     }
 
-    private async Task<AnimeId> GetIdInternal(string source, long id)
+    private static async Task<AnimeId> GetIdInternal(string source, long id)
     {
-        var stream = await _httpClient.GetStreamAsync($"https://arm.haglund.dev/api/ids?source={source}&id={id}");
+        var stream = await $"https://arm.haglund.dev/api/ids?source={source}&id={id}".GetStreamAsync();
         return await JsonSerializer.DeserializeAsync(stream, AnimeIdSerializerContext.Default.AnimeId);
     }
 }

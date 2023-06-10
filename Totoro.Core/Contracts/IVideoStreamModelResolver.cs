@@ -10,6 +10,11 @@ public interface IVideoStreamModelResolver
     Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType);
 }
 
+public interface ISpecialVideoStreamModelResolver
+{
+    Task<VideoStreamsForEpisodeModel> ResolveSpecialEpisode(string episode, StreamType streamType);
+}
+
 public interface ICompletionAware
 {
     void OnCompleted();

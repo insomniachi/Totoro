@@ -6,20 +6,21 @@ namespace Totoro.Core.Models
     public class EpisodeModel : ReactiveObject
     {
 
-        [Reactive] public int EpisodeNumber { get; init; }
-        public string SpecialEpisodeNumber { get; init; }
-        public bool IsSpecial { get; init; }
+        [Reactive] public int EpisodeNumber { get; set; }
+        [Reactive] public string SpecialEpisodeNumber { get; set; }
+        [Reactive] public bool IsSpecial { get; set; }
         [Reactive] public string EpisodeTitle { get; set; }
         [ObservableAsProperty] public string DisplayName { get; }
 
         public EpisodeModel()
         {
-            this.WhenAnyValue(x => x.EpisodeTitle, x => x.EpisodeNumber)
+            this.WhenAnyPropertyChanged()
                 .Select(_ =>
                 {
+                    
                     return string.IsNullOrEmpty(EpisodeTitle)
-                            ? $"{EpisodeNumber}"
-                            : $"{EpisodeNumber} - {EpisodeTitle}";
+                            ? $"{(IsSpecial ? SpecialEpisodeNumber : EpisodeNumber)}"
+                            : $"{(IsSpecial ? SpecialEpisodeNumber : EpisodeNumber)} - {EpisodeTitle}";
                 })
                 .ToPropertyEx(this, x => x.DisplayName);
         }

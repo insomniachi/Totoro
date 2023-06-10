@@ -8,13 +8,14 @@ namespace Totoro.Core.Services.StreamResolvers;
 public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
                                                      INotifyDownloadStatus,
                                                      ICompletionAware,
-                                                     IAsyncDisposable
+                                                     IAsyncDisposable,
+                                                     ISpecialVideoStreamModelResolver
 {
     private readonly ITorrentEngine _torrentEngine;
     private readonly Torrent _torrent;
     private readonly string _torrentUrl;
     private readonly string _saveDirectory;
-    private readonly Dictionary<int, int> _episodeToTorrentFileMap = new();
+    private readonly Dictionary<string, int> _episodeToTorrentFileMap = new();
     private readonly ScheduledSubject<(double, ConnectionMonitor)> _downloadStatus = new(RxApp.MainThreadScheduler);
     private readonly CompositeDisposable _disposable = new();
     private static Stream _prevStream;
@@ -72,22 +73,31 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
             .DisposeWith(_disposable);
 
         var index = 0;
+        var eps = new EpisodeModelCollection();
         foreach (var file in _torrentManager.Torrent.Files.Select(x => x.Path))
         {
             var result = AnitomySharp.AnitomySharp.Parse(file);
-            if (result.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epResult &&
-                int.TryParse(epResult.Value, out var ep))
+            if (result.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epResult)
             {
-                _episodeToTorrentFileMap[ep] = index;
+                var epModel = new EpisodeModel();
+                _episodeToTorrentFileMap[epResult.Value] = index;
+                if (int.TryParse(epResult.Value, out var ep))
+                {
+                    epModel.EpisodeNumber = ep;
+                }
+                else
+                {
+                    epModel.IsSpecial = true;
+                    epModel.SpecialEpisodeNumber = epResult.Value;
+                }
+
+                eps.Add(epModel);
             }
 
             index++;
         }
 
-        var start = _episodeToTorrentFileMap.Keys.Min();
-        var end = _episodeToTorrentFileMap.Keys.Max();
-
-        return EpisodeModelCollection.FromEpisode(start, end);
+        return eps;
     }
 
     public async Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, StreamType streamType)
@@ -96,8 +106,19 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         _prevStream?.Dispose();
         _prevStream = null;
         _prevStream = _torrent is null
-            ? await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode])
-            : await _torrentEngine.GetStream(_torrent, _episodeToTorrentFileMap[episode]);
+            ? await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode.ToString()])
+            : await _torrentEngine.GetStream(_torrent, _episodeToTorrentFileMap[episode.ToString()]);
+
+        return new VideoStreamsForEpisodeModel(_prevStream);
+    }
+
+    public async Task<VideoStreamsForEpisodeModel> ResolveSpecialEpisode(string episode, StreamType streamType)
+    {
+        _prevStream?.Dispose();
+        _prevStream = null;
+        _prevStream = _torrent is null
+            ? await _torrentEngine.GetStream(_torrentUrl, _episodeToTorrentFileMap[episode.ToString()])
+            : await _torrentEngine.GetStream(_torrent, _episodeToTorrentFileMap[episode.ToString()]);
 
         return new VideoStreamsForEpisodeModel(_prevStream);
     }
@@ -115,7 +136,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         }
 
         // if torrent contains multiple episodes, then only mark for delete when the final episode is completed.
-        if(_lastResolvedEp < _episodeToTorrentFileMap.Keys.Max())
+        if(_lastResolvedEp < _episodeToTorrentFileMap.Keys.Where(x => int.TryParse(x, out _)).Select(int.Parse).Max())
         {
             return;
         }

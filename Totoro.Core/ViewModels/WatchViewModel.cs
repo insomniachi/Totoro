@@ -114,7 +114,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.WhenAnyValue(x => x.EpisodeModels)
             .WhereNotNull()
-            .Log(this, "Episodes :", x => string.Join(",", x.Select(e => e.EpisodeNumber)))
+            .Log(this, "Episodes :", x => string.Join(",", x.Select(e => e.IsSpecial ? e.SpecialEpisodeNumber : e.EpisodeNumber.ToString())))
             .Select(_ => GetQueuedEpisode())
             .Where(RequestedEpisodeIsValid)
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -140,9 +140,8 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .SelectMany(x => x.WhenAnyValue(x => x.Current))
             .WhereNotNull()
-            .Where(ep => ep.EpisodeNumber > 0)
             .Do(_ => MediaPlayer.Pause())
-            .Log(this, "Selected Episode :", ep => ep.EpisodeNumber.ToString())
+            .Log(this, "Selected Episode :", ep => ep.IsSpecial ? ep.SpecialEpisodeNumber : ep.EpisodeNumber.ToString())
             .Do(epModel =>
             {
                 if (EpisodeModels.Count > 1)
@@ -153,7 +152,9 @@ public partial class WatchViewModel : NavigatableViewModel
 
                 SetEpisode(epModel.EpisodeNumber);
             })
-            .SelectMany(epModel => _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, SelectedAudioStream.Value))
+            .SelectMany(epModel => epModel.IsSpecial
+                    ? ((ISpecialVideoStreamModelResolver)_videoStreamResolver).ResolveSpecialEpisode(epModel.SpecialEpisodeNumber, SelectedAudioStream.Value)
+                    : _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, SelectedAudioStream.Value))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(stream => Streams = stream, RxApp.DefaultExceptionHandler.OnError);
 

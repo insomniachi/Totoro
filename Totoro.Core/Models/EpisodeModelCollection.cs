@@ -7,7 +7,7 @@ namespace Totoro.Core.Models
 {
     public class EpisodeModelCollection : Collection<EpisodeModel>, INotifyPropertyChanged
     {
-        private EpisodeModelCollection() { }
+        public EpisodeModelCollection() { }
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged([CallerMemberName] string property = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
 
