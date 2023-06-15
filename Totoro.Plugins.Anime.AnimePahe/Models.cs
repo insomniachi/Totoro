@@ -4,7 +4,7 @@
 
 internal class AnimePaheEpisodePage
 {
-    public int total { get; set; }
+    public double total { get; set; }
     public int per_page { get; set; }
     public int current_page { get; set; }
     public int last_page { get; set; }
@@ -19,8 +19,8 @@ internal class AnimePaheEpisodeInfo
 {
     public int id { get; set; }
     public int anime_id { get; set; }
-    public int episode { get; set; }
-    public int episode2 { get; set; }
+    public double episode { get; set; }
+    public double episode2 { get; set; }
     public string edition { get; set; } = string.Empty;
     public string title { get; set; } = string.Empty;
     public string snapshot { get; set; } = string.Empty;

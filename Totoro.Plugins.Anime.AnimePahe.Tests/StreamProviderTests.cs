@@ -9,14 +9,16 @@ namespace Totoro.Plugins.Anime.AnimePahe.Tests;
 public class StreamProviderTests
 {
     public const string Hyouka = "hyouka";
+    public const string OshiNoKo = "oshi no ko";
 
     private readonly ITestOutputHelper _output;
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
     private readonly Dictionary<string, string> _urlMap = new()
     {
-        { Hyouka, Url.Combine(Config.Url, "/anime/31a82404-2bc3-d182-597e-a7a15e79f5aa") }
+        { Hyouka, Url.Combine(Config.Url, "/anime/31a82404-2bc3-d182-597e-a7a15e79f5aa") },
+        { OshiNoKo, Url.Combine(Config.Url, "/anime/ae95c1fc-25d9-d824-1340-d46440e9652e") }
     };
-    private readonly bool _allEpisodes = false;
+    private readonly bool _allEpisodes = true;
 
     public StreamProviderTests(ITestOutputHelper output)
     {
@@ -25,6 +27,7 @@ public class StreamProviderTests
 
     [Theory]
     [InlineData(Hyouka, 22)]
+    [InlineData(OshiNoKo, 10)]
     public async Task GetNumberOfEpisodes(string key, int expected)
     {        
         // arrange
@@ -40,6 +43,7 @@ public class StreamProviderTests
 
     [Theory]
     [InlineData(Hyouka)]
+    [InlineData(OshiNoKo)]
     public async Task GetStreams(string key)
     {
         // arrange

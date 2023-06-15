@@ -40,7 +40,8 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
     {
         var html = await url.WithClient(_client).GetStringAsync();
         var releaseId = IdRegex().Match(html).Groups[1].Value;
-        return (await GetSessionPage(releaseId, 1)).total;
+        var page = await GetSessionPage(releaseId, 1);
+        return (int)page.total;
     }
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range)
@@ -49,7 +50,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
         var releaseId = IdRegex().Match(doc.Text).Groups[1].Value;
         var firstPage = await GetSessionPage(releaseId, 1);
-        var (start, end) = range.Extract(firstPage.total);
+        var (start, end) = range.Extract((int)firstPage.total);
         var startPage = (start + firstPage.per_page - 1) / firstPage.per_page;
         var endPage = (end + firstPage.per_page - 1) / firstPage.per_page;
 
@@ -77,7 +78,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
         {
             var streams = new VideoStreamsForEpisode
             {
-                Episode = item.episode
+                Episode = (int)item.episode
             };
 
             var stringUrls = await GetStreamUrl(releaseId, item.session);
