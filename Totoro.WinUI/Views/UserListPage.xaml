@@ -96,36 +96,7 @@
                                     <uc:AnimeCard
                                         x:Name="Card"
                                         Margin="3"
-                                        Anime="{x:Bind}">
-                                        <!--<uc:AnimeCard.Flyout>
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem
-                                                    Command="{x:Bind root:App.Commands.UpdateTracking}"
-                                                    CommandParameter="{x:Bind}"
-                                                    Text="Update">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <SymbolIcon Symbol="PostUpdate" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutItem
-                                                    Command="{x:Bind root:App.Commands.SearchTorrent}"
-                                                    CommandParameter="{x:Bind}"
-                                                    Text="Search Torrents">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <SymbolIcon Symbol="Globe" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutItem
-                                                    Command="{x:Bind root:App.Commands.More}"
-                                                    CommandParameter="{Binding Id}"
-                                                    Text="More">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <SymbolIcon Symbol="More" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                            </MenuFlyout>
-                                        </uc:AnimeCard.Flyout>-->
-                                    </uc:AnimeCard>
+                                        Anime="{x:Bind}" />
                                 </DataTemplate>
                             </ctk:AdaptiveGridView.ItemTemplate>
                         </ctk:AdaptiveGridView>
