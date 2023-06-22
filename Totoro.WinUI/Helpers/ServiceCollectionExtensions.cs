@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins;
+using Totoro.Plugins.MediaDetection;
+using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.WinUI.Activation;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
@@ -47,6 +50,17 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddMediaDetection(this IServiceCollection services)
+    {
+        services.AddSingleton<ProcessWatcher>();
+
+#if DEBUG
+        PluginFactory<INativeMediaPlayer>.Instance.LoadPlugin(new Plugins.MediaDetection.Vlc.Plugin());
+#endif
+
+        return services;
+    }
+
     public static IServiceCollection AddPlatformServices(this IServiceCollection services)
     {
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
@@ -81,6 +95,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
         services.AddPageForNavigation<AboutAnimeViewModel, AboutAnimePage>();
         services.AddPageForNavigation<TorrentingViewModel, TorrentingView>();
+        services.AddPageForNavigation<NowPlayingViewModel, NowPlayingPage>();
         return services;
     }
 

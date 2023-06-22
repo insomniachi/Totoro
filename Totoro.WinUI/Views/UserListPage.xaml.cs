@@ -1,5 +1,7 @@
 ﻿using ReactiveMarbles.ObservableEvents;
+using Splat;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins.MediaDetection;
 
 namespace Totoro.WinUI.Views;
 
@@ -34,6 +36,8 @@ public sealed partial class UserListPage : UserListPageBase
 
         this.WhenActivated(d =>
         {
+            var watcher = new ProcessWatcher();
+
             this.WhenAnyValue(x => x.ViewModel.CurrentView)
                 .Subscribe(x =>
                 {

@@ -37,6 +37,7 @@ public partial class App : Application, IEnableLogger
                     .AddMyAnimeList()
                     .AddAniList()
                     .AddTorrenting()
+                    .AddMediaDetection()
                     .AddTopLevelPages()
                     .AddDialogPages();
 

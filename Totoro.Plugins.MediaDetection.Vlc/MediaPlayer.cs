@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
@@ -15,18 +16,18 @@ namespace Totoro.Plugins.MediaDetection.Vlc
         private Application? _application;
         private Window? _mainWindow;
         private Slider? _slider;
+        private int? _processId;
+        private readonly Subject<TimeSpan> _positionChanged = new();
 
-        [Reactive] public double PositionPercent { get; set; }
         [Reactive] TimeSpan Duration { get; set; }
 
-        public IObservable<TimeSpan> PositionChanged { get; }
+        public IObservable<TimeSpan> PositionChanged => _positionChanged;
         public IObservable<TimeSpan> DurationChanged { get; }
+
+        public int ProcessId => _processId ?? 0;
 
         public MediaPlayer()
         {
-            PositionChanged = this.WhenAnyValue(x => x.PositionPercent)
-                .Select(x => TimeSpan.FromSeconds(Duration.TotalSeconds * (x / 10)));
-
             DurationChanged = this.WhenAnyValue(x => x.Duration);
         }
 
@@ -49,13 +50,22 @@ namespace Totoro.Plugins.MediaDetection.Vlc
 
         public void Initialize(int processId)
         {
+            _processId = processId;
             _application = Application.Attach(processId);
             InitializeInternal();
         }
 
         private void InitializeInternal()
         {
-            _mainWindow = _application!.GetMainWindow(new UIA3Automation());
+            while(_mainWindow is null)
+            {
+                try
+                {
+                    _mainWindow = _application!.GetMainWindow(new UIA3Automation());
+                }
+                catch { }
+            }
+
             GetDuration();
             GetSlider();
         }
@@ -91,7 +101,8 @@ namespace Totoro.Plugins.MediaDetection.Vlc
                     var property = item.Patterns.Value.Pattern.PropertyIds.Value;
                     var handler = item.RegisterPropertyChangedEvent(TreeScope.Element, (ae, _, _) =>
                     {
-                        PositionPercent = ae.AsSlider().Value;
+                        var percent = ae.AsSlider().Value;
+                        _positionChanged.OnNext(TimeSpan.FromSeconds(Duration.TotalSeconds * percent / 10000));
                     }, property);
                 }
             }

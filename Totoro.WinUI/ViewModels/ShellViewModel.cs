@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins.MediaDetection;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
 
@@ -8,6 +9,8 @@ namespace Totoro.WinUI.ViewModels;
 
 public partial class ShellViewModel : ReactiveObject
 {
+    private readonly ProcessWatcher _processWatcher;
+
     [Reactive] public object Selected { get; set; }
     [Reactive] public bool IsBackEnabled { get; set; }
     [Reactive] public bool IsAuthenticated { get; set; }
@@ -21,12 +24,30 @@ public partial class ShellViewModel : ReactiveObject
                           INavigationViewService navigationViewService,
                           ITrackingServiceContext trackingService,
                           IUpdateService updateService,
-                          IViewService viewService)
+                          IViewService viewService,
+                          ProcessWatcher processWatcher)
     {
         NavigationService = navigationService;
         NavigationService.Navigated.Subscribe(OnNavigated);
         NavigationViewService = navigationViewService;
         IsAuthenticated = trackingService.IsAuthenticated;
+        _processWatcher = processWatcher;
+
+        processWatcher
+            .MediaPlayerDetected
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(player =>
+            {
+                navigationService.NavigateTo<NowPlayingViewModel>(parameter: new Dictionary<string, object>
+                {
+                    ["Player"] = player
+                });
+            });
+
+        processWatcher
+            .MediaPlayerClosed
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => navigationService.GoBack());
 
         trackingService
             .Authenticated

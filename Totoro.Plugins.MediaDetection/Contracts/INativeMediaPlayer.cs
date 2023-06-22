@@ -1,4 +1,6 @@
-﻿namespace Totoro.Plugins.MediaDetection.Contracts
+﻿using System.Reactive;
+
+namespace Totoro.Plugins.MediaDetection.Contracts
 {
     public interface INativeMediaPlayer
     {
@@ -7,6 +9,6 @@
         void Initialize(int processId);
         IObservable<TimeSpan> PositionChanged { get; }
         IObservable<TimeSpan> DurationChanged { get; }
-        void SetPosition(TimeSpan position);
+        int ProcessId { get; }
     }
 }
