@@ -63,7 +63,8 @@
                 </TextBlock>
                 <TextBlock>
                     <Run FontWeight="Bold" Text="Season :" />
-                    <Run Text="{x:Bind ViewModel.Anime.Season, Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.Anime.Season.SeasonName, Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.Anime.Season.Year, Mode=OneWay}" />
                 </TextBlock>
                 <TextBlock>
                     <Run FontWeight="Bold" Text="Score :" />

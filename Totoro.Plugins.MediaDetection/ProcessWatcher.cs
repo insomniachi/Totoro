@@ -14,21 +14,19 @@ public class ProcessWatcher : IEnableLogger
     
     public ProcessWatcher()
     {
-        DetectMediaProcess();
     }
+
+    public void Start() => DetectMediaProcess();
     
     public IObservable<INativeMediaPlayer> MediaPlayerDetected => _mediaPlayerDetected;
     public IObservable<int> MediaPlayerClosed => _mediaPlayerClosed;
 
     private void DetectMediaProcess()
     {
-        foreach (var process in Process.GetProcesses())
-        {
-            if (process.Id == Environment.ProcessId)
-            {
-                continue;
-            }
+        var processes = Process.GetProcesses();
 
+        foreach (var process in processes)
+        {
             if (_processes.Find(x => x.Id == process.Id) is { })
             {
                 continue;
@@ -48,9 +46,9 @@ public class ProcessWatcher : IEnableLogger
 
             if (PluginFactory<INativeMediaPlayer>.Instance.Plugins.FirstOrDefault(x => x.Name == process.ProcessName) is { } pluginInfo)
             {
-                _processes.Add(process);
                 if (PluginFactory<INativeMediaPlayer>.Instance.CreatePlugin(process.ProcessName) is { } player)
                 {
+                    _processes.Add(process);
                     this.Log().Info($"Media Player ({process.ProcessName}) detected");
                     player.Initialize(process.Id);
                     _mediaPlayerDetected.OnNext(player);

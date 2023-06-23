@@ -68,7 +68,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
 
         private void InitializeInternal()
         {
-            while(_mainWindow is null || _mainWindow is { IsAvailable : false })
+            while(_mainWindow is not { IsAvailable : true })
             {
                 try
                 {

@@ -10,7 +10,6 @@ public class NowPlayingViewModel : NavigatableViewModel
     private readonly IAnimeServiceContext _animeServiceContext;
     private readonly NativeMediaPlayerTrackingUpdater _trackingUpdater;
     private readonly NativeMediaPlayerDiscordRichPresenseUpdater _discordRichPresenseUpdater;
-    private INativeMediaPlayer _mediaPlayer;
 
     public NowPlayingViewModel(IViewService viewService,
                                IAnimeServiceContext animeServiceContext,
@@ -26,8 +25,12 @@ public class NowPlayingViewModel : NavigatableViewModel
 
         watcher
             .MediaPlayerClosed
-            .Where(id => _mediaPlayer.ProcessId == id)
-            .Subscribe(_ => _mediaPlayer.Dispose());
+            .Where(id => MediaPlayer.ProcessId == id)
+            .Subscribe(_ =>
+            {
+                MediaPlayer.Dispose();
+                IsVisible = false;
+            });
         
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
@@ -60,14 +63,17 @@ public class NowPlayingViewModel : NavigatableViewModel
     [ObservableAsProperty] public TimeSpan Position { get; }
     [Reactive] public AnimeModel Anime { get; set; }
     [Reactive] public string Episode { get; set; }
+    [Reactive] public bool IsVisible { get; set; }
     public int EpisodeInt { get; set; }
+    public INativeMediaPlayer MediaPlayer { get; set; }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         if(parameters.ContainsKey("Player"))
         {
-            var player = (INativeMediaPlayer)parameters["Player"];
-            InitializeFromPlayer(player);
+            IsVisible = true;
+            MediaPlayer = (INativeMediaPlayer)parameters["Player"];
+            InitializeFromPlayer(MediaPlayer);
         };
 
         return Task.CompletedTask;
@@ -75,19 +81,18 @@ public class NowPlayingViewModel : NavigatableViewModel
 
     public async void InitializeFromPlayer(INativeMediaPlayer player)
     {
-        _mediaPlayer = player;
         _trackingUpdater.SetMediaPlayer(player);
         _discordRichPresenseUpdater.SetMediaPlayer(player);
 
         player
             .DurationChanged
             .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.Duration, initialValue: TimeSpan.Zero).DisposeWith(Garbage);
-        
+            .ToPropertyEx(this, x => x.Duration, initialValue: TimeSpan.Zero);
+
         player
             .PositionChanged
             .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.Position, initialValue: TimeSpan.Zero).DisposeWith(Garbage);
+            .ToPropertyEx(this, x => x.Position, initialValue: TimeSpan.Zero);
 
         var fileName = player.GetTitle();
         var parsedResults = AnitomySharp.AnitomySharp.Parse(fileName);

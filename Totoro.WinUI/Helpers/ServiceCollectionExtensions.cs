@@ -19,20 +19,28 @@ namespace Totoro.WinUI.Helpers;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddPage<TViewModel, TView>(this IServiceCollection services)
+    public static IServiceCollection AddPage<TViewModel, TView>(this IServiceCollection services, bool isSingleton = false)
         where TViewModel : class, INotifyPropertyChanged
         where TView : class, IViewFor<TViewModel>
     {
-        services.AddTransient<TViewModel>();
+        if (isSingleton)
+        {
+            services.AddSingleton<TViewModel>();
+        }
+        else
+        {
+            services.AddTransient<TViewModel>();
+        }
+
         services.AddTransient<IViewFor<TViewModel>, TView>();
         return services;
     }
 
-    public static IServiceCollection AddPageForNavigation<TViewModel, TView>(this IServiceCollection services)
+    public static IServiceCollection AddPageForNavigation<TViewModel, TView>(this IServiceCollection services, bool isSingleton = false)
         where TViewModel : class, INotifyPropertyChanged
         where TView : class, IViewFor<TViewModel>
     {
-        services.AddPage<TViewModel, TView>();
+        services.AddPage<TViewModel, TView>(isSingleton);
         services.AddTransient<ViewType<TViewModel>>(x => new(typeof(TView)));
         services.AddTransient<ViewType>(x => x.GetService<ViewType<TViewModel>>());
         return services;
@@ -97,7 +105,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
         services.AddPageForNavigation<AboutAnimeViewModel, AboutAnimePage>();
         services.AddPageForNavigation<TorrentingViewModel, TorrentingView>();
-        services.AddPageForNavigation<NowPlayingViewModel, NowPlayingPage>();
+        services.AddPageForNavigation<NowPlayingViewModel, NowPlayingPage>(true);
         return services;
     }
 
