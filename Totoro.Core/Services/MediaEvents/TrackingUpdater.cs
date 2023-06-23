@@ -5,7 +5,7 @@ public interface ITrackingUpdater
     public event EventHandler TrackingUpdated;
 }
 
-internal class TrackingUpdater : MediaEventListener, ITrackingUpdater
+public class TrackingUpdater : MediaEventListener, ITrackingUpdater
 {
     private readonly ITrackingServiceContext _trackingService;
     private readonly ISettings _settings;
@@ -16,6 +16,7 @@ internal class TrackingUpdater : MediaEventListener, ITrackingUpdater
     private TimeSpan _duration;
     private static readonly TimeSpan _nextBuffer = TimeSpan.FromMinutes(3);
     private bool _isUpdated;
+    private readonly object _lock = new object();
 
     public event EventHandler TrackingUpdated;
 
@@ -48,13 +49,16 @@ internal class TrackingUpdater : MediaEventListener, ITrackingUpdater
 
     protected override void OnPositionChanged(TimeSpan position)
     {
-        _position = position;
-        if (!IsEnabled || position < _updateAt || _isUpdated || _animeModel.Tracking?.WatchedEpisodes >= _currentEpisode)
+        lock(_lock)
         {
-            return;
-        }
+            _position = position;
+            if (!IsEnabled || position < _updateAt || _isUpdated || _animeModel.Tracking?.WatchedEpisodes >= _currentEpisode)
+            {
+                return;
+            }
 
-        _ = UpdateTracking();
+            _ = UpdateTracking();
+        }
     }
 
     protected override void OnNextTrack()

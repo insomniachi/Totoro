@@ -25,6 +25,7 @@ public partial class ShellViewModel : ReactiveObject
                           ITrackingServiceContext trackingService,
                           IUpdateService updateService,
                           IViewService viewService,
+                          IDiscordRichPresense drpc,
                           ProcessWatcher processWatcher)
     {
         NavigationService = navigationService;
@@ -47,7 +48,11 @@ public partial class ShellViewModel : ReactiveObject
         processWatcher
             .MediaPlayerClosed
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => navigationService.GoBack());
+            .Subscribe(_ =>
+            {
+                drpc.Clear();
+                navigationService.GoBack();
+            });
 
         trackingService
             .Authenticated

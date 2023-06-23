@@ -1,8 +1,6 @@
-﻿using System.Reactive;
-
-namespace Totoro.Plugins.MediaDetection.Contracts
+﻿namespace Totoro.Plugins.MediaDetection.Contracts
 {
-    public interface INativeMediaPlayer
+    public interface INativeMediaPlayer : IDisposable
     {
         string GetTitle();
         void Initialize(string fileName);

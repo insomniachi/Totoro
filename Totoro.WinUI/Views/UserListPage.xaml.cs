@@ -36,8 +36,6 @@ public sealed partial class UserListPage : UserListPageBase
 
         this.WhenActivated(d =>
         {
-            var watcher = new ProcessWatcher();
-
             this.WhenAnyValue(x => x.ViewModel.CurrentView)
                 .Subscribe(x =>
                 {

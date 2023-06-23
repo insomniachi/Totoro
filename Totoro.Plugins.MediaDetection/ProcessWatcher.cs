@@ -3,7 +3,6 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Splat;
 using Totoro.Plugins.MediaDetection.Contracts;
-using static PInvoke.User32;
 
 namespace Totoro.Plugins.MediaDetection;
 
@@ -15,8 +14,7 @@ public class ProcessWatcher : IEnableLogger
     
     public ProcessWatcher()
     {
-        Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(5))
-             .Subscribe(_ => DetectMediaProcess());
+        DetectMediaProcess();
     }
     
     public IObservable<INativeMediaPlayer> MediaPlayerDetected => _mediaPlayerDetected;
@@ -24,11 +22,6 @@ public class ProcessWatcher : IEnableLogger
 
     private void DetectMediaProcess()
     {
-        if(Process.GetProcesses().Where(x => x.ProcessName == "vlc").ToList() is { Count: >0} list)
-        {
-            ;
-        }
-
         foreach (var process in Process.GetProcesses())
         {
             if (process.Id == Environment.ProcessId)
@@ -41,7 +34,7 @@ public class ProcessWatcher : IEnableLogger
                 continue;
             }
 
-            List<Process> exited = new List<Process>();
+            List<Process> exited = new();
             foreach (var p in _processes)
             {
                 if (p.HasExited)
@@ -64,5 +57,7 @@ public class ProcessWatcher : IEnableLogger
                 }
             }
         }
+
+        Observable.Timer(TimeSpan.FromSeconds(5)).Subscribe(_ => DetectMediaProcess());
     }
 }

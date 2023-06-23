@@ -53,6 +53,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMediaDetection(this IServiceCollection services)
     {
         services.AddSingleton<ProcessWatcher>();
+        services.AddTransient<NativeMediaPlayerTrackingUpdater>();
+        services.AddTransient<NativeMediaPlayerDiscordRichPresenseUpdater>();
 
 #if DEBUG
         PluginFactory<INativeMediaPlayer>.Instance.LoadPlugin(new Plugins.MediaDetection.Vlc.Plugin());

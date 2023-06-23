@@ -2,7 +2,7 @@
 
 namespace Totoro.Core.Services.MediaEvents;
 
-internal class DiscordRichPresenseUpdater : MediaEventListener
+public class DiscordRichPresenseUpdater : MediaEventListener
 {
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly ISettings _settings;

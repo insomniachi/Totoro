@@ -39,6 +39,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
             }
 
             var title = _mainWindow.Title;
+
             return title.Replace("- Vlc media player", string.Empty).Trim();
         }
 
@@ -55,9 +56,19 @@ namespace Totoro.Plugins.MediaDetection.Vlc
             InitializeInternal();
         }
 
+        public void Dispose()
+        {
+            if(_application is null)
+            {
+                return;
+            }
+
+            _application.Dispose();
+        }
+
         private void InitializeInternal()
         {
-            while(_mainWindow is null)
+            while(_mainWindow is null || _mainWindow is { IsAvailable : false })
             {
                 try
                 {
