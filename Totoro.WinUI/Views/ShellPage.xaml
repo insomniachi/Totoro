@@ -76,6 +76,11 @@
                     Content="About"
                     Icon="Document"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAboutView), Mode=OneWay}" />
+                <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.WinUI.ViewModels.NowPlayingViewModel" Content="Now Playing">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEC15;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <NavigationViewItem Content="Give Feedback" Tapped="Feedback_Tapped">

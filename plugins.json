@@ -35,5 +35,19 @@
       "Version": "1.0.0.0",
       "FileName": "Totoro.Plugins.Torrents.AnimeTosho.dll"
     }
+  ],
+  "MediaDetection": [
+    {
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.MediaDetection.Vlc.dll"
+    },
+    {
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.MediaDetection.Win11MediaPlayer.dll"
+    },
+    {
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.MediaDetection.Generic.dll"
+    }
   ]
 }

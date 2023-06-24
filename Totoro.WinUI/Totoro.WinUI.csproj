@@ -46,6 +46,13 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Totoro.Core\Totoro.Core.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.MediaDetection\Totoro.Plugins.MediaDetection.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<ProjectReference Include="..\Totoro.Plugins.MediaDetection.Vlc\Totoro.Plugins.MediaDetection.Vlc.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -72,6 +79,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Views\NowPlayingPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Views\SettingsSections\MediaPlayerSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>

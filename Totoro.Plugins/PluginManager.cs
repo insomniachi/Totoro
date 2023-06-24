@@ -8,9 +8,9 @@ namespace Totoro.Plugins;
 
 public class PluginManager : IPluginManager, IEnableLogger
 {
-    private readonly HttpClient _httpClient;
     private readonly IPluginFactory _animePluginFactory;
     private readonly IPluginFactory _torrentPluginFactory;
+    private readonly IPluginFactory _mediaDetectionPluginFactory;
     private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/main";
 
     public static bool AllowSideLoadingPlugins { get; set; } = false;
@@ -20,31 +20,36 @@ public class PluginManager : IPluginManager, IEnableLogger
         public List<PluginInfoSlim> Anime { get; set; } = new();
         public List<PluginInfoSlim> Manga { get; set; } = new();
         public List<PluginInfoSlim> Torrent { get; set; } = new();
+        public List<PluginInfoSlim> MediaDetection { get; set; } = new();
     }
 
-    public PluginManager(HttpClient httpClient,
-                         IPluginFactory animePluginFactory,
-                         IPluginFactory torrentPluginFactory)
+    public PluginManager(IPluginFactory animePluginFactory,
+                         IPluginFactory torrentPluginFactory,
+                         IPluginFactory mediaDetectionPluginFactory)
     {
-        _httpClient = httpClient;
         _animePluginFactory = animePluginFactory;
         _torrentPluginFactory = torrentPluginFactory;
+        _mediaDetectionPluginFactory = mediaDetectionPluginFactory;
     }
 
     public async Task Initialize(string folder)
     {
         var animeFolder = Path.Combine(folder, "Anime");
         var torrentsFolder = Path.Combine(folder, "Torrents");
+        var mediaDetectionFolder = Path.Combine(folder, "Media Detection");
 
         var localAnimePlugins = GetLocalPlugins(animeFolder);
         var localTorrentsPlugins = GetLocalPlugins(torrentsFolder);
+        var localMediaDetectionPlugins = GetLocalPlugins(mediaDetectionFolder);
         var listedPlugins = await GetListedPlugins();
         
         await DownloadOrUpdatePlugins(listedPlugins.Anime, localAnimePlugins, animeFolder);
         await DownloadOrUpdatePlugins(listedPlugins.Torrent, localTorrentsPlugins, torrentsFolder);
+        await DownloadOrUpdatePlugins(listedPlugins.MediaDetection, localMediaDetectionPlugins, mediaDetectionFolder);
 
-         _animePluginFactory.LoadPlugins(animeFolder);
+        _animePluginFactory.LoadPlugins(animeFolder);
         _torrentPluginFactory.LoadPlugins(torrentsFolder);
+        _mediaDetectionPluginFactory.LoadPlugins(mediaDetectionFolder);
     }
 
     private static List<PluginInfoSlim> GetLocalPlugins(string folder)
@@ -84,7 +89,7 @@ public class PluginManager : IPluginManager, IEnableLogger
             }
 
             var url = Url.Combine(_baseUrl, "Plugins", item.FileName);
-            using var s = await _httpClient.GetStreamAsync(url);
+            using var s = await url.GetStreamAsync();
             using var fs = new FileStream(path, FileMode.OpenOrCreate);
             await s.CopyToAsync(fs);
         }

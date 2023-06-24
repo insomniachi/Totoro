@@ -48,7 +48,7 @@ public class NavigationViewService : INavigationViewService
 
             if (selectedItem.GetValue(NavigationHelper.NavigateToProperty) is string typeKey)
             {
-                _navigationService.NavigateTo(Type.GetType($"{typeKey},Totoro.Core"));
+                _navigationService.NavigateTo(Type.GetType($"{typeKey},Totoro.Core") ?? Type.GetType($"{typeKey},Totoro.WinUI"));
             }
         }
     }
@@ -76,7 +76,7 @@ public class NavigationViewService : INavigationViewService
     {
         if (menuItem.GetValue(NavigationHelper.NavigateToProperty) is string typeKey)
         {
-            return Type.GetType($"{typeKey},Totoro.Core") == vmType;
+            return Type.GetType($"{typeKey},Totoro.Core") == vmType || Type.GetType($"{typeKey},Totoro.WinUI") == vmType;
         }
 
         return false;

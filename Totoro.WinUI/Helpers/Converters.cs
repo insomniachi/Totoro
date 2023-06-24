@@ -57,8 +57,9 @@ public static partial class Converters
         return Enum.GetValues(value.GetType());
     }
 
-    public static Visibility NullToVisibility(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
+    public static string Join(IEnumerable<object> values) => string.Join(",", values);
 
+    public static Visibility NullToVisibility(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
 
     public static string ConvertStreamType(string type)
     {

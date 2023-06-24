@@ -21,6 +21,7 @@ public sealed partial class ShellPage : Page
 
         ViewModel.NavigationService.Frame = NavigationFrame;
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
+        ViewModel.Initialize();
 
         App.GetService<IWindowService>()
             .IsFullWindowChanged

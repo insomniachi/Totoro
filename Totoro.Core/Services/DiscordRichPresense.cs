@@ -23,11 +23,5 @@ public class DiscordRichPresense : IDiscordRichPresense
         }
     }
     public void ClearTimer() => _client.UpdateClearTime();
-    public void Clear()
-    {
-        _client.UpdateDetails("Idle");
-        _client.UpdateState(string.Empty);
-        _client.UpdateLargeAsset("icon");
-        ClearTimer();
-    }
+    public void Clear() => SetPresence();
 }

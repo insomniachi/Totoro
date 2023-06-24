@@ -50,7 +50,7 @@ public class AnilistService : IAnimeService, IAnilistService
             var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
                 Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
-                    .WithMedia(MediaQueryBuilder(), search: name, type: MediaType.Anime), page: 1, perPage: 10).Build()
+                    .WithMedia(MediaQueryBuilder(), search: name, type: MediaType.Anime), page: 1, perPage: 5).Build()
             });
 
             observer.OnNext(response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel));

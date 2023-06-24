@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Concurrency;
+using System.Text.Json;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -6,9 +8,15 @@ using Serilog;
 using Splat;
 using Splat.Serilog;
 using Totoro.Core;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.MediaDetection.Contracts;
+using Totoro.Plugins.Torrents.Contracts;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
+using Totoro.WinUI.ViewModels;
 using Windows.ApplicationModel;
 using WinUIEx;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -37,11 +45,15 @@ public partial class App : Application, IEnableLogger
                     .AddMyAnimeList()
                     .AddAniList()
                     .AddTorrenting()
+                    .AddMediaDetection()
                     .AddTopLevelPages()
                     .AddDialogPages();
 
             services.AddSingleton(MessageBus.Current);
             services.AddTransient<DefaultExceptionHandler>();
+            services.AddSingleton<IPluginManager>(x => new PluginManager(PluginFactory<AnimeProvider>.Instance,
+                                                                         PluginFactory<ITorrentTracker>.Instance,
+                                                                         PluginFactory<INativeMediaPlayer>.Instance));
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
@@ -90,20 +102,30 @@ public partial class App : Application, IEnableLogger
         ToastNotificationManagerCompat.Uninstall();
     }
 
-    private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
+    private async void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
     {
         var args = ToastArguments.Parse(e.Argument);
+
+        if(!args.Contains("Type"))
+        {
+            return;
+        }
 
         switch (args.GetEnum<ToastType>("Type"))
         {
             case ToastType.DownloadComplete:
                 Process.Start(new ProcessStartInfo { FileName = args.Get("File"), UseShellExecute = true });
                 break;
-        }
-
-        if (args.GetBool("NeedUI"))
-        {
-            MainWindow.Activate();
+            case ToastType.FinishedEpisode:
+                var anime = JsonSerializer.Deserialize<AnimeModel>(args.Get("Payload"));
+                var trackingService = GetService<ITrackingServiceContext>();
+                await trackingService.Update(anime.Id, Tracking.Next(anime));
+                break;
+            case ToastType.SelectAnime:
+                var id = long.Parse((string)e.UserInput["animeId"]);
+                var nowPlayingViewModel = GetService<NowPlayingViewModel>();
+                RxApp.MainThreadScheduler.Schedule(async () => await nowPlayingViewModel.SetAnime(id));
+                break;
         }
     }
 
