@@ -8,28 +8,40 @@ public class NowPlayingViewModel : NavigatableViewModel
 {
     private readonly IViewService _viewService;
     private readonly IAnimeServiceContext _animeServiceContext;
+    private readonly IToastService _toastService;
     private readonly NativeMediaPlayerTrackingUpdater _trackingUpdater;
     private readonly NativeMediaPlayerDiscordRichPresenseUpdater _discordRichPresenseUpdater;
 
     public NowPlayingViewModel(IViewService viewService,
                                IAnimeServiceContext animeServiceContext,
                                ITimestampsService timestampsService,
+                               IToastService toastService,
                                ProcessWatcher watcher,
                                NativeMediaPlayerTrackingUpdater trackingUpdater,
                                NativeMediaPlayerDiscordRichPresenseUpdater discordRichPresenseUpdater)
     {
         _viewService = viewService;
         _animeServiceContext = animeServiceContext;
+        _toastService = toastService;
         _trackingUpdater = trackingUpdater;
         _discordRichPresenseUpdater = discordRichPresenseUpdater;
 
         watcher
             .MediaPlayerClosed
-            .Where(id => MediaPlayer.ProcessId == id)
+            .Where(id => MediaPlayer.Process.Id == id)
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
+                if (Anime is not null && IsVisible && (Anime.Tracking?.WatchedEpisodes ?? 0) < EpisodeInt)
+                {
+                    toastService.CheckEpisodeComplete(Anime, EpisodeInt);
+                }
+
                 MediaPlayer.Dispose();
                 IsVisible = false;
+                Anime = null;
+                Episode = string.Empty;
+                EpisodeInt = 0;
             });
         
         this.WhenAnyValue(x => x.Anime)
@@ -81,18 +93,19 @@ public class NowPlayingViewModel : NavigatableViewModel
 
     public async void InitializeFromPlayer(INativeMediaPlayer player)
     {
-        _trackingUpdater.SetMediaPlayer(player);
-        _discordRichPresenseUpdater.SetMediaPlayer(player);
+        if(player is IHavePosition ihp)
+        {
+            _trackingUpdater.SetMediaPlayer(ihp);
+            _discordRichPresenseUpdater.SetMediaPlayer(ihp);
 
-        player
-            .DurationChanged
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.Duration, initialValue: TimeSpan.Zero);
+            ihp.DurationChanged
+               .ObserveOn(RxApp.MainThreadScheduler)
+               .ToPropertyEx(this, x => x.Duration, initialValue: TimeSpan.Zero);
 
-        player
-            .PositionChanged
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .ToPropertyEx(this, x => x.Position, initialValue: TimeSpan.Zero);
+            ihp.PositionChanged
+               .ObserveOn(RxApp.MainThreadScheduler)
+               .ToPropertyEx(this, x => x.Position, initialValue: TimeSpan.Zero);
+        }
 
         var fileName = player.GetTitle();
         var parsedResults = AnitomySharp.AnitomySharp.Parse(fileName);
@@ -115,5 +128,6 @@ public class NowPlayingViewModel : NavigatableViewModel
         Anime = await _animeServiceContext.GetInformation(animeId);
 
         _discordRichPresenseUpdater.Initialize();
+        _toastService.Playing(Anime, Episode);
     }
 }

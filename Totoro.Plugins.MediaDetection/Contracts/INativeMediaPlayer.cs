@@ -1,12 +1,18 @@
-﻿namespace Totoro.Plugins.MediaDetection.Contracts
+﻿using System.Diagnostics;
+using FlaUI.Core.AutomationElements;
+
+namespace Totoro.Plugins.MediaDetection.Contracts
 {
     public interface INativeMediaPlayer : IDisposable
     {
         string GetTitle();
-        void Initialize(string fileName);
-        void Initialize(int processId);
+        void Initialize(Window window);
+        Process? Process { get; }
+    }
+
+    public interface IHavePosition
+    {
         IObservable<TimeSpan> PositionChanged { get; }
         IObservable<TimeSpan> DurationChanged { get; }
-        int ProcessId { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.Json;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -91,20 +92,25 @@ public partial class App : Application, IEnableLogger
         ToastNotificationManagerCompat.Uninstall();
     }
 
-    private void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
+    private async void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
     {
         var args = ToastArguments.Parse(e.Argument);
+
+        if(!args.Contains("Type"))
+        {
+            return;
+        }
 
         switch (args.GetEnum<ToastType>("Type"))
         {
             case ToastType.DownloadComplete:
                 Process.Start(new ProcessStartInfo { FileName = args.Get("File"), UseShellExecute = true });
                 break;
-        }
-
-        if (args.GetBool("NeedUI"))
-        {
-            MainWindow.Activate();
+            case ToastType.FinishedEpisode:
+                var anime = JsonSerializer.Deserialize<AnimeModel>(args.Get("Payload"));
+                var trackingService = GetService<ITrackingServiceContext>();
+                await trackingService.Update(anime.Id, Tracking.Next(anime));
+                break;
         }
     }
 

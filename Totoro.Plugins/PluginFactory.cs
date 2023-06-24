@@ -70,7 +70,7 @@ public class PluginFactory<T> : IPluginFactory<T>
             var context = new AssemblyLoadContext(Path.GetFullPath(dll), true);
 
             var assembly = context.LoadFromAssemblyPath(dll);
-            var plugins = assembly.GetExportedTypes().Where(x => x.IsAssignableTo(typeof(IPlugin<T>))).ToList();
+            var plugins = assembly.GetExportedTypes().Where(x => x.IsAssignableTo(typeof(IPlugin<T>)) && !x.IsAbstract).ToList();
 
             if (plugins.Count == 0)
             {

@@ -66,6 +66,9 @@ public static class ServiceCollectionExtensions
 
 #if DEBUG
         PluginFactory<INativeMediaPlayer>.Instance.LoadPlugin(new Plugins.MediaDetection.Vlc.Plugin());
+        PluginFactory<INativeMediaPlayer>.Instance.LoadPlugin(new Plugins.MediaDetection.Win11MediaPlayer.Plugin());
+        PluginFactory<INativeMediaPlayer>.Instance.LoadPlugin(new Plugins.MediaDetection.Generic.MpvPlugin());
+        PluginFactory<INativeMediaPlayer>.Instance.LoadPlugin(new Plugins.MediaDetection.Generic.MpcHcPlugin());
 #endif
 
         return services;

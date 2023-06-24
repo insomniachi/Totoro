@@ -9,7 +9,7 @@ public class NativeMediaPlayerTrackingUpdater : TrackingUpdater
     {
     }
 
-    public void SetMediaPlayer(INativeMediaPlayer mediaPlayer)
+    public void SetMediaPlayer(IHavePosition mediaPlayer)
     {
         mediaPlayer.DurationChanged.Subscribe(OnDurationChanged);
         mediaPlayer.PositionChanged.Subscribe(OnPositionChanged);
@@ -22,7 +22,7 @@ public class NativeMediaPlayerDiscordRichPresenseUpdater : DiscordRichPresenseUp
     {
     }
 
-    public void SetMediaPlayer(INativeMediaPlayer mediaPlayer)
+    public void SetMediaPlayer(IHavePosition mediaPlayer)
     {
         mediaPlayer.DurationChanged.Subscribe(OnDurationChanged);
         mediaPlayer.PositionChanged.Subscribe(OnPositionChanged);

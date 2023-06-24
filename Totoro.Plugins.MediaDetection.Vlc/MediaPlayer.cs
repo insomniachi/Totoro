@@ -1,4 +1,5 @@
-﻿using System.Reactive.Linq;
+﻿using System.Diagnostics;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using FlaUI.Core;
@@ -11,20 +12,17 @@ using Totoro.Plugins.MediaDetection.Contracts;
 
 namespace Totoro.Plugins.MediaDetection.Vlc
 {
-    internal sealed partial class MediaPlayer : ReactiveObject, INativeMediaPlayer
+    internal sealed partial class MediaPlayer : ReactiveObject, INativeMediaPlayer, IHavePosition
     {
         private Application? _application;
         private Window? _mainWindow;
         private Slider? _slider;
-        private int? _processId;
         private readonly Subject<TimeSpan> _positionChanged = new();
 
         [Reactive] TimeSpan Duration { get; set; }
-
         public IObservable<TimeSpan> PositionChanged => _positionChanged;
         public IObservable<TimeSpan> DurationChanged { get; }
-
-        public int ProcessId => _processId ?? 0;
+        public Process? Process { get; private set; }
 
         public MediaPlayer()
         {
@@ -49,10 +47,11 @@ namespace Totoro.Plugins.MediaDetection.Vlc
             InitializeInternal();
         }
 
-        public void Initialize(int processId)
+
+        public void Initialize(Window window)
         {
-            _processId = processId;
-            _application = Application.Attach(processId);
+            _mainWindow = window;
+            Process = Process.GetProcessById(window.Properties.ProcessId);
             InitializeInternal();
         }
 
