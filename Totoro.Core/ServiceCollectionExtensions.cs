@@ -103,9 +103,6 @@ namespace Totoro.Core
             PluginFactory<ITorrentTracker>.Instance.LoadPlugin(new Plugins.Torrents.AnimeTosho.Plugin());
 
 #endif
-            services.AddSingleton<IPluginManager>(x => new PluginManager(x.GetRequiredService<HttpClient>(),
-                                                                         PluginFactory<AnimeProvider>.Instance,
-                                                                         PluginFactory<ITorrentTracker>.Instance));
             services.AddSingleton(typeof(IPluginOptionsStorage<>), typeof(PluginOptionStorage<>));
             services.AddSingleton<PluginOptionsStorage>();
             

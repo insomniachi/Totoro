@@ -23,7 +23,8 @@ namespace Totoro.WinUI.Services
                 .SetToastScenario(ToastScenario.Default)
                 .SetToastDuration(ToastDuration.Short)
                 .AddText("Now Playing", AdaptiveTextStyle.Header)
-                .AddText($"{anime.Title} Episode {episode}", AdaptiveTextStyle.Subheader)
+                .AddText(anime.Title, AdaptiveTextStyle.Subheader)
+                .AddText($"Episode {episode}")
                 .Show();
         }
 

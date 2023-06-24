@@ -7,6 +7,11 @@ using Serilog;
 using Splat;
 using Splat.Serilog;
 using Totoro.Core;
+using Totoro.Plugins;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
+using Totoro.Plugins.MediaDetection.Contracts;
+using Totoro.Plugins.Torrents.Contracts;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
@@ -44,6 +49,9 @@ public partial class App : Application, IEnableLogger
 
             services.AddSingleton(MessageBus.Current);
             services.AddTransient<DefaultExceptionHandler>();
+            services.AddSingleton<IPluginManager>(x => new PluginManager(PluginFactory<AnimeProvider>.Instance,
+                                                                         PluginFactory<ITorrentTracker>.Instance,
+                                                                         PluginFactory<INativeMediaPlayer>.Instance));
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
