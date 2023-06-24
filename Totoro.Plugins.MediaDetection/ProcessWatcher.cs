@@ -54,6 +54,7 @@ public class ProcessWatcher : IEnableLogger
         if(process.MainWindowTitle == "Media Player") // win 11 media player
         {
             name = "Microsoft.Media.Player";
+            process = Process.GetProcessesByName("Microsoft.Media.Player").First();
         }
 
         if(_processes.FirstOrDefault(x => x.Id == process.Id) is { })

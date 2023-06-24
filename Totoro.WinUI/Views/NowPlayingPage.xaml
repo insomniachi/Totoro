@@ -39,41 +39,30 @@
             Grid.Column="1"
             Spacing="10">
 
-            <StackPanel Spacing="10">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Info, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="10" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock FontSize="20">
+                                <Run FontWeight="Bold" Text="{Binding Key}" />
+                                <Run Text="{Binding Value}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Spacing="10" Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsPositionVisible), Mode=OneWay}">
                 <StackPanel.Resources>
                     <Style TargetType="TextBlock">
                         <Setter Property="FontSize" Value="20" />
                     </Style>
                 </StackPanel.Resources>
-                <TextBlock>
-                    <Run FontWeight="Bold" Text="Title : " />
-                    <Run Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
-                </TextBlock>
-                <TextBlock>
-                    <Run FontWeight="Bold" Text="Episode :" />
-                    <Run Text="{x:Bind ViewModel.Episode, Mode=OneWay}" />
-                </TextBlock>
-                <TextBlock>
-                    <Run FontWeight="Bold" Text="Total Episodes : " />
-                    <Run Text="{x:Bind ViewModel.Anime.TotalEpisodes, Mode=OneWay}" />
-                </TextBlock>
-                <TextBlock>
-                    <Run FontWeight="Bold" Text="Status :" />
-                    <Run Text="{x:Bind ViewModel.Anime.AiringStatus, Mode=OneWay}" />
-                </TextBlock>
-                <TextBlock>
-                    <Run FontWeight="Bold" Text="Season :" />
-                    <Run Text="{x:Bind ViewModel.Anime.Season.SeasonName, Mode=OneWay}" />
-                    <Run Text="{x:Bind ViewModel.Anime.Season.Year, Mode=OneWay}" />
-                </TextBlock>
-                <TextBlock>
-                    <Run FontWeight="Bold" Text="Score :" />
-                    <Run Text="{x:Bind ViewModel.Anime.MeanScore, Mode=OneWay}" />
-                </TextBlock>
-                <TextBlock>
-                    <Run FontWeight="Bold" Text="Genres :" />
-                    <Run Text="{x:Bind help:Converters.Join(ViewModel.Anime.Genres), Mode=OneWay}" />
-                </TextBlock>
                 <TextBlock>
                     <Run FontWeight="Bold" Text="Episode Duration :" />
                     <Run Text="{x:Bind ViewModel.Duration, Mode=OneWay}" />
@@ -85,20 +74,25 @@
             </StackPanel>
 
             <TextBlock
-                Margin="0,50,0,0"
+                Margin="0,30,0,0"
                 FontSize="25"
                 FontWeight="Bold"
-                Text="Synopsis" />
+                Text="Synopsis"
+                Visibility="{x:Bind help:Converters.NullToVisibility(ViewModel.Anime), Mode=OneWay}" />
+
             <Rectangle
                 Width="{Binding ElementName=Container, Path=ActualWidth}"
                 Height="1"
                 HorizontalAlignment="Left"
-                Fill="Gray" />
+                Fill="Gray"
+                Visibility="{x:Bind help:Converters.NullToVisibility(ViewModel.Anime), Mode=OneWay}" />
 
             <TextBlock
+                Padding="0,0,5,0"
                 FontSize="20"
                 Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}"
-                TextWrapping="WrapWholeWords" />
+                TextWrapping="WrapWholeWords"
+                Visibility="{x:Bind help:Converters.NullToVisibility(ViewModel.Anime), Mode=OneWay}" />
 
         </StackPanel>
 

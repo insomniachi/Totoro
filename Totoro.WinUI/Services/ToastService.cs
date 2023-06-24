@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 using CommunityToolkit.WinUI.Notifications;
+using Windows.ApplicationModel.Store;
 
 namespace Totoro.WinUI.Services
 {
@@ -40,13 +41,22 @@ namespace Totoro.WinUI.Services
                 .Show();
         }
 
-
+        public void PromptAnimeSelection(IEnumerable<AnimeModel> items, AnimeModel defaultSelection)
+        {
+            new ToastContentBuilder()
+                .SetToastScenario(ToastScenario.Reminder)
+                .AddText($"Unable match anime, select from the list", AdaptiveTextStyle.Header)
+                .AddComboBox("animeId", defaultSelection.Id.ToString(), items.Select(x => new ValueTuple<string,string>(x.Id.ToString(), x.Title)).ToArray())
+                .AddButton("Select", ToastActivationType.Background, $"Type={ToastType.SelectAnime}")
+                .Show();
+        }
     }
 
     public enum ToastType
     {
         DownloadComplete,
         FinishedEpisode,
-        NoAction
+        NoAction,
+        SelectAnime
     }
 }

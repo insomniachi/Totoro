@@ -26,13 +26,19 @@ internal partial class MediaPlayer : INativeMediaPlayer
             return string.Empty;
         }
 
-        return _mainWindow.FindFirstDescendant(cb => cb.ByAutomationId("mediaItemTitle")).Name;
+        var element = _mainWindow.FindFirstDescendant(cb => cb.ByAutomationId("mediaItemTitle"));
+        while (element is null)
+        {
+            element = _mainWindow.FindFirstDescendant(cb => cb.ByAutomationId("mediaItemTitle"));
+        }
+
+        return element.Name;
     }
 
 
     public void Initialize(Window window)
     {
         _mainWindow = window;
-        Process = Process.GetProcessById(window.Properties.ProcessId);
+        Process = Process.GetProcessesByName("Microsoft.Media.Player").First();
     }
 }

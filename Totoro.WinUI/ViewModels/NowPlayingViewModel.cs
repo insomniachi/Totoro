@@ -1,6 +1,8 @@
-﻿using Totoro.Core.ViewModels;
+﻿using Totoro.Core.Models;
+using Totoro.Core.ViewModels;
 using Totoro.Plugins.MediaDetection;
 using Totoro.Plugins.MediaDetection.Contracts;
+using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.ViewModels;
 
@@ -50,6 +52,8 @@ public class NowPlayingViewModel : NavigatableViewModel
             {
                 trackingUpdater.SetAnime(anime);
                 discordRichPresenseUpdater.SetAnime(anime);
+                discordRichPresenseUpdater.Initialize();
+                toastService.Playing(Anime, Episode);
             });
 
         this.WhenAnyValue(x => x.Episode)
@@ -76,6 +80,8 @@ public class NowPlayingViewModel : NavigatableViewModel
     [Reactive] public AnimeModel Anime { get; set; }
     [Reactive] public string Episode { get; set; }
     [Reactive] public bool IsVisible { get; set; }
+    [Reactive] public ObservableCollection<KeyValuePair<string,string>> Info { get; set; }
+    [Reactive] public bool IsPositionVisible { get; set; }
     public int EpisodeInt { get; set; }
     public INativeMediaPlayer MediaPlayer { get; set; }
 
@@ -91,8 +97,25 @@ public class NowPlayingViewModel : NavigatableViewModel
         return Task.CompletedTask;
     }
 
+    public async Task SetAnime(long animeId)
+    {
+        Anime = await _animeServiceContext.GetInformation(animeId);
+
+        Info = new ObservableCollection<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string, string>("Title :", Anime.Title),
+            new KeyValuePair<string, string>("Episode :", $"({Episode}/{(Anime.TotalEpisodes is null ? "?" : Anime.TotalEpisodes.ToString())})"),
+            new KeyValuePair<string, string>("Airing Status :", Converters.EnumToDescription(Anime.AiringStatus)),
+            new KeyValuePair<string, string>("Season :", $"{Anime.Season.SeasonName} {Anime.Season.Year}"),
+            new KeyValuePair<string, string>("Rating :", Anime.MeanScore.ToString()),
+            new KeyValuePair<string, string>("Genres :", string.Join(", ", Anime.Genres)),
+        };
+    }
+
     public async void InitializeFromPlayer(INativeMediaPlayer player)
     {
+        IsPositionVisible = player is IHavePosition;
+
         if(player is IHavePosition ihp)
         {
             _trackingUpdater.SetMediaPlayer(ihp);
@@ -118,16 +141,19 @@ public class NowPlayingViewModel : NavigatableViewModel
 
         Episode = parsedResults.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
 
-        var id = await _viewService.TryGetId(title);
+        Info = new ObservableCollection<KeyValuePair<string, string>>
+        {
+            new KeyValuePair<string, string>("Title :", title),
+            new KeyValuePair<string, string>("Episode :", Episode),
+        };
+
+        var id = await _viewService.BeginTryGetId(title);
 
         if(id is not { } animeId)
         {
             return;
         }
 
-        Anime = await _animeServiceContext.GetInformation(animeId);
-
-        _discordRichPresenseUpdater.Initialize();
-        _toastService.Playing(Anime, Episode);
+        await SetAnime(animeId);
     }
 }

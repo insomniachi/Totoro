@@ -61,7 +61,6 @@ public static partial class Converters
 
     public static Visibility NullToVisibility(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
 
-
     public static string ConvertStreamType(string type)
     {
         static string getDubedName(string type)

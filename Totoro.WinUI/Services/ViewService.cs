@@ -21,14 +21,17 @@ public class ViewService : IViewService, IEnableLogger
 {
     private readonly IContentDialogService _contentDialogService;
     private readonly IAnimeServiceContext _animeService;
+    private readonly IToastService _toastService;
     private readonly ICommand _copyToClipboard;
 
 
     public ViewService(IContentDialogService contentDialogService,
-                       IAnimeServiceContext animeService)
+                       IAnimeServiceContext animeService,
+                       IToastService toastService)
     {
         _contentDialogService = contentDialogService;
         _animeService = animeService;
+        _toastService = toastService;
         _copyToClipboard = ReactiveCommand.Create<Exception>(ex =>
         {
             var package = new DataPackage();
@@ -184,6 +187,37 @@ public class ViewService : IViewService, IEnableLogger
 
             var model = await SelectModel(candidates, filtered.FirstOrDefault() ?? candidates.FirstOrDefault(), _animeService.GetAnime);
             return model?.Id;
+        }
+    }
+
+    public async Task<long?> BeginTryGetId(string title)
+    {
+        var candidates = Enumerable.Empty<AnimeModel>();
+        try
+        {
+            candidates = await _animeService.GetAnime(title[..Math.Min(title.Length, 50)]);
+        }
+        catch (Exception ex)
+        {
+            this.Log().Error(ex);
+            return null;
+        }
+
+        var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(title, x) > 80)).ToList();
+        if (filtered.Count == 1)
+        {
+            return filtered[0].Id;
+        }
+        else
+        {
+            if (!candidates.Any())
+            {
+                this.Log().Fatal($"no candidates found for title {title}");
+                return null;
+            }
+
+            _toastService.PromptAnimeSelection(candidates, filtered.FirstOrDefault() ?? candidates.FirstOrDefault());
+            return null;
         }
     }
 

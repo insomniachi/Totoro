@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Concurrency;
 using System.Text.Json;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
@@ -15,6 +16,7 @@ using Totoro.Plugins.Torrents.Contracts;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
+using Totoro.WinUI.ViewModels;
 using Windows.ApplicationModel;
 using WinUIEx;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -118,6 +120,11 @@ public partial class App : Application, IEnableLogger
                 var anime = JsonSerializer.Deserialize<AnimeModel>(args.Get("Payload"));
                 var trackingService = GetService<ITrackingServiceContext>();
                 await trackingService.Update(anime.Id, Tracking.Next(anime));
+                break;
+            case ToastType.SelectAnime:
+                var id = long.Parse((string)e.UserInput["animeId"]);
+                var nowPlayingViewModel = GetService<NowPlayingViewModel>();
+                RxApp.MainThreadScheduler.Schedule(async () => await nowPlayingViewModel.SetAnime(id));
                 break;
         }
     }

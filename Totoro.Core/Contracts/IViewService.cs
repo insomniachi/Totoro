@@ -13,6 +13,7 @@ public interface IViewService
     Task PlayVideo(string title, string url);
     Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string, IObservable<IEnumerable<T>>> searcher = default) where T : class;
     Task<long?> TryGetId(string title);
+    Task<long?> BeginTryGetId(string title);
     Task SubmitTimeStamp(long malId, int ep, VideoStreamModel stream, AniSkipResult existingResult, double duration, double introStart);
     Task<bool> Question(string title, string message);
     Task<Unit> Information(string title, string message);
