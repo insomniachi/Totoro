@@ -46,8 +46,15 @@
             Header="Episodes"
             IsExpanded="True">
 
-            <StackPanel Margin="{StaticResource MediumTopMargin}">
+            <Grid Margin="{StaticResource MediumTopMargin}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
                 <StackPanel
+                    Grid.Row="0"
                     Margin="{StaticResource MediumBottomMargin}"
                     HorizontalAlignment="Center"
                     Orientation="Horizontal"
@@ -66,6 +73,7 @@
                 </StackPanel>
 
                 <StackPanel
+                    Grid.Row="1"
                     Margin="{StaticResource MediumBottomMargin}"
                     Padding="20,0"
                     HorizontalAlignment="Center"
@@ -86,6 +94,7 @@
                 </StackPanel>
 
                 <TextBlock
+                    Grid.Row="2"
                     Margin="{StaticResource MediumBottomMargin}"
                     HorizontalAlignment="Center"
                     FontSize="15"
@@ -93,13 +102,14 @@
                     Text="Episodes" />
 
                 <ListView
+                    Grid.Row="3"
                     MinWidth="300"
                     VerticalAlignment="Top"
                     DisplayMemberPath="DisplayName"
                     ItemsSource="{x:Bind ViewModel.EpisodeModels, Mode=OneWay}"
                     SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}" />
 
-            </StackPanel>
+            </Grid>
         </ctk:Expander>
     </Grid>
 </local:WatchPageBase>
