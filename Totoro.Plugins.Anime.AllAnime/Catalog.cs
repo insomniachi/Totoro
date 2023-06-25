@@ -72,17 +72,28 @@ internal class Catalog : IAnimeCatalog
 
         foreach (var item in jObject?["shows"]?["edges"] ?? new JArray())
         {
-            var malId = long.Parse($"{item?["malId"]}");
-            var aniListId = long.Parse($"{item?["aniListId"]}");
+            _ = long.TryParse($"{item?["malId"]}", out long malId);
+            _ = long.TryParse($"{item?["aniListId"]}", out long aniListId);
+            var title = $"{item?["name"]}";
+            var url = Url.Combine(Config.Url, $"/anime/{item?["_id"]}");
+            var season = "";
+            var year = "";
+            if (item?["season"]?.HasValues == true)
+            {
+                season = $"{item?["season"]?["quarter"]}";
+                year = $"{item?["season"]?["year"]}";
+            }
+            var rating = $"{item?["score"]}";
+            var image = $"{item?["thumbnail"]}";
 
             yield return new SearchResult
             {
-                Title = $"{item?["name"]}",
-                Url = Url.Combine(Config.Url, $"/anime/{item?["_id"]}"),
-                Season = $"{item?["season"]?["quarter"]}",
-                Year = $"{item?["season"]?["year"]}",
-                Rating = $"{item?["score"]}",
-                Image = $"{item?["thumbnail"]}",
+                Title = title,
+                Url = url,
+                Season = season,
+                Year = year,
+                Rating = rating,
+                Image = image,
                 MalId = malId,
                 AnilistId = aniListId,
             };

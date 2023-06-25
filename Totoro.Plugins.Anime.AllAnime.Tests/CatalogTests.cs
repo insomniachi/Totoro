@@ -17,6 +17,7 @@ public class CatalogTests
 
     [Theory]
     [InlineData("hyouka")]
+    [InlineData("one pi")]
     public async Task Search(string query)
     {
         // arrange
