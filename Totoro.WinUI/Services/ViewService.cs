@@ -172,20 +172,32 @@ public class ViewService : IViewService, IEnableLogger
             return null;
         }
 
-        var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(title, x) > 80)).ToList();
+        if (!candidates.Any())
+        {
+            this.Log().Fatal($"no candidates found for title {title}");
+            return null;
+        }
+
+        if (candidates.FirstOrDefault(x => x.Title == title || x.AlternativeTitles.Any(x => x == title)) is { } result)
+        {
+            return result.Id;
+        }
+
+        var ratios = candidates.Select(x => (x, Fuzz.PartialRatio(x.Title, title))).OrderByDescending(x => x.Item2).ToList();
+        var filtered = ratios.Where(x => x.Item2 > 80).ToList();
         if (filtered.Count == 1)
         {
-            return filtered[0].Id;
+            return filtered[0].x.Id;
         }
         else
         {
-            if (!candidates.Any())
+            var hundredPercent = filtered.Where(x => x.Item2 == 100).ToList();
+            if (hundredPercent.Count == 1)
             {
-                this.Log().Fatal($"no candidates found for title {title}");
-                return null;
+                return hundredPercent[0].x.Id;
             }
 
-            var model = await SelectModel(candidates, filtered.FirstOrDefault() ?? candidates.FirstOrDefault(), _animeService.GetAnime);
+            var model = await SelectModel(candidates, filtered.FirstOrDefault().x ?? candidates.FirstOrDefault(), _animeService.GetAnime);
             return model?.Id;
         }
     }
@@ -203,20 +215,33 @@ public class ViewService : IViewService, IEnableLogger
             return null;
         }
 
-        var filtered = candidates.Where(x => Fuzz.PartialRatio(x.Title, title) > 80 || x.AlternativeTitles.Any(x => Fuzz.PartialRatio(title, x) > 80)).ToList();
+        if (!candidates.Any())
+        {
+            this.Log().Fatal($"no candidates found for title {title}");
+            return null;
+        }
+
+        if (candidates.FirstOrDefault(x => x.Title == title || x.AlternativeTitles.Any(x => x == title)) is { } result)
+        {
+            return result.Id;
+        }
+
+        var ratios = candidates.Select(x => (x, Fuzz.PartialRatio(x.Title, title))).OrderByDescending(x => x.Item2).ToList();
+        var filtered = ratios.Where(x => x.Item2 > 80).ToList();
         if (filtered.Count == 1)
         {
-            return filtered[0].Id;
+            return filtered[0].x.Id;
         }
         else
         {
-            if (!candidates.Any())
+            var hundredPercent = filtered.Where(x => x.Item2 == 100).ToList();
+            if (hundredPercent.Count == 1)
             {
-                this.Log().Fatal($"no candidates found for title {title}");
-                return null;
+                return hundredPercent[0].x.Id;
             }
 
-            _toastService.PromptAnimeSelection(candidates, filtered.FirstOrDefault() ?? candidates.FirstOrDefault());
+            _toastService.PromptAnimeSelection(candidates, filtered.FirstOrDefault().x ?? candidates.FirstOrDefault());
+
             return null;
         }
     }
@@ -307,7 +332,7 @@ public class ViewService : IViewService, IEnableLogger
             PrimaryButtonText = "Yes",
         };
 
-        var result = await dialog.ShowAsync();
+        await dialog.ShowAsync();
         return Unit.Default;
     }
 

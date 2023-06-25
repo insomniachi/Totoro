@@ -104,28 +104,36 @@ public partial class App : Application, IEnableLogger
 
     private async void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
     {
-        var args = ToastArguments.Parse(e.Argument);
-
-        if(!args.Contains("Type"))
+        try
         {
-            return;
+            var args = ToastArguments.Parse(e.Argument);
+
+            if (!args.Contains("Type"))
+            {
+                return;
+            }
+
+            switch (args.GetEnum<ToastType>("Type"))
+            {
+                case ToastType.DownloadComplete:
+                    Process.Start(new ProcessStartInfo { FileName = args.Get("File"), UseShellExecute = true });
+                    break;
+                case ToastType.FinishedEpisode:
+                    var anime = JsonSerializer.Deserialize<AnimeModel>(args.Get("Payload"));
+                    var ep = args.GetInt("Episode");
+                    var trackingService = GetService<ITrackingServiceContext>();
+                    await trackingService.Update(anime.Id, Tracking.WithEpisode(anime, ep));
+                    break;
+                case ToastType.SelectAnime:
+                    var id = long.Parse((string)e.UserInput["animeId"]);
+                    var nowPlayingViewModel = GetService<NowPlayingViewModel>();
+                    RxApp.MainThreadScheduler.Schedule(async () => await nowPlayingViewModel.SetAnime(id));
+                    break;
+            }
         }
-
-        switch (args.GetEnum<ToastType>("Type"))
+        catch (Exception ex)
         {
-            case ToastType.DownloadComplete:
-                Process.Start(new ProcessStartInfo { FileName = args.Get("File"), UseShellExecute = true });
-                break;
-            case ToastType.FinishedEpisode:
-                var anime = JsonSerializer.Deserialize<AnimeModel>(args.Get("Payload"));
-                var trackingService = GetService<ITrackingServiceContext>();
-                await trackingService.Update(anime.Id, Tracking.Next(anime));
-                break;
-            case ToastType.SelectAnime:
-                var id = long.Parse((string)e.UserInput["animeId"]);
-                var nowPlayingViewModel = GetService<NowPlayingViewModel>();
-                RxApp.MainThreadScheduler.Schedule(async () => await nowPlayingViewModel.SetAnime(id));
-                break;
+            this.Log().Error(ex);
         }
     }
 
