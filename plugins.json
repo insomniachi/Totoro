@@ -46,7 +46,7 @@
       "FileName": "Totoro.Plugins.MediaDetection.Win11MediaPlayer.dll"
     },
     {
-      "Version": "1.0.0.0",
+      "Version": "1.1.0.0",
       "FileName": "Totoro.Plugins.MediaDetection.Generic.dll"
     }
   ]
