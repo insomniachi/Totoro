@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
 using CommunityToolkit.WinUI.Notifications;
-using Windows.ApplicationModel.Store;
 
 namespace Totoro.WinUI.Services
 {
@@ -13,7 +12,7 @@ namespace Totoro.WinUI.Services
             new ToastContentBuilder()
                 .SetToastScenario(ToastScenario.Reminder)
                 .AddText($"Did you finish watching {anime.Title} Episode {currentEp}")
-                .AddButton("Yes", ToastActivationType.Background, $"Type={ToastType.FinishedEpisode};Payload={payload}")
+                .AddButton("Yes", ToastActivationType.Background, $"Type={ToastType.FinishedEpisode};Payload={payload};Episode={currentEp}")
                 .AddButton("No", ToastActivationType.Background, $"Type={ToastType.NoAction}")
                 .Show();
         }
