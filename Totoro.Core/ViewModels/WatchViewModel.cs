@@ -345,11 +345,11 @@ public partial class WatchViewModel : NavigatableViewModel
         else if (parameters.ContainsKey("SearchResult"))
         {
             var searchResult = (ICatalogItem)parameters["SearchResult"];
-            if(searchResult is IHaveMalId ihmid && _settings.DefaultListService == ListServiceType.MyAnimeList)
+            if(searchResult is IHaveMalId  { MalId: >0 } ihmid && _settings.DefaultListService == ListServiceType.MyAnimeList)
             {
                 SetAnime(ihmid.MalId);
             }
-            else if(searchResult is IHaveAnilistId ihaid && _settings.DefaultListService == ListServiceType.AniList)
+            else if(searchResult is IHaveAnilistId { AnilistId : >0 } ihaid && _settings.DefaultListService == ListServiceType.AniList)
             {
                 SetAnime(ihaid.AnilistId);
             }
