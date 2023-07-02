@@ -1,12 +1,11 @@
 ﻿using System.Globalization;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Web;
 using Flurl;
 using Flurl.Http;
 using FlurlGraphQL.Querying;
+using Microsoft.VisualBasic;
 using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
@@ -50,6 +49,9 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
 
     [GeneratedRegex("\\\\u(?<Value>[a-zA-Z0-9]{4})")]
     private static partial Regex UtfEncodedStringRegex();
+
+    [GeneratedRegex("(?<=/clock)(?=[?&#])")]
+    private static partial Regex ClockRegex();
 
     public Task<int> GetNumberOfStreams(string url) => GetNumberOfStreams(url, Config.StreamType);
 
@@ -152,18 +154,28 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
 
             var sourceArray = jsonNode?["episode"]?["sourceUrls"];
             var sourceObjs = sourceArray?.ToObject<List<SourceUrlObj>>() ?? new List<SourceUrlObj>();
-            var source = sourceObjs.Where(x => x.type == "player").OrderByDescending(x => x.priority).First();
-            var stream = new VideoStreamsForEpisode
+            sourceObjs.Sort((x, y) => y.priority.CompareTo(x.priority));
+            var item = sourceObjs.First();
+            item.sourceUrl = DecryptSourceUrl(item.sourceUrl);
+            if (item.type == "iframe")
             {
-                Episode = e,
-            };
-            stream.StreamTypes.AddRange(streamTypes);
-            stream.Streams.Add(new VideoStream
+                var clockUrl = ClockRegex().Replace(apiEndPoint + item.sourceUrl, ".json");
+                var stream = await Extract(clockUrl);
+                if (stream is not null)
+                {
+                    stream.Episode = e;
+                    yield return stream;
+                }
+            }
+            else
             {
-                Url = source.sourceUrl,
-                Resolution = "default"
-            });
-            yield return stream;
+                if (await Unpack(item.sourceUrl) is { } stream)
+                {
+                    stream.Episode = e;
+                    yield return stream;
+                }
+            }
+
         }
     }
 
@@ -208,6 +220,18 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         };
     }
 
+    private async Task<VideoStreamsForEpisode?> Unpack(string url)
+    {
+        var uri = new Uri(url);
+
+        return uri.Host switch
+        {
+            "v.vrv.co" => await VrvUnpack(uri),
+            "repackager.wixmp.com" => WixMpUnpack(uri),
+            _ => GetDefault(url)
+        };
+    }
+
     private static string GetResolution(StreamLink link)
     {
         if(link.resolution > 0)
@@ -236,7 +260,19 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         }
         return result;
     }
-    
+    private static VideoStreamsForEpisode GetDefault(string url)
+    {
+        var result = new VideoStreamsForEpisode();
+        var uri = new Uri(url);
+        result.Streams.Add(new VideoStream
+        {
+            Url = uri.AbsoluteUri,
+            Resolution = "default"
+        });
+        return result;
+    }
+
+
     private async Task<VideoStreamsForEpisode> VrvUnpack(Uri uri)
     {
         var response = await uri.GetStringAsync();
@@ -287,5 +323,40 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
     static string DecodeEncodedNonAsciiCharacters(string value)
     {
         return UtfEncodedStringRegex().Replace(value, m => ((char)int.Parse(m.Groups["Value"].Value, NumberStyles.HexNumber)).ToString());
+    }
+
+    private static string Decrypt(string password, string target)
+    {
+        var data = Convert.FromHexString(target);
+
+        IEnumerable<char> GenExp()
+        {
+            foreach (var segment in data!)
+            {
+                var x = segment;
+                foreach (var ch in password)
+                {
+                    x ^= (byte)ch;
+                }
+
+                yield return (char)x;
+            }
+        }
+
+        return string.Join("", GenExp());
+    }
+
+    private static string DecryptSourceUrl(string sourceUrl)
+    {
+        if(sourceUrl.StartsWith("##"))
+        {
+            return Decrypt("1234567890123456789", sourceUrl[2..]);
+        }
+        else if(sourceUrl.StartsWith("#"))
+        {
+            return Decrypt("allanimenews", sourceUrl[1..]);
+        }
+
+        return string.Empty;
     }
 }

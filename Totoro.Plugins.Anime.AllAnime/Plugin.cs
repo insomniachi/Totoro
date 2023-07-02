@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Contracts;
@@ -6,6 +7,7 @@ using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
+[ExcludeFromCodeCoverage]
 public class Plugin : IPlugin<AnimeProvider>
 {
     public AnimeProvider Create() => new()
