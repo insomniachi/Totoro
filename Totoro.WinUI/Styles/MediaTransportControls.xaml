@@ -214,6 +214,20 @@
                                             Grid.Column="0"
                                             HorizontalAlignment="Left"
                                             Orientation="Horizontal">
+
+                                            <StackPanel Width="0" Height="0">
+                                                <AppBarButton x:Name="SmallSkipForward">
+                                                    <AppBarButton.KeyboardAccelerators>
+                                                        <KeyboardAccelerator Key="Right" />
+                                                    </AppBarButton.KeyboardAccelerators>
+                                                </AppBarButton>
+                                                <AppBarButton x:Name="SmallSkipBackward">
+                                                    <AppBarButton.KeyboardAccelerators>
+                                                        <KeyboardAccelerator Key="Left" />
+                                                    </AppBarButton.KeyboardAccelerators>
+                                                </AppBarButton>
+                                            </StackPanel>
+
                                             <AppBarButton x:Name="VolumeMuteButton" Style="{StaticResource AppBarButtonStyle}">
                                                 <AppBarButton.Flyout>
                                                     <Flyout
@@ -315,11 +329,17 @@
                                                 x:Name="PreviousTrackButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="Left" Modifiers="Control" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xF8AC;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton x:Name="PlayPauseButton" Style="{StaticResource AppBarButtonStyle}">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="Space" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon x:Name="PlayPauseSymbol" Glyph="&#xF5B0;" />
                                                 </AppBarButton.Icon>
@@ -328,6 +348,9 @@
                                                 x:Name="NextTrackButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="Right" Modifiers="Control" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xF8AD;" />
                                                 </AppBarButton.Icon>
@@ -350,6 +373,9 @@
                                                 x:Name="SkipIntroButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 ToolTipService.ToolTip="Skip opening">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="S" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xec4f;" />
                                                 </AppBarButton.Icon>
@@ -372,7 +398,7 @@
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 ToolTipService.ToolTip="Full screen">
                                                 <AppBarButton.KeyboardAccelerators>
-                                                    <KeyboardAccelerator Key="Enter" Modifiers="Menu" />
+                                                    <KeyboardAccelerator Key="F" />
                                                 </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <SymbolIcon x:Name="FullWindowSymbol" Symbol="FullScreen" />
@@ -759,6 +785,21 @@
                                             Grid.Column="0"
                                             HorizontalAlignment="Left"
                                             Orientation="Horizontal">
+
+                                            <StackPanel Width="0" Height="0">
+                                                <AppBarButton x:Name="SmallSkipForward">
+                                                    <AppBarButton.KeyboardAccelerators>
+                                                        <KeyboardAccelerator Key="Right" />
+                                                    </AppBarButton.KeyboardAccelerators>
+                                                </AppBarButton>
+                                                <AppBarButton x:Name="SmallSkipBackward">
+                                                    <AppBarButton.KeyboardAccelerators>
+                                                        <KeyboardAccelerator Key="Left" />
+                                                    </AppBarButton.KeyboardAccelerators>
+                                                </AppBarButton>
+                                            </StackPanel>
+
+
                                             <AppBarButton x:Name="VolumeMuteButton" Style="{StaticResource AppBarButtonStyle}">
                                                 <AppBarButton.Flyout>
                                                     <Flyout
@@ -857,11 +898,17 @@
                                                 x:Name="PreviousTrackButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="Left" Modifiers="Control" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xF8AC;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton x:Name="PlayPauseButton" Style="{StaticResource AppBarButtonStyle}">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="Space" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon x:Name="PlayPauseSymbol" Glyph="&#xF5B0;" />
                                                 </AppBarButton.Icon>
@@ -870,6 +917,9 @@
                                                 x:Name="NextTrackButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="Right" Modifiers="Control" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xF8AD;" />
                                                 </AppBarButton.Icon>
@@ -889,6 +939,9 @@
                                                 x:Name="SkipIntroButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 ToolTipService.ToolTip="Skip opening">
+                                                <AppBarButton.KeyboardAccelerators>
+                                                    <KeyboardAccelerator Key="S" />
+                                                </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xec4f;" />
                                                 </AppBarButton.Icon>
@@ -911,7 +964,7 @@
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 ToolTipService.ToolTip="Full screen">
                                                 <AppBarButton.KeyboardAccelerators>
-                                                    <KeyboardAccelerator Key="Enter" Modifiers="Menu" />
+                                                    <KeyboardAccelerator Key="F" />
                                                 </AppBarButton.KeyboardAccelerators>
                                                 <AppBarButton.Icon>
                                                     <SymbolIcon x:Name="FullWindowSymbol" Symbol="FullScreen" />

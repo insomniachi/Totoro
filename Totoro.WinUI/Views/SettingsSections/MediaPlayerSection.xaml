@@ -51,5 +51,16 @@
                 Value="{x:Bind ViewModel.Settings.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
         </labs:SettingsCard>
 
+        <labs:SettingsCard Description="Small skip amount in seconds" Header="Small Skip">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE893;" />
+            </labs:SettingsCard.HeaderIcon>
+            <NumberBox
+                LargeChange="5"
+                SmallChange="1"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.Settings.SmallSkipAmount, Mode=TwoWay}" />
+        </labs:SettingsCard>
+
     </StackPanel>
 </Page>

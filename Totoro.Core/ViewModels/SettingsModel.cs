@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using System.Text.Json.Serialization;
 using Splat;
-using Totoro.Core.Torrents;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
@@ -43,6 +42,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         AutoDownloadTorrents = localSettingsService.ReadSetting(Settings.AutoDownloadTorrents);
         AutoRemoveWatchedTorrents = localSettingsService.ReadSetting(Settings.AutoRemoveWatchedTorrents);
         AnimeCardClickAction = localSettingsService.ReadSetting(Settings.AnimeCardClickAction);
+        SmallSkipAmount = localSettingsService.ReadSetting(Settings.SmallSkipAmount);
 
         ObserveChanges();
     }
@@ -119,6 +119,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool AutoDownloadTorrents { get; set; }
     [Reactive] public string AnimeCardClickAction { get; set; }
     [Reactive] public string DefaultTorrentTrackerType { get; set; }
+    [Reactive] public int SmallSkipAmount { get; set; }
 }
 
 

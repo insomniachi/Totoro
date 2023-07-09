@@ -1,11 +1,9 @@
 ﻿using System.Diagnostics;
-using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Plugins.Anime.Models;
-using Totoro.Plugins.Helpers;
 
 namespace Totoro.WinUI.Media.Vlc;
 

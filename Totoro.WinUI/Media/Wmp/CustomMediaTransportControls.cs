@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
+using Windows.Media.Playback;
 
 namespace Totoro.WinUI.Media.Wmp;
 
@@ -143,6 +144,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     public IObservable<string> OnQualityChanged => _onQualityChanged;
     public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
+    public MediaPlayer MediaPlayer { get; set; }
 
     public CustomMediaTransportControls(IWindowService windowService)
     {
@@ -174,6 +176,9 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
         var submitTimeStamp = GetTemplateChild("SubmitTimeStampsButton") as AppBarButton;
         var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
+        var smallSkipForward = GetTemplateChild("SmallSkipForward") as AppBarButton;
+        var smallSkipBackward = GetTemplateChild("SmallSkipBackward") as AppBarButton;
+        
         _fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;
@@ -186,7 +191,11 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         submitTimeStamp.Click += (_, _) => _onSubmitTimeStamp.OnNext(Unit.Default);
         fullWindowButton.Click += (_, _) => _windowService?.ToggleIsFullWindow();
         _dynamicSkipIntroButton.Click += (_, _) => _onDynamicSkipIntro.OnNext(Unit.Default);
-        _addCCButton.Click += (_, _) => _onAddCc.OnNext(Unit.Default); 
+        _addCCButton.Click += (_, _) => _onAddCc.OnNext(Unit.Default);
+
+        var skipTime = App.GetService<ISettings>().SmallSkipAmount;
+        smallSkipForward.Click += (_, _) => MediaPlayer.Position += TimeSpan.FromSeconds(skipTime);
+        smallSkipBackward.Click += (_, _) => MediaPlayer.Position -= TimeSpan.FromSeconds(skipTime);
 
         base.OnApplyTemplate();
     }

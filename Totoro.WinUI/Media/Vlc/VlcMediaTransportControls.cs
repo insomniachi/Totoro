@@ -699,9 +699,12 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         Initialize("FullWindowButton", "", (_, _) => App.GetService<IWindowService>().ToggleIsFullWindow());
         AddCCButton = Initialize("AddCCButton", "Add Subtitle", (_, _) => _onAddCc.OnNext(Unit.Default)) as ButtonBase;
         FullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
-
         QualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         QualitiesButton.Flyout = _qualitiesFlyout;
+
+        var skipTime = App.GetService<ISettings>().SmallSkipAmount;
+        Initialize("SmallSkipForward", "", (_,_) => MediaPlayer.Time += skipTime * 1000);
+        Initialize("SmallSkipBackward", "", (_,_) => MediaPlayer.Time -= skipTime * 1000);
 
         UpdateVolumeSlider();
         UpdateTime();

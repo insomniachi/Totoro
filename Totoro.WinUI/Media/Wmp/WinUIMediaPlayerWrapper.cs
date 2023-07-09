@@ -25,7 +25,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     public WinUIMediaPlayerWrapper(IWindowService windowService)
     {
-        _transportControls = new CustomMediaTransportControls(windowService);
+        _transportControls = new CustomMediaTransportControls(windowService) { MediaPlayer = _player };
     }
 
     public IObservable<Unit> Paused => _player.Events().CurrentStateChanged.Where(x => x.sender.CurrentState == MediaPlayerState.Paused).Select(_ => Unit.Default);
