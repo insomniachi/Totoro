@@ -38,7 +38,7 @@ internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
     {
         _settings = settings;
         _localSettingsService = localSettingsService;
-        _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>("AnimePluginConfigs", new());
+        _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>($"{typeof(T).Name}Configs", new());
     }
 
     public PluginOptionWrapper GetOptions(string pluginName) => _configs[pluginName];
@@ -99,6 +99,6 @@ internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
     private void SaveConfig()
     {
         var configValues = _configs.ToDictionary(x => x.Key, x => x.Value.Options.ToDictionary(x => x.Name, x => x.Value));
-        _localSettingsService.SaveSetting("AnimePluginConfigs", configValues);
+        _localSettingsService.SaveSetting($"{typeof(T).Name}Configs", configValues);
     }
 }

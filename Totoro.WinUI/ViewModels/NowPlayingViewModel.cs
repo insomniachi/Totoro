@@ -1,5 +1,5 @@
-﻿using Totoro.Core.Models;
-using Totoro.Core.ViewModels;
+﻿using Totoro.Core.ViewModels;
+using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.MediaDetection;
 using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.WinUI.Helpers;
@@ -10,7 +10,6 @@ public class NowPlayingViewModel : NavigatableViewModel
 {
     private readonly IViewService _viewService;
     private readonly IAnimeServiceContext _animeServiceContext;
-    private readonly IToastService _toastService;
     private readonly NativeMediaPlayerTrackingUpdater _trackingUpdater;
     private readonly NativeMediaPlayerDiscordRichPresenseUpdater _discordRichPresenseUpdater;
 
@@ -18,13 +17,14 @@ public class NowPlayingViewModel : NavigatableViewModel
                                IAnimeServiceContext animeServiceContext,
                                ITimestampsService timestampsService,
                                IToastService toastService,
+                               IVideoStreamResolverFactory videoStreamResolverFactory,
+                               ISettings settings,
                                ProcessWatcher watcher,
                                NativeMediaPlayerTrackingUpdater trackingUpdater,
                                NativeMediaPlayerDiscordRichPresenseUpdater discordRichPresenseUpdater)
     {
         _viewService = viewService;
         _animeServiceContext = animeServiceContext;
-        _toastService = toastService;
         _trackingUpdater = trackingUpdater;
         _discordRichPresenseUpdater = discordRichPresenseUpdater;
 
@@ -82,8 +82,12 @@ public class NowPlayingViewModel : NavigatableViewModel
     [Reactive] public bool IsVisible { get; set; }
     [Reactive] public ObservableCollection<KeyValuePair<string,string>> Info { get; set; }
     [Reactive] public bool IsPositionVisible { get; set; }
+    [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     public int EpisodeInt { get; set; }
     public INativeMediaPlayer MediaPlayer { get; set; }
+    public string ProviderType { get; set; }
+    public AnimeProvider Provider { get; set; }
+
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
@@ -92,7 +96,7 @@ public class NowPlayingViewModel : NavigatableViewModel
             IsVisible = true;
             MediaPlayer = (INativeMediaPlayer)parameters["Player"];
             InitializeFromPlayer(MediaPlayer);
-        };
+        }
 
         return Task.CompletedTask;
     }

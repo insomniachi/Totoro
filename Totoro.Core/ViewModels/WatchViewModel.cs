@@ -401,11 +401,6 @@ public partial class WatchViewModel : NavigatableViewModel
             return (null, null);
         }
 
-        //if (Provider.Catalog is IMalCatalog malCatalog)
-        //{
-        //    return await malCatalog.SearchByMalId(id);
-        //}
-
         return await _streamPageMapper.GetStreamPage(id, ProviderType) ?? await SearchProvider(title);
     }
 

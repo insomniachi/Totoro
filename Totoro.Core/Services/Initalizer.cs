@@ -1,13 +1,10 @@
 ﻿using System.Reactive.Subjects;
-using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core.Services;
 
 public class Initalizer : IInitializer
 {
-    private readonly IPluginManager _pluginManager;
-    private readonly IKnownFolders _knownFolders;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IRssDownloader _rssDownloader;
     private readonly PluginOptionsStorage _pluginOptionsStorage;
@@ -25,8 +22,6 @@ public class Initalizer : IInitializer
                       IRssDownloader rssDownloader,
                       PluginOptionsStorage pluginOptionsStorage)
     {
-        _pluginManager = pluginManager;
-        _knownFolders = knownFolders;
         _localSettingsService = localSettingsService;
         _rssDownloader = rssDownloader;
         _pluginOptionsStorage = pluginOptionsStorage;

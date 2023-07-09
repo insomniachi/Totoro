@@ -2,7 +2,6 @@
 using System.Reflection;
 using MonoTorrent.Client;
 using Splat;
-using Totoro.Core.Torrents;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Torrents.Contracts;
@@ -18,6 +17,7 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public PluginInfo SelectedProvider { get; set; }
     [Reactive] public PluginInfo SelectedTracker { get; set; }
+    [Reactive] public PluginInfo SelectedMediaPlayer { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
     [ObservableAsProperty] public bool HasInactiveTorrents { get; }
     public ObservableCollection<TorrentManager> InactiveTorrents { get; }

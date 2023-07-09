@@ -71,6 +71,17 @@
             </labs:SettingsCard.HeaderIcon>
         </labs:SettingsCard>
 
+        <labs:SettingsCard
+            Command="{x:Bind ViewModel.Navigate}"
+            CommandParameter="External Media"
+            Description="Option for External Media"
+            Header="External Media"
+            IsClickEnabled="true">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xEC15;" />
+            </labs:SettingsCard.HeaderIcon>
+        </labs:SettingsCard>
+
         <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xe7fc;" />

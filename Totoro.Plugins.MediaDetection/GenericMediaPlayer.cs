@@ -13,7 +13,7 @@ public abstract class GenericMediaPlayer : INativeMediaPlayer
 
     public void Dispose() { }
 
-    public string GetTitle()
+    public virtual string GetTitle()
     {
         if(GetTitleFromWindow && _window is not null)
         {

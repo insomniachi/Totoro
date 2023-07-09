@@ -34,6 +34,7 @@ public static class Settings
     public static Key<string> AnimeCardClickAction { get; } = new("AnimeCardClickAction", "Watch");
     public static Key<string> DefaultTorrentTrackerType { get; } = new("DefaultTorrentTrackerType", "nya");
     public static Key<int> SmallSkipAmount { get; } = new("SmallSkipAmount", 5);
+    public static Key<string> DefaultMediaPlayer { get; } = new("DefaultMediaPlayer", "vlc");
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

@@ -11,8 +11,8 @@ public abstract class GenericPlugin<T> : IPlugin<INativeMediaPlayer>
     public INativeMediaPlayer Create() => new T();
 
     public abstract PluginInfo GetInfo();
-    public PluginOptions GetOptions() => new();
-    public void SetOptions(PluginOptions options) { }
+    public virtual PluginOptions GetOptions() => new();
+    public virtual void SetOptions(PluginOptions options) { }
     object IPlugin.Create() => Create();
 }
 
@@ -28,6 +28,15 @@ public class MpvPlugin : GenericPlugin<Mpv>
             Version = Assembly.GetExecutingAssembly().GetName().Version!
         };
     }
+
+    public override PluginOptions GetOptions() => new PluginOptions()
+        .AddOption(x => x.WithNameAndValue(MpvConfig.FileName)
+                         .ToPluginOption());
+
+    public override void SetOptions(PluginOptions options)
+    {
+        MpvConfig.FileName = options.GetString(nameof(MpvConfig.FileName), MpvConfig.FileName);
+    }
 }
 
 public class MpcHcPlugin : GenericPlugin<MpcHc>
@@ -41,5 +50,14 @@ public class MpcHcPlugin : GenericPlugin<MpcHc>
             Description = "",
             Version = Assembly.GetExecutingAssembly().GetName().Version!
         };
+    }
+
+    public override PluginOptions GetOptions() => new PluginOptions()
+        .AddOption(x => x.WithNameAndValue(MpcConfig.FileName)
+                         .ToPluginOption());
+
+    public override void SetOptions(PluginOptions options)
+    {
+        MpvConfig.FileName = options.GetString(nameof(MpcConfig.FileName), MpvConfig.FileName);
     }
 }

@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Splat;
+using Totoro.Core.Services;
+using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.WinUI.Activation;
 using Totoro.WinUI.Helpers;
 using WinUIEx;
@@ -14,6 +16,7 @@ public class ActivationService : IActivationService, IEnableLogger
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IInitializer _initializer;
+    private readonly IPluginOptionsStorage<INativeMediaPlayer> _mediaPlayerPluginOptions;
     private readonly string _prevWebviewFolder;
     private readonly string _tempPath = Path.GetTempPath();
 
@@ -22,12 +25,14 @@ public class ActivationService : IActivationService, IEnableLogger
     public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
                              IEnumerable<IActivationHandler> activationHandlers,
                              IThemeSelectorService themeSelectorService,
-                             IInitializer initializer)
+                             IInitializer initializer,
+                             IPluginOptionsStorage<INativeMediaPlayer> mediaPlayerPluginOptions)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
         _initializer = initializer;
+        _mediaPlayerPluginOptions = mediaPlayerPluginOptions;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
 
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
@@ -84,6 +89,7 @@ public class ActivationService : IActivationService, IEnableLogger
     {
         _themeSelectorService.Initialize();
         await _initializer.Initialize();
+        _mediaPlayerPluginOptions.Initialize();
     }
 
     private Task StartupAsync()

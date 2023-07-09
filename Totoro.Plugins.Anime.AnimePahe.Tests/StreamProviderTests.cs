@@ -15,7 +15,7 @@ public class StreamProviderTests
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
     private readonly Dictionary<string, string> _urlMap = new()
     {
-        { Hyouka, Url.Combine(Config.Url, "/anime/31a82404-2bc3-d182-597e-a7a15e79f5aa") },
+        { Hyouka, Url.Combine(Config.Url, "/anime/719af9b0-65bd-7526-2dae-09f5e152d691") },
         { OshiNoKo, Url.Combine(Config.Url, "/anime/ae95c1fc-25d9-d824-1340-d46440e9652e") }
     };
     private readonly bool _allEpisodes = true;

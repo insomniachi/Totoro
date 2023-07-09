@@ -63,6 +63,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ProcessWatcher>();
         services.AddTransient<NativeMediaPlayerTrackingUpdater>();
         services.AddTransient<NativeMediaPlayerDiscordRichPresenseUpdater>();
+        services.AddSingleton<ExternalMediaPlayerLauncher>();
 
 #if DEBUG
         PluginFactory<INativeMediaPlayer>.Instance.LoadPlugin(new Plugins.MediaDetection.Vlc.Plugin());

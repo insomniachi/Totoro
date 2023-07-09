@@ -10,8 +10,11 @@ using Totoro.Core.Services;
 using Totoro.Core.Torrents;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Contracts;
+using Totoro.WinUI.Services;
+using Totoro.WinUI.ViewModels;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -112,6 +115,21 @@ public static partial class Converters
         }
         flyout.Items.Add(scrapersFlyoutItem);
 
+        var watchExternalFlyoutItem = new MenuFlyoutSubItem
+        {
+            Text = @"Watch External",
+            Icon = new FontIcon{Glyph = "\uEC15"}
+        };
+        foreach (var item in PluginFactory<AnimeProvider>.Instance.Plugins)
+        {
+            watchExternalFlyoutItem.Items.Add(new MenuFlyoutItem
+            {
+                Text = _settings.DefaultProviderType == item.Name ? $"{item.DisplayName} (default)" : item.DisplayName,
+                Command = WatchExternal,
+                CommandParameter = (anime, item.Name)
+            });
+        }
+        flyout.Items.Add(watchExternalFlyoutItem);
 
         var torrentFlyoutItem = new MenuFlyoutSubItem
         {
@@ -134,7 +152,7 @@ public static partial class Converters
             Text = @"Info",
             Command = App.Commands.More,
             CommandParameter = anime.Id,
-            Icon = new FontIcon() { Glyph = "\uE946" }
+            Icon = new FontIcon() { Glyph = "\uEC15" }
         });
 
         return flyout;
@@ -177,6 +195,7 @@ public static partial class Converters
 
     public static PluginOptions GetAnimeOptions(string pluginName) => GetOptions<AnimeProvider>(pluginName);
     public static PluginOptions GetTorrentsOptions(string pluginName) => GetOptions<ITorrentTracker>(pluginName);
+    public static PluginOptions GetMediaOptions(string pluginName) => GetOptions<INativeMediaPlayer>(pluginName);
 
     private static PluginOptions GetOptions<T>(string pluginName)
     {
@@ -189,4 +208,16 @@ public static partial class Converters
 
     [GeneratedRegex(@"(?'Type'.+)\sDub(?'Season'\d+)")]
     private static partial Regex DubRegex();
+
+    private static ICommand WatchExternal { get; set; } = ReactiveCommand.Create<object>(async param =>
+    {
+        switch (param)
+        {
+            case (AnimeModel anime, string providerType):
+                {
+                    await App.GetService<ExternalMediaPlayerLauncher>().Initialize(anime, providerType, App.GetService<ISettings>().DefaultMediaPlayer);
+                }
+                break;
+        }
+    });
 }

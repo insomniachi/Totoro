@@ -43,6 +43,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         AutoRemoveWatchedTorrents = localSettingsService.ReadSetting(Settings.AutoRemoveWatchedTorrents);
         AnimeCardClickAction = localSettingsService.ReadSetting(Settings.AnimeCardClickAction);
         SmallSkipAmount = localSettingsService.ReadSetting(Settings.SmallSkipAmount);
+        DefaultMediaPlayer = localSettingsService.ReadSetting(Settings.DefaultMediaPlayer);
 
         ObserveChanges();
     }
@@ -120,6 +121,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public string AnimeCardClickAction { get; set; }
     [Reactive] public string DefaultTorrentTrackerType { get; set; }
     [Reactive] public int SmallSkipAmount { get; set; }
+    [Reactive] public string DefaultMediaPlayer { get; set; }
 }
 
 

@@ -183,6 +183,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand UpdateTracking { get; }
     public ICommand More { get; }
     public ICommand Watch { get; }
+    public ICommand WatchExternal { get; }
     public ICommand PlayVideo { get; }
     public ICommand ConfigureProvider { get; }
     public ICommand TorrentCommand { get; }

@@ -39,6 +39,7 @@ public sealed partial class SettingsPage : SettingsPageBase, IEnableLogger
             "Settings>Torrenting" => Navigate<TorrentingSection>(),
             "Settings>Torrenting>RSS" => Navigate<RssSection>(),
             "Settings>Preferences" => Navigate<PreferencesSection>(),
+            "Settings>External Media" => Navigate<ExternalMediaSection>(),
             _ => false
         };
     }

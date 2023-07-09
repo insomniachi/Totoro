@@ -9,6 +9,7 @@ public interface ISettings : INotifyPropertyChanged
     bool PreferSubs { get; set; }
     string DefaultProviderType { get; set; }
     string DefaultTorrentTrackerType { get; set; }
+    string DefaultMediaPlayer { get; set; }
     bool UseDiscordRichPresense { get; set; }
     int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     int OpeningSkipDurationInSeconds { get; set; }

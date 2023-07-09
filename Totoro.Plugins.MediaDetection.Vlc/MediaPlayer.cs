@@ -12,12 +12,14 @@ using Totoro.Plugins.MediaDetection.Contracts;
 
 namespace Totoro.Plugins.MediaDetection.Vlc
 {
-    internal sealed partial class MediaPlayer : ReactiveObject, INativeMediaPlayer, IHavePosition
+    internal sealed partial class MediaPlayer : ReactiveObject, INativeMediaPlayer, IHavePosition, ICanLaunch
     {
         private Application? _application;
         private Window? _mainWindow;
         private Slider? _slider;
         private readonly Subject<TimeSpan> _positionChanged = new();
+        private bool _hasCustomTitle;
+        private string? _customTitle;
 
         [Reactive] TimeSpan Duration { get; set; }
         public IObservable<TimeSpan> PositionChanged => _positionChanged;
@@ -31,6 +33,11 @@ namespace Totoro.Plugins.MediaDetection.Vlc
 
         public string GetTitle()
         {
+            if (_hasCustomTitle)
+            {
+                return _customTitle!;
+            }
+
             if (_mainWindow is null)
             {
                 return "";
@@ -41,12 +48,13 @@ namespace Totoro.Plugins.MediaDetection.Vlc
             return title.Replace("- Vlc media player", string.Empty).Trim();
         }
 
-        public void Initialize(string fileName)
+        public void Launch(string title,string url)
         {
-            _application = Application.Launch("", fileName);
+            _hasCustomTitle = true;
+            _customTitle = title;
+            _application = Application.Launch(Config.FileName,$"{url} --meta-title=\"{title}\" -f");
             InitializeInternal();
         }
-
 
         public void Initialize(Window window)
         {

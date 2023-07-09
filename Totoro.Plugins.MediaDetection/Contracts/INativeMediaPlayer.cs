@@ -15,4 +15,9 @@ namespace Totoro.Plugins.MediaDetection.Contracts
         IObservable<TimeSpan> PositionChanged { get; }
         IObservable<TimeSpan> DurationChanged { get; }
     }
+
+    public interface ICanLaunch
+    {
+        void Launch(string title, string url);
+    }
 }
