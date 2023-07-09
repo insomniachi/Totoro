@@ -54,6 +54,15 @@
                 ItemsSource="{x:Bind MediaPlayers}"
                 SelectedItem="{x:Bind SelectedMediaPlayer, Mode=TwoWay}" />
         </labs:SettingsCard>
+        <labs:SettingsCard Description="Automatical detect and track media playing in external media players" Header="Enable Media Detection">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE773;" />
+            </labs:SettingsCard.HeaderIcon>
+            <ToggleSwitch
+                IsOn="{x:Bind ViewModel.Settings.MediaDetectionEnabled, Mode=TwoWay}"
+                OffContent="Off"
+                OnContent="On" />
+        </labs:SettingsCard>
 
         <TextBlock
             Margin="0,20,0,0"

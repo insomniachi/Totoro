@@ -28,6 +28,19 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
         _settings = settings;
         _viewService = viewService;
         _processWatcher = processWatcher;
+
+        settings.ObservableForProperty(x => x.MediaDetectionEnabled, x => x)
+            .Subscribe(isEnabled =>
+            {
+                if (isEnabled)
+                {
+                    processWatcher.Enable();
+                }
+                else
+                {
+                    processWatcher.Disable();
+                }
+            });
         
         processWatcher
             .MediaPlayerDetected
@@ -72,7 +85,10 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
             _viewService.Information("Ops...", "There has been a breaking change, please wait till application downloads update");
         }
 
-        _processWatcher.Start();
+        if(_settings.MediaDetectionEnabled)
+        {
+            _processWatcher.Enable();
+        }
 
         return Task.CompletedTask;
     }

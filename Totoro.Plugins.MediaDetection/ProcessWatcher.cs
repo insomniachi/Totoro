@@ -18,27 +18,31 @@ public class ProcessWatcher : IEnableLogger
     private readonly Subject<int> _mediaPlayerClosed = new();
     private readonly FlaUI.UIA3.UIA3Automation _automation = new();
     private readonly AutomationElement _desktop;
+    private readonly UIA3AutomationEventHandler _automationEventHandler;
     
     public ProcessWatcher()
     {
         _desktop = _automation.GetDesktop();
-        UIA3AutomationEventHandler automationEventHandler = new(_desktop.FrameworkAutomationElement,_automation.EventLibrary.Window.WindowOpenedEvent, OnWindowOpened);
-        _automation.NativeAutomation.AddAutomationEventHandler(_automation.EventLibrary.Window.WindowOpenedEvent.Id,
-                                                               _desktop.ToNative(),
-                                                               (Interop.UIAutomationClient.TreeScope)TreeScope.Descendants,
-                                                               null,
-                                                               automationEventHandler);
-
-
+        _automationEventHandler = new(_desktop.FrameworkAutomationElement,_automation.EventLibrary.Window.WindowOpenedEvent, OnWindowOpened);
+        DetectMediaProcess();
     }
 
-    public void Start()
+    public void Enable()
     {
         foreach (var item in _desktop.FindAllChildren(cb => cb.ByControlType(ControlType.Window)).Select(x => x.AsWindow()))
         {
             OnWindowOpened(item, EventId.NotSupportedByFramework);
         }
-        DetectMediaProcess();
+        _automation.NativeAutomation.AddAutomationEventHandler(_automation.EventLibrary.Window.WindowOpenedEvent.Id,
+                                                       _desktop.ToNative(),
+                                                       (Interop.UIAutomationClient.TreeScope)TreeScope.Descendants,
+                                                       null,
+                                                       _automationEventHandler);
+    }
+
+    public void Disable()
+    {
+        _automation.NativeAutomation.RemoveAutomationEventHandler(_automation.EventLibrary.Window.WindowOpenedEvent.Id, _desktop.ToNative(), _automationEventHandler);
     }
 
     public IObservable<INativeMediaPlayer> MediaPlayerDetected => _mediaPlayerDetected;

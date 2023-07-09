@@ -33,6 +33,7 @@ public interface ISettings : INotifyPropertyChanged
     bool AutoDownloadTorrents { get; set; }
     string AnimeCardClickAction { get; set; }
     int SmallSkipAmount { get; set; }
+    bool MediaDetectionEnabled { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

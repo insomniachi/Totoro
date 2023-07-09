@@ -122,6 +122,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public string DefaultTorrentTrackerType { get; set; }
     [Reactive] public int SmallSkipAmount { get; set; }
     [Reactive] public string DefaultMediaPlayer { get; set; }
+    [Reactive] public bool MediaDetectionEnabled { get; set; }
 }
 
 
