@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using Flurl.Http;
 using Splat;
+using Totoro.Plugins.Helpers;
 
 namespace Totoro.Core.Services;
 
@@ -23,9 +24,6 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
         _httpClient = httpClient;
         _knownFolders = knownFolders;
 
-#if DEBUG
-        _onUpdate = Observable.Empty<VersionInfo>();
-#else
         _onUpdate = Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
             .Where(_ => settings.AutoUpdate)
@@ -39,15 +37,20 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
                 Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue(),
                 Body = jsonNode?["body"]?.ToString()
             })
-            .Where(vi => vi.Version > Assembly.GetEntryAssembly().GetName().Version)
-            .Log(this, "New Version", vi => vi.Version.ToString())
+            .Where(vi =>
+            {
+                var current = Assembly.GetEntryAssembly().GetName().Version;
+                this.Log().Debug("Current Version, {Version}", Assembly.GetEntryAssembly().GetName().Version);
+                this.Log().Debug("Latest Version, {Version}", vi.Version);
+                return vi.Version > current;
+            })
             .Throttle(TimeSpan.FromSeconds(3));
-#endif
     }
 
-    private async Task<string> TryGetStreamAsync()
+    private static async Task<string> TryGetStreamAsync()
     {
         var response = await "https://api.github.com/repos/insomniachi/totoro/releases/latest"
+            .WithDefaultUserAgent()
             .AllowAnyHttpStatus()
             .GetAsync();
 
@@ -61,21 +64,23 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
 
     public async ValueTask<VersionInfo> GetCurrentVersionInfo()
     {
-        if (_current is null)
+        if (_current is not null)
         {
-            var url = $"https://api.github.com/repositories/522584084/releases/tags/{Assembly.GetEntryAssembly().GetName().Version.ToString(3)}";
-            var response = await _httpClient.GetAsync(url);
+            return _current;
+        }
 
-            if (response.IsSuccessStatusCode)
+        var url = $"https://api.github.com/repositories/insomniachi/totoro/releases/tags/{Assembly.GetEntryAssembly().GetName().Version.ToString(3)}";
+        var response = await _httpClient.GetAsync(url);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var jsonNode = JsonNode.Parse(await response.Content.ReadAsStreamAsync());
+            _current = new VersionInfo()
             {
-                var jsonNode = JsonNode.Parse(await response.Content.ReadAsStreamAsync());
-                _current = new VersionInfo()
-                {
-                    Version = new Version(jsonNode["tag_name"].ToString()),
-                    Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue(),
-                    Body = jsonNode?["body"]?.ToString()
-                };
-            }
+                Version = new Version(jsonNode["tag_name"].ToString()),
+                Url = (string)jsonNode["assets"][0]["browser_download_url"].AsValue(),
+                Body = jsonNode?["body"]?.ToString()
+            };
         }
         return _current;
     }

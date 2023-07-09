@@ -17,10 +17,6 @@
       "FileName": "Totoro.Plugins.Anime.GogoAnime.dll"
     },
     {
-      "Version": "1.0.0.0",
-      "FileName": "Totoro.Plugins.Anime.Zoro.dll"
-    },
-    {
       "Version": "1.4.0.0",
       "FileName": "Totoro.Plugins.Anime.Marin.dll"
     }
