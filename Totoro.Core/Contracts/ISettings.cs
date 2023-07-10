@@ -34,6 +34,8 @@ public interface ISettings : INotifyPropertyChanged
     string AnimeCardClickAction { get; set; }
     int SmallSkipAmount { get; set; }
     bool MediaDetectionEnabled { get; set; }
+    bool OnlyDetectMediaInLibraryFolders { get; set; }
+    ObservableCollection<string> LibraryFolders { get; set; }
 }
 
 public class DefaultUrls : ReactiveObject

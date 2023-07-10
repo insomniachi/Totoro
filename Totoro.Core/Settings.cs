@@ -36,6 +36,8 @@ public static class Settings
     public static Key<int> SmallSkipAmount { get; } = new("SmallSkipAmount", 5);
     public static Key<string> DefaultMediaPlayer { get; } = new("DefaultMediaPlayer", "vlc");
     public static Key<bool> MediaDetectionEnabled { get; } = new("MediaDetectionEnabled", false);
+    public static Key<bool> OnlyDetectMediaInLibraryFolders { get; } = new("OnlyDetectMediaInLibraryFolders", false);
+    public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", new ObservableCollection<string>());
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

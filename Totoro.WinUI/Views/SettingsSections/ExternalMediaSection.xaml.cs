@@ -27,7 +27,7 @@ public sealed partial class ExternalMediaSection : Page, INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
 
     public IEnumerable<PluginInfo> MediaPlayers { get; } = PluginFactory<INativeMediaPlayer>.Instance.Plugins;
-
+    public ICommand AddLibraryFolder { get; }
 
     private PluginInfo _selectedMediaPlayer;
     public PluginInfo SelectedMediaPlayer 
@@ -51,6 +51,18 @@ public sealed partial class ExternalMediaSection : Page, INotifyPropertyChanged
         InitializeComponent();
         SelectedMediaPlayer = PluginFactory<INativeMediaPlayer>.Instance.Plugins.FirstOrDefault(x => x.Name == _settings.DefaultMediaPlayer)
                 ?? PluginFactory<INativeMediaPlayer>.Instance.Plugins.FirstOrDefault(x => x.Name == "vlc");
+
+        AddLibraryFolder = ReactiveCommand.Create(async () =>
+        {
+            var folder = await App.GetService<IViewService>().BrowseFolder();
+            
+            if(string.IsNullOrEmpty(folder))
+            {
+                return;
+            }
+
+            ViewModel.Settings.LibraryFolders.Add(folder);
+        });
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

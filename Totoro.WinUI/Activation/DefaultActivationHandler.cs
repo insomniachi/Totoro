@@ -1,4 +1,8 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Dynamic;
+using System.IO;
+using LibVLCSharp.Shared;
+using Microsoft.UI.Xaml;
+using Totoro.Core.Services;
 using Totoro.Core.ViewModels;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
@@ -15,6 +19,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
     private readonly ISettings _settings;
     private readonly IViewService _viewService;
     private readonly ProcessWatcher _processWatcher;
+    private bool _mediaDetected;
 
     public DefaultActivationHandler(IWinUINavigationService navigationService,
                                     ITrackingServiceContext trackingService,
@@ -47,6 +52,24 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(player =>
             {
+                var title = player.GetTitle();
+                _mediaDetected = !settings.OnlyDetectMediaInLibraryFolders || 
+                                    settings
+                                    .LibraryFolders
+                                    .Any(x => Directory.GetFiles(x, "*", SearchOption.AllDirectories)
+                                    .FirstOrDefault(x => x.Contains(player.GetTitle())) is not null);
+
+                foreach (var item in settings.LibraryFolders)
+                {
+                    var files = Directory.GetFiles(item, "*", SearchOption.AllDirectories);
+                }
+
+                if (!_mediaDetected)
+                {
+                    processWatcher.RemoveProcess(player.Process);
+                    return;
+                }
+
                 navigationService.NavigateTo<NowPlayingViewModel>(parameter: new Dictionary<string, object>
                 {
                     ["Player"] = player
@@ -55,6 +78,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
 
         processWatcher
             .MediaPlayerClosed
+            .Where(_  => _mediaDetected)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {

@@ -44,18 +44,21 @@ internal class SettingsModel : ReactiveObject, ISettings
         AnimeCardClickAction = localSettingsService.ReadSetting(Settings.AnimeCardClickAction);
         SmallSkipAmount = localSettingsService.ReadSetting(Settings.SmallSkipAmount);
         DefaultMediaPlayer = localSettingsService.ReadSetting(Settings.DefaultMediaPlayer);
+        MediaDetectionEnabled = localSettingsService.ReadSetting(Settings.MediaDetectionEnabled);
+        OnlyDetectMediaInLibraryFolders = localSettingsService.ReadSetting(Settings.OnlyDetectMediaInLibraryFolders);
+        LibraryFolders = localSettingsService.ReadSetting(Settings.LibraryFolders);
 
-        ObserveChanges();
-    }
-
-    public void ObserveChanges()
-    {
         if (UseDiscordRichPresense && !_dRpc.IsInitialized)
         {
             _dRpc.Initialize();
             _dRpc.SetPresence();
         }
 
+        ObserveChanges();
+    }
+
+    public void ObserveChanges()
+    {
         Changed
             .Select(x => GetType().GetProperty(x.PropertyName))
             .Where(x => x.GetCustomAttribute<JsonIgnoreAttribute>() is null)
@@ -74,6 +77,10 @@ internal class SettingsModel : ReactiveObject, ISettings
                 _dRpc.Initialize();
                 _dRpc.SetPresence();
             });
+
+        LibraryFolders
+            .ToObservableChangeSet()
+            .Subscribe(_ => _localSettingsService.SaveSetting(Settings.LibraryFolders, LibraryFolders));
 
         ObserveObject(TorrentSearchOptions, Settings.TorrentSearchOptions);
     }
@@ -123,6 +130,8 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public int SmallSkipAmount { get; set; }
     [Reactive] public string DefaultMediaPlayer { get; set; }
     [Reactive] public bool MediaDetectionEnabled { get; set; }
+    [Reactive] public bool OnlyDetectMediaInLibraryFolders { get; set; }
+    public ObservableCollection<string> LibraryFolders { get; set; }
 }
 
 

@@ -33,6 +33,7 @@ public partial class ShellViewModel : ReactiveObject
         NavigationViewService = navigationViewService;
         _nowPlayingViewModel = nowPlayingViewModel;
         IsAuthenticated = trackingService.IsAuthenticated;
+        
         trackingService
             .Authenticated
             .Subscribe(_ => IsAuthenticated = trackingService.IsAuthenticated);
@@ -58,8 +59,6 @@ public partial class ShellViewModel : ReactiveObject
         this.WhenAnyValue(x => x.Selected)
             .Select(x => x is NavigationViewItem { Content: "About" })
             .ToPropertyEx(this, x => x.IsAboutView);
-
-
     }
 
     public void Initialize()

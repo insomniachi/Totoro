@@ -45,7 +45,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
 
             var title = _mainWindow.Title;
 
-            return title.Replace("- Vlc media player", string.Empty).Trim();
+            return title.Replace("- Vlc media player", string.Empty, StringComparison.InvariantCultureIgnoreCase).Trim();
         }
 
         public void Launch(string title,string url)

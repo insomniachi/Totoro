@@ -178,6 +178,7 @@ public class TotoroCommands : IEnableLogger
                 More.Execute(anime.Id);
             }
         });
+        RemoveLibraryFolder = ReactiveCommand.Create<string>(folder => settings.LibraryFolders.Remove(folder));
     }
 
     public ICommand UpdateTracking { get; }
@@ -194,6 +195,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand RemoveTorrentWithFiles { get; }
     public ICommand PlayLocalFolder { get; }
     public ICommand AnimeCard { get; }
+    public ICommand RemoveLibraryFolder { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

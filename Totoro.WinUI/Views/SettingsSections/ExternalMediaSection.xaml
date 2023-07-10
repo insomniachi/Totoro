@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:plugins="using:Totoro.Plugins"
     xmlns:po="using:Totoro.Plugins.Options"
+    xmlns:root="using:Totoro.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -41,10 +42,12 @@
             <EntranceThemeTransition FromVerticalOffset="50" />
             <RepositionThemeTransition IsStaggeringEnabled="False" />
         </StackPanel.ChildrenTransitions>
+
         <TextBlock
             FontSize="16"
             FontWeight="SemiBold"
             Text="General" />
+
         <labs:SettingsCard Description="Default external media player used to stream." Header="Default Media Player">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xEC15;" />
@@ -54,6 +57,7 @@
                 ItemsSource="{x:Bind MediaPlayers}"
                 SelectedItem="{x:Bind SelectedMediaPlayer, Mode=TwoWay}" />
         </labs:SettingsCard>
+
         <labs:SettingsCard Description="Automatical detect and track media playing in external media players" Header="Enable Media Detection">
             <labs:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE773;" />
@@ -63,6 +67,43 @@
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
+
+        <labs:SettingsExpander
+            Description="Only detect media that are in library folders"
+            Header="Library Folders"
+            IsExpanded="True"
+            ItemsSource="{x:Bind ViewModel.Settings.LibraryFolders, Mode=OneWay}">
+            <labs:SettingsExpander.HeaderIcon>
+                <SymbolIcon Symbol="Library" />
+            </labs:SettingsExpander.HeaderIcon>
+            <labs:SettingsExpander.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <labs:SettingsCard Header="{x:Bind}" IsClickEnabled="True">
+                        <Button Command="{x:Bind root:App.Commands.RemoveLibraryFolder}" CommandParameter="{x:Bind}">
+                            <SymbolIcon Symbol="Delete" />
+                        </Button>
+                    </labs:SettingsCard>
+                </DataTemplate>
+            </labs:SettingsExpander.ItemTemplate>
+            <labs:SettingsExpander.ItemsFooter>
+                <labs:SettingsCard>
+                    <Button
+                        HorizontalAlignment="Right"
+                        Command="{x:Bind AddLibraryFolder}"
+                        Style="{ThemeResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <SymbolIcon Symbol="Add" />
+                            <TextBlock Text="Add Library Folder" />
+                        </StackPanel>
+                    </Button>
+                </labs:SettingsCard>
+            </labs:SettingsExpander.ItemsFooter>
+            <ToggleSwitch
+                IsOn="{x:Bind ViewModel.Settings.OnlyDetectMediaInLibraryFolders, Mode=TwoWay}"
+                OffContent="Off"
+                OnContent="On" />
+        </labs:SettingsExpander>
+
 
         <TextBlock
             Margin="0,20,0,0"

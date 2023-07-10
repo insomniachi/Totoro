@@ -19,6 +19,7 @@ public class ProcessWatcher : IEnableLogger
     private readonly FlaUI.UIA3.UIA3Automation _automation = new();
     private readonly AutomationElement _desktop;
     private readonly UIA3AutomationEventHandler _automationEventHandler;
+    private readonly object _lock = new object();
     
     public ProcessWatcher()
     {
@@ -78,9 +79,22 @@ public class ProcessWatcher : IEnableLogger
         }
     }
 
+    public void RemoveProcess(Process process)
+    {
+        lock(_lock)
+        {
+            _processes.Remove(process);
+        }
+    }
+
     private void DetectMediaProcess()
     {
-        List<Process> exited = _processes.Where(x => x.HasExited).ToList();
+        List<Process> exited = new();
+
+        lock (_lock)
+        {
+            exited = _processes.Where(x => x.HasExited).ToList();
+        }
 
         exited.ForEach(x =>
         {

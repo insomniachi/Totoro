@@ -30,6 +30,7 @@ public class NowPlayingViewModel : NavigatableViewModel
 
         watcher
             .MediaPlayerClosed
+            .Where(_ => MediaPlayer is not null)
             .Where(id => MediaPlayer.Process.Id == id)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
