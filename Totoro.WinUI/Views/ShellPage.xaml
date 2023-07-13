@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:helpers="using:Totoro.WinUI.Helpers"
+    xmlns:tb="using:H.NotifyIcon"
     Loaded="OnLoaded">
 
     <Grid>
@@ -93,5 +94,23 @@
                 <Frame x:Name="NavigationFrame" Margin="0" />
             </Grid>
         </NavigationView>
+
+        <tb:TaskbarIcon
+            x:Name="TrayIcon"
+            x:FieldModifier="public"
+            ContextMenuMode="SecondWindow"
+            IconSource="/Assets/WindowIcon.ico"
+            LeftClickCommand="{x:Bind ShowHideWindowCommand}"
+            NoLeftClickDelay="True"
+            ToolTipText="ToolTip">
+            <tb:TaskbarIcon.ContextFlyout>
+                <MenuFlyout AreOpenCloseAnimationsEnabled="False">
+                    <MenuFlyoutItem Command="{x:Bind ShowHideWindowCommand}" Text="Show/Hide Window" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Command="{x:Bind ExitApplicationCommand}" Text="Exit" />
+                </MenuFlyout>
+            </tb:TaskbarIcon.ContextFlyout>
+        </tb:TaskbarIcon>
+
     </Grid>
 </Page>

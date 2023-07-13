@@ -50,6 +50,14 @@ public class ActivationService : IActivationService, IEnableLogger
         // Activate the MainWindow.
         App.MainWindow.Activate();
         App.MainWindow.Maximize();
+        App.MainWindow.Closed += (sender, args) =>
+        {
+            if (App.HandleClosedEvents)
+            {
+                args.Handled = true;
+                App.MainWindow.Hide();
+            }
+        };
         App.MainWindow.AppWindow.Closing += AppWindow_Closing;
 
         // Execute tasks after activation.

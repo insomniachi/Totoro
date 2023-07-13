@@ -1,5 +1,29 @@
-﻿namespace Totoro.Core.ViewModels;
+﻿using System.Linq;
 
+namespace Totoro.Core.ViewModels;
+
+
+public class AnimeCollectionFilter : ReactiveObject
+{
+    [Reactive] public AnimeStatus ListStatus { get; set; } = AnimeStatus.Watching;
+    [Reactive] public string SearchText { get; set; }
+    [Reactive] public int? Year { get; set; }
+    [Reactive] public AiringStatus? AiringStatus { get; set; }
+    public ObservableCollection<string> Genres { get; } = new();
+
+    public bool IsVisible(AnimeModel model)
+    {
+        var listStatusCheck = model.Tracking.Status == ListStatus;
+        var searchTextStatus = string.IsNullOrEmpty(SearchText) ||
+                               model.Title.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase) ||
+                               model.AlternativeTitles.Any(x => x.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase));
+        var yearCheck = Year is null || model.Season.Year == Year;
+        var genresCheck = !Genres.Any() || Genres.All(x => model.Genres.Any(y => string.Equals(y, x, StringComparison.InvariantCultureIgnoreCase)));
+        var airingStatusCheck = AiringStatus is null || AiringStatus == model.AiringStatus;
+
+        return listStatusCheck && searchTextStatus && yearCheck && genresCheck && airingStatusCheck;
+    }
+}
 
 public class UserListViewModel : NavigatableViewModel, IHaveState
 {
@@ -25,8 +49,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         _animeCache
             .Connect()
             .RefCount()
-            .Filter(this.WhenAnyValue(x => x.CurrentView).Select(FilterByStatusPredicate))
-            .Filter(this.WhenAnyValue(x => x.SearchText).Select(x => x?.ToLower()).Select(FilterByTitle))
+            .Filter(Filter.WhenAnyPropertyChanged().Select(x => (Func<AnimeModel,bool>)x.IsVisible))
             .Sort(SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore))
             .Bind(out _anime)
             .DisposeMany()
@@ -56,6 +79,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string QuickAddSearchText { get; set; }
     public bool IsAuthenticated { get; }
+    public AnimeCollectionFilter Filter { get; } = new();
     public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ChangeCurrentViewCommand { get; }
@@ -79,7 +103,11 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         _animeCache.Clear();
         _trackingService.GetAnime()
                         .ObserveOn(RxApp.MainThreadScheduler)
-                        .Finally(() => IsLoading = false)
+                        .Finally(() =>
+                        {
+                            IsLoading = false;
+                            Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
+                        })
                         .Subscribe(list =>
                         {
                             _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id);

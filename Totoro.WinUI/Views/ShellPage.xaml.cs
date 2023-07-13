@@ -6,6 +6,7 @@ using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
 using Totoro.WinUI.ViewModels;
 using Windows.System;
+using WinUIEx;
 
 namespace Totoro.WinUI.Views;
 
@@ -30,6 +31,9 @@ public sealed partial class ShellPage : Page
                 App.MainWindow.PresenterKind = isFullWindow ? Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen : Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped;
                 NavigationViewControl.IsPaneVisible = !isFullWindow;
             });
+
+        ShowHideWindowCommand = ReactiveCommand.Create(ShowHideWindow);
+        ExitApplicationCommand = ReactiveCommand.Create(ExitApplication);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -91,5 +95,33 @@ public sealed partial class ShellPage : Page
         {
             UseShellExecute = true
         });
+    }
+
+    public ICommand ShowHideWindowCommand { get; }
+    public ICommand ExitApplicationCommand { get; }
+
+    public void ShowHideWindow()
+    {
+        var window = App.MainWindow;
+        if (window == null)
+        {
+            return;
+        }
+
+        if (window.Visible)
+        {
+            window.Hide();
+        }
+        else
+        {
+            window.Show();
+        }
+    }
+
+    public void ExitApplication()
+    {
+        App.HandleClosedEvents = false;
+        TrayIcon.Dispose();
+        App.MainWindow?.Close();
     }
 }

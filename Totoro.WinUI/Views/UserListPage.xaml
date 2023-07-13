@@ -48,7 +48,7 @@
                     <labs:Segmented
                         Margin="{StaticResource SmallTopBottomMargin}"
                         ItemsSource="{x:Bind Statuses}"
-                        SelectedItem="{x:Bind ViewModel.CurrentView, Mode=TwoWay}">
+                        SelectedItem="{x:Bind ViewModel.Filter.ListStatus, Mode=TwoWay}">
                         <labs:Segmented.ItemTemplate>
                             <DataTemplate x:DataType="cm:AnimeStatus">
                                 <TextBlock Text="{x:Bind v:UserListPage.ToStatusString((cm:AnimeStatus))}" />
@@ -67,17 +67,19 @@
                         </labs:Segmented.ItemContainerStyle>
                     </labs:Segmented>
 
-                    <AutoSuggestBox
+                    <StackPanel
                         Grid.Row="1"
-                        Width="300"
-                        Height="35"
+                        HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        VerticalContentAlignment="Center"
-                        uhelp:OnScreenKeyboard.Enabled="true"
-                        PlaceholderText="Search"
-                        QueryIcon="Find"
-                        Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
+                        Orientation="Horizontal">
+                        <AutoSuggestBox
+                            Width="300"
+                            Height="35"
+                            uhelp:OnScreenKeyboard.Enabled="true"
+                            PlaceholderText="Search"
+                            QueryIcon="Find"
+                            Text="{x:Bind ViewModel.Filter.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
                 </Grid>
 
                 <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
