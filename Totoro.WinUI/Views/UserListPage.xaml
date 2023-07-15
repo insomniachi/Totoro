@@ -66,20 +66,6 @@
                             </Style>
                         </labs:Segmented.ItemContainerStyle>
                     </labs:Segmented>
-
-                    <StackPanel
-                        Grid.Row="1"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
-                        <AutoSuggestBox
-                            Width="300"
-                            Height="35"
-                            uhelp:OnScreenKeyboard.Enabled="true"
-                            PlaceholderText="Search"
-                            QueryIcon="Find"
-                            Text="{x:Bind ViewModel.Filter.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
                 </Grid>
 
                 <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
@@ -133,6 +119,68 @@
                     </ctk:Case>
                 </ctk:SwitchPresenter>
 
+                <Grid Grid.Row="1">
+                    <TeachingTip
+                        x:Name="GenresTeachingTip"
+                        PreferredPlacement="Bottom"
+                        Target="{x:Bind GenresButton}">
+                        <labs:TokenView
+                            x:Name="GenresView"
+                            IsWrapped="True"
+                            ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}"
+                            SelectionChanged="TokenView_SelectionChanged"
+                            SelectionMode="Multiple" />
+                    </TeachingTip>
+                    <TeachingTip
+                        x:Name="QuickAddPopup"
+                        Title="Quick Add"
+                        Grid.Row="1"
+                        Target="{x:Bind QuickAdd}">
+                        <Grid Padding="3,5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+
+                            <AutoSuggestBox
+                                PlaceholderText="Search"
+                                QueryIcon="Find"
+                                Text="{x:Bind ViewModel.QuickAddSearchText, Mode=TwoWay}" />
+
+                            <ListView
+                                x:Name="QuickAddResult"
+                                Grid.Row="1"
+                                Height="150"
+                                Margin="{StaticResource SmallTopMargin}"
+                                IsItemClickEnabled="True"
+                                ItemsSource="{x:Bind ViewModel.QuickSearchResults, Mode=OneWay}"
+                                SelectionMode="None">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="cm:AnimeModel">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Text="{x:Bind Title}"
+                                                TextTrimming="CharacterEllipsis"
+                                                ToolTipService.ToolTip="{x:Bind Title}" />
+                                            <Button
+                                                Grid.Column="1"
+                                                Command="{x:Bind root:App.Commands.More}"
+                                                CommandParameter="{x:Bind Id}">
+                                                <SymbolIcon Symbol="More" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Grid>
+                    </TeachingTip>
+                </Grid>
+
                 <ctk:Loading
                     x:Name="LoadingControl"
                     Grid.Row="1"
@@ -140,122 +188,123 @@
                     <ProgressRing Margin="0,0,12,0" IsActive="True" />
                 </ctk:Loading>
 
-                <CommandBar
-                    Grid.Row="2"
-                    Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}"
-                    DefaultLabelPosition="Bottom">
-                    <AppBarButton
-                        x:Name="QuickAdd"
-                        Icon="Add"
-                        Label="Quick Add" />
-                    <AppBarButton
-                        Command="{x:Bind ViewModel.RefreshCommand}"
-                        Icon="Refresh"
-                        Label="Refresh" />
-                    <AppBarButton Icon="View" Label="Display mode">
-                        <AppBarButton.Flyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem
-                                    Command="{x:Bind ViewModel.SetDisplayMode}"
-                                    CommandParameter="{x:Bind cm:DisplayMode.Grid}"
-                                    Text="Grid view">
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xf0e2;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem
-                                    Command="{x:Bind ViewModel.SetDisplayMode}"
-                                    CommandParameter="{x:Bind cm:DisplayMode.List}"
-                                    Text="List view">
-                                    <MenuFlyoutItem.Icon>
-                                        <FontIcon Glyph="&#xf0e4;" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                            </MenuFlyout>
-                        </AppBarButton.Flyout>
-                    </AppBarButton>
-                    <AppBarButton Icon="Filter" Label="Filter">
-                        <AppBarButton.Flyout>
-                            <MenuFlyout>
-                                <RadioMenuFlyoutItem
-                                    x:Name="WatchingFlyoutToggle"
-                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                    CommandParameter="{x:Bind cm:AnimeStatus.Watching}"
-                                    Text="Watching" />
-                                <RadioMenuFlyoutItem
-                                    x:Name="PtwFlyoutToggle"
-                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                    CommandParameter="{x:Bind cm:AnimeStatus.PlanToWatch}"
-                                    Text="Plan to watch" />
-                                <RadioMenuFlyoutItem
-                                    x:Name="OnHoldFlyoutToggle"
-                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                    CommandParameter="{x:Bind cm:AnimeStatus.OnHold}"
-                                    Text="On Hold" />
-                                <RadioMenuFlyoutItem
-                                    x:Name="CompletedFlyoutToggle"
-                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                    CommandParameter="{x:Bind cm:AnimeStatus.Completed}"
-                                    Text="Completed" />
-                                <RadioMenuFlyoutItem
-                                    x:Name="DroppedFlyoutToggle"
-                                    Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                    CommandParameter="{x:Bind cm:AnimeStatus.Dropped}"
-                                    Text="Dropped" />
-                            </MenuFlyout>
-                        </AppBarButton.Flyout>
-                    </AppBarButton>
-                </CommandBar>
+                <Grid Grid.Row="2" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
 
-                <TeachingTip
-                    x:Name="QuickAddPopup"
-                    Title="Quick Add"
-                    Grid.Row="1"
-                    Target="{x:Bind QuickAdd}">
-                    <Grid Padding="3,5">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition />
-                        </Grid.RowDefinitions>
+                    <CommandBar
+                        HorizontalAlignment="Left"
+                        DefaultLabelPosition="Right"
+                        IsDynamicOverflowEnabled="False">
+                        <AppBarElementContainer Padding="10,7,0,7">
+                            <AutoSuggestBox
+                                Width="300"
+                                VerticalAlignment="Center"
+                                PlaceholderText="Title"
+                                QueryIcon="Find"
+                                Text="{x:Bind ViewModel.Filter.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </AppBarElementContainer>
+                        <AppBarElementContainer Padding="10,7,7,7">
+                            <TextBox PlaceholderText="Year" Text="{x:Bind ViewModel.Filter.Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </AppBarElementContainer>
+                        <AppBarButton
+                            x:Name="GenresButton"
+                            Icon="Tag"
+                            Label="Genres" />
+                        <AppBarButton Icon="Filter" Label="Watching Status">
+                            <AppBarButton.Flyout>
+                                <MenuFlyout AreOpenCloseAnimationsEnabled="True">
+                                    <RadioMenuFlyoutItem
+                                        x:Name="WatchingFlyoutToggle"
+                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                        CommandParameter="{x:Bind cm:AnimeStatus.Watching}"
+                                        Text="Watching" />
+                                    <RadioMenuFlyoutItem
+                                        x:Name="PtwFlyoutToggle"
+                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                        CommandParameter="{x:Bind cm:AnimeStatus.PlanToWatch}"
+                                        Text="Plan to watch" />
+                                    <RadioMenuFlyoutItem
+                                        x:Name="OnHoldFlyoutToggle"
+                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                        CommandParameter="{x:Bind cm:AnimeStatus.OnHold}"
+                                        Text="On Hold" />
+                                    <RadioMenuFlyoutItem
+                                        x:Name="CompletedFlyoutToggle"
+                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                        CommandParameter="{x:Bind cm:AnimeStatus.Completed}"
+                                        Text="Completed" />
+                                    <RadioMenuFlyoutItem
+                                        x:Name="DroppedFlyoutToggle"
+                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
+                                        CommandParameter="{x:Bind cm:AnimeStatus.Dropped}"
+                                        Text="Dropped" />
+                                </MenuFlyout>
+                            </AppBarButton.Flyout>
+                        </AppBarButton>
+                        <AppBarButton Icon="Calendar" Label="Airing Status">
+                            <AppBarButton.Flyout>
+                                <MenuFlyout>
+                                    <RadioMenuFlyoutItem
+                                        Click="AiringStatusClicked"
+                                        IsChecked="True"
+                                        Text="All" />
+                                    <RadioMenuFlyoutItem
+                                        Click="AiringStatusClicked"
+                                        Tag="{x:Bind cm:AiringStatus.CurrentlyAiring}"
+                                        Text="Currently airing" />
+                                    <RadioMenuFlyoutItem
+                                        Click="AiringStatusClicked"
+                                        Tag="{x:Bind cm:AiringStatus.NotYetAired}"
+                                        Text="Not yet aired" />
+                                    <RadioMenuFlyoutItem
+                                        Click="AiringStatusClicked"
+                                        Tag="{x:Bind cm:AiringStatus.FinishedAiring}"
+                                        Text="Finished airing" />
+                                </MenuFlyout>
+                            </AppBarButton.Flyout>
+                        </AppBarButton>
+                    </CommandBar>
 
-                        <AutoSuggestBox
-                            PlaceholderText="Search"
-                            QueryIcon="Find"
-                            Text="{x:Bind ViewModel.QuickAddSearchText, Mode=TwoWay}" />
+                    <CommandBar
+                        Grid.Column="1"
+                        DefaultLabelPosition="Right"
+                        IsDynamicOverflowEnabled="False">
+                        <AppBarButton
+                            x:Name="QuickAdd"
+                            Icon="Add"
+                            Label="Quick Add" />
+                        <AppBarButton
+                            Command="{x:Bind ViewModel.RefreshCommand}"
+                            Icon="Refresh"
+                            Label="Refresh" />
+                        <AppBarButton Icon="View" Label="Display mode">
+                            <AppBarButton.Flyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetDisplayMode}"
+                                        CommandParameter="{x:Bind cm:DisplayMode.Grid}"
+                                        Text="Grid view">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xf0e2;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetDisplayMode}"
+                                        CommandParameter="{x:Bind cm:DisplayMode.List}"
+                                        Text="List view">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xf0e4;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </AppBarButton.Flyout>
+                        </AppBarButton>
+                    </CommandBar>
 
-                        <ListView
-                            x:Name="QuickAddResult"
-                            Grid.Row="1"
-                            Height="150"
-                            Margin="{StaticResource SmallTopMargin}"
-                            IsItemClickEnabled="True"
-                            ItemsSource="{x:Bind ViewModel.QuickSearchResults, Mode=OneWay}"
-                            SelectionMode="None">
-                            <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Text="{x:Bind Title}"
-                                            TextTrimming="CharacterEllipsis"
-                                            ToolTipService.ToolTip="{x:Bind Title}" />
-                                        <Button
-                                            Grid.Column="1"
-                                            Command="{x:Bind root:App.Commands.More}"
-                                            CommandParameter="{x:Bind Id}">
-                                            <SymbolIcon Symbol="More" />
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
-                    </Grid>
-                </TeachingTip>
-
+                </Grid>
             </Grid>
         </ctk:Case>
         <ctk:Case>

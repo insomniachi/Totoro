@@ -1,15 +1,18 @@
-﻿using System.Linq;
+﻿using System.Text.RegularExpressions;
 
 namespace Totoro.Core.ViewModels;
 
 
-public class AnimeCollectionFilter : ReactiveObject
+public partial class AnimeCollectionFilter : ReactiveObject
 {
     [Reactive] public AnimeStatus ListStatus { get; set; } = AnimeStatus.Watching;
     [Reactive] public string SearchText { get; set; }
-    [Reactive] public int? Year { get; set; }
+    [Reactive] public string Year { get; set; }
     [Reactive] public AiringStatus? AiringStatus { get; set; }
-    public ObservableCollection<string> Genres { get; } = new();
+    [Reactive] public ObservableCollection<string> Genres { get; set; } = new();
+
+    [GeneratedRegex(@"(19[5-9][0-9])|(20\d{2})")]
+    private partial Regex YearRegex();
 
     public bool IsVisible(AnimeModel model)
     {
@@ -17,7 +20,7 @@ public class AnimeCollectionFilter : ReactiveObject
         var searchTextStatus = string.IsNullOrEmpty(SearchText) ||
                                model.Title.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase) ||
                                model.AlternativeTitles.Any(x => x.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase));
-        var yearCheck = Year is null || model.Season.Year == Year;
+        var yearCheck = string.IsNullOrEmpty(Year) || !YearRegex().IsMatch(Year) || model.Season.Year.ToString() == Year;
         var genresCheck = !Genres.Any() || Genres.All(x => model.Genres.Any(y => string.Equals(y, x, StringComparison.InvariantCultureIgnoreCase)));
         var airingStatusCheck = AiringStatus is null || AiringStatus == model.AiringStatus;
 
@@ -33,6 +36,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     private readonly SourceCache<AnimeModel, long> _searchCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
     private readonly ReadOnlyObservableCollection<AnimeModel> _searchResults;
+    private readonly HashSet<string> _genres = new();
 
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IAnimeServiceContext animeService,
@@ -42,14 +46,14 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         _viewService = viewService;
         IsAuthenticated = trackingService.IsAuthenticated;
 
-        ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => CurrentView = x);
+        ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
 
         _animeCache
             .Connect()
             .RefCount()
-            .Filter(Filter.WhenAnyPropertyChanged().Select(x => (Func<AnimeModel,bool>)x.IsVisible))
+            .Filter(this.WhenAnyValue(x => x.Filter).SelectMany(x => x.WhenAnyPropertyChanged()).Select(x => (Func<AnimeModel, bool>)x.IsVisible))
             .Sort(SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore))
             .Bind(out _anime)
             .DisposeMany()
@@ -73,23 +77,19 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Subscribe(list => _searchCache.EditDiff(list, (first, second) => first.Id == second.Id));
     }
 
-    [Reactive] public AnimeStatus CurrentView { get; set; } = AnimeStatus.Watching;
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string QuickAddSearchText { get; set; }
+    [Reactive] public List<string> Genres { get; set; }
+    [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
+
     public bool IsAuthenticated { get; }
-    public AnimeCollectionFilter Filter { get; } = new();
     public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public ICommand ChangeCurrentViewCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand SetDisplayMode { get; }
-
-    private Func<AnimeModel, bool> FilterByStatusPredicate(AnimeStatus status) => x => x.Tracking.Status == status;
-    private static Func<AnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
-                                                                                  x.Title.ToLower().Contains(title) ||
-                                                                                  (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true);
 
     public Task SetInitialState()
     {
@@ -99,6 +99,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         }
 
         IsLoading = true;
+        _genres.Clear();
 
         _animeCache.Clear();
         _trackingService.GetAnime()
@@ -106,11 +107,21 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                         .Finally(() =>
                         {
                             IsLoading = false;
+                            Genres = new(_genres);
                             Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
                         })
                         .Subscribe(list =>
                         {
                             _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id);
+
+                            foreach (var anime in list)
+                            {
+                                foreach (var genre in anime.Genres)
+                                {
+                                    _genres.Add(genre);
+                                }
+                            }
+
                             IsLoading = false;
                         }, RxApp.DefaultExceptionHandler.OnError)
                         .DisposeWith(Garbage);
@@ -126,14 +137,15 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         }
 
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
-        state.AddOrUpdate(CurrentView);
+        state.AddOrUpdate(Filter);
     }
 
     public void RestoreState(IState state)
     {
         var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
-        CurrentView = state.GetValue<AnimeStatus>(nameof(CurrentView));
+        Filter = state.GetValue<AnimeCollectionFilter>(nameof(Filter));
+        Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
     }
 
     public async Task<Unit> UpdateAnime(IAnimeModel model) => await _viewService.UpdateTracking(model);

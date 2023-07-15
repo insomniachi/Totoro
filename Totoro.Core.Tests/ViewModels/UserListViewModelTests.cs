@@ -22,7 +22,7 @@ public class UserListViewModelTests
         vm.SetInitialState();
 
         // assert
-        Assert.Equal(AnimeStatus.Watching, vm.CurrentView);
+        Assert.Equal(AnimeStatus.Watching, vm.Filter.ListStatus);
         Assert.Equal(2, vm.Anime.Count);
     }
 
@@ -48,7 +48,7 @@ public class UserListViewModelTests
         // act
         vm.ChangeCurrentViewCommand.Execute(status);
         Assert.Equal(count, vm.Anime.Count);
-        Assert.Equal(status, vm.CurrentView);
+        Assert.Equal(status, vm.Filter.ListStatus);
     }
 
     [Fact]

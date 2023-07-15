@@ -38,6 +38,19 @@ public sealed partial class ShellPage : Page
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        App.MainWindow.Closed += (sender, args) =>
+        {
+            if (App.HandleClosedEvents)
+            {
+                args.Handled = true;
+                App.MainWindow.Hide();
+            }
+            else
+            {
+                TrayIcon?.Dispose();
+            }
+        };
+
         App.MainWindow.ExtendsContentIntoTitleBar = true;
         App.MainWindow.SetTitleBar(AppTitleBar);
         App.MainWindow.Activated += MainWindow_Activated;
@@ -51,8 +64,7 @@ public sealed partial class ShellPage : Page
 
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
-        var resource = args.WindowActivationState == WindowActivationState.Deactivated ? "WindowCaptionForegroundDisabled" : "WindowCaptionForeground";
-        //AppTitleBarText.Foreground = (SolidColorBrush)App.Current.Resources[resource];
+
     }
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -100,10 +112,15 @@ public sealed partial class ShellPage : Page
     public ICommand ShowHideWindowCommand { get; }
     public ICommand ExitApplicationCommand { get; }
 
-    public void ShowHideWindow()
+    public static void ShowHideWindow()
     {
         var window = App.MainWindow;
         if (window == null)
+        {
+            return;
+        }
+
+        if(!App.HandleClosedEvents)
         {
             return;
         }

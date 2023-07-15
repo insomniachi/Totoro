@@ -61,7 +61,12 @@ public partial class App : Application, IEnableLogger
         .Build();
 
     public static TotoroCommands Commands { get; private set; }
+
+#if RELEASE
     public static bool HandleClosedEvents { get; set; } = true;
+#else
+    public static bool HandleClosedEvents { get; set; }
+#endif
 
     public static T GetService<T>()
         where T : class

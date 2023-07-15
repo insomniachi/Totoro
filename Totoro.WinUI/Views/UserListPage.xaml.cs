@@ -1,7 +1,7 @@
-﻿using ReactiveMarbles.ObservableEvents;
-using Splat;
+﻿using CommunityToolkit.Labs.WinUI;
+using Microsoft.UI.Xaml.Controls;
+using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
-using Totoro.Plugins.MediaDetection;
 
 namespace Totoro.WinUI.Views;
 
@@ -36,7 +36,7 @@ public sealed partial class UserListPage : UserListPageBase
 
         this.WhenActivated(d =>
         {
-            this.WhenAnyValue(x => x.ViewModel.CurrentView)
+            this.WhenAnyValue(x => x.ViewModel.Filter.ListStatus)
                 .Subscribe(x =>
                 {
                     switch (x)
@@ -67,6 +67,11 @@ public sealed partial class UserListPage : UserListPageBase
             .Subscribe(_ => QuickAddPopup.IsOpen ^= true)
             .DisposeWith(d);
 
+            GenresButton
+            .Events()
+            .Click
+            .Subscribe(_ => GenresTeachingTip.IsOpen ^= true);
+
             QuickAddResult
             .Events()
             .ItemClick
@@ -76,5 +81,21 @@ public sealed partial class UserListPage : UserListPageBase
             .Subscribe()
             .DisposeWith(d);
         });
+    }
+
+    private void GenresButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        GenresTeachingTip.IsOpen = true;
+    }
+
+    private void TokenView_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
+    {
+        ViewModel.Filter.Genres = new ObservableCollection<string>(((TokenView)sender).SelectedItems.Cast<string>());
+    }
+
+    private void AiringStatusClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var btn = (RadioMenuFlyoutItem)sender;
+        ViewModel.Filter.AiringStatus = btn.Tag is AiringStatus status ? status : (AiringStatus?)null;
     }
 }
