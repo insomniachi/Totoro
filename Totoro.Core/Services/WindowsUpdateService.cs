@@ -19,14 +19,15 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
 
     public WindowsUpdateService(HttpClient httpClient,
                                 ISettings settings,
-                                IKnownFolders knownFolders)
+                                IKnownFolders knownFolders,
+                                IConnectivityService connectivityService)
     {
         _httpClient = httpClient;
         _knownFolders = knownFolders;
 
         _onUpdate = Observable
             .Timer(TimeSpan.Zero, TimeSpan.FromHours(1))
-            .Where(_ => settings.AutoUpdate)
+            .Where(_ => settings.AutoUpdate && connectivityService.IsConnected)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .SelectMany(_ => TryGetStreamAsync())
             .Where(x => !string.IsNullOrEmpty(x))

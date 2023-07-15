@@ -9,6 +9,7 @@ public class Initalizer : IInitializer
     private readonly IKnownFolders _knownFolders;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IRssDownloader _rssDownloader;
+    private readonly IConnectivityService _connectivityService;
     private readonly PluginOptionsStorage _pluginOptionsStorage;
     private readonly IUpdateService _updateService;
     private readonly IResumePlaybackService _playbackStateStorage;
@@ -22,12 +23,14 @@ public class Initalizer : IInitializer
                       ITorrentEngine torrentEngine,
                       ILocalSettingsService localSettingsService,
                       IRssDownloader rssDownloader,
+                      IConnectivityService connectivityService,
                       PluginOptionsStorage pluginOptionsStorage)
     {
         _pluginManager = pluginManager;
         _knownFolders = knownFolders;
         _localSettingsService = localSettingsService;
         _rssDownloader = rssDownloader;
+        _connectivityService = connectivityService;
         _pluginOptionsStorage = pluginOptionsStorage;
         _updateService = updateService;
         _playbackStateStorage = playbackStateStorage;
@@ -39,8 +42,11 @@ public class Initalizer : IInitializer
 #if RELEASE
         await _pluginManager.Initialize(_knownFolders.Plugins); 
 #endif
-        await _torrentEngine.TryRestoreState();
-        await _rssDownloader.Initialize();
+        if(_connectivityService.IsConnected)
+        {
+            await _torrentEngine.TryRestoreState();
+            await _rssDownloader.Initialize();
+        }
         _pluginOptionsStorage.Initialize();
         RemoveObsoleteSettings();
     }

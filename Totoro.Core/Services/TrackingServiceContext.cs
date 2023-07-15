@@ -6,13 +6,15 @@ public class TrackingServiceContext : ITrackingServiceContext
 {
     private readonly Dictionary<ListServiceType, ITrackingService> _trackers;
     private readonly ISettings _settings;
+    private readonly IConnectivityService _connectivityService;
     private readonly Subject<ListServiceType> _authenticatedSubject = new();
 
     public TrackingServiceContext(ISettings settings,
-                                  IEnumerable<ITrackingService> trackers)
+                                  IEnumerable<ITrackingService> trackers,
+                                  IConnectivityService connectivityService)
     {
         _settings = settings;
-
+        _connectivityService = connectivityService;
         _trackers = trackers.Any()
             ? trackers.ToDictionary(x => x.Type, x => x)
             : new();
@@ -23,11 +25,21 @@ public class TrackingServiceContext : ITrackingServiceContext
     public IObservable<ListServiceType> Authenticated => _authenticatedSubject;
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
+        if (!_connectivityService.IsConnected)
+        {
+            return Observable.Return(Enumerable.Empty<AnimeModel>());
+        }
+
         return _trackers[_settings.DefaultListService].GetAnime();
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
     {
+        if (!_connectivityService.IsConnected)
+        {
+            return Observable.Return(Enumerable.Empty<AnimeModel>());
+        }
+
         return _trackers[_settings.DefaultListService].GetCurrentlyAiringTrackedAnime();
     }
 
@@ -39,6 +51,11 @@ public class TrackingServiceContext : ITrackingServiceContext
 
     public IObservable<Tracking> Update(long id, Tracking tracking)
     {
+        if (!_connectivityService.IsConnected)
+        {
+            return Observable.Return(tracking);
+        }
+
         return _trackers[_settings.DefaultListService].Update(id, tracking);
     }
 }

@@ -37,8 +37,6 @@ public partial class App : Application, IEnableLogger
         })
         .ConfigureServices((context, services) =>
         {
-            MessageBus.Current.RegisterMessageSource(Observable.Timer(TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)).Select(_ => new MinuteTick()));
-
             services.AddPlatformServices()
                     .AddTotoro()
                     .AddPlugins()

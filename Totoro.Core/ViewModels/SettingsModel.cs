@@ -47,6 +47,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         MediaDetectionEnabled = localSettingsService.ReadSetting(Settings.MediaDetectionEnabled);
         OnlyDetectMediaInLibraryFolders = localSettingsService.ReadSetting(Settings.OnlyDetectMediaInLibraryFolders);
         LibraryFolders = localSettingsService.ReadSetting(Settings.LibraryFolders);
+        StartupOptions = localSettingsService.ReadSetting(Settings.StartupOptions);
 
         if (UseDiscordRichPresense && !_dRpc.IsInitialized)
         {
@@ -83,6 +84,7 @@ internal class SettingsModel : ReactiveObject, ISettings
             .Subscribe(_ => _localSettingsService.SaveSetting(Settings.LibraryFolders, LibraryFolders));
 
         ObserveObject(TorrentSearchOptions, Settings.TorrentSearchOptions);
+        ObserveObject(StartupOptions, Settings.StartupOptions);
     }
 
     private void ObserveObject<T>(T target, Key<T> key)
@@ -132,6 +134,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool MediaDetectionEnabled { get; set; }
     [Reactive] public bool OnlyDetectMediaInLibraryFolders { get; set; }
     public ObservableCollection<string> LibraryFolders { get; set; }
+    [Reactive] public StartupOptions StartupOptions { get; set; }
 }
 
 

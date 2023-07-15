@@ -40,7 +40,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IAnimeServiceContext animeService,
-                             IViewService viewService)
+                             IViewService viewService,
+                             IConnectivityService connectivityService)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -75,6 +76,11 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .SelectMany(animeService.GetAnime)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(list => _searchCache.EditDiff(list, (first, second) => first.Id == second.Id));
+
+        connectivityService
+            .Connected
+            .Subscribe(_ => FetchAnime())
+            .DisposeWith(Garbage);
     }
 
     [Reactive] public bool IsLoading { get; set; }
@@ -98,9 +104,15 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             return Task.CompletedTask;
         }
 
+        FetchAnime();
+
+        return Task.CompletedTask;
+    }
+
+    private void FetchAnime()
+    {
         IsLoading = true;
         _genres.Clear();
-
         _animeCache.Clear();
         _trackingService.GetAnime()
                         .ObserveOn(RxApp.MainThreadScheduler)
@@ -125,8 +137,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                             IsLoading = false;
                         }, RxApp.DefaultExceptionHandler.OnError)
                         .DisposeWith(Garbage);
-
-        return Task.CompletedTask;
     }
 
     public void StoreState(IState state)

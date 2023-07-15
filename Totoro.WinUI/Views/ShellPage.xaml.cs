@@ -38,6 +38,7 @@ public sealed partial class ShellPage : Page
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        App.HandleClosedEvents = App.GetService<ISettings>().StartupOptions.MinimizeToTrayOnClose;
         App.MainWindow.Closed += (sender, args) =>
         {
             if (App.HandleClosedEvents)
@@ -53,18 +54,12 @@ public sealed partial class ShellPage : Page
 
         App.MainWindow.ExtendsContentIntoTitleBar = true;
         App.MainWindow.SetTitleBar(AppTitleBar);
-        App.MainWindow.Activated += MainWindow_Activated;
         AppTitleBarText.Text = "AppDisplayName".GetLocalized();
 
         TitleBarHelper.UpdateTitleBar(RequestedTheme);
 
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
-    }
-
-    private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
-    {
-
     }
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -116,11 +111,6 @@ public sealed partial class ShellPage : Page
     {
         var window = App.MainWindow;
         if (window == null)
-        {
-            return;
-        }
-
-        if(!App.HandleClosedEvents)
         {
             return;
         }

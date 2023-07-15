@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using System.ComponentModel;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Contracts;
@@ -36,6 +36,14 @@ public interface ISettings : INotifyPropertyChanged
     bool MediaDetectionEnabled { get; set; }
     bool OnlyDetectMediaInLibraryFolders { get; set; }
     ObservableCollection<string> LibraryFolders { get; set; }
+    StartupOptions StartupOptions { get; set; }
+}
+
+public class StartupOptions : ReactiveObject
+{
+    [Reactive] public bool MinimizeToTrayOnClose { get; set; } = false;
+    [Reactive] public bool StartMinimizedToTray { get; set; } = false;
+    [Reactive] public bool RunOnStartup { get; set; } = false;
 }
 
 public class DefaultUrls : ReactiveObject

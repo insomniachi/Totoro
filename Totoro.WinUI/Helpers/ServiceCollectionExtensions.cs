@@ -83,6 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWinUINavigationService, NavigationService>();
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
         services.AddSingleton<IAiredEpisodeToastService, AiredEpisodeToastService>();
+        services.AddSingleton<IConnectivityService, ConnectivityService>();
 
         services.AddTransient<INavigationViewService, NavigationViewService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();

@@ -38,6 +38,7 @@ public static class Settings
     public static Key<bool> MediaDetectionEnabled { get; } = new("MediaDetectionEnabled", false);
     public static Key<bool> OnlyDetectMediaInLibraryFolders { get; } = new("OnlyDetectMediaInLibraryFolders", false);
     public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", new ObservableCollection<string>());
+    public static Key<StartupOptions> StartupOptions { get; } = new("StartupOptions", () => new StartupOptions());
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

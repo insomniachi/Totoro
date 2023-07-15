@@ -17,6 +17,7 @@ public class ActivationService : IActivationService, IEnableLogger
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly IInitializer _initializer;
     private readonly IPluginOptionsStorage<INativeMediaPlayer> _mediaPlayerPluginOptions;
+    private readonly ISettings _settings;
     private readonly string _prevWebviewFolder;
     private readonly string _tempPath = Path.GetTempPath();
 
@@ -26,13 +27,15 @@ public class ActivationService : IActivationService, IEnableLogger
                              IEnumerable<IActivationHandler> activationHandlers,
                              IThemeSelectorService themeSelectorService,
                              IInitializer initializer,
-                             IPluginOptionsStorage<INativeMediaPlayer> mediaPlayerPluginOptions)
+                             IPluginOptionsStorage<INativeMediaPlayer> mediaPlayerPluginOptions,
+                             ISettings settings)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
         _initializer = initializer;
         _mediaPlayerPluginOptions = mediaPlayerPluginOptions;
+        _settings = settings;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
 
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
@@ -47,8 +50,12 @@ public class ActivationService : IActivationService, IEnableLogger
         await HandleActivationAsync(activationArgs);
 
         // Activate the MainWindow.
-        App.MainWindow.Activate();
-        App.MainWindow.Maximize();
+        if(!_settings.StartupOptions.StartMinimizedToTray)
+        {
+            App.MainWindow.Activate();
+            App.MainWindow.Maximize();
+        }
+
         App.MainWindow.AppWindow.Closing += AppWindow_Closing;
 
         // Execute tasks after activation.

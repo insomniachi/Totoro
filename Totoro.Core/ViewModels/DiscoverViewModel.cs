@@ -7,6 +7,7 @@ namespace Totoro.Core.ViewModels;
 public class DiscoverViewModel : NavigatableViewModel
 {
     private readonly INavigationService _navigationService;
+    private readonly IConnectivityService _connectivityService;
     private readonly SourceCache<IAiredAnimeEpisode, string> _episodesCache = new(x => x.Url);
     private readonly SourceCache<ICatalogItem, string> _animeSearchResultCache = new(x => x.Url);
     private readonly ReadOnlyObservableCollection<IAiredAnimeEpisode> _episodes;
@@ -15,11 +16,12 @@ public class DiscoverViewModel : NavigatableViewModel
 
     public DiscoverViewModel(IPluginFactory<AnimeProvider> providerFacotory,
                              ISettings settings,
-                             INavigationService navigationService)
+                             INavigationService navigationService,
+                             IConnectivityService connectivityService)
     {
         _provider = providerFacotory.CreatePlugin(settings.DefaultProviderType);
         _navigationService = navigationService;
-
+        _connectivityService = connectivityService;
         _episodesCache
             .Connect()
             .RefCount()
@@ -69,6 +71,12 @@ public class DiscoverViewModel : NavigatableViewModel
             .Throttle(TimeSpan.FromMilliseconds(200))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ => _animeSearchResultCache.Clear());
+
+        connectivityService
+            .Connected
+            .Where(_ => !_episodesCache.Items.Any())
+            .SelectMany(_ => LoadPage(1))
+            .Subscribe();
     }
 
     [Reactive] public int SelectedIndex { get; set; }
@@ -92,6 +100,11 @@ public class DiscoverViewModel : NavigatableViewModel
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        if(!_connectivityService.IsConnected)
+        {
+            return Task.CompletedTask;
+        }
+
         LoadPage(1).Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
 
         return Task.CompletedTask;
