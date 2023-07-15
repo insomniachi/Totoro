@@ -76,9 +76,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetecti
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Media Detection", "Media Detection", "{046D778E-C7B5-4086-A056-F0526C7C3A96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.MediaDetection.Win11MediaPlayer", "..\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj", "{5117D9CF-5D78-459F-9546-113BCEDD79B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Win11MediaPlayer", "..\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj", "{5117D9CF-5D78-459F-9546-113BCEDD79B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.MediaDetection.Generic", "..\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj", "{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Generic", "..\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj", "{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

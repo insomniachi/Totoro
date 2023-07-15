@@ -8,12 +8,14 @@ internal class UserListViewModelBuilder
     private readonly Mock<ITrackingServiceContext> _trackingServiceMock = new();
     private readonly Mock<IAnimeServiceContext> _animeServiceMock = new();
     private readonly Mock<IViewService> _viewServiceMock = new();
+    private readonly Mock<IConnectivityService> _connectivityServiceMock = new();
 
     internal UserListViewModel Build()
     {
         return new UserListViewModel(_trackingServiceMock.Object,
                                      _animeServiceMock.Object,
-                                     _viewServiceMock.Object);
+                                     _viewServiceMock.Object,
+                                     _connectivityServiceMock.Object);
     }
 
     internal UserListViewModelBuilder WithTrackingService(Action<Mock<ITrackingServiceContext>> configure)

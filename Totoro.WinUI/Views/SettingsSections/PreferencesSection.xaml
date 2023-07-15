@@ -45,7 +45,7 @@
 
         <labs:SettingsCard Description="Run application on system start" Header="Run on Startup">
             <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE9F5;" />
+                <FontIcon Glyph="&#xEC4A;" />
             </labs:SettingsCard.HeaderIcon>
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.StartupOptions.RunOnStartup, Mode=TwoWay}"
@@ -55,7 +55,7 @@
 
         <labs:SettingsCard Description="Start application minimized to tray" Header="Start Minimized">
             <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE9F5;" />
+                <FontIcon Glyph="&#xEE47;" />
             </labs:SettingsCard.HeaderIcon>
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.StartupOptions.StartMinimizedToTray, Mode=TwoWay}"
@@ -65,7 +65,7 @@
 
         <labs:SettingsCard Description="When closing application, minimize to system tray" Header="Close to Tray">
             <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE9F5;" />
+                <FontIcon Glyph="&#xE770;" />
             </labs:SettingsCard.HeaderIcon>
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.StartupOptions.MinimizeToTrayOnClose, Mode=TwoWay}"

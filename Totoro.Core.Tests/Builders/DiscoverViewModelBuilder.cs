@@ -12,13 +12,15 @@ internal class DiscoverViewModelBuilder
     private Mock<ISchedulerProvider> _schedulerProvider;
     private readonly Mock<IPluginFactory<AnimeProvider>> _providerFactoryMock = new();
     private readonly Mock<ISettings> _settingsMock = new();
+    private readonly Mock<IConnectivityService> _connectivityServiceMock = new();
 
 
     internal DiscoverViewModel Build()
     {
         return new DiscoverViewModel(_providerFactoryMock.Object,
                                      _settingsMock.Object,
-                                     _navigationServiceMock.Object);
+                                     _navigationServiceMock.Object, 
+                                     _connectivityServiceMock.Object);
     }
 
     internal DiscoverViewModelBuilder WithSettings(Action<Mock<ISettings>> configure)
