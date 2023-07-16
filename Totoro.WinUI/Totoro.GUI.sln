@@ -76,6 +76,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetecti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Generic", "..\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj", "{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeDao", "..\Totoro.Plugins.Anime.AnimeDao\Totoro.Plugins.Anime.AnimeDao.csproj", "{B263350D-CCBF-4365-B4C8-D03BC1F77110}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeDao.Tests", "..\Totoro.Plugins.Anime.AnimeDao.Tests\Totoro.Plugins.Anime.AnimeDao.Tests.csproj", "{05FA7647-73F5-4AD7-968D-D820C9A88F8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -271,6 +275,19 @@ Global
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}.Release|x64.ActiveCfg = Release|x64
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}.Release|x64.Build.0 = Release|x64
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Debug|x64.ActiveCfg = Debug|x64
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Debug|x64.Build.0 = Debug|x64
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Release|x64.ActiveCfg = Release|Any CPU
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110}.Release|x64.Build.0 = Release|Any CPU
+		{05FA7647-73F5-4AD7-968D-D820C9A88F8E}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{05FA7647-73F5-4AD7-968D-D820C9A88F8E}.Debug|x64.ActiveCfg = Debug|x64
+		{05FA7647-73F5-4AD7-968D-D820C9A88F8E}.Debug|x64.Build.0 = Debug|x64
+		{05FA7647-73F5-4AD7-968D-D820C9A88F8E}.Release|Any CPU.ActiveCfg = Release|x64
+		{05FA7647-73F5-4AD7-968D-D820C9A88F8E}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -302,6 +319,8 @@ Global
 		{046D778E-C7B5-4086-A056-F0526C7C3A96} = {E2331907-A768-4E4A-AACA-B53B83AA1919}
 		{5117D9CF-5D78-459F-9546-113BCEDD79B8} = {046D778E-C7B5-4086-A056-F0526C7C3A96}
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07} = {046D778E-C7B5-4086-A056-F0526C7C3A96}
+		{B263350D-CCBF-4365-B4C8-D03BC1F77110} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
+		{05FA7647-73F5-4AD7-968D-D820C9A88F8E} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98BB8C58-726D-4AB8-A113-D44B55413B79}

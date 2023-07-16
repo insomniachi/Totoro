@@ -7,9 +7,9 @@ using Flurl.Http;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
 
-namespace Totoro.Plugins.Anime.GogoAnime;
+namespace Totoro.Plugins.Anime;
 
-internal partial class GogoPlayExtractor
+public partial class GogoPlayExtractor
 {
     [GeneratedRegex("(?:container|videocontent)-(\\d+)", RegexOptions.Compiled)]
     private static partial Regex KeysRegex();
