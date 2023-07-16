@@ -191,7 +191,7 @@
                 <Grid Grid.Row="2" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
-                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <CommandBar
