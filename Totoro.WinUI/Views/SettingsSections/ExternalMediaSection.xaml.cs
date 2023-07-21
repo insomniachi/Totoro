@@ -35,6 +35,11 @@ public sealed partial class ExternalMediaSection : Page, INotifyPropertyChanged
         get => _selectedMediaPlayer;
         set
         {
+            if(_selectedMediaPlayer == value)
+            {
+                return;
+            }
+
             _selectedMediaPlayer = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedMediaPlayer)));
             if(value is not null)
