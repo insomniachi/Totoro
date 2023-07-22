@@ -67,5 +67,23 @@ public class AnimeHelpers
     }
 
     public static double ScoreToRating(int? score) => score is > 0 ? score.Value / 2.0 : -1;
-    public static string Eps(AnimeModel a) => $"{a.Tracking?.WatchedEpisodes ?? 0}/{(a.TotalEpisodes == 0 ? "??" : a.TotalEpisodes)}";
+    public static string Progress(Tracking tracking, int? totalEpisodes)
+    {
+        var watched = (tracking?.WatchedEpisodes ?? 0) == 0
+            ? "-" : tracking.WatchedEpisodes.ToString();
+        var total = (totalEpisodes == 0 ? "??" : totalEpisodes.ToString());
+        return $"{watched}/{total}";
+    }
+
+    public static string UserScore(AnimeModel a)
+    {
+        if (a.Tracking is null)
+        {
+            return "-";
+        }
+
+        return a.Tracking.Score == 0
+            ? "-"
+            : a.Tracking.Score.ToString();
+    }
 }

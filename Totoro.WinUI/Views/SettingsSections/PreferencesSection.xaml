@@ -38,6 +38,16 @@
                 SelectedItem="{x:Bind ViewModel.Settings.AnimeCardClickAction, Mode=TwoWay}" />
         </labs:SettingsCard>
 
+        <labs:SettingsCard Description="Choose how your list should be displayed" Header="Default List Display Mode">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE890;" />
+            </labs:SettingsCard.HeaderIcon>
+            <ComboBox
+                Width="150"
+                ItemsSource="{x:Bind ViewModel.ListDisplayModes}"
+                SelectedItem="{x:Bind ViewModel.Settings.ListDisplayMode, Mode=TwoWay}" />
+        </labs:SettingsCard>
+
         <TextBlock
             FontSize="16"
             FontWeight="SemiBold"

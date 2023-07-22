@@ -22,8 +22,6 @@ public static class Settings
     public static Key<bool> IncludeNsfw { get; } = new("IncludeNsfw", false);
     public static Key<bool> EnterFullScreenWhenPlaying { get; } = new("EnterFullScreenWhenPlaying", false);
     public static Key<DebridServiceType> DebridServiceType { get; } = new("DebridServiceType", Models.DebridServiceType.Premiumize);
-    [Obsolete("Removed")] public static Key<string> TorrentProviderType { get; } = new("TorrentProviderType", "<>");
-    [Obsolete("Removed")] public static Key<string> NyaUrl { get; } = new("NyaUrl", "https://nyaa.ink/");
     public static Key<bool> AutoUpdate { get; } = new("AutoUpdate", true);
     public static Key<string> PremiumizeApiKey { get; } = new("PremiumizeApiKey", "");
     public static Key<AdvanceTorrentSearchOptions> TorrentSearchOptions { get; } = new("TorrentSearchOptions", () => AdvanceTorrentSearchOptions.Default);
@@ -39,6 +37,7 @@ public static class Settings
     public static Key<bool> OnlyDetectMediaInLibraryFolders { get; } = new("OnlyDetectMediaInLibraryFolders", false);
     public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", new ObservableCollection<string>());
     public static Key<StartupOptions> StartupOptions { get; } = new("StartupOptions", () => new StartupOptions());
+    public static Key<DisplayMode> ListDisplayMode { get; } = new("ListDisplayMode", DisplayMode.Grid);
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

@@ -19,6 +19,7 @@ public class TotoroCommands : IEnableLogger
     public TotoroCommands(IViewService viewService,
                           INavigationService navigationService,
                           IDebridServiceContext debridServiceContext,
+                          ITrackingServiceContext trackingServiceContext,
                           ITorrentEngine torrentEngine,
                           ISettings settings)
     {
@@ -179,6 +180,14 @@ public class TotoroCommands : IEnableLogger
             }
         });
         RemoveLibraryFolder = ReactiveCommand.Create<string>(folder => settings.LibraryFolders.Remove(folder));
+        IncrementTracking = ReactiveCommand.Create<AnimeModel>(async anime =>
+        {
+            anime.Tracking = await trackingServiceContext.Update(anime.Id, Tracking.Next(anime));
+        });
+        DecrementTracking = ReactiveCommand.Create<AnimeModel>(async anime =>
+        {
+            anime.Tracking = await trackingServiceContext.Update(anime.Id, Tracking.Previous(anime));
+        });
     }
 
     public ICommand UpdateTracking { get; }
@@ -196,6 +205,8 @@ public class TotoroCommands : IEnableLogger
     public ICommand PlayLocalFolder { get; }
     public ICommand AnimeCard { get; }
     public ICommand RemoveLibraryFolder { get; }
+    public ICommand IncrementTracking { get; }
+    public ICommand DecrementTracking { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

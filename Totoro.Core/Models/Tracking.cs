@@ -32,6 +32,21 @@ public record Tracking
         return tracking;
     }
 
+    public static Tracking Previous(AnimeModel anime)
+    {
+        var tracking = new Tracking
+        {
+            WatchedEpisodes = (anime.Tracking?.WatchedEpisodes ?? 0) - 1
+        };
+
+        if (tracking.WatchedEpisodes <= 0)
+        {
+            tracking.Status = AnimeStatus.PlanToWatch;
+        }
+
+        return tracking;
+    }
+
     public static Tracking WithEpisode(AnimeModel anime, int episode)
     {
         var tracking = new Tracking

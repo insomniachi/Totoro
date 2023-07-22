@@ -28,6 +28,7 @@ public class SettingsViewModel : NavigatableViewModel
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public IEnumerable<PluginInfo> ProviderTypes => PluginFactory<AnimeProvider>.Instance.Plugins;
     public IEnumerable<PluginInfo> TrackerTypes => PluginFactory<ITorrentTracker>.Instance.Plugins;
+    public IEnumerable<DisplayMode> ListDisplayModes { get; } = Enum.GetValues<DisplayMode>().Cast<DisplayMode>().Take(2).ToList();
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };

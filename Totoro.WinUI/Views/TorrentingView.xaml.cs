@@ -84,6 +84,7 @@ public class HumanizeConverter : IValueConverter
     {
         return value switch
         {
+            DateTime d when d == new DateTime() => "-",
             DateTime d => d.Humanize(),
             _ => DependencyProperty.UnsetValue
         };

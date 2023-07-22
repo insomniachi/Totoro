@@ -14,7 +14,7 @@ public class AnimeModel : ReactiveObject, IAnimeModel
     public long Id { get; set; }
     public string Image { get; set; }
     public string Title { get; set; }
-    public Tracking Tracking { get; set; }
+    [Reactive] public Tracking Tracking { get; set; }
     public int? TotalEpisodes { get; set; }
     public AiringStatus AiringStatus { get; set; }
     public float? MeanScore { get; set; }

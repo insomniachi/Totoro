@@ -48,6 +48,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         OnlyDetectMediaInLibraryFolders = localSettingsService.ReadSetting(Settings.OnlyDetectMediaInLibraryFolders);
         LibraryFolders = localSettingsService.ReadSetting(Settings.LibraryFolders);
         StartupOptions = localSettingsService.ReadSetting(Settings.StartupOptions);
+        ListDisplayMode = localSettingsService.ReadSetting(Settings.ListDisplayMode);
 
         if (UseDiscordRichPresense && !_dRpc.IsInitialized)
         {
@@ -135,6 +136,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool OnlyDetectMediaInLibraryFolders { get; set; }
     public ObservableCollection<string> LibraryFolders { get; set; }
     [Reactive] public StartupOptions StartupOptions { get; set; }
+    [Reactive] public DisplayMode ListDisplayMode { get; set; }
 }
 
 

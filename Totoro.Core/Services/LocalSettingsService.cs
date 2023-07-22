@@ -19,7 +19,8 @@ public class LocalSettingsService : ILocalSettingsService
             Converters =
             {
                 new JsonStringEnumConverter()
-            }
+            },
+            NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
         };
 
         _file = Path.Combine(knownFolders.ApplicationData, "LocalSettings.json");

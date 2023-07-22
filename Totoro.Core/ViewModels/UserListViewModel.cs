@@ -41,6 +41,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IAnimeServiceContext animeService,
                              IViewService viewService,
+                             ISettings settings,
                              IConnectivityService connectivityService)
     {
         _trackingService = trackingService;
@@ -50,12 +51,35 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
+        Mode = settings.ListDisplayMode;
+
+        var sort = this.WhenAnyValue(x => x.SortSettings)
+            .WhereNotNull()
+            .Select(settings =>
+            {
+                return settings switch
+                {
+                    { ColumnName: "Title", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title),
+                    { ColumnName: "Title", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Title),
+                    { ColumnName: "User Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking?.Score),
+                    { ColumnName: "User Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking?.Score),
+                    { ColumnName: "Mean Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.MeanScore),
+                    { ColumnName: "Mean Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore),
+                    { ColumnName: "Date Started", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.StartDate),
+                    { ColumnName: "Date Started", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.StartDate),
+                    { ColumnName: "Date Completed", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.FinishDate),
+                    { ColumnName: "Date Completed", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.FinishDate),
+                    { ColumnName: "Last Updated", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.UpdatedAt),
+                    { ColumnName: "Last Updated", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.UpdatedAt),
+                    _ => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title)
+                };
+            });
 
         _animeCache
             .Connect()
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.Filter).SelectMany(x => x.WhenAnyPropertyChanged()).Select(x => (Func<AnimeModel, bool>)x.IsVisible))
-            .Sort(SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore))
+            .Sort(sort)
             .Bind(out _anime)
             .DisposeMany()
             .Subscribe()
@@ -81,14 +105,20 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Connected
             .Subscribe(_ => FetchAnime())
             .DisposeWith(Garbage);
+
+        this.WhenAnyValue(x => x.Mode)
+            .Select(x => x == DisplayMode.List)
+            .ToPropertyEx(this, x => x.IsListView);
     }
 
     [Reactive] public bool IsLoading { get; set; }
-    [Reactive] public DisplayMode Mode { get; set; } = DisplayMode.Grid;
+    [Reactive] public DisplayMode Mode { get; set; }
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string QuickAddSearchText { get; set; }
     [Reactive] public List<string> Genres { get; set; }
     [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
+    [Reactive] public SortSettings SortSettings { get; set; }
+    [ObservableAsProperty] public bool IsListView { get; }
 
     public bool IsAuthenticated { get; }
     public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
@@ -165,4 +195,10 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         QuickAddSearchText = string.Empty;
         _searchCache.Clear();
     }
+}
+
+public class SortSettings
+{
+    public string ColumnName { get; set; }
+    public bool IsAscending { get; set; }
 }

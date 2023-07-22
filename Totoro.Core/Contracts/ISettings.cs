@@ -37,6 +37,7 @@ public interface ISettings : INotifyPropertyChanged
     bool OnlyDetectMediaInLibraryFolders { get; set; }
     ObservableCollection<string> LibraryFolders { get; set; }
     StartupOptions StartupOptions { get; set; }
+    DisplayMode ListDisplayMode { get; set; }
 }
 
 public class StartupOptions : ReactiveObject
