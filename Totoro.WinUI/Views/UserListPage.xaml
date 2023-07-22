@@ -26,6 +26,7 @@
                 <ResourceDictionary Source="/Styles/RadioButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <v:HumanizeConverter x:Key="HumanizeConverter" />
+            <v:AiringStatusToBrushConverter x:Key="StatusConverter" />
         </ResourceDictionary>
     </v:UserListPageBase.Resources>
 
@@ -102,13 +103,26 @@
                             CanUserSortColumns="True"
                             ColumnDisplayIndexChanged="DataGrid_ColumnDisplayIndexChanged"
                             GridLinesVisibility="Vertical"
+                            HeadersVisibility="All"
                             IsReadOnly="True"
                             ItemsSource="{x:Bind ViewModel.Anime}"
                             Loaded="DataGrid_Loaded"
                             RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
                             RowDetailsVisibilityMode="VisibleWhenSelected"
+                            RowHeaderWidth="5"
                             SelectionMode="Single"
                             Sorting="DataGrid_Sorting">
+                            <ctk:DataGrid.RowHeaderStyle>
+                                <Style TargetType="primitives:DataGridRowHeader">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="primitives:DataGridRowHeader">
+                                                <Grid Background="{Binding AiringStatus, Converter={StaticResource StatusConverter}}" />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ctk:DataGrid.RowHeaderStyle>
                             <ctk:DataGrid.RowDetailsTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
                                     <Grid>
@@ -131,6 +145,24 @@
                                 </DataTemplate>
                             </ctk:DataGrid.RowDetailsTemplate>
                             <ctk:DataGrid.Columns>
+                                <!--<ctk:DataGridTemplateColumn
+                                    Width="10"
+                                    CanUserReorder="False"
+                                    CanUserResize="False"
+                                    CanUserSort="False"
+                                    DisplayIndex="0">
+                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="cm:AnimeModel">
+                                            <Grid Width="10" Background="{x:Bind AiringStatus, Converter={StaticResource StatusConverter}}" />
+                                        </DataTemplate>
+                                    </ctk:DataGridTemplateColumn.CellTemplate>
+                                    <ctk:DataGridTemplateColumn.CellStyle>
+                                        <Style TargetType="ctk:DataGridCell">
+                                            <Setter Property="Margin" Value="0" />
+                                            <Setter Property="Padding" Value="0" />
+                                        </Style>
+                                    </ctk:DataGridTemplateColumn.CellStyle>
+                                </ctk:DataGridTemplateColumn>-->
                                 <ctk:DataGridTextColumn
                                     Binding="{Binding Title}"
                                     Header="Title"

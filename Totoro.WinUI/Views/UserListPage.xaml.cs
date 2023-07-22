@@ -1,6 +1,12 @@
-﻿using CommunityToolkit.Labs.WinUI;
+﻿using System.Globalization;
+using System.Windows;
+using CommunityToolkit.Labs.WinUI;
 using CommunityToolkit.WinUI.UI.Controls;
+using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Helpers;
@@ -288,6 +294,30 @@ public sealed partial class UserListPage : UserListPageBase
     private void SaveDataGridSettings()
     {
         _localSettingsService.SaveSetting(DataGridSettingsKey, DataGridSettings);
+    }
+}
+
+public class AiringStatusToBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if(value is not AiringStatus status)
+        {
+            return DependencyProperty.UnsetValue;
+        }
+
+        return status switch
+        {
+            AiringStatus.CurrentlyAiring => new SolidColorBrush(Colors.LimeGreen),
+            AiringStatus.FinishedAiring => new SolidColorBrush(Colors.MediumSlateBlue),
+            AiringStatus.NotYetAired => new SolidColorBrush(Colors.LightSlateGray),
+            _ => new SolidColorBrush(Colors.Navy),
+        };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
     }
 }
 
