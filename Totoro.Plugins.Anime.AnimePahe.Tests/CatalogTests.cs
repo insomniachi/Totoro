@@ -18,6 +18,8 @@ public class CatalogTests
     [Theory]
     [InlineData("hyouka")]
     [InlineData("oshi no ko")]
+    [InlineData("Rent a Girlfriend Season 3")]
+    [InlineData("Jujutsu Kaisen Season 2")]
     public async Task Search(string query)
     {
         // arrange

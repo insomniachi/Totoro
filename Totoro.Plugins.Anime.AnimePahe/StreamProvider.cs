@@ -50,13 +50,14 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
         var releaseId = IdRegex().Match(doc.Text).Groups[1].Value;
         var firstPage = await GetSessionPage(releaseId, 1);
+        var offset = (int)firstPage.data.Min(x => x.episode);
         var (start, end) = range.Extract((int)firstPage.total);
         var startPage = (start + firstPage.per_page - 1) / firstPage.per_page;
         var endPage = (end + firstPage.per_page - 1) / firstPage.per_page;
 
         if (startPage == 1)
         {
-            await foreach(var item in GetStreamFromPage(firstPage, releaseId, start, end))
+            await foreach(var item in GetStreamFromPage(firstPage, releaseId, start, end, offset))
             {
                 yield return item;
             }
@@ -64,7 +65,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
         for (int i = startPage == 1 ? startPage + 1 : startPage; i <= endPage; i++)
         {
             var page = await GetSessionPage(releaseId, i);
-            await foreach (var item in GetStreamFromPage(page, releaseId, start, end))
+            await foreach (var item in GetStreamFromPage(page, releaseId, start, end, offset))
             {
                 yield return item;
             }
@@ -72,13 +73,14 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     }
 
-    private async IAsyncEnumerable<VideoStreamsForEpisode> GetStreamFromPage(AnimePaheEpisodePage page, string releaseId, int start, int end)
+    private async IAsyncEnumerable<VideoStreamsForEpisode> GetStreamFromPage(AnimePaheEpisodePage page, string releaseId, int start, int end, int offset)
     {
-        foreach (var item in page.data.Where(x => x.episode >= start && x.episode <= end))
+        foreach (var item in page.data.Where(x => x.episode - offset + 1 >= start && x.episode - offset + 1 <= end))
         {
+
             var streams = new VideoStreamsForEpisode
             {
-                Episode = (int)item.episode
+                Episode = (int)item.episode - offset + 1
             };
 
             var stringUrls = await GetStreamUrl(releaseId, item.session);
