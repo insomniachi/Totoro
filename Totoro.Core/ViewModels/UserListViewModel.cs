@@ -42,7 +42,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                              IAnimeServiceContext animeService,
                              IViewService viewService,
                              ISettings settings,
-                             IConnectivityService connectivityService)
+                             IConnectivityService connectivityService,
+                             ILocalSettingsService localSettingsService)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -51,29 +52,28 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
+        ResetDataGridColumns = ReactiveCommand.Create(() => DataGridSettings = Settings.GetDefaultUserListDataGridSettings());
+        SaveDataGridSettings = ReactiveCommand.Create(() => localSettingsService.SaveSetting(Settings.UserListDataGridSettings, DataGridSettings));
         Mode = settings.ListDisplayMode;
+        DataGridSettings = localSettingsService.ReadSetting(Settings.UserListDataGridSettings);
+        CheckNewColumns();
 
-        var sort = this.WhenAnyValue(x => x.SortSettings)
+        var sort = this.WhenAnyValue(x => x.DataGridSettings)
             .WhereNotNull()
-            .Select(settings =>
-            {
-                return settings switch
-                {
-                    { ColumnName: "Title", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title),
-                    { ColumnName: "Title", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Title),
-                    { ColumnName: "User Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking?.Score),
-                    { ColumnName: "User Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking?.Score),
-                    { ColumnName: "Mean Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.MeanScore),
-                    { ColumnName: "Mean Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore),
-                    { ColumnName: "Date Started", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.StartDate),
-                    { ColumnName: "Date Started", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.StartDate),
-                    { ColumnName: "Date Completed", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.FinishDate),
-                    { ColumnName: "Date Completed", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.FinishDate),
-                    { ColumnName: "Last Updated", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.UpdatedAt),
-                    { ColumnName: "Last Updated", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.UpdatedAt),
-                    _ => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title)
-                };
-            });
+            .SelectMany(settings => settings.WhenAnyValue(x => x.Sort))
+            .Do(_ => SaveDataGridSettings.Execute(Unit.Default))
+            .Select(GetSortComparer);
+
+        this.ObservableForProperty(x => x.DataGridSettings, x => x)
+            .Select(_ => Unit.Default)
+            .InvokeCommand(SaveDataGridSettings);
+
+        this.WhenAnyValue(x => x.DataGridSettings)
+            .WhereNotNull()
+            .SelectMany(x => x.OnColumnChanged())
+            .Throttle(TimeSpan.FromMilliseconds(100))
+            .Select(_ => Unit.Default)
+            .InvokeCommand(SaveDataGridSettings);
 
         _animeCache
             .Connect()
@@ -117,7 +117,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public string QuickAddSearchText { get; set; }
     [Reactive] public List<string> Genres { get; set; }
     [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
-    [Reactive] public SortSettings SortSettings { get; set; }
+    [Reactive] public DataGridSettings DataGridSettings { get; set; }
     [ObservableAsProperty] public bool IsListView { get; }
 
     public bool IsAuthenticated { get; }
@@ -126,6 +126,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     public ICommand ChangeCurrentViewCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand SetDisplayMode { get; }
+    public ICommand ResetDataGridColumns { get; }
+    public ICommand SaveDataGridSettings { get; }
 
     public Task SetInitialState()
     {
@@ -195,10 +197,47 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         QuickAddSearchText = string.Empty;
         _searchCache.Clear();
     }
-}
 
-public class SortSettings
-{
-    public string ColumnName { get; set; }
-    public bool IsAscending { get; set; }
+    private static IComparer<AnimeModel> GetSortComparer(DataGridSort sort)
+    {
+        return sort switch
+        {
+            { ColumnName: "Title", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title),
+            { ColumnName: "Title", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Title),
+            { ColumnName: "User Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking?.Score),
+            { ColumnName: "User Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking?.Score),
+            { ColumnName: "Mean Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.MeanScore),
+            { ColumnName: "Mean Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore),
+            { ColumnName: "Date Started", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.StartDate),
+            { ColumnName: "Date Started", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.StartDate),
+            { ColumnName: "Date Completed", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.FinishDate),
+            { ColumnName: "Date Completed", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.FinishDate),
+            { ColumnName: "Last Updated", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.UpdatedAt),
+            { ColumnName: "Last Updated", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.UpdatedAt),
+            { ColumnName: "Type", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Type),
+            { ColumnName: "Type", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Type),
+            _ => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title)
+        };
+    }
+
+    private void CheckNewColumns()
+    {
+        var defaultColumns = Settings.GetDefaultUserListDataGridSettings().Columns;
+        var newColumnsAdded = false;
+        foreach (var item in defaultColumns)
+        {
+            if (DataGridSettings.Columns.FirstOrDefault(x => x.Name == item.Name) is not null)
+            {
+                continue;
+            }
+
+            newColumnsAdded = true;
+            DataGridSettings.Columns.Add(item);
+        }
+
+        if (newColumnsAdded)
+        {
+            SaveDataGridSettings.Execute(Unit.Default);
+        }
+    }
 }

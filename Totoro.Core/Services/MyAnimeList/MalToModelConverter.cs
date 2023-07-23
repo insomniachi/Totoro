@@ -12,7 +12,8 @@ public class MalToModelConverter
             Id = malModel.Id,
             Title = malModel.Title,
             Image = malModel.MainPicture?.Large ?? string.Empty,
-            Description = malModel.Synopsis
+            Description = malModel.Synopsis,
+            Type = malModel.MediaType.ToString()
         };
 
         try

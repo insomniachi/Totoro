@@ -27,6 +27,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         MalApi.AnimeFieldNames.Videos,
         MalApi.AnimeFieldNames.EndDate,
         MalApi.AnimeFieldNames.StartDate,
+        MalApi.AnimeFieldNames.MediaType
     };
 
     public bool IsAuthenticated => _client.IsAuthenticated;

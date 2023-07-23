@@ -27,6 +27,7 @@ namespace Totoro.Core.Services.AniList
                 AlternativeTitles = GetAlternateTiltes(media.Title),
                 AiredEpisodes = media.NextAiringEpisode?.Episode - 1 ?? 0,
                 BannerImage = media.BannerImage,
+                Type = ConvertSource(media.Source),
                 NextEpisodeAt = ConvertToExactTime(media.NextAiringEpisode?.TimeUntilAiring),
                 Genres = media.Genres,
                 Related = ConvertSimple(media.Relations?.Nodes.Where(x => x.Type == MediaType.Anime)),
@@ -221,6 +222,22 @@ namespace Totoro.Core.Services.AniList
                     Url = $"https://www.youtube.com/watch?v={trailer.Id}/",
                     Thumbnail = trailer.Thumbnail
                 }
+            };
+        }
+
+        private static string ConvertSource(MediaSource? source)
+        {
+            return source switch
+            {
+                MediaSource.VideoGame => "Video Game",
+                MediaSource.LightNovel => "Light Novel",
+                MediaSource.LiveAction => "Live Action",
+                MediaSource.MultimediaProject => "Multimedia Project",
+                MediaSource.PictureBook => "Picture Book",
+                MediaSource.VisualNovel => "Visual Novel",
+                MediaSource.WebNovel => "Web Novel",
+                null => MediaSource.Other.ToString(),
+                _ => source.ToString()
             };
         }
     }

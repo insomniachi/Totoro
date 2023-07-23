@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core;
@@ -38,6 +37,7 @@ public static class Settings
     public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", new ObservableCollection<string>());
     public static Key<StartupOptions> StartupOptions { get; } = new("StartupOptions", () => new StartupOptions());
     public static Key<DisplayMode> ListDisplayMode { get; } = new("ListDisplayMode", DisplayMode.Grid);
+    public static Key<DataGridSettings> UserListDataGridSettings = new("UserListDataGridSettings", GetDefaultUserListDataGridSettings);
 
     public static IEnumerable<string> GetObsoleteKeys()
     {
@@ -46,5 +46,66 @@ public static class Settings
             .Where(x => x.GetCustomAttribute<ObsoleteAttribute>() is not null)
             .Select(x => x.GetValue(null) as IKey)
             .Select(x => x.Name);
+    }
+
+    public static DataGridSettings GetDefaultUserListDataGridSettings()
+    {
+        return new DataGridSettings
+        {
+            Sort = new ("Title", true),
+            Columns = new List<DataGridColumnModel>()
+            {
+                new()
+                {
+                    Name = "Title",
+                    DisplayIndex = 0,
+                    Width = 600
+                },
+                new()
+                {
+                    Name = "Season",
+                    DisplayIndex = 1,
+                },
+                new()
+                {
+                    Name = "Mean Score",
+                    DisplayIndex = 2,
+                },
+                new()
+                {
+                    Name = "User Score",
+                    DisplayIndex = 3,
+                },
+                new()
+                {
+                    Name = "Tracking",
+                    DisplayIndex = 4,
+                },
+                new()
+                {
+                    Name = "Date Started",
+                    DisplayIndex = 5,
+                    IsVisible = false
+                },
+                new()
+                {
+                    Name = "Date Completed",
+                    DisplayIndex = 6,
+                    IsVisible = false
+                },
+                new()
+                {
+                    Name = "Last Updated",
+                    DisplayIndex = 7,
+                    IsVisible = false
+                },
+                new()
+                {
+                    Name = "Type",
+                    DisplayIndex = 8,
+                    IsVisible = false
+                }
+            }
+        };
     }
 }

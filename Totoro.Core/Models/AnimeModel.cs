@@ -30,6 +30,7 @@ public class AnimeModel : ReactiveObject, IAnimeModel
     [Reactive] public int AiredEpisodes { get; set; }
     [Reactive] public string BannerImage { get; set; } = string.Empty;
     [Reactive] public DateTime? NextEpisodeAt { get; set; }
+    public string Type { get; set; }
 
     public override string ToString()
     {

@@ -2,7 +2,9 @@
     x:Class="Totoro.WinUI.Views.UserListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:b="using:Totoro.WinUI.Behaviors"
     xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -27,6 +29,7 @@
             </ResourceDictionary.MergedDictionaries>
             <v:HumanizeConverter x:Key="HumanizeConverter" />
             <v:AiringStatusToBrushConverter x:Key="StatusConverter" />
+            <v:ScoreConverter x:Key="ScoreConverter" />
         </ResourceDictionary>
     </v:UserListPageBase.Resources>
 
@@ -94,24 +97,24 @@
                     </ctk:Case>
                     <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
                         <ctk:DataGrid
-                            x:Name="DataGrid"
+                            x:Name="ListDataGrid"
                             AlternatingRowBackground="{ThemeResource SubtleFillColorTransparentBrush}"
                             AreRowDetailsFrozen="True"
                             AutoGenerateColumns="False"
                             CanUserReorderColumns="True"
                             CanUserResizeColumns="True"
                             CanUserSortColumns="True"
-                            ColumnDisplayIndexChanged="DataGrid_ColumnDisplayIndexChanged"
                             GridLinesVisibility="Vertical"
                             HeadersVisibility="All"
-                            IsReadOnly="True"
                             ItemsSource="{x:Bind ViewModel.Anime}"
-                            Loaded="DataGrid_Loaded"
+                            LoadingRow="OnLoadingRow"
                             RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
                             RowDetailsVisibilityMode="VisibleWhenSelected"
                             RowHeaderWidth="5"
-                            SelectionMode="Single"
-                            Sorting="DataGrid_Sorting">
+                            SelectionMode="Single">
+                            <Interactivity:Interaction.Behaviors>
+                                <b:DataGridPersistenceBehavior Settings="{x:Bind ViewModel.DataGridSettings, Mode=OneWay}" />
+                            </Interactivity:Interaction.Behaviors>
                             <ctk:DataGrid.RowHeaderStyle>
                                 <Style TargetType="primitives:DataGridRowHeader">
                                     <Setter Property="Template">
@@ -138,38 +141,25 @@
                                             PlaceholderStretch="Fill"
                                             Source="{x:Bind Image}"
                                             Stretch="UniformToFill" />
-                                        <StackPanel Grid.Column="1" Padding="10">
+                                        <StackPanel
+                                            Grid.Column="1"
+                                            Padding="10"
+                                            Spacing="10">
                                             <TextBlock Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                             </ctk:DataGrid.RowDetailsTemplate>
                             <ctk:DataGrid.Columns>
-                                <!--<ctk:DataGridTemplateColumn
-                                    Width="10"
-                                    CanUserReorder="False"
-                                    CanUserResize="False"
-                                    CanUserSort="False"
-                                    DisplayIndex="0">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <Grid Width="10" Background="{x:Bind AiringStatus, Converter={StaticResource StatusConverter}}" />
-                                        </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                    <ctk:DataGridTemplateColumn.CellStyle>
-                                        <Style TargetType="ctk:DataGridCell">
-                                            <Setter Property="Margin" Value="0" />
-                                            <Setter Property="Padding" Value="0" />
-                                        </Style>
-                                    </ctk:DataGridTemplateColumn.CellStyle>
-                                </ctk:DataGridTemplateColumn>-->
                                 <ctk:DataGridTextColumn
                                     Binding="{Binding Title}"
                                     Header="Title"
+                                    IsReadOnly="True"
                                     Tag="Title" />
                                 <ctk:DataGridTemplateColumn
                                     CanUserSort="False"
                                     Header="Season"
+                                    IsReadOnly="True"
                                     Tag="Season">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
@@ -180,7 +170,10 @@
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn Header="Average" Tag="Mean Score">
+                                <ctk:DataGridTemplateColumn
+                                    Header="Average"
+                                    IsReadOnly="True"
+                                    Tag="Mean Score">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
@@ -190,7 +183,10 @@
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn Header="Score" Tag="User Score">
+                                <ctk:DataGridTemplateColumn
+                                    Header="Score"
+                                    IsReadOnly="True"
+                                    Tag="User Score">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
@@ -201,9 +197,10 @@
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
                                 <ctk:DataGridTemplateColumn
-                                    MinWidth="100"
+                                    MinWidth="173"
                                     CanUserSort="False"
                                     Header="Progress"
+                                    IsReadOnly="True"
                                     Tag="Tracking">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
@@ -222,7 +219,10 @@
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn Header="Started" Tag="Date Started">
+                                <ctk:DataGridTemplateColumn
+                                    Header="Started"
+                                    IsReadOnly="True"
+                                    Tag="Date Started">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
@@ -232,7 +232,10 @@
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn Header="Completed" Tag="Date Completed">
+                                <ctk:DataGridTemplateColumn
+                                    Header="Completed"
+                                    IsReadOnly="True"
+                                    Tag="Date Completed">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
@@ -242,7 +245,10 @@
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn Header="Last updated" Tag="Last Updated">
+                                <ctk:DataGridTemplateColumn
+                                    Header="Last updated"
+                                    IsReadOnly="True"
+                                    Tag="Last Updated">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
@@ -252,6 +258,11 @@
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
+                                <ctk:DataGridTextColumn
+                                    Binding="{Binding Type}"
+                                    Header="Type"
+                                    IsReadOnly="True"
+                                    Tag="Type" />
                             </ctk:DataGrid.Columns>
                         </ctk:DataGrid>
                     </ctk:Case>
@@ -416,16 +427,17 @@
                             </AppBarButton.Icon>
                             <AppBarButton.Flyout>
                                 <MenuFlyout>
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind DataGridSettings.Columns[1].IsVisible, Mode=TwoWay}" Text="Season" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind DataGridSettings.Columns[2].IsVisible, Mode=TwoWay}" Text="Average Score" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind DataGridSettings.Columns[3].IsVisible, Mode=TwoWay}" Text="User Score" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind DataGridSettings.Columns[4].IsVisible, Mode=TwoWay}" Text="Tracking" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind DataGridSettings.Columns[5].IsVisible, Mode=TwoWay}" Text="Date Stared" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind DataGridSettings.Columns[6].IsVisible, Mode=TwoWay}" Text="Date Completed" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind DataGridSettings.Columns[7].IsVisible, Mode=TwoWay}" Text="Last Updated" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[1].IsVisible, Mode=TwoWay}" Text="Season" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[2].IsVisible, Mode=TwoWay}" Text="Average Score" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[3].IsVisible, Mode=TwoWay}" Text="User Score" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[4].IsVisible, Mode=TwoWay}" Text="Tracking" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[5].IsVisible, Mode=TwoWay}" Text="Date Stared" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[6].IsVisible, Mode=TwoWay}" Text="Date Completed" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[7].IsVisible, Mode=TwoWay}" Text="Last Updated" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[8].IsVisible, Mode=TwoWay}" Text="Type" />
                                     <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem Click="OnSaveColumnWidths" Text="Save Column Widths" />
-                                    <MenuFlyoutItem Click="ResetDataGridSettings" Text="Reset to defaults" />
+                                    <MenuFlyoutItem Click="OnSaveColumnWidths" Text="Save column widths" />
+                                    <MenuFlyoutItem Command="{x:Bind ViewModel.ResetDataGridColumns}" Text="Reset columns" />
                                 </MenuFlyout>
                             </AppBarButton.Flyout>
                         </AppBarButton>

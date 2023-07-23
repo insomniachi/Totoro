@@ -222,7 +222,8 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
         MalApi.AnimeFieldNames.Genres,
         MalApi.AnimeFieldNames.Status,
         MalApi.AnimeFieldNames.Videos,
-        MalApi.AnimeFieldNames.StartDate
+        MalApi.AnimeFieldNames.StartDate,
+        MalApi.AnimeFieldNames.MediaType
     };
     private async Task<int> GetAiredEpisodes(AnimeModel model)
     {

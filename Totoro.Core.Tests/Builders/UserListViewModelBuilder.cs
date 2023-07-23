@@ -15,7 +15,9 @@ internal class UserListViewModelBuilder
         return new UserListViewModel(_trackingServiceMock.Object,
                                      _animeServiceMock.Object,
                                      _viewServiceMock.Object,
-                                     _connectivityServiceMock.Object);
+                                     Mock.Of<ISettings>(),
+                                     _connectivityServiceMock.Object,
+                                     Mock.Of<ILocalSettingsService>());
     }
 
     internal UserListViewModelBuilder WithTrackingService(Action<Mock<ITrackingServiceContext>> configure)
