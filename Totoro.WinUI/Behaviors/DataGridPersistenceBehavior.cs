@@ -2,6 +2,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.Xaml.Interactivity;
 using ReactiveMarbles.ObservableEvents;
+using SharpCompress;
+using System.Text;
 using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Behaviors
@@ -48,7 +50,7 @@ namespace Totoro.WinUI.Behaviors
 
             AssociatedObject
                 .Events()
-                .ColumnDisplayIndexChanged
+                .ColumnReordered
                 .Where(_ => Settings is not null)
                 .Subscribe(OnDisplayIndexChanged)
                 .DisposeWith(_disposables);
@@ -69,12 +71,15 @@ namespace Totoro.WinUI.Behaviors
 
         private void OnDisplayIndexChanged(DataGridColumnEventArgs args)
         {
-            var tag = (string)args.Column.Tag;
-            if (Settings.Columns.FirstOrDefault(x => x.Name == tag) is not { } model)
+            foreach (var column in AssociatedObject.Columns)
             {
-                return;
+                var tag = (string)column.Tag;
+                if (Settings.Columns.FirstOrDefault(x => x.Name == tag) is not { } model)
+                {
+                    return;
+                }
+                model.DisplayIndex = column.DisplayIndex;
             }
-            model.DisplayIndex = args.Column.DisplayIndex;
         }
 
         private void OnSorting(DataGridColumnEventArgs args)
@@ -99,7 +104,11 @@ namespace Totoro.WinUI.Behaviors
 
         private void ApplyDataGridSettings()
         {
-            foreach (var column in AssociatedObject.Columns)
+            AssociatedObject.Columns.ForEach(x => x.Visibility = Visibility.Collapsed);
+
+            var sb = new StringBuilder();
+
+            foreach (var column in AssociatedObject.Columns.OrderBy(x => x.DisplayIndex))
             {
                 var tag = (string)column.Tag;
 
@@ -119,7 +128,11 @@ namespace Totoro.WinUI.Behaviors
                 column.Width = model.Width is null
                     ? DataGridLength.Auto
                     : new DataGridLength(model.Width.Value, DataGridLengthUnitType.Pixel);
+
+                sb.AppendLine($"{model.Name} : {column.DisplayIndex}");
             }
+
+            var result = sb.ToString();
         }
     }
 }
