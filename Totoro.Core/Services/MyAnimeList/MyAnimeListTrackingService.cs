@@ -81,6 +81,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                     .ObserveOn(RxApp.MainThreadScheduler)
                     .Subscribe(x => model.AiredEpisodes = x);
 
+                    _anilistService
+                        .GetNextAiringEpisodeTime(model.Id)
+                        .ToObservable()
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(x => model.NextEpisodeAt = x);
+
                     list.Add(model);
                 }
 

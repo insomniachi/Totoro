@@ -104,6 +104,12 @@ public static class Settings
                     Name = "Type",
                     DisplayIndex = 8,
                     IsVisible = false
+                },
+                new()
+                {
+                    Name = "Next Episode",
+                    DisplayIndex = 9,
+                    IsVisible = false
                 }
             }
         };

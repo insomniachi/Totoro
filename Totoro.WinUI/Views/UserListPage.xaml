@@ -263,6 +263,19 @@
                                     Header="Type"
                                     IsReadOnly="True"
                                     Tag="Type" />
+                                <ctk:DataGridTemplateColumn
+                                    Header="Next episode"
+                                    IsReadOnly="True"
+                                    Tag="Next Episode">
+                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="cm:AnimeModel">
+                                            <TextBlock
+                                                Margin="10,0"
+                                                VerticalAlignment="Center"
+                                                Text="{x:Bind NextEpisodeAt, Converter={StaticResource HumanizeConverter}, Mode=OneWay, ConverterParameter=1}" />
+                                        </DataTemplate>
+                                    </ctk:DataGridTemplateColumn.CellTemplate>
+                                </ctk:DataGridTemplateColumn>
                             </ctk:DataGrid.Columns>
                         </ctk:DataGrid>
                     </ctk:Case>
@@ -435,6 +448,7 @@
                                     <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[6].IsVisible, Mode=TwoWay}" Text="Date Completed" />
                                     <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[7].IsVisible, Mode=TwoWay}" Text="Last Updated" />
                                     <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[8].IsVisible, Mode=TwoWay}" Text="Type" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[9].IsVisible, Mode=TwoWay}" Text="Next Episode" />
                                     <MenuFlyoutSeparator />
                                     <MenuFlyoutItem Click="OnSaveColumnWidths" Text="Save column widths" />
                                     <MenuFlyoutItem Command="{x:Bind ViewModel.ResetDataGridColumns}" Text="Reset columns" />

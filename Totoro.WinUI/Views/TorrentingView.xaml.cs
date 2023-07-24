@@ -80,8 +80,20 @@ public class TorrentStateConverter : IValueConverter
 
 public class HumanizeConverter : IValueConverter
 {
+    public bool ShowRemainingTime { get; set; }
+
     public object Convert(object value, Type targetType, object parameter, string language)
     {
+        if(parameter is not null)
+        {
+            return value switch
+            {
+                DateTime d when d == new DateTime() => "-",
+                DateTime d => (d - DateTime.Now).Humanize(2),
+                _ => DependencyProperty.UnsetValue
+            };
+        }
+
         return value switch
         {
             DateTime d when d == new DateTime() => "-",
