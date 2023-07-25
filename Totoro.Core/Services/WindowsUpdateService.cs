@@ -41,8 +41,8 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             .Where(vi =>
             {
                 var current = Assembly.GetEntryAssembly().GetName().Version;
-                this.Log().Debug("Current Version, {Version}", current);
-                this.Log().Debug("Latest Version, {Version}", vi.Version);
+                this.Log().Debug($"Current Version, {current}");
+                this.Log().Debug($"Latest Version, {vi.Version}");
                 return vi.Version > current;
             })
             .Throttle(TimeSpan.FromSeconds(3));

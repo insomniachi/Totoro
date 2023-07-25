@@ -75,15 +75,15 @@ public class AnimeHelpers
         return $"{watched}/{total}";
     }
 
-    public static string UserScore(AnimeModel a)
+    public static string UserScore(Tracking tracking)
     {
-        if (a.Tracking is null)
+        if (tracking is null)
         {
             return "-";
         }
 
-        return a.Tracking.Score == 0
+        return tracking.Score == 0
             ? "-"
-            : a.Tracking.Score.ToString();
+            : tracking.Score.ToString();
     }
 }

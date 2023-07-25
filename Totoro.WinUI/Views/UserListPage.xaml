@@ -183,18 +183,21 @@
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                 </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn
-                                    Header="Score"
-                                    IsReadOnly="True"
-                                    Tag="User Score">
+                                <ctk:DataGridTemplateColumn Header="Score" Tag="User Score">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
-                                                Text="{x:Bind help:AnimeHelpers.UserScore((cm:AnimeModel))}" />
+                                                Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}" />
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>
+                                    <ctk:DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate x:DataType="cm:AnimeModel">
+                                            <uc:RatingPicker HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                             Anime="{x:Bind}"/>
+                                        </DataTemplate>
+                                    </ctk:DataGridTemplateColumn.CellEditingTemplate>
                                 </ctk:DataGridTemplateColumn>
                                 <ctk:DataGridTemplateColumn
                                     MinWidth="173"

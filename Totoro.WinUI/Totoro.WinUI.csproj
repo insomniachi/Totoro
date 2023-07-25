@@ -20,6 +20,7 @@
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="UserControls\RatingPicker.xaml" />
 	  <None Remove="Views\SettingsSections\ExternalMediaSection.xaml" />
 	</ItemGroup>
 
@@ -84,6 +85,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="UserControls\RatingPicker.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Views\NowPlayingPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
