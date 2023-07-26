@@ -267,7 +267,7 @@
                                     IsReadOnly="True"
                                     Tag="Type" />
                                 <ctk:DataGridTemplateColumn
-                                    Header="Next episode"
+                                    Header="Next Episode"
                                     IsReadOnly="True"
                                     Tag="Next Episode">
                                     <ctk:DataGridTemplateColumn.CellTemplate>
