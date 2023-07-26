@@ -216,6 +216,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             { ColumnName: "Last Updated", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.UpdatedAt),
             { ColumnName: "Type", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Type),
             { ColumnName: "Type", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Type),
+            { ColumnName: "Next Episode", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.NextEpisodeAt),
+            { ColumnName: "Next Episode", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.NextEpisodeAt),
             _ => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title)
         };
     }
