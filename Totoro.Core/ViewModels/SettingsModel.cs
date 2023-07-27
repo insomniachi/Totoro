@@ -20,6 +20,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         DefaultProviderType = localSettingsService.ReadSetting(Settings.DefaultProviderType);
         PreferSubs = localSettingsService.ReadSetting(Settings.PreferSubs);
         UseDiscordRichPresense = localSettingsService.ReadSetting(Settings.UseDiscordRichPresense);
+        ShowTimeRemainingOnDiscordRichPresense = localSettingsService.ReadSetting(Settings.ShowTimeRemainingOnDiscordRichPresense);
         TimeRemainingWhenEpisodeCompletesInSeconds = localSettingsService.ReadSetting(Settings.TimeRemainingWhenEpisodeCompletesInSeconds);
         OpeningSkipDurationInSeconds = localSettingsService.ReadSetting(Settings.OpeningSkipDurationInSeconds);
         ContributeTimeStamps = localSettingsService.ReadSetting(Settings.ContributeTimeStamps);
@@ -105,6 +106,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public bool PreferSubs { get; set; }
     [Reactive] public string DefaultProviderType { get; set; }
     [Reactive] public bool UseDiscordRichPresense { get; set; }
+    [Reactive] public bool ShowTimeRemainingOnDiscordRichPresense { get; set; }
     [Reactive] public int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     [Reactive] public int OpeningSkipDurationInSeconds { get; set; }
     [Reactive] public bool ContributeTimeStamps { get; set; }

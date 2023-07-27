@@ -82,15 +82,26 @@
             </labs:SettingsCard.HeaderIcon>
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Let discord know what anime you're watching." Header="Use discord rich presense">
-            <labs:SettingsCard.HeaderIcon>
+        <labs:SettingsExpander
+            Description="Let discord know what anime you're watching."
+            Header="Use discord rich presense"
+            IsExpanded="True">
+            <labs:SettingsExpander.HeaderIcon>
                 <FontIcon Glyph="&#xe7fc;" />
-            </labs:SettingsCard.HeaderIcon>
+            </labs:SettingsExpander.HeaderIcon>
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.UseDiscordRichPresense, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
-        </labs:SettingsCard>
+            <labs:SettingsExpander.Items>
+                <labs:SettingsCard Header="Show time remaining on rich presence">
+                    <ToggleSwitch
+                        IsOn="{x:Bind ViewModel.Settings.ShowTimeRemainingOnDiscordRichPresense, Mode=TwoWay}"
+                        OffContent="Off"
+                        OnContent="On" />
+                </labs:SettingsCard>
+            </labs:SettingsExpander.Items>
+        </labs:SettingsExpander>
 
         <labs:SettingsCard Description="Contribute opening and ending timestamps to the community." Header="Contribute Timestamps">
             <labs:SettingsCard.HeaderIcon>

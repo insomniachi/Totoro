@@ -21,7 +21,7 @@ public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
     {
         _duration = duration;
 
-        if (!_settings.UseDiscordRichPresense)
+        if (!_settings.UseDiscordRichPresense || !_settings.ShowTimeRemainingOnDiscordRichPresense)
         {
             return;
         }
@@ -45,7 +45,10 @@ public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
         _discordRichPresense.SetUrl(GetUrl(_animeModel?.Id));
         _discordRichPresense.UpdateDetails(GetTitle());
         _discordRichPresense.UpdateState($"Episode {_currentEpisode}");
-        _discordRichPresense.UpdateTimer(_duration - _currentTime);
+        if (_settings.ShowTimeRemainingOnDiscordRichPresense)
+        {
+            _discordRichPresense.UpdateTimer(_duration - _currentTime); 
+        }
         _discordRichPresense.UpdateImage(GetDiscordImageKey());
     }
 

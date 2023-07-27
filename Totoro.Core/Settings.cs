@@ -9,6 +9,7 @@ public static class Settings
     public static Key<bool> PreferSubs { get; } = new("PreferSubs", true);
     public static Key<string> DefaultProviderType { get; } = new("DefaultProviderType", "anime-pahe");
     public static Key<bool> UseDiscordRichPresense { get; } = new("UseDiscordRichPresense", false);
+    public static Key<bool> ShowTimeRemainingOnDiscordRichPresense { get; } = new("ShowTimeRemainingOnDiscordRichPresense", true);
     public static Key<int> TimeRemainingWhenEpisodeCompletesInSeconds { get; } = new("TimeRemainingWhenEpisodeCompletesInSeconds", 120);
     public static Key<int> OpeningSkipDurationInSeconds { get; } = new("OpeningSkipDurationInSeconds", 85);
     public static Key<Guid> AniSkipId { get; } = new("AniSkipId", Guid.NewGuid);
