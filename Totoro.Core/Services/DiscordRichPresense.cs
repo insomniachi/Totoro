@@ -23,5 +23,5 @@ public class DiscordRichPresense : IDiscordRichPresense
         }
     }
     public void ClearTimer() => _client.UpdateClearTime();
-    public void Clear() => SetPresence();
+    public void Clear() => _client.ClearPresence();
 }

@@ -200,27 +200,27 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     private static IComparer<AnimeModel> GetSortComparer(DataGridSort sort)
     {
+        if(sort is null)
+        {
+            return null;
+        }
+
+        var direction = sort.IsAscending ? SortDirection.Ascending : SortDirection.Descending;
+
         return sort switch
         {
-            { ColumnName: "Title", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title),
-            { ColumnName: "Title", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Title),
-            { ColumnName: "User Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking?.Score),
-            { ColumnName: "User Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking?.Score),
-            { ColumnName: "Mean Score", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.MeanScore),
-            { ColumnName: "Mean Score", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.MeanScore),
-            { ColumnName: "Date Started", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.StartDate),
-            { ColumnName: "Date Started", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.StartDate),
-            { ColumnName: "Date Completed", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.FinishDate),
-            { ColumnName: "Date Completed", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.FinishDate),
-            { ColumnName: "Last Updated", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Tracking.UpdatedAt),
-            { ColumnName: "Last Updated", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Tracking.UpdatedAt),
-            { ColumnName: "Type", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.Type),
-            { ColumnName: "Type", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.Type),
-            { ColumnName: "Next Episode", IsAscending: true } => SortExpressionComparer<AnimeModel>.Ascending(x => x.NextEpisodeAt),
-            { ColumnName: "Next Episode", IsAscending: false } => SortExpressionComparer<AnimeModel>.Descending(x => x.NextEpisodeAt),
-            _ => SortExpressionComparer<AnimeModel>.Ascending(x => x.Title)
+            { ColumnName: "Title" } => CreateComparer(x => x.Title, sort.IsAscending),
+            { ColumnName: "User Score" } => CreateComparer(x => x.Tracking.Score, sort.IsAscending),
+            { ColumnName: "Mean Score" } => CreateComparer(x => x.MeanScore, sort.IsAscending),
+            { ColumnName: "Date Started" } => CreateComparer(x => x.Tracking.StartDate, sort.IsAscending),
+            { ColumnName: "Date Completed" } => CreateComparer(x => x.Tracking.FinishDate, sort.IsAscending),
+            { ColumnName: "Type" } => CreateComparer(x => x.Type, sort.IsAscending),
+            { ColumnName: "Next Episode" } => CreateComparer(x => x.NextEpisodeAt, sort.IsAscending),
+            _ => null
         };
     }
+
+    private static IComparer<AnimeModel> CreateComparer(Func<AnimeModel, IComparable> expression, bool isAscending) => new SortExpressionComparer<AnimeModel> { new(expression, isAscending ? SortDirection.Ascending : SortDirection.Descending) };
 
     private void CheckNewColumns()
     {

@@ -53,7 +53,6 @@ internal class SettingsModel : ReactiveObject, ISettings
         if (UseDiscordRichPresense && !_dRpc.IsInitialized)
         {
             _dRpc.Initialize();
-            _dRpc.SetPresence();
         }
 
         ObserveChanges();
@@ -77,7 +76,6 @@ internal class SettingsModel : ReactiveObject, ISettings
             .Subscribe(value =>
             {
                 _dRpc.Initialize();
-                _dRpc.SetPresence();
             });
 
         LibraryFolders

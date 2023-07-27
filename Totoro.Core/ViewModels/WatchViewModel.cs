@@ -383,6 +383,10 @@ public partial class WatchViewModel : NavigatableViewModel
     public override async Task OnNavigatedFrom()
     {
         MediaPlayer?.Dispose();
+        foreach (var disposable in _mediaEventListeners.OfType<IDisposable>())
+        {
+            disposable.Dispose();
+        }
         NativeMethods.AllowSleep();
         if (_videoStreamResolver is IAsyncDisposable ad)
         {

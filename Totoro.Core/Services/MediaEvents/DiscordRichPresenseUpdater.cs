@@ -2,12 +2,13 @@
 
 namespace Totoro.Core.Services.MediaEvents;
 
-public class DiscordRichPresenseUpdater : MediaEventListener
+public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
 {
     private readonly IDiscordRichPresense _discordRichPresense;
     private readonly ISettings _settings;
     private TimeSpan _currentTime;
     private TimeSpan _duration;
+    private bool _disposed;
 
     public DiscordRichPresenseUpdater(IDiscordRichPresense discordRichPresense,
                                       ISettings settings)
@@ -40,6 +41,7 @@ public class DiscordRichPresenseUpdater : MediaEventListener
             return;
         }
 
+        _discordRichPresense.SetPresence();
         _discordRichPresense.UpdateDetails(GetTitle());
         _discordRichPresense.UpdateState($"Episode {_currentEpisode}");
         _discordRichPresense.UpdateTimer(_duration - _currentTime);
@@ -48,7 +50,7 @@ public class DiscordRichPresenseUpdater : MediaEventListener
 
     protected override void OnPaused()
     {
-        if (!_settings.UseDiscordRichPresense)
+        if (!_settings.UseDiscordRichPresense || _disposed)
         {
             return;
         }
@@ -93,5 +95,26 @@ public class DiscordRichPresenseUpdater : MediaEventListener
     }
 
     private string GetTitle() => _animeModel?.Title ?? _searchResult?.Title ?? string.Empty;
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    public virtual void Dispose(bool disposing)
+    {
+        if (_disposed || !_settings.UseDiscordRichPresense)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _discordRichPresense.Clear();
+        }
+
+        _disposed = true;
+    }
 }
 
