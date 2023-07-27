@@ -42,6 +42,7 @@ public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
         }
 
         _discordRichPresense.SetPresence();
+        _discordRichPresense.SetUrl(GetUrl(_animeModel?.Id));
         _discordRichPresense.UpdateDetails(GetTitle());
         _discordRichPresense.UpdateState($"Episode {_currentEpisode}");
         _discordRichPresense.UpdateTimer(_duration - _currentTime);
@@ -115,6 +116,21 @@ public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
         }
 
         _disposed = true;
+    }
+
+    private string GetUrl(long? id)
+    {
+        if(id is null)
+        {
+            return string.Empty;
+        }
+
+        return _settings.DefaultListService switch
+        {
+            ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{id}/",
+            ListServiceType.AniList => $@"https://anilist.co/anime/{id}/",
+            _ => string.Empty
+        };
     }
 }
 

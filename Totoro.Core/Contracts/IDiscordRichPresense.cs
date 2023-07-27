@@ -10,5 +10,6 @@ public interface IDiscordRichPresense
     void Clear();
     void ClearTimer();
     void Initialize();
+    void SetUrl(string url);
     bool IsInitialized { get; }
 }

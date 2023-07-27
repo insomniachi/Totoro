@@ -24,4 +24,22 @@ public class DiscordRichPresense : IDiscordRichPresense
     }
     public void ClearTimer() => _client.UpdateClearTime();
     public void Clear() => _client.ClearPresence();
+    public void SetUrl(string url)
+    {
+        if(string.IsNullOrEmpty(url))
+        {
+            return;
+        }
+
+        var buttons = new Button[]
+        {
+            new Button()
+            {
+                Url = url,
+                Label = "View Anime"
+            }
+        };
+
+        _client.UpdateButtons(buttons);
+    }
 }
