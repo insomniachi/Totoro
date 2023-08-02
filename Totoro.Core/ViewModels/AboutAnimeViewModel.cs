@@ -28,6 +28,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
                                IAnimeIdService animeIdService,
                                IDebridServiceContext debridServiceContext)
     {
+        ListType = settings.DefaultListService;
 
         if(PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
         {
@@ -145,6 +146,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
     [ObservableAsProperty] public bool HasTracking { get; }
     [ObservableAsProperty] public IList<AnimeSound> Sounds { get; }
 
+    public ListServiceType ListType { get; }
     public string DefaultProviderType { get; }
     public ICommand PlaySound { get; }
     public ICommand Pause { get; }

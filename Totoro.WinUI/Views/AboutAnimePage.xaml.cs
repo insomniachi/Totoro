@@ -1,4 +1,5 @@
-﻿using Totoro.Core.ViewModels;
+﻿using CommunityToolkit.WinUI.UI.Controls;
+using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
 
@@ -29,5 +30,22 @@ public sealed partial class AboutAnimePage : AboutAnimePageBase
                 })
                 .DisposeWith(d);
         });
+    }
+
+    private void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        var url = ViewModel.ListType switch
+        {
+            ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{ViewModel.Anime.Id}/",
+            ListServiceType.AniList => $@"https://anilist.co/anime/{ViewModel.Anime.Id}/",
+            _ => string.Empty
+        };
+
+        if (string.IsNullOrEmpty(url))
+        {
+            return;
+        }
+
+        _ = Windows.System.Launcher.LaunchUriAsync(new Uri(url));
     }
 }

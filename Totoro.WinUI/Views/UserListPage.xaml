@@ -109,7 +109,7 @@
                             ItemsSource="{x:Bind ViewModel.Anime}"
                             LoadingRow="OnLoadingRow"
                             RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            RowDetailsVisibilityMode="VisibleWhenSelected"
+                            RowDetailsVisibilityMode="Collapsed"
                             RowHeaderWidth="5"
                             SelectionMode="Single">
                             <Interactivity:Interaction.Behaviors>
@@ -140,7 +140,9 @@
                                             PlaceholderSource="/Assets/placeholder.jpg"
                                             PlaceholderStretch="Fill"
                                             Source="{x:Bind Image}"
-                                            Stretch="UniformToFill" />
+                                            Stretch="UniformToFill"
+                                            Tapped="ImageTapped" />
+
                                         <StackPanel
                                             Grid.Column="1"
                                             Padding="10"

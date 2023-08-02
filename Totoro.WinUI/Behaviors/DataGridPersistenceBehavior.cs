@@ -69,8 +69,9 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
             .LoadingRow
             .Subscribe(x =>
             {
-                x.Row.PointerReleased += Row_PointerReleased;
-                x.Row.Tapped += Row_Tapped;
+                //x.Row.PointerReleased += Row_PointerReleased;
+                //x.Row.Tapped += Row_Tapped;
+                x.Row.DoubleTapped += Row_DoubleTapped;
             })
             .DisposeWith(_disposables);
 
@@ -79,14 +80,34 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
             .UnloadingRow
             .Subscribe(x =>
             {
-                x.Row.PointerReleased -= Row_PointerReleased;
-                x.Row.Tapped -= Row_Tapped;
+                //x.Row.PointerReleased -= Row_PointerReleased;
+                //x.Row.Tapped -= Row_Tapped;
+                x.Row.DoubleTapped += Row_DoubleTapped;
             })
             .DisposeWith(_disposables);
     }
 
-    private void Row_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e) => UnSelectIfSelected();
-    private void Row_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e) => UnSelectIfSelected();
+    private void Row_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+    {
+        if(sender is not DataGridRow row)
+        {
+            return;
+        }
+
+        row.DetailsVisibility = row.DetailsVisibility == Visibility.Visible
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+    }
+
+    //private void Row_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    //{
+    //    UnSelectIfSelected();
+    //}
+
+    //private void Row_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    //{
+    //    UnSelectIfSelected();
+    //}
 
     private void UnSelectIfSelected()
     {

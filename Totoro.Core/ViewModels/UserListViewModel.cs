@@ -48,6 +48,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         _trackingService = trackingService;
         _viewService = viewService;
         IsAuthenticated = trackingService.IsAuthenticated;
+        ListType = settings.DefaultListService;
 
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
@@ -120,6 +121,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public DataGridSettings DataGridSettings { get; set; }
     [ObservableAsProperty] public bool IsListView { get; }
 
+    public ListServiceType ListType { get; }
     public bool IsAuthenticated { get; }
     public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;

@@ -40,6 +40,8 @@ public sealed partial class UserListPage : UserListPageBase
         };
     }
 
+    public ICommand ViewInBrowser { get; }
+
     public UserListPage()
     {
         InitializeComponent();
@@ -91,6 +93,41 @@ public sealed partial class UserListPage : UserListPageBase
             .Subscribe()
             .DisposeWith(d);
         });
+
+        ViewInBrowser = ReactiveCommand.Create<AnimeModel>(async anime =>
+        {
+            var url = ViewModel.ListType switch
+            {
+                ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{anime.Id}/",
+                ListServiceType.AniList => $@"https://anilist.co/anime/{anime.Id}/",
+                _ => string.Empty
+            };
+
+            if(string.IsNullOrEmpty(url))
+            {
+                return;
+            }
+
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+        });
+    }
+
+    private void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        var anime = ((ImageEx)sender).DataContext as AnimeModel;
+        var url = ViewModel.ListType switch
+        {
+            ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{anime.Id}/",
+            ListServiceType.AniList => $@"https://anilist.co/anime/{anime.Id}/",
+            _ => string.Empty
+        };
+
+        if (string.IsNullOrEmpty(url))
+        {
+            return;
+        }
+
+        _ = Windows.System.Launcher.LaunchUriAsync(new Uri(url));
     }
 
     private void GenresButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

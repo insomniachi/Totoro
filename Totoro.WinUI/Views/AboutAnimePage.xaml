@@ -53,7 +53,8 @@
                     PlaceholderSource="/Assets/placeholder.jpg"
                     PlaceholderStretch="Fill"
                     Source="{x:Bind ViewModel.Anime.Image, Mode=OneWay}"
-                    Stretch="Uniform" />
+                    Stretch="Uniform"
+                    Tapped="ImageTapped" />
 
                 <SplitButton
                     Width="{Binding ElementName=Container, Path=ActualWidth}"
