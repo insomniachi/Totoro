@@ -194,8 +194,10 @@
                                     </ctk:DataGridTemplateColumn.CellTemplate>
                                     <ctk:DataGridTemplateColumn.CellEditingTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
-                                            <uc:RatingPicker HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                                             Anime="{x:Bind}"/>
+                                            <uc:RatingPicker
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Anime="{x:Bind}" />
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellEditingTemplate>
                                 </ctk:DataGridTemplateColumn>
