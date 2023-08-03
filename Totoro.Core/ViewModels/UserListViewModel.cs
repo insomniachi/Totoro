@@ -51,7 +51,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         ListType = settings.DefaultListService;
 
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
-        RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState);
+        RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState, this.WhenAnyValue(x => x.IsLoading).Select(x => !x));
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
         ResetDataGridColumns = ReactiveCommand.Create(() => DataGridSettings = Settings.GetDefaultUserListDataGridSettings());
         SaveDataGridSettings = ReactiveCommand.Create(() => localSettingsService.SaveSetting(Settings.UserListDataGridSettings, DataGridSettings));
@@ -182,10 +182,12 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
         state.AddOrUpdate(Filter);
+        state.AddOrUpdate(Mode);
     }
 
     public void RestoreState(IState state)
     {
+        Mode = state.GetValue<DisplayMode>(nameof(Mode));
         var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
         Filter = state.GetValue<AnimeCollectionFilter>(nameof(Filter));

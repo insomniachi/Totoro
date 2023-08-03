@@ -34,6 +34,11 @@ public sealed partial class AboutAnimePage : AboutAnimePageBase
 
     private void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
+        if(ViewModel.Anime is null)
+        {
+            return;
+        }
+
         var url = ViewModel.ListType switch
         {
             ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{ViewModel.Anime.Id}/",
