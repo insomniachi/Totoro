@@ -29,7 +29,6 @@
             </ResourceDictionary.MergedDictionaries>
             <v:HumanizeConverter x:Key="HumanizeConverter" />
             <v:AiringStatusToBrushConverter x:Key="StatusConverter" />
-            <v:ScoreConverter x:Key="ScoreConverter" />
         </ResourceDictionary>
     </v:UserListPageBase.Resources>
 
@@ -153,11 +152,30 @@
                                 </DataTemplate>
                             </ctk:DataGrid.RowDetailsTemplate>
                             <ctk:DataGrid.Columns>
-                                <ctk:DataGridTextColumn
-                                    Binding="{Binding Title}"
+                                <ctk:DataGridTemplateColumn
                                     Header="Title"
                                     IsReadOnly="True"
-                                    Tag="Title" />
+                                    Tag="Title">
+                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="cm:AnimeModel">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock
+                                                    Margin="10,0"
+                                                    VerticalAlignment="Center"
+                                                    Text="{Binding Title}" />
+                                                <InfoBadge
+                                                    x:Name="InfoBadge"
+                                                    VerticalAlignment="Center"
+                                                    Style="{ThemeResource AttentionValueInfoBadgeStyle}"
+                                                    Value="{x:Bind v:UserListPage.UnwatchedEpisodes((cm:AnimeModel), AiredEpisodes), Mode=OneWay}">
+                                                    <Interactivity:Interaction.Behaviors>
+                                                        <b:HideInfoBadeBehavior />
+                                                    </Interactivity:Interaction.Behaviors>
+                                                </InfoBadge>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ctk:DataGridTemplateColumn.CellTemplate>
+                                </ctk:DataGridTemplateColumn>
                                 <ctk:DataGridTemplateColumn
                                     CanUserSort="False"
                                     Header="Season"

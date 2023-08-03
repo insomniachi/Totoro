@@ -159,47 +159,34 @@ public sealed partial class UserListPage : UserListPageBase
         }
     }
 
-    private void OnLoadingRow(object sender, CommunityToolkit.WinUI.UI.Controls.DataGridRowEventArgs e)
+    private void OnLoadingRow(object sender, DataGridRowEventArgs e)
     {
         e.Row.ContextFlyout = Converters.AnimeToFlyout(e.Row.DataContext as AnimeModel);
     }
-}
 
-public class ScoreConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
+    public static Visibility InfoBadgeVisibillity(int value) => value > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    public static int UnwatchedEpisodes(AnimeModel anime, int airedEpisodes)
     {
-        if(value is null)
+        if (anime is null)
         {
-            return "(0) No Score";
+            return -1;
         }
 
-        if(value is not int score)
+        if (anime.Tracking is null || anime.Tracking.WatchedEpisodes is null)
         {
-            return DependencyProperty.UnsetValue;
+            return -1;
         }
 
-        return score switch
+        if (airedEpisodes == 0)
         {
-            1 => "(1) Appalling",
-            2 => "(2) Horrible",
-            3 => "(3) Very Bad",
-            4 => "(4) Bad",
-            5 => "(5) Average",
-            6 => "(6) Fine",
-            7 => "(7) Good",
-            8 => "(8) Very Good",
-            9 => "(9) Great",
-            10 => "(10) Masterpiece",
-            _ => "(0) No Score"
-        };
-    }
+            return -1;
+        }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        throw new NotImplementedException();
+        return (airedEpisodes - anime.Tracking.WatchedEpisodes.Value);
     }
 }
+
 
 public class AiringStatusToBrushConverter : IValueConverter
 {
