@@ -163,15 +163,10 @@
                                                     Margin="10,0"
                                                     VerticalAlignment="Center"
                                                     Text="{Binding Title}" />
-                                                <InfoBadge
-                                                    x:Name="InfoBadge"
+                                                <uc:UnwatchedEpisodesBadge
                                                     VerticalAlignment="Center"
-                                                    Style="{ThemeResource AttentionValueInfoBadgeStyle}"
-                                                    Value="{x:Bind v:UserListPage.UnwatchedEpisodes((cm:AnimeModel), AiredEpisodes), Mode=OneWay}">
-                                                    <Interactivity:Interaction.Behaviors>
-                                                        <b:HideInfoBadeBehavior />
-                                                    </Interactivity:Interaction.Behaviors>
-                                                </InfoBadge>
+                                                    Anime="{x:Bind}"
+                                                    Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
                                             </StackPanel>
                                         </DataTemplate>
                                     </ctk:DataGridTemplateColumn.CellTemplate>

@@ -163,28 +163,6 @@ public sealed partial class UserListPage : UserListPageBase
     {
         e.Row.ContextFlyout = Converters.AnimeToFlyout(e.Row.DataContext as AnimeModel);
     }
-
-    public static Visibility InfoBadgeVisibillity(int value) => value > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-    public static int UnwatchedEpisodes(AnimeModel anime, int airedEpisodes)
-    {
-        if (anime is null)
-        {
-            return -1;
-        }
-
-        if (anime.Tracking is null || anime.Tracking.WatchedEpisodes is null)
-        {
-            return -1;
-        }
-
-        if (airedEpisodes == 0)
-        {
-            return -1;
-        }
-
-        return (airedEpisodes - anime.Tracking.WatchedEpisodes.Value);
-    }
 }
 
 

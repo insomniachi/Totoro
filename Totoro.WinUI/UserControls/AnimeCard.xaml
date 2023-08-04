@@ -8,6 +8,7 @@
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
 
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
@@ -33,16 +34,14 @@
                     Source="{x:Bind Anime.Image, Mode=OneWay}"
                     Stretch="UniformToFill" />
 
-                <InfoBadge
-                    x:Name="InfoBadge"
+                <uc:UnwatchedEpisodesBadge
                     Width="30"
                     Height="30"
                     MaxHeight="30"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
-                    Style="{ThemeResource AttentionValueInfoBadgeStyle}"
-                    Visibility="{x:Bind InfoBadgeVisibillity(InfoBadge.Value), Mode=OneWay}"
-                    Value="{x:Bind UnwatchedEpisodes(Anime.AiredEpisodes), Mode=OneWay}" />
+                    Anime="{x:Bind Anime, Mode=OneWay}"
+                    Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
 
                 <Grid
                     x:Name="NextEpisodeInContainer"
