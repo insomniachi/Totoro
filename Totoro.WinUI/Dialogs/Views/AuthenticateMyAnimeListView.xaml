@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:views="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -21,11 +22,11 @@
             FontWeight="Bold"
             Text="Authenticated"
             Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
-        <ctk:Loading
+        <uc:Loading
             x:Name="LoadingControl"
             Grid.Row="1"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </ctk:Loading>
+        </uc:Loading>
     </Grid>
 </views:AuthenticateMyAnimeListViewBase>

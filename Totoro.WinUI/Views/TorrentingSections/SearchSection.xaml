@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
     xmlns:settingssections="using:Totoro.WinUI.Views.SettingsSections"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     x:Name="Page"
     mc:Ignorable="d">
@@ -58,7 +59,7 @@
             </Button>
         </StackPanel>
 
-        <ctk:DataGrid
+        <uc:DataGrid
             x:Name="DataGrid"
             Grid.Row="1"
             Margin="20"
@@ -73,11 +74,11 @@
             SelectionMode="Single"
             Sorting="DataGrid_Sorting"
             Tag="{x:Bind ViewModel.IsDebridAuthenticated}">
-            <ctk:DataGrid.Columns>
-                <ctk:DataGridTemplateColumn Header="Category" Visibility="Collapsed">
-                    <ctk:DataGridTemplateColumn.CellTemplate>
+            <uc:DataGrid.Columns>
+                <uc:DataGridTemplateColumn Header="Category" Visibility="Collapsed">
+                    <uc:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ctk:ImageEx
+                            <uc:ImageEx
                                 Width="80"
                                 Height="28"
                                 CacheMode="BitmapCache"
@@ -85,43 +86,43 @@
                                 Source="{Binding CategoryImage}"
                                 ToolTipService.ToolTip="{Binding Category}" />
                         </DataTemplate>
-                    </ctk:DataGridTemplateColumn.CellTemplate>
-                </ctk:DataGridTemplateColumn>
-                <ctk:DataGridTextColumn
+                    </uc:DataGridTemplateColumn.CellTemplate>
+                </uc:DataGridTemplateColumn>
+                <uc:DataGridTextColumn
                     Width="*"
                     Binding="{Binding Name}"
                     Header="Name" />
-                <ctk:DataGridTextColumn Binding="{Binding Size}" Header="Size" />
-                <ctk:DataGridTemplateColumn
+                <uc:DataGridTextColumn Binding="{Binding Size}" Header="Size" />
+                <uc:DataGridTemplateColumn
                     CanUserSort="True"
                     Header="Time"
                     Tag="Time"
                     Visibility="Collapsed">
-                    <ctk:DataGridTemplateColumn.CellTemplate>
+                    <uc:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock VerticalAlignment="Center" Text="{Binding Date, Converter={StaticResource HumanizeConverter}}" />
                         </DataTemplate>
-                    </ctk:DataGridTemplateColumn.CellTemplate>
-                </ctk:DataGridTemplateColumn>
-                <ctk:DataGridTextColumn
+                    </uc:DataGridTemplateColumn.CellTemplate>
+                </uc:DataGridTemplateColumn>
+                <uc:DataGridTextColumn
                     Binding="{Binding Seeders}"
                     FontWeight="Bold"
                     Foreground="Green"
                     Header="Seeders"
                     Tag="Seeders" />
-                <ctk:DataGridTextColumn
+                <uc:DataGridTextColumn
                     Binding="{Binding Leeches}"
                     FontWeight="Bold"
                     Foreground="Red"
                     Header="Leeches" />
-                <ctk:DataGridTextColumn
+                <uc:DataGridTextColumn
                     Binding="{Binding Completed}"
                     Header="Completed"
                     Visibility="Collapsed" />
-                <ctk:DataGridTemplateColumn Header="Actions">
-                    <ctk:DataGridTemplateColumn.CellTemplate>
+                <uc:DataGridTemplateColumn Header="Actions">
+                    <uc:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ctk:UniformGrid
+                            <uc:UniformGrid
                                 Margin="3,0"
                                 ColumnSpacing="3"
                                 Rows="1">
@@ -146,12 +147,12 @@
                                     ToolTipService.ToolTip="Download">
                                     <SymbolIcon Symbol="Download" />
                                 </Button>
-                            </ctk:UniformGrid>
+                            </uc:UniformGrid>
                         </DataTemplate>
-                    </ctk:DataGridTemplateColumn.CellTemplate>
-                </ctk:DataGridTemplateColumn>
-            </ctk:DataGrid.Columns>
-        </ctk:DataGrid>
+                    </uc:DataGridTemplateColumn.CellTemplate>
+                </uc:DataGridTemplateColumn>
+            </uc:DataGrid.Columns>
+        </uc:DataGrid>
     </Grid>
 
 </Page>
