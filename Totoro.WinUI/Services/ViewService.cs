@@ -49,14 +49,12 @@ public class ViewService : IViewService, IEnableLogger
         {
             d.Title = anime.Title;
             d.PrimaryButtonText = "Update";
-            d.IsSecondaryButtonEnabled = false;
+            d.PrimaryButtonCommand = vm.Update;
+            d.SecondaryButtonText = "Delete";
+            d.IsSecondaryButtonEnabled = true;
+            d.SecondaryButtonCommand = vm.Delete;
             d.CloseButtonText = "Cancel";
         });
-
-        if (result == ContentDialogResult.Primary)
-        {
-            vm.UpdateTracking();
-        }
 
         return Unit.Default;
     }

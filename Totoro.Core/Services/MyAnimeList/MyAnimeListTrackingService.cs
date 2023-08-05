@@ -211,6 +211,11 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             .Do(tracking => this.Log().Debug("Tracking Updated {0}.", tracking));
     }
 
+    public IObservable<bool> Delete(long id)
+    {
+        return _client.Anime().WithId(id).RemoveFromList().ToObservable();
+    }
+
     private static bool CurrentlyAiringOrFinishedToday(MalApi.Anime anime)
     {
         if (anime.Status == MalApi.AiringStatus.CurrentlyAiring)

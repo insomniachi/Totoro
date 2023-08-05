@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Subjects;
+using Totoro.Core.Models;
 
 namespace Totoro.Core.Services;
 
@@ -57,5 +58,15 @@ public class TrackingServiceContext : ITrackingServiceContext
         }
 
         return _trackers[_settings.DefaultListService].Update(id, tracking);
+    }
+
+    public IObservable<bool> Delete(long id)
+    {
+        if (!_connectivityService.IsConnected)
+        {
+            return Observable.Return(false);
+        }
+
+        return _trackers[_settings.DefaultListService].Delete(id);
     }
 }

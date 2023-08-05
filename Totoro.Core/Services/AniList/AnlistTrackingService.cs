@@ -51,7 +51,6 @@ public class AniListTrackingService : ITrackingService
                 });
 
                 observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
-
                 observer.OnCompleted();
             });
         }
@@ -77,7 +76,6 @@ public class AniListTrackingService : ITrackingService
                 });
 
                 observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => x.Media).Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
-
                 observer.OnCompleted();
             });
         }
@@ -132,12 +130,49 @@ public class AniListTrackingService : ITrackingService
                 });
 
                 observer.OnNext(ConvertTracking(response.Data.SaveMediaListEntry));
+                observer.OnCompleted();
             });
         }
         else
         {
             return Observable.Return(tracking);
         }
+    }
+
+    public IObservable<bool> Delete(long id)
+    {
+        return Observable.Create<bool>(async observer =>
+        {
+            var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
+                .WithMediaListEntry(new MediaListQueryBuilder().WithId()), 
+                id: (int)id,
+                type: MediaType.Anime).Build();
+
+            var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+            {
+                Query = query
+            });
+
+            var trackingId = response.Data?.Media?.MediaListEntry?.Id;
+
+            if(trackingId is null)
+            {
+                observer.OnNext(false);
+                observer.OnCompleted();
+            }
+
+            query = new MutationQueryBuilder()
+                .WithDeleteMediaListEntry(new DeletedQueryBuilder().WithAllFields(), id: response.Data.Media.MediaListEntry.Id)
+                .Build();
+
+            var mutationResponse = await _anilistClient.SendMutationAsync<Mutation>(new GraphQL.GraphQLRequest
+            {
+                Query = query
+            });
+
+            observer.OnNext(mutationResponse.Data?.DeleteActivity?.Deleted ?? false);
+            observer.OnCompleted();
+        });
     }
 
     private static bool CurrentlyAiringOrFinishedToday(Media media)

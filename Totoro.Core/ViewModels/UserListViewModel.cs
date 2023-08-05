@@ -16,6 +16,11 @@ public partial class AnimeCollectionFilter : ReactiveObject
 
     public bool IsVisible(AnimeModel model)
     {
+        if(model.Tracking is null)
+        {
+            return false;
+        }
+
         var listStatusCheck = model.Tracking.Status == ListStatus;
         var searchTextStatus = string.IsNullOrEmpty(SearchText) ||
                                model.Title.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase) ||
@@ -79,6 +84,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         _animeCache
             .Connect()
             .RefCount()
+            .AutoRefresh(x => x.Tracking)
             .Filter(this.WhenAnyValue(x => x.Filter).SelectMany(x => x.WhenAnyPropertyChanged()).Select(x => (Func<AnimeModel, bool>)x.IsVisible))
             .Sort(sort)
             .Bind(out _anime)

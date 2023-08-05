@@ -4,6 +4,7 @@ public interface ITrackingService
 {
     ListServiceType Type { get; }
     IObservable<Tracking> Update(long id, Tracking tracking);
+    IObservable<bool> Delete(long id);
     IObservable<IEnumerable<AnimeModel>> GetAnime();
     IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime();
     void SetAccessToken(string accessToken);
@@ -14,6 +15,7 @@ public interface ITrackingServiceContext
 {
     IObservable<ListServiceType> Authenticated { get; }
     IObservable<Tracking> Update(long id, Tracking tracking);
+    IObservable<bool> Delete(long id);
     IObservable<IEnumerable<AnimeModel>> GetAnime();
     IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime();
     void SetAccessToken(string token, ListServiceType type);

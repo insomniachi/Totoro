@@ -8,6 +8,9 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
     {
         _trackingService = trackingService;
 
+        Delete = ReactiveCommand.Create(() => DeleteTracking());
+        Update = ReactiveCommand.Create(() => UpdateTracking());
+
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
             .Subscribe(x => TotalEpisodes = x.TotalEpisodes == 0 ? double.MaxValue : x.TotalEpisodes ?? double.MaxValue);
@@ -40,7 +43,20 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
             .Subscribe(x => Status = AnimeStatus.Completed);
     }
 
-    public void UpdateTracking()
+    private void DeleteTracking()
+    {
+        if (Anime is null)
+        {
+            return;
+        }
+
+        _trackingService.Delete(Anime.Id)
+                        .Where(x => x)
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(_ => Anime.Tracking = null);
+    }
+
+    private void UpdateTracking()
     {
         if (Anime is null)
         {
@@ -70,8 +86,13 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
             tracking.FinishDate = fd.Date;
         }
 
-        _trackingService.Update(Anime.Id, tracking).Subscribe(t => Anime.Tracking = t);
+        _trackingService.Update(Anime.Id, tracking)
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(t => Anime.Tracking = t);
     }
+
+    public ICommand Delete { get; }
+    public ICommand Update { get; }
 
     [Reactive] public IAnimeModel Anime { get; set; }
     [Reactive] public AnimeStatus Status { get; set; } = AnimeStatus.PlanToWatch;
@@ -82,4 +103,5 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
     [Reactive] public double TotalEpisodes { get; set; }
     [Reactive] public DateTimeOffset? StartDate { get; set; }
     [Reactive] public DateTimeOffset? FinishDate { get; set; }
+
 }
