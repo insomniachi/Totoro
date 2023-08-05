@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Totoro.WinUI.UserControls.RatingPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -57,17 +56,4 @@
             </MenuFlyout>
         </SplitButton.Flyout>
     </SplitButton>
-    <!--<ComboBox x:Name="ComboBox">
-        <ComboBoxItem Content="(0) - No Score" />
-        <ComboBoxItem Content="(1) - Appalling" />
-        <ComboBoxItem Content="(2) - Horring" />
-        <ComboBoxItem Content="(3) - Very Bad" />
-        <ComboBoxItem Content="(4) - Bad" />
-        <ComboBoxItem Content="(5) - Average" />
-        <ComboBoxItem Content="(6) - Fine" />
-        <ComboBoxItem Content="(7) - Good" />
-        <ComboBoxItem Content="(8) - Very Good" />
-        <ComboBoxItem Content="(9) - Great" />
-        <ComboBoxItem Content="(10) - Masterpiece" />
-    </ComboBox>-->
 </UserControl>

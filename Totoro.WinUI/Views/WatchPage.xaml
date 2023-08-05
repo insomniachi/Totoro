@@ -9,6 +9,7 @@
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     xmlns:vlc="using:Totoro.WinUI.Media.Vlc"
     xmlns:wmp="using:Totoro.WinUI.Media.Wmp"
@@ -22,20 +23,20 @@
         </Grid.ColumnDefinitions>
 
         <ctk:SwitchPresenter Value="{x:Bind ViewModel.MediaPlayerType, Mode=OneWay}">
-            <ctk:Case IsDefault="True" Value="{x:Null}" />
-            <ctk:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
+            <uc:Case IsDefault="True" Value="{x:Null}" />
+            <uc:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
                 <MediaPlayerElement
                     x:Name="MediaPlayerElement"
                     AreTransportControlsEnabled="True"
                     AutoPlay="False"
                     IsDoubleTapEnabled="True" />
-            </ctk:Case>
-            <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
+            </uc:Case>
+            <uc:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
                 <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" />
-            </ctk:Case>
+            </uc:Case>
         </ctk:SwitchPresenter>
 
-        <ctk:Expander
+        <uc:Expander
             x:Name="EpisodesExpander"
             Grid.Column="1"
             Margin="{StaticResource MediumTopMargin}"
@@ -110,6 +111,6 @@
                     SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}" />
 
             </Grid>
-        </ctk:Expander>
+        </uc:Expander>
     </Grid>
 </local:WatchPageBase>

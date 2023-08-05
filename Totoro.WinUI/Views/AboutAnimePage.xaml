@@ -13,6 +13,7 @@
     xmlns:models="using:Totoro.Core.Models"
     xmlns:root="using:Totoro.WinUI"
     xmlns:torrents="using:Totoro.Plugins.Torrents.Models"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:usercontrols="using:Totoro.WinUI.UserControls"
     Name="Page"
@@ -45,7 +46,7 @@
                     </Style>
                 </StackPanel.Resources>
 
-                <ctk:ImageEx
+                <uc:ImageEx
                     Width="260"
                     HorizontalAlignment="Left"
                     CornerRadius="3"
@@ -167,7 +168,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid CornerRadius="10">
-                <ctk:ImageEx Source="{x:Bind ViewModel.Anime.BannerImage, Mode=OneWay}" Stretch="UniformToFill" />
+                <uc:ImageEx Source="{x:Bind ViewModel.Anime.BannerImage, Mode=OneWay}" Stretch="UniformToFill" />
                 <Grid Padding="20">
                     <Grid.Background>
                         <media:PipelineBrush Source="{media:BackdropSource}">
@@ -207,7 +208,7 @@
                             </ItemsControl.ItemTemplate>
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <ctk:WrapPanel Orientation="Horizontal" />
+                                    <uc:WrapPanel Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -235,8 +236,8 @@
                 </labs:Segmented.ItemContainerStyle>
             </labs:Segmented>
             <ctk:SwitchPresenter Grid.Row="2" Value="{x:Bind ViewModel.SelectedPage.Header, Mode=OneWay}">
-                <ctk:Case Value="Previews">
-                    <ctk:AdaptiveGridView
+                <uc:Case Value="Previews">
+                    <uc:AdaptiveGridView
                         Margin="0,10"
                         ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
                         DesiredWidth="360"
@@ -261,10 +262,10 @@
                                 </Grid>
                             </DataTemplate>
                         </GridView.ItemTemplate>
-                    </ctk:AdaptiveGridView>
-                </ctk:Case>
-                <ctk:Case Value="Related">
-                    <ctk:AdaptiveGridView
+                    </uc:AdaptiveGridView>
+                </uc:Case>
+                <uc:Case Value="Related">
+                    <uc:AdaptiveGridView
                         Margin="0,10"
                         animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
                         ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
@@ -272,15 +273,15 @@
                         IsItemClickEnabled="True"
                         ItemsSource="{x:Bind ViewModel.Anime.Related, Mode=OneWay}"
                         StretchContentForSingleRow="False">
-                        <ctk:AdaptiveGridView.ItemTemplate>
+                        <uc:AdaptiveGridView.ItemTemplate>
                             <DataTemplate x:DataType="models:AnimeModel">
                                 <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
                             </DataTemplate>
-                        </ctk:AdaptiveGridView.ItemTemplate>
-                    </ctk:AdaptiveGridView>
-                </ctk:Case>
-                <ctk:Case Value="Recommended">
-                    <ctk:AdaptiveGridView
+                        </uc:AdaptiveGridView.ItemTemplate>
+                    </uc:AdaptiveGridView>
+                </uc:Case>
+                <uc:Case Value="Recommended">
+                    <uc:AdaptiveGridView
                         Margin="0,10"
                         animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
                         ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
@@ -288,14 +289,14 @@
                         IsItemClickEnabled="True"
                         ItemsSource="{x:Bind ViewModel.Anime.Recommended, Mode=OneWay}"
                         StretchContentForSingleRow="False">
-                        <ctk:AdaptiveGridView.ItemTemplate>
+                        <uc:AdaptiveGridView.ItemTemplate>
                             <DataTemplate x:DataType="models:AnimeModel">
                                 <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
                             </DataTemplate>
-                        </ctk:AdaptiveGridView.ItemTemplate>
-                    </ctk:AdaptiveGridView>
-                </ctk:Case>
-                <ctk:Case Value="OST">
+                        </uc:AdaptiveGridView.ItemTemplate>
+                    </uc:AdaptiveGridView>
+                </uc:Case>
+                <uc:Case Value="OST">
                     <ScrollViewer>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
                             <ItemsControl.ItemTemplate>
@@ -315,15 +316,15 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                </ctk:Case>
-                <ctk:Case Value="Torrents">
+                </uc:Case>
+                <uc:Case Value="Torrents">
                     <Grid Margin="{StaticResource SmallTopMargin}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <ctk:Expander
+                        <uc:Expander
                             Margin="0,0,36,0"
                             VerticalAlignment="Stretch"
                             VerticalContentAlignment="Top"
@@ -337,7 +338,7 @@
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
-                        </ctk:Expander>
+                        </uc:Expander>
 
                         <Grid Grid.Column="1">
                             <ListView ItemsSource="{x:Bind ViewModel.Torrents, Mode=OneWay}" SelectionMode="None">
@@ -391,16 +392,16 @@
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
-                            <ctk:Loading
+                            <uc:Loading
                                 x:Name="LoadingControl"
                                 Grid.Row="1"
                                 IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
                                 <ProgressRing Margin="0,0,12,0" IsActive="True" />
-                            </ctk:Loading>
+                            </uc:Loading>
                         </Grid>
 
                     </Grid>
-                </ctk:Case>
+                </uc:Case>
             </ctk:SwitchPresenter>
         </Grid>
     </Grid>

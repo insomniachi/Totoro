@@ -33,10 +33,10 @@
     </v:UserListPageBase.Resources>
 
     <ctk:SwitchPresenter Value="{x:Bind ViewModel.IsAuthenticated}">
-        <ctk:Case>
-            <ctk:Case.Value>
+        <uc:Case>
+            <uc:Case.Value>
                 <x:Boolean>True</x:Boolean>
-            </ctk:Case.Value>
+            </uc:Case.Value>
             <Grid x:Name="ContentArea" Margin="0,25,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -61,7 +61,7 @@
                         </labs:Segmented.ItemTemplate>
                         <labs:Segmented.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <ctk:WrapPanel Orientation="Horizontal" />
+                                <uc:WrapPanel Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </labs:Segmented.ItemsPanel>
                         <labs:Segmented.ItemContainerStyle>
@@ -74,8 +74,8 @@
                 </Grid>
 
                 <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-                        <ctk:AdaptiveGridView
+                    <uc:Case Value="{x:Bind cm:DisplayMode.Grid}">
+                        <uc:AdaptiveGridView
                             x:Name="AnimeListView"
                             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
                             ui:ListViewExtensions.Command="{x:Bind root:App.Commands.AnimeCard}"
@@ -84,18 +84,18 @@
                             ItemHeight="380"
                             ItemsSource="{x:Bind ViewModel.Anime}"
                             StretchContentForSingleRow="False">
-                            <ctk:AdaptiveGridView.ItemTemplate>
+                            <uc:AdaptiveGridView.ItemTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
                                     <uc:AnimeCard
                                         x:Name="Card"
                                         Margin="3"
                                         Anime="{x:Bind}" />
                                 </DataTemplate>
-                            </ctk:AdaptiveGridView.ItemTemplate>
-                        </ctk:AdaptiveGridView>
-                    </ctk:Case>
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
-                        <ctk:DataGrid
+                            </uc:AdaptiveGridView.ItemTemplate>
+                        </uc:AdaptiveGridView>
+                    </uc:Case>
+                    <uc:Case Value="{x:Bind cm:DisplayMode.List}">
+                        <uc:DataGrid
                             x:Name="ListDataGrid"
                             AlternatingRowBackground="{ThemeResource SubtleFillColorTransparentBrush}"
                             AreRowDetailsFrozen="True"
@@ -114,7 +114,7 @@
                             <Interactivity:Interaction.Behaviors>
                                 <b:DataGridPersistenceBehavior Settings="{x:Bind ViewModel.DataGridSettings, Mode=OneWay}" />
                             </Interactivity:Interaction.Behaviors>
-                            <ctk:DataGrid.RowHeaderStyle>
+                            <uc:DataGrid.RowHeaderStyle>
                                 <Style TargetType="primitives:DataGridRowHeader">
                                     <Setter Property="Template">
                                         <Setter.Value>
@@ -124,15 +124,15 @@
                                         </Setter.Value>
                                     </Setter>
                                 </Style>
-                            </ctk:DataGrid.RowHeaderStyle>
-                            <ctk:DataGrid.RowDetailsTemplate>
+                            </uc:DataGrid.RowHeaderStyle>
+                            <uc:DataGrid.RowDetailsTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
-                                        <ctk:ImageEx
+                                        <uc:ImageEx
                                             Width="160"
                                             Margin="10"
                                             CornerRadius="10"
@@ -150,13 +150,13 @@
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>
-                            </ctk:DataGrid.RowDetailsTemplate>
-                            <ctk:DataGrid.Columns>
-                                <ctk:DataGridTemplateColumn
+                            </uc:DataGrid.RowDetailsTemplate>
+                            <uc:DataGrid.Columns>
+                                <uc:DataGridTemplateColumn
                                     Header="Title"
                                     IsReadOnly="True"
                                     Tag="Title">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock
@@ -169,62 +169,62 @@
                                                     Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
                                             </StackPanel>
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTemplateColumn
                                     CanUserSort="False"
                                     Header="Season"
                                     IsReadOnly="True"
                                     Tag="Season">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock Margin="10,0" VerticalAlignment="Center">
                                                 <Run Text="{x:Bind Season.SeasonName}" />
                                                 <Run Text="{x:Bind Season.Year}" />
                                             </TextBlock>
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTemplateColumn
                                     Header="Average"
                                     IsReadOnly="True"
                                     Tag="Mean Score">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 Text="{x:Bind MeanScore}" />
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn Header="Score" Tag="User Score">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTemplateColumn Header="Score" Tag="User Score">
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}" />
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                    <ctk:DataGridTemplateColumn.CellEditingTemplate>
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellEditingTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <uc:RatingPicker
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"
                                                 Anime="{x:Bind}" />
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellEditingTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn
+                                    </uc:DataGridTemplateColumn.CellEditingTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTemplateColumn
                                     MinWidth="173"
                                     CanUserSort="False"
                                     Header="Progress"
                                     IsReadOnly="True"
                                     Tag="Tracking">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
-                                            <ctk:UniformGrid
+                                            <uc:UniformGrid
                                                 Margin="10,5"
                                                 ColumnSpacing="10"
                                                 Columns="3">
@@ -235,70 +235,70 @@
                                                 <Button Command="{x:Bind root:App.Commands.DecrementTracking}" CommandParameter="{x:Bind}">
                                                     <SymbolIcon Symbol="Remove" />
                                                 </Button>
-                                            </ctk:UniformGrid>
+                                            </uc:UniformGrid>
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTemplateColumn
                                     Header="Started"
                                     IsReadOnly="True"
                                     Tag="Date Started">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
                                                 Margin="10,0"
                                                 VerticalAlignment="Center"
                                                 Text="{x:Bind Tracking.StartDate, Converter={StaticResource HumanizeConverter}}" />
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTemplateColumn
                                     Header="Completed"
                                     IsReadOnly="True"
                                     Tag="Date Completed">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
                                                 Margin="10,0"
                                                 VerticalAlignment="Center"
                                                 Text="{x:Bind Tracking.FinishDate, Converter={StaticResource HumanizeConverter}}" />
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTemplateColumn
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTemplateColumn
                                     Header="Last updated"
                                     IsReadOnly="True"
                                     Tag="Last Updated">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
                                                 Margin="10,0"
                                                 VerticalAlignment="Center"
                                                 Text="{x:Bind Tracking.UpdatedAt, Converter={StaticResource HumanizeConverter}}" />
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                                <ctk:DataGridTextColumn
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                                <uc:DataGridTextColumn
                                     Binding="{Binding Type}"
                                     Header="Type"
                                     IsReadOnly="True"
                                     Tag="Type" />
-                                <ctk:DataGridTemplateColumn
+                                <uc:DataGridTemplateColumn
                                     Header="Next Episode"
                                     IsReadOnly="True"
                                     Tag="Next Episode">
-                                    <ctk:DataGridTemplateColumn.CellTemplate>
+                                    <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
                                             <TextBlock
                                                 Margin="10,0"
                                                 VerticalAlignment="Center"
                                                 Text="{x:Bind NextEpisodeAt, Converter={StaticResource HumanizeConverter}, Mode=OneWay, ConverterParameter=1}" />
                                         </DataTemplate>
-                                    </ctk:DataGridTemplateColumn.CellTemplate>
-                                </ctk:DataGridTemplateColumn>
-                            </ctk:DataGrid.Columns>
-                        </ctk:DataGrid>
-                    </ctk:Case>
+                                    </uc:DataGridTemplateColumn.CellTemplate>
+                                </uc:DataGridTemplateColumn>
+                            </uc:DataGrid.Columns>
+                        </uc:DataGrid>
+                    </uc:Case>
                 </ctk:SwitchPresenter>
 
                 <Grid Grid.Row="1">
@@ -363,12 +363,12 @@
                     </TeachingTip>
                 </Grid>
 
-                <ctk:Loading
+                <uc:Loading
                     x:Name="LoadingControl"
                     Grid.Row="1"
                     IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
                     <ProgressRing Margin="0,0,12,0" IsActive="True" />
-                </ctk:Loading>
+                </uc:Loading>
 
                 <Grid Grid.Row="2" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
                     <Grid.ColumnDefinitions>
@@ -509,11 +509,11 @@
 
                 </Grid>
             </Grid>
-        </ctk:Case>
-        <ctk:Case>
-            <ctk:Case.Value>
+        </uc:Case>
+        <uc:Case>
+            <uc:Case.Value>
                 <x:Boolean>False</x:Boolean>
-            </ctk:Case.Value>
+            </uc:Case.Value>
             <Grid>
                 <TextBlock
                     HorizontalAlignment="Center"
@@ -526,7 +526,7 @@
                     </TextBlock.Foreground>
                 </TextBlock>
             </Grid>
-        </ctk:Case>
+        </uc:Case>
 
     </ctk:SwitchPresenter>
 </v:UserListPageBase>

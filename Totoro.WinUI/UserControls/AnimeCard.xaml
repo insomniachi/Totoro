@@ -13,7 +13,7 @@
 
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
 
-        <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
+        <uc:Case Value="{x:Bind cm:DisplayMode.Grid}">
             <Grid
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -24,7 +24,7 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <ctk:ImageEx
+                <uc:ImageEx
                     Grid.Row="0"
                     CacheMode="BitmapCache"
                     EnableLazyLoading="True"
@@ -109,9 +109,9 @@
                     </Grid>
                 </Border>
             </Grid>
-        </ctk:Case>
+        </uc:Case>
 
-        <ctk:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
+        <uc:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
             <Grid
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -122,7 +122,7 @@
                     <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
 
-                <ctk:ImageEx
+                <uc:ImageEx
                     Grid.Column="0"
                     CacheMode="BitmapCache"
                     EnableLazyLoading="True"
@@ -179,7 +179,7 @@
                         ItemsSource="{x:Bind GetAdditionalInformation(Anime), Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <ctk:UniformGrid Margin="{StaticResource XXSmallLeftTopRightBottomMargin}" Columns="2">
+                                <uc:UniformGrid Margin="{StaticResource XXSmallLeftTopRightBottomMargin}" Columns="2">
                                     <TextBlock Margin="{StaticResource SmallLeftMargin}" FontWeight="Bold">
                                         <Run Text="{Binding Key}" />
                                     </TextBlock>
@@ -188,7 +188,7 @@
                                         Text="{Binding Value}"
                                         TextTrimming="WordEllipsis"
                                         ToolTipService.ToolTip="{Binding Value}" />
-                                </ctk:UniformGrid>
+                                </uc:UniformGrid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -203,7 +203,7 @@
 
 
             </Grid>
-        </ctk:Case>
+        </uc:Case>
 
     </ctk:SwitchPresenter>
 

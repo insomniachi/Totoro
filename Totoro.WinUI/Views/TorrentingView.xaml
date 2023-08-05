@@ -7,6 +7,7 @@
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     x:Name="Page"
     mc:Ignorable="d">
 
@@ -39,12 +40,13 @@
 
         <Frame x:Name="NavFrame" Grid.Row="1" />
 
-        <ctk:Loading
+        <uc:Loading
             x:Name="LoadingControl"
             Grid.Row="1"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </ctk:Loading>
+        </uc:Loading>
+
     </Grid>
 
 </local:TorrentingViewBase>

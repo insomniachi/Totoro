@@ -46,7 +46,7 @@
                 SelectedItem="{x:Bind ViewModel.SeasonFilter, Mode=TwoWay}">
                 <labs:Segmented.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <ctk:WrapPanel Orientation="Horizontal" />
+                        <uc:WrapPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </labs:Segmented.ItemsPanel>
                 <labs:Segmented.ItemContainerStyle>
@@ -71,7 +71,7 @@
 
 
 
-        <ctk:AdaptiveGridView
+        <uc:AdaptiveGridView
             x:Name="AnimeListView"
             Grid.Row="2"
             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
@@ -80,7 +80,7 @@
             IsItemClickEnabled="True"
             ItemsSource="{x:Bind ViewModel.Anime}"
             StretchContentForSingleRow="False">
-            <ctk:AdaptiveGridView.ItemTemplate>
+            <uc:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="cm:AnimeModel">
                     <uc:AnimeCard
                         x:Name="Card"
@@ -109,15 +109,15 @@
                         </uc:AnimeCard.Flyout>
                     </uc:AnimeCard>
                 </DataTemplate>
-            </ctk:AdaptiveGridView.ItemTemplate>
-        </ctk:AdaptiveGridView>
+            </uc:AdaptiveGridView.ItemTemplate>
+        </uc:AdaptiveGridView>
 
-        <ctk:Loading
+        <uc:Loading
             x:Name="LoadingControl"
             Grid.Row="2"
             IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </ctk:Loading>
+        </uc:Loading>
 
 
         <CommandBar

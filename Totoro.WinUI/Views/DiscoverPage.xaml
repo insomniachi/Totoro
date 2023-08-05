@@ -8,6 +8,7 @@
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pc="using:Totoro.Plugins.Anime.Contracts"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     xmlns:views="using:Totoro.WinUI.Views"
     x:Name="Page"
@@ -68,7 +69,7 @@
                         OnContent="Show only anime that you are watching"
                         Visibility="Collapsed" />
 
-                    <ctk:AdaptiveGridView
+                    <uc:AdaptiveGridView
                         Grid.Row="2"
                         animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
                         DesiredWidth="{x:Bind ViewModel.CardWidth}"
@@ -77,7 +78,7 @@
                         ItemHeight="320"
                         ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
                         StretchContentForSingleRow="False">
-                        <ctk:AdaptiveGridView.ItemTemplate>
+                        <uc:AdaptiveGridView.ItemTemplate>
                             <DataTemplate x:DataType="pc:IAiredAnimeEpisode">
                                 <Grid
                                     x:Name="MainGrid"
@@ -89,8 +90,8 @@
                                     </Grid.RowDefinitions>
 
                                     <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
-                                        <ctk:Case IsDefault="True" Value="{StaticResource False}">
-                                            <ctk:ImageEx
+                                        <uc:Case IsDefault="True" Value="{StaticResource False}">
+                                            <uc:ImageEx
                                                 CacheMode="BitmapCache"
                                                 EnableLazyLoading="True"
                                                 IsCacheEnabled="True"
@@ -98,13 +99,13 @@
                                                 PlaceholderStretch="Fill"
                                                 Source="{x:Bind Image}"
                                                 Stretch="UniformToFill" />
-                                        </ctk:Case>
-                                        <ctk:Case Value="{StaticResource True}">
+                                        </uc:Case>
+                                        <uc:Case Value="{StaticResource True}">
                                             <Image
                                                 Grid.Row="0"
                                                 Source="{x:Bind Image}"
                                                 Stretch="UniformToFill" />
-                                        </ctk:Case>
+                                        </uc:Case>
                                     </ctk:SwitchPresenter>
 
                                     <Grid
@@ -148,8 +149,8 @@
                                     </Border>
                                 </Grid>
                             </DataTemplate>
-                        </ctk:AdaptiveGridView.ItemTemplate>
-                    </ctk:AdaptiveGridView>
+                        </uc:AdaptiveGridView.ItemTemplate>
+                    </uc:AdaptiveGridView>
                 </Grid>
             </PivotItem>
 
@@ -177,7 +178,7 @@
                     </StackPanel>
 
 
-                    <ctk:AdaptiveGridView
+                    <uc:AdaptiveGridView
                         Grid.Row="1"
                         animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
                         DesiredWidth="190"
@@ -186,7 +187,7 @@
                         ItemHeight="320"
                         ItemsSource="{x:Bind ViewModel.AnimeSearchResults, Mode=OneWay}"
                         StretchContentForSingleRow="False">
-                        <ctk:AdaptiveGridView.ItemTemplate>
+                        <uc:AdaptiveGridView.ItemTemplate>
                             <DataTemplate x:DataType="pc:ICatalogItem">
                                 <Grid x:Name="MainGrid" Margin="3">
                                     <Grid.RowDefinitions>
@@ -195,8 +196,8 @@
                                     </Grid.RowDefinitions>
 
                                     <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
-                                        <ctk:Case IsDefault="True" Value="{StaticResource False}">
-                                            <ctk:ImageEx
+                                        <uc:Case IsDefault="True" Value="{StaticResource False}">
+                                            <uc:ImageEx
                                                 CacheMode="BitmapCache"
                                                 EnableLazyLoading="True"
                                                 IsCacheEnabled="True"
@@ -204,13 +205,13 @@
                                                 PlaceholderStretch="Fill"
                                                 Source="{x:Bind help:ModelHelpers.GetImage((pc:ICatalogItem))}"
                                                 Stretch="UniformToFill" />
-                                        </ctk:Case>
-                                        <ctk:Case Value="{StaticResource True}">
+                                        </uc:Case>
+                                        <uc:Case Value="{StaticResource True}">
                                             <Image
                                                 Grid.Row="0"
                                                 Source="{x:Bind help:ModelHelpers.GetImageSource((pc:ICatalogItem))}"
                                                 Stretch="UniformToFill" />
-                                        </ctk:Case>
+                                        </uc:Case>
                                     </ctk:SwitchPresenter>
 
                                     <Grid
@@ -249,15 +250,15 @@
                                     </Border>
                                 </Grid>
                             </DataTemplate>
-                        </ctk:AdaptiveGridView.ItemTemplate>
-                    </ctk:AdaptiveGridView>
+                        </uc:AdaptiveGridView.ItemTemplate>
+                    </uc:AdaptiveGridView>
                 </Grid>
             </PivotItem>
 
         </Pivot>
-        <ctk:Loading x:Name="LoadingControl" IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
+        <uc:Loading x:Name="LoadingControl" IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
             <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </ctk:Loading>
+        </uc:Loading>
     </Grid>
 
 </views:DiscoverPageBase>
