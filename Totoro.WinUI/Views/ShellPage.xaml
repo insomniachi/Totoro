@@ -102,7 +102,7 @@
             IconSource="/Assets/WindowIcon.ico"
             LeftClickCommand="{x:Bind ShowHideWindowCommand}"
             NoLeftClickDelay="True"
-            ToolTipText="ToolTip">
+            ToolTipText="Totoro">
             <tb:TaskbarIcon.ContextFlyout>
                 <MenuFlyout AreOpenCloseAnimationsEnabled="False">
                     <MenuFlyoutItem Command="{x:Bind ShowHideWindowCommand}" Text="Show/Hide Window" />
