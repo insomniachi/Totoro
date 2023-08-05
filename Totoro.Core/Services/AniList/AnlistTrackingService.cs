@@ -170,7 +170,7 @@ public class AniListTrackingService : ITrackingService
                 Query = query
             });
 
-            observer.OnNext(mutationResponse.Data?.DeleteActivity?.Deleted ?? false);
+            observer.OnNext(mutationResponse.Data?.DeleteMediaListEntry?.Deleted ?? false);
             observer.OnCompleted();
         });
     }
