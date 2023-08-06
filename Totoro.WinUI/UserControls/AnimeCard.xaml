@@ -41,13 +41,15 @@
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     Anime="{x:Bind Anime, Mode=OneWay}"
+                    Background="OrangeRed"
+                    FontWeight="Bold"
                     Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
 
                 <Grid
                     x:Name="NextEpisodeInContainer"
                     Grid.Row="0"
                     Height="30"
-                    HorizontalAlignment="Right"
+                    HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Visibility="{x:Bind NextEpisodeInVisibility(NextEpisodeInText.Text), Mode=OneWay}">
                     <Grid.Background>

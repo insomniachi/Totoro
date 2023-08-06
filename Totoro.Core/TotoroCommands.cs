@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AngleSharp.Dom;
 using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.ViewModels;

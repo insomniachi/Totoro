@@ -59,11 +59,6 @@
                     Content="Seasonal"
                     Icon="Calendar" />
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.ScheduleViewModel"
-                    Content="Schedule"
-                    Icon="Clock"
-                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
-                <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.TorrentingViewModel"
                     Content="Torrenting"
                     Icon="People" />

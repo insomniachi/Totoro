@@ -89,7 +89,8 @@
                                     <uc:AnimeCard
                                         x:Name="Card"
                                         Margin="3"
-                                        Anime="{x:Bind}" />
+                                        Anime="{x:Bind}"
+                                        ShowNextEpisodeTime="True" />
                                 </DataTemplate>
                             </uc:AdaptiveGridView.ItemTemplate>
                         </uc:AdaptiveGridView>
