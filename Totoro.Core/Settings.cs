@@ -38,7 +38,8 @@ public static class Settings
     public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", new ObservableCollection<string>());
     public static Key<StartupOptions> StartupOptions { get; } = new("StartupOptions", () => new StartupOptions());
     public static Key<DisplayMode> ListDisplayMode { get; } = new("ListDisplayMode", DisplayMode.Grid);
-    public static Key<DataGridSettings> UserListDataGridSettings = new("UserListDataGridSettings", GetDefaultUserListDataGridSettings);
+    public static Key<DataGridSettings> UserListDataGridSettings { get; } = new("UserListDataGridSettings", GetDefaultUserListDataGridSettings);
+    public static Key<GridViewSettings> UserListGridViewSettings { get; } = new("UserListGridViewSettings", new GridViewSettings());
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

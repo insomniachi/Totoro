@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft Corporation and Contributors.
 // Licensed under the MIT License.
 
+using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using Totoro.Core.Torrents.Rss;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views.SettingsSections;
 
-public sealed partial class RssSection : Page
+public sealed partial class GridViewSection : Page
 {
+
     public SettingsViewModel ViewModel
     {
         get { return (SettingsViewModel)GetValue(ViewModelProperty); }
@@ -18,23 +19,19 @@ public sealed partial class RssSection : Page
     }
 
     public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register("ViewModel", typeof(SettingsViewModel), typeof(RssSection), new PropertyMetadata(null));
+        DependencyProperty.Register("ViewModel", typeof(SettingsViewModel), typeof(GridViewSection), new PropertyMetadata(null));
 
+    public ICommand Reset { get; }
 
-    public RssSection()
+    public GridViewSection()
     {
         InitializeComponent();
+        Preview.ItemsSource = Enumerable.Range(1, 6).Select(x => new object()).ToList();
+        Reset = ReactiveCommand.Create(() => ViewModel.Settings.UserListGridViewSettings = new());
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         ViewModel = e.Parameter as SettingsViewModel;
-    }
-
-    private void OnDelete(object sender, RoutedEventArgs e) 
-    {
-        //var btn = (Button)sender;
-        //var item = (TorrentNameFilter)btn.Tag;
-        //ViewModel.Settings.RssOptions.Filters.Remove(item);
     }
 }

@@ -39,6 +39,7 @@ public interface ISettings : INotifyPropertyChanged
     ObservableCollection<string> LibraryFolders { get; set; }
     StartupOptions StartupOptions { get; set; }
     DisplayMode ListDisplayMode { get; set; }
+    GridViewSettings UserListGridViewSettings { get; set; }
 }
 
 public class StartupOptions : ReactiveObject
@@ -48,11 +49,10 @@ public class StartupOptions : ReactiveObject
     [Reactive] public bool RunOnStartup { get; set; } = false;
 }
 
-public class DefaultUrls : ReactiveObject
+public class GridViewSettings : ReactiveObject
 {
-    [Reactive] public string GogoAnime { get; set; }
-    [Reactive] public string Tenshi { get; set; }
-    [Reactive] public string Yugen { get; set; }
-    [Reactive] public string AnimePahe { get; set; }
-    [Reactive] public string AllAnime { get; set; }
+    [Reactive] public int MaxNumberOfColumns { get; set; } = -1;
+    [Reactive] public double SpacingBetweenItems { get; set; } = 6;
+    [Reactive] public double ItemHeight { get; set; } = 380;
+    [Reactive] public double DesiredWidth { get; set; } = 240;
 }

@@ -62,6 +62,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         SaveDataGridSettings = ReactiveCommand.Create(() => localSettingsService.SaveSetting(Settings.UserListDataGridSettings, DataGridSettings));
         Mode = settings.ListDisplayMode;
         DataGridSettings = localSettingsService.ReadSetting(Settings.UserListDataGridSettings);
+        GridViewSettings = settings.UserListGridViewSettings;
         CheckNewColumns();
 
         var sort = this.WhenAnyValue(x => x.DataGridSettings)
@@ -125,6 +126,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public List<string> Genres { get; set; }
     [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
     [Reactive] public DataGridSettings DataGridSettings { get; set; }
+    [Reactive] public GridViewSettings GridViewSettings { get; set; }
     [ObservableAsProperty] public bool IsListView { get; }
 
     public ListServiceType ListType { get; }

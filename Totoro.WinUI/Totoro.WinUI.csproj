@@ -19,10 +19,6 @@
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Remove="UserControls\RatingPicker.xaml" />
-	  <None Remove="Views\SettingsSections\ExternalMediaSection.xaml" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" Version="0.0.3" />
@@ -116,11 +112,11 @@
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>
-		<Page Update="Views\SettingsSections\TorrentingSection.xaml">
+		<Page Update="Views\SettingsSections\GridViewSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>
-		<Page Update="Views\SettingsSections\RssSection.xaml">
+		<Page Update="Views\SettingsSections\TorrentingSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>

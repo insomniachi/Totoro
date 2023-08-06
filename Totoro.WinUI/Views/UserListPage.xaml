@@ -79,11 +79,12 @@
                             x:Name="AnimeListView"
                             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
                             ui:ListViewExtensions.Command="{x:Bind root:App.Commands.AnimeCard}"
-                            DesiredWidth="240"
                             IsItemClickEnabled="True"
-                            ItemHeight="380"
                             ItemsSource="{x:Bind ViewModel.Anime}"
                             StretchContentForSingleRow="False">
+                            <Interactivity:Interaction.Behaviors>
+                                <b:AdaptiveGridViewBehavior Settings="{x:Bind ViewModel.GridViewSettings}" />
+                            </Interactivity:Interaction.Behaviors>
                             <uc:AdaptiveGridView.ItemTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
                                     <uc:AnimeCard

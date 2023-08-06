@@ -37,9 +37,9 @@ public sealed partial class SettingsPage : SettingsPageBase, IEnableLogger
             "Settings>Anime Plugins" => Navigate<AnimePluginsSection>(),
             "Settings>Tracking" => Navigate<TrackingSection>(),
             "Settings>Torrenting" => Navigate<TorrentingSection>(),
-            "Settings>Torrenting>RSS" => Navigate<RssSection>(),
             "Settings>Preferences" => Navigate<PreferencesSection>(),
             "Settings>External Media" => Navigate<ExternalMediaSection>(),
+            "Settings>Preferences>Grid View Settings" => Navigate<GridViewSection>(),
             _ => false
         };
     }

@@ -50,6 +50,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         LibraryFolders = localSettingsService.ReadSetting(Settings.LibraryFolders);
         StartupOptions = localSettingsService.ReadSetting(Settings.StartupOptions);
         ListDisplayMode = localSettingsService.ReadSetting(Settings.ListDisplayMode);
+        UserListGridViewSettings = localSettingsService.ReadSetting(Settings.UserListGridViewSettings);
 
         if (UseDiscordRichPresense && !_dRpc.IsInitialized)
         {
@@ -85,6 +86,7 @@ internal class SettingsModel : ReactiveObject, ISettings
 
         ObserveObject(TorrentSearchOptions, Settings.TorrentSearchOptions);
         ObserveObject(StartupOptions, Settings.StartupOptions);
+        ObserveObject(UserListGridViewSettings, Settings.UserListGridViewSettings);
     }
 
     private void ObserveObject<T>(T target, Key<T> key)
@@ -110,7 +112,6 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public int TimeRemainingWhenEpisodeCompletesInSeconds { get; set; }
     [Reactive] public int OpeningSkipDurationInSeconds { get; set; }
     [Reactive] public bool ContributeTimeStamps { get; set; }
-    [Reactive] public DefaultUrls DefaultUrls { get; set; }
     [Reactive] public LogLevel MinimumLogLevel { get; set; }
     [Reactive] public bool AutoUpdate { get; set; }
     [Reactive] public ListServiceType DefaultListService { get; set; }
@@ -137,6 +138,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     public ObservableCollection<string> LibraryFolders { get; set; }
     [Reactive] public StartupOptions StartupOptions { get; set; }
     [Reactive] public DisplayMode ListDisplayMode { get; set; }
+    [Reactive] public GridViewSettings UserListGridViewSettings { get; set; }
 }
 
 
