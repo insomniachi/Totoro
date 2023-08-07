@@ -73,6 +73,9 @@ public static partial class Converters
         _ => new SolidColorBrush(Colors.Navy),
     };
 
+    public static Visibility VisibleIfHasTracking(AnimeModel anime) => BooleanToVisibility(anime is { Tracking: not null });
+    public static Visibility CollapsedIfHasTracking(AnimeModel anime) => InvertedBooleanToVisibility(anime is { Tracking: not null });
+
     public static string ConvertStreamType(string type)
     {
         static string getDubedName(string type)

@@ -116,7 +116,8 @@
                         <StackPanel
                             HorizontalAlignment="Right"
                             Orientation="Horizontal"
-                            Spacing="20">
+                            Spacing="20"
+                            Visibility="{x:Bind help:Converters.VisibleIfHasTracking(Anime), Mode=OneWay}">
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <FontIcon FontSize="12" Glyph="&#xE734;" />
                                 <TextBlock VerticalAlignment="Center" Text="{x:Bind chelp:AnimeHelpers.UserScore(Anime.Tracking), Mode=OneWay}" />
@@ -140,10 +141,16 @@
                                 </Button>
                             </StackPanel>
                         </StackPanel>
+                        <Button
+                            HorizontalAlignment="Right"
+                            Command="{x:Bind root:App.Commands.UpdateTracking}"
+                            CommandParameter="{x:Bind Anime, Mode=OneWay}"
+                            ToolTipService.ToolTip="Add to list"
+                            Visibility="{x:Bind help:Converters.CollapsedIfHasTracking(Anime), Mode=OneWay}">
+                            <FontIcon FontSize="12" Glyph="&#xE710;" />
+                        </Button>
                     </Grid>
-
                 </Grid>
-
             </Grid>
         </uc:Case>
 

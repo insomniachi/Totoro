@@ -1,4 +1,5 @@
 ﻿using JikanDotNet;
+using MalApi;
 using MalApi.Interfaces;
 using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
@@ -10,6 +11,7 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
     private readonly IAnilistService _anilistService;
     private readonly ISettings _settings;
     private readonly IJikan _jikan = new Jikan();
+    private readonly string _recursiveAnimeProperties = $"my_list_status,status,{AnimeFieldNames.TotalEpisodes},{AnimeFieldNames.Mean}";
 
     public MyAnimeListService(IMalClient client,
                               IAnilistService anilistService,
@@ -29,8 +31,8 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
             var malModel = await _client.Anime().WithId(id)
                                         .WithFields(_commonFields)
                                         .WithField(x => x.Genres)
-                                        .WithFields("related_anime{my_list_status,status}")
-                                        .WithFields("recommendations{my_list_status,status}")
+                                        .WithFields($"related_anime{{{_recursiveAnimeProperties}}}")
+                                        .WithFields($"recommendations{{{_recursiveAnimeProperties}}}")
                                         .Find();
 
             var model = ConvertModel(malModel);
