@@ -117,6 +117,17 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         this.WhenAnyValue(x => x.Mode)
             .Select(x => x == DisplayMode.List)
             .ToPropertyEx(this, x => x.IsListView);
+
+        Observable.Timer(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ =>
+            {
+                foreach (var item in Anime)
+                {
+                    item.RaisePropertyChanged(nameof(item.NextEpisodeAt));
+                }
+            }, RxApp.DefaultExceptionHandler.OnError)
+            .DisposeWith(Garbage);
     }
 
     [Reactive] public bool IsLoading { get; set; }
@@ -160,14 +171,11 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Finally(() =>
                         {
-                            IsLoading = false;
                             Genres = new(_genres);
-                            Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
                         })
                         .Subscribe(list =>
                         {
-                            _animeCache.EditDiff(list, (item1, item2) => item1.Id == item2.Id);
-
+                            _animeCache.AddOrUpdate(list);
                             foreach (var anime in list)
                             {
                                 foreach (var genre in anime.Genres)
@@ -175,8 +183,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                                     _genres.Add(genre);
                                 }
                             }
-
                             IsLoading = false;
+                            Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
                         }, RxApp.DefaultExceptionHandler.OnError)
                         .DisposeWith(Garbage);
     }

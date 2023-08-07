@@ -67,6 +67,7 @@ public class AnimeHelpers
     }
 
     public static double ScoreToRating(int? score) => score is > 0 ? score.Value / 2.0 : -1;
+
     public static string Progress(Tracking tracking, int? totalEpisodes)
     {
         var watched = (tracking?.WatchedEpisodes ?? 0) == 0

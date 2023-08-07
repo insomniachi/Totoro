@@ -63,42 +63,48 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         {
             return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
-                var watching = await _client.Anime()
+                var statuses = new[] 
+                {
+                    MalApi.AnimeStatus.Watching,
+                    MalApi.AnimeStatus.PlanToWatch, 
+                    MalApi.AnimeStatus.Completed,
+                    MalApi.AnimeStatus.OnHold,
+                    MalApi.AnimeStatus.Dropped 
+                };
+
+                foreach (var status in statuses)
+                {
+                    var result = await _client.Anime()
                                             .OfUser()
-                                            .WithStatus(MalApi.AnimeStatus.Watching)
+                                            .WithStatus(status)
                                             .IncludeNsfw()
                                             .WithFields(FieldNames)
                                             .Find();
 
-                var list = new List<AnimeModel>();
+                    var models = result.Data.Select(x =>
+                    {
+                        var model = ConvertModel(x);
 
-                foreach (var item in watching.Data)
-                {
-                    var model = ConvertModel(item);
+                        if (status == MalApi.AnimeStatus.Watching)
+                        {
+                            GetAiredEpisodes(model)
+                                .ToObservable()
+                                .ObserveOn(RxApp.MainThreadScheduler)
+                                .Subscribe(x => model.AiredEpisodes = x);
 
-                    GetAiredEpisodes(model)
-                    .ToObservable()
-                    .ObserveOn(RxApp.MainThreadScheduler)
-                    .Subscribe(x => model.AiredEpisodes = x);
+                            _anilistService
+                                .GetNextAiringEpisodeTime(model.Id)
+                                .ToObservable()
+                                .ObserveOn(RxApp.MainThreadScheduler)
+                                .Subscribe(x => model.NextEpisodeAt = x);
+                        }
 
-                    _anilistService
-                        .GetNextAiringEpisodeTime(model.Id)
-                        .ToObservable()
-                        .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(x => model.NextEpisodeAt = x);
+                        return model;
+                    });
 
-                    list.Add(model);
+                    observer.OnNext(models.ToList());
                 }
 
-                observer.OnNext(list);
-
-                var all = await _client.Anime()
-                                       .OfUser()
-                                       .IncludeNsfw()
-                                       .WithFields(FieldNames)
-                                       .Find();
-
-                observer.OnNext(all.Data.Select(ConvertModel));
                 observer.OnCompleted();
                 return Disposable.Empty;
             });

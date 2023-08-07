@@ -1,8 +1,8 @@
-﻿using Humanizer;
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.UserControls;
 
@@ -12,7 +12,14 @@ public sealed partial class AnimeCard : UserControl
         DependencyProperty.Register("Anime", typeof(AnimeModel), typeof(AnimeCard), new PropertyMetadata(null));
     public static readonly DependencyProperty FlyoutProperty =
         DependencyProperty.Register("Flyout", typeof(MenuFlyout), typeof(AnimeCard), new PropertyMetadata(null));
+    public static readonly DependencyProperty ShowNextEpisodeTimeProperty =
+        DependencyProperty.Register("ShowNextEpisodeTime", typeof(bool), typeof(AnimeCard), new PropertyMetadata(false));
 
+    public bool ShowNextEpisodeTime
+    {
+        get { return (bool)GetValue(ShowNextEpisodeTimeProperty); }
+        set { SetValue(ShowNextEpisodeTimeProperty, value); }
+    }
 
     public AnimeModel Anime
     {
@@ -27,12 +34,18 @@ public sealed partial class AnimeCard : UserControl
     }
 
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
-    public bool ShowNextEpisodeTime { get; set; } = false;
     public bool ShowAddToList { get; set; } = true;
 
     public AnimeCard()
     {
         InitializeComponent();
+
+        this.WhenAnyValue(x => x.Anime)
+            .WhereNotNull()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(anime => ShowNextEpisodeTime = anime.NextEpisodeAt is not null)
+            .SelectMany(x => x.WhenAnyValue(y => y.NextEpisodeAt).DistinctUntilChanged())
+            .Subscribe(date => ShowNextEpisodeTime = date is not null);
     }
 
     public Visibility AddToListButtonVisibility(AnimeModel a)
@@ -45,11 +58,6 @@ public sealed partial class AnimeCard : UserControl
         return a.Tracking is null ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    public Visibility NextEpisodeInVisibility(string text)
-    {
-        return string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
-    }
-
     public string GetTime(DateTime? airingAt)
     {
         if (!ShowNextEpisodeTime)
@@ -59,18 +67,7 @@ public sealed partial class AnimeCard : UserControl
 
         return airingAt is null
             ? string.Empty
-            : (airingAt.Value - DateTime.Now).Humanize(2);
-    }
-
-    public Brush GetBorderBrush(AiringStatus status)
-    {
-        return status switch
-        {
-            AiringStatus.CurrentlyAiring => new SolidColorBrush(Colors.LimeGreen),
-            AiringStatus.FinishedAiring => new SolidColorBrush(Colors.MediumSlateBlue),
-            AiringStatus.NotYetAired => new SolidColorBrush(Colors.LightSlateGray),
-            _ => new SolidColorBrush(Colors.Navy),
-        };
+            : $"EP{Anime?.AiredEpisodes + 1}: {(airingAt.Value - DateTime.Now).HumanizeTimeSpan()}";
     }
 
     public Dictionary<string, string> GetAdditionalInformation(AnimeModel anime)

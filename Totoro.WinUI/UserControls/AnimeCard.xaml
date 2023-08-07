@@ -2,6 +2,7 @@
     x:Class="Totoro.WinUI.UserControls.AnimeCard"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:chelp="using:Totoro.Core.Helpers"
     xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -14,102 +15,135 @@
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
 
         <uc:Case Value="{x:Bind cm:DisplayMode.Grid}">
-            <Grid
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                ContextFlyout="{x:Bind Flyout}"
-                CornerRadius="5">
+            <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <uc:ImageEx
-                    Grid.Row="0"
-                    CacheMode="BitmapCache"
-                    EnableLazyLoading="True"
-                    IsCacheEnabled="True"
-                    PlaceholderSource="/Assets/placeholder.jpg"
-                    PlaceholderStretch="Fill"
-                    Source="{x:Bind Anime.Image, Mode=OneWay}"
-                    Stretch="UniformToFill" />
-
-                <uc:UnwatchedEpisodesBadge
-                    Width="30"
-                    Height="30"
-                    MaxHeight="30"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Anime="{x:Bind Anime, Mode=OneWay}"
-                    Background="OrangeRed"
-                    FontWeight="Bold"
-                    Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
-
                 <Grid
-                    x:Name="NextEpisodeInContainer"
                     Grid.Row="0"
-                    Height="30"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Visibility="{x:Bind NextEpisodeInVisibility(NextEpisodeInText.Text), Mode=OneWay}">
-                    <Grid.Background>
-                        <SolidColorBrush Opacity="0.5" Color="Black" />
-                    </Grid.Background>
+                    Background="{ThemeResource ControlOnImageFillColorDefaultBrush}"
+                    Canvas.ZIndex="1"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ShowNextEpisodeTime), Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                     <TextBlock
                         x:Name="NextEpisodeInText"
-                        Padding="5,0"
+                        Padding="5"
+                        HorizontalAlignment="Stretch"
                         FontSize="20"
                         Foreground="White"
-                        Text="{x:Bind GetTime(Anime.NextEpisodeAt), Mode=OneWay}" />
+                        Text="{x:Bind GetTime(Anime.NextEpisodeAt), Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextTrimming="CharacterEllipsis" />
+                    <uc:UnwatchedEpisodesBadge
+                        Grid.Column="1"
+                        Width="25"
+                        Height="30"
+                        Margin="0,0,8,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Anime="{x:Bind Anime, Mode=OneWay}"
+                        Background="OrangeRed"
+                        Canvas.ZIndex="2"
+                        FontWeight="Bold"
+                        Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
                 </Grid>
 
                 <Grid
                     Grid.Row="0"
-                    Margin="0"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Background="{ThemeResource ControlOnImageFillColorDefaultBrush}">
+                    Grid.RowSpan="2"
+                    CornerRadius="5 5 0 0">
+                    <uc:ImageEx
+                        CacheMode="BitmapCache"
+                        EnableLazyLoading="True"
+                        IsCacheEnabled="True"
+                        PlaceholderSource="/Assets/placeholder.jpg"
+                        PlaceholderStretch="Fill"
+                        Source="{x:Bind Anime.Image, Mode=OneWay}"
+                        Stretch="UniformToFill" />
                     <Button
                         Width="45"
                         Height="45"
-                        Flyout="{x:Bind help:Converters.AnimeToFlyout(Anime), Mode=OneWay}"
-                        UseSystemFocusVisuals="False">
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Background="{ThemeResource ControlOnImageFillColorDefault}"
+                        Flyout="{x:Bind help:Converters.AnimeToFlyout(Anime), Mode=OneWay}">
                         <SymbolIcon Symbol="More" />
                     </Button>
+                    <StackPanel
+                        Padding="5"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Background="{ThemeResource ControlOnImageFillColorDefault}"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <SymbolIcon Symbol="SolidStar" />
+                        <TextBlock Text="{x:Bind Anime.MeanScore, Mode=OneWay}" />
+                    </StackPanel>
                 </Grid>
 
-                <Border
-                    x:Name="Border"
-                    Grid.Row="1"
-                    Height="60"
-                    Padding="3"
-                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-                    BorderBrush="{x:Bind GetBorderBrush(Anime.AiringStatus), Mode=OneWay}"
-                    BorderThickness="0,4,0,0">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Style="{ThemeResource BodyStrongTextBlockStyle}"
-                            Text="{x:Bind Anime.Title, Mode=TwoWay}"
-                            TextAlignment="Center"
-                            TextTrimming="WordEllipsis"
-                            ToolTipService.ToolTip="{x:Bind Anime.Title, Mode=OneWay}" />
-                        <Button
-                            Grid.Column="1"
-                            Width="45"
-                            Height="45"
-                            Command="{x:Bind root:App.Commands.UpdateTracking}"
-                            CommandParameter="{x:Bind Anime, Mode=OneWay}"
-                            Visibility="{x:Bind AddToListButtonVisibility(Anime), Mode=OneWay}">
-                            <SymbolIcon Symbol="Add" />
-                        </Button>
+                <Grid
+                    Grid.Row="2"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    BorderBrush="{x:Bind help:Converters.AiringStatusToBrush(Anime.AiringStatus), Mode=OneWay}"
+                    BorderThickness="0,4,0,0"
+                    CornerRadius="0 0 5 5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="47" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Grid.Row="0"
+                        Padding="5"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Anime.Title, Mode=TwoWay}"
+                        TextAlignment="Center"
+                        TextTrimming="WordEllipsis"
+                        ToolTipService.ToolTip="{x:Bind Anime.Title, Mode=OneWay}" />
+
+                    <Grid
+                        Grid.Row="1"
+                        Padding="5"
+                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                        <StackPanel
+                            HorizontalAlignment="Right"
+                            Orientation="Horizontal"
+                            Spacing="20">
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <FontIcon FontSize="12" Glyph="&#xE734;" />
+                                <TextBlock VerticalAlignment="Center" Text="{x:Bind chelp:AnimeHelpers.UserScore(Anime.Tracking), Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <FontIcon FontSize="12" Glyph="&#xE7B3;" />
+                                <TextBlock VerticalAlignment="Center" Text="{x:Bind chelp:AnimeHelpers.Progress(Anime.Tracking, Anime.TotalEpisodes), Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                <Button
+                                    Command="{x:Bind root:App.Commands.DecrementTracking}"
+                                    CommandParameter="{x:Bind Anime, Mode=OneWay}"
+                                    ToolTipService.ToolTip="Decrement episode">
+                                    <FontIcon FontSize="12" Glyph="&#xECC9;" />
+                                </Button>
+                                <Button
+                                    Command="{x:Bind root:App.Commands.IncrementTracking}"
+                                    CommandParameter="{x:Bind Anime, Mode=OneWay}"
+                                    ToolTipService.ToolTip="Increment episode">
+                                    <FontIcon FontSize="12" Glyph="&#xECC8;" />
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
                     </Grid>
-                </Border>
+
+                </Grid>
+
             </Grid>
         </uc:Case>
 
@@ -143,7 +177,7 @@
 
                     <Grid
                         Background="{ThemeResource AccentAcrylicBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{x:Bind GetBorderBrush(Anime.AiringStatus), Mode=OneWay}"
+                        BorderBrush="{x:Bind help:Converters.AiringStatusToBrush(Anime.AiringStatus), Mode=OneWay}"
                         BorderThickness="0,0,0,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />

@@ -1,20 +1,21 @@
 ﻿using System.ComponentModel;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
+using Humanizer;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using MonoTorrent.Client;
 using Totoro.Core.Services;
-using Totoro.Core.Torrents;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Contracts;
 using Totoro.WinUI.Services;
-using Totoro.WinUI.ViewModels;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -63,6 +64,14 @@ public static partial class Converters
     public static string Join(IEnumerable<object> values) => string.Join(",", values);
 
     public static Visibility NullToVisibility(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
+
+    public static Brush AiringStatusToBrush(AiringStatus status) => status switch
+    {
+        AiringStatus.CurrentlyAiring => new SolidColorBrush(Colors.LimeGreen),
+        AiringStatus.FinishedAiring => new SolidColorBrush(Colors.MediumSlateBlue),
+        AiringStatus.NotYetAired => new SolidColorBrush(Colors.LightSlateGray),
+        _ => new SolidColorBrush(Colors.Navy),
+    };
 
     public static string ConvertStreamType(string type)
     {
@@ -180,6 +189,34 @@ public static partial class Converters
     }
 
     public static string TorrentToPercent(TorrentManager torrentManager) => $"{torrentManager.Progress:N2}";
+    public static string HumanizeTimeSpan(this TimeSpan ts)
+    {
+        var sb = new StringBuilder();
+        var week = ts.Days / 7;
+        var days = ts.Days % 7;
+        if (week > 0)
+        {
+            sb.Append($"{week}w ");
+        }
+        if(days > 0)
+        {
+            sb.Append($"{days}d ");
+        }
+        if(ts.Hours > 0)
+        {
+            sb.Append($"{ts.Hours.ToString().PadLeft(2, '0')}h ");
+        }
+        if (ts.Minutes > 0)
+        {
+            sb.Append($"{ts.Minutes.ToString().PadLeft(2, '0')}m ");
+        }
+        if(ts.Seconds > 0)
+        {
+            sb.Append($"{ts.Seconds.ToString().PadLeft(2, '0')}s ");
+        }
+
+        return sb.ToString().TrimEnd();
+    }
 
     public static ImageSource StreamToImage(Stream stream)
     {
