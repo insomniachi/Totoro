@@ -7,6 +7,7 @@
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"
@@ -168,6 +169,7 @@
                 <uc:ImageEx
                     Grid.Column="0"
                     CacheMode="BitmapCache"
+                    CornerRadius="5 0 0 5"
                     EnableLazyLoading="True"
                     IsCacheEnabled="True"
                     PlaceholderSource="/Assets/placeholder.jpg"
@@ -175,7 +177,10 @@
                     Source="{x:Bind Anime.Image, Mode=OneWay}"
                     Stretch="UniformToFill" />
 
-                <Grid Grid.Column="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                <Grid
+                    Grid.Column="1"
+                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                    CornerRadius="0 5 5 0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -218,22 +223,27 @@
 
                     <ItemsControl
                         Grid.Row="1"
-                        Margin="0,0,0,5"
-                        ItemsSource="{x:Bind GetAdditionalInformation(Anime), Mode=OneWay}">
+                        Margin="{StaticResource SmallTopMargin}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        ItemsSource="{x:Bind Anime.Genres, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <uc:UniformGrid Margin="{StaticResource XXSmallLeftTopRightBottomMargin}" Columns="2">
-                                    <TextBlock Margin="{StaticResource SmallLeftMargin}" FontWeight="Bold">
-                                        <Run Text="{Binding Key}" />
-                                    </TextBlock>
-                                    <TextBlock
-                                        Margin="{StaticResource SmallRightMargin}"
-                                        Text="{Binding Value}"
-                                        TextTrimming="WordEllipsis"
-                                        ToolTipService.ToolTip="{Binding Value}" />
-                                </uc:UniformGrid>
+                                <Border
+                                    Margin="5"
+                                    Padding="20,5"
+                                    Background="{ThemeResource AccentAcrylicInAppFillColorDefaultBrush}"
+                                    BorderBrush="Black"
+                                    CornerRadius="12">
+                                    <TextBlock Text="{Binding}" />
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <labs:WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                     </ItemsControl>
 
                     <ScrollViewer
@@ -242,6 +252,7 @@
                         Padding="10">
                         <TextBlock Text="{x:Bind Anime.Description, Mode=OneWay}" TextWrapping="WrapWholeWords" />
                     </ScrollViewer>
+
                 </Grid>
 
 

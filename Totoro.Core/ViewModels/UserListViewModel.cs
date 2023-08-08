@@ -119,10 +119,11 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .ToPropertyEx(this, x => x.IsListView);
 
         Observable.Timer(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1))
+            .Where(_ => Mode == DisplayMode.Grid)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
-                foreach (var item in Anime)
+                foreach (var item in Anime.Where(x => x.NextEpisodeAt is not null))
                 {
                     item.RaisePropertyChanged(nameof(item.NextEpisodeAt));
                 }
