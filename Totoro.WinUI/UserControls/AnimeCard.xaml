@@ -34,9 +34,10 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock
                         x:Name="NextEpisodeInText"
-                        Padding="5"
+                        Padding="2"
                         HorizontalAlignment="Stretch"
-                        FontSize="20"
+                        FontSize="14"
+                        FontWeight="SemiBold"
                         Foreground="White"
                         Text="{x:Bind GetTime(Anime.NextEpisodeAt), Mode=OneWay}"
                         TextAlignment="Center"
@@ -101,12 +102,12 @@
 
                     <TextBlock
                         Grid.Row="0"
-                        Padding="5"
-                        HorizontalAlignment="Center"
+                        Padding="3"
+                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Style="{ThemeResource BodyStrongTextBlockStyle}"
                         Text="{x:Bind Anime.Title, Mode=TwoWay}"
-                        TextAlignment="Center"
+                        TextAlignment="Left"
                         TextTrimming="WordEllipsis"
                         ToolTipService.ToolTip="{x:Bind Anime.Title, Mode=OneWay}" />
 
