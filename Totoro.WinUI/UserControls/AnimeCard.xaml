@@ -69,6 +69,7 @@
                         Source="{x:Bind Anime.Image, Mode=OneWay}"
                         Stretch="UniformToFill" />
                     <Button
+                        x:Name="MoreButton"
                         Width="45"
                         Height="45"
                         HorizontalAlignment="Right"
@@ -84,8 +85,8 @@
                         Background="{ThemeResource ControlOnImageFillColorDefault}"
                         Orientation="Horizontal"
                         Spacing="10">
-                        <SymbolIcon Symbol="SolidStar" />
-                        <TextBlock Text="{x:Bind Anime.MeanScore, Mode=OneWay}" />
+                        <FontIcon FontSize="12" Glyph="&#xE735;" />
+                        <TextBlock FontSize="12" Text="{x:Bind Anime.MeanScore, Mode=OneWay}" />
                     </StackPanel>
                 </Grid>
 
@@ -118,24 +119,32 @@
                         <StackPanel
                             HorizontalAlignment="Right"
                             Orientation="Horizontal"
-                            Spacing="20"
+                            Spacing="15"
                             Visibility="{x:Bind help:Converters.VisibleIfHasTracking(Anime), Mode=OneWay}">
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <FontIcon FontSize="12" Glyph="&#xE734;" />
-                                <TextBlock VerticalAlignment="Center" Text="{x:Bind chelp:AnimeHelpers.UserScore(Anime.Tracking), Mode=OneWay}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Text="{x:Bind chelp:AnimeHelpers.UserScore(Anime.Tracking), Mode=OneWay}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <FontIcon FontSize="12" Glyph="&#xE7B3;" />
-                                <TextBlock VerticalAlignment="Center" Text="{x:Bind chelp:AnimeHelpers.Progress(Anime.Tracking, Anime.TotalEpisodes), Mode=OneWay}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    Text="{x:Bind chelp:AnimeHelpers.Progress(Anime.Tracking, Anime.TotalEpisodes), Mode=OneWay}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <Button
+                                    Padding="5"
                                     Command="{x:Bind root:App.Commands.DecrementTracking}"
                                     CommandParameter="{x:Bind Anime, Mode=OneWay}"
                                     ToolTipService.ToolTip="Decrement episode">
                                     <FontIcon FontSize="12" Glyph="&#xECC9;" />
                                 </Button>
                                 <Button
+                                    Padding="5"
                                     Command="{x:Bind root:App.Commands.IncrementTracking}"
                                     CommandParameter="{x:Bind Anime, Mode=OneWay}"
                                     ToolTipService.ToolTip="Increment episode">

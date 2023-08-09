@@ -35,17 +35,25 @@ public sealed partial class AnimeCard : UserControl
 
     public DisplayMode DisplayMode { get; set; } = DisplayMode.Grid;
     public bool ShowAddToList { get; set; } = true;
+    public static bool HasTouch { get; } = Windows.Devices.Input.PointerDevice.GetPointerDevices().Any(x => x.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch);
 
     public AnimeCard()
     {
         InitializeComponent();
-
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Do(anime => ShowNextEpisodeTime = anime.NextEpisodeAt is not null)
             .SelectMany(x => x.WhenAnyValue(y => y.NextEpisodeAt).DistinctUntilChanged())
             .Subscribe(date => ShowNextEpisodeTime = date is not null);
+
+        Loaded += (_, _) =>
+        {
+            if (!HasTouch)
+            {
+                MoreButton.Visibility = Visibility.Collapsed;
+            }
+        };
     }
 
     public Visibility AddToListButtonVisibility(AnimeModel a)

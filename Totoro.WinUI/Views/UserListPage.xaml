@@ -88,10 +88,9 @@
                             <uc:AdaptiveGridView.ItemTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
                                     <uc:AnimeCard
-                                        x:Name="Card"
                                         Margin="3"
                                         Anime="{x:Bind}"
-                                        ShowNextEpisodeTime="True" />
+                                        ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
                                 </DataTemplate>
                             </uc:AdaptiveGridView.ItemTemplate>
                         </uc:AdaptiveGridView>
