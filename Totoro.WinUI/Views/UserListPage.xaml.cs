@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Labs.WinUI;
+﻿using System.Linq;
+using CommunityToolkit.Labs.WinUI;
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -162,6 +163,21 @@ public sealed partial class UserListPage : UserListPageBase
     private void OnLoadingRow(object sender, DataGridRowEventArgs e)
     {
         e.Row.ContextFlyout = Converters.AnimeToFlyout(e.Row.DataContext as AnimeModel);
+    }
+
+    private void SortButton_Loaded(object sender, RoutedEventArgs e)
+    {
+        var flyout = ((MenuFlyout)((AppBarButton)sender).Flyout);
+        if(flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "1").FirstOrDefault(x => (string)x.CommandParameter == ViewModel.DataGridSettings.Sort.ColumnName) is RadioMenuFlyoutItem column)
+        {
+            column.IsChecked = true;
+        }
+
+        if(flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "2").FirstOrDefault(x => ViewModel.DataGridSettings.Sort.IsAscending == (bool)x.CommandParameter) is RadioMenuFlyoutItem order)
+        {
+            order.IsChecked = true;
+        }
+
     }
 }
 

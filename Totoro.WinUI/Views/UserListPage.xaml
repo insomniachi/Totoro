@@ -477,6 +477,69 @@
                             </AppBarButton.Flyout>
                         </AppBarButton>
                         <AppBarButton
+                            x:Name="SortButton"
+                            Icon="Sort"
+                            Label="Sort"
+                            Loaded="SortButton_Loaded"
+                            Visibility="{x:Bind uhelp:Converters.InvertedBooleanToVisibility(ViewModel.IsListView), Mode=OneWay}">
+                            <AppBarButton.Flyout>
+                                <MenuFlyout>
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortProperty}"
+                                        CommandParameter="Title"
+                                        GroupName="1"
+                                        Text="Title" />
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortProperty}"
+                                        CommandParameter="Mean Score"
+                                        GroupName="1"
+                                        Text="Average" />
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortProperty}"
+                                        CommandParameter="User Score"
+                                        GroupName="1"
+                                        Text="Score" />
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortProperty}"
+                                        CommandParameter="Date Started"
+                                        GroupName="1"
+                                        Text="Date Started" />
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortProperty}"
+                                        CommandParameter="Date Completed"
+                                        GroupName="1"
+                                        Text="Date Completed" />
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortProperty}"
+                                        CommandParameter="Last Updated"
+                                        GroupName="1"
+                                        Text="Last Updated" />
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortProperty}"
+                                        CommandParameter="Next Episode"
+                                        GroupName="1"
+                                        Text="Next Episode" />
+                                    <MenuFlyoutSeparator />
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortOrder}"
+                                        GroupName="2"
+                                        Text="Ascending">
+                                        <RadioMenuFlyoutItem.CommandParameter>
+                                            <x:Boolean>True</x:Boolean>
+                                        </RadioMenuFlyoutItem.CommandParameter>
+                                    </RadioMenuFlyoutItem>
+                                    <RadioMenuFlyoutItem
+                                        Command="{x:Bind ViewModel.SetSortOrder}"
+                                        GroupName="2"
+                                        Text="Descending">
+                                        <RadioMenuFlyoutItem.CommandParameter>
+                                            <x:Boolean>False</x:Boolean>
+                                        </RadioMenuFlyoutItem.CommandParameter>
+                                    </RadioMenuFlyoutItem>
+                                </MenuFlyout>
+                            </AppBarButton.Flyout>
+                        </AppBarButton>
+                        <AppBarButton
                             x:Name="QuickAdd"
                             Icon="Add"
                             Label="Quick Add" />

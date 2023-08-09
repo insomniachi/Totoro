@@ -60,16 +60,26 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
         ResetDataGridColumns = ReactiveCommand.Create(() => DataGridSettings = Settings.GetDefaultUserListDataGridSettings());
         SaveDataGridSettings = ReactiveCommand.Create(() => localSettingsService.SaveSetting(Settings.UserListDataGridSettings, DataGridSettings));
+        SetSortProperty = ReactiveCommand.Create<string>(columnName => SelectedSortProperty = columnName);
+        SetSortOrder = ReactiveCommand.Create<bool>(isAscending => IsSortByAscending = isAscending);
         Mode = settings.ListDisplayMode;
         DataGridSettings = localSettingsService.ReadSetting(Settings.UserListDataGridSettings);
         GridViewSettings = settings.UserListGridViewSettings;
+        (SelectedSortProperty, IsSortByAscending) = DataGridSettings.Sort;
         CheckNewColumns();
 
         var sort = this.WhenAnyValue(x => x.DataGridSettings)
             .WhereNotNull()
             .SelectMany(settings => settings.WhenAnyValue(x => x.Sort))
+            .DistinctUntilChanged()
             .Do(_ => SaveDataGridSettings.Execute(Unit.Default))
             .Select(GetSortComparer);
+
+        this.WhenAnyValue(x => x.SelectedSortProperty, x => x.IsSortByAscending)
+            .Where(x => !string.IsNullOrEmpty(x.Item1))
+            .Select(x => new DataGridSort(x.Item1, x.Item2))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => DataGridSettings.Sort = x);
 
         this.ObservableForProperty(x => x.DataGridSettings, x => x)
             .Select(_ => Unit.Default)
@@ -139,17 +149,22 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
     [Reactive] public DataGridSettings DataGridSettings { get; set; }
     [Reactive] public GridViewSettings GridViewSettings { get; set; }
+    [Reactive] public string SelectedSortProperty { get; set; }
+    [Reactive] public bool IsSortByAscending { get; set; }
     [ObservableAsProperty] public bool IsListView { get; }
 
     public ListServiceType ListType { get; }
     public bool IsAuthenticated { get; }
     public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
+    public List<string> SortableProperties { get; } = new() { "Title", "Mean Score", "User Score", "Date Started", "Date Completed", "Last Updated", "Type", "Next Episode" };
     public ICommand ChangeCurrentViewCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand SetDisplayMode { get; }
     public ICommand ResetDataGridColumns { get; }
     public ICommand SaveDataGridSettings { get; }
+    public ICommand SetSortProperty { get; }
+    public ICommand SetSortOrder { get; }
 
     public Task SetInitialState()
     {
@@ -237,6 +252,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             { ColumnName: "Date Completed" } => CreateComparer(x => x.Tracking.FinishDate, sort.IsAscending),
             { ColumnName: "Type" } => CreateComparer(x => x.Type, sort.IsAscending),
             { ColumnName: "Next Episode" } => CreateComparer(x => x.NextEpisodeAt, sort.IsAscending),
+            { ColumnName: "Last Updated" } => CreateComparer(x => x.Tracking.UpdatedAt, sort.IsAscending),
             _ => null
         };
     }
