@@ -1,7 +1,5 @@
-﻿using Microsoft.UI;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.UserControls;
@@ -14,6 +12,15 @@ public sealed partial class AnimeCard : UserControl
         DependencyProperty.Register("Flyout", typeof(MenuFlyout), typeof(AnimeCard), new PropertyMetadata(null));
     public static readonly DependencyProperty ShowNextEpisodeTimeProperty =
         DependencyProperty.Register("ShowNextEpisodeTime", typeof(bool), typeof(AnimeCard), new PropertyMetadata(false));
+    public static readonly DependencyProperty CommandProperty =
+        DependencyProperty.Register("Command", typeof(ICommand), typeof(AnimeCard), new PropertyMetadata(null));
+
+
+    public ICommand Command
+    {
+        get { return (ICommand)GetValue(CommandProperty); }
+        set { SetValue(CommandProperty, value); }
+    }
 
     public bool ShowNextEpisodeTime
     {
@@ -92,5 +99,10 @@ public sealed partial class AnimeCard : UserControl
             ["Score"] = $"{fa.MeanScore}",
             ["Popularity"] = $"#{fa.Popularity}"
         };
+    }
+
+    private void ImageEx_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        Command?.Execute(Anime);
     }
 }

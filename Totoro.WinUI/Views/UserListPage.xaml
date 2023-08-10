@@ -78,8 +78,6 @@
                         <uc:AdaptiveGridView
                             x:Name="AnimeListView"
                             animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                            ui:ListViewExtensions.Command="{x:Bind root:App.Commands.AnimeCard}"
-                            IsItemClickEnabled="True"
                             ItemsSource="{x:Bind ViewModel.Anime}"
                             StretchContentForSingleRow="False">
                             <Interactivity:Interaction.Behaviors>
@@ -90,6 +88,7 @@
                                     <uc:AnimeCard
                                         Margin="3"
                                         Anime="{x:Bind}"
+                                        Command="{x:Bind root:App.Commands.AnimeCard}"
                                         ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
                                 </DataTemplate>
                             </uc:AdaptiveGridView.ItemTemplate>

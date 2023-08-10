@@ -133,10 +133,14 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
-                foreach (var item in Anime.Where(x => x.NextEpisodeAt is not null))
+                try
                 {
-                    item.RaisePropertyChanged(nameof(item.NextEpisodeAt));
+                    foreach (var item in Anime.Where(x => x.NextEpisodeAt is not null))
+                    {
+                        item.RaisePropertyChanged(nameof(item.NextEpisodeAt));
+                    }
                 }
+                catch { }
             }, RxApp.DefaultExceptionHandler.OnError)
             .DisposeWith(Garbage);
     }

@@ -2,58 +2,34 @@
     x:Class="Totoro.WinUI.UserControls.RatingPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
-    <SplitButton>
-        <TextBlock x:Name="RatingText" />
-        <SplitButton.Flyout>
-            <MenuFlyout>
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="0"
-                    Text="(0) - No Score" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="1"
-                    Text="(1) - Appalling" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="2"
-                    Text="(2) - Horring" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="3"
-                    Text="(3) - Very Bad" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="4"
-                    Text="(4) - Bad" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="5"
-                    Text="(5) - Average" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="6"
-                    Text="(6) - Fine" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="7"
-                    Text="(7) - Good" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="8"
-                    Text="(8) - Very Good" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="9"
-                    Text="(9) - Great" />
-                <RadioMenuFlyoutItem
-                    Command="{x:Bind UpdateRating}"
-                    CommandParameter="10"
-                    Text="(10) - Masterpiece" />
-            </MenuFlyout>
-        </SplitButton.Flyout>
-    </SplitButton>
+
+    <ctk:SwitchPresenter Value="{x:Bind IsCompact, Mode=OneWay}">
+        <uc:Case>
+            <uc:Case.Value>
+                <x:Boolean>False</x:Boolean>
+            </uc:Case.Value>
+            <SplitButton Flyout="{x:Bind CreateFlyout(Anime), Mode=OneWay}">
+                <TextBlock x:Name="RatingText" />
+            </SplitButton>
+        </uc:Case>
+        <uc:Case>
+            <uc:Case.Value>
+                <x:Boolean>True</x:Boolean>
+            </uc:Case.Value>
+            <StackPanel
+                FlyoutBase.AttachedFlyout="{x:Bind CreateFlyout(Anime), Mode=OneWay}"
+                Loaded="StackPanel_Loaded"
+                Orientation="Horizontal"
+                Spacing="5"
+                Tapped="StackPanel_Tapped">
+                <FontIcon FontSize="12" Glyph="&#xE734;" />
+                <TextBlock x:Name="CompactRatingText" FontSize="12" />
+            </StackPanel>
+        </uc:Case>
+    </ctk:SwitchPresenter>
 </UserControl>
