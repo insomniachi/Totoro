@@ -137,14 +137,14 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="5">
                                 <Button
-                                    Padding="5"
+                                    Padding="0"
                                     Command="{x:Bind root:App.Commands.DecrementTracking}"
                                     CommandParameter="{x:Bind Anime, Mode=OneWay}"
                                     ToolTipService.ToolTip="Decrement episode">
                                     <FontIcon FontSize="12" Glyph="&#xECC9;" />
                                 </Button>
                                 <Button
-                                    Padding="5"
+                                    Padding="0"
                                     Command="{x:Bind root:App.Commands.IncrementTracking}"
                                     CommandParameter="{x:Bind Anime, Mode=OneWay}"
                                     ToolTipService.ToolTip="Increment episode">

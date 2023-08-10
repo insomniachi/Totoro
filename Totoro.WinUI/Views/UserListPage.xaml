@@ -218,25 +218,35 @@
                                     </uc:DataGridTemplateColumn.CellEditingTemplate>
                                 </uc:DataGridTemplateColumn>
                                 <uc:DataGridTemplateColumn
-                                    MinWidth="173"
+                                    MinWidth="109"
                                     CanUserSort="False"
                                     Header="Progress"
                                     IsReadOnly="True"
                                     Tag="Tracking">
                                     <uc:DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
-                                            <uc:UniformGrid
-                                                Margin="10,5"
-                                                ColumnSpacing="10"
-                                                Columns="3">
-                                                <TextBlock VerticalAlignment="Center" Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}" />
-                                                <Button Command="{x:Bind root:App.Commands.IncrementTracking}" CommandParameter="{x:Bind}">
-                                                    <SymbolIcon Symbol="Add" />
+                                            <StackPanel
+                                                HorizontalAlignment="Center"
+                                                Orientation="Horizontal"
+                                                Spacing="10">
+                                                <Button
+                                                    Padding="0"
+                                                    Command="{x:Bind root:App.Commands.DecrementTracking}"
+                                                    CommandParameter="{x:Bind}">
+                                                    <FontIcon FontSize="12" Glyph="&#xECC9;" />
                                                 </Button>
-                                                <Button Command="{x:Bind root:App.Commands.DecrementTracking}" CommandParameter="{x:Bind}">
-                                                    <SymbolIcon Symbol="Remove" />
+                                                <TextBlock
+                                                    MinWidth="30"
+                                                    VerticalAlignment="Center"
+                                                    Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}"
+                                                    TextAlignment="Center" />
+                                                <Button
+                                                    Padding="0"
+                                                    Command="{x:Bind root:App.Commands.IncrementTracking}"
+                                                    CommandParameter="{x:Bind}">
+                                                    <FontIcon FontSize="12" Glyph="&#xECC8;" />
                                                 </Button>
-                                            </uc:UniformGrid>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </uc:DataGridTemplateColumn.CellTemplate>
                                 </uc:DataGridTemplateColumn>
