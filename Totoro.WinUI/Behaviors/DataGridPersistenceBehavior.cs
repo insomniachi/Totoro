@@ -12,7 +12,6 @@ namespace Totoro.WinUI.Behaviors;
 public class DataGridPersistenceBehavior : Behavior<DataGrid>
 {
     private readonly CompositeDisposable _disposables = new();
-    private readonly PropertyInfo _isSelectedProperty = typeof(DataGridRow).GetProperty("IsSelected", BindingFlags.Instance | BindingFlags.NonPublic);
     
     public static readonly DependencyProperty SettingsProperty =
         DependencyProperty.Register("Settings", typeof(DataGridSettings), typeof(DataGridPersistenceBehavior), new PropertyMetadata(null));
@@ -69,8 +68,6 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
             .LoadingRow
             .Subscribe(x =>
             {
-                //x.Row.PointerReleased += Row_PointerReleased;
-                //x.Row.Tapped += Row_Tapped;
                 x.Row.DoubleTapped += Row_DoubleTapped;
             })
             .DisposeWith(_disposables);
@@ -80,11 +77,11 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
             .UnloadingRow
             .Subscribe(x =>
             {
-                //x.Row.PointerReleased -= Row_PointerReleased;
-                //x.Row.Tapped -= Row_Tapped;
                 x.Row.DoubleTapped += Row_DoubleTapped;
             })
             .DisposeWith(_disposables);
+
+        ApplyDataGridSettings();
     }
 
     private void Row_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
@@ -99,29 +96,8 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
             : Visibility.Visible;
     }
 
-    //private void Row_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
-    //{
-    //    UnSelectIfSelected();
-    //}
-
-    //private void Row_PointerReleased(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-    //{
-    //    UnSelectIfSelected();
-    //}
-
-    private void UnSelectIfSelected()
-    {
-        if (AssociatedObject.SelectedItem is null)
-        {
-            return;
-        }
-
-        AssociatedObject.DispatcherQueue.TryEnqueue(() => AssociatedObject.SelectedItem = null);
-    }
-
     protected override void OnDetaching()
     {
-        base.OnDetaching();
         _disposables.Dispose();
     }
 
@@ -162,8 +138,6 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
     {
         AssociatedObject.Columns.ForEach(x => x.Visibility = Visibility.Collapsed);
 
-        var sb = new StringBuilder();
-
         foreach (var column in AssociatedObject.Columns.OrderBy(x => x.DisplayIndex))
         {
             var tag = (string)column.Tag;
@@ -184,10 +158,6 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
             column.Width = model.Width is null
                 ? DataGridLength.Auto
                 : new DataGridLength(model.Width.Value, DataGridLengthUnitType.Pixel);
-
-            sb.AppendLine($"{model.Name} : {column.DisplayIndex}");
         }
-
-        var result = sb.ToString();
     }
 }
