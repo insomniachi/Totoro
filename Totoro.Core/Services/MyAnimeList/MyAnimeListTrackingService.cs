@@ -59,80 +59,97 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
-        if (IsAuthenticated)
-        {
-            return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
-            {
-                var statuses = new[] 
-                {
-                    MalApi.AnimeStatus.Watching,
-                    MalApi.AnimeStatus.PlanToWatch, 
-                    MalApi.AnimeStatus.Completed,
-                    MalApi.AnimeStatus.OnHold,
-                    MalApi.AnimeStatus.Dropped 
-                };
-
-                foreach (var status in statuses)
-                {
-                    var result = await _client.Anime()
-                                            .OfUser()
-                                            .WithStatus(status)
-                                            .IncludeNsfw()
-                                            .WithFields(FieldNames)
-                                            .Find();
-
-                    var models = result.Data.Select(x =>
-                    {
-                        var model = ConvertModel(x);
-
-                        if (status == MalApi.AnimeStatus.Watching)
-                        {
-                            GetAiredEpisodes(model)
-                                .ToObservable()
-                                .ObserveOn(RxApp.MainThreadScheduler)
-                                .Subscribe(x => model.AiredEpisodes = x);
-
-                            _anilistService
-                                .GetNextAiringEpisodeTime(model.Id)
-                                .ToObservable()
-                                .ObserveOn(RxApp.MainThreadScheduler)
-                                .Subscribe(x => model.NextEpisodeAt = x);
-                        }
-
-                        return model;
-                    });
-
-                    observer.OnNext(models.ToList());
-                }
-
-                observer.OnCompleted();
-                return Disposable.Empty;
-            });
-        }
-        else
+        if (!IsAuthenticated)
         {
             return Observable.Empty<IEnumerable<AnimeModel>>();
         }
+
+        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        {
+            var statuses = new[]
+            {
+                MalApi.AnimeStatus.Watching,
+                MalApi.AnimeStatus.PlanToWatch,
+                MalApi.AnimeStatus.Completed,
+                MalApi.AnimeStatus.OnHold,
+                MalApi.AnimeStatus.Dropped
+            };
+
+            foreach (var status in statuses)
+            {
+                var result = await _client.Anime()
+                                        .OfUser()
+                                        .WithStatus(status)
+                                        .IncludeNsfw()
+                                        .WithFields(FieldNames)
+                                        .Find();
+
+                var models = new List<AnimeModel>();
+
+                foreach (var item in result.Data)
+                {
+                    var model = ConvertModel(item);
+
+                    if (status == MalApi.AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
+                    {
+                        var airedEpisodes = GetAiredEpisodes(model);
+                        var nextEpisode = _anilistService.GetNextAiringEpisodeTime(model.Id);
+
+                        await Task.WhenAll(airedEpisodes, nextEpisode);
+
+                        model.AiredEpisodes = airedEpisodes.Result;
+                        model.NextEpisodeAt = nextEpisode.Result;
+                    }
+
+                    models.Add(model);
+                }
+
+                observer.OnNext(models);
+            }
+
+            observer.OnCompleted();
+            return Disposable.Empty;
+        });
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
     {
-        if (IsAuthenticated)
+        if (!IsAuthenticated)
         {
-            return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
-            {
-                var pagedAnime = await _client.Anime()
-                                              .OfUser()
-                                              .WithStatus(MalApi.AnimeStatus.Watching)
-                                              .IncludeNsfw()
-                                              .WithFields(FieldNames)
-                                              .Find();
+            return Observable.Empty<IEnumerable<AnimeModel>>();
+        }
 
-                var data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
+        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        {
+            var pagedAnime = await _client.Anime()
+                                            .OfUser()
+                                            .WithStatus(MalApi.AnimeStatus.Watching)
+                                            .IncludeNsfw()
+                                            .WithFields(FieldNames)
+                                            .Find();
+
+            var data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
+            observer.OnNext(data);
+
+            foreach (var item in data)
+            {
+
+                _anilistService
+                    .GetNextAiringEpisodeTime(item.Id)
+                    .ToObservable()
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Subscribe(x => item.NextEpisodeAt = x);
+            }
+
+            while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
+            {
+                pagedAnime = await _client.GetNextAnimePage(pagedAnime);
+                data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
                 observer.OnNext(data);
 
                 foreach (var item in data)
                 {
+                    await Task.Delay(100);
 
                     _anilistService
                         .GetNextAiringEpisodeTime(item.Id)
@@ -140,34 +157,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(x => item.NextEpisodeAt = x);
                 }
+            }
 
-                while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
-                {
-                    pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                    data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
-                    observer.OnNext(data);
+            observer.OnCompleted();
 
-                    foreach (var item in data)
-                    {
-                        await Task.Delay(100);
-
-                        _anilistService
-                            .GetNextAiringEpisodeTime(item.Id)
-                            .ToObservable()
-                            .ObserveOn(RxApp.MainThreadScheduler)
-                            .Subscribe(x => item.NextEpisodeAt = x);
-                    }
-                }
-
-                observer.OnCompleted();
-
-                return Disposable.Empty;
-            });
-        }
-        else
-        {
-            return Observable.Empty<IEnumerable<AnimeModel>>();
-        }
+            return Disposable.Empty;
+        });
     }
 
     public IObservable<Tracking> Update(long id, Tracking tracking)
