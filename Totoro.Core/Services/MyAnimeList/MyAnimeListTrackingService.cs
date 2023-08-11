@@ -10,7 +10,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
     private readonly IAnilistService _anilistService;
-    private static readonly string[] FieldNames = new[]
+    private static readonly string[] _fieldNames = new[]
     {
         MalApi.AnimeFieldNames.Synopsis,
         MalApi.AnimeFieldNames.TotalEpisodes,
@@ -81,7 +81,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                                         .OfUser()
                                         .WithStatus(status)
                                         .IncludeNsfw()
-                                        .WithFields(FieldNames)
+                                        .WithFields(_fieldNames)
                                         .Find();
 
                 var models = new List<AnimeModel>();
@@ -92,13 +92,9 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
                     if (status == MalApi.AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
                     {
-                        var airedEpisodes = GetAiredEpisodes(model);
-                        var nextEpisode = _anilistService.GetNextAiringEpisodeTime(model.Id);
-
-                        await Task.WhenAll(airedEpisodes, nextEpisode);
-
-                        model.AiredEpisodes = airedEpisodes.Result;
-                        model.NextEpisodeAt = nextEpisode.Result;
+                        var epAndTime = await _anilistService.GetNextAiringEpisode(item.Id);
+                        model.AiredEpisodes = epAndTime.Episode - 1 ?? 0;
+                        model.NextEpisodeAt = epAndTime.Time;
                     }
 
                     models.Add(model);
@@ -125,38 +121,17 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
                                             .OfUser()
                                             .WithStatus(MalApi.AnimeStatus.Watching)
                                             .IncludeNsfw()
-                                            .WithFields(FieldNames)
+                                            .WithFields(_fieldNames)
                                             .Find();
 
             var data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
             observer.OnNext(data);
-
-            foreach (var item in data)
-            {
-
-                _anilistService
-                    .GetNextAiringEpisodeTime(item.Id)
-                    .ToObservable()
-                    .ObserveOn(RxApp.MainThreadScheduler)
-                    .Subscribe(x => item.NextEpisodeAt = x);
-            }
 
             while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
             {
                 pagedAnime = await _client.GetNextAnimePage(pagedAnime);
                 data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
                 observer.OnNext(data);
-
-                foreach (var item in data)
-                {
-                    await Task.Delay(100);
-
-                    _anilistService
-                        .GetNextAiringEpisodeTime(item.Id)
-                        .ToObservable()
-                        .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(x => item.NextEpisodeAt = x);
-                }
             }
 
             observer.OnCompleted();
@@ -230,11 +205,5 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         }
 
         return DateTime.Today == date;
-    }
-
-    private async Task<int> GetAiredEpisodes(AnimeModel model)
-    {
-        var nextEp = await _anilistService.GetNextAiringEpisode(model.Id);
-        return nextEp - 1 ?? 0;
     }
 }

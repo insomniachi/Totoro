@@ -129,46 +129,27 @@ public class AnilistService : IAnimeService, IAnilistService
         return response.Data.Media.BannerImage;
     }
 
-    public async Task<int?> GetNextAiringEpisode(long id)
+    public async Task<(int? Episode, DateTime? Time)> GetNextAiringEpisode(long id)
     {
         var animeId = await _animeIdService.GetId(id);
 
         if (animeId is null)
         {
-            return null;
+            return (null, null);
         }
 
         var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
             Query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
                 .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
-                    .WithEpisode()), id: (int)animeId.AniList).Build()
-        });
-
-        return response.Data.Media.NextAiringEpisode?.Episode;
-    }
-
-    public async Task<DateTime?> GetNextAiringEpisodeTime(long id)
-    {
-        var animeId = await _animeIdService.GetId(id);
-
-        if (animeId is null)
-        {
-            return null;
-        }
-
-        var response = _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-        {
-            Query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
-                .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
+                    .WithEpisode()
                     .WithTimeUntilAiring()), id: (int)animeId.AniList).Build()
         });
 
-
-        var nextEp = response.Result.Data.Media.NextAiringEpisode?.TimeUntilAiring;
+        var ep = response.Data.Media.NextAiringEpisode?.Episode;
+        var nextEp = response.Data.Media.NextAiringEpisode?.TimeUntilAiring;
         DateTime? dt = nextEp is null ? null : DateTime.Now + TimeSpan.FromSeconds(nextEp.Value);
-
-        return dt;
+        return (ep, dt);
     }
 
     private bool FilterNsfw(Media m)

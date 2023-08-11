@@ -2,7 +2,6 @@
 
 public interface IAnilistService : IAnimeService
 {
-    Task<int?> GetNextAiringEpisode(long id);
-    Task<DateTime?> GetNextAiringEpisodeTime(long id);
+    Task<(int? Episode, DateTime? Time)> GetNextAiringEpisode(long id);
     Task<string> GetBannerImage(long id);
 }

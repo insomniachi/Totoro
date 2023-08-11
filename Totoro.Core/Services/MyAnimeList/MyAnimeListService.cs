@@ -37,11 +37,6 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
 
             var model = ConvertModel(malModel);
             
-            GetAiredEpisodes(model)
-            .ToObservable()
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => model.AiredEpisodes = x);
-
             _anilistService
                 .GetBannerImage(id)
                 .ToObservable()
@@ -227,9 +222,4 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
         MalApi.AnimeFieldNames.StartDate,
         MalApi.AnimeFieldNames.MediaType
     };
-    private async Task<int> GetAiredEpisodes(AnimeModel model)
-    {
-        var nextEp = await _anilistService.GetNextAiringEpisode(model.Id);
-        return nextEp - 1 ?? 0;
-    }
 }
