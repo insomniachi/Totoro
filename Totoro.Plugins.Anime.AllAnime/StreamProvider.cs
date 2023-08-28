@@ -325,38 +325,12 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         return UtfEncodedStringRegex().Replace(value, m => ((char)int.Parse(m.Groups["Value"].Value, NumberStyles.HexNumber)).ToString());
     }
 
-    private static string Decrypt(string password, string target)
-    {
-        var data = Convert.FromHexString(target);
-
-        IEnumerable<char> GenExp()
-        {
-            foreach (var segment in data!)
-            {
-                var x = segment;
-                foreach (var ch in password)
-                {
-                    x ^= (byte)ch;
-                }
-
-                yield return (char)x;
-            }
-        }
-
-        return string.Join("", GenExp());
-    }
+    private static string Decrypt(string target) => string.Join("", Convert.FromHexString(target).Select(x => (char)(x ^ 56)));
 
     private static string DecryptSourceUrl(string sourceUrl)
     {
-        if(sourceUrl.StartsWith("##"))
-        {
-            return Decrypt("1234567890123456789", sourceUrl[2..]);
-        }
-        else if(sourceUrl.StartsWith("#"))
-        {
-            return Decrypt("allanimenews", sourceUrl[1..]);
-        }
-
-        return string.Empty;
+        var index = sourceUrl.LastIndexOf('-') + 1;
+        var encrypted = sourceUrl[index..];
+        return Decrypt(encrypted);
     }
 }
