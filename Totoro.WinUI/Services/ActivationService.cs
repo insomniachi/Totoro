@@ -20,6 +20,7 @@ public class ActivationService : IActivationService, IEnableLogger
     private readonly ISettings _settings;
     private readonly string _prevWebviewFolder;
     private readonly string _tempPath = Path.GetTempPath();
+    private readonly WindowPersistenceService _windowPersistenceService;
 
     public bool IsAuthenticated { get; set; } = true;
 
@@ -28,7 +29,8 @@ public class ActivationService : IActivationService, IEnableLogger
                              IThemeSelectorService themeSelectorService,
                              IInitializer initializer,
                              IPluginOptionsStorage<INativeMediaPlayer> mediaPlayerPluginOptions,
-                             ISettings settings)
+                             ISettings settings,
+                             ILocalSettingsService localSettingsService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
@@ -37,6 +39,7 @@ public class ActivationService : IActivationService, IEnableLogger
         _mediaPlayerPluginOptions = mediaPlayerPluginOptions;
         _settings = settings;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
+        _windowPersistenceService = new WindowPersistenceService(localSettingsService, App.MainWindow, "MainWindow");
 
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
     }
@@ -53,7 +56,6 @@ public class ActivationService : IActivationService, IEnableLogger
         if(!_settings.StartupOptions.StartMinimizedToTray)
         {
             App.MainWindow.Activate();
-            App.MainWindow.Maximize();
         }
 
         App.MainWindow.AppWindow.Closing += AppWindow_Closing;
