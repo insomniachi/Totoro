@@ -76,6 +76,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetecti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Generic", "..\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj", "{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Aniwave", "..\Totoro.Plugins.Anime.Aniwave\Totoro.Plugins.Anime.Aniwave.csproj", "{04662C12-CD0A-4376-82C4-3E244499E3AF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Aniwave.Tests", "..\Totoro.Plugins.Anime.Aniwave.Tests\Totoro.Plugins.Anime.Aniwave.Tests.csproj", "{95C6966D-1060-423C-8051-9C04D598AC0A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -184,6 +188,14 @@ Global
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}.Debug|x64.Build.0 = Debug|x64
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}.Release|x64.ActiveCfg = Release|x64
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}.Release|x64.Build.0 = Release|x64
+		{04662C12-CD0A-4376-82C4-3E244499E3AF}.Debug|x64.ActiveCfg = Debug|x64
+		{04662C12-CD0A-4376-82C4-3E244499E3AF}.Debug|x64.Build.0 = Debug|x64
+		{04662C12-CD0A-4376-82C4-3E244499E3AF}.Release|x64.ActiveCfg = Release|Any CPU
+		{04662C12-CD0A-4376-82C4-3E244499E3AF}.Release|x64.Build.0 = Release|Any CPU
+		{95C6966D-1060-423C-8051-9C04D598AC0A}.Debug|x64.ActiveCfg = Debug|x64
+		{95C6966D-1060-423C-8051-9C04D598AC0A}.Debug|x64.Build.0 = Debug|x64
+		{95C6966D-1060-423C-8051-9C04D598AC0A}.Release|x64.ActiveCfg = Release|Any CPU
+		{95C6966D-1060-423C-8051-9C04D598AC0A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -215,6 +227,8 @@ Global
 		{046D778E-C7B5-4086-A056-F0526C7C3A96} = {E2331907-A768-4E4A-AACA-B53B83AA1919}
 		{5117D9CF-5D78-459F-9546-113BCEDD79B8} = {046D778E-C7B5-4086-A056-F0526C7C3A96}
 		{A2856FA8-E5E3-469D-997B-CC50E6B4BC07} = {046D778E-C7B5-4086-A056-F0526C7C3A96}
+		{04662C12-CD0A-4376-82C4-3E244499E3AF} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
+		{95C6966D-1060-423C-8051-9C04D598AC0A} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98BB8C58-726D-4AB8-A113-D44B55413B79}
