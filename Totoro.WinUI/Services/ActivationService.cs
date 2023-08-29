@@ -5,6 +5,7 @@ using Splat;
 using Totoro.Core.Services;
 using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.WinUI.Activation;
+using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
 using WinUIEx;
 
@@ -30,7 +31,8 @@ public class ActivationService : IActivationService, IEnableLogger
                              IInitializer initializer,
                              IPluginOptionsStorage<INativeMediaPlayer> mediaPlayerPluginOptions,
                              ISettings settings,
-                             ILocalSettingsService localSettingsService)
+                             ILocalSettingsService localSettingsService,
+                             IWindowService windowService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
@@ -39,7 +41,7 @@ public class ActivationService : IActivationService, IEnableLogger
         _mediaPlayerPluginOptions = mediaPlayerPluginOptions;
         _settings = settings;
         _prevWebviewFolder = Environment.GetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER");
-        _windowPersistenceService = new WindowPersistenceService(localSettingsService, App.MainWindow, "MainWindow");
+        _windowPersistenceService = new WindowPersistenceService(localSettingsService, windowService, App.MainWindow, "MainWindow");
 
         Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", _tempPath);
     }
