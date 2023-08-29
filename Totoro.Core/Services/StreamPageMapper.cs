@@ -175,8 +175,8 @@ namespace Totoro.Core.Services
             {
                 ListServiceType.AniList => animeId.AniList,
                 ListServiceType.MyAnimeList => animeId.MyAnimeList,
-                ListServiceType.Kitsu => animeId.Kitsu,
-                ListServiceType.AniDb => animeId.AniDb,
+                ListServiceType.Kitsu => animeId.Kitsu ?? throw new ArgumentException("Kitsu id not found"),
+                ListServiceType.AniDb => animeId.AniDb ?? throw new ArgumentException("AniDb id not found"),
                 _ => throw new NotSupportedException()
             };
         }

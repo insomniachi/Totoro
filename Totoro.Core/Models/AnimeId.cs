@@ -5,7 +5,7 @@ namespace Totoro.Core.Models;
 public record AnimeId
 {
     [JsonPropertyName("anidb")]
-    public long AniDb { get; set; }
+    public long? AniDb { get; set; }
 
     [JsonPropertyName("anilist")]
     public long AniList { get; set; }
@@ -14,7 +14,7 @@ public record AnimeId
     public long MyAnimeList { get; set; }
 
     [JsonPropertyName("kitsu")]
-    public long Kitsu { get; set; }
+    public long? Kitsu { get; set; }
 
     public static AnimeId Zero => new();
 }
