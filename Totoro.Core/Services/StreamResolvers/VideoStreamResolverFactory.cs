@@ -31,7 +31,7 @@ public class VideoStreamResolverFactory : IVideoStreamResolverFactory
         return new AnimDLVideoStreamResolver(_providerFactory.CreatePlugin(providerType), _settings, baseUrl);
     }
 
-    public IVideoStreamModelResolver CreateGogoAnimDLResolver(string providerType, string baseUrlSub, string baseUrlDub)
+    public IVideoStreamModelResolver CreateSubDubResolver(string providerType, string baseUrlSub, string baseUrlDub)
     {
         return new AnimDLVideoStreamResolver(_providerFactory.CreatePlugin(providerType), _settings, baseUrlSub, baseUrlDub);
     }
