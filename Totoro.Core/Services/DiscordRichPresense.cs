@@ -22,8 +22,24 @@ public class DiscordRichPresense : IDiscordRichPresense
             _client.UpdateSmallAsset("icon");
         }
     }
-    public void ClearTimer() => _client.UpdateClearTime();
-    public void Clear() => _client.ClearPresence();
+    public void ClearTimer()
+    {
+        if (!IsInitialized)
+        {
+            return;
+        }
+
+        _client.UpdateClearTime();
+    }
+    public void Clear()
+    {
+        if(!IsInitialized)
+        {
+            return;
+        }
+
+        _client.ClearPresence();
+    }
     public void SetUrl(string url)
     {
         if(string.IsNullOrEmpty(url))
