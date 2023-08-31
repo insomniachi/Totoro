@@ -17,30 +17,22 @@ internal partial class StreamProvider : IAnimeStreamProvider
     [GeneratedRegex(@"go_to_player\('(?<Url>.+)'\)")]
     private static partial Regex PlayerListRegex();
 
+    private int GetNumberOfStreams(HtmlDocument doc)
+    {
+        var lastNode = doc.QuerySelectorAll(".episodes-card").Last();
+        return (int)double.Parse(NumberRegex().Match(lastNode.InnerText).Groups[1].Value);
+    }
+
     public async Task<int> GetNumberOfStreams(string url)
     {
         var doc = await url.GetHtmlDocumentAsync();
-        var lastNode = doc.QuerySelectorAll(".episodes-card").Last();
-        return (int)double.Parse(NumberRegex().Match(lastNode.InnerText).Groups[1].Value);
+        return GetNumberOfStreams(doc);
     }
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range episodeRange)
     {
         var doc = await url.GetHtmlDocumentAsync();
-        var total = 0;
-        foreach (var item in doc.QuerySelectorAll(".anime-info"))
-        {
-            if (item.InnerText.Contains("عدد الحلقات:"))
-            {
-                total = int.Parse(NumberRegex().Match(item.InnerText).Groups[1].Value);
-            }
-        }
-
-        if(total == 0)
-        {
-            yield break;
-        }
-
+        var total = GetNumberOfStreams(doc);
         var (start, end) = episodeRange.Extract(total);
 
         foreach (var item in doc.QuerySelectorAll(".episodes-card"))
