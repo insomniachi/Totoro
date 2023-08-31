@@ -20,16 +20,8 @@ internal partial class StreamProvider : IAnimeStreamProvider
     public async Task<int> GetNumberOfStreams(string url)
     {
         var doc = await url.GetHtmlDocumentAsync();
-
-        foreach (var item in doc.QuerySelectorAll(".anime-info"))
-        {
-            if(item.InnerText.Contains("عدد الحلقات:"))
-            {
-                return int.Parse(NumberRegex().Match(item.InnerText).Groups[1].Value);
-            }
-        }
-
-        return 0;
+        var lastNode = doc.QuerySelectorAll(".episodes-card").Last();
+        return (int)double.Parse(NumberRegex().Match(lastNode.InnerText).Groups[1].Value);
     }
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range episodeRange)
