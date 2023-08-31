@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Flurl.Http;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Models;
