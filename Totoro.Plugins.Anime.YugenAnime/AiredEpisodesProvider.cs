@@ -31,7 +31,7 @@ internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
         foreach (var item in nodes)
         {
             var title = item.QuerySelector(".ep-origin-name").InnerText.Trim();
-            var path = item.QuerySelector(".ep-thumbnail").Attributes["href"].Value;
+            var path = item.QuerySelector(".ep-details").Attributes["href"].Value;
             var url =  Url.Combine(Config.Url, path);
             var img = item.QuerySelector("img").Attributes["data-src"].Value;
             var time = item.QuerySelector("time").Attributes["datetime"].Value;
