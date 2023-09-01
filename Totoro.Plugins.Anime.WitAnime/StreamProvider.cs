@@ -77,7 +77,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
         {
             return serverUrl switch
             {
-                //string x when x.Contains("yonaplay") => await ExtractFromMultiUrl(serverUrl),
+                string x when x.Contains("yonaplay") => await ExtractFromMultiUrl(serverUrl),
                 string x when x.Contains("4shared") => await FourSharedExtractor.Extract(serverUrl),
                 string x when x.Contains("soraplay") => await SoraPlayExtractor.Extract(serverUrl, Config.Url),
                 string x when x.Contains("drive.google.com") => await GoogleDriveExtractor.Extract(serverUrl),
