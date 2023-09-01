@@ -40,22 +40,32 @@ public class DiscordRichPresense : IDiscordRichPresense
 
         _client.ClearPresence();
     }
+
     public void SetUrl(string url)
     {
-        if(string.IsNullOrEmpty(url))
-        {
-            return;
-        }
+        _client.UpdateButtons(GetButtons(url).ToArray());
+    }
 
-        var buttons = new Button[]
+    private IEnumerable<Button> GetButtons(string url = "")
+    {
+        var buttons = new List<Button>
         {
-            new Button()
+            new Button
+            {
+                Label = "Download Totoro",
+                Url = "https://github.com/insomniachi/Totoro/releases/latest"
+            },
+        };
+
+        if(!string.IsNullOrEmpty(url))
+        {
+            buttons.Add(new Button()
             {
                 Url = url,
                 Label = "View Anime"
-            }
-        };
+            });
+        }
 
-        _client.UpdateButtons(buttons);
+        return buttons;
     }
 }
