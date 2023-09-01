@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using System.Web;
 using Flurl;
 using Flurl.Http;
 using Totoro.Plugins.Anime.Contracts;
@@ -47,6 +48,7 @@ internal class StreamProvider : IAnimeStreamProvider
 
         var jObject = JsonNode.Parse(episdoeData);
         var stream = new VideoStreamsForEpisode();
+        var token = HttpUtility.UrlDecode(jar.First(x => x.Name == "XSRF-TOKEN").Value);
         stream.AdditionalInformation.Title = jObject?["props"]?["episode"]?["data"]?["title"]?.AsArray()[0]?["text"]?.ToString();
         foreach (var item in jObject?["props"]?["video"]?["data"]?["mirror"]?.AsArray() ?? new JsonArray())
         {
@@ -54,7 +56,15 @@ internal class StreamProvider : IAnimeStreamProvider
             stream.Streams.Add(new VideoStream
             {
                 Url = code!["file"]!.ToString(),
-                Resolution = item!["resolution"]!.ToString()
+                Resolution = item!["resolution"]!.ToString(),
+                Headers =
+                {
+                    { HeaderNames.Accept, "video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5" },
+                    { HeaderNames.Referer, url },
+                    { HeaderNames.AcceptLanguage, "en-US,en;q=0.5" },
+                    { HeaderNames.Cookie, string.Join(";", jar.Select(x => $"{x.Name}={x.Value}")) },
+                    { "x-xsrf-token", token },
+                }
             });
         }
 

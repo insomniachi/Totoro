@@ -72,9 +72,9 @@ class HttpRandomAccessStream : IRandomAccessStreamWithContentType
 
         if (!response.Headers.ContainsKey("Accept-Ranges"))
         {
-            throw new Exception(string.Format(
-                "HTTP server does not support range requests: {0}",
-                "http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.5"));
+            //throw new Exception(string.Format(
+            //    "HTTP server does not support range requests: {0}",
+            //    "http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.5"));
         }
 
         if (string.IsNullOrEmpty(etagHeader) && response.Headers.ContainsKey("ETag"))
