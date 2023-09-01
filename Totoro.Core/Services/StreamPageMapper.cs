@@ -76,17 +76,7 @@ namespace Totoro.Core.Services
                 }
                 else if (provider == "gogo-anime")
                 {
-                    var uri = new Uri(url);
-                    var path = uri.Segments[^1];
-
-                    if (path.Contains("-episode-"))
-                    {
-                        return await GetId(path.Split("-episode").FirstOrDefault(), provider);
-                    }
-                    else
-                    {
-                        return await GetId(path, provider);
-                    }
+                    return null;
                 }
                 else if (provider == "anime-pahe")
                 {
