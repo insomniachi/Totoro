@@ -27,33 +27,36 @@ namespace Totoro.Core.Services
             _settings = settings;
         }
 
-        public async Task<long> GetId(string identifier, string provider)
+        public Task<long> GetId(string identifier, string provider)
         {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                this.Log().Warn("No identifier found");
-                return 0;
-            }
+            return Task.FromResult<long>(0);
 
-            try
-            {
-                var key = _settings.DefaultListService switch
-                {
-                    ListServiceType.MyAnimeList => "malId",
-                    ListServiceType.AniList => "aniId",
-                    _ => throw new NotSupportedException()
-                };
+            // Mal-Sync-Backup got DMCA
+            //if (string.IsNullOrEmpty(identifier))
+            //{
+            //    this.Log().Warn("No identifier found");
+            //    return 0;
+            //}
 
-                var json = await _httpClient.GetStringAsync($"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/pages/{GetProviderPage(provider)}/{identifier}.json");
-                var jObject = JsonNode.Parse(json);
-                var value = (long)jObject[key].AsValue();
-                return value;
-            }
-            catch (Exception ex)
-            {
-                this.Log().Error(ex);
-                return 0;
-            }
+            //try
+            //{
+            //    var key = _settings.DefaultListService switch
+            //    {
+            //        ListServiceType.MyAnimeList => "malId",
+            //        ListServiceType.AniList => "aniId",
+            //        _ => throw new NotSupportedException()
+            //    };
+
+            //    var json = await _httpClient.GetStringAsync($"https://raw.githubusercontent.com/MALSync/MAL-Sync-Backup/master/data/pages/{GetProviderPage(provider)}/{identifier}.json");
+            //    var jObject = JsonNode.Parse(json);
+            //    var value = (long)jObject[key].AsValue();
+            //    return value;
+            //}
+            //catch (Exception ex)
+            //{
+            //    this.Log().Error(ex);
+            //    return 0;
+            //}
         }
 
         public async Task<long?> GetIdFromUrl(string url, string provider)

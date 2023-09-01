@@ -515,7 +515,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         var id = await _streamPageMapper.GetIdFromUrl(url, ProviderType) ?? await TryGetId(title);
 
-        if (id is null)
+        if (id is null or 0)
         {
             this.Log().Warn($"Unable to find Id for {title}, watch session will not be tracked");
             return;
