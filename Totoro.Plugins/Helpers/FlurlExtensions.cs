@@ -51,4 +51,9 @@ public static class FlurlExtensions
     {
         return request.WithHeader(HeaderNames.UserAgent, USER_AGENT);
     }
+
+    public static IFlurlRequest WithDefaultUserAgent(this Url url)
+    {
+        return url.WithHeader(HeaderNames.UserAgent, USER_AGENT);
+    }
 }

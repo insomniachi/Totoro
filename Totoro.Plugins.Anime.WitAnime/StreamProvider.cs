@@ -56,10 +56,9 @@ internal partial class StreamProvider : IAnimeStreamProvider
             foreach (var server in doc2.QuerySelectorAll("#episode-servers li a"))
             {
                 var serverUrl = server.Attributes["data-ep-url"].Value;
-                var serverName = server.InnerHtml;
-
+                //var serverName = server.InnerHtml;
+                
                 var stream = await GetStreams(serverUrl);
-
                 if(stream is null)
                 {
                     continue;
@@ -74,22 +73,32 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
     private async Task<VideoStreamsForEpisode?> GetStreams(string serverUrl)
     {
-        return serverUrl switch
+        try
         {
-            string x when x.Contains("yonaplay") => await ExtractFromMultiUrl(serverUrl),
-            string x when x.Contains("4shared") => await FourSharedExtractor.Extract(serverUrl),
-            string x when x.Contains("soraplay") => await SoraPlayExtractor.Extract(serverUrl, Config.Url),
-            string x when x.Contains("drive.google.com") => await GoogleDriveExtractor.Extract(serverUrl),
-            //string x when x.Contains("dood") => await DoodExtractor.Extract(serverUrl, "Dood mirror"),
-            //string x when x.Contains("mp4upload.com") => await Mp4UploadExtractor.Extract(serverUrl, Config.Url),
-            _ => null
-        };
+            return serverUrl switch
+            {
+                //string x when x.Contains("yonaplay") => await ExtractFromMultiUrl(serverUrl),
+                string x when x.Contains("4shared") => await FourSharedExtractor.Extract(serverUrl),
+                string x when x.Contains("soraplay") => await SoraPlayExtractor.Extract(serverUrl, Config.Url),
+                string x when x.Contains("drive.google.com") => await GoogleDriveExtractor.Extract(serverUrl),
+                string x when x.Contains("dailymotion") => await DailyMotionExtractor.Extract(serverUrl, Config.Url),
+                string x when x.Contains("ok.ru") => await OkRuExtractor.Extract(serverUrl),
+                string x when x.Contains("dood") => await DoodExtractor.Extract(serverUrl, "Dood mirror"),
+                string x when x.Contains("mp4upload.com") => await Mp4UploadExtractor.Extract(serverUrl, Config.Url),
+                _ => null
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private async Task<VideoStreamsForEpisode?> ExtractFromMultiUrl(string url)
     {
         var html = await url
             .WithReferer(Config.Url)
+            .WithDefaultUserAgent()
             .GetStringAsync();
 
         foreach (var match in PlayerListRegex().Matches(html).OfType<Match>())

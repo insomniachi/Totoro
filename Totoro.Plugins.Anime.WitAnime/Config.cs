@@ -2,5 +2,5 @@
 
 internal static class Config
 {
-    internal static string Url { get; set; } = "https://witanime.ink/";
+    internal static string Url { get; set; } = "https://witanime.cam/";
 }

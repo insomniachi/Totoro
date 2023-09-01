@@ -12,6 +12,7 @@ public class StreamProviderTests
     public const string OPM = "one punch man";
     public const string Nagatoro = "nagatoro san";
     public const string JJK2 = "jujutsu kaisen 2nd season";
+    public const string Masumune2 = "masamune-kun-no-revenge-r";
 
     private readonly ITestOutputHelper _output;
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
@@ -20,7 +21,8 @@ public class StreamProviderTests
         { Hyouka, Url.Combine(Config.Url, "/anime/hyouka/") },
         { OPM, Url.Combine(Config.Url, "/anime/one-punch-man/") },
         { Nagatoro, Url.Combine(Config.Url, "/anime/ijiranaide-nagatoro-san-2nd-attack/") },
-        { JJK2, Url.Combine(Config.Url, "/anime/jujutsu-kaisen-2nd-season/") }
+        { JJK2, Url.Combine(Config.Url, "/anime/jujutsu-kaisen-2nd-season/") },
+        { Masumune2, Url.Combine(Config.Url, "/anime/masamune-kun-no-revenge-r") }
     };
     private readonly bool _allEpisodes = false;
 
@@ -48,6 +50,7 @@ public class StreamProviderTests
     [InlineData(Hyouka)]
     [InlineData(OPM)]
     [InlineData(Nagatoro)]
+    [InlineData(Masumune2)]
     public async Task GetStreams(string key)
     {
         // arrange

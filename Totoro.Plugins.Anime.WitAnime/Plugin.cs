@@ -11,6 +11,7 @@ public class Plugin : IPlugin<AnimeProvider>
     {
         Catalog = new Catalog(),
         StreamProvider = new StreamProvider(),
+        AiredAnimeEpisodeProvider = new AiredEpisodesProvider(),
     };
 
     public PluginInfo GetInfo() => new()
