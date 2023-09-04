@@ -48,40 +48,11 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
         return new VideoStreamsForEpisodeModel(results.First());
     }
 
-    private async Task<List<VideoStreamsForEpisode>> GetStreams(int episode, StreamType streamType)
-    {
-        try
-        {
-            var url = _baseUrlSub;
-            if (_settings.DefaultProviderType == "gogo-anime")
-            {
-                url = streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub;
-            }
-
-            return _provider?.StreamProvider switch
-            {
-                IMultiLanguageAnimeStreamProvider mp => await mp.GetStreams(url, episode..episode, streamType).ToListAsync(),
-                IAnimeStreamProvider sp => await sp.GetStreams(url, episode..episode).ToListAsync(),
-                _ => new List<VideoStreamsForEpisode>()
-            };
-        }
-        catch (Exception ex)
-        {
-            this.Log().Fatal(ex);
-            return new List<VideoStreamsForEpisode>();
-        }
-    }
-
     public async Task<int> GetNumberOfEpisodes(StreamType streamType)
     {
         try
         {
-            var url = _baseUrlSub;
-            if (_settings.DefaultProviderType == "gogo-anime")
-            {
-                url = streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub;
-            }
-
+            var url = GetUrlForStreamType(streamType);
             var count = _provider?.StreamProvider switch
             {
                 IMultiLanguageAnimeStreamProvider mp => await mp.GetNumberOfStreams(url, streamType),
@@ -101,6 +72,35 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
     public async Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
         return EpisodeModelCollection.FromEpisodeCount(await GetNumberOfEpisodes(streamType));
+    }
+    
+    private async Task<List<VideoStreamsForEpisode>> GetStreams(int episode, StreamType streamType)
+    {
+        try
+        {
+            var url = GetUrlForStreamType(streamType);
+            return _provider?.StreamProvider switch
+            {
+                IMultiLanguageAnimeStreamProvider mp => await mp.GetStreams(url, episode..episode, streamType).ToListAsync(),
+                IAnimeStreamProvider sp => await sp.GetStreams(url, episode..episode).ToListAsync(),
+                _ => new List<VideoStreamsForEpisode>()
+            };
+        }
+        catch (Exception ex)
+        {
+            this.Log().Fatal(ex);
+            return new List<VideoStreamsForEpisode>();
+        }
+    }
+
+    private string GetUrlForStreamType(StreamType streamType)
+    {
+        return _settings.DefaultProviderType switch
+        {
+            "gogo-anime" => streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub,
+            "anime-saturn" => streamType is StreamType.ItalianDubbed ? _baseUrlDub : _baseUrlSub,
+            _ => _baseUrlSub
+        };
     }
 }
 

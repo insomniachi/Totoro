@@ -224,7 +224,7 @@ public class ViewService : IViewService, IEnableLogger
             return result.Id;
         }
 
-        var ratios = candidates.Select(x => (x, Fuzz.PartialRatio(x.Title, title))).OrderByDescending(x => x.Item2).ToList();
+        var ratios = candidates.Select(x => (x, Fuzz.Ratio(x.Title, title))).OrderByDescending(x => x.Item2).ToList();
         var filtered = ratios.Where(x => x.Item2 > 80).ToList();
         if (filtered.Count == 1)
         {

@@ -4,25 +4,25 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Platforms>x64</Platforms>
-	<Version>1.5</Version>
+	<Platforms>x64</Platforms>
+	<Version>1.0</Version>
 	<OutputPath Condition="$(Configuration) == Release">..\Plugins\</OutputPath>
 	<AppendTargetFrameworkToOutputPath Condition="$(Configuration) == Release">false</AppendTargetFrameworkToOutputPath>
 	<AppendRuntimeIdentifierToOutputPath Condition="$(Configuration) == Release">false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
-	
+
+  <ItemGroup>
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+		<_Parameter1>$(AssemblyName).Tests</_Parameter1>
+	</AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wit-anime-logo.png" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
   </ItemGroup>
-
-	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-			<_Parameter1>$(AssemblyName).Tests</_Parameter1>
-		</AssemblyAttribute>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="marin-logo.jpg" />
-	</ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@ public class DiscoverViewModel : NavigatableViewModel
 {
     private readonly INavigationService _navigationService;
     private readonly IConnectivityService _connectivityService;
-    private readonly SourceCache<IAiredAnimeEpisode, string> _episodesCache = new(x => x.Url);
+    private readonly SourceCache<IAiredAnimeEpisode, string> _episodesCache = new(x => (x.Url + x.EpisodeString));
     private readonly SourceCache<ICatalogItem, string> _animeSearchResultCache = new(x => x.Url);
     private readonly ReadOnlyObservableCollection<IAiredAnimeEpisode> _episodes;
     private readonly ReadOnlyObservableCollection<ICatalogItem> _animeSearchResults;

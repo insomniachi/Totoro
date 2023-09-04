@@ -54,7 +54,7 @@ namespace Totoro.WinUI.Services
 
             if (hasSubDub)
             {
-                _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(ProviderType, result.Sub.Url, result.Dub.Url);
+                _videoStreamResolver = _videoStreamResolverFactory.CreateSubDubResolver(ProviderType, result.Sub.Url, result.Dub.Url);
             }
             else
             {

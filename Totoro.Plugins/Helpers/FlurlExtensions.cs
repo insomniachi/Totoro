@@ -24,6 +24,15 @@ public static class FlurlExtensions
         return doc;
     }
 
+    public static async Task<HtmlDocument> GetHtmlDocumentAsync(this Task<IFlurlResponse> responseTask)
+    {
+        var response = await responseTask;
+        var stream = await response.GetStreamAsync();
+        var doc = new HtmlDocument();
+        doc.Load(stream);
+        return doc;
+    }
+
     public static async Task<HtmlDocument> GetHtmlDocumentAsync(this Url url)
     {
         var stream = await url.GetStreamAsync();
@@ -50,5 +59,10 @@ public static class FlurlExtensions
     public static IFlurlRequest WithDefaultUserAgent(this IFlurlRequest request)
     {
         return request.WithHeader(HeaderNames.UserAgent, USER_AGENT);
+    }
+
+    public static IFlurlRequest WithDefaultUserAgent(this Url url)
+    {
+        return url.WithHeader(HeaderNames.UserAgent, USER_AGENT);
     }
 }

@@ -4,5 +4,7 @@ public enum StreamType
 {
     EnglishSubbed,
     EnglishDubbed,
+    ItalianSubbed,
+    ItalianDubbed,
     Raw
 }

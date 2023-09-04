@@ -28,7 +28,8 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IMyAnimeListService _myAnimeListService;
     private readonly IAnimeDetectionService _animeDetectionService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
-    
+    private readonly string[] _subDubProviders = new [] { "gogo-anime", "anime-saturn" };
+     
     private PluginOptions _providerOptions;
     private bool _isCrunchyroll;
     private IEnumerable<EpisodeModel> _episodeMetadata;
@@ -106,7 +107,9 @@ public partial class WatchViewModel : NavigatableViewModel
                 if (hasSubDub)
                 {
                     await CreateAnimDLResolver(x.Sub.Url, x.Dub.Url);
-                    SubStreams = new List<StreamType>() { StreamType.EnglishSubbed, StreamType.EnglishDubbed };
+                    SubStreams = ProviderType is "gogo"
+                        ? new List<StreamType>() { StreamType.EnglishSubbed, StreamType.EnglishDubbed }
+                        : new List<StreamType>() { StreamType.ItalianSubbed, StreamType.ItalianDubbed };
                     SelectedAudioStream = _settings.PreferSubs ? SubStreams.First() : SubStreams.Last();
                 }
                 else
@@ -179,7 +182,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Do(stream =>
             {
-                if (ProviderType != "gogo-anime")
+                if (!_subDubProviders.Contains(ProviderType))
                 {
                     var selectedAudioStream = SelectedAudioStream;
                     SubStreams = stream.StreamTypes;
@@ -450,7 +453,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             return (results[0], null);
         }
-        else if (results.Count == 2 && ProviderType is "gogo-anime") // gogo anime has separate listing for sub/dub
+        else if (results.Count == 2 && _subDubProviders.Contains(ProviderType)) // separate listing for sub/dub
         {
             return (results[0], results[1]);
         }
@@ -515,7 +518,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         var id = await _streamPageMapper.GetIdFromUrl(url, ProviderType) ?? await _animeDetectionService.DetectFromTitle(title);
 
-        if (id is null)
+        if (id is null or 0)
         {
             this.Log().Warn($"Unable to find Id for {title}, watch session will not be tracked");
             return;
@@ -647,7 +650,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task CreateAnimDLResolver(string sub, string dub)
     {
-        _videoStreamResolver = _videoStreamResolverFactory.CreateGogoAnimDLResolver(ProviderType, sub, dub);
+        _videoStreamResolver = _videoStreamResolverFactory.CreateSubDubResolver(ProviderType, sub, dub);
         EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(SelectedAudioStream.Value);
     }
 

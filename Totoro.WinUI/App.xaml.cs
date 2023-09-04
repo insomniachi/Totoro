@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Reactive.Concurrency;
 using System.Text.Json;
 using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 using Serilog;
 using Splat;
 using Splat.Serilog;
@@ -18,6 +20,7 @@ using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
 using Windows.ApplicationModel;
+using Windows.ApplicationModel.Activation;
 using WinUIEx;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -93,6 +96,19 @@ public partial class App : Application, IEnableLogger
         UnhandledException += App_UnhandledException;
         DebugSettings.XamlResourceReferenceFailed += (_, e) => this.Log().Fatal(e.Message);
         DebugSettings.BindingFailed += (_, e) => this.Log().Warn(e.Message);
+        var exe = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Totoro", "Totoro.WinUI.exe");
+        ActivationRegistrationManager.RegisterForProtocolActivation("totoro", "", "Totoro", exe);
+    }
+
+    private void App_Activated(AppActivationArguments e)
+    {
+        this.Log().Info($"Activation Kind : {e.Kind}");
+        if(e.Kind == ExtendedActivationKind.Protocol)
+        {
+            this.Log().Info("Protocol Activation");
+            IProtocolActivatedEventArgs protocolArgs = e.Data as IProtocolActivatedEventArgs;
+            this.Log().Info(protocolArgs.Uri.AbsolutePath);
+        }
     }
 
     private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
@@ -148,8 +164,9 @@ public partial class App : Application, IEnableLogger
         this.Log().Fatal(e.Exception, e.Message);
     }
 
-    protected async override void OnLaunched(LaunchActivatedEventArgs args)
+    protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        //RegisterUriScheme();
         MainWindow = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
@@ -157,6 +174,9 @@ public partial class App : Application, IEnableLogger
         ConfigureLogging();
         var activationService = GetService<IActivationService>();
         await activationService.ActivateAsync(args);
+
+        var actArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        App_Activated(actArgs);
     }
 
     private static void ConfigureLogging()
