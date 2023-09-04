@@ -26,6 +26,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
     private readonly IMyAnimeListService _myAnimeListService;
+    private readonly IAnimeDetectionService _animeDetectionService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
     
     private PluginOptions _providerOptions;
@@ -45,7 +46,8 @@ public partial class WatchViewModel : NavigatableViewModel
                           IStreamPageMapper streamPageMapper,
                           IVideoStreamResolverFactory videoStreamResolverFactory,
                           IEnumerable<IMediaEventListener> mediaEventListeners,
-                          IMyAnimeListService myAnimeListService)
+                          IMyAnimeListService myAnimeListService,
+                          IAnimeDetectionService animeDetectionService)
     {
         _providerFactory = providerFactory;
         _viewService = viewService;
@@ -56,6 +58,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _streamPageMapper = streamPageMapper;
         _videoStreamResolverFactory = videoStreamResolverFactory;
         _myAnimeListService = myAnimeListService;
+        _animeDetectionService = animeDetectionService;
         _mediaEventListeners = mediaEventListeners.ToList();
 
         NextEpisode = ReactiveCommand.Create(() =>
@@ -510,7 +513,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return;
         }
 
-        var id = await _streamPageMapper.GetIdFromUrl(url, ProviderType) ?? await TryGetId(title);
+        var id = await _streamPageMapper.GetIdFromUrl(url, ProviderType) ?? await _animeDetectionService.DetectFromTitle(title);
 
         if (id is null)
         {
@@ -523,7 +526,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task TrySetAnime(string title)
     {
-        var id = await TryGetId(title);
+        var id = await _animeDetectionService.DetectFromTitle(title);
 
         if (id is null)
         {
@@ -545,15 +548,15 @@ public partial class WatchViewModel : NavigatableViewModel
             }, RxApp.DefaultExceptionHandler.OnError);
     }
 
-    private async Task<long?> TryGetId(string title)
-    {
-        if (ProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
-        {
-            return 0;
-        }
+    //private async Task<long?> TryGetId(string title)
+    //{
+    //    if (ProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
+    //    {
+    //        return 0;
+    //    }
 
-        return await _viewService.TryGetId(title);
-    }
+    //    return await _viewService.TryGetId(title);
+    //}
 
     private StreamType GetDefaultAudioStream()
     {

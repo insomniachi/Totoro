@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Reactive.Concurrency;
+using System.Text.RegularExpressions;
 
 namespace Totoro.Core.ViewModels;
 
@@ -191,7 +192,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Finally(() =>
                         {
-                            Genres = new(_genres);
+                            RxApp.MainThreadScheduler.Schedule(() => Genres = new(_genres));
                         })
                         .Subscribe(list =>
                         {

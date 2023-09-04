@@ -8,8 +8,8 @@ namespace Totoro.WinUI.ViewModels;
 
 public class NowPlayingViewModel : NavigatableViewModel
 {
-    private readonly IViewService _viewService;
     private readonly IAnimeServiceContext _animeServiceContext;
+    private readonly IAnimeDetectionService _animeDetectionService;
     private readonly NativeMediaPlayerTrackingUpdater _trackingUpdater;
     private readonly NativeMediaPlayerDiscordRichPresenseUpdater _discordRichPresenseUpdater;
 
@@ -17,14 +17,13 @@ public class NowPlayingViewModel : NavigatableViewModel
                                IAnimeServiceContext animeServiceContext,
                                ITimestampsService timestampsService,
                                IToastService toastService,
-                               IVideoStreamResolverFactory videoStreamResolverFactory,
-                               ISettings settings,
+                               IAnimeDetectionService animeDetectionService,
                                ProcessWatcher watcher,
                                NativeMediaPlayerTrackingUpdater trackingUpdater,
                                NativeMediaPlayerDiscordRichPresenseUpdater discordRichPresenseUpdater)
     {
-        _viewService = viewService;
         _animeServiceContext = animeServiceContext;
+        _animeDetectionService = animeDetectionService;
         _trackingUpdater = trackingUpdater;
         _discordRichPresenseUpdater = discordRichPresenseUpdater;
 
@@ -152,7 +151,7 @@ public class NowPlayingViewModel : NavigatableViewModel
             new KeyValuePair<string, string>("Episode :", Episode),
         };
 
-        var id = await _viewService.BeginTryGetId(title);
+        var id = await _animeDetectionService.DetectFromFileName(title, true);
 
         if(id is not { } animeId)
         {
