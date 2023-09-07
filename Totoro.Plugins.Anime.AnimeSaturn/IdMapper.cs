@@ -2,7 +2,7 @@
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
 
-namespace Totoro.Plugins.Anime.YugenAnime;
+namespace Totoro.Plugins.Anime.AnimeSaturn;
 
 internal class IdMapper : IIdMapper
 {

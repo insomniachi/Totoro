@@ -22,7 +22,7 @@ internal class Catalog : IAnimeCatalog, IEnableLogger
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var doc = await Config.Url.AppendPathSegment("search")
+        var doc = await Config.Url.AppendPathSegment("discover")
             .SetQueryParam("q", query)
             .GetHtmlDocumentAsync();
         var nodes = doc.QuerySelectorAll(".anime-meta");

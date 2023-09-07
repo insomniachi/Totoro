@@ -17,12 +17,17 @@ public static class IdMappingHelper
         try
         {
             var html = await url.GetStringAsync();
-            var match = regex.Match(html);
-            return match.Success ? long.Parse(match.Groups[1].Value) : 0;
+            return GetIdFromHtml(html, regex);
         }
         catch
         {
             return null;
         }
+    }
+
+    public static long? GetIdFromHtml(string html, Regex regex)
+    {
+        var match = regex.Match(html);
+        return match.Success ? long.Parse(match.Groups[1].Value) : 0;
     }
 }

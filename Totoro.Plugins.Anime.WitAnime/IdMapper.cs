@@ -2,7 +2,7 @@
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
 
-namespace Totoro.Plugins.Anime.YugenAnime;
+namespace Totoro.Plugins.Anime.WitAnime;
 
 internal class IdMapper : IIdMapper
 {
@@ -12,8 +12,7 @@ internal class IdMapper : IIdMapper
 
         return new AnimeId
         {
-            MyAnimeList = IdMappingHelper.GetIdFromHtml(html, RegexHelper.MyAnimeListLinkRegex()),
-            AniList = IdMappingHelper.GetIdFromHtml(html, RegexHelper.MyAnimeListLinkRegex())
+            MyAnimeList = IdMappingHelper.GetIdFromHtml(html, RegexHelper.MyAnimeListLinkRegex())
         };
     }
 }
