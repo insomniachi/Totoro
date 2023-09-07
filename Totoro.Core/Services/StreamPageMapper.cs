@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
-using Flurl.Http;
-using Splat;
+﻿using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Contracts;
@@ -11,18 +8,15 @@ namespace Totoro.Core.Services
     public partial class StreamPageMapper : IStreamPageMapper, IEnableLogger
     {
         private readonly IPluginFactory<AnimeProvider> _providerFactory;
+        private readonly IAnimeIdService _animeIdService;
         private readonly ISettings _settings;
 
-        class SearchResult : ICatalogItem
-        {
-            required public string Title { get; init; }
-            required public string Url { get; init; }
-        }
-
         public StreamPageMapper(IPluginFactory<AnimeProvider> providerFactory,
+                                IAnimeIdService animeIdService,
                                 ISettings settings)
         {
             _providerFactory = providerFactory;
+            _animeIdService = animeIdService;
             _settings = settings;
         }
 
@@ -38,6 +32,11 @@ namespace Totoro.Core.Services
                 }
 
                 var id = await instance.IdMapper.MapId(url);
+
+                if(id.MyAnimeList is null || id.AniList is null)
+                {
+                    id = await GetFullId(id);
+                }
 
                 return GetId(id);
             }
@@ -58,6 +57,19 @@ namespace Totoro.Core.Services
                 ListServiceType.AniDb => animeId.AniDb ?? throw new ArgumentException("AniDb id not found"),
                 _ => throw new NotSupportedException()
             };
+        }
+
+        private async Task<AnimeId> GetFullId(AnimeId id)
+        {
+            (ListServiceType type, long listId) = id switch
+            {
+                { MyAnimeList: not null } => (ListServiceType.MyAnimeList, id.MyAnimeList.Value),
+                { AniList: not null } => (ListServiceType.AniList, id.AniList.Value),
+                { Kitsu: not null } => (ListServiceType.Kitsu, id.Kitsu.Value),
+                { AniDb: not null } => (ListServiceType.AniDb, id.AniDb.Value)
+            };
+
+            return await _animeIdService.GetId(type, listId);
         }
     }
 }
