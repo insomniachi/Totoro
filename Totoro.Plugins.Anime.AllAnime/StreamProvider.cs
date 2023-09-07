@@ -21,7 +21,9 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             show(
                 _id: $showId
             ) {
-                availableEpisodesDetail
+                availableEpisodesDetail,
+                malId,
+                aniListId
             }
         }
         """;

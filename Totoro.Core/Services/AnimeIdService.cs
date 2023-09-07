@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Flurl.Http;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services;
 

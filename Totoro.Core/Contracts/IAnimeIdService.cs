@@ -1,4 +1,6 @@
-﻿namespace Totoro.Core.Contracts;
+﻿using Totoro.Plugins.Anime.Models;
+
+namespace Totoro.Core.Contracts;
 
 public interface IAnimeIdService
 {

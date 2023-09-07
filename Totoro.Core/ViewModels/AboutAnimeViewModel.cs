@@ -92,7 +92,13 @@ public class AboutAnimeViewModel : NavigatableViewModel
                     Pages.Remove(Pages.First(x => x.Header == "Recommended"));
                 }
 
-                ObservableCollection<EpisodeModel> episodes = new ((await myAnimeListService.GetEpisodes((await animeIdService.GetId(anime.Id)).MyAnimeList)));
+                var animeId = await animeIdService.GetId(anime.Id);
+                if(animeId.MyAnimeList is not long malId)
+                {
+                    return;
+                }
+                
+                ObservableCollection<EpisodeModel> episodes = new(await myAnimeListService.GetEpisodes(malId));
                 var lastEpisodeNumber = episodes.LastOrDefault()?.EpisodeNumber ?? 0;
                 var count = anime.AiredEpisodes - lastEpisodeNumber;
                 if(count > 0)

@@ -105,7 +105,7 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         }
         else
         {
-            return (await _animeIdService.GetId(id)).MyAnimeList;
+            return (await _animeIdService.GetId(id)).MyAnimeList ?? 0;
         }
     }
 }

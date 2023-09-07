@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Totoro.Core.Models;
+namespace Totoro.Plugins.Anime.Models;
 
 public record AnimeId
 {
@@ -8,10 +8,10 @@ public record AnimeId
     public long? AniDb { get; set; }
 
     [JsonPropertyName("anilist")]
-    public long AniList { get; set; }
+    public long? AniList { get; set; }
 
     [JsonPropertyName("myanimelist")]
-    public long MyAnimeList { get; set; }
+    public long? MyAnimeList { get; set; }
 
     [JsonPropertyName("kitsu")]
     public long? Kitsu { get; set; }

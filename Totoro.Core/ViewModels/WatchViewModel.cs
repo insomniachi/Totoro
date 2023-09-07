@@ -411,7 +411,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return (null, null);
         }
 
-        return await _streamPageMapper.GetStreamPage(id, ProviderType) ?? await SearchProvider(title);
+        return await SearchProvider(title);
     }
 
     private IObservable<bool> HasNextEpisode()
