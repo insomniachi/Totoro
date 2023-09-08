@@ -84,9 +84,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeSaturn.Tests", "..\Totoro.Plugins.Anime.AnimeSaturn.Tests\Totoro.Plugins.Anime.AnimeSaturn.Tests.csproj", "{EF158ADE-DD82-4C5D-8EED-E6170C28B238}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.WitAnime", "..\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj", "{D6326042-EE8D-426B-9DE1-0BBD724FF029}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAnime", "..\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj", "{D6326042-EE8D-426B-9DE1-0BBD724FF029}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Anime.WitAnime.Tests", "..\Totoro.Plugins.Anime.WitAnime.Tests\Totoro.Plugins.Anime.WitAnime.Tests.csproj", "{4B042113-D218-4018-B1AD-C67E57F6500D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAnime.Tests", "..\Totoro.Plugins.Anime.WitAnime.Tests\Totoro.Plugins.Anime.WitAnime.Tests.csproj", "{4B042113-D218-4018-B1AD-C67E57F6500D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga", "..\Totoro.Plugins.Manga\Totoro.Plugins.Manga.csproj", "{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Manga", "Manga", "{C3C023F8-74CB-4201-A926-C86D22DDB1CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex", "..\Totoro.Plugins.Manga.MangaDex\Totoro.Plugins.Manga.MangaDex.csproj", "{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex.Tests", "..\Totoro.Plugins.Manga.MangaDex.Tests\Totoro.Plugins.Manga.MangaDex.Tests.csproj", "{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -220,6 +228,18 @@ Global
 		{4B042113-D218-4018-B1AD-C67E57F6500D}.Debug|x64.Build.0 = Debug|x64
 		{4B042113-D218-4018-B1AD-C67E57F6500D}.Release|x64.ActiveCfg = Release|x64
 		{4B042113-D218-4018-B1AD-C67E57F6500D}.Release|x64.Build.0 = Release|x64
+		{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}.Debug|x64.ActiveCfg = Debug|x64
+		{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}.Debug|x64.Build.0 = Debug|x64
+		{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}.Release|x64.ActiveCfg = Release|x64
+		{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}.Release|x64.Build.0 = Release|x64
+		{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}.Debug|x64.ActiveCfg = Debug|x64
+		{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}.Debug|x64.Build.0 = Debug|x64
+		{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}.Release|x64.ActiveCfg = Release|x64
+		{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}.Release|x64.Build.0 = Release|x64
+		{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}.Debug|x64.ActiveCfg = Debug|x64
+		{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}.Debug|x64.Build.0 = Debug|x64
+		{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}.Release|x64.ActiveCfg = Release|x64
+		{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -257,6 +277,10 @@ Global
 		{EF158ADE-DD82-4C5D-8EED-E6170C28B238} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 		{D6326042-EE8D-426B-9DE1-0BBD724FF029} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 		{4B042113-D218-4018-B1AD-C67E57F6500D} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
+		{520ADEA3-B0ED-42CB-B5A9-D31700391BB1} = {E2331907-A768-4E4A-AACA-B53B83AA1919}
+		{C3C023F8-74CB-4201-A926-C86D22DDB1CF} = {E2331907-A768-4E4A-AACA-B53B83AA1919}
+		{2D423284-85B6-4C57-B8CE-AC62DC3EBD75} = {C3C023F8-74CB-4201-A926-C86D22DDB1CF}
+		{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C} = {C3C023F8-74CB-4201-A926-C86D22DDB1CF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98BB8C58-726D-4AB8-A113-D44B55413B79}
