@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Totoro.Core.Services;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Tests.Services;
 

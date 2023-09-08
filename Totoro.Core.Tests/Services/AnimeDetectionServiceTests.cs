@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MalApi;
+﻿using MalApi;
 using Totoro.Core.Services;
 using Totoro.Core.Services.MyAnimeList;
 
@@ -50,6 +45,7 @@ public class AnimeDetectionServiceTests
         connectivityService.Setup(x => x.IsConnected).Returns(true);
 
         var sut = new AnimeDetectionService(Mock.Of<IViewService>(), 
+                                            Mock.Of<IToastService>(),
                                             new AnimeServiceContext(settings.Object, listServies, connectivityService.Object));
 
         // act
