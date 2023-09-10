@@ -42,6 +42,20 @@ public static class ModelHelpers
         }
     }
 
+    public static ImageSource GetImageSource(this Plugins.Manga.Contracts.ICatalogItem searchResult)
+    {
+        try
+        {
+            var uri = new Uri(searchResult.Image, UriKind.Absolute);
+            var imageSource = new BitmapImage { UriSource = uri };
+            return imageSource;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public static string GetAdditionalInformation(this ICatalogItem searchResult)
     {
         StringBuilder sb = new();

@@ -13,6 +13,7 @@ using Totoro.Core.ViewModels;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Manga;
 using Totoro.Plugins.Torrents.Contracts;
 
 namespace Totoro.Core
@@ -99,6 +100,9 @@ namespace Totoro.Core
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.Marin.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AnimeSaturn.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.WitAnime.Plugin());
+
+            // manga
+            PluginFactory<MangaProvider>.Instance.LoadPlugin(new Plugins.Manga.MangaDex.Plugin());
 
             // torrents
             PluginFactory<ITorrentTracker>.Instance.LoadPlugin(new Plugins.Torrents.Nya.Plugin());

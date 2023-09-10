@@ -29,28 +29,36 @@ internal class Catalog : IMangaCatalog
 
         foreach (var item in response.data)
         {
-            string title = item.attributes.title.en;
-            string cover = string.Empty;
-
+            string title = "";
+            string cover = "";
+            string id = "";
+            
             try
             {
+                title = item.attributes.title.en;
+                cover = string.Empty;
+                id = item.id;
+
                 foreach (var relation in item.relationships)
                 {
                     if (relation.type != "cover_art")
                     {
                         continue;
                     }
-
-                    cover = relation.attributes.fileName;
+                    
+                    cover = $"https://uploads.mangadex.org/covers/{item.id}/{relation.attributes.fileName}.256.jpg";
                 }
             }
-            catch { }
+            catch 
+            {
+                continue;
+            }
 
             yield return new SearchResult
             {
                 Title = title,
-                Url = item.id,
-                Image = $"https://uploads.mangadex.org/covers/{item.id}/{cover}.256.jpg"
+                Url = id,
+                Image = cover
             };
         }
     }

@@ -19,6 +19,9 @@
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Views\DiscoverMangaPage.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" Version="0.0.3" />
@@ -83,6 +86,9 @@
 		</None>
 		<Page Update="UserControls\RatingPicker.xaml">
 		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\DiscoverMangaPage.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>
 		<Page Update="Views\NowPlayingPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
