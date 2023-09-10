@@ -21,6 +21,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="Views\DiscoverMangaPage.xaml" />
+	  <None Remove="Views\ReadPage.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -84,6 +85,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Views\ReadPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="UserControls\RatingPicker.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

@@ -23,6 +23,6 @@ public interface IChapterProvider
 public class ChapterModel
 {
     public string Id { get; set; }
-    public int Chapter { get; set; }
-    public int Volume { get; set; }
+    public float Chapter { get; set; }
+    public float Volume { get; set; }
 }

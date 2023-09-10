@@ -60,7 +60,7 @@ public class DiscoverMangaViewModel : NavigatableViewModel
             ["SearchResult"] = searchResult
         };
 
-        //_navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);
+        _navigationService.NavigateTo<ReadViewModel>(parameter: navigationParameters);
 
         return Task.CompletedTask;
     }

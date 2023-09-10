@@ -112,6 +112,8 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<TorrentingViewModel, TorrentingView>();
         services.AddPageForNavigation<NowPlayingViewModel, NowPlayingPage>(true);
         services.AddPageForNavigation<DiscoverMangaViewModel, DiscoverMangaPage>();
+        services.AddPageForNavigation<ReadViewModel, ReadPage>();
+
         return services;
     }
 

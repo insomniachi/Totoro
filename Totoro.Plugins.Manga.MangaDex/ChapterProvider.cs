@@ -24,8 +24,8 @@ internal class ChapterProvider : IChapterProvider
 
         foreach (var item in jObject?["data"]?.AsArray() ?? new JsonArray())
         {
-            var volume = int.Parse(item?["attributes"]?["volume"]?.ToString() ?? "0");
-            var chapter = int.Parse(item?["attributes"]?["chapter"]?.ToString() ?? "0");
+            var volume = float.Parse(item?["attributes"]?["volume"]?.ToString() ?? "0");
+            var chapter = float.Parse(item?["attributes"]?["chapter"]?.ToString() ?? "0");
             var id = item?["id"]?.ToString();
 
             yield return new ChapterModel
