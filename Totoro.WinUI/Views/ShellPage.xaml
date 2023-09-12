@@ -47,9 +47,22 @@
             </NavigationView.PaneHeader>
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverViewModel"
                     Content="Discover"
-                    Icon="World" />
+                    Icon="World"
+                    IsExpanded="true">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverViewModel" Content="Anime">
+                            <NavigationViewItem.Icon>
+                                <FontIcon Glyph="&#xE8B2;" />
+                            </NavigationViewItem.Icon>
+                        </NavigationViewItem>
+                        <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverMangaViewModel" Content="Manga">
+                            <NavigationViewItem.Icon>
+                                <FontIcon Glyph="&#xF56E;" />
+                            </NavigationViewItem.Icon>
+                        </NavigationViewItem>
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.UserListViewModel"
                     Content="My List"

@@ -19,6 +19,10 @@
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Views\DiscoverMangaPage.xaml" />
+	  <None Remove="Views\ReadPage.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" Version="0.0.3" />
@@ -52,9 +56,9 @@
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<ProjectReference Include="..\Totoro.Plugins.MediaDetection.Vlc\Totoro.Plugins.MediaDetection.Vlc.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj" />
+		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Vlc\Totoro.Plugins.MediaDetection.Vlc.csproj" />
+		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj" />
+		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -81,8 +85,14 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Views\ReadPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="UserControls\RatingPicker.xaml">
 		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\DiscoverMangaPage.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>
 		<Page Update="Views\NowPlayingPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>

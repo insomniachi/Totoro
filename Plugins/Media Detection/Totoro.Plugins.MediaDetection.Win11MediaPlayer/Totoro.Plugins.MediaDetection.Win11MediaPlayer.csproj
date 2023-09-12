@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x64</Platforms>
+	<Version>1.1</Version>
+	<OutputPath Condition="$(Configuration) == Release">..\..\..\Plugins Store\</OutputPath>
+	<AppendTargetFrameworkToOutputPath Condition="$(Configuration) == Release">false</AppendTargetFrameworkToOutputPath>
+	<AppendRuntimeIdentifierToOutputPath Condition="$(Configuration) == Release">false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <ProjectReference Include="..\..\..\Totoro.Plugins.MediaDetection\Totoro.Plugins.MediaDetection.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -13,6 +13,7 @@ using Totoro.Core;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;
+using Totoro.Plugins.Manga;
 using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Torrents.Contracts;
 using Totoro.WinUI.Helpers;
@@ -53,6 +54,7 @@ public partial class App : Application, IEnableLogger
             services.AddSingleton(MessageBus.Current);
             services.AddTransient<DefaultExceptionHandler>();
             services.AddSingleton<IPluginManager>(x => new PluginManager(PluginFactory<AnimeProvider>.Instance,
+                                                                         PluginFactory<MangaProvider>.Instance,
                                                                          PluginFactory<ITorrentTracker>.Instance,
                                                                          PluginFactory<INativeMediaPlayer>.Instance));
 

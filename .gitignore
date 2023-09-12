@@ -350,8 +350,8 @@ MigrationBackup/
 .ionide/
 
 # Totoro Plugins folder
-/Plugins/*.json
-/Plugins/Totoro.Plugins.dll
-/Plugins/Totoro.Plugins.Anime.dll
-/Plugins/Totoro.Plugins.Torrents.dll
-/Plugins/Totoro.Plugins.MediaDetection.dll
+/Plugins Store/*.json
+/Plugins Store/Totoro.Plugins.dll
+/Plugins Store/Totoro.Plugins.Anime.dll
+/Plugins Store/Totoro.Plugins.Torrents.dll
+/Plugins Store/Totoro.Plugins.MediaDetection.dll
