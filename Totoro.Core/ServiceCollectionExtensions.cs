@@ -113,6 +113,7 @@ namespace Totoro.Core
             services.AddSingleton<PluginOptionsStorage>();
             
             services.AddSingleton<IPluginFactory<AnimeProvider>>(PluginFactory<AnimeProvider>.Instance);
+            services.AddSingleton<IPluginFactory<MangaProvider>>(PluginFactory<MangaProvider>.Instance);
             services.AddSingleton<IPluginFactory<ITorrentTracker>>(PluginFactory<ITorrentTracker>.Instance);
 
             return services;

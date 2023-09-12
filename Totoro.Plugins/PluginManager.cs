@@ -9,6 +9,7 @@ namespace Totoro.Plugins;
 public class PluginManager : IPluginManager, IEnableLogger
 {
     private readonly IPluginFactory _animePluginFactory;
+    private readonly IPluginFactory _mangaPluginFactory;
     private readonly IPluginFactory _torrentPluginFactory;
     private readonly IPluginFactory _mediaDetectionPluginFactory;
     private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/main";
@@ -24,10 +25,12 @@ public class PluginManager : IPluginManager, IEnableLogger
     }
 
     public PluginManager(IPluginFactory animePluginFactory,
+                         IPluginFactory mangaPluginFactory,
                          IPluginFactory torrentPluginFactory,
                          IPluginFactory mediaDetectionPluginFactory)
     {
         _animePluginFactory = animePluginFactory;
+        _mangaPluginFactory = mangaPluginFactory;
         _torrentPluginFactory = torrentPluginFactory;
         _mediaDetectionPluginFactory = mediaDetectionPluginFactory;
     }
@@ -35,15 +38,18 @@ public class PluginManager : IPluginManager, IEnableLogger
     public async Task Initialize(string folder)
     {
         var animeFolder = Path.Combine(folder, "Anime");
+        var mangaFolder = Path.Combine(folder, "Manga");
         var torrentsFolder = Path.Combine(folder, "Torrents");
         var mediaDetectionFolder = Path.Combine(folder, "Media Detection");
 
         var localAnimePlugins = GetLocalPlugins(animeFolder);
         var localTorrentsPlugins = GetLocalPlugins(torrentsFolder);
         var localMediaDetectionPlugins = GetLocalPlugins(mediaDetectionFolder);
+        var localMangaPlugins = GetLocalPlugins(mangaFolder);
         var listedPlugins = await GetListedPlugins();
         
         await DownloadOrUpdatePlugins(listedPlugins.Anime, localAnimePlugins, animeFolder);
+        await DownloadOrUpdatePlugins(listedPlugins.Manga, localMangaPlugins, mangaFolder);
         await DownloadOrUpdatePlugins(listedPlugins.Torrent, localTorrentsPlugins, torrentsFolder);
         await DownloadOrUpdatePlugins(listedPlugins.MediaDetection, localMediaDetectionPlugins, mediaDetectionFolder);
 
@@ -88,7 +94,7 @@ public class PluginManager : IPluginManager, IEnableLogger
                 File.Delete(path);
             }
 
-            var url = Url.Combine(_baseUrl, "Plugins", item.FileName);
+            var url = Url.Combine(_baseUrl, "Plugins Store", item.FileName);
             using var s = await url.GetStreamAsync();
             using var fs = new FileStream(path, FileMode.OpenOrCreate);
             await s.CopyToAsync(fs);

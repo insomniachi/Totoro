@@ -49,26 +49,27 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
+		<ProjectReference Include="..\Totoro.Plugins.Manga\Totoro.Plugins.Manga.csproj" />
 		<ProjectReference Include="..\Totoro.Plugins.Torrents\Totoro.Plugins.Torrents.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<ProjectReference Include="..\Totoro.Plugins.Anime.AnimePahe\Totoro.Plugins.Anime.AnimePahe.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Anime.YugenAnime\Totoro.Plugins.Anime.YugenAnime.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Anime.Marin\Totoro.Plugins.Anime.Marin.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Anime.AnimeSaturn\Totoro.Plugins.Anime.AnimeSaturn.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.AnimePahe\Totoro.Plugins.Anime.AnimePahe.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.YugenAnime\Totoro.Plugins.Anime.YugenAnime.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.Marin\Totoro.Plugins.Anime.Marin.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.AnimeSaturn\Totoro.Plugins.Anime.AnimeSaturn.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<ProjectReference Include="..\Totoro.Plugins.Manga.MangaDex\Totoro.Plugins.Manga.MangaDex.csproj" />
+		<ProjectReference Include="..\Plugins\Manga\Totoro.Plugins.Manga.MangaDex\Totoro.Plugins.Manga.MangaDex.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-		<ProjectReference Include="..\Totoro.Plugins.Torrents.Nya\Totoro.Plugins.Torrents.Nya.csproj" />
-		<ProjectReference Include="..\Totoro.Plugins.Torrents.AnimeTosho\Totoro.Plugins.Torrents.AnimeTosho.csproj" />
+		<ProjectReference Include="..\Plugins\Torrents\Totoro.Plugins.Torrents.Nya\Totoro.Plugins.Torrents.Nya.csproj" />
+		<ProjectReference Include="..\Plugins\Torrents\Totoro.Plugins.Torrents.AnimeTosho\Totoro.Plugins.Torrents.AnimeTosho.csproj" />
 	</ItemGroup>
 	
 </Project>

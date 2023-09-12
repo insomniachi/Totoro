@@ -32,69 +32,69 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins", "..\Totoro.Plugins\Totoro.Plugins.csproj", "{D0B38240-41C6-4CE2-8E70-6E237FF65498}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimePahe", "..\Totoro.Plugins.Anime.AnimePahe\Totoro.Plugins.Anime.AnimePahe.csproj", "{84C78515-F87D-406B-955E-AE84CDC8A44E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimePahe", "..\Plugins\Anime\Totoro.Plugins.Anime.AnimePahe\Totoro.Plugins.Anime.AnimePahe.csproj", "{84C78515-F87D-406B-955E-AE84CDC8A44E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Anime", "Anime", "{9F7BCE27-2A3F-4D82-8F52-903C9B356F25}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimePahe.Tests", "..\Totoro.Plugins.Anime.AnimePahe.Tests\Totoro.Plugins.Anime.AnimePahe.Tests.csproj", "{2FE52236-DF8B-40C6-96FF-914434118044}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimePahe.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.AnimePahe.Tests\Totoro.Plugins.Anime.AnimePahe.Tests.csproj", "{2FE52236-DF8B-40C6-96FF-914434118044}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AllAnime", "..\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj", "{235E5957-AC87-4323-8E3B-64A948BB6621}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AllAnime", "..\Plugins\Anime\Totoro.Plugins.Anime.AllAnime\Totoro.Plugins.Anime.AllAnime.csproj", "{235E5957-AC87-4323-8E3B-64A948BB6621}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AllAnime.Tests", "..\Totoro.Plugins.Anime.AllAnime.Tests\Totoro.Plugins.Anime.AllAnime.Tests.csproj", "{B727DAB9-0169-4733-9CB3-CB75BC8F9FA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AllAnime.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.AllAnime.Tests\Totoro.Plugins.Anime.AllAnime.Tests.csproj", "{B727DAB9-0169-4733-9CB3-CB75BC8F9FA6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.YugenAnime", "..\Totoro.Plugins.Anime.YugenAnime\Totoro.Plugins.Anime.YugenAnime.csproj", "{F2D03497-DCC2-4FC8-AF03-60B316ACEB62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.YugenAnime", "..\Plugins\Anime\Totoro.Plugins.Anime.YugenAnime\Totoro.Plugins.Anime.YugenAnime.csproj", "{F2D03497-DCC2-4FC8-AF03-60B316ACEB62}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.YugenAnime.Tests", "..\Totoro.Plugins.Anime.YugenAnime.Tests\Totoro.Plugins.Anime.YugenAnime.Tests.csproj", "{C4E006E2-7A89-4E80-8F54-9D5391BE2D14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.YugenAnime.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.YugenAnime.Tests\Totoro.Plugins.Anime.YugenAnime.Tests.csproj", "{C4E006E2-7A89-4E80-8F54-9D5391BE2D14}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAnime", "..\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj", "{282BACC8-47D0-4923-9CBA-E499E68CA81B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAnime", "..\Plugins\Anime\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj", "{282BACC8-47D0-4923-9CBA-E499E68CA81B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAnime.Tests", "..\Totoro.Plugins.Anime.GogoAnime.Tests\Totoro.Plugins.Anime.GogoAnime.Tests.csproj", "{0303576B-6099-416C-8F32-F7A131E8EDFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.GogoAnime.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.GogoAnime.Tests\Totoro.Plugins.Anime.GogoAnime.Tests.csproj", "{0303576B-6099-416C-8F32-F7A131E8EDFD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents", "..\Totoro.Plugins.Torrents\Totoro.Plugins.Torrents.csproj", "{3527BAD8-2A4A-492C-9DEB-37205A445C45}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Torrents", "Torrents", "{172557E0-6D09-4352-A6F3-172AFF78599B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.Nya", "..\Totoro.Plugins.Torrents.Nya\Totoro.Plugins.Torrents.Nya.csproj", "{03A01D57-2E2F-4D8F-B462-570AB1878925}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.Nya", "..\Plugins\Torrents\Totoro.Plugins.Torrents.Nya\Totoro.Plugins.Torrents.Nya.csproj", "{03A01D57-2E2F-4D8F-B462-570AB1878925}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.Nya.Tests", "..\Totoro.Plugins.Torrents.Nya.Tests\Totoro.Plugins.Torrents.Nya.Tests.csproj", "{7FEB2745-E922-43FA-9141-4E37D93DDD81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.Nya.Tests", "..\Plugins\Torrents\Totoro.Plugins.Torrents.Nya.Tests\Totoro.Plugins.Torrents.Nya.Tests.csproj", "{7FEB2745-E922-43FA-9141-4E37D93DDD81}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.AnimeTosho", "..\Totoro.Plugins.Torrents.AnimeTosho\Totoro.Plugins.Torrents.AnimeTosho.csproj", "{3071EFF8-C1DA-4C48-AC41-01BB468AC9B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.AnimeTosho", "..\Plugins\Torrents\Totoro.Plugins.Torrents.AnimeTosho\Totoro.Plugins.Torrents.AnimeTosho.csproj", "{3071EFF8-C1DA-4C48-AC41-01BB468AC9B7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.AnimeTosho.Tests", "..\Totoro.Plugins.Torrents.AnimeTosho.Tests\Totoro.Plugins.Torrents.AnimeTosho.Tests.csproj", "{0399ED4B-3BC0-4799-B6A0-F3448EABD212}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Torrents.AnimeTosho.Tests", "..\Plugins\Torrents\Totoro.Plugins.Torrents.AnimeTosho.Tests\Totoro.Plugins.Torrents.AnimeTosho.Tests.csproj", "{0399ED4B-3BC0-4799-B6A0-F3448EABD212}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Marin", "..\Totoro.Plugins.Anime.Marin\Totoro.Plugins.Anime.Marin.csproj", "{0B2F4C83-47D4-4B8F-9255-FF4186EB57FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Marin", "..\Plugins\Anime\Totoro.Plugins.Anime.Marin\Totoro.Plugins.Anime.Marin.csproj", "{0B2F4C83-47D4-4B8F-9255-FF4186EB57FF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Marin.Tests", "..\Totoro.Plugins.Anime.Marin.Tests\Totoro.Plugins.Anime.Marin.Tests.csproj", "{039B3647-B1CB-4B3D-9501-1E4DF21A9D4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Marin.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.Marin.Tests\Totoro.Plugins.Anime.Marin.Tests.csproj", "{039B3647-B1CB-4B3D-9501-1E4DF21A9D4F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection", "..\Totoro.Plugins.MediaDetection\Totoro.Plugins.MediaDetection.csproj", "{06099802-65BD-47D6-AB96-F8D65654012F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Vlc", "..\Totoro.Plugins.MediaDetection.Vlc\Totoro.Plugins.MediaDetection.Vlc.csproj", "{53AF97EB-94A1-4AC1-9946-73AAB26C8A1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Vlc", "..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Vlc\Totoro.Plugins.MediaDetection.Vlc.csproj", "{53AF97EB-94A1-4AC1-9946-73AAB26C8A1B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Media Detection", "Media Detection", "{046D778E-C7B5-4086-A056-F0526C7C3A96}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Win11MediaPlayer", "..\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj", "{5117D9CF-5D78-459F-9546-113BCEDD79B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Win11MediaPlayer", "..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj", "{5117D9CF-5D78-459F-9546-113BCEDD79B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Generic", "..\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj", "{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.Generic", "..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj", "{A2856FA8-E5E3-469D-997B-CC50E6B4BC07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Aniwave", "..\Totoro.Plugins.Anime.Aniwave\Totoro.Plugins.Anime.Aniwave.csproj", "{04662C12-CD0A-4376-82C4-3E244499E3AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Aniwave", "..\Plugins\Anime\Totoro.Plugins.Anime.Aniwave\Totoro.Plugins.Anime.Aniwave.csproj", "{04662C12-CD0A-4376-82C4-3E244499E3AF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Aniwave.Tests", "..\Totoro.Plugins.Anime.Aniwave.Tests\Totoro.Plugins.Anime.Aniwave.Tests.csproj", "{95C6966D-1060-423C-8051-9C04D598AC0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Aniwave.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.Aniwave.Tests\Totoro.Plugins.Anime.Aniwave.Tests.csproj", "{95C6966D-1060-423C-8051-9C04D598AC0A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeSaturn", "..\Totoro.Plugins.Anime.AnimeSaturn\Totoro.Plugins.Anime.AnimeSaturn.csproj", "{CCCBA99C-8ACB-4873-9DC8-D99EA3661E0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeSaturn", "..\Plugins\Anime\Totoro.Plugins.Anime.AnimeSaturn\Totoro.Plugins.Anime.AnimeSaturn.csproj", "{CCCBA99C-8ACB-4873-9DC8-D99EA3661E0D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeSaturn.Tests", "..\Totoro.Plugins.Anime.AnimeSaturn.Tests\Totoro.Plugins.Anime.AnimeSaturn.Tests.csproj", "{EF158ADE-DD82-4C5D-8EED-E6170C28B238}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.AnimeSaturn.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.AnimeSaturn.Tests\Totoro.Plugins.Anime.AnimeSaturn.Tests.csproj", "{EF158ADE-DD82-4C5D-8EED-E6170C28B238}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAnime", "..\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj", "{D6326042-EE8D-426B-9DE1-0BBD724FF029}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAnime", "..\Plugins\Anime\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj", "{D6326042-EE8D-426B-9DE1-0BBD724FF029}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAnime.Tests", "..\Totoro.Plugins.Anime.WitAnime.Tests\Totoro.Plugins.Anime.WitAnime.Tests.csproj", "{4B042113-D218-4018-B1AD-C67E57F6500D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAnime.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.WitAnime.Tests\Totoro.Plugins.Anime.WitAnime.Tests.csproj", "{4B042113-D218-4018-B1AD-C67E57F6500D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga", "..\Totoro.Plugins.Manga\Totoro.Plugins.Manga.csproj", "{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Manga", "Manga", "{C3C023F8-74CB-4201-A926-C86D22DDB1CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex", "..\Totoro.Plugins.Manga.MangaDex\Totoro.Plugins.Manga.MangaDex.csproj", "{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex", "..\Plugins\Manga\Totoro.Plugins.Manga.MangaDex\Totoro.Plugins.Manga.MangaDex.csproj", "{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex.Tests", "..\Totoro.Plugins.Manga.MangaDex.Tests\Totoro.Plugins.Manga.MangaDex.Tests.csproj", "{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex.Tests", "..\Plugins\Manga\Totoro.Plugins.Manga.MangaDex.Tests\Totoro.Plugins.Manga.MangaDex.Tests.csproj", "{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
