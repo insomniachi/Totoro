@@ -53,12 +53,12 @@
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverViewModel" Content="Anime">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE8B2;" />
+                                <FontIcon Glyph="&#xE714;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                         <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverMangaViewModel" Content="Manga">
                             <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xF56E;" />
+                                <FontIcon Glyph="&#xE736;" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
                     </NavigationViewItem.MenuItems>

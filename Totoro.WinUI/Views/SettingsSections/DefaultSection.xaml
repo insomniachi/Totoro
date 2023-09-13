@@ -56,7 +56,7 @@
             Header="Manga Plugins"
             IsClickEnabled="True">
             <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE8B2;" />
+                <FontIcon Glyph="&#xE736;" />
             </labs:SettingsCard.HeaderIcon>
         </labs:SettingsCard>
 
