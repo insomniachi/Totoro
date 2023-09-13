@@ -11,6 +11,7 @@ public class Plugin : IPlugin<AnimeProvider>
     {
         Catalog = new Catalog(),
         StreamProvider = new StreamProvider(),
+        AiredAnimeEpisodeProvider = new AiredEpisodesProvider()
     };
 
     public PluginInfo GetInfo() => new()
@@ -18,6 +19,7 @@ public class Plugin : IPlugin<AnimeProvider>
         DisplayName = "Aniwave",
         Name = "aniwave",
         Version = Assembly.GetExecutingAssembly().GetName().Version!,
+        Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.Aniwave.aniwave-logo.png"),
         Description = "previously 9anime"
     };
 

@@ -10,11 +10,14 @@
 	  <AppendTargetFrameworkToOutputPath Condition="$(Configuration) == Release">false</AppendTargetFrameworkToOutputPath>
 	  <AppendRuntimeIdentifierToOutputPath Condition="$(Configuration) == Release">false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
-
 	<ItemGroup>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
 			<_Parameter1>$(AssemblyName).Tests</_Parameter1>
 		</AssemblyAttribute>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="aniwave-logo.png" />
 	</ItemGroup>
 
   <ItemGroup>

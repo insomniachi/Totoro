@@ -23,6 +23,10 @@
     {
       "Version": "1.0.0.0",
       "FileName": "Totoro.Plugins.Anime.AnimeSaturn.dll"
+    },
+    {
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.Anime.Aniwave.dll"
     }
   ],
   "Manga": [

@@ -17,7 +17,7 @@ public class PluginFactory<T> : IPluginFactory<T>
     private readonly List<Plugin> _plugins = new();
 
     public static PluginFactory<T> Instance { get; } = new();
-    public IEnumerable<PluginInfo> Plugins => _plugins.Select(x => x.Info);
+    public IEnumerable<PluginInfo> Plugins => _plugins.Select(x => x.Info).OrderBy(x => x.DisplayName);
 
     object? IPluginFactory.CreatePlugin(string name) => CreatePlugin(name);
 
