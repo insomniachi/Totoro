@@ -109,7 +109,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
                 {
                     continue;
                 }
-
+                stream.Episode = epNum;
                 yield return stream;
             }
         }
@@ -127,10 +127,34 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
     private async Task<VideoStreamsForEpisode?> DefaultExtract(string serverName, string url)
     {
-        var slug = new Url(url).PathSegments.Last();
+        var urlObj = new Url(url);
+        var slug = urlObj.PathSegments.Last();
+        var futoken = await urlObj.Root.AppendPathSegment("/futoken").GetStringAsync();
         var isMyCloud = serverName == "MyCloud";
         var server = isMyCloud ? "Mcloud" : "Vizcloud";
-        var apiResponse = await $"https://9anime.eltik.net/raw{server}?query={slug}&apikey=saikou".GetStringAsync();
-        return null;
+        var apiResponse = await $"https://9anime.eltik.net/raw{server}?query={slug}&apikey=chayce".PostUrlEncodedAsync(new
+        {
+            query = slug,
+            futoken
+        }).ReceiveJson();
+
+        string data = apiResponse.rawURL;
+        var vidstreamInfo = await data.SetQueryParam("t", urlObj.QueryParams.First(x => x.Name == "t").Value)
+            .WithHeader(HeaderNames.Referer, url)
+            .GetJsonAsync();
+
+        string streamUrl = vidstreamInfo.result.sources[0].file;
+
+        return new VideoStreamsForEpisode
+        {
+            Streams =
+            {
+                new VideoStream
+                {
+                    Url = streamUrl,
+                    Headers = { { HeaderNames.Referer, url } }
+                }
+            }
+        };
     }
 }

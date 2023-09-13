@@ -100,6 +100,7 @@ namespace Totoro.Core
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.Marin.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AnimeSaturn.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.WitAnime.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.Aniwave.Plugin());
 
             // manga
             PluginFactory<MangaProvider>.Instance.LoadPlugin(new Plugins.Manga.MangaDex.Plugin());
