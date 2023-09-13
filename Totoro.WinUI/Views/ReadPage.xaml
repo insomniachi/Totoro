@@ -4,15 +4,17 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:m="using:Totoro.Plugins.Manga.Contracts"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:views="using:Totoro.WinUI.Views"
     mc:Ignorable="d">
 
-    <Grid Margin="0,45">
+    <Grid Margin="0,45,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
-            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <FlipView
@@ -21,19 +23,36 @@
             SelectedIndex="{x:Bind ViewModel.SelectedPage, Mode=TwoWay}">
             <FlipView.ItemTemplate>
                 <DataTemplate>
-                    <Image Source="{Binding}" Stretch="Uniform" />
+                    <uc:ImageEx
+                        CacheMode="BitmapCache"
+                        IsCacheEnabled="True"
+                        PlaceholderSource="/Assets/placeholder.jpg"
+                        Source="{Binding}"
+                        Stretch="Uniform" />
                 </DataTemplate>
             </FlipView.ItemTemplate>
         </FlipView>
 
-        <Grid VerticalAlignment="Bottom" Background="{StaticResource ControlOnImageFillColorDefault}">
-            <PipsPager
+        <Grid
+            Padding="20"
+            VerticalAlignment="Bottom"
+            Background="{StaticResource ControlOnImageFillColorDefault}">
+            <StackPanel
                 HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                NextButtonVisibility="Visible"
-                NumberOfPages="{x:Bind ViewModel.NumberOfPages, Mode=OneWay}"
-                PreviousButtonVisibility="Visible"
-                SelectedPageIndex="{x:Bind ViewModel.SelectedPage, Mode=TwoWay}" />
+                Orientation="Horizontal"
+                Spacing="10">
+                <PipsPager
+                    VerticalAlignment="Bottom"
+                    NextButtonVisibility="Visible"
+                    NumberOfPages="{x:Bind ViewModel.NumberOfPages, Mode=OneWay}"
+                    PreviousButtonVisibility="Visible"
+                    SelectedPageIndex="{x:Bind ViewModel.SelectedPage, Mode=TwoWay}" />
+                <TextBlock>
+                    <Run Text="{x:Bind help:Converters.ToOneBasedIndex(ViewModel.SelectedPage), Mode=OneWay}" />
+                    <Run Text="/" />
+                    <Run Text="{x:Bind help:Converters.ToOneBasedIndex(ViewModel.NumberOfPages), Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
         </Grid>
 
         <ListView
@@ -42,7 +61,7 @@
             SelectedItem="{x:Bind ViewModel.SelectedChapter, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="m:ChapterModel">
-                    <TextBlock Text="{x:Bind Chapter}" />
+                    <TextBlock Text="{x:Bind help:Converters.ToTitle((m:ChapterModel))}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

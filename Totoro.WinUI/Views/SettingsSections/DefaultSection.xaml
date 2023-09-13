@@ -51,6 +51,17 @@
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
+            CommandParameter="Manga Plugins"
+            Description="Options related to manga website scrapers"
+            Header="Manga Plugins"
+            IsClickEnabled="True">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE8B2;" />
+            </labs:SettingsCard.HeaderIcon>
+        </labs:SettingsCard>
+
+        <labs:SettingsCard
+            Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="Tracking"
             Description="Configure tracking services"
             Header="Tracking"

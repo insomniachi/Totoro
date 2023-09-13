@@ -25,7 +25,12 @@
       "FileName": "Totoro.Plugins.Anime.AnimeSaturn.dll"
     }
   ],
-  "Manga": [],
+  "Manga": [
+    {
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.Manga.MangaDex.dll"
+    }
+  ],
   "Torrent": [
     {
       "Version": "1.0.0.0",

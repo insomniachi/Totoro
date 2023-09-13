@@ -4,6 +4,7 @@ using MonoTorrent.Client;
 using Splat;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Manga;
 using Totoro.Plugins.Torrents.Contracts;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -16,6 +17,7 @@ public class SettingsViewModel : NavigatableViewModel
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
     [Reactive] public PluginInfo SelectedProvider { get; set; }
+    [Reactive] public PluginInfo SelectedMangaProvider { get; set; }
     [Reactive] public PluginInfo SelectedTracker { get; set; }
     [Reactive] public PluginInfo SelectedMediaPlayer { get; set; }
     [Reactive] public ElementTheme Theme { get; set; }
@@ -28,6 +30,7 @@ public class SettingsViewModel : NavigatableViewModel
     public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public IEnumerable<PluginInfo> ProviderTypes => PluginFactory<AnimeProvider>.Instance.Plugins;
     public IEnumerable<PluginInfo> TrackerTypes => PluginFactory<ITorrentTracker>.Instance.Plugins;
+    public IEnumerable<PluginInfo> MangaProviderTypes => PluginFactory<MangaProvider>.Instance.Plugins;
     public IEnumerable<DisplayMode> ListDisplayModes { get; } = Enum.GetValues<DisplayMode>().Cast<DisplayMode>().Take(2).ToList();
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
     public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
@@ -60,6 +63,8 @@ public class SettingsViewModel : NavigatableViewModel
             ?? PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "anime-pahe");
         SelectedTracker = PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultTorrentTrackerType)
             ?? PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == "nya");
+        SelectedMangaProvider = PluginFactory<MangaProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultMangaProviderType)
+            ?? PluginFactory<MangaProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "manga-dex");
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {

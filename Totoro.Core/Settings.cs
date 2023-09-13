@@ -40,6 +40,7 @@ public static class Settings
     public static Key<DisplayMode> ListDisplayMode { get; } = new("ListDisplayMode", DisplayMode.Grid);
     public static Key<DataGridSettings> UserListDataGridSettings { get; } = new("UserListDataGridSettings", GetDefaultUserListDataGridSettings);
     public static Key<GridViewSettings> UserListGridViewSettings { get; } = new("UserListGridViewSettings", new GridViewSettings());
+    public static Key<string> DefaultMangaProviderType { get; } = new("DefaultMangaProviderType", "manga-dex");
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

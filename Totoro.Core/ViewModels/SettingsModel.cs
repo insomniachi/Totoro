@@ -51,6 +51,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         StartupOptions = localSettingsService.ReadSetting(Settings.StartupOptions);
         ListDisplayMode = localSettingsService.ReadSetting(Settings.ListDisplayMode);
         UserListGridViewSettings = localSettingsService.ReadSetting(Settings.UserListGridViewSettings);
+        DefaultMangaProviderType = localSettingsService.ReadSetting(Settings.DefaultMangaProviderType);
 
         if (UseDiscordRichPresense && !_dRpc.IsInitialized)
         {
@@ -139,6 +140,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public StartupOptions StartupOptions { get; set; }
     [Reactive] public DisplayMode ListDisplayMode { get; set; }
     [Reactive] public GridViewSettings UserListGridViewSettings { get; set; }
+    [Reactive] public string DefaultMangaProviderType { get; set; }
 }
 
 

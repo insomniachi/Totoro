@@ -1,7 +1,10 @@
-﻿namespace Totoro.Plugins;
+﻿using System.Diagnostics;
+
+namespace Totoro.Plugins;
 
 #nullable disable
 
+[DebuggerDisplay("{DisplayName}")]
 public class PluginInfo
 {
     public PluginInfo()

@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Concurrency;
 using Totoro.Plugins;
+using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Manga;
 using Totoro.Plugins.Manga.Contracts;
 
@@ -11,7 +12,9 @@ public class DiscoverMangaViewModel : NavigatableViewModel
     private readonly ReadOnlyObservableCollection<ICatalogItem> _mangaSearchResults;
     private readonly INavigationService _navigationService;
     private readonly MangaProvider _provider;
-    public DiscoverMangaViewModel(INavigationService navigationService)
+    public DiscoverMangaViewModel(INavigationService navigationService,
+                                  ISettings settings,
+                                  IPluginFactory<MangaProvider> pluginFactory)
     {
         _navigationService = navigationService;
 
@@ -24,7 +27,7 @@ public class DiscoverMangaViewModel : NavigatableViewModel
            .Subscribe()
            .DisposeWith(Garbage);
 
-        _provider = PluginFactory<MangaProvider>.Instance.CreatePlugin("manga-dex");
+        _provider = pluginFactory.CreatePlugin(settings.DefaultMangaProviderType);
 
         this.WhenAnyValue(x => x.SearchText)
             .Where(x => x is { Length: >= 2 })
@@ -57,7 +60,7 @@ public class DiscoverMangaViewModel : NavigatableViewModel
     {
         var navigationParameters = new Dictionary<string, object>
         {
-            ["SearchResult"] = searchResult
+            ["SearchResult"] = searchResult,
         };
 
         _navigationService.NavigateTo<ReadViewModel>(parameter: navigationParameters);
@@ -72,10 +75,10 @@ public class DiscoverMangaViewModel : NavigatableViewModel
             return;
         }
 
-        await foreach(var item in _provider.Catalog.Search(query))
-        {
-            _mangaSearchResultCache.AddOrUpdate(item);
-        }
+        SetLoading(true);
+        var items = await _provider.Catalog.Search(query).ToListAsync();
+        _mangaSearchResultCache.EditDiff(items, (item1, item2) => item1.Url == item2.Url);
+        SetLoading(false);
     }
 
 }

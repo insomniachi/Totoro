@@ -12,6 +12,8 @@ using MonoTorrent.Client;
 using Totoro.Core.Services;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Manga;
+using Totoro.Plugins.Manga.Contracts;
 using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Contracts;
@@ -233,9 +235,15 @@ public static partial class Converters
         return bmp;
     }
 
+    public static string ToOneBasedIndex(int number) => (number + 1).ToString();
+    public static string ToTitle(ChapterModel chapter) => string.IsNullOrEmpty(chapter.Title)
+        ? chapter.Chapter.ToString()
+        : $"{chapter.Chapter} - {chapter.Title}";
+
     public static PluginOptions GetAnimeOptions(string pluginName) => GetOptions<AnimeProvider>(pluginName);
     public static PluginOptions GetTorrentsOptions(string pluginName) => GetOptions<ITorrentTracker>(pluginName);
     public static PluginOptions GetMediaOptions(string pluginName) => GetOptions<INativeMediaPlayer>(pluginName);
+    public static PluginOptions GetMangaOptions(string pluginName) => GetOptions<MangaProvider>(pluginName);
 
     private static PluginOptions GetOptions<T>(string pluginName)
     {

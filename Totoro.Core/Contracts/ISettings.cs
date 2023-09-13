@@ -40,6 +40,7 @@ public interface ISettings : INotifyPropertyChanged
     StartupOptions StartupOptions { get; set; }
     DisplayMode ListDisplayMode { get; set; }
     GridViewSettings UserListGridViewSettings { get; set; }
+    public string DefaultMangaProviderType { get; set; }
 }
 
 public class StartupOptions : ReactiveObject

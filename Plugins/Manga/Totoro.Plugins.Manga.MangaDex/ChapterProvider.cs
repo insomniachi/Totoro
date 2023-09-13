@@ -12,27 +12,24 @@ internal class ChapterProvider : IChapterProvider
     {
         var response = await Config.Api
             .WithDefaultUserAgent()
-            .AppendPathSegment("manga")
-            .AppendPathSegment(url)
-            .AppendPathSegment("feed")
+            .AppendPathSegment($"/manga/{url}/feed")
             .SetQueryParam("translatedLanguage[]", "en")
-            .SetQueryParam("order[volume]", "asc")
             .SetQueryParam("order[chapter]", "asc")
-            .GetStringAsync();
+            .GetJsonAsync();
 
-        var jObject = JsonNode.Parse(response);
-
-        foreach (var item in jObject?["data"]?.AsArray() ?? new JsonArray())
+        foreach (var item in response.data)
         {
-            var volume = float.Parse(item?["attributes"]?["volume"]?.ToString() ?? "0");
-            var chapter = float.Parse(item?["attributes"]?["chapter"]?.ToString() ?? "0");
-            var id = item?["id"]?.ToString();
+            var volume = float.Parse(item.attributes.volume);
+            var chapter = float.Parse(item.attributes.chapter);
+            var title = item.attributes.title;
+            var id = item.id;
 
             yield return new ChapterModel
             {
                 Volume = volume,
                 Id = id,
-                Chapter = chapter
+                Chapter = chapter,
+                Title = title
             };
         }
     }

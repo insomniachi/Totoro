@@ -77,10 +77,6 @@
                                         <Grid.Background>
                                             <SolidColorBrush Opacity="0.5" Color="Black" />
                                         </Grid.Background>
-                                        <!--<TextBlock
-                                            FontSize="20"
-                                            Foreground="White"
-                                            Text="{x:Bind help:ModelHelpers.GetRating((pc:ICatalogItem))}" />-->
                                     </Grid>
 
                                     <Border
@@ -100,7 +96,6 @@
                                                 TextTrimming="WordEllipsis"
                                                 TextWrapping="NoWrap"
                                                 ToolTipService.ToolTip="{x:Bind Title}" />
-                                            <!--<TextBlock HorizontalAlignment="Center" Text="{x:Bind help:ModelHelpers.GetAdditionalInformation((pc:ICatalogItem))}" />-->
                                         </StackPanel>
                                     </Border>
                                 </Grid>
