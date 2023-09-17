@@ -39,12 +39,12 @@
 	<PackageReference Include="ReactiveUI.Fody" Version="19.4.1" />
 	<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 	<PackageReference Include="SharpCompress" Version="0.33.0" />
-	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.6.37" />
+	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.7.1" />
 	<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-	<PackageReference Include="Splat.Serilog" Version="14.6.37" />
+	<PackageReference Include="Splat.Serilog" Version="14.7.1" />
 	<PackageReference Include="System.ServiceModel.Syndication" Version="7.0.0" />
-	<PackageReference Include="YoutubeExplode" Version="6.3.0" />
-	<PackageReference Include="DiscordRichPresence" Version="1.1.4.20" />
+	<PackageReference Include="YoutubeExplode" Version="6.3.4" />
+	<PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />
   </ItemGroup>
 
 	<ItemGroup>

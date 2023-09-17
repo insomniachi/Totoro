@@ -10,7 +10,6 @@
   <ItemGroup>
     <PackageReference Include="FlaUI.Core" Version="4.0.0" />
     <PackageReference Include="FlaUI.UIA3" Version="4.0.0" />
-    <PackageReference Include="PInvoke.User32" Version="0.7.124" />
   </ItemGroup>
 
   <ItemGroup>

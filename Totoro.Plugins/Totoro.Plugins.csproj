@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="3.2.4" />
     <PackageReference Include="FlurlGraphQL.Querying" Version="1.2.0" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.50" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.53" />
     <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.4.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
