@@ -195,25 +195,6 @@ public class TorrentingViewModel : NavigatableViewModel
             var anime = (AnimeModel)parameters["Anime"];
             Query = GetQueryText(anime);
             OnSearch();
-            //if (_catalog is IIndexedTorrentCatalog itc && anime is not null)
-            //{
-            //    var id = await _animeIdService.GetId(anime.Id);
-            //    itc.Search(Query, id)
-            //       .ToListAsync()
-            //       .AsTask()
-            //       .ToObservable()
-            //       .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
-            //       .ObserveOn(RxApp.MainThreadScheduler)
-            //       .Subscribe(async list =>
-            //       {
-            //           await UpdateCachedState(list);
-            //           _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
-            //       }, RxApp.DefaultExceptionHandler.OnError);
-            //}
-            //else
-            //{
-            //    OnSearch();
-            //}
         }
         else
         {

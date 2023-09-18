@@ -24,6 +24,7 @@
                 <ResourceDictionary Source="/Styles/Thickness.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/RadioButton.xaml" />
+                <ResourceDictionary Source="/Styles/CopyButton.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <Style BasedOn="{StaticResource DefaultTextBoxStyle}" TargetType="TextBox">

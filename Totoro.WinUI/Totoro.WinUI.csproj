@@ -20,6 +20,7 @@
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Styles\TextBlock.xaml" />
 	  <None Remove="Views\DiscoverMangaPage.xaml" />
 	  <None Remove="Views\ReadPage.xaml" />
 	  <None Remove="Views\SettingsSections\MangaPluginsSection.xaml" />
@@ -86,6 +87,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Styles\TextBlock.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
 		<Page Update="Views\ReadPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

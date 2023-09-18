@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
 using TorrentModel = Totoro.Plugins.Torrents.Models.TorrentModel;
 
 namespace Totoro.WinUI.Views.SettingsSections;
@@ -103,5 +104,18 @@ public sealed partial class SearchSection : Page, IViewFor<TorrentingViewModel>
         }
 
         App.Commands.TorrentCommand.Execute(m);
+    }
+
+    private void CopyButton_Click(object sender, RoutedEventArgs e)
+    {
+        var button = sender as Button;
+        if (button.DataContext is not TorrentModel m)
+        {
+            return;
+        }
+
+        var package = new DataPackage();
+        package.SetText(m.Magnet);
+        Clipboard.SetContent(package);
     }
 }

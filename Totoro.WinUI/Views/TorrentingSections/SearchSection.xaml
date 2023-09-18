@@ -147,6 +147,13 @@
                                     ToolTipService.ToolTip="Download">
                                     <SymbolIcon Symbol="Download" />
                                 </Button>
+                                <uc:CopyButton
+                                    x:Name="CopyButton"
+                                    HorizontalAlignment="Stretch"
+                                    Click="CopyButton_Click"
+                                    ToolTipService.ToolTip="Copy magnet url">
+                                    <FontIcon Glyph="&#xE8C8;" />
+                                </uc:CopyButton>
                             </uc:UniformGrid>
                         </DataTemplate>
                     </uc:DataGridTemplateColumn.CellTemplate>
