@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Reactive.Concurrency;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
@@ -43,6 +44,11 @@ public sealed partial class WatchPage : WatchPageBase
 
                     this.WhenAnyValue(x => x.ViewModel.SelectedQuality)
                         .Subscribe(resolution => wrapper.TransportControls.SelectedResolution = resolution);
+
+                    wrapper
+                        .Playing
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(_ => VisualStateManager.GoToState((Control)wrapper.TransportControls, "ControlPanelFadeOut", true));
 
                     wrapper
                         .TransportControls
