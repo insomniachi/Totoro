@@ -2,5 +2,5 @@
 
 public static class Config
 {
-    public static string Url { get; set; } = "https://gogoanime.cl/";
+    public static string Url { get; set; } = "https://gogoanimehd.io/";
 }

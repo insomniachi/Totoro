@@ -27,13 +27,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" Version="0.0.3" />
+		<!--<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" Version="0.0.3" />
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.18" />
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.0.6" />
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.0.6" />-->
 		<PackageReference Include="CommunityToolkit.WinUI.Connectivity" Version="7.1.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.230907" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.230907" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.230907" />
+		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.230907" />
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
-		<PackageReference Include="CommunityToolkit.WinUI.UI.Media" Version="7.1.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
+		<!--<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="7.1.2" />-->
 		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.115" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
