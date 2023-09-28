@@ -5,25 +5,24 @@
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:b="using:Totoro.WinUI.Behaviors"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:help="using:Totoro.WinUI.Helpers"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="using:Totoro.WinUI.UserControls"
     x:Name="Page"
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
-        <labs:SettingsCard Header="Reset to Defaults">
+        <ctk:SettingsCard Header="Reset to Defaults">
             <Button
                 Command="{x:Bind Reset}"
                 Content="Reset"
                 Style="{ThemeResource AccentButtonStyle}" />
-        </labs:SettingsCard>
-        <labs:SettingsCard Description="Value -1 means auto calculate number of columns based on item height and width" Header="Max Number of Columns">
-            <labs:SettingsCard.HeaderIcon>
+        </ctk:SettingsCard>
+        <ctk:SettingsCard Description="Value -1 means auto calculate number of columns based on item height and width" Header="Max Number of Columns">
+            <ctk:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xF0E2;" />
-            </labs:SettingsCard.HeaderIcon>
+            </ctk:SettingsCard.HeaderIcon>
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <TextBlock VerticalAlignment="Center" Text="{x:Bind ColumnsSlider.Value, Mode=OneWay}" />
                 <Slider
@@ -32,11 +31,11 @@
                     Minimum="-1"
                     Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.MaxNumberOfColumns, Mode=TwoWay}" />
             </StackPanel>
-        </labs:SettingsCard>
-        <labs:SettingsCard Header="Item Height">
-            <labs:SettingsCard.HeaderIcon>
+        </ctk:SettingsCard>
+        <ctk:SettingsCard Header="Item Height">
+            <ctk:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE76F;" />
-            </labs:SettingsCard.HeaderIcon>
+            </ctk:SettingsCard.HeaderIcon>
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <TextBlock VerticalAlignment="Center" Text="{x:Bind HeightSlider.Value, Mode=OneWay}" />
                 <Slider
@@ -45,11 +44,11 @@
                     Minimum="100"
                     Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.ItemHeight, Mode=TwoWay}" />
             </StackPanel>
-        </labs:SettingsCard>
-        <labs:SettingsCard Header="Desired Item Width">
-            <labs:SettingsCard.HeaderIcon>
+        </ctk:SettingsCard>
+        <ctk:SettingsCard Header="Desired Item Width">
+            <ctk:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE784;" />
-            </labs:SettingsCard.HeaderIcon>
+            </ctk:SettingsCard.HeaderIcon>
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <TextBlock VerticalAlignment="Center" Text="{x:Bind WidthSlider.Value, Mode=OneWay}" />
                 <Slider
@@ -58,11 +57,11 @@
                     Minimum="100"
                     Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.DesiredWidth, Mode=TwoWay}" />
             </StackPanel>
-        </labs:SettingsCard>
-        <labs:SettingsCard Header="Spacing Between Items">
-            <labs:SettingsCard.HeaderIcon>
+        </ctk:SettingsCard>
+        <ctk:SettingsCard Header="Spacing Between Items">
+            <ctk:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xF573;" />
-            </labs:SettingsCard.HeaderIcon>
+            </ctk:SettingsCard.HeaderIcon>
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <TextBlock VerticalAlignment="Center" Text="{x:Bind SpacingSlider.Value, Mode=OneWay}" />
                 <Slider
@@ -71,7 +70,7 @@
                     Minimum="0"
                     Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.SpacingBetweenItems, Mode=TwoWay}" />
             </StackPanel>
-        </labs:SettingsCard>
+        </ctk:SettingsCard>
 
         <TextBlock
             FontSize="16"

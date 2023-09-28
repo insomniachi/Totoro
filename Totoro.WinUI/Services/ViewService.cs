@@ -326,7 +326,7 @@ public class ViewService : IViewService, IEnableLogger
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
             XamlRoot = App.MainWindow.Content.XamlRoot,
             DefaultButton = ContentDialogButton.Primary,
-            Content = new MarkdownTextBlock() { Text = message, TextWrapping = TextWrapping.WrapWholeWords, Padding = new Thickness(10) },
+            Content = new TextBlock() { Text = message, TextWrapping = TextWrapping.WrapWholeWords, Padding = new Thickness(10) },
             PrimaryButtonText = "Yes",
         };
 
