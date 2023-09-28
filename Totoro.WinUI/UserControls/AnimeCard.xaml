@@ -14,7 +14,7 @@
 
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
 
-        <uc:Case Value="{x:Bind cm:DisplayMode.Grid}">
+        <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -59,12 +59,8 @@
                     Grid.Row="0"
                     Grid.RowSpan="2"
                     CornerRadius="5 5 0 0">
-                    <uc:ImageEx
+                    <Image
                         CacheMode="BitmapCache"
-                        EnableLazyLoading="True"
-                        IsCacheEnabled="True"
-                        PlaceholderSource="/Assets/placeholder.jpg"
-                        PlaceholderStretch="Fill"
                         Source="{x:Bind Anime.Image, Mode=OneWay}"
                         Stretch="UniformToFill"
                         Tapped="ImageEx_Tapped" />
@@ -157,9 +153,9 @@
                     </Grid>
                 </Grid>
             </Grid>
-        </uc:Case>
+        </ctk:Case>
 
-        <uc:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
+        <ctk:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
             <Grid
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -170,14 +166,9 @@
                     <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
 
-                <uc:ImageEx
+                <Image
                     Grid.Column="0"
                     CacheMode="BitmapCache"
-                    CornerRadius="5 0 0 5"
-                    EnableLazyLoading="True"
-                    IsCacheEnabled="True"
-                    PlaceholderSource="/Assets/placeholder.jpg"
-                    PlaceholderStretch="Fill"
                     Source="{x:Bind Anime.Image, Mode=OneWay}"
                     Stretch="UniformToFill" />
 
@@ -261,7 +252,7 @@
 
 
             </Grid>
-        </uc:Case>
+        </ctk:Case>
 
     </ctk:SwitchPresenter>
 

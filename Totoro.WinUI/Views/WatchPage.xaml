@@ -2,7 +2,7 @@
     x:Class="Totoro.WinUI.Views.WatchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
@@ -11,8 +11,6 @@
     xmlns:media="using:Totoro.WinUI.Media"
     xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
-    xmlns:vlc="using:Totoro.WinUI.Media.Vlc"
-    xmlns:wmp="using:Totoro.WinUI.Media.Wmp"
     d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
 
@@ -23,17 +21,17 @@
         </Grid.ColumnDefinitions>
 
         <ctk:SwitchPresenter Value="{x:Bind ViewModel.MediaPlayerType, Mode=OneWay}">
-            <uc:Case IsDefault="True" Value="{x:Null}" />
-            <uc:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
+            <ctk:Case IsDefault="True" Value="{x:Null}" />
+            <ctk:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
                 <MediaPlayerElement
                     x:Name="MediaPlayerElement"
                     AreTransportControlsEnabled="True"
                     AutoPlay="False"
                     IsDoubleTapEnabled="True" />
-            </uc:Case>
-            <uc:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
+            </ctk:Case>
+            <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
                 <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" />
-            </uc:Case>
+            </ctk:Case>
         </ctk:SwitchPresenter>
 
         <uc:Expander

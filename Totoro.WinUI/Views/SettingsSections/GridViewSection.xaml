@@ -77,19 +77,21 @@
             FontWeight="SemiBold"
             Text="Preview" />
 
-        <uc:AdaptiveGridView
-            x:Name="Preview"
-            animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-            StretchContentForSingleRow="False">
+        <ItemsView x:Name="Preview">
             <Interactivity:Interaction.Behaviors>
-                <b:AdaptiveGridViewBehavior Settings="{x:Bind ViewModel.Settings.UserListGridViewSettings, Mode=OneWay}" />
+                <b:ItemsViewBehavior Settings="{x:Bind ViewModel.Settings.UserListGridViewSettings, Mode=OneWay}" />
             </Interactivity:Interaction.Behaviors>
-            <uc:AdaptiveGridView.ItemTemplate>
+            <ItemsView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Background="DarkGray" CornerRadius="10" />
+                    <ItemContainer>
+                        <Grid Background="DarkGray" CornerRadius="10" />
+                    </ItemContainer>
                 </DataTemplate>
-            </uc:AdaptiveGridView.ItemTemplate>
-        </uc:AdaptiveGridView>
+            </ItemsView.ItemTemplate>
+            <ItemsView.Layout>
+                <UniformGridLayout />
+            </ItemsView.Layout>
+        </ItemsView>
 
     </StackPanel>
 </Page>

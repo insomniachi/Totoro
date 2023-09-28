@@ -74,24 +74,28 @@
 
                 <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
                     <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-                        <uc:AdaptiveGridView
-                            x:Name="AnimeListView"
-                            animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                            ItemsSource="{x:Bind ViewModel.Anime}"
-                            StretchContentForSingleRow="False">
-                            <Interactivity:Interaction.Behaviors>
-                                <b:AdaptiveGridViewBehavior Settings="{x:Bind ViewModel.GridViewSettings}" />
-                            </Interactivity:Interaction.Behaviors>
-                            <uc:AdaptiveGridView.ItemTemplate>
+                        <ItemsView ItemsSource="{x:Bind ViewModel.Anime}" SelectionMode="None">
+                            <ItemsView.ItemTransitionProvider>
+                                <LinedFlowLayoutItemCollectionTransitionProvider />
+                            </ItemsView.ItemTransitionProvider>
+                            <ItemsView.ItemTemplate>
                                 <DataTemplate x:DataType="cm:AnimeModel">
-                                    <uc:AnimeCard
-                                        Margin="3"
-                                        Anime="{x:Bind}"
-                                        Command="{x:Bind root:App.Commands.AnimeCard}"
-                                        ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
+                                    <ItemContainer>
+                                        <uc:AnimeCard
+                                            Margin="3"
+                                            Anime="{x:Bind}"
+                                            Command="{x:Bind root:App.Commands.AnimeCard}"
+                                            ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
+                                    </ItemContainer>
                                 </DataTemplate>
-                            </uc:AdaptiveGridView.ItemTemplate>
-                        </uc:AdaptiveGridView>
+                            </ItemsView.ItemTemplate>
+                            <ItemsView.Layout>
+                                <UniformGridLayout />
+                            </ItemsView.Layout>
+                            <Interactivity:Interaction.Behaviors>
+                                <b:ItemsViewBehavior Settings="{x:Bind ViewModel.GridViewSettings}" />
+                            </Interactivity:Interaction.Behaviors>
+                        </ItemsView>
                     </ctk:Case>
                     <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
                         <uc:DataGrid

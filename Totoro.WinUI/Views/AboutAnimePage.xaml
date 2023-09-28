@@ -236,7 +236,7 @@
                 </ctk:Segmented.ItemContainerStyle>
             </ctk:Segmented>
             <ctk:SwitchPresenter Grid.Row="2" Value="{x:Bind ViewModel.SelectedPage.Header, Mode=OneWay}">
-                <uc:Case Value="Previews">
+                <ctk:Case Value="Previews">
                     <uc:AdaptiveGridView
                         Margin="0,10"
                         ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
@@ -263,8 +263,8 @@
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </uc:AdaptiveGridView>
-                </uc:Case>
-                <uc:Case Value="Related">
+                </ctk:Case>
+                <ctk:Case Value="Related">
                     <uc:AdaptiveGridView
                         Margin="0,10"
                         animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
@@ -279,8 +279,8 @@
                             </DataTemplate>
                         </uc:AdaptiveGridView.ItemTemplate>
                     </uc:AdaptiveGridView>
-                </uc:Case>
-                <uc:Case Value="Recommended">
+                </ctk:Case>
+                <ctk:Case Value="Recommended">
                     <uc:AdaptiveGridView
                         Margin="0,10"
                         animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
@@ -295,8 +295,8 @@
                             </DataTemplate>
                         </uc:AdaptiveGridView.ItemTemplate>
                     </uc:AdaptiveGridView>
-                </uc:Case>
-                <uc:Case Value="OST">
+                </ctk:Case>
+                <ctk:Case Value="OST">
                     <ScrollViewer>
                         <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
                             <ItemsControl.ItemTemplate>
@@ -316,8 +316,8 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
-                </uc:Case>
-                <uc:Case Value="Torrents">
+                </ctk:Case>
+                <ctk:Case Value="Torrents">
                     <Grid Margin="{StaticResource SmallTopMargin}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -401,7 +401,7 @@
                         </Grid>
 
                     </Grid>
-                </uc:Case>
+                </ctk:Case>
             </ctk:SwitchPresenter>
         </Grid>
     </Grid>

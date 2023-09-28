@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -90,7 +90,7 @@
                                     </Grid.RowDefinitions>
 
                                     <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
-                                        <uc:Case IsDefault="True" Value="{StaticResource False}">
+                                        <ctk:Case IsDefault="True" Value="{StaticResource False}">
                                             <uc:ImageEx
                                                 CacheMode="BitmapCache"
                                                 EnableLazyLoading="True"
@@ -99,13 +99,13 @@
                                                 PlaceholderStretch="Fill"
                                                 Source="{x:Bind Image}"
                                                 Stretch="UniformToFill" />
-                                        </uc:Case>
-                                        <uc:Case Value="{StaticResource True}">
+                                        </ctk:Case>
+                                        <ctk:Case Value="{StaticResource True}">
                                             <Image
                                                 Grid.Row="0"
                                                 Source="{x:Bind Image}"
                                                 Stretch="UniformToFill" />
-                                        </uc:Case>
+                                        </ctk:Case>
                                     </ctk:SwitchPresenter>
 
                                     <Grid
@@ -196,7 +196,7 @@
                                     </Grid.RowDefinitions>
 
                                     <ctk:SwitchPresenter Grid.Row="0" Value="{Binding ElementName=Page, Path=ViewModel.DontUseImageEx, Mode=OneWay}">
-                                        <uc:Case IsDefault="True" Value="{StaticResource False}">
+                                        <ctk:Case IsDefault="True" Value="{StaticResource False}">
                                             <uc:ImageEx
                                                 CacheMode="BitmapCache"
                                                 EnableLazyLoading="True"
@@ -205,13 +205,13 @@
                                                 PlaceholderStretch="Fill"
                                                 Source="{x:Bind help:ModelHelpers.GetImage((pc:ICatalogItem))}"
                                                 Stretch="UniformToFill" />
-                                        </uc:Case>
-                                        <uc:Case Value="{StaticResource True}">
+                                        </ctk:Case>
+                                        <ctk:Case Value="{StaticResource True}">
                                             <Image
                                                 Grid.Row="0"
                                                 Source="{x:Bind help:ModelHelpers.GetImageSource((pc:ICatalogItem))}"
                                                 Stretch="UniformToFill" />
-                                        </uc:Case>
+                                        </ctk:Case>
                                     </ctk:SwitchPresenter>
 
                                     <Grid
