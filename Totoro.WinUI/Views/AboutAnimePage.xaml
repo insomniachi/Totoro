@@ -2,19 +2,15 @@
     x:Class="Totoro.WinUI.Views.AboutAnimePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:models="using:Totoro.Core.Models"
     xmlns:root="using:Totoro.WinUI"
     xmlns:torrents="using:Totoro.Plugins.Torrents.Models"
     xmlns:uc="using:Totoro.WinUI.UserControls"
-    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     xmlns:usercontrols="using:Totoro.WinUI.UserControls"
     Name="Page"
     mc:Ignorable="d">
@@ -22,7 +18,7 @@
     <local:AboutAnimePageBase.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="ms-appx:///CommunityToolkit.Labs.WinUI.SegmentedControl/Segmented/Segmented.xaml" />
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <local:TorrentStateConverter x:Key="StateConverter" />
         </ResourceDictionary>
@@ -46,13 +42,9 @@
                     </Style>
                 </StackPanel.Resources>
 
-                <uc:ImageEx
+                <Image
                     Width="260"
                     HorizontalAlignment="Left"
-                    CornerRadius="3"
-                    IsCacheEnabled="True"
-                    PlaceholderSource="/Assets/placeholder.jpg"
-                    PlaceholderStretch="Fill"
                     Source="{x:Bind ViewModel.Anime.Image, Mode=OneWay}"
                     Stretch="Uniform"
                     Tapped="ImageTapped" />
@@ -169,17 +161,7 @@
             </Grid.RowDefinitions>
             <Grid CornerRadius="10">
                 <uc:ImageEx Source="{x:Bind ViewModel.Anime.BannerImage, Mode=OneWay}" Stretch="UniformToFill" />
-                <Grid Padding="20">
-                    <Grid.Background>
-                        <media:PipelineBrush Source="{media:BackdropSource}">
-                            <media:LuminanceToAlphaEffect />
-                            <media:OpacityEffect Value="0.4" />
-                            <media:BlendEffect Mode="Multiply" Source="{media:BackdropSource}" />
-                            <media:BlurEffect Amount="5" />
-                            <media:ShadeEffect Intensity="0.2" Color="#FF222222" />
-                        </media:PipelineBrush>
-                    </Grid.Background>
-
+                <Grid Padding="20" Background="{StaticResource ControlOnImageFillColorDefaultBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
@@ -237,85 +219,84 @@
             </ctk:Segmented>
             <ctk:SwitchPresenter Grid.Row="2" Value="{x:Bind ViewModel.SelectedPage.Header, Mode=OneWay}">
                 <ctk:Case Value="Previews">
-                    <uc:AdaptiveGridView
+                    <ItemsView
                         Margin="0,10"
-                        ui:ListViewExtensions.Command="{x:Bind root:App.Commands.PlayVideo}"
-                        DesiredWidth="360"
-                        IsItemClickEnabled="True"
-                        ItemHeight="240"
-                        ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}"
-                        StretchContentForSingleRow="False">
-                        <GridView.ItemTemplate>
+                        IsItemInvokedEnabled="True"
+                        ItemInvoked="PlayVideo"
+                        ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}">
+                        <ItemsView.ItemTemplate>
                             <DataTemplate x:DataType="models:Video">
-                                <Grid Margin="3">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <Image Source="{x:Bind Thumbnail}" Stretch="UniformToFill" />
-                                    <TextBlock
-                                        Grid.Row="1"
-                                        FontSize="18"
-                                        FontWeight="Bold"
-                                        Text="{x:Bind Title}"
-                                        TextWrapping="WrapWholeWords" />
-                                </Grid>
+                                <ItemContainer>
+                                    <Grid Margin="3">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <uc:ImageEx Source="{x:Bind Thumbnail}" Stretch="UniformToFill" />
+                                        <TextBlock
+                                            Grid.Row="1"
+                                            FontSize="18"
+                                            FontWeight="Bold"
+                                            Text="{x:Bind Title}"
+                                            TextWrapping="WrapWholeWords" />
+                                    </Grid>
+                                </ItemContainer>
                             </DataTemplate>
-                        </GridView.ItemTemplate>
-                    </uc:AdaptiveGridView>
+                        </ItemsView.ItemTemplate>
+                        <ItemsView.Layout>
+                            <UniformGridLayout MinItemHeight="240" MinItemWidth="360" />
+                        </ItemsView.Layout>
+                    </ItemsView>
                 </ctk:Case>
                 <ctk:Case Value="Related">
-                    <uc:AdaptiveGridView
+                    <ItemsView
                         Margin="0,10"
-                        animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                        ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
-                        DesiredWidth="230"
-                        IsItemClickEnabled="True"
-                        ItemsSource="{x:Bind ViewModel.Anime.Related, Mode=OneWay}"
-                        StretchContentForSingleRow="False">
-                        <uc:AdaptiveGridView.ItemTemplate>
+                        IsItemInvokedEnabled="True"
+                        ItemsSource="{x:Bind ViewModel.Anime.Related, Mode=OneWay}">
+                        <ItemsView.ItemTemplate>
                             <DataTemplate x:DataType="models:AnimeModel">
-                                <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
+                                <ItemContainer>
+                                    <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
+                                </ItemContainer>
                             </DataTemplate>
-                        </uc:AdaptiveGridView.ItemTemplate>
-                    </uc:AdaptiveGridView>
+                        </ItemsView.ItemTemplate>
+                        <ItemsView.Layout>
+                            <UniformGridLayout MinItemWidth="230" />
+                        </ItemsView.Layout>
+                    </ItemsView>
                 </ctk:Case>
                 <ctk:Case Value="Recommended">
-                    <uc:AdaptiveGridView
+                    <ItemsView
                         Margin="0,10"
-                        animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-                        ui:ListViewExtensions.Command="{x:Bind root:App.Commands.More}"
-                        DesiredWidth="230"
-                        IsItemClickEnabled="True"
-                        ItemsSource="{x:Bind ViewModel.Anime.Recommended, Mode=OneWay}"
-                        StretchContentForSingleRow="False">
-                        <uc:AdaptiveGridView.ItemTemplate>
+                        IsItemInvokedEnabled="True"
+                        ItemsSource="{x:Bind ViewModel.Anime.Recommended, Mode=OneWay}">
+                        <ItemsView.ItemTemplate>
                             <DataTemplate x:DataType="models:AnimeModel">
-                                <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
+                                <ItemContainer>
+                                    <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
+                                </ItemContainer>
                             </DataTemplate>
-                        </uc:AdaptiveGridView.ItemTemplate>
-                    </uc:AdaptiveGridView>
+                        </ItemsView.ItemTemplate>
+                        <ItemsView.Layout>
+                            <UniformGridLayout MinItemWidth="230" />
+                        </ItemsView.Layout>
+                    </ItemsView>
                 </ctk:Case>
                 <ctk:Case Value="OST">
-                    <ScrollViewer>
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:AnimeSound">
-                                    <StackPanel
-                                        Margin="5"
-                                        Orientation="Horizontal"
-                                        Spacing="10">
-                                        <HyperlinkButton
-                                            Command="{x:Bind root:App.Commands.PlayVideo}"
-                                            CommandParameter="{x:Bind}"
-                                            Content="{x:Bind SongName}"
-                                            FontSize="18"
-                                            FontWeight="Bold" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <ItemsView ItemsSource="{x:Bind ViewModel.Sounds, Mode=OneWay}">
+                        <ItemsView.ItemTemplate>
+                            <DataTemplate x:DataType="models:AnimeSound">
+                                <ItemContainer>
+                                    <HyperlinkButton
+                                        Command="{x:Bind root:App.Commands.PlayVideo}"
+                                        CommandParameter="{x:Bind}"
+                                        Content="{x:Bind SongName}"
+                                        FontSize="18"
+                                        FontWeight="Bold" />
+                                </ItemContainer>
+                            </DataTemplate>
+                        </ItemsView.ItemTemplate>
+                    </ItemsView>
                 </ctk:Case>
                 <ctk:Case Value="Torrents">
                     <Grid Margin="{StaticResource SmallTopMargin}">

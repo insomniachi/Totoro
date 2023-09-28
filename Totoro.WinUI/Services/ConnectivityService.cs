@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.WinUI.Connectivity;
+﻿
+using CommunityToolkit.WinUI.Helpers;
 
 namespace Totoro.WinUI.Services;
 

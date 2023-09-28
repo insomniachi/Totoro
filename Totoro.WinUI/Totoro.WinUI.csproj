@@ -27,18 +27,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!--<PackageReference Include="CommunityToolkit.Labs.WinUI.SegmentedControl" Version="0.0.3" />
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.SettingsControls" Version="0.0.18" />
-		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.0.6" />-->
-		
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.230830" />
-		
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.230907" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.230907" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.230907" />
 		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.230907" />
 		
-		<PackageReference Include="CommunityToolkit.WinUI.Connectivity" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Core" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />

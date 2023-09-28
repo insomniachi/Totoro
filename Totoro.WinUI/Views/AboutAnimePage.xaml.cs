@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
+using Flurl.Util;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
@@ -52,5 +53,10 @@ public sealed partial class AboutAnimePage : AboutAnimePageBase
         }
 
         _ = Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+    }
+
+    private void PlayVideo(Microsoft.UI.Xaml.Controls.ItemsView sender, Microsoft.UI.Xaml.Controls.ItemsViewItemInvokedEventArgs args)
+    {
+        App.Commands.PlayVideo.Execute(args.InvokedItem);
     }
 }
