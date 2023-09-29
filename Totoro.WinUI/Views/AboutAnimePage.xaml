@@ -30,7 +30,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ScrollViewer>
+        <ScrollView>
             <StackPanel
                 x:Name="Container"
                 Margin="20"
@@ -42,9 +42,13 @@
                     </Style>
                 </StackPanel.Resources>
 
-                <Image
+                <uc:ImageEx
                     Width="260"
                     HorizontalAlignment="Left"
+                    CornerRadius="3"
+                    IsCacheEnabled="True"
+                    PlaceholderSource="/Assets/placeholder.jpg"
+                    PlaceholderStretch="Fill"
                     Source="{x:Bind ViewModel.Anime.Image, Mode=OneWay}"
                     Stretch="Uniform"
                     Tapped="ImageTapped" />
@@ -147,7 +151,7 @@
 
                 </StackPanel>
             </StackPanel>
-        </ScrollViewer>
+        </ScrollView>
 
 
         <Grid
@@ -196,12 +200,12 @@
                         </ItemsControl>
                     </StackPanel>
 
-                    <ScrollViewer Grid.Row="1">
+                    <ScrollView Grid.Row="1">
                         <TextBlock
                             FontSize="20"
                             Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}"
                             TextWrapping="Wrap" />
-                    </ScrollViewer>
+                    </ScrollView>
 
                 </Grid>
             </Grid>
