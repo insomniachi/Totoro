@@ -18,4 +18,4 @@ public class PluginInfo
     public Stream Icon { get; init; }
 }
 
-public record PluginInfoSlim(string FileName, string Version);
+public record PluginInfoSlim(string FileName, string Version, bool Exists = true, string DisplayName = "");

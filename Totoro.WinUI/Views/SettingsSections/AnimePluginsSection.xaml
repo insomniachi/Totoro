@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:plugins="using:Totoro.Plugins"
     xmlns:po="using:Totoro.Plugins.Options"
+    xmlns:root="using:Totoro.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -72,11 +73,26 @@
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <TextBlock
-            Margin="0,20,0,0"
-            FontSize="16"
-            FontWeight="SemiBold"
-            Text="Plugins" />
+        <Grid Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                VerticalAlignment="Bottom"
+                FontSize="16"
+                FontWeight="SemiBold"
+                Text="Plugins" />
+
+            <Button
+                Grid.Column="1"
+                VerticalAlignment="Bottom"
+                Command="{x:Bind root:App.Commands.ShowPluginsStore}"
+                CommandParameter="Anime"
+                Content="Get More"
+                Style="{ThemeResource AccentButtonStyle}" />
+        </Grid>
 
         <ItemsControl ItemsSource="{x:Bind ViewModel.ProviderTypes}">
             <ItemsControl.ItemTemplate>

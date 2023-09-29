@@ -5,10 +5,12 @@ namespace Totoro.Plugins.Contracts;
 public interface IPluginManager
 {
     Task Initialize(string folder);
+    ValueTask<PluginIndex> GetAllPlugins();
 }
 
 public interface IPluginFactory
 {
+    void LoadPlugin(string file);
     void LoadPlugins(string folder);
     object? CreatePlugin(string name);
     bool SetOptions(string name, PluginOptions options);

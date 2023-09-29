@@ -20,6 +20,7 @@
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Dialogs\Views\PluginStoreView.xaml" />
 	  <None Remove="Styles\TextBlock.xaml" />
 	  <None Remove="Views\DiscoverMangaPage.xaml" />
 	  <None Remove="Views\ReadPage.xaml" />
@@ -94,6 +95,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Dialogs\Views\PluginStoreView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Styles\TextBlock.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>

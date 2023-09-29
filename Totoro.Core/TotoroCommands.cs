@@ -188,6 +188,7 @@ public class TotoroCommands : IEnableLogger
         {
             anime.Tracking = await trackingServiceContext.Update(anime.Id, Tracking.Previous(anime));
         });
+        ShowPluginsStore = ReactiveCommand.CreateFromTask<string>(viewService.ShowPluginStore);
     }
 
     public ICommand UpdateTracking { get; }
@@ -207,6 +208,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand RemoveLibraryFolder { get; }
     public ICommand IncrementTracking { get; }
     public ICommand DecrementTracking { get; }
+    public ICommand ShowPluginsStore { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {

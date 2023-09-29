@@ -414,4 +414,17 @@ public class ViewService : IViewService, IEnableLogger
         var file = await openPicker.PickSingleFileAsync();
         return file?.Path ?? string.Empty;
     }
+
+    public async Task ShowPluginStore(string pluginType)
+    {
+        var vm = App.GetService<PluginStoreViewModel>();
+        await vm.Initalize(pluginType);
+
+        var result = await _contentDialogService.ShowDialog(vm, d =>
+        {
+            d.Title = $"Plugin Store";
+            d.IsPrimaryButtonEnabled = true;
+            d.PrimaryButtonText = "Close";
+        });
+    }
 }
