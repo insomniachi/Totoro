@@ -23,12 +23,17 @@ public sealed partial class WatchPage : WatchPageBase
         {
             var windowService = App.GetService<IWindowService>();
             var viewService = App.GetService<IViewService>();
+            var localSettingsService = App.GetService<ILocalSettingsService>();
             this.WhenAnyValue(x => x.ViewModel.MediaPlayer)
                 .WhereNotNull()
                 .Subscribe(wrapper =>
                 {
+                    var globalVolume = localSettingsService.ReadSetting<double>("Volume", 100);
+
                     if (wrapper is WinUIMediaPlayerWrapper wmpWrapper)
                     {
+                        wmpWrapper.SetVolume(globalVolume);
+                        wmpWrapper.VolumeChanged.Subscribe(volume => localSettingsService.SaveSetting("Volume", volume));
                         SubscribeDoubleTap(MediaPlayerElement, windowService);
                         MediaPlayerElement.SetMediaPlayer(wmpWrapper.GetMediaPlayer());
                         MediaPlayerElement.TransportControls = wmpWrapper.TransportControls as CustomMediaTransportControls;

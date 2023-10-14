@@ -33,6 +33,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
     public IObservable<Unit> PlaybackEnded => _player.Events().MediaEnded.Select(_ => Unit.Default);
     public IObservable<TimeSpan> PositionChanged => _player.PlaybackSession.Events().PositionChanged.Select(x => x.sender.Position);
     public IObservable<TimeSpan> DurationChanged => _player.PlaybackSession.Events().NaturalDurationChanged.Select(x => x.sender.NaturalDuration);
+    public IObservable<double> VolumeChanged => _player.Events().VolumeChanged.Select(x => x.sender.Volume);
     public IMediaTransportControls TransportControls => _transportControls;
     public MediaPlayerType Type => MediaPlayerType.WindowsMediaPlayer;
 
@@ -99,6 +100,11 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
         _player.Position = TimeSpan.FromSeconds(offsetInSeconds);
         _player.Play();
+    }
+
+    public void SetVolume(double volume)
+    {
+        _player.Volume = volume;
     }
 
     private void SetSubtitles(MediaSource source, AdditionalVideoStreamInformation additionalVideoStreamInformation)

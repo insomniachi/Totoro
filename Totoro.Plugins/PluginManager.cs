@@ -22,6 +22,7 @@ public class PluginManager : IPluginManager, IEnableLogger
     private readonly IPluginFactory _mediaDetectionPluginFactory;
     private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/main";
     private PluginIndex? _listedPlugins;
+    private readonly bool _autoDownloadAllPlugins = true;
 
     public static bool AllowSideLoadingPlugins { get; set; } = false;
 
@@ -48,16 +49,20 @@ public class PluginManager : IPluginManager, IEnableLogger
         var torrentsFolder = Path.Combine(folder, "Torrents");
         var mediaDetectionFolder = Path.Combine(folder, "Media Detection");
 
-        //var localAnimePlugins = GetLocalPlugins(animeFolder);
-        //var localTorrentsPlugins = GetLocalPlugins(torrentsFolder);
-        //var localMediaDetectionPlugins = GetLocalPlugins(mediaDetectionFolder);
-        //var localMangaPlugins = GetLocalPlugins(mangaFolder);
         _listedPlugins ??= await GetListedPlugins();
-        
-        //await DownloadOrUpdatePlugins(_listedPlugins.Anime, localAnimePlugins, animeFolder);
-        //await DownloadOrUpdatePlugins(_listedPlugins.Manga, localMangaPlugins, mangaFolder);
-        //await DownloadOrUpdatePlugins(_listedPlugins.Torrent, localTorrentsPlugins, torrentsFolder);
-        //await DownloadOrUpdatePlugins(_listedPlugins.MediaDetection, localMediaDetectionPlugins, mediaDetectionFolder);
+
+        if (_autoDownloadAllPlugins)
+        {
+            var localAnimePlugins = GetLocalPlugins(animeFolder);
+            var localTorrentsPlugins = GetLocalPlugins(torrentsFolder);
+            var localMediaDetectionPlugins = GetLocalPlugins(mediaDetectionFolder);
+            var localMangaPlugins = GetLocalPlugins(mangaFolder);
+
+            await DownloadOrUpdatePlugins(_listedPlugins.Anime, localAnimePlugins, animeFolder);
+            await DownloadOrUpdatePlugins(_listedPlugins.Manga, localMangaPlugins, mangaFolder);
+            await DownloadOrUpdatePlugins(_listedPlugins.Torrent, localTorrentsPlugins, torrentsFolder);
+            await DownloadOrUpdatePlugins(_listedPlugins.MediaDetection, localMediaDetectionPlugins, mediaDetectionFolder); 
+        }
 
         _animePluginFactory.LoadPlugins(animeFolder);
         _torrentPluginFactory.LoadPlugins(torrentsFolder);
