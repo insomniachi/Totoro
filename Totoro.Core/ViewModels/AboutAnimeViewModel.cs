@@ -41,7 +41,8 @@ public class AboutAnimeViewModel : NavigatableViewModel
         this.ObservableForProperty(x => x.Id, x => x)
             .Where(id => id > 0)
             .SelectMany(animeService.GetInformation)
-            .Subscribe(x => Anime = x);
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => Anime = x, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()

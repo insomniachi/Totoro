@@ -106,7 +106,7 @@
         <tb:TaskbarIcon
             x:Name="TrayIcon"
             x:FieldModifier="public"
-            ContextMenuMode="SecondWindow"
+            ContextMenuMode="PopupMenu"
             IconSource="/Assets/WindowIcon.ico"
             LeftClickCommand="{x:Bind ShowHideWindowCommand}"
             NoLeftClickDelay="True"

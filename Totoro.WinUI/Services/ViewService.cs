@@ -326,7 +326,7 @@ public class ViewService : IViewService, IEnableLogger
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
             XamlRoot = App.MainWindow.Content.XamlRoot,
             DefaultButton = ContentDialogButton.Primary,
-            Content = new MarkdownTextBlock() { Text = message, TextWrapping = TextWrapping.WrapWholeWords, Padding = new Thickness(10) },
+            Content = new TextBlock() { Text = message, TextWrapping = TextWrapping.WrapWholeWords, Padding = new Thickness(10) },
             PrimaryButtonText = "Yes",
         };
 
@@ -413,5 +413,18 @@ public class ViewService : IViewService, IEnableLogger
         // Open the picker for the user to pick a file
         var file = await openPicker.PickSingleFileAsync();
         return file?.Path ?? string.Empty;
+    }
+
+    public async Task ShowPluginStore(string pluginType)
+    {
+        var vm = App.GetService<PluginStoreViewModel>();
+        await vm.Initalize(pluginType);
+
+        var result = await _contentDialogService.ShowDialog(vm, d =>
+        {
+            d.Title = $"Plugin Store";
+            d.IsPrimaryButtonEnabled = true;
+            d.PrimaryButtonText = "Close";
+        });
     }
 }

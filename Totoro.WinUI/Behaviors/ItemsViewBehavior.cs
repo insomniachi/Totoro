@@ -1,14 +1,12 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Xaml.Interactivity;
-using Totoro.WinUI.UserControls;
 
 namespace Totoro.WinUI.Behaviors;
 
-public class AdaptiveGridViewBehavior : Behavior<AdaptiveGridView>
+public class ItemsViewBehavior : Behavior<ItemsView>
 {
     private CompositeDisposable _disposables = new();
-    private ItemsWrapGrid _wrapGrid;
 
     public GridViewSettings Settings
     {
@@ -17,11 +15,11 @@ public class AdaptiveGridViewBehavior : Behavior<AdaptiveGridView>
     }
 
     public static readonly DependencyProperty SettingsProperty =
-        DependencyProperty.Register("Settings", typeof(GridViewSettings), typeof(AdaptiveGridViewBehavior), new PropertyMetadata(null, OnSettingsChanged));
+        DependencyProperty.Register("Settings", typeof(GridViewSettings), typeof(ItemsViewBehavior), new PropertyMetadata(null, OnSettingsChanged));
 
     private static void OnSettingsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var behavior = d as AdaptiveGridViewBehavior;
+        var behavior = d as ItemsViewBehavior;
 
         if(e.OldValue is { })
         {
@@ -35,7 +33,6 @@ public class AdaptiveGridViewBehavior : Behavior<AdaptiveGridView>
         }
 
         settings.WhenAnyValue(x => x.MaxNumberOfColumns)
-                .Where(_ => behavior._wrapGrid is not null)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(behavior.UpdateColumns)
                 .DisposeWith(behavior._disposables);
@@ -61,22 +58,28 @@ public class AdaptiveGridViewBehavior : Behavior<AdaptiveGridView>
 
     private void UpdateThickness(double spacing)
     {
-        for (int i = 0; i < AssociatedObject.Items.Count; i++)
-        {
-            if (AssociatedObject.ContainerFromIndex(i) is not GridViewItem item)
-            {
-                continue;
-            }
-
-            item.Margin = new Thickness(spacing);
-        }
+        var layout = AssociatedObject.Layout as UniformGridLayout;
+        layout.MinColumnSpacing = spacing;
+        layout.MinRowSpacing = spacing;
     }
 
-    private void UpdateColumns(int count) => _wrapGrid.MaximumRowsOrColumns = count;
+    private void UpdateColumns(int count)
+    {
+        var layout = AssociatedObject.Layout as UniformGridLayout;
+        layout.MaximumRowsOrColumns = count;
+    }
     
-    private void UpdateHeight(double itemHeight) => AssociatedObject.ItemHeight = itemHeight;
+    private void UpdateHeight(double itemHeight)
+    {
+        var layout = AssociatedObject.Layout as UniformGridLayout;
+        layout.MinItemHeight = itemHeight;
+    }
 
-    private void UpdateWidth(double desiredWidth) => AssociatedObject.DesiredWidth = desiredWidth;
+    private void UpdateWidth(double desiredWidth)
+    {
+        var layout = AssociatedObject.Layout as UniformGridLayout;
+        layout.MinItemWidth = desiredWidth;
+    }
 
     protected override void OnAttached()
     {
@@ -85,7 +88,6 @@ public class AdaptiveGridViewBehavior : Behavior<AdaptiveGridView>
 
     private void AssociatedObject_Loaded(object sender, RoutedEventArgs e)
     {
-        _wrapGrid = (ItemsWrapGrid)AssociatedObject.ItemsPanelRoot;
         UpdateColumns(Settings.MaxNumberOfColumns);
         UpdateThickness(Settings.SpacingBetweenItems);
         UpdateWidth(Settings.DesiredWidth);

@@ -127,6 +127,7 @@ public static class ServiceCollectionExtensions
         services.AddPage<SubmitTimeStampsViewModel, SubmitTimeStampsView>();
         services.AddPage<ConfigureProviderViewModel, ConfigureProviderView>();
         services.AddPage<RequestRatingViewModel, RequestRatingView>();
+        services.AddPage<PluginStoreViewModel, PluginStoreView>();
         return services;
     }
 

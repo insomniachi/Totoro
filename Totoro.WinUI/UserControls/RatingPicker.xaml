@@ -2,25 +2,25 @@
     x:Class="Totoro.WinUI.UserControls.RatingPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
 
     <ctk:SwitchPresenter Value="{x:Bind IsCompact, Mode=OneWay}">
-        <uc:Case>
-            <uc:Case.Value>
+        <ctk:Case>
+            <ctk:Case.Value>
                 <x:Boolean>False</x:Boolean>
-            </uc:Case.Value>
+            </ctk:Case.Value>
             <SplitButton Flyout="{x:Bind CreateFlyout(Anime), Mode=OneWay}">
                 <TextBlock x:Name="RatingText" />
             </SplitButton>
-        </uc:Case>
-        <uc:Case>
-            <uc:Case.Value>
+        </ctk:Case>
+        <ctk:Case>
+            <ctk:Case.Value>
                 <x:Boolean>True</x:Boolean>
-            </uc:Case.Value>
+            </ctk:Case.Value>
             <StackPanel
                 FlyoutBase.AttachedFlyout="{x:Bind CreateFlyout(Anime), Mode=OneWay}"
                 Loaded="StackPanel_Loaded"
@@ -30,6 +30,6 @@
                 <FontIcon FontSize="12" Glyph="&#xE734;" />
                 <TextBlock x:Name="CompactRatingText" FontSize="12" />
             </StackPanel>
-        </uc:Case>
+        </ctk:Case>
     </ctk:SwitchPresenter>
 </UserControl>

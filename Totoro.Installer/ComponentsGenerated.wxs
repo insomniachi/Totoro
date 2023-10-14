@@ -51,7 +51,7 @@
                 <File Id="fil8D5BCFECECDAB8DBC3968EEDB303D3B2" KeyPath="yes" Source="$(var.BasePath)\CommunityToolkit.WinUI.Notifications.dll" />
             </Component>
             <Component Id="cmp6D57CD97F08E2A3F2A88FC58CF3798D5" Guid="{DA235964-3ACA-4158-A7AE-23103E11228C}">
-                <File Id="fil870C9170793E161006B5973E42405769" KeyPath="yes" Source="$(var.BasePath)\CommunityToolkit.WinUI.UI.Animations.dll" />
+                <File Id="fil870C9170793E161006B5973E42405769" KeyPath="yes" Source="$(var.BasePath)\CommunityToolkit.WinUI.Animations.dll" />
             </Component>
             <Component Id="cmpECFB210389CA21B2D075C18186D0F5DE" Guid="{48891197-0194-4C90-B88C-579C2C12F908}">
                 <File Id="fil0259C39730772C314A358963820A5B98" KeyPath="yes" Source="$(var.BasePath)\CommunityToolkit.WinUI.UI.Behaviors.dll" />
@@ -81,7 +81,7 @@
                 <File Id="filD04769C08C8DE41C8B408084EAB36DA0" KeyPath="yes" Source="$(var.BasePath)\CommunityToolkit.WinUI.UI.dll" />
             </Component>
             <Component Id="cmp3FAD06A3198FB887E390201BFA86D9AD" Guid="{15E59740-6AA4-482F-8591-B5F46C865557}">
-                <File Id="filF18690CD60F8070D0E76EE907E536784" KeyPath="yes" Source="$(var.BasePath)\CommunityToolkit.WinUI.UI.Media.dll" />
+                <File Id="filF18690CD60F8070D0E76EE907E536784" KeyPath="yes" Source="$(var.BasePath)\CommunityToolkit.WinUI.Media.dll" />
             </Component>
             <Component Id="cmp1FAC008E6AA14459AD5390EB28F23EFE" Guid="{C119439F-4F23-4778-A404-9DB5CEF582D5}">
                 <File Id="filDCDD15F7F6F6F4476AD67EA901580BA2" KeyPath="yes" Source="$(var.BasePath)\coreclr.dll" />

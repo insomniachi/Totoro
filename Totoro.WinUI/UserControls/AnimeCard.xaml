@@ -4,10 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:chelp="using:Totoro.Core.Helpers"
     xmlns:cm="using:Totoro.Core.Models"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"
@@ -15,7 +14,7 @@
 
     <ctk:SwitchPresenter Value="{x:Bind DisplayMode}">
 
-        <uc:Case Value="{x:Bind cm:DisplayMode.Grid}">
+        <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -60,12 +59,8 @@
                     Grid.Row="0"
                     Grid.RowSpan="2"
                     CornerRadius="5 5 0 0">
-                    <uc:ImageEx
+                    <Image
                         CacheMode="BitmapCache"
-                        EnableLazyLoading="True"
-                        IsCacheEnabled="True"
-                        PlaceholderSource="/Assets/placeholder.jpg"
-                        PlaceholderStretch="Fill"
                         Source="{x:Bind Anime.Image, Mode=OneWay}"
                         Stretch="UniformToFill"
                         Tapped="ImageEx_Tapped" />
@@ -158,9 +153,9 @@
                     </Grid>
                 </Grid>
             </Grid>
-        </uc:Case>
+        </ctk:Case>
 
-        <uc:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
+        <ctk:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
             <Grid
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -171,14 +166,9 @@
                     <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
 
-                <uc:ImageEx
+                <Image
                     Grid.Column="0"
                     CacheMode="BitmapCache"
-                    CornerRadius="5 0 0 5"
-                    EnableLazyLoading="True"
-                    IsCacheEnabled="True"
-                    PlaceholderSource="/Assets/placeholder.jpg"
-                    PlaceholderStretch="Fill"
                     Source="{x:Bind Anime.Image, Mode=OneWay}"
                     Stretch="UniformToFill" />
 
@@ -246,7 +236,7 @@
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <labs:WrapPanel Orientation="Horizontal" />
+                                <uc:WrapPanel Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
@@ -262,7 +252,7 @@
 
 
             </Grid>
-        </uc:Case>
+        </ctk:Case>
 
     </ctk:SwitchPresenter>
 

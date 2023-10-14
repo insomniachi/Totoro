@@ -2,9 +2,9 @@
     x:Class="Totoro.WinUI.Views.SeasonalPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cm="using:Totoro.Core.Models"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.Labs.WinUI"
     xmlns:mal="using:MalApi"
@@ -39,23 +39,23 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <labs:Segmented
+            <ctk:Segmented
                 Margin="{StaticResource SmallTopBottomMargin}"
                 FontSize="20"
                 ItemsSource="{x:Bind Seasons}"
                 SelectedItem="{x:Bind ViewModel.SeasonFilter, Mode=TwoWay}">
-                <labs:Segmented.ItemsPanel>
+                <ctk:Segmented.ItemsPanel>
                     <ItemsPanelTemplate>
                         <uc:WrapPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
-                </labs:Segmented.ItemsPanel>
-                <labs:Segmented.ItemContainerStyle>
-                    <Style TargetType="labs:SegmentedItem">
+                </ctk:Segmented.ItemsPanel>
+                <ctk:Segmented.ItemContainerStyle>
+                    <Style TargetType="ctk:SegmentedItem">
                         <Setter Property="MinWidth" Value="200" />
                         <Setter Property="FontSize" Value="20" />
                     </Style>
-                </labs:Segmented.ItemContainerStyle>
-            </labs:Segmented>
+                </ctk:Segmented.ItemContainerStyle>
+            </ctk:Segmented>
 
             <AutoSuggestBox
                 Grid.Row="1"
