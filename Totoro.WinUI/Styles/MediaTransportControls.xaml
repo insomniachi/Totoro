@@ -98,7 +98,7 @@
                             <Grid
                                 x:Name="ControlPanelGrid"
                                 VerticalAlignment="Bottom"
-                                Background="{ThemeResource MediaTransportControlsPanelBackground}"
+                                Background="{ThemeResource ControlOnImageFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource MediaTransportControlsBorderBrush}"
                                 BorderThickness="{ThemeResource MediaTransportControlsBorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}"
