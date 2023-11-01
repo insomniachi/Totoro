@@ -41,13 +41,7 @@
       "FileName": "Totoro.Plugins.Anime.WitAnime.dll"
     }
   ],
-  "Manga": [
-    {
-      "DisplayName": "Manga Dex",
-      "Version": "1.0.0.0",
-      "FileName": "Totoro.Plugins.Manga.MangaDex.dll"
-    }
-  ],
+  "Manga": [],
   "Torrent": [
     {
       "DisplayName": "Nyaa si",
