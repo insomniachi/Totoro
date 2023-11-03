@@ -66,7 +66,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
         _animePluginFactory.LoadPlugins(animeFolder);
         _torrentPluginFactory.LoadPlugins(torrentsFolder);
-        _mangaPluginFactory.LoadPlugin(mangaFolder);
+        _mangaPluginFactory.LoadPlugins(mangaFolder);
         _mediaDetectionPluginFactory.LoadPlugins(mediaDetectionFolder);
     }
 

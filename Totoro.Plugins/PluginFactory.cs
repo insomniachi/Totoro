@@ -1,10 +1,11 @@
 ﻿using System.Runtime.Loader;
+using Splat;
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins;
 
-public class PluginFactory<T> : IPluginFactory<T>
+public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
 {
     class Plugin
     {
@@ -64,44 +65,51 @@ public class PluginFactory<T> : IPluginFactory<T>
 
     public void LoadPlugin(string file)
     {
-        var context = new AssemblyLoadContext(Path.GetFullPath(file), true);
-        var assembly = context.LoadFromAssemblyPath(file);
-        var plugins = assembly.GetExportedTypes().Where(x => x.IsAssignableTo(typeof(IPlugin<T>)) && !x.IsAbstract).ToList();
-
-        if (plugins.Count == 0)
+        try
         {
-            context.Unload();
-            return;
-        }
+            var context = new AssemblyLoadContext(Path.GetFullPath(file), true);
+            var assembly = context.LoadFromAssemblyPath(file);
+            var plugins = assembly.GetExportedTypes().Where(x => x.IsAssignableTo(typeof(IPlugin<T>)) && !x.IsAbstract).ToList();
 
-        foreach (var type in plugins)
+            if (plugins.Count == 0)
+            {
+                context.Unload();
+                return;
+            }
+
+            foreach (var type in plugins)
+            {
+                if (!type.IsAssignableTo(typeof(IPlugin<T>)) || !(type.FullName is { } pluginType))
+                {
+                    continue;
+                }
+
+                if (assembly.CreateInstance(pluginType) is not IPlugin<T> plugIn)
+                {
+                    continue;
+                }
+
+                var pluginInfo = plugIn.GetInfo();
+
+                if (_plugins.FirstOrDefault(x => x.Info.Name == pluginInfo.Name) is { })
+                {
+                    continue;
+                }
+
+                _plugins.Add(new Plugin
+                {
+                    Info = pluginInfo,
+                    Module = plugIn,
+                    Instance = new(plugIn.Create)
+                });
+            }
+
+            _assemblyLoadContexts.Add(context);
+        }
+        catch (Exception ex)
         {
-            if (!type.IsAssignableTo(typeof(IPlugin<T>)) || !(type.FullName is { } pluginType))
-            {
-                continue;
-            }
-
-            if (assembly.CreateInstance(pluginType) is not IPlugin<T> plugIn)
-            {
-                continue;
-            }
-
-            var pluginInfo = plugIn.GetInfo();
-
-            if (_plugins.FirstOrDefault(x => x.Info.Name == pluginInfo.Name) is { })
-            {
-                continue;
-            }
-
-            _plugins.Add(new Plugin
-            {
-                Info = pluginInfo,
-                Module = plugIn,
-                Instance = new(plugIn.Create)
-            });
+            this.Log().Error(ex);
         }
-
-        _assemblyLoadContexts.Add(context);
     }
 
     public void LoadPlugins(string folder)
