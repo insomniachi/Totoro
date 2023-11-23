@@ -77,6 +77,31 @@
                         </Interactivity:Interaction.Behaviors>
                     </Button>
                 </labs:SettingsCard>
+                <labs:SettingsCard Header="Simkl">
+                    <!--<labs:SettingsCard.HeaderIcon>
+                        <ImageIcon Source="/Assets/anilist.png" />
+                    </labs:SettingsCard.HeaderIcon>-->
+                    <Button
+                        Name="SimklButton"
+                        Width="150"
+                        Command="{x:Bind ViewModel.AuthenticateCommand}"
+                        CommandParameter="{x:Bind models:ListServiceType.Simkl}"
+                        Content="Connect"
+                        Style="{StaticResource AccentButtonStyle}">
+                        <Interactivity:Interaction.Behaviors>
+                            <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsSimklConnected, Mode=OneWay}" Value="True">
+                                <Interactions:ChangePropertyAction
+                                    PropertyName="Background"
+                                    TargetObject="{x:Bind SimklButton}"
+                                    Value="Green" />
+                                <Interactions:ChangePropertyAction
+                                    PropertyName="Content"
+                                    TargetObject="{x:Bind SimklButton}"
+                                    Value="Connected" />
+                            </Interactions:DataTriggerBehavior>
+                        </Interactivity:Interaction.Behaviors>
+                    </Button>
+                </labs:SettingsCard>
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
 

@@ -16,6 +16,7 @@ public class SettingsViewModel : NavigatableViewModel
 
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
+    [Reactive] public bool IsSimklConnected { get; set; }
     [Reactive] public PluginInfo SelectedProvider { get; set; }
     [Reactive] public PluginInfo SelectedMangaProvider { get; set; }
     [Reactive] public PluginInfo SelectedTracker { get; set; }

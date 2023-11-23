@@ -111,7 +111,7 @@ public class ViewService : IViewService, IEnableLogger
                 d.Width = App.MainWindow.Bounds.Width;
             });
         }
-        else
+        else if(type == ListServiceType.MyAnimeList)
         {
             return _contentDialogService.ShowDialog<AuthenticateMyAnimeListViewModel>(d =>
             {
@@ -122,6 +122,19 @@ public class ViewService : IViewService, IEnableLogger
                 d.Width = App.MainWindow.Bounds.Width;
             });
         }
+        else if(type == ListServiceType.Simkl)
+        {
+            return _contentDialogService.ShowDialog<AuthenticateSimklViewModel>(d =>
+            {
+                d.Title = "Authenticate";
+                d.IsPrimaryButtonEnabled = false;
+                d.IsSecondaryButtonEnabled = false;
+                d.CloseButtonText = "Ok";
+                d.Width = App.MainWindow.Bounds.Width;
+            });
+        }
+
+        return Task.CompletedTask;
     }
 
     public async Task PlayVideo(string title, string url)
