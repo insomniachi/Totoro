@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Refit;
+﻿using Refit;
 using Totoro.Core.Services.Simkl;
 
 namespace Totoro.Core.Tests.Services;
@@ -26,6 +21,6 @@ public class SimklClientTests
     {
         var sut = RestService.For<ISimklClient>("https://api.simkl.com", _settings);
 
-        var result = await sut.GetSummary(1812124);
+        var result = await sut.GetEpisodes(40099);
     }
 }

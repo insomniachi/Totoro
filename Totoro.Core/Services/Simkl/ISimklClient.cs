@@ -7,10 +7,19 @@ namespace Totoro.Core.Services.Simkl;
 internal interface ISimklClient
 {
     [Get("/sync/all-items/{type}/{status}")]
-    Task<SimklAllItemsResponse> GetAllItems(ItemType type, SimklWatchStatus status);
+    Task<SimklAllItems> GetAllItems(ItemType type, SimklWatchStatus status);
 
     [Get("/anime/{id}?client_id={clientId}&extended=full")]
-    Task<SimklAnimeMetaData> GetSummary(long id, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
+    Task<SimklMetaData> GetSummary(long id, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
+
+    [Get("/anime/episodes/{id}?client_id={clientId}&extended=full")]
+    Task<List<Episode>> GetEpisodes(long id, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
+
+    [Post("/sync/history")]
+    Task AddItems([Body(BodySerializationMethod.Serialized)]SimklMutateListBody items);
+
+    [Post("/sync/history/remove")]
+    Task RemoveItems([Body(BodySerializationMethod.Serialized)] SimklMutateListBody items);
 }
 
 internal class SimklHandler : DelegatingHandler
@@ -57,14 +66,69 @@ internal enum SimklWatchStatus
     Dropped
 }
 
-internal class SimklAllItemsResponse
+internal class SimklAllItems
 {
     [JsonPropertyName("anime")]
-    public List<SimklAnimeModel> Anime { get; set; }
+    public List<SimklItemModel> Anime { get; set; }
+
+    [JsonPropertyName("movies")]
+    public List<SimklItemModel> Movies { get; set; }
+
+    [JsonPropertyName("shows")]
+    public List<SimklItemModel> Shows { get; set; }
+}
+
+internal class SimklMutateListBody
+{
+    [JsonPropertyName("shows")]
+    public List<SimklMetaDataSlim> Shows { get; set; }
+
+    [JsonPropertyName("movies")]
+    public List<SimklMetaDataSlim> Movies { get; set; }
+
+    [JsonPropertyName("episodes")]
+    public List<EpisodeSlim> Episodes { get; set; }
+}
+
+internal class SimklMetaDataSlim
+{
+    [JsonPropertyName("ids")]
+    public SimklIds Ids { get; set; }
+
+}
+
+internal class Episode
+{
+    [JsonPropertyName("title")]
+    public string Title { get; set; }
+
+    [JsonPropertyName("Description")]
+    public string Description { get; set; }
+
+    [JsonPropertyName("episode")]
+    public int EpisodeNumber { get; set; }
+
+    [JsonPropertyName("aired")]
+    public bool Aired { get; set; }
+
+    [JsonPropertyName("img")]
+    public string Image { get; set; }
+
+    [JsonPropertyName("date")]
+    public string Date { get; set; }
+}
+
+internal class EpisodeSlim
+{
+    [JsonPropertyName("watched_at")]
+    public string WatchedAt { get; set; }
+
+    [JsonPropertyName("ids")]
+    public SimklIds Ids { get; set; }
 }
 
 
-internal class SimklAnimeModel
+internal class SimklItemModel
 {
     [JsonPropertyName("last_watched_at")]
     public string LastWatchedAt { get; set; }
@@ -91,10 +155,10 @@ internal class SimklAnimeModel
     public string AnimeType { get; set; }
 
     [JsonPropertyName("show")]
-    public SimklAnimeMetaData Show { get; set; }
+    public SimklMetaData Show { get; set; }
 }
 
-internal class SimklAnimeMetaData
+internal class SimklMetaData
 {
     [JsonPropertyName("title")]
     public string Title { get; set; }
@@ -133,10 +197,10 @@ internal class SimklAnimeMetaData
     public List<Trailer> Trailers { get; set; }
 
     [JsonPropertyName("users_recommendations")]
-    public List<SimklAnimeMetaData> UserRecommendations { get; set; }
+    public List<SimklMetaData> UserRecommendations { get; set; }
 
     [JsonPropertyName("relations")]
-    public List<SimklAnimeMetaData> Relations { get; set; }
+    public List<SimklMetaData> Relations { get; set; }
 }
 
 internal class SimklRating
