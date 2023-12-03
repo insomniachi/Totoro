@@ -4,11 +4,15 @@ namespace Totoro.Core.Services.Simkl;
 internal class SimklTrackingService : ITrackingService
 {
     private readonly ISimklClient _simklClient;
+    private readonly IAnilistService _anilistService;
+    private readonly SimklWatchStatus[] _status = new[] { SimklWatchStatus.Watching, SimklWatchStatus.PlanToWatch, SimklWatchStatus.Completed, SimklWatchStatus.Hold, SimklWatchStatus.Dropped };
 
     public SimklTrackingService(ISimklClient simklClient,
+                                IAnilistService anilistService,
                                 ILocalSettingsService localSettingsService)
     {
         _simklClient = simklClient;
+        _anilistService = anilistService;
         IsAuthenticated = !string.IsNullOrEmpty(localSettingsService.ReadSetting<string>("SimklToken"));
     }
 
@@ -42,11 +46,24 @@ internal class SimklTrackingService : ITrackingService
     {
         return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
         {
-            var items = await _simklClient.GetAllItems(ItemType.Anime, SimklWatchStatus.Watching);
-            observer.OnNext(items.Anime.Select(SimklToAnimeModelConverter.Convert));
+            foreach (var status in _status)
+            {
+                var items = await _simklClient.GetAllItems(ItemType.Anime, status);
+                var watchedItems = new List<AnimeModel>();
+                foreach (var item in items.Anime)
+                {
+                    var model = SimklToAnimeModelConverter.Convert(item);
+                    if (item.Status == "watching" && model.AiringStatus == AiringStatus.CurrentlyAiring)
+                    {
+                        var epAndTime = await _anilistService.GetNextAiringEpisode(item.Show.Id.Simkl ?? item.Show.Id.Simkl2 ?? 0);
+                        model.AiredEpisodes = epAndTime.Episode - 1 ?? 0;
+                        model.NextEpisodeAt = epAndTime.Time;
+                    }
+                    watchedItems.Add(model);
+                }
+                observer.OnNext(watchedItems);
+            }
 
-            items = await _simklClient.GetAllItems(ItemType.Anime, null);
-            observer.OnNext(items.Anime.Select(SimklToAnimeModelConverter.Convert));
             observer.OnCompleted();
 
             return Disposable.Empty;

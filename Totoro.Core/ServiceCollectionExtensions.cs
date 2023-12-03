@@ -97,7 +97,7 @@ namespace Totoro.Core
                     .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.simkl.com"))
                     .AddHttpMessageHandler<SimklHttpMessageHandler>();
             services.AddTransient<ITrackingService, SimklTrackingService>();
-            services.AddTransient<IAnimeService, SimklService>();
+            services.AddTransient<IAnimeService, SimklAnimeService>();
 
             return services;
         }
