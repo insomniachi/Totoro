@@ -10,13 +10,13 @@ namespace Totoro.Core.Services.Simkl
             return new AnimeModel
             {
                 Title = item.Show.Title,
-                Id = item.Show.Id.Simkl,
+                Id = item.Show.Id.Simkl ?? item.Show.Id.Simkl2 ?? 0,
                 TotalEpisodes = item.TotalEpisodesCount,
                 Videos = ConvertTrailers(item.Show.Trailers),
-                AlternativeTitles = [item.Show.EnglishTitle],
+                AlternativeTitles = new [] { item.Show.EnglishTitle },
                 Season = ConvertSeason(item.Show.Season),
                 MeanScore = item.Show.Ratings?.Simkl.Rating,
-                Genres = item.Show.Genres ?? [],
+                Genres = item.Show.Genres ?? Enumerable.Empty<string>(),
                 Related = ConvertSimple(item.Show.Relations),
                 Image = $"https://wsrv.nl/?url=https://simkl.in/posters/{item.Show.Image}_m.jpg",
                 AiringStatus = ConvertStatus(item),
@@ -29,14 +29,14 @@ namespace Totoro.Core.Services.Simkl
         {
             return new AnimeModel
             {
-                Title = item.Title,
-                Id = item.Id.Simkl,
+                Title = item.EnglishTitle ?? item.Title,
+                Id = item.Id.Simkl ?? item.Id.Simkl2 ?? 0,
                 TotalEpisodes = item.TotalEpisodes,
                 Videos = ConvertTrailers(item.Trailers),
-                AlternativeTitles = [item.EnglishTitle],
+                AlternativeTitles = new[] { item.EnglishTitle },
                 Season = ConvertSeason(item.Season),
                 MeanScore = item.Ratings?.Simkl.Rating,
-                Genres = item.Genres ?? [],
+                Genres = item.Genres ?? Enumerable.Empty<string>(),
                 Related = ConvertSimple(item.Relations),
                 Image = $"https://wsrv.nl/?url=https://simkl.in/posters/{item.Image}_m.jpg",
                 Description = item.Overview
@@ -80,14 +80,14 @@ namespace Totoro.Core.Services.Simkl
         {
             if(relations is null)
             {
-                return [];
+                return Array.Empty<AnimeModel>();
             }
 
             return relations.Select(item => new AnimeModel
             {
                 Title = item.Title,
-                Id = item.Id.Simkl,
-                Image = Url.Combine("https://simkl.in/posters/", $"{item.Image}.jpg")
+                Id = item.Id.Simkl ?? item.Id.Simkl2 ?? 0,
+                Image = $"https://wsrv.nl/?url=https://simkl.in/posters/{item.Image}_m.jpg",
             }).ToArray();
 
         }
@@ -96,7 +96,7 @@ namespace Totoro.Core.Services.Simkl
         {
             if(trailers is null)
             {
-                return [];
+                return new List<Video>();
             }
 
             return trailers.Select((x,i) => new Video

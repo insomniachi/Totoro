@@ -94,7 +94,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 }
 
                 var animeId = await animeIdService.GetId(anime.Id);
-                if(animeId.MyAnimeList is not long malId)
+                if(animeId?.MyAnimeList is not long malId)
                 {
                     return;
                 }

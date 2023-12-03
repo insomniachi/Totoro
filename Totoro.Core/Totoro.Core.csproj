@@ -37,7 +37,7 @@
 	<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
 	<PackageReference Include="MonoTorrent" Version="2.0.7" />
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.1" />
-	<PackageReference Include="Refit" Version="7.0.0" />
+	<PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
 	<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 	<PackageReference Include="SharpCompress" Version="0.34.1" />
 	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.7.1" />

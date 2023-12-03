@@ -24,6 +24,7 @@ public class AnimeIdService : IAnimeIdService
             ListServiceType.AniList => "anilist",
             ListServiceType.MyAnimeList => "myanimelist",
             ListServiceType.Kitsu => "kitsu",
+            ListServiceType.Simkl => "myanimelist", // TODO fix
             _ => throw new UnreachableException()
         };
     }

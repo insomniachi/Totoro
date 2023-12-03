@@ -156,7 +156,7 @@ internal class SimklMetaData
     [JsonPropertyName("ids")]
     public SimklIds Id { get; set; }
 
-    [JsonPropertyName("en_title")]
+    [JsonPropertyName("title_en")]
     public string EnglishTitle { get; set; }
 
     [JsonPropertyName("season_name_year")]
@@ -225,7 +225,10 @@ internal class RatingItem
 internal class SimklIds
 {
     [JsonPropertyName("simkl")]
-    public long Simkl { get; set; }
+    public long? Simkl { get; set; }
+
+    [JsonPropertyName("simkl_id")]
+    public long? Simkl2 { get; set; }
 
     [JsonPropertyName("mal")]
     public string MyAnimeList { get; set; }

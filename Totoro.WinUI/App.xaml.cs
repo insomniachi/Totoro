@@ -46,6 +46,7 @@ public partial class App : Application, IEnableLogger
                     .AddPlugins()
                     .AddMyAnimeList()
                     .AddAniList()
+                    .AddSimkl()
                     .AddTorrenting()
                     .AddMediaDetection()
                     .AddTopLevelPages()

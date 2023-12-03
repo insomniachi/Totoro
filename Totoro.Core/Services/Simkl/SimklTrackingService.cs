@@ -22,15 +22,16 @@ internal class SimklTrackingService : ITrackingService
         {
             _simklClient.RemoveItems(new SimklMutateListBody
             {
-                Shows =
-                [
-                    new() {
+                Shows = new List<SimklMetaDataSlim>
+                {
+                    new() 
+                    {
                         Ids = new SimklIds
                         {
                             Simkl = id
                         }
                     }
-                ]
+                }
             });
 
             return Disposable.Empty;
@@ -87,8 +88,8 @@ internal class SimklTrackingService : ITrackingService
             {
                 await _simklClient.AddItems(new SimklMutateListBody
                 {
-                    Shows =
-                    [
+                    Shows = new List<SimklMetaDataSlim>()
+                    {
                         new()
                         {
                             Ids = new SimklIds
@@ -97,7 +98,7 @@ internal class SimklTrackingService : ITrackingService
                             },
                             Rating = tracking.Score
                         }
-                    ],
+                    },
                     Episodes = episodes
                 });
             }
@@ -106,8 +107,8 @@ internal class SimklTrackingService : ITrackingService
             {
                 await _simklClient.MoveItems(new SimklMutateListBody
                 {
-                    Shows =
-                    [
+                    Shows = new List<SimklMetaDataSlim>()
+                    {
                         new()
                         {
                             Ids = new SimklIds
@@ -124,7 +125,7 @@ internal class SimklTrackingService : ITrackingService
                                 _ => null
                             }
                         }
-                    ],
+                    },
                 });
             }
 

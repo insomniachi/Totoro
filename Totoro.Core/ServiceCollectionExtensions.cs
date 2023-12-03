@@ -1,12 +1,14 @@
 ﻿using MalApi;
 using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Refit;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
 using Totoro.Core.Services.Debrid;
 using Totoro.Core.Services.MediaEvents;
 using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
+using Totoro.Core.Services.Simkl;
 using Totoro.Core.Services.StreamResolvers;
 using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
@@ -77,6 +79,18 @@ namespace Totoro.Core
             services.AddTransient<ITrackingService, MyAnimeListTrackingService>();
             services.AddTransient<IAnimeService, MyAnimeListService>();
             services.AddSingleton<IMalClient, MalClient>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddSimkl(this IServiceCollection services)
+        {
+            services.AddTransient<SimklHttpMessageHandler>();
+            services.AddRefitClient<ISimklClient>()
+                    .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.simkl.com"))
+                    .AddHttpMessageHandler<SimklHttpMessageHandler>();
+            services.AddTransient<ITrackingService, SimklTrackingService>();
+            services.AddTransient<IAnimeService, SimklService>();
 
             return services;
         }

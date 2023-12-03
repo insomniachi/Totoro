@@ -8,7 +8,6 @@ namespace Totoro.WinUI.Dialogs.ViewModels;
 public class AuthenticateSimklViewModel : DialogViewModel
 {
     private readonly string _redirectUri = @"https://github.com/insomniachi/Totoro/";
-    private readonly string _accessTokenRequestTemplate = @"";
 
     public AuthenticateSimklViewModel(IConfiguration configuration,
                                       ILocalSettingsService localSettingsService,
@@ -21,10 +20,6 @@ public class AuthenticateSimklViewModel : DialogViewModel
 
         this.ObservableForProperty(x => x.AuthUrl, x => x)
             .Select(HttpUtility.ParseQueryString)
-            .Do(x =>
-            {
-                ;
-            })
             .Where(queries => queries.Count > 0 && queries.Keys[0]?.EndsWith("code") == true)
             .Do(_ => IsLoading = true)
             .ObserveOn(RxApp.TaskpoolScheduler)
