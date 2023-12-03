@@ -80,7 +80,8 @@
                         VerticalAlignment="Bottom"
                         Background="{ThemeResource ControlOnImageFillColorDefault}"
                         Orientation="Horizontal"
-                        Spacing="10">
+                        Spacing="10"
+                        Visibility="{x:Bind help:Converters.NullToVisibility(Anime.MeanScore)}">
                         <FontIcon FontSize="12" Glyph="&#xE735;" />
                         <TextBlock FontSize="12" Text="{x:Bind Anime.MeanScore, Mode=OneWay}" />
                     </StackPanel>
