@@ -60,7 +60,7 @@ internal class SimklTrackingService : ITrackingService
 
     public void SetAccessToken(string accessToken)
     {
-        // Not needed
+        IsAuthenticated = true;
     }
 
     public IObservable<Tracking> Update(long id, Tracking tracking)

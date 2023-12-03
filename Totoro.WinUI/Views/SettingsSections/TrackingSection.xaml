@@ -78,9 +78,9 @@
                     </Button>
                 </labs:SettingsCard>
                 <labs:SettingsCard Header="Simkl">
-                    <!--<labs:SettingsCard.HeaderIcon>
-                        <ImageIcon Source="/Assets/anilist.png" />
-                    </labs:SettingsCard.HeaderIcon>-->
+                    <labs:SettingsCard.HeaderIcon>
+                        <ImageIcon Source="/Assets/simkl.png" />
+                    </labs:SettingsCard.HeaderIcon>
                     <Button
                         Name="SimklButton"
                         Width="150"

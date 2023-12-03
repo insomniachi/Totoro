@@ -126,6 +126,7 @@ public class SettingsViewModel : NavigatableViewModel
     {
         IsMalConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.MyAnimeList);
         IsAniListConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
+        IsSimklConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.Simkl);
     }
 
 
