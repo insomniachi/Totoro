@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.Design.Serialization;
-using Flurl;
+﻿using Flurl;
 using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;

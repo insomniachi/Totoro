@@ -17,7 +17,7 @@ internal interface ISimklClient
     Task<List<Episode>> GetEpisodes(long id, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
 
     [Post("/sync/history")]
-    Task AddItems([Body(BodySerializationMethod.Serialized)]SimklMutateListBody items);
+    Task AddItems([Body(BodySerializationMethod.Serialized)] SimklMutateListBody items);
 
     [Post("/sync/add-to-list")]
     Task MoveItems([Body(BodySerializationMethod.Serialized)] SimklMutateListBody items);

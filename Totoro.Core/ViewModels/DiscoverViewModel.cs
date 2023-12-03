@@ -100,7 +100,7 @@ public class DiscoverViewModel : NavigatableViewModel
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if(!_connectivityService.IsConnected)
+        if (!_connectivityService.IsConnected)
         {
             return Task.CompletedTask;
         }

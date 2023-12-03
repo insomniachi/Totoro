@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Nodes;
-using Flurl;
+﻿using Flurl;
 using Flurl.Http;
 using Totoro.Plugins.Helpers;
 using Totoro.Plugins.Manga.Contracts;

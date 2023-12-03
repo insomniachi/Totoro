@@ -1,7 +1,6 @@
 ﻿using FuzzySharp;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using Splat;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
@@ -115,7 +114,7 @@ public class ViewService : IViewService, IEnableLogger
                 d.Width = App.MainWindow.Bounds.Width;
             });
         }
-        else if(type == ListServiceType.MyAnimeList)
+        else if (type == ListServiceType.MyAnimeList)
         {
             return _contentDialogService.ShowDialog<AuthenticateMyAnimeListViewModel>(d =>
             {
@@ -126,7 +125,7 @@ public class ViewService : IViewService, IEnableLogger
                 d.Width = App.MainWindow.Bounds.Width;
             });
         }
-        else if(type == ListServiceType.Simkl)
+        else if (type == ListServiceType.Simkl)
         {
             return _contentDialogService.ShowDialog<AuthenticateSimklViewModel>(d =>
             {
@@ -455,7 +454,7 @@ public class ViewService : IViewService, IEnableLogger
         };
         grid.Children.Add(textBox);
 
-        if(_nameService.HasName(id))
+        if (_nameService.HasName(id))
         {
             textBox.Text = _nameService.GetName(id);
         }
@@ -474,7 +473,7 @@ public class ViewService : IViewService, IEnableLogger
 
         var result = await dialog.ShowAsync();
         var text = textBox.Text;
-        if(result == ContentDialogResult.Primary && !string.IsNullOrEmpty(text))
+        if (result == ContentDialogResult.Primary && !string.IsNullOrEmpty(text))
         {
             _nameService.AddOrUpdate(id, text);
         }

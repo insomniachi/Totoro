@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Reactive.Concurrency;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;

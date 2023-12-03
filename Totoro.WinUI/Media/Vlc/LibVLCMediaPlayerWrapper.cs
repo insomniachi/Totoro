@@ -66,7 +66,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public async Task<Unit> SetMedia(VideoStreamModel stream)
     {
-        while(_vlc is null)
+        while (_vlc is null)
         {
             await Task.Delay(10);
         }
@@ -82,7 +82,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     public ValueTask AddSubtitle(string file)
     {
-        if(!System.IO.File.Exists(file))
+        if (!System.IO.File.Exists(file))
         {
             return ValueTask.CompletedTask;
         }
@@ -94,7 +94,7 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer
 
     private void SetSubtitles(List<Subtitle> subtitles)
     {
-        if(!subtitles.Any())
+        if (!subtitles.Any())
         {
             return;
         }

@@ -26,7 +26,7 @@ internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
             var parseResult = AnitomySharp.AnitomySharp.Parse(fileInfo.Name);
             var ep = parseResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
 
-            if(!int.TryParse(ep, out int episode))
+            if (!int.TryParse(ep, out int episode))
             {
                 continue;
             }
@@ -42,7 +42,7 @@ internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
         _prevStream?.Dispose();
         _prevStream = null;
 
-        if(!_episodes.ContainsKey(episode))
+        if (!_episodes.ContainsKey(episode))
         {
             return Task.FromResult<VideoStreamsForEpisodeModel>(default);
         }

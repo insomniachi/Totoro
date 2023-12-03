@@ -54,7 +54,7 @@ internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
                 Options = baseConfig,
                 PluginName = item.Name
             });
-            
+
             if (!_configValues.ContainsKey(item.Name))
             {
                 hasNewConfig = true;

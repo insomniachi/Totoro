@@ -48,11 +48,11 @@ namespace Totoro.Plugins.MediaDetection.Vlc
             return title.Replace("- Vlc media player", string.Empty, StringComparison.InvariantCultureIgnoreCase).Trim();
         }
 
-        public void Launch(string title,string url)
+        public void Launch(string title, string url)
         {
             _hasCustomTitle = true;
             _customTitle = title;
-            _application = Application.Launch(Config.FileName,$"{url} --meta-title=\"{title}\" -f");
+            _application = Application.Launch(Config.FileName, $"{url} --meta-title=\"{title}\" -f");
             InitializeInternal();
         }
 
@@ -65,7 +65,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
 
         public void Dispose()
         {
-            if(_application is null)
+            if (_application is null)
             {
                 return;
             }
@@ -75,7 +75,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
 
         private void InitializeInternal()
         {
-            while(_mainWindow is not { IsAvailable : true })
+            while (_mainWindow is not { IsAvailable: true })
             {
                 try
                 {
@@ -97,7 +97,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
                 {
                     var parts = item.Name.Split(':');
 
-                    if(parts.Length == 3)
+                    if (parts.Length == 3)
                     {
                         Duration = new TimeSpan(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]));
                     }

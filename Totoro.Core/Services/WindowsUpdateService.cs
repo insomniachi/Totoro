@@ -55,7 +55,7 @@ public class WindowsUpdateService : ReactiveObject, IUpdateService, IEnableLogge
             .AllowAnyHttpStatus()
             .GetAsync();
 
-        if(response.StatusCode > 300)
+        if (response.StatusCode > 300)
         {
             return "";
         }

@@ -57,7 +57,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
         if (startPage == 1)
         {
-            await foreach(var item in GetStreamFromPage(firstPage, releaseId, start, end, offset))
+            await foreach (var item in GetStreamFromPage(firstPage, releaseId, start, end, offset))
             {
                 yield return item;
             }
@@ -90,7 +90,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
                 try
                 {
                     var url = await GetDirectLink(kv.Value);
-                    if(string.IsNullOrEmpty(url))
+                    if (string.IsNullOrEmpty(url))
                     {
                         continue;
                     }
@@ -128,7 +128,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
     {
         var streamData = await Config.Url.AppendPathSegments("play", releaseId, streamSession).GetStringAsync();
         var result = new Dictionary<string, string>();
-        
+
         foreach (var match in StreamsRegex().Matches(streamData).Cast<Match>())
         {
             result.TryAdd(match.Groups["resolution"].Value, match.Groups["url"].Value);
@@ -136,7 +136,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
         return result;
     }
-   
+
     private static string Encode(int number, int @base)
     {
         int n = number / @base;

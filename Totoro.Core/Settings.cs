@@ -55,7 +55,7 @@ public static class Settings
     {
         return new DataGridSettings
         {
-            Sort = new ("Title", true),
+            Sort = new("Title", true),
             Columns = new List<DataGridColumnModel>()
             {
                 new()

@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using Flurl;
+﻿using Flurl;
 using Flurl.Http;
 using Totoro.Plugins.Helpers;
 using Totoro.Plugins.Manga.Contracts;
@@ -32,7 +30,7 @@ internal class Catalog : IMangaCatalog
             string title = "";
             string cover = "";
             string id = "";
-            
+
             try
             {
                 title = item.attributes.title.en;
@@ -45,11 +43,11 @@ internal class Catalog : IMangaCatalog
                     {
                         continue;
                     }
-                    
+
                     cover = $"https://uploads.mangadex.org/covers/{item.id}/{relation.attributes.fileName}.256.jpg";
                 }
             }
-            catch 
+            catch
             {
                 continue;
             }

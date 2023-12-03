@@ -45,7 +45,7 @@ namespace Totoro.WinUI.Services
             new ToastContentBuilder()
                 .SetToastScenario(ToastScenario.Reminder)
                 .AddText($"Unable match anime, select from the list", AdaptiveTextStyle.Header)
-                .AddComboBox("animeId", defaultSelection.Id.ToString(), items.Select(x => new ValueTuple<string,string>(x.Id.ToString(), x.Title)).ToArray())
+                .AddComboBox("animeId", defaultSelection.Id.ToString(), items.Select(x => new ValueTuple<string, string>(x.Id.ToString(), x.Title)).ToArray())
                 .AddButton("Select", ToastActivationType.Background, $"Type={ToastType.SelectAnime}")
                 .Show();
         }

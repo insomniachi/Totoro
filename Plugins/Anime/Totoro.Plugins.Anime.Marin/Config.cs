@@ -21,7 +21,7 @@ internal partial class Config
 
     internal static async ValueTask<string> GetInertiaVersion()
     {
-        if(!string.IsNullOrEmpty(_inertiaVersion))
+        if (!string.IsNullOrEmpty(_inertiaVersion))
         {
             return _inertiaVersion;
         }

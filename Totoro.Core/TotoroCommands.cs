@@ -30,14 +30,14 @@ public class TotoroCommands : IEnableLogger
             switch (param)
             {
                 case AnimeModel anime:
-                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() 
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
-                        ["Anime"] = anime ,
+                        ["Anime"] = anime,
                         ["Provider"] = settings.DefaultProviderType
                     });
                     break;
                 case long id:
-                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>() 
+                    navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
                         ["Id"] = id,
                         ["Provider"] = settings.DefaultProviderType
@@ -123,7 +123,7 @@ public class TotoroCommands : IEnableLogger
             switch (param)
             {
                 case AnimeModel model:
-                    navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>() 
+                    navigationService.NavigateTo<TorrentingViewModel>(parameter: new Dictionary<string, object>()
                     {
                         ["Anime"] = model,
                         ["Indexer"] = settings.DefaultTorrentTrackerType

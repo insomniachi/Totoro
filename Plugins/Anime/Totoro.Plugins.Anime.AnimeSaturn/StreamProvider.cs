@@ -18,15 +18,15 @@ internal partial class StreamProvider : IAnimeStreamProvider
         var doc = await url.GetHtmlDocumentAsync();
         var lastEpNode = doc.QuerySelectorAll(".episodes-button").LastOrDefault();
 
-        if(lastEpNode is null)
+        if (lastEpNode is null)
         {
             return 0;
         }
 
         var text = lastEpNode.QuerySelector("a").InnerHtml;
         var match = EpisodeNumberRegex().Match(text);
-        
-        if(!match.Success)
+
+        if (!match.Success)
         {
             return 0;
         }
@@ -51,12 +51,12 @@ internal partial class StreamProvider : IAnimeStreamProvider
         foreach (var item in epNodes)
         {
             var ep = GetEpNumber(item);
-            
-            if(ep < start)
+
+            if (ep < start)
             {
                 continue;
             }
-            if(ep > end)
+            if (ep > end)
             {
                 break;
             }
@@ -66,7 +66,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
             var playerUrl = string.Empty;
             foreach (var link in intermediatePage.QuerySelectorAll("a"))
             {
-                if(!link.InnerHtml.Contains(@"Guarda lo Streaming"))
+                if (!link.InnerHtml.Contains(@"Guarda lo Streaming"))
                 {
                     continue;
                 }
@@ -77,13 +77,13 @@ internal partial class StreamProvider : IAnimeStreamProvider
             var playerPage = await playerUrl.GetHtmlDocumentAsync();
             var sourceElement = playerPage.QuerySelector("source");
             string stream;
-            if(sourceElement is null)
+            if (sourceElement is null)
             {
                 playerPage = await playerUrl.SetQueryParam("s", "alt").GetHtmlDocumentAsync();
                 sourceElement = playerPage.QuerySelector("source");
             }
             stream = sourceElement.Attributes["src"].Value;
-            
+
             yield return new VideoStreamsForEpisode
             {
                 Episode = ep,
@@ -104,7 +104,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
     {
         var match = EpisodeNumberRegex().Match(node.QuerySelector("a").InnerHtml);
 
-        if(!match.Success)
+        if (!match.Success)
         {
             return 0;
         }

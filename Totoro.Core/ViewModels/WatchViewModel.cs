@@ -29,8 +29,8 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IAnimeDetectionService _animeDetectionService;
     private readonly INameService _nameService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
-    private readonly string[] _subDubProviders = new [] { "gogo-anime", "anime-saturn" };
-     
+    private readonly string[] _subDubProviders = new[] { "gogo-anime", "anime-saturn" };
+
     private PluginOptions _providerOptions;
     private bool _isCrunchyroll;
     private IEnumerable<EpisodeModel> _episodeMetadata;
@@ -136,7 +136,7 @@ public partial class WatchViewModel : NavigatableViewModel
             {
                 foreach (var item in _episodeMetadata)
                 {
-                    if(EpisodeModels.FirstOrDefault(x => x.EpisodeNumber == item.EpisodeNumber) is not { } ep)
+                    if (EpisodeModels.FirstOrDefault(x => x.EpisodeNumber == item.EpisodeNumber) is not { } ep)
                     {
                         continue;
                     }
@@ -354,11 +354,11 @@ public partial class WatchViewModel : NavigatableViewModel
         else if (parameters.ContainsKey("SearchResult"))
         {
             var searchResult = (ICatalogItem)parameters["SearchResult"];
-            if(searchResult is IHaveMalId  { MalId: >0 } ihmid && _settings.DefaultListService == ListServiceType.MyAnimeList)
+            if (searchResult is IHaveMalId { MalId: > 0 } ihmid && _settings.DefaultListService == ListServiceType.MyAnimeList)
             {
                 SetAnime(ihmid.MalId);
             }
-            else if(searchResult is IHaveAnilistId { AnilistId : >0 } ihaid && _settings.DefaultListService == ListServiceType.AniList)
+            else if (searchResult is IHaveAnilistId { AnilistId: > 0 } ihaid && _settings.DefaultListService == ListServiceType.AniList)
             {
                 SetAnime(ihaid.AnilistId);
             }
@@ -375,13 +375,13 @@ public partial class WatchViewModel : NavigatableViewModel
             var useDebrid = (bool)parameters["UseDebrid"];
             await InitializeFromTorrentModel(Torrent, useDebrid);
         }
-        else if(parameters.ContainsKey("LocalFolder"))
+        else if (parameters.ContainsKey("LocalFolder"))
         {
             var folder = (string)parameters["LocalFolder"];
             await TrySetAnime(Path.GetFileName(folder));
             await CreateLocalStreamResolver(folder);
         }
-        else if(parameters.ContainsKey("TorrentManager"))
+        else if (parameters.ContainsKey("TorrentManager"))
         {
             var torrentManager = (TorrentManager)parameters["TorrentManager"];
             await TrySetAnime(torrentManager.Torrent.Name);
@@ -401,7 +401,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             await ad.DisposeAsync();
         }
-        else if(_videoStreamResolver is IDisposable d)
+        else if (_videoStreamResolver is IDisposable d)
         {
             d.Dispose();
         }
@@ -445,7 +445,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task<(ICatalogItem Sub, ICatalogItem Dub)> SearchProvider(long id, string title)
     {
-        if(_nameService.HasName(id))
+        if (_nameService.HasName(id))
         {
             title = _nameService.GetName(id);
         }
@@ -507,7 +507,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private int GetQueuedEpisode()
     {
-        if(UseTorrents && EpisodeModels is { Count : 1 })
+        if (UseTorrents && EpisodeModels is { Count: 1 })
         {
             return _episodeRequest ?? EpisodeModels.First().EpisodeNumber;
         }

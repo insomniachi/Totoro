@@ -42,7 +42,7 @@ public class Initalizer : IInitializer
 #if RELEASE
         await _pluginManager.Initialize(_knownFolders.Plugins); 
 #endif
-        if(_connectivityService.IsConnected)
+        if (_connectivityService.IsConnected)
         {
             await _torrentEngine.TryRestoreState();
             await _rssDownloader.Initialize();

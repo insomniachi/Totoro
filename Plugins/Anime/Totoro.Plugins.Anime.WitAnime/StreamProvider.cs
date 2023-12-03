@@ -40,12 +40,12 @@ internal partial class StreamProvider : IAnimeStreamProvider
             var titleNode = item.QuerySelector(".episodes-card-title a");
             var ep = int.Parse(NumberRegex().Match(titleNode.InnerHtml).Groups[1].Value);
 
-            if(ep < start)
+            if (ep < start)
             {
                 continue;
             }
 
-            if(ep > end)
+            if (ep > end)
             {
                 break;
             }
@@ -57,9 +57,9 @@ internal partial class StreamProvider : IAnimeStreamProvider
             {
                 var serverUrl = server.Attributes["data-ep-url"].Value;
                 //var serverName = server.InnerHtml;
-                
+
                 var stream = await GetStreams(serverUrl);
-                if(stream is null)
+                if (stream is null)
                 {
                     continue;
                 }
@@ -106,7 +106,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
             var playerUrl = match.Groups["Url"].Value;
             var stream = await GetStreams(playerUrl);
 
-            if(stream is null)
+            if (stream is null)
             {
                 continue;
             }

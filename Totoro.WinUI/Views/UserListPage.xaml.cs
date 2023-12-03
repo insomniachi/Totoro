@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using CommunityToolkit.Labs.WinUI;
+﻿using CommunityToolkit.Labs.WinUI;
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -104,7 +103,7 @@ public sealed partial class UserListPage : UserListPageBase
                 _ => string.Empty
             };
 
-            if(string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(url))
             {
                 return;
             }
@@ -168,12 +167,12 @@ public sealed partial class UserListPage : UserListPageBase
     private void SortButton_Loaded(object sender, RoutedEventArgs e)
     {
         var flyout = ((MenuFlyout)((AppBarButton)sender).Flyout);
-        if(flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "1").FirstOrDefault(x => (string)x.CommandParameter == ViewModel.DataGridSettings.Sort.ColumnName) is RadioMenuFlyoutItem column)
+        if (flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "1").FirstOrDefault(x => (string)x.CommandParameter == ViewModel.DataGridSettings.Sort.ColumnName) is RadioMenuFlyoutItem column)
         {
             column.IsChecked = true;
         }
 
-        if(flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "2").FirstOrDefault(x => ViewModel.DataGridSettings.Sort.IsAscending == (bool)x.CommandParameter) is RadioMenuFlyoutItem order)
+        if (flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "2").FirstOrDefault(x => ViewModel.DataGridSettings.Sort.IsAscending == (bool)x.CommandParameter) is RadioMenuFlyoutItem order)
         {
             order.IsChecked = true;
         }
@@ -186,7 +185,7 @@ public class AiringStatusToBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if(value is not AiringStatus status)
+        if (value is not AiringStatus status)
         {
             return DependencyProperty.UnsetValue;
         }

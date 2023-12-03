@@ -31,7 +31,7 @@ public class AnimeServiceContext : IAnimeServiceContext
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
     {
-        if(!_connectivityService.IsConnected)
+        if (!_connectivityService.IsConnected)
         {
             return Observable.Return(Enumerable.Empty<AnimeModel>());
         }

@@ -74,7 +74,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         var mtc = d as CustomMediaTransportControls;
         var flyout = mtc._qualitiesFlyout;
 
-        if(mtc._qualitiesButton is null)
+        if (mtc._qualitiesButton is null)
         {
             return;
         }
@@ -178,7 +178,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
         var smallSkipForward = GetTemplateChild("SmallSkipForward") as AppBarButton;
         var smallSkipBackward = GetTemplateChild("SmallSkipBackward") as AppBarButton;
-        
+
         _fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;

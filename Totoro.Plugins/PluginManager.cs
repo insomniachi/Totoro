@@ -61,7 +61,7 @@ public class PluginManager : IPluginManager, IEnableLogger
             await DownloadOrUpdatePlugins(_listedPlugins.Anime, localAnimePlugins, animeFolder);
             await DownloadOrUpdatePlugins(_listedPlugins.Manga, localMangaPlugins, mangaFolder);
             await DownloadOrUpdatePlugins(_listedPlugins.Torrent, localTorrentsPlugins, torrentsFolder);
-            await DownloadOrUpdatePlugins(_listedPlugins.MediaDetection, localMediaDetectionPlugins, mediaDetectionFolder); 
+            await DownloadOrUpdatePlugins(_listedPlugins.MediaDetection, localMediaDetectionPlugins, mediaDetectionFolder);
         }
 
         _animePluginFactory.LoadPlugins(animeFolder);
@@ -90,7 +90,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
     private async Task DownloadOrUpdatePlugins(List<PluginInfoSlim> listedPlugins, IEnumerable<PluginInfoSlim> localPlugins, string folder)
     {
-        if(listedPlugins is not { Count : > 0})
+        if (listedPlugins is not { Count: > 0 })
         {
             return;
         }

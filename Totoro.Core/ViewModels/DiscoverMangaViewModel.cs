@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using Totoro.Plugins;
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Manga;
 using Totoro.Plugins.Manga.Contracts;

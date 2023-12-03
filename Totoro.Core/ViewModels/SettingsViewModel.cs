@@ -81,7 +81,7 @@ public class SettingsViewModel : NavigatableViewModel
         EditUserTorrentDirectory = ReactiveCommand.Create(async () =>
         {
             var folder = await viewService.BrowseFolder();
-            if(string.IsNullOrEmpty(folder))
+            if (string.IsNullOrEmpty(folder))
             {
                 return;
             }

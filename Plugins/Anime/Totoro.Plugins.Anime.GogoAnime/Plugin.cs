@@ -27,12 +27,12 @@ public class Plugin : IPlugin<AnimeProvider>
         return new PluginOptions()
             .AddOption(x =>
             {
-               return x.WithName(nameof(Config.Url))
-                       .WithDisplayName("Url")
-                       .WithDescription("Url to home page")
-                       .WithValue(Config.Url)
-                       .WithGlyph("\uE71B")
-                       .ToPluginOption();
+                return x.WithName(nameof(Config.Url))
+                        .WithDisplayName("Url")
+                        .WithDescription("Url to home page")
+                        .WithValue(Config.Url)
+                        .WithGlyph("\uE71B")
+                        .ToPluginOption();
             });
     }
 

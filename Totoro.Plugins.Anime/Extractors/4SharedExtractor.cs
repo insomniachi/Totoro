@@ -11,7 +11,7 @@ public class FourSharedExtractor
         var doc = await url.GetHtmlDocumentAsync();
         var sourceNode = doc.QuerySelector("source");
 
-        if(sourceNode is null)
+        if (sourceNode is null)
         {
             return null;
         }

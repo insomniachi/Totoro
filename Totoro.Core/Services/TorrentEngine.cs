@@ -36,12 +36,12 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
     public async Task RemoveTorrent(string torrentName, bool removeFiles = false)
     {
-        if(_engine.Torrents.FirstOrDefault(x => x.Torrent.Name == torrentName) is not { } tm)
+        if (_engine.Torrents.FirstOrDefault(x => x.Torrent.Name == torrentName) is not { } tm)
         {
             return;
         }
 
-        if(tm.State == TorrentState.Downloading)
+        if (tm.State == TorrentState.Downloading)
         {
             await tm.StopAsync();
         }
@@ -52,7 +52,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
     public void MarkForDeletion(InfoHash infoHash)
     {
-        if(!_settings.AutoRemoveWatchedTorrents)
+        if (!_settings.AutoRemoveWatchedTorrents)
         {
             return;
         }
@@ -75,7 +75,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
 
             foreach (var item in _engine.Torrents)
             {
-                if(_settings.AutoRemoveWatchedTorrents && _torrentDeleteRequests.Contains(item.InfoHash))
+                if (_settings.AutoRemoveWatchedTorrents && _torrentDeleteRequests.Contains(item.InfoHash))
                 {
                     await RemoveTorrent(item.Torrent.Name, true);
                     torrentsRemoved = true;
@@ -87,13 +87,13 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 }
             }
 
-            if(torrentsRemoved)
+            if (torrentsRemoved)
             {
                 _torrentDeleteRequests.Clear();
                 _localSettingsService.SaveSetting("TorrentDeleteRequests", _torrentDeleteRequests.Select(x => x.ToHex()));
             }
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             this.Log().Error(ex);
         }
@@ -120,7 +120,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 SubscribeEvents(torrentManager);
             }
 
-            if(!torrentManager.Complete)
+            if (!torrentManager.Complete)
             {
                 await torrentManager.StartAsync();
             }
@@ -130,7 +130,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 await torrentManager.WaitForMetadataAsync();
             }
 
-            if(isNew)
+            if (isNew)
             {
                 _torrentAdded.OnNext(torrentManager);
             }

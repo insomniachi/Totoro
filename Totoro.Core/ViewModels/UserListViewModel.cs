@@ -17,7 +17,7 @@ public partial class AnimeCollectionFilter : ReactiveObject
 
     public bool IsVisible(AnimeModel model)
     {
-        if(model.Tracking is null)
+        if (model.Tracking is null)
         {
             return false;
         }
@@ -241,7 +241,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     private static IComparer<AnimeModel> GetSortComparer(DataGridSort sort)
     {
-        if(sort is null)
+        if (sort is null)
         {
             return null;
         }

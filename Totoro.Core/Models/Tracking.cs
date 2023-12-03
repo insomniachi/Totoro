@@ -1,6 +1,4 @@
-﻿using MalApi;
-
-namespace Totoro.Core.Models;
+﻿namespace Totoro.Core.Models;
 
 public record Tracking
 {
@@ -23,7 +21,7 @@ public record Tracking
             tracking.Status = AnimeStatus.Completed;
             tracking.FinishDate = DateTime.Today;
         }
-        else if(tracking.WatchedEpisodes == 1)
+        else if (tracking.WatchedEpisodes == 1)
         {
             tracking.Status = AnimeStatus.Watching;
             tracking.StartDate = DateTime.Today;

@@ -20,11 +20,11 @@ public class ProcessWatcher : IEnableLogger
     private readonly AutomationElement _desktop;
     private readonly UIA3AutomationEventHandler _automationEventHandler;
     private readonly object _lock = new object();
-    
+
     public ProcessWatcher()
     {
         _desktop = _automation.GetDesktop();
-        _automationEventHandler = new(_desktop.FrameworkAutomationElement,_automation.EventLibrary.Window.WindowOpenedEvent, OnWindowOpened);
+        _automationEventHandler = new(_desktop.FrameworkAutomationElement, _automation.EventLibrary.Window.WindowOpenedEvent, OnWindowOpened);
         DetectMediaProcess();
     }
 
@@ -56,13 +56,13 @@ public class ProcessWatcher : IEnableLogger
         var process = Process.GetProcessById(pid);
         var name = process.ProcessName;
 
-        if(process.MainWindowTitle == "Media Player") // win 11 media player
+        if (process.MainWindowTitle == "Media Player") // win 11 media player
         {
             name = "Microsoft.Media.Player";
             process = Process.GetProcessesByName("Microsoft.Media.Player").First();
         }
 
-        if(_processes.FirstOrDefault(x => x.Id == process.Id) is { })
+        if (_processes.FirstOrDefault(x => x.Id == process.Id) is { })
         {
             return;
         }
@@ -81,7 +81,7 @@ public class ProcessWatcher : IEnableLogger
 
     public void RemoveProcess(Process process)
     {
-        lock(_lock)
+        lock (_lock)
         {
             _processes.Remove(process);
         }

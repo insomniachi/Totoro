@@ -15,12 +15,12 @@ internal class IdMapper : IIdMapper
 
         var id = new AnimeId();
 
-        if(long.TryParse(jObject?["show"]?["malId"].ToString(), out long malId))
+        if (long.TryParse(jObject?["show"]?["malId"].ToString(), out long malId))
         {
             id.MyAnimeList = malId;
         }
 
-        if(long.TryParse(jObject?["show"]?["aniListId"].ToString(), out long anilistId))
+        if (long.TryParse(jObject?["show"]?["aniListId"].ToString(), out long anilistId))
         {
             id.AniList = anilistId;
         }

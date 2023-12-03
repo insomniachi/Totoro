@@ -9,7 +9,6 @@ using Totoro.Core;
 using Totoro.Core.ViewModels;
 using Totoro.Plugins;
 using Totoro.Plugins.MediaDetection.Contracts;
-using Totoro.Plugins.Torrents.Contracts;
 
 namespace Totoro.WinUI.Views.SettingsSections;
 
@@ -30,19 +29,19 @@ public sealed partial class ExternalMediaSection : Page, INotifyPropertyChanged
     public ICommand AddLibraryFolder { get; }
 
     private PluginInfo _selectedMediaPlayer;
-    public PluginInfo SelectedMediaPlayer 
+    public PluginInfo SelectedMediaPlayer
     {
         get => _selectedMediaPlayer;
         set
         {
-            if(_selectedMediaPlayer == value)
+            if (_selectedMediaPlayer == value)
             {
                 return;
             }
 
             _selectedMediaPlayer = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedMediaPlayer)));
-            if(value is not null)
+            if (value is not null)
             {
                 App.GetService<ILocalSettingsService>().SaveSetting(Settings.DefaultMediaPlayer, value.Name);
             }
@@ -60,8 +59,8 @@ public sealed partial class ExternalMediaSection : Page, INotifyPropertyChanged
         AddLibraryFolder = ReactiveCommand.Create(async () =>
         {
             var folder = await App.GetService<IViewService>().BrowseFolder();
-            
-            if(string.IsNullOrEmpty(folder))
+
+            if (string.IsNullOrEmpty(folder))
             {
                 return;
             }

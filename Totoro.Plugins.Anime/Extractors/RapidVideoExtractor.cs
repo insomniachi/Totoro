@@ -22,7 +22,7 @@ public static class RapidVideoExtractor
         var json = JsonNode.Parse(ajaxResponse);
 
         var encrypted = json!["encrypted"]!.GetValue<bool>();
-        if(encrypted)
+        if (encrypted)
         {
             var stream = new VideoStreamsForEpisode();
             var saltSecret = Encoding.UTF8.GetBytes(await SALT_SECRET_ENDPOINT.GetStringAsync());

@@ -43,7 +43,7 @@ public class RssFeed
             return Unit.Default;
         }
 
-        if(Options.IsEnabled == false)
+        if (Options.IsEnabled == false)
         {
             return Unit.Default;
         }

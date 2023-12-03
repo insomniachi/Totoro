@@ -23,7 +23,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
         var jar = Config.GetCookieJar();
         _ = await Config.Url.WithHeader(HeaderNames.Range, "bytes=0-0").WithCookies(jar).GetAsync();
         var token = HttpUtility.UrlDecode(jar.First(x => x.Name == "XSRF-TOKEN").Value);
-        
+
         var releaseData = await Config.Url.AppendPathSegment("/episode")
             .WithCookies(jar)
             .WithHeader("x-inertia", true)

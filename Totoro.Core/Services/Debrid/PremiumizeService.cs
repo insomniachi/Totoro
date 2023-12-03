@@ -94,7 +94,7 @@ public class PremiumizeService : IDebridService
             yield break;
         }
 
-        if(!magnetLinks.Any())
+        if (!magnetLinks.Any())
         {
             yield break;
         }
@@ -102,7 +102,7 @@ public class PremiumizeService : IDebridService
         using FormUrlEncodedContent content = new(magnetLinks.Select(x => new KeyValuePair<string, string>("items[]", x)));
         content.Headers.Clear();
         content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
-        var json =  await (await _httpClient.PostAsync(_api + $"/cache/check?apikey={_apiKey}", content)).Content.ReadAsStringAsync();
+        var json = await (await _httpClient.PostAsync(_api + $"/cache/check?apikey={_apiKey}", content)).Content.ReadAsStringAsync();
         var jObject = JsonNode.Parse(json);
 
         foreach (var item in jObject?["response"]?.AsArray())
@@ -176,7 +176,7 @@ public class PremiumizeService : IDebridService
         var json = await _api.AppendPathSegment("/account/info")
             .SetQueryParam("apikey", _apiKey)
             .GetStringAsync();
-;
+        ;
         var jObject = JsonNode.Parse(json);
         long premiumUntil = ((long?)jObject?["premium_until"]?.AsValue()) ?? 0;
         return premiumUntil > 0;

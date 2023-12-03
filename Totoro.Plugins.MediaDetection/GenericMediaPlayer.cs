@@ -15,11 +15,11 @@ public abstract class GenericMediaPlayer : INativeMediaPlayer
 
     public virtual string GetTitle()
     {
-        if(GetTitleFromWindow && _window is not null)
+        if (GetTitleFromWindow && _window is not null)
         {
             return _window.Title;
         }
-        else if(Process is not null)
+        else if (Process is not null)
         {
             return ParseFromWindowTitle(Process.MainWindowTitle);
         }

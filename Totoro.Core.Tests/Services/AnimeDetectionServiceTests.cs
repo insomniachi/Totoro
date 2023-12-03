@@ -44,7 +44,7 @@ public class AnimeDetectionServiceTests
         var connectivityService = new Mock<IConnectivityService>();
         connectivityService.Setup(x => x.IsConnected).Returns(true);
 
-        var sut = new AnimeDetectionService(Mock.Of<IViewService>(), 
+        var sut = new AnimeDetectionService(Mock.Of<IViewService>(),
                                             Mock.Of<IToastService>(),
                                             new AnimeServiceContext(settings.Object, listServies, connectivityService.Object));
 

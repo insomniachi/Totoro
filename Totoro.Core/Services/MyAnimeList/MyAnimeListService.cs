@@ -36,7 +36,7 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
                                         .Find();
 
             var model = ConvertModel(malModel);
-            
+
             _anilistService
                 .GetBannerImage(id)
                 .ToObservable()

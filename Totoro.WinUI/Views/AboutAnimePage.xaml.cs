@@ -1,6 +1,4 @@
-﻿using CommunityToolkit.WinUI.UI.Controls;
-using Flurl.Util;
-using Totoro.Core.ViewModels;
+﻿using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
 
@@ -35,7 +33,7 @@ public sealed partial class AboutAnimePage : AboutAnimePageBase
 
     private void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
-        if(ViewModel.Anime is null)
+        if (ViewModel.Anime is null)
         {
             return;
         }

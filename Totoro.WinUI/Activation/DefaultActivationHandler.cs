@@ -1,8 +1,5 @@
-﻿using System.Dynamic;
-using System.IO;
-using LibVLCSharp.Shared;
+﻿using System.IO;
 using Microsoft.UI.Xaml;
-using Totoro.Core.Services;
 using Totoro.Core.ViewModels;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
@@ -46,14 +43,14 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
                     processWatcher.Disable();
                 }
             });
-        
+
         processWatcher
             .MediaPlayerDetected
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(player =>
             {
                 var title = player.GetTitle();
-                _mediaDetected = !settings.OnlyDetectMediaInLibraryFolders || 
+                _mediaDetected = !settings.OnlyDetectMediaInLibraryFolders ||
                                     settings
                                     .LibraryFolders
                                     .Any(x => Directory.GetFiles(x, "*", SearchOption.AllDirectories)
@@ -78,7 +75,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
 
         processWatcher
             .MediaPlayerClosed
-            .Where(_  => _mediaDetected)
+            .Where(_ => _mediaDetected)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
@@ -109,7 +106,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
             _viewService.Information("Ops...", "There has been a breaking change, please wait till application downloads update");
         }
 
-        if(_settings.MediaDetectionEnabled)
+        if (_settings.MediaDetectionEnabled)
         {
             _processWatcher.Enable();
         }

@@ -24,7 +24,7 @@ public class Plugin : IPlugin<INativeMediaPlayer>
         .AddOption(x => x.WithNameAndValue(Config.FileName)
                          .ToPluginOption());
 
-    public void SetOptions(PluginOptions options) 
+    public void SetOptions(PluginOptions options)
     {
         Config.FileName = options.GetString(nameof(Config.FileName), Config.FileName);
     }

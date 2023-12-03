@@ -51,7 +51,7 @@ internal sealed class WindowPersistenceService : IDisposable
 
     private void Initialize()
     {
-        if(_persistence.WindowState is OverlappedPresenterState.Maximized)
+        if (_persistence.WindowState is OverlappedPresenterState.Maximized)
         {
             _window.Maximize();
             return;
@@ -62,18 +62,18 @@ internal sealed class WindowPersistenceService : IDisposable
 
     private void PositionChanged(object sender, PointInt32 e)
     {
-        if(_window.PresenterKind != AppWindowPresenterKind.Overlapped || _windowService.IsFullWindow)
+        if (_window.PresenterKind != AppWindowPresenterKind.Overlapped || _windowService.IsFullWindow)
         {
             return;
         }
 
-        _persistence.Position = new(e.X,e.Y);
+        _persistence.Position = new(e.X, e.Y);
     }
 
 
     private void SizeChanged(object sender, Microsoft.UI.Xaml.WindowSizeChangedEventArgs args)
     {
-        if(_window.Presenter is not OverlappedPresenter op || _windowService.IsFullWindow)
+        if (_window.Presenter is not OverlappedPresenter op || _windowService.IsFullWindow)
         {
             return;
         }

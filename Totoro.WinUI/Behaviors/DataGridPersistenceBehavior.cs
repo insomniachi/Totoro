@@ -3,8 +3,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.Xaml.Interactivity;
 using ReactiveMarbles.ObservableEvents;
 using SharpCompress;
-using System.Reflection;
-using System.Text;
 using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Behaviors;
@@ -12,7 +10,7 @@ namespace Totoro.WinUI.Behaviors;
 public class DataGridPersistenceBehavior : Behavior<DataGrid>
 {
     private readonly CompositeDisposable _disposables = new();
-    
+
     public static readonly DependencyProperty SettingsProperty =
         DependencyProperty.Register("Settings", typeof(DataGridSettings), typeof(DataGridPersistenceBehavior), new PropertyMetadata(null));
 
@@ -86,7 +84,7 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
 
     private void Row_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
     {
-        if(sender is not DataGridRow row)
+        if (sender is not DataGridRow row)
         {
             return;
         }
@@ -124,7 +122,7 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
 
         Settings.Sort = new DataGridSort(default, default)
         {
-            ColumnName = tag, 
+            ColumnName = tag,
             IsAscending = args.Column.SortDirection == DataGridSortDirection.Ascending
         };
 

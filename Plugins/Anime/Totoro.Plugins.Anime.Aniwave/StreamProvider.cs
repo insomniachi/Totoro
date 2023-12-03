@@ -73,13 +73,13 @@ internal partial class StreamProvider : IAnimeStreamProvider
         {
             var ids = item.Attributes["data-ids"].Value.Split(',');
             var id = isSub ? ids[0] : ids[1];
-            
+
             if (!int.TryParse(item.Attributes["data-num"].Value, out int epNum))
             {
                 continue;
             }
 
-            if(epNum < start || epNum > end)
+            if (epNum < start || epNum > end)
             {
                 continue;
             }
@@ -105,7 +105,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
                 var encodedUrl = jObject!["result"]!["url"]!.ToString();
                 var decoded = await Vrf.Decode(encodedUrl);
 
-                if(await ExtractStreams(name, decoded) is not VideoStreamsForEpisode stream)
+                if (await ExtractStreams(name, decoded) is not VideoStreamsForEpisode stream)
                 {
                     continue;
                 }

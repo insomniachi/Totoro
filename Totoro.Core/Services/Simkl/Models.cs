@@ -7,7 +7,7 @@ internal enum ItemType
 {
     [EnumMember(Value = "shows")]
     Shows,
-    
+
     [EnumMember(Value = "movies")]
     Movies,
 
@@ -169,7 +169,7 @@ internal class SimklMetaData
     public string Overview { get; set; }
 
     [JsonPropertyName("genres")]
-    public List<string> Genres { get;set; }
+    public List<string> Genres { get; set; }
 
     [JsonPropertyName("total_episodes")]
     public int TotalEpisodes { get; set; }

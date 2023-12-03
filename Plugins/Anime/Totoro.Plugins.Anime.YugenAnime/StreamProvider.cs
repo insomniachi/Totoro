@@ -97,7 +97,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
     private static string ToBase64String(string str) => Convert.ToBase64String(Encoding.UTF8.GetBytes(str));
     private static string GetStreamKey(string id, int ep, StreamType streamType)
     {
-        if(streamType == StreamType.EnglishSubbed)
+        if (streamType == StreamType.EnglishSubbed)
         {
             return ToBase64String($"{id}|{ep}");
         }

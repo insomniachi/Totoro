@@ -75,28 +75,28 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
         var title = parseResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
         var episode = parseResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
 
-        if(string.IsNullOrEmpty(title))
+        if (string.IsNullOrEmpty(title))
         {
             return;
         }
 
-        if(_watchingAnime.FirstOrDefault(x => x.Title.ToLower().Contains(title) || (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true)) is not { } anime)
+        if (_watchingAnime.FirstOrDefault(x => x.Title.ToLower().Contains(title) || (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true)) is not { } anime)
         {
             return;
         }
 
-        if(!int.TryParse(episode, out int ep))
+        if (!int.TryParse(episode, out int ep))
         {
             return;
         }
 
-        if(ep <= anime.Tracking.WatchedEpisodes)
+        if (ep <= anime.Tracking.WatchedEpisodes)
         {
             return;
         }
 
         this.Log().Info("New torrent available {0}, Episode {1}", title, episode);
-        
+
         var saveDirectory = Path.Combine(_settings.UserTorrentsDownloadDirectory, title);
 
         var torrentManager = item switch
@@ -112,7 +112,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
 
     private void TorrentManager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
     {
-        if(e.NewState != TorrentState.Seeding)
+        if (e.NewState != TorrentState.Seeding)
         {
             return;
         }

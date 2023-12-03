@@ -49,7 +49,7 @@ public class TrackingUpdater : MediaEventListener, ITrackingUpdater
 
     protected override void OnPositionChanged(TimeSpan position)
     {
-        lock(_lock)
+        lock (_lock)
         {
             _position = position;
             if (!IsEnabled || position < _updateAt || _isUpdated || _animeModel.Tracking?.WatchedEpisodes >= _currentEpisode)

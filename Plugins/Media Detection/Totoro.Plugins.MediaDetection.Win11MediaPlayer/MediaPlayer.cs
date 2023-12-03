@@ -21,7 +21,7 @@ internal partial class MediaPlayer : INativeMediaPlayer
 
     public string GetTitle()
     {
-        if(_mainWindow is null)
+        if (_mainWindow is null)
         {
             return string.Empty;
         }

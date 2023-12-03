@@ -24,7 +24,7 @@ internal class SimklTrackingService : ITrackingService
             {
                 Shows = new List<SimklMetaDataSlim>
                 {
-                    new() 
+                    new()
                     {
                         Ids = new SimklIds
                         {
@@ -69,10 +69,10 @@ internal class SimklTrackingService : ITrackingService
         {
             var episodes = new List<EpisodeSlim>();
 
-            if(tracking.WatchedEpisodes is >0)
+            if (tracking.WatchedEpisodes is > 0)
             {
                 var eps = await _simklClient.GetEpisodes(id);
-                if(eps.FirstOrDefault(x => x.EpisodeNumber == tracking.WatchedEpisodes) is { } epInfo)
+                if (eps.FirstOrDefault(x => x.EpisodeNumber == tracking.WatchedEpisodes) is { } epInfo)
                 {
                     episodes.Add(new EpisodeSlim
                     {
@@ -84,7 +84,7 @@ internal class SimklTrackingService : ITrackingService
                 }
             }
 
-            if(episodes.Count > 0 || tracking.Score is { })
+            if (episodes.Count > 0 || tracking.Score is { })
             {
                 await _simklClient.AddItems(new SimklMutateListBody
                 {
@@ -103,7 +103,7 @@ internal class SimklTrackingService : ITrackingService
                 });
             }
 
-            if(tracking.Status is { } status)
+            if (tracking.Status is { } status)
             {
                 await _simklClient.MoveItems(new SimklMutateListBody
                 {

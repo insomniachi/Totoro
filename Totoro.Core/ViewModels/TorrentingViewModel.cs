@@ -38,7 +38,7 @@ public class TorrentingViewModel : NavigatableViewModel
         _settings = settings;
 
         IsDebridAuthenticated = _debridServiceContext.IsAuthenticated;
-        
+
         var sort = this.WhenAnyValue(x => x.SortMode)
             .Select(sort => sort switch
             {
@@ -93,13 +93,13 @@ public class TorrentingViewModel : NavigatableViewModel
 
         Search = ReactiveCommand.Create(OnSearch);
 
-        if(IsDebridAuthenticated)
+        if (IsDebridAuthenticated)
         {
             Sections.Add(new PivotItemModel { Header = "Transfers" });
         }
 
         EngineTorrents = new(torrentEngine.TorrentManagers.Select(x => new TorrentManagerModel(torrentEngine, x)));
-        
+
         this.WhenAnyValue(x => x.PastedTorrent.Magnet)
             .Where(x => !string.IsNullOrEmpty(x))
             .Subscribe(_ => PastedTorrent.State = TorrentState.Unknown);

@@ -1,6 +1,5 @@
 ﻿using System.Web;
 using Flurl.Http;
-using Totoro.Core.Services.AniList;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;

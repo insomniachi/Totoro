@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.Core.Contracts;

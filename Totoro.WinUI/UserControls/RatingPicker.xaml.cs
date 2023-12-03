@@ -71,7 +71,7 @@ public sealed partial class RatingPicker : UserControl
 
     public MenuFlyout CreateFlyout(AnimeModel anime)
     {
-        if(anime is null)
+        if (anime is null)
         {
             return null;
         }

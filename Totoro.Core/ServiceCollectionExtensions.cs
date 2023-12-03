@@ -10,7 +10,6 @@ using Totoro.Core.Services.MyAnimeList;
 using Totoro.Core.Services.ShanaProject;
 using Totoro.Core.Services.Simkl;
 using Totoro.Core.Services.StreamResolvers;
-using Totoro.Core.Torrents;
 using Totoro.Core.ViewModels;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
@@ -127,7 +126,7 @@ namespace Totoro.Core
 #endif
             services.AddSingleton(typeof(IPluginOptionsStorage<>), typeof(PluginOptionStorage<>));
             services.AddSingleton<PluginOptionsStorage>();
-            
+
             services.AddSingleton<IPluginFactory<AnimeProvider>>(PluginFactory<AnimeProvider>.Instance);
             services.AddSingleton<IPluginFactory<MangaProvider>>(PluginFactory<MangaProvider>.Instance);
             services.AddSingleton<IPluginFactory<ITorrentTracker>>(PluginFactory<ITorrentTracker>.Instance);

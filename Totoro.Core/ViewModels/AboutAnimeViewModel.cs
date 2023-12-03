@@ -29,7 +29,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
     {
         ListType = settings.DefaultListService;
 
-        if(PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
+        if (PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
         {
             DefaultProviderType = $"({provider.DisplayName})";
         }
@@ -55,9 +55,9 @@ public class AboutAnimeViewModel : NavigatableViewModel
             .Select(animeSoundService.GetThemes)
             .ToPropertyEx(this, x => x.Sounds, scheduler: RxApp.MainThreadScheduler);
 
-        this.WhenAnyValue (x => x.Episodes, x => x.Anime)
+        this.WhenAnyValue(x => x.Episodes, x => x.Anime)
             .Where(x => x is not (_, null))
-            .Select(x => x.Item1 is { Count : > 0} || x.Item2.AiringStatus is not AiringStatus.NotYetAired)
+            .Select(x => x.Item1 is { Count: > 0 } || x.Item2.AiringStatus is not AiringStatus.NotYetAired)
             .ToPropertyEx(this, x => x.CanWatch, scheduler: RxApp.MainThreadScheduler);
 
         this.WhenAnyValue(x => x.Sounds)
@@ -79,11 +79,11 @@ public class AboutAnimeViewModel : NavigatableViewModel
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(async anime =>
             {
-                if(anime.Videos is not { Count : >0})
+                if (anime.Videos is not { Count: > 0 })
                 {
                     Pages.Remove(Pages.First(x => x.Header == "Previews"));
                 }
-                if(anime.Related is not { Length: > 0 })
+                if (anime.Related is not { Length: > 0 })
                 {
                     Pages.Remove(Pages.First(x => x.Header == "Related"));
                 }
@@ -95,15 +95,15 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 var animeId = await animeIdService.GetId(anime.Id);
                 var malId = anime.MalId ?? animeId?.MyAnimeList;
 
-                if(malId is null)
+                if (malId is null)
                 {
                     return;
                 }
-                
+
                 ObservableCollection<EpisodeModel> episodes = new(await myAnimeListService.GetEpisodes(malId.Value));
                 var lastEpisodeNumber = episodes.LastOrDefault()?.EpisodeNumber ?? 0;
                 var count = anime.AiredEpisodes - lastEpisodeNumber;
-                if(count > 0)
+                if (count > 0)
                 {
                     foreach (var ep in Enumerable.Range(lastEpisodeNumber + 1, count))
                     {
@@ -111,7 +111,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
                     }
                 }
 
-                if(episodes.Count == 0)
+                if (episodes.Count == 0)
                 {
                     Pages.Remove(Pages.First(x => x.Header == "Torrents"));
                 }
@@ -161,11 +161,11 @@ public class AboutAnimeViewModel : NavigatableViewModel
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if(parameters.ContainsKey("Id"))
+        if (parameters.ContainsKey("Id"))
         {
             Id = (long)parameters.GetValueOrDefault("Id", (long)0);
         }
-        else if(parameters.ContainsKey("Anime"))
+        else if (parameters.ContainsKey("Anime"))
         {
             Anime = (AnimeModel)parameters.GetValueOrDefault("Anime", null);
         }

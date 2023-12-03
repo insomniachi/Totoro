@@ -6,7 +6,7 @@ namespace Totoro.Core.Torrents.Rss
     {
         public static RssFeedItem Convert(string url, SyndicationItem item)
         {
-            if(url.StartsWith("https://subsplease.org/rss/"))
+            if (url.StartsWith("https://subsplease.org/rss/"))
             {
                 return ConvertSubsPlease(item);
             }

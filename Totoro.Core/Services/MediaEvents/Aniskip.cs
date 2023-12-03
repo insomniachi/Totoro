@@ -53,7 +53,7 @@ internal class Aniskip : MediaEventListener, IAniskip
                                          _duration is not null &&
                                          _animeModel is not null &&
                                          _animeModel.MalId is not null;
-    
+
     protected override void OnDurationChanged(TimeSpan duration)
     {
         _duration = duration;

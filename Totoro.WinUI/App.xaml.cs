@@ -106,7 +106,7 @@ public partial class App : Application, IEnableLogger
     private void App_Activated(AppActivationArguments e)
     {
         this.Log().Info($"Activation Kind : {e.Kind}");
-        if(e.Kind == ExtendedActivationKind.Protocol)
+        if (e.Kind == ExtendedActivationKind.Protocol)
         {
             this.Log().Info("Protocol Activation");
             IProtocolActivatedEventArgs protocolArgs = e.Data as IProtocolActivatedEventArgs;

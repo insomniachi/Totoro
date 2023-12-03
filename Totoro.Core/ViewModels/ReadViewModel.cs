@@ -41,8 +41,8 @@ public class ReadViewModel : NavigatableViewModel
     {
         var providerType = parameters.GetValueOrDefault("ProviderType", _settings.DefaultMangaProviderType) as string;
         _provider = _providerFactory.CreatePlugin(providerType);
-        
-        if(parameters.ContainsKey("SearchResult"))
+
+        if (parameters.ContainsKey("SearchResult"))
         {
             var result = (ICatalogItem)parameters["SearchResult"];
             Chapters = await _provider.ChapterProvider.GetChapters(result.Url).ToListAsync();

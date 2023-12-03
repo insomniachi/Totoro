@@ -42,7 +42,7 @@ public class TrackingUpdaterTests
 
     [Fact]
     public async Task UpdatesTracking_WhenWatchingFirstEpisode()
-    {        
+    {
         // arrange
         var trackingService = new Mock<ITrackingServiceContext>();
         var settings = new Mock<ISettings>();

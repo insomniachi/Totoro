@@ -73,7 +73,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
     {
         return EpisodeModelCollection.FromEpisodeCount(await GetNumberOfEpisodes(streamType));
     }
-    
+
     private async Task<List<VideoStreamsForEpisode>> GetStreams(int episode, StreamType streamType)
     {
         try

@@ -28,11 +28,11 @@ public class Plugin : IPlugin<AnimeProvider>
         return new PluginOptions()
             .AddOption(x =>
             {
-               return x.WithNameAndValue(Config.Url)
-                       .WithDisplayName("Url")
-                       .WithDescription("Url to home page")
-                       .WithGlyph(Glyphs.Url)
-                       .ToPluginOption();
+                return x.WithNameAndValue(Config.Url)
+                        .WithDisplayName("Url")
+                        .WithDescription("Url to home page")
+                        .WithGlyph(Glyphs.Url)
+                        .ToPluginOption();
             });
     }
 

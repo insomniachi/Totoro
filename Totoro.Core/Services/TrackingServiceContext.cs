@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Subjects;
-using Totoro.Core.Models;
 
 namespace Totoro.Core.Services;
 

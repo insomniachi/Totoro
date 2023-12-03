@@ -144,7 +144,7 @@ public class AniListTrackingService : ITrackingService
         return Observable.Create<bool>(async observer =>
         {
             var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
-                .WithMediaListEntry(new MediaListQueryBuilder().WithId()), 
+                .WithMediaListEntry(new MediaListQueryBuilder().WithId()),
                 id: (int)id,
                 type: MediaType.Anime).Build();
 
@@ -155,7 +155,7 @@ public class AniListTrackingService : ITrackingService
 
             var trackingId = response.Data?.Media?.MediaListEntry?.Id;
 
-            if(trackingId is null)
+            if (trackingId is null)
             {
                 observer.OnNext(false);
                 observer.OnCompleted();

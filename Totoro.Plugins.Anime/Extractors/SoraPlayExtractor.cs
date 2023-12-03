@@ -10,7 +10,7 @@ namespace Totoro.Plugins.Anime.Extractors;
 public static partial class SoraPlayExtractor
 {
     [GeneratedRegex(@"sources: (?<Sources>\[[^\]]+\])")]
-    private static partial Regex SourcesRegex(); 
+    private static partial Regex SourcesRegex();
 
     public static async Task<VideoStreamsForEpisode?> Extract(string url, string referer = "")
     {

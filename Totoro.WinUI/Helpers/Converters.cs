@@ -1,10 +1,7 @@
 ﻿using System.ComponentModel;
-using System.Data;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks.Dataflow;
-using Humanizer;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,7 +17,6 @@ using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Contracts;
 using Totoro.WinUI.Services;
-using Windows.Gaming.Input;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -102,7 +98,7 @@ public static partial class Converters
 
     public static MenuFlyout AnimeToFlyout(AnimeModel anime)
     {
-        if(anime is null)
+        if (anime is null)
         {
             return null;
         }
@@ -135,7 +131,7 @@ public static partial class Converters
         var watchExternalFlyoutItem = new MenuFlyoutSubItem
         {
             Text = @"Watch External",
-            Icon = new FontIcon{Glyph = "\uEC15"}
+            Icon = new FontIcon { Glyph = "\uEC15" }
         };
         foreach (var item in PluginFactory<AnimeProvider>.Instance.Plugins)
         {
@@ -164,13 +160,13 @@ public static partial class Converters
             });
         }
         flyout.Items.Add(torrentFlyoutItem);
-        
+
         flyout.Items.Add(new MenuFlyoutItem
         {
             Text = @"Set Alternate Name",
             Command = App.Commands.SetName,
             CommandParameter = anime.Id,
-            Icon = new FontIcon(){ Glyph = "\uE8AC" }
+            Icon = new FontIcon() { Glyph = "\uE8AC" }
         });
         flyout.Items.Add(new MenuFlyoutItem
         {
@@ -185,7 +181,7 @@ public static partial class Converters
 
     public static MenuFlyout GetProvidersFlyout(AnimeModel anime)
     {
-        if(anime is null)
+        if (anime is null)
         {
             return null;
         }
@@ -214,11 +210,11 @@ public static partial class Converters
         {
             sb.Append($"{week}w ");
         }
-        if(days > 0)
+        if (days > 0)
         {
             sb.Append($"{days}d ");
         }
-        if(ts.Hours > 0)
+        if (ts.Hours > 0)
         {
             sb.Append($"{ts.Hours.ToString().PadLeft(2, '0')}h ");
         }
@@ -226,7 +222,7 @@ public static partial class Converters
         {
             sb.Append($"{ts.Minutes.ToString().PadLeft(2, '0')}m ");
         }
-        if(ts.Seconds > 0)
+        if (ts.Seconds > 0)
         {
             sb.Append($"{ts.Seconds.ToString().PadLeft(2, '0')}s ");
         }
@@ -236,7 +232,7 @@ public static partial class Converters
 
     public static ImageSource StreamToImage(Stream stream)
     {
-        if(stream is null)
+        if (stream is null)
         {
             return null;
         }

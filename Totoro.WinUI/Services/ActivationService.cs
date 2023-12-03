@@ -7,7 +7,6 @@ using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.WinUI.Activation;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
-using WinUIEx;
 
 namespace Totoro.WinUI.Services;
 
@@ -55,7 +54,7 @@ public class ActivationService : IActivationService, IEnableLogger
         await HandleActivationAsync(activationArgs);
 
         // Activate the MainWindow.
-        if(!_settings.StartupOptions.StartMinimizedToTray)
+        if (!_settings.StartupOptions.StartMinimizedToTray)
         {
             App.MainWindow.Activate();
         }

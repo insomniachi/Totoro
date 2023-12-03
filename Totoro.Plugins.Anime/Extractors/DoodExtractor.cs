@@ -1,6 +1,4 @@
-﻿using Flurl;
-using Flurl.Http;
-using Totoro.Plugins.Anime.Models;
+﻿using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Plugins.Anime.Extractors;
 

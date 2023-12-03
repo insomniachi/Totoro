@@ -19,7 +19,7 @@ internal class DiscoverViewModelBuilder
     {
         return new DiscoverViewModel(_providerFactoryMock.Object,
                                      _settingsMock.Object,
-                                     _navigationServiceMock.Object, 
+                                     _navigationServiceMock.Object,
                                      _connectivityServiceMock.Object);
     }
 

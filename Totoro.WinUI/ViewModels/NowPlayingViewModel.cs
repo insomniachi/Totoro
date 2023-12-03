@@ -46,7 +46,7 @@ public class NowPlayingViewModel : NavigatableViewModel
                 Episode = string.Empty;
                 EpisodeInt = 0;
             });
-        
+
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .Subscribe(anime =>
@@ -81,7 +81,7 @@ public class NowPlayingViewModel : NavigatableViewModel
     [Reactive] public AnimeModel Anime { get; set; }
     [Reactive] public string Episode { get; set; }
     [Reactive] public bool IsVisible { get; set; }
-    [Reactive] public ObservableCollection<KeyValuePair<string,string>> Info { get; set; }
+    [Reactive] public ObservableCollection<KeyValuePair<string, string>> Info { get; set; }
     [Reactive] public bool IsPositionVisible { get; set; }
     [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     public int EpisodeInt { get; set; }
@@ -92,7 +92,7 @@ public class NowPlayingViewModel : NavigatableViewModel
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        if(parameters.ContainsKey("Player"))
+        if (parameters.ContainsKey("Player"))
         {
             IsVisible = true;
             MediaPlayer = (INativeMediaPlayer)parameters["Player"];
@@ -121,7 +121,7 @@ public class NowPlayingViewModel : NavigatableViewModel
     {
         IsPositionVisible = player is IHavePosition;
 
-        if(player is IHavePosition ihp)
+        if (player is IHavePosition ihp)
         {
             _trackingUpdater.SetMediaPlayer(ihp);
             _discordRichPresenseUpdater.SetMediaPlayer(ihp);
@@ -139,7 +139,7 @@ public class NowPlayingViewModel : NavigatableViewModel
         var parsedResults = AnitomySharp.AnitomySharp.Parse(fileName);
         var title = parsedResults.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
 
-        if(string.IsNullOrEmpty(title))
+        if (string.IsNullOrEmpty(title))
         {
             return;
         }
@@ -154,7 +154,7 @@ public class NowPlayingViewModel : NavigatableViewModel
 
         var id = await _animeDetectionService.DetectFromFileName(title, true);
 
-        if(id is not { } animeId)
+        if (id is not { } animeId)
         {
             return;
         }

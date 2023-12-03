@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Totoro.Plugins.Anime.AnimeSaturn;
+﻿namespace Totoro.Plugins.Anime.AnimeSaturn;
 
 internal class Config
 {

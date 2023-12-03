@@ -1,5 +1,5 @@
-﻿using ReactiveUI.Fody.Helpers;
-using ReactiveUI;
+﻿using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
 namespace Totoro.Plugins.Torrents.Models;
 

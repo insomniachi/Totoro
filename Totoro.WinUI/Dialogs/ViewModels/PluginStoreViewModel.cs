@@ -50,7 +50,7 @@ public class PluginStoreViewModel : DialogViewModel
 
     public async Task DownloadPlugin(string fileName)
     {
-        if(GetPluginFactory(_type) is not { } factory)
+        if (GetPluginFactory(_type) is not { } factory)
         {
             return;
         }

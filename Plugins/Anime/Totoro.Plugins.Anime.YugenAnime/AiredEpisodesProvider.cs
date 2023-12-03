@@ -32,7 +32,7 @@ internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
         {
             var title = item.QuerySelector(".ep-origin-name").InnerText.Trim();
             var path = item.QuerySelector(".ep-details").Attributes["href"].Value;
-            var url =  Url.Combine(Config.Url, path);
+            var url = Url.Combine(Config.Url, path);
             var img = item.QuerySelector("img").Attributes["data-src"].Value;
             var time = item.QuerySelector("time").Attributes["datetime"].Value;
             var epString = EpisodeRegex().Match(url).Groups[1].Value;

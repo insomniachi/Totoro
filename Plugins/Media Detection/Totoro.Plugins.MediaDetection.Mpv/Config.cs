@@ -8,4 +8,4 @@ public class MpcConfig
 public class MpvConfig
 {
     public static string FileName { get; set; } = @"";
-}    
+}

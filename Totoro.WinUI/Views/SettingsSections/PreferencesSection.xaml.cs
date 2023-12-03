@@ -45,7 +45,7 @@ public sealed partial class PreferencesSection : Page
             .ObservableForProperty(x => x.RunOnStartup, x => x)
             .Subscribe(value =>
             {
-                if(value)
+                if (value)
                 {
                     Task.Run(AddToStartup);
                 }
@@ -75,7 +75,7 @@ public sealed partial class PreferencesSection : Page
         var startupApps = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Microsoft\Windows\Start Menu\Programs\Startup");
         var shortcut = Path.Combine(startupApps, "Totoro.lnk");
 
-        if(File.Exists(shortcut))
+        if (File.Exists(shortcut))
         {
             File.Delete(shortcut);
         }

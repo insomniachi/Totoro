@@ -703,8 +703,8 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         QualitiesButton.Flyout = _qualitiesFlyout;
 
         var skipTime = App.GetService<ISettings>().SmallSkipAmount;
-        Initialize("SmallSkipForward", "", (_,_) => MediaPlayer.Time += skipTime * 1000);
-        Initialize("SmallSkipBackward", "", (_,_) => MediaPlayer.Time -= skipTime * 1000);
+        Initialize("SmallSkipForward", "", (_, _) => MediaPlayer.Time += skipTime * 1000);
+        Initialize("SmallSkipBackward", "", (_, _) => MediaPlayer.Time -= skipTime * 1000);
 
         UpdateVolumeSlider();
         UpdateTime();

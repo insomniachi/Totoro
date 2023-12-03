@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Navigation;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
-using Totoro.WinUI.Services;
 
 namespace Totoro.WinUI.ViewModels;
 
@@ -33,7 +32,7 @@ public partial class ShellViewModel : ReactiveObject
         NavigationViewService = navigationViewService;
         _nowPlayingViewModel = nowPlayingViewModel;
         IsAuthenticated = trackingService.IsAuthenticated;
-        
+
         trackingService
             .Authenticated
             .Subscribe(_ => IsAuthenticated = trackingService.IsAuthenticated);

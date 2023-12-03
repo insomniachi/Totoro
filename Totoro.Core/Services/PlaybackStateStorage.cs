@@ -48,7 +48,7 @@ public class PlaybackStateStorage : IResumePlaybackService, IEnableLogger
         }
 
         this.Log().Info("Reset time for Id:{0} Ep:{1}", id, episode);
-        
+
         _recents[id].Remove(episode);
 
         if (_recents[id].Count == 0)

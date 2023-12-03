@@ -28,9 +28,9 @@ public sealed partial class VlcMediaPlayerElement : UserControl
     public static readonly DependencyProperty TransportControlsProperty =
         DependencyProperty.Register("TransportControls", typeof(VlcMediaTransportControls), typeof(VlcMediaPlayerElement), new PropertyMetadata(null));
 
-    
+
     private LibVLCMediaPlayerWrapper _mediaPlayer;
-    internal LibVLCMediaPlayerWrapper MediaPlayer 
+    internal LibVLCMediaPlayerWrapper MediaPlayer
     {
         get => _mediaPlayer;
         set
@@ -51,7 +51,7 @@ public sealed partial class VlcMediaPlayerElement : UserControl
         _libVlc = new LibVLC(e.SwapChainOptions);
         _player = new MediaPlayer(_libVlc);
 
-        if(MediaPlayer is null)
+        if (MediaPlayer is null)
         {
             return;
         }

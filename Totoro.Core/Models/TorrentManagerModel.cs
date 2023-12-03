@@ -38,7 +38,7 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
 
     public TorrentManager Manager { get; }
     public string Name => Manager.Torrent.Name;
-    
+
     public ICommand Remove { get; }
     public ICommand Delete { get; }
     public ICommand Resume { get; }
@@ -52,7 +52,7 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
 
     private void UpdateCommandStates(TorrentState state)
     {
-        if(state == TorrentState.Downloading)
+        if (state == TorrentState.Downloading)
         {
             Monitor();
         }
@@ -80,7 +80,7 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
                 Progress = Manager.Progress.ToString("N2");
                 Speed = $"({Manager.Monitor.DownloadSpeed.Bytes().Humanize()}/s)";
                 Complete = Manager.Complete;
-            }); 
+            });
     }
 
     public void Dispose()

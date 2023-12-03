@@ -102,7 +102,7 @@ public class ContentDialogService : IContentDialogService
 
             return result;
         }, RxApp.MainThreadScheduler);
-        
+
         return await result;
     }
 

@@ -109,7 +109,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     private void SetSubtitles(MediaSource source, AdditionalVideoStreamInformation additionalVideoStreamInformation)
     {
-        if(!additionalVideoStreamInformation.Subtitles.Any())
+        if (!additionalVideoStreamInformation.Subtitles.Any())
         {
             return;
         }
@@ -135,7 +135,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
         SetSubtitles(source, stream.AdditionalInformation);
         var playbackItem = new MediaPlaybackItem(source);
 
-        if(playbackItem.TimedMetadataTracks.Count > 0)
+        if (playbackItem.TimedMetadataTracks.Count > 0)
         {
             ShowCCSelectionButton();
         }
@@ -151,7 +151,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     public async ValueTask AddSubtitle(string file)
     {
-        if(_player.Source is not MediaPlaybackItem playbackItem)
+        if (_player.Source is not MediaPlaybackItem playbackItem)
         {
             return;
         }
@@ -172,7 +172,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
         {
             return;
         }
-        
+
         args.Tracks[0].Label = lang;
         lang = lang.ToLower();
 

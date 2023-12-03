@@ -17,7 +17,7 @@ public class Mpv : GenericMediaPlayer, ICanLaunch
 
     public override string GetTitle()
     {
-        if(_hasCustomTitle)
+        if (_hasCustomTitle)
         {
             return _customTitle!;
         }
@@ -45,13 +45,13 @@ public sealed class MpcHc : INativeMediaPlayer, ICanLaunch
 
     public string GetTitle()
     {
-        if(_hasCustomTitle)
+        if (_hasCustomTitle)
         {
             return _customTitle!;
         }
 
         var title = _window!.Title;
-        while(title == "Media Player Classic Home Cinema")
+        while (title == "Media Player Classic Home Cinema")
         {
             title = _window!.Title;
             Thread.Sleep(100);

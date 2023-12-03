@@ -1,6 +1,4 @@
-﻿using Flurl;
-
-namespace Totoro.Core.Services.Simkl
+﻿namespace Totoro.Core.Services.Simkl
 {
     internal class SimklToAnimeModelConverter
     {
@@ -14,7 +12,7 @@ namespace Totoro.Core.Services.Simkl
                 MalId = GetMalId(item.Show.Id.MyAnimeList),
                 TotalEpisodes = item.TotalEpisodesCount,
                 Videos = ConvertTrailers(item.Show.Trailers),
-                AlternativeTitles = new [] { item.Show.EnglishTitle },
+                AlternativeTitles = new[] { item.Show.EnglishTitle },
                 Season = ConvertSeason(item.Show.Season),
                 MeanScore = item.Show.Ratings?.Simkl.Rating,
                 Genres = item.Show.Genres ?? Enumerable.Empty<string>(),
@@ -73,11 +71,11 @@ namespace Totoro.Core.Services.Simkl
 
         private static AiringStatus ConvertStatus(SimklItemModel item)
         {
-            if(item.NotAiredEpisodesCount > 0)
+            if (item.NotAiredEpisodesCount > 0)
             {
                 return AiringStatus.CurrentlyAiring;
             }
-            else if(item.NotAiredEpisodesCount == 0)
+            else if (item.NotAiredEpisodesCount == 0)
             {
                 return AiringStatus.FinishedAiring;
             }
@@ -87,7 +85,7 @@ namespace Totoro.Core.Services.Simkl
 
         private static AnimeModel[] ConvertSimple(List<SimklMetaData> relations)
         {
-            if(relations is null)
+            if (relations is null)
             {
                 return Array.Empty<AnimeModel>();
             }
@@ -103,21 +101,21 @@ namespace Totoro.Core.Services.Simkl
 
         private static List<Video> ConvertTrailers(List<Trailer> trailers)
         {
-            if(trailers is null)
+            if (trailers is null)
             {
                 return new List<Video>();
             }
 
-            return trailers.Select((x,i) => new Video
+            return trailers.Select((x, i) => new Video
             {
                 Url = $"https://www.youtube.com/watch?v={x.Youtube}",
-                Title = $"Trailer {i+1}"
+                Title = $"Trailer {i + 1}"
             }).ToList();
         }
 
         private static Season ConvertSeason(string season)
         {
-            if(string.IsNullOrEmpty(season))
+            if (string.IsNullOrEmpty(season))
             {
                 return null;
             }

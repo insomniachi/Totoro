@@ -34,7 +34,7 @@ public class StreamProviderTests
     [InlineData(Hyouka, 22)]
     [InlineData(OshiNoKo, 10)]
     public async Task GetNumberOfEpisodes(string key, int expected)
-    {        
+    {
         // arrange
         var url = _urlMap[key];
         var sut = new StreamProvider();

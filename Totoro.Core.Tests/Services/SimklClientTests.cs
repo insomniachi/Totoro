@@ -1,7 +1,4 @@
-﻿using Refit;
-using Totoro.Core.Services.Simkl;
-
-namespace Totoro.Core.Tests.Services;
+﻿namespace Totoro.Core.Tests.Services;
 
 //public class SimklClientTests
 //{

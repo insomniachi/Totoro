@@ -33,7 +33,7 @@ public class PluginOptionBuilder
     }
 
     public PluginOptionBuilder WithDisplayName(string displayName)
-    { 
+    {
         _displayName = displayName;
         return this;
     }
@@ -83,7 +83,7 @@ public class PluginOptionBuilder
     }
 
     public PluginOptionBuilder WithAllowedValues<T>()
-        where T: struct, Enum
+        where T : struct, Enum
     {
         _allowedValues = Enum.GetNames<T>();
         return this;

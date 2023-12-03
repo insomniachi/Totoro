@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using Flurl;
 using Flurl.Http;
 using FlurlGraphQL.Querying;
-using Microsoft.VisualBasic;
 using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
@@ -101,7 +100,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             yield break;
         }
 
-        if(episodeDetails.ToObject<EpisodeDetails>() is not { } episodesDetail)
+        if (episodeDetails.ToObject<EpisodeDetails>() is not { } episodesDetail)
         {
             yield break;
         }
@@ -122,18 +121,18 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
                     break;
                 }
             }
-            else 
+            else
             {
                 continue;
             }
 
             var streamTypes = new List<StreamType>() { StreamType.EnglishSubbed };
 
-            if(episodesDetail.dub?.Contains(ep) == true)
+            if (episodesDetail.dub?.Contains(ep) == true)
             {
                 streamTypes.Add(StreamType.EnglishDubbed);
             }
-            if(episodesDetail.raw?.Contains(ep) == true)
+            if (episodesDetail.raw?.Contains(ep) == true)
             {
                 streamTypes.Add(StreamType.Raw);
             }
@@ -183,12 +182,12 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
 
     private async Task<VideoStreamsForEpisode?> Extract(string url)
     {
-        if(string.IsNullOrEmpty(url))
+        if (string.IsNullOrEmpty(url))
         {
             return null;
         }
 
-        if(!url.StartsWith("https"))
+        if (!url.StartsWith("https"))
         {
             url = $"https://{url}";
         }
@@ -197,7 +196,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         var jObject = JsonNode.Parse(json);
         var links = jObject!["links"]!.Deserialize<List<StreamLink>>()!;
 
-        if(string.IsNullOrEmpty(links[0].link))
+        if (string.IsNullOrEmpty(links[0].link))
         {
             var result = new VideoStreamsForEpisode();
             var resolutionStr = GetResolution(links[0]);
@@ -236,11 +235,11 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
 
     private static string GetResolution(StreamLink link)
     {
-        if(link.resolution > 0)
+        if (link.resolution > 0)
         {
             return link.resolution.ToString();
         }
-        if(!string.IsNullOrEmpty(link.resolutionStr))
+        if (!string.IsNullOrEmpty(link.resolutionStr))
         {
             return link.resolutionStr;
         }
@@ -293,8 +292,8 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
     private static VideoStreamsForEpisode? WixMpUnpack(Uri uri)
     {
         var match = WixMpUrlRegex().Match(uri.AbsoluteUri);
-        
-        if(!match.Success)
+
+        if (!match.Success)
         {
             return null;
         }

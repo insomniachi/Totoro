@@ -21,7 +21,7 @@ public class NameService : INameService
 
     public void AddOrUpdate(long id, string name)
     {
-        if(!_maps.TryGetValue(_settings.DefaultListService, out _))
+        if (!_maps.TryGetValue(_settings.DefaultListService, out _))
         {
             _maps[_settings.DefaultListService] = new();
         }

@@ -13,7 +13,7 @@ public static partial class VidStreamExtractor
 
     public static async Task<VideoStreamsForEpisode?> Extract(string url)
     {
-        if(url.Contains("srcd"))
+        if (url.Contains("srcd"))
         {
             var text = await url.GetStringAsync();
             var streamUrl = FileRegex().Match(text).Groups[1].Value;
@@ -26,9 +26,9 @@ public static partial class VidStreamExtractor
                     {
                         Url = streamUrl,
                         Resolution = "default",
-                        Headers = 
-                        { 
-                            { HeaderNames.Referer, url } 
+                        Headers =
+                        {
+                            { HeaderNames.Referer, url }
                         }
                     }
                 },
@@ -39,7 +39,7 @@ public static partial class VidStreamExtractor
         var doc = await url.GetHtmlDocumentAsync();
         var iframeUrl = doc.QuerySelector("iframe").Attributes["src"].Value;
 
-        if(iframeUrl.Contains("filemoon"))
+        if (iframeUrl.Contains("filemoon"))
         {
 
         }

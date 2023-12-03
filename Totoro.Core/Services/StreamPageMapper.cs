@@ -26,14 +26,14 @@ namespace Totoro.Core.Services
             {
                 var instance = _providerFactory.CreatePlugin(provider);
 
-                if(instance is null || instance.IdMapper is null)
+                if (instance is null || instance.IdMapper is null)
                 {
                     return null;
                 }
 
                 var id = await instance.IdMapper.MapId(url);
 
-                if(id.MyAnimeList is null || id.AniList is null)
+                if (id.MyAnimeList is null || id.AniList is null)
                 {
                     id = await GetFullId(id);
                 }

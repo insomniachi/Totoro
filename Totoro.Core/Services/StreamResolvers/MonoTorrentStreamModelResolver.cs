@@ -5,7 +5,7 @@ using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
-public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver, 
+public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
                                                      INotifyDownloadStatus,
                                                      ICompletionAware,
                                                      IAsyncDisposable,
@@ -53,7 +53,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         await _torrentEngine.SaveState();
     }
 
-    public IObservable<(double,ConnectionMonitor)> Status => _downloadStatus;
+    public IObservable<(double, ConnectionMonitor)> Status => _downloadStatus;
 
     public async Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
@@ -61,7 +61,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
             ? await _torrentEngine.DownloadFromUrl(_torrentUrl, _saveDirectory)
             : await _torrentEngine.Download(_torrent, _saveDirectory);
 
-        if(_torrentManager is null)
+        if (_torrentManager is null)
         {
             return EpisodeModelCollection.Empty;
         }
@@ -125,18 +125,18 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
 
     public void OnCompleted()
     {
-        if(_torrentManager is null)
+        if (_torrentManager is null)
         {
             return;
         }
 
-        if(_torrentManager.Torrent.Files.Count > 1)
+        if (_torrentManager.Torrent.Files.Count > 1)
         {
             return;
         }
 
         // if torrent contains multiple episodes, then only mark for delete when the final episode is completed.
-        if(_lastResolvedEp < _episodeToTorrentFileMap.Keys.Where(x => int.TryParse(x, out _)).Select(int.Parse).Max())
+        if (_lastResolvedEp < _episodeToTorrentFileMap.Keys.Where(x => int.TryParse(x, out _)).Select(int.Parse).Max())
         {
             return;
         }

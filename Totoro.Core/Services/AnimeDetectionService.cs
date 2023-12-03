@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using AnitomySharp;
+﻿using AnitomySharp;
 using FuzzySharp;
 using Humanizer;
 using Splat;
-using Totoro.Core.Contracts;
 
 namespace Totoro.Core.Services;
 
@@ -26,14 +24,14 @@ internal class AnimeDetectionService : IAnimeDetectionService, IEnableLogger
     {
         var anitomyResult = AnitomySharp.AnitomySharp.Parse(fileName);
 
-        if(anitomyResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle) is not { } titleResult)
+        if (anitomyResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle) is not { } titleResult)
         {
             return null;
         }
 
         var title = titleResult.Value;
 
-        if(anitomyResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeSeason) is { } seasonResult)
+        if (anitomyResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeSeason) is { } seasonResult)
         {
             var season = int.Parse(seasonResult.Value);
             title += $" {season.Ordinalize()} Season";
@@ -81,7 +79,7 @@ internal class AnimeDetectionService : IAnimeDetectionService, IEnableLogger
                 return hundredPercent[0].Item1.Id;
             }
 
-            if(useNotification)
+            if (useNotification)
             {
                 _toastService.PromptAnimeSelection(candidates, filtered.FirstOrDefault().Item1 ?? candidates.FirstOrDefault());
                 return null;

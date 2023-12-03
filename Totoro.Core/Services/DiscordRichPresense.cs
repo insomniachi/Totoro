@@ -33,7 +33,7 @@ public class DiscordRichPresense : IDiscordRichPresense
     }
     public void Clear()
     {
-        if(!IsInitialized)
+        if (!IsInitialized)
         {
             return;
         }
@@ -57,7 +57,7 @@ public class DiscordRichPresense : IDiscordRichPresense
             },
         };
 
-        if(!string.IsNullOrEmpty(url))
+        if (!string.IsNullOrEmpty(url))
         {
             buttons.Add(new Button()
             {

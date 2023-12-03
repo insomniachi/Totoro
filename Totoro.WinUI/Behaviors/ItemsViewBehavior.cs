@@ -21,7 +21,7 @@ public class ItemsViewBehavior : Behavior<ItemsView>
     {
         var behavior = d as ItemsViewBehavior;
 
-        if(e.OldValue is { })
+        if (e.OldValue is { })
         {
             behavior._disposables.Dispose();
             behavior._disposables = new();
@@ -68,7 +68,7 @@ public class ItemsViewBehavior : Behavior<ItemsView>
         var layout = AssociatedObject.Layout as UniformGridLayout;
         layout.MaximumRowsOrColumns = count;
     }
-    
+
     private void UpdateHeight(double itemHeight)
     {
         var layout = AssociatedObject.Layout as UniformGridLayout;
@@ -98,7 +98,7 @@ public class ItemsViewBehavior : Behavior<ItemsView>
     {
         AssociatedObject.Loaded -= AssociatedObject_Loaded;
 
-        if(_disposables.IsDisposed)
+        if (_disposables.IsDisposed)
         {
             return;
         }

@@ -10,12 +10,12 @@ public class VideoStreamsForEpisode
         get => _episode;
         set
         {
-            if(value <= 0)
+            if (value <= 0)
             {
                 return;
             }
 
-            if(_episode == value)
+            if (_episode == value)
             {
                 return;
             }
@@ -30,18 +30,18 @@ public class VideoStreamsForEpisode
         get => _episodeString;
         set
         {
-            if(string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
                 return;
             }
 
-            if(_episodeString == value)
+            if (_episodeString == value)
             {
                 return;
             }
 
             _episodeString = value;
-            if(int.TryParse(value, out int epInt))
+            if (int.TryParse(value, out int epInt))
             {
                 _episode = epInt;
             }

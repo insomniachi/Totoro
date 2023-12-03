@@ -47,7 +47,7 @@ public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
         _discordRichPresense.UpdateState($"Episode {_currentEpisode}");
         if (_settings.ShowTimeRemainingOnDiscordRichPresense)
         {
-            _discordRichPresense.UpdateTimer(_duration - _currentTime); 
+            _discordRichPresense.UpdateTimer(_duration - _currentTime);
         }
         _discordRichPresense.UpdateImage(GetDiscordImageKey());
     }
@@ -90,7 +90,7 @@ public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
             return ihi.Image;
         }
 
-        if(_animeModel is not null)
+        if (_animeModel is not null)
         {
             return _animeModel.Image;
         }
@@ -123,7 +123,7 @@ public class DiscordRichPresenseUpdater : MediaEventListener, IDisposable
 
     private string GetUrl(long? id)
     {
-        if(id is null)
+        if (id is null)
         {
             return string.Empty;
         }

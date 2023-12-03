@@ -55,7 +55,7 @@ namespace Totoro.Plugins.Anime.AnimeSaturn
                     Image = image
                 };
             }
-                
+
         }
     }
 }
