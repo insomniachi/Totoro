@@ -7,6 +7,9 @@ internal interface ISimklClient
     [Get("/search/{type}?q={query}&extended=full&client_id={clientId}")]
     Task<List<SimklMetaData>> Search(string query, ItemType type, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
 
+    [Get("/search/id?{service}={id}&client_id={clientId}")]
+    Task<List<SimklMetaData>> Search(string service, long id, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
+
     [Get("/sync/all-items/{type}/{status}")]
     Task<SimklAllItems> GetAllItems(ItemType type, SimklWatchStatus? status);
 

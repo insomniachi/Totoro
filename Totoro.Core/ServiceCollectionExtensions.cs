@@ -51,6 +51,7 @@ namespace Totoro.Core
             services.AddTransient<IStreamPageMapper, StreamPageMapper>();
             services.AddTransient<IAnilistService, AnilistService>();
             services.AddTransient<IMyAnimeListService, MyAnimeListService>();
+            services.AddTransient<ISimklService, SimklService>();
             services.AddTransient<IVideoStreamResolverFactory, VideoStreamResolverFactory>();
             services.AddTransient<IAnimeDetectionService, AnimeDetectionService>();
 
@@ -63,6 +64,13 @@ namespace Totoro.Core
             services.AddHttpClient();
 
             return services;
+        }
+
+        public static IServiceCollection AddTracking(this IServiceCollection services)
+        {
+            return services.AddMyAnimeList()
+                           .AddAniList()
+                           .AddSimkl();
         }
 
         public static IServiceCollection AddAniList(this IServiceCollection services)

@@ -1,4 +1,5 @@
 ﻿using Splat;
+using Totoro.Core.Services.Simkl;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Contracts;
@@ -33,9 +34,10 @@ namespace Totoro.Core.Services
 
                 var id = await instance.IdMapper.MapId(url);
 
-                if (id.MyAnimeList is null || id.AniList is null)
+                if (id.MyAnimeList is null || id.AniList is null || _settings.DefaultListService is ListServiceType.Simkl)
                 {
-                    id = await GetFullId(id);
+                    var fullId = await GetFullId(id);
+                    return GetId(fullId);
                 }
 
                 return GetId(id);
@@ -59,7 +61,17 @@ namespace Totoro.Core.Services
             };
         }
 
-        private async Task<AnimeId> GetFullId(AnimeId id)
+        private long GetId(AnimeIdExtended animeId)
+        {
+            return _settings.DefaultListService switch
+            {
+                ListServiceType.AniList or ListServiceType.MyAnimeList or ListServiceType.Kitsu or ListServiceType.AniDb => GetId((AnimeId)animeId),
+                ListServiceType.Simkl => animeId.Simkl ?? throw new ArgumentException("Simkl id not found"),
+                _ => throw new NotSupportedException()
+            };
+        }
+
+        private async Task<AnimeIdExtended> GetFullId(AnimeId id)
         {
             (ListServiceType type, long listId) = id switch
             {

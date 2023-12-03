@@ -1,9 +1,9 @@
-﻿using Totoro.Plugins.Anime.Models;
+﻿using Totoro.Core.Services.Simkl;
 
 namespace Totoro.Core.Contracts;
 
 public interface IAnimeIdService
 {
-    Task<AnimeId> GetId(ListServiceType serviceType, long id);
-    Task<AnimeId> GetId(long id);
+    Task<AnimeIdExtended> GetId(ListServiceType serviceType, long id);
+    Task<AnimeIdExtended> GetId(long id);
 }

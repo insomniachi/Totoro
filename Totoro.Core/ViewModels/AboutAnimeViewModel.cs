@@ -92,8 +92,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
                     Pages.Remove(Pages.First(x => x.Header == "Recommended"));
                 }
 
-                var animeId = await animeIdService.GetId(anime.Id);
-                var malId = anime.MalId ?? animeId?.MyAnimeList;
+                var malId = anime.MalId ?? (await animeIdService.GetId(anime.Id)).MyAnimeList;
 
                 if (malId is null)
                 {

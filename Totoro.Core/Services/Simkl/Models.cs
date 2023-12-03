@@ -241,4 +241,7 @@ internal class SimklIds
 
     [JsonPropertyName("anidb")]
     public string AniDb { get; set; }
+
+    [JsonPropertyName("livechart")]
+    public string LiveChart { get; set; }
 }

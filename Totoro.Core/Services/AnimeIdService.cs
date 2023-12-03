@@ -1,37 +1,26 @@
-﻿using System.Diagnostics;
-using Flurl.Http;
-using Totoro.Plugins.Anime.Models;
+﻿using Totoro.Core.Services.Simkl;
 
 namespace Totoro.Core.Services;
 
 public class AnimeIdService : IAnimeIdService
 {
     private readonly ISettings _settings;
+    private readonly ISimklService _simklService;
 
-    public AnimeIdService(ISettings settings)
+    public AnimeIdService(ISettings settings,
+                          ISimklService simklService)
     {
         _settings = settings;
+        _simklService = simklService;
     }
 
-    public Task<AnimeId> GetId(ListServiceType serviceType, long id) => GetIdInternal(ConvertType(serviceType), id);
-    public Task<AnimeId> GetId(long id) => GetIdInternal(ConvertType(_settings.DefaultListService), id);
-
-    private static string ConvertType(ListServiceType? type)
+    public Task<AnimeIdExtended> GetId(ListServiceType serviceType, long id)
     {
-        return type switch
-        {
-            ListServiceType.AniDb => "anidb",
-            ListServiceType.AniList => "anilist",
-            ListServiceType.MyAnimeList => "myanimelist",
-            ListServiceType.Kitsu => "kitsu",
-            ListServiceType.Simkl => "myanimelist", // TODO fix
-            _ => throw new UnreachableException()
-        };
+        return _simklService.GetId(serviceType, id);
     }
 
-    private static async Task<AnimeId> GetIdInternal(string source, long id)
+    public Task<AnimeIdExtended> GetId(long id)
     {
-        var stream = await $"https://arm.haglund.dev/api/ids?source={source}&id={id}".GetStreamAsync();
-        return await JsonSerializer.DeserializeAsync(stream, AnimeIdSerializerContext.Default.AnimeId);
+        return _simklService.GetId(_settings.DefaultListService, id);
     }
 }

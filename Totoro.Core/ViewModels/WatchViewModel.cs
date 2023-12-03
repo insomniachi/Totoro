@@ -519,7 +519,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task TrySetAnime(string url, string title)
     {
-        if (_isCrunchyroll) // crunchyroll combines seasons to single series, had to update tracking 
+        if (_isCrunchyroll) // crunchyroll combines seasons to single series, hard to update tracking 
         {
             return;
         }
