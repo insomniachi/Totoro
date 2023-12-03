@@ -131,13 +131,20 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 RxApp.MainThreadScheduler.Schedule(async () =>
                 {
                     IsLoading = true;
-                    Torrents = await catalog.Search($"{Anime.Title} - {(episode.EpisodeNumber).ToString().PadLeft(2, '0')}").ToListAsync();
-                    var index = 0;
-                    await foreach (var item in debridServiceContext.Check(Torrents.Select(x => x.Magnet)))
+                    try
                     {
-                        Torrents[index++].State = item ? TorrentState.Cached : TorrentState.NotCached;
+                        Torrents = await catalog.Search($"{Anime.Title} - {(episode.EpisodeNumber).ToString().PadLeft(2, '0')}").ToListAsync();
+                        var index = 0;
+                        await foreach (var item in debridServiceContext.Check(Torrents.Select(x => x.Magnet)))
+                        {
+                            Torrents[index++].State = item ? TorrentState.Cached : TorrentState.NotCached;
+                        }
                     }
-                    IsLoading = false;
+                    catch { }
+                    finally
+                    {
+                        IsLoading = false;
+                    }
                 });
             });
     }
