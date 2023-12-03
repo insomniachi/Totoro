@@ -51,7 +51,8 @@ internal class Aniskip : MediaEventListener, IAniskip
                                          _position > _endTime &&
                                          _isDialogShown == false &&
                                          _duration is not null &&
-                                         _animeModel is not null;
+                                         _animeModel is not null &&
+                                         _animeModel.MalId is not null;
     
     protected override void OnDurationChanged(TimeSpan duration)
     {
@@ -104,7 +105,7 @@ internal class Aniskip : MediaEventListener, IAniskip
     public async Task SubmitTimeStamp()
     {
         _mediaPlayer.Pause();
-        await _viewService.SubmitTimeStamp(_animeModel.Id, _currentEpisode, _videoStreamModel, _timeStamps, _duration.Value.TotalSeconds, _staticSkipPosition - 8);
+        await _viewService.SubmitTimeStamp(_animeModel.MalId.Value, _currentEpisode, _videoStreamModel, _timeStamps, _duration.Value.TotalSeconds, _staticSkipPosition - 8);
         _mediaPlayer.Play();
     }
 }

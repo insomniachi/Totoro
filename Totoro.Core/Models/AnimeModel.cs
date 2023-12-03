@@ -12,6 +12,7 @@ public interface IAnimeModel
 public class AnimeModel : ReactiveObject, IAnimeModel
 {
     public long Id { get; set; }
+    public long? MalId { get; set; }
     public string Image { get; set; }
     public string Title { get; set; }
     [Reactive] public Tracking Tracking { get; set; }

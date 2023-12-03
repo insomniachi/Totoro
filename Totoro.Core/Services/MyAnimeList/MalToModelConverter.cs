@@ -10,6 +10,7 @@ public class MalToModelConverter
         var model = new AnimeModel
         {
             Id = malModel.Id,
+            MalId = malModel.Id,
             Title = malModel.Title,
             Image = malModel.MainPicture?.Large ?? string.Empty,
             Description = malModel.Synopsis,

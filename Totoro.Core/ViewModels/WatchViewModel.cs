@@ -36,7 +36,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private IEnumerable<EpisodeModel> _episodeMetadata;
     private int? _episodeRequest;
     private IVideoStreamModelResolver _videoStreamResolver;
-    private IAnimeModel _anime;
+    private AnimeModel _anime;
 
     public WatchViewModel(IPluginFactory<AnimeProvider> providerFactory,
                           IViewService viewService,
@@ -256,7 +256,7 @@ public partial class WatchViewModel : NavigatableViewModel
     [ObservableAsProperty] public bool HasMultipleSubStreams { get; }
 
     public AnimeProvider Provider { get; private set; }
-    public IAnimeModel Anime
+    public AnimeModel Anime
     {
         get => _anime;
         set => this.RaiseAndSetIfChanged(ref _anime, value);
@@ -275,7 +275,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .DurationChanged
             .Where(_ => Anime is not null)
             .Throttle(TimeSpan.FromSeconds(1))
-            .SelectMany(duration => _timestampsService.GetTimeStamps(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds))
+            .SelectMany(GetTimeStamps)
             .Where(timeStamp => timeStamp.Success)
             .Subscribe(timeStamps =>
             {
@@ -337,7 +337,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         if (parameters.ContainsKey("Anime"))
         {
-            Anime = parameters["Anime"] as IAnimeModel;
+            Anime = parameters["Anime"] as AnimeModel;
         }
         else if (parameters.ContainsKey("EpisodeInfo"))
         {
@@ -559,16 +559,6 @@ public partial class WatchViewModel : NavigatableViewModel
             }, RxApp.DefaultExceptionHandler.OnError);
     }
 
-    //private async Task<long?> TryGetId(string title)
-    //{
-    //    if (ProviderType == "kamy") // kamy combines seasons to single series, had to update tracking 
-    //    {
-    //        return 0;
-    //    }
-
-    //    return await _viewService.TryGetId(title);
-    //}
-
     private StreamType GetDefaultAudioStream()
     {
         if (ProviderType == "gogo-anime")
@@ -595,7 +585,7 @@ public partial class WatchViewModel : NavigatableViewModel
         return _playbackStateStorage.GetTime(Anime.Id, EpisodeModels.Current.EpisodeNumber);
     }
 
-    private void SetAnime(IAnimeModel anime)
+    private void SetAnime(AnimeModel anime)
     {
         foreach (var item in _mediaEventListeners)
         {
@@ -690,5 +680,12 @@ public partial class WatchViewModel : NavigatableViewModel
                 TotalDownloaded = x.Item2.DataBytesDownloaded.Bytes().Humanize();
                 DownloadProgress = x.Item1.ToString("N2");
             });
+    }
+
+    private Task<AniSkipResult> GetTimeStamps(TimeSpan duration)
+    {
+        return Anime.MalId is { } malId
+            ? _timestampsService.GetTimeStampsWithMalId(malId, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds)
+            : _timestampsService.GetTimeStampsWithMalId(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds);
     }
 }

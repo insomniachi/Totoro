@@ -9,12 +9,12 @@ namespace Totoro.WinUI.ViewModels;
 public class NowPlayingViewModel : NavigatableViewModel
 {
     private readonly IAnimeServiceContext _animeServiceContext;
+    private readonly ITimestampsService _timestampsService;
     private readonly IAnimeDetectionService _animeDetectionService;
     private readonly NativeMediaPlayerTrackingUpdater _trackingUpdater;
     private readonly NativeMediaPlayerDiscordRichPresenseUpdater _discordRichPresenseUpdater;
 
-    public NowPlayingViewModel(IViewService viewService,
-                               IAnimeServiceContext animeServiceContext,
+    public NowPlayingViewModel(IAnimeServiceContext animeServiceContext,
                                ITimestampsService timestampsService,
                                IToastService toastService,
                                IAnimeDetectionService animeDetectionService,
@@ -23,6 +23,7 @@ public class NowPlayingViewModel : NavigatableViewModel
                                NativeMediaPlayerDiscordRichPresenseUpdater discordRichPresenseUpdater)
     {
         _animeServiceContext = animeServiceContext;
+        _timestampsService = timestampsService;
         _animeDetectionService = animeDetectionService;
         _trackingUpdater = trackingUpdater;
         _discordRichPresenseUpdater = discordRichPresenseUpdater;
@@ -71,7 +72,7 @@ public class NowPlayingViewModel : NavigatableViewModel
 
         this.WhenAnyValue(x => x.Anime, x => x.Duration)
             .Where(x => x.Item2 > TimeSpan.Zero && EpisodeInt > 0 && x.Item1 is not null)
-            .SelectMany(x => timestampsService.GetTimeStamps(x.Item1.Id, EpisodeInt, x.Item2.TotalSeconds))
+            .SelectMany(x => GetTimeStamps(x.Item1, x.Item2))
             .Subscribe(trackingUpdater.SetTimeStamps, RxApp.DefaultExceptionHandler.OnError);
     }
 
@@ -159,5 +160,12 @@ public class NowPlayingViewModel : NavigatableViewModel
         }
 
         await SetAnime(animeId);
+    }
+
+    private Task<AniSkipResult> GetTimeStamps(AnimeModel anime, TimeSpan duration)
+    {
+        return anime.MalId is { } malId
+            ? _timestampsService.GetTimeStampsWithMalId(malId, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds)
+            : _timestampsService.GetTimeStampsWithMalId(anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds);
     }
 }

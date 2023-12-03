@@ -14,6 +14,7 @@ namespace Totoro.Core.Services.AniList
             {
                 Title = media.Title.Romaji ?? media.Title.English ?? string.Empty,
                 Id = media.Id ?? 0,
+                MalId = media.IdMal,
                 Image = media.CoverImage.Large,
                 TotalEpisodes = media.Episodes,
                 AiringStatus = ConvertStatus(media.Status),

@@ -4,14 +4,14 @@ namespace Totoro.Core.Services.MediaEvents;
 
 public abstract class MediaEventListener : IMediaEventListener
 {
-    protected IAnimeModel _animeModel;
+    protected AnimeModel _animeModel;
     protected IMediaPlayer _mediaPlayer;
     protected int _currentEpisode;
     protected ICatalogItem _searchResult;
     protected VideoStreamModel _videoStreamModel;
     protected AniSkipResult _timeStamps;
 
-    public void SetAnime(IAnimeModel anime)
+    public void SetAnime(AnimeModel anime)
     {
         _animeModel = anime;
         OnAnimeChanged();

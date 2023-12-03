@@ -1,5 +1,4 @@
 ﻿using System.Reactive.Concurrency;
-using Totoro.Core.Torrents;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;
@@ -94,12 +93,14 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 }
 
                 var animeId = await animeIdService.GetId(anime.Id);
-                if(animeId?.MyAnimeList is not long malId)
+                var malId = anime.MalId ?? animeId?.MyAnimeList;
+
+                if(malId is null)
                 {
                     return;
                 }
                 
-                ObservableCollection<EpisodeModel> episodes = new(await myAnimeListService.GetEpisodes(malId));
+                ObservableCollection<EpisodeModel> episodes = new(await myAnimeListService.GetEpisodes(malId.Value));
                 var lastEpisodeNumber = episodes.LastOrDefault()?.EpisodeNumber ?? 0;
                 var count = anime.AiredEpisodes - lastEpisodeNumber;
                 if(count > 0)

@@ -11,6 +11,7 @@ namespace Totoro.Core.Services.Simkl
             {
                 Title = item.Show.Title,
                 Id = item.Show.Id.Simkl ?? item.Show.Id.Simkl2 ?? 0,
+                MalId = GetMalId(item.Show.Id.MyAnimeList),
                 TotalEpisodes = item.TotalEpisodesCount,
                 Videos = ConvertTrailers(item.Show.Trailers),
                 AlternativeTitles = new [] { item.Show.EnglishTitle },
@@ -25,12 +26,20 @@ namespace Totoro.Core.Services.Simkl
             };
         }
 
+        private static long? GetMalId(string myAnimeList)
+        {
+            return long.TryParse(myAnimeList, out var malId)
+                ? malId
+                : null;
+        }
+
         internal static AnimeModel Convert(SimklMetaData item)
         {
             return new AnimeModel
             {
                 Title = item.EnglishTitle ?? item.Title,
                 Id = item.Id.Simkl ?? item.Id.Simkl2 ?? 0,
+                MalId = GetMalId(item.Id.MyAnimeList),
                 TotalEpisodes = item.TotalEpisodes,
                 Videos = ConvertTrailers(item.Trailers),
                 AlternativeTitles = new[] { item.EnglishTitle },

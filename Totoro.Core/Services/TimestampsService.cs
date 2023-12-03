@@ -23,10 +23,8 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         }
     }
 
-    public async Task<AniSkipResult> GetTimeStamps(long id, int ep, double duration)
+    public async Task<AniSkipResult> GetTimeStampsWithMalId(long malId, int ep, double duration)
     {
-        var malId = await GetMalId(id);
-
         var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}";
         this.Log().Debug("Requesting timestamps : {0}", url);
         var response = await _httpClient.GetAsync(url);
@@ -49,9 +47,14 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         return new AniSkipResult { Success = false, Items = Enumerable.Empty<AniSkipResultItem>().ToArray() };
     }
 
-    public async Task SubmitTimeStamp(long id, int ep, string skipType, Interval interval, double episodeLength)
+    public async Task<AniSkipResult> GetTimeStamps(long id, int ep, double duration)
     {
         var malId = await GetMalId(id);
+        return await GetTimeStampsWithMalId(malId, ep, duration);
+    }
+
+    public async Task SubmitTimeStampWithMalId(long malId, int ep, string skipType, Interval interval, double episodeLength)
+    {
         var postData = new Dictionary<string, string>()
         {
             ["skipType"] = skipType,
@@ -72,6 +75,12 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         request.Content = content;
         var response = await _httpClient.SendAsync(request);
         this.Log().Info("Submitted : {0}", response.IsSuccessStatusCode);
+    }
+
+    public async Task SubmitTimeStamp(long id, int ep, string skipType, Interval interval, double episodeLength)
+    {
+        var malId = await GetMalId(id);
+        await SubmitTimeStampWithMalId(malId, ep, skipType, interval, episodeLength);
     }
 
     public async Task Vote(string skipId, bool isThumpsUp)
