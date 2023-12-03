@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel;
+using System.Data;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks.Dataflow;
 using Humanizer;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -18,6 +20,7 @@ using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Contracts;
 using Totoro.WinUI.Services;
+using Windows.Gaming.Input;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -161,6 +164,14 @@ public static partial class Converters
             });
         }
         flyout.Items.Add(torrentFlyoutItem);
+        
+        flyout.Items.Add(new MenuFlyoutItem
+        {
+            Text = @"Set Alternate Name",
+            Command = App.Commands.SetName,
+            CommandParameter = anime.Id,
+            Icon = new FontIcon(){ Glyph = "\uE8AC" }
+        });
         flyout.Items.Add(new MenuFlyoutItem
         {
             Text = @"Info",

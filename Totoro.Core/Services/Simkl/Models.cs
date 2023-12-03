@@ -1,43 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using Refit;
 
 namespace Totoro.Core.Services.Simkl;
-
-internal interface ISimklClient
-{
-    [Get("/sync/all-items/{type}/{status}")]
-    Task<SimklAllItems> GetAllItems(ItemType type, SimklWatchStatus status);
-
-    [Get("/anime/{id}?client_id={clientId}&extended=full")]
-    Task<SimklMetaData> GetSummary(long id, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
-
-    [Get("/anime/episodes/{id}?client_id={clientId}&extended=full")]
-    Task<List<Episode>> GetEpisodes(long id, string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
-
-    [Post("/sync/history")]
-    Task AddItems([Body(BodySerializationMethod.Serialized)]SimklMutateListBody items);
-
-    [Post("/sync/add-to-list")]
-    Task MoveItems([Body(BodySerializationMethod.Serialized)] SimklMutateListBody items);
-
-    [Post("/sync/history/remove")]
-    Task RemoveItems([Body(BodySerializationMethod.Serialized)] SimklMutateListBody items);
-}
-
-internal class SimklHandler : DelegatingHandler
-{
-    private readonly string _token = "002e7f8f88f5be46c0a2a6dd60b669b9486f26e9324fd566f4fa31fa8c770501";
-
-
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        request.Headers.Add("simkl-api-key", "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
-        request.Headers.Add("Authorization", $"Bearer {_token}");
-        return base.SendAsync(request, cancellationToken);
-    }
-}
-
 
 internal enum ItemType
 {
@@ -98,6 +62,14 @@ internal class SimklMetaDataSlim
     [JsonPropertyName("ids")]
     public SimklIds Ids { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("rating")]
+    public int? Rating { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("to")]
+    public string To { get; set; }
+
 }
 
 internal class Episode
@@ -119,6 +91,15 @@ internal class Episode
 
     [JsonPropertyName("date")]
     public string Date { get; set; }
+
+    [JsonPropertyName("ids")]
+    public SimklIdSlim Ids { get; set; }
+}
+
+internal class SimklIdSlim
+{
+    [JsonPropertyName("simkl_id")]
+    public long Simkl { get; set; }
 }
 
 internal class EpisodeSlim
@@ -159,6 +140,9 @@ internal class SimklItemModel
 
     [JsonPropertyName("show")]
     public SimklMetaData Show { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; }
 }
 
 internal class SimklMetaData
@@ -228,7 +212,7 @@ internal class Trailer
 internal class RatingItem
 {
     [JsonPropertyName("rating")]
-    public double Rating { get; set; }
+    public float Rating { get; set; }
 
     [JsonPropertyName("votes")]
     public long Votes { get; set; }

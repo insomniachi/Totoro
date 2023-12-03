@@ -27,6 +27,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
     private readonly IMyAnimeListService _myAnimeListService;
     private readonly IAnimeDetectionService _animeDetectionService;
+    private readonly INameService _nameService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
     private readonly string[] _subDubProviders = new [] { "gogo-anime", "anime-saturn" };
      
@@ -48,7 +49,8 @@ public partial class WatchViewModel : NavigatableViewModel
                           IVideoStreamResolverFactory videoStreamResolverFactory,
                           IEnumerable<IMediaEventListener> mediaEventListeners,
                           IMyAnimeListService myAnimeListService,
-                          IAnimeDetectionService animeDetectionService)
+                          IAnimeDetectionService animeDetectionService,
+                          INameService nameService)
     {
         _providerFactory = providerFactory;
         _viewService = viewService;
@@ -60,6 +62,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _videoStreamResolverFactory = videoStreamResolverFactory;
         _myAnimeListService = myAnimeListService;
         _animeDetectionService = animeDetectionService;
+        _nameService = nameService;
         _mediaEventListeners = mediaEventListeners.ToList();
 
         NextEpisode = ReactiveCommand.Create(() =>
@@ -411,7 +414,7 @@ public partial class WatchViewModel : NavigatableViewModel
             return (null, null);
         }
 
-        return await SearchProvider(title);
+        return await SearchProvider(id, title);
     }
 
     private IObservable<bool> HasNextEpisode()
@@ -440,8 +443,13 @@ public partial class WatchViewModel : NavigatableViewModel
         });
     }
 
-    private async Task<(ICatalogItem Sub, ICatalogItem Dub)> SearchProvider(string title)
+    private async Task<(ICatalogItem Sub, ICatalogItem Dub)> SearchProvider(long id, string title)
     {
+        if(_nameService.HasName(id))
+        {
+            title = _nameService.GetName(id);
+        }
+
         var results = await Provider.Catalog.Search(title).ToListAsync();
 
         if (results.Count == 0)

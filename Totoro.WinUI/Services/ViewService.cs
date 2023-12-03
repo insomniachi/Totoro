@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.WinUI.UI.Controls;
-using FuzzySharp;
+﻿using FuzzySharp;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Splat;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
@@ -14,6 +14,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinUIEx;
+using Application = Microsoft.UI.Xaml.Application;
 
 namespace Totoro.WinUI.Services;
 
@@ -22,16 +23,19 @@ public class ViewService : IViewService, IEnableLogger
     private readonly IContentDialogService _contentDialogService;
     private readonly IAnimeServiceContext _animeService;
     private readonly IToastService _toastService;
+    private readonly INameService _nameService;
     private readonly ICommand _copyToClipboard;
 
 
     public ViewService(IContentDialogService contentDialogService,
                        IAnimeServiceContext animeService,
-                       IToastService toastService)
+                       IToastService toastService,
+                       INameService nameService)
     {
         _contentDialogService = contentDialogService;
         _animeService = animeService;
         _toastService = toastService;
+        _nameService = nameService;
         _copyToClipboard = ReactiveCommand.Create<Exception>(ex =>
         {
             var package = new DataPackage();
@@ -439,5 +443,40 @@ public class ViewService : IViewService, IEnableLogger
             d.IsPrimaryButtonEnabled = true;
             d.PrimaryButtonText = "Close";
         });
+    }
+
+    public async Task PromptAnimeName(long id)
+    {
+        var grid = new Grid();
+        var textBox = new TextBox()
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        grid.Children.Add(textBox);
+
+        if(_nameService.HasName(id))
+        {
+            textBox.Text = _nameService.GetName(id);
+        }
+
+        var dialog = new ContentDialog()
+        {
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
+            XamlRoot = App.MainWindow.Content.XamlRoot,
+            DefaultButton = ContentDialogButton.Primary,
+            Content = grid,
+            ManipulationMode = Microsoft.UI.Xaml.Input.ManipulationModes.All,
+            Title = "Set Name",
+            PrimaryButtonText = "Save",
+            SecondaryButtonText = "Cancel"
+        };
+
+        var result = await dialog.ShowAsync();
+        var text = textBox.Text;
+        if(result == ContentDialogResult.Primary && !string.IsNullOrEmpty(text))
+        {
+            _nameService.AddOrUpdate(id, text);
+        }
     }
 }

@@ -262,7 +262,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         };
     }
 
-    private static IComparer<AnimeModel> CreateComparer(Func<AnimeModel, IComparable> expression, bool isAscending) => new SortExpressionComparer<AnimeModel> { new(expression, isAscending ? SortDirection.Ascending : SortDirection.Descending) };
+    private static SortExpressionComparer<AnimeModel> CreateComparer(Func<AnimeModel, IComparable> expression, bool isAscending) => new() { new(expression, isAscending ? SortDirection.Ascending : SortDirection.Descending) };
 
     private void CheckNewColumns()
     {
