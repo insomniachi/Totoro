@@ -73,6 +73,16 @@
                 OnContent="On" />
         </labs:SettingsCard>
 
+        <labs:SettingsCard Description="This repository is to store and provide the mapping between various anime sources, (https://github.com/Fribb/anime-lists)" Header="Offline Anime DB">
+            <labs:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE78C;" />
+            </labs:SettingsCard.HeaderIcon>
+            <Button
+                Command="{x:Bind UpdateOfflineDb}"
+                Content="Update"
+                Style="{ThemeResource AccentButtonStyle}" />
+        </labs:SettingsCard>
+
         <Grid Margin="0,20,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />

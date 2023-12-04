@@ -6,4 +6,5 @@ public interface IAnimeIdService
 {
     Task<AnimeIdExtended> GetId(ListServiceType serviceType, long id);
     Task<AnimeIdExtended> GetId(long id);
+    Task UpdateOfflineMappings();
 }

@@ -5,6 +5,11 @@ namespace Totoro.Core.Services;
 
 public class FileService : IFileService
 {
+    private readonly JsonSerializerSettings _settings = new()
+    {
+        DefaultValueHandling = DefaultValueHandling.Ignore
+    };
+
     public T Read<T>(string folderPath, string fileName)
     {
         var path = Path.Combine(folderPath, fileName);
@@ -24,7 +29,7 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        var fileContent = JsonConvert.SerializeObject(content);
+        var fileContent = JsonConvert.SerializeObject(content, Formatting.Indented, _settings);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }
 
