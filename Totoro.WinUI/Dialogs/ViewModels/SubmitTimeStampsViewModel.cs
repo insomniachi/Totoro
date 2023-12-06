@@ -11,7 +11,6 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     {
         _timestampsService = timestampsService;
 
-        PlayRange = ReactiveCommand.Create(Play);
         SetStartPosition = ReactiveCommand.Create(() => StartPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
         SetEndPosition = ReactiveCommand.Create(() => EndPosition = MediaPlayer.GetMediaPlayer().Position.TotalSeconds);
         SkipNearEnd = ReactiveCommand.Create(() => MediaPlayer.SeekTo(TimeSpan.FromSeconds(EndPosition - 5)));
@@ -62,6 +61,9 @@ public class SubmitTimeStampsViewModel : DialogViewModel
         this.WhenAnyValue(x => x.Stream)
             .WhereNotNull()
             .Subscribe(async x => await MediaPlayer.SetMedia(x));
+
+        this.WhenAnyValue(x => x.StartPosition)
+            .Subscribe(pos => EndPosition = pos + 90);
     }
 
     [Reactive] public double StartPosition { get; set; }
@@ -70,6 +72,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     [Reactive] public double CurrentPlayerPosition { get; set; }
     [Reactive] public VideoStreamModel Stream { get; set; }
     [Reactive] public AniSkipResult ExistingResult { get; set; }
+    [Reactive] public string Status { get; set; }
     public long MalId { get; set; }
     public int Episode { get; set; }
     public double Duration { get; set; }
@@ -77,28 +80,14 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     public double SuggestedStartPosition { get; set; }
     public double SuggestedEndPosition => Duration - 120;
     public WinUIMediaPlayerWrapper MediaPlayer { get; } = App.GetService<IMediaPlayerFactory>().Create(MediaPlayerType.WindowsMediaPlayer) as WinUIMediaPlayerWrapper;
+    public bool HandleClose { get; set; }
 
-    public ICommand PlayRange { get; }
     public ICommand SetStartPosition { get; }
     public ICommand SetEndPosition { get; }
     public ICommand SkipNearEnd { get; }
     public ICommand Submit { get; }
     public ICommand VoteUp { get; }
     public ICommand VoteDown { get; }
-
-    private void Play()
-    {
-        _subscription?.Dispose();
-        MediaPlayer.Play(StartPosition);
-
-        _subscription = this.WhenAnyValue(x => x.CurrentPlayerPosition)
-            .Where(time => time >= EndPosition)
-            .Subscribe(_ =>
-            {
-                _subscription?.Dispose();
-                MediaPlayer.Pause();
-            });
-    }
 
     private void Vote(bool vote)
     {
@@ -114,7 +103,9 @@ public class SubmitTimeStampsViewModel : DialogViewModel
 
     public async Task SubmitTimeStamp()
     {
+        HandleClose = true;
         await _timestampsService.SubmitTimeStamp(MalId, Episode, SelectedTimeStampType.ToLower(), new Interval { StartTime = StartPosition, EndTime = EndPosition }, Duration);
+        Status = $"{SelectedTimeStampType} timestamp submitted";
     }
 
 }

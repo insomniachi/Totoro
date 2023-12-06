@@ -53,15 +53,7 @@
             <RepeatButton x:Name="SetEndButton" Content="Set End" />
             <Button Command="{x:Bind ViewModel.SkipNearEnd}" Content="Skip near End" />
         </StackPanel>
-        <Button
-            Width="150"
-            Command="{x:Bind ViewModel.PlayRange}"
-            Content="Preview" />
-        <TextBlock Text="{x:Bind ViewModel.CurrentPlayerPosition, Mode=OneWay}" />
-        <Button
-            Width="150"
-            Command="{x:Bind ViewModel.Submit}"
-            Content="Submit" />
+        <TextBlock Text="{x:Bind ViewModel.Status, Mode=OneWay}" />
     </StackPanel>
 
 </local:SubmitTimeStampsViewBase>

@@ -5,25 +5,18 @@ namespace Totoro.Core.Services.Simkl;
 internal class SimklService : ISimklService
 {
     private readonly ISimklClient _simklClient;
+    private readonly ISettings _settings;
 
-    public SimklService(ISimklClient simklClient)
+    public SimklService(ISimklClient simklClient,
+                        ISettings settings)
     {
         _simklClient = simklClient;
+        _settings = settings;
     }
 
     public async Task<AnimeIdExtended> GetId(ListServiceType type, long id)
     {
-        var serviceType = type switch
-        {
-            ListServiceType.MyAnimeList => "mal",
-            ListServiceType.AniList => "anilist",
-            ListServiceType.Kitsu => "kitsu",
-            ListServiceType.AniDb => "anidb",
-            ListServiceType.Simkl => "simkl",
-            _ => throw new UnreachableException()
-        };
-
-        var response = await _simklClient.Search(serviceType, id);
+        var response = await _simklClient.Search(GetServiceType(type), id);
         if (response.FirstOrDefault() is not { Id.Simkl: not null } metaData)
         {
             return null;
@@ -60,5 +53,52 @@ internal class SimklService : ISimklService
         }
 
         return extended;
+    }
+
+    public async Task<IEnumerable<EpisodeModel>> GetEpisodes(long id)
+    {
+        id = await GetSimklId(id);
+
+        if(id == 0)
+        {
+            return Enumerable.Empty<EpisodeModel>();
+        }
+
+        var episodes = await _simklClient.GetEpisodes(id);
+
+        return episodes.Select(x => new EpisodeModel
+        {
+            EpisodeNumber = x.EpisodeNumber,
+            EpisodeTitle = x.Title
+        });
+    }
+
+    private async ValueTask<long> GetSimklId(long id)
+    {
+        if(_settings.DefaultListService == ListServiceType.Simkl)
+        {
+            return id;
+        }
+
+        var response = await _simklClient.Search(GetServiceType(_settings.DefaultListService), id);
+        if (response.FirstOrDefault() is not { Id.Simkl: not null } metaData)
+        {
+            return 0;
+        }
+
+        return metaData.Id.Simkl ?? 0;
+    }
+
+    private static string GetServiceType(ListServiceType type)
+    {
+        return type switch
+        {
+            ListServiceType.MyAnimeList => "mal",
+            ListServiceType.AniList => "anilist",
+            ListServiceType.Kitsu => "kitsu",
+            ListServiceType.AniDb => "anidb",
+            ListServiceType.Simkl => "simkl",
+            _ => throw new UnreachableException()
+        };
     }
 }

@@ -34,7 +34,7 @@ public class SettingsViewModel : NavigatableViewModel
     public IEnumerable<PluginInfo> MangaProviderTypes => PluginFactory<MangaProvider>.Instance.Plugins;
     public IEnumerable<DisplayMode> ListDisplayModes { get; } = Enum.GetValues<DisplayMode>().Cast<DisplayMode>().Take(2).ToList();
     public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
-    public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList };
+    public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList, ListServiceType.Simkl };
     public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
     public List<string> AnimeActions { get; } = new List<string> { "Watch", "Info" };
     public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();

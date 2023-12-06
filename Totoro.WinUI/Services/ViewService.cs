@@ -279,8 +279,18 @@ public class ViewService : IViewService, IEnableLogger
         {
             d.Title = "Submit Timestamp";
             d.IsPrimaryButtonEnabled = true;
-            d.IsSecondaryButtonEnabled = false;
-            d.PrimaryButtonText = "Close";
+            d.IsSecondaryButtonEnabled = true;
+            d.PrimaryButtonText = "Submit";
+            d.SecondaryButtonText = "Close";
+            d.PrimaryButtonCommand = vm.Submit;
+            d.SecondaryButtonClick += (_, _) => vm.HandleClose = false;
+            d.Closing += (_, args) =>
+            {
+                if (vm.HandleClose)
+                {
+                    args.Cancel = true;
+                }
+            };
         });
 
         vm.MediaPlayer.Pause();

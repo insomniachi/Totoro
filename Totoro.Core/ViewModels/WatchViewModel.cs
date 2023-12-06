@@ -25,7 +25,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IAnimeServiceContext _animeService;
     private readonly IStreamPageMapper _streamPageMapper;
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
-    private readonly IMyAnimeListService _myAnimeListService;
+    private readonly ISimklService _simklService;
     private readonly IAnimeDetectionService _animeDetectionService;
     private readonly INameService _nameService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
@@ -47,8 +47,8 @@ public partial class WatchViewModel : NavigatableViewModel
                           IMediaPlayerFactory mediaPlayerFactory,
                           IStreamPageMapper streamPageMapper,
                           IVideoStreamResolverFactory videoStreamResolverFactory,
+                          ISimklService simklService,
                           IEnumerable<IMediaEventListener> mediaEventListeners,
-                          IMyAnimeListService myAnimeListService,
                           IAnimeDetectionService animeDetectionService,
                           INameService nameService)
     {
@@ -60,7 +60,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _animeService = animeService;
         _streamPageMapper = streamPageMapper;
         _videoStreamResolverFactory = videoStreamResolverFactory;
-        _myAnimeListService = myAnimeListService;
+        _simklService = simklService;
         _animeDetectionService = animeDetectionService;
         _nameService = nameService;
         _mediaEventListeners = mediaEventListeners.ToList();
@@ -97,7 +97,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
-            .Do(async model => _episodeMetadata ??= await myAnimeListService.GetEpisodes(model.Id))
+            .Do(async model => _episodeMetadata ??= await simklService.GetEpisodes(model.Id))
             .SelectMany(model => Find(model.Id, model.Title))
             .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
@@ -554,7 +554,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(async anime =>
             {
                 _anime = anime;
-                _episodeMetadata = await _myAnimeListService.GetEpisodes(id);
+                _episodeMetadata = await _simklService.GetEpisodes(id);
                 SetAnime(_anime);
             }, RxApp.DefaultExceptionHandler.OnError);
     }
