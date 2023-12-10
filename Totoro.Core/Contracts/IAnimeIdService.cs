@@ -4,7 +4,6 @@ namespace Totoro.Core.Contracts;
 
 public interface IAnimeIdService
 {
-    Task<AnimeIdExtended> GetId(ListServiceType serviceType, long id);
-    Task<AnimeIdExtended> GetId(long id);
-    Task UpdateOfflineMappings();
+    ValueTask<AnimeIdExtended> GetId(ListServiceType serviceType, long id);
+    ValueTask<AnimeIdExtended> GetId(long id);
 }

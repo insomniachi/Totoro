@@ -11,6 +11,7 @@ public class Initalizer : IInitializer
     private readonly IRssDownloader _rssDownloader;
     private readonly IConnectivityService _connectivityService;
     private readonly PluginOptionsStorage _pluginOptionsStorage;
+    private readonly IOfflineAnimeIdService _offlineAnimeIdService;
     private readonly IUpdateService _updateService;
     private readonly IResumePlaybackService _playbackStateStorage;
     private readonly ITorrentEngine _torrentEngine;
@@ -24,7 +25,8 @@ public class Initalizer : IInitializer
                       ILocalSettingsService localSettingsService,
                       IRssDownloader rssDownloader,
                       IConnectivityService connectivityService,
-                      PluginOptionsStorage pluginOptionsStorage)
+                      PluginOptionsStorage pluginOptionsStorage,
+                      IOfflineAnimeIdService offlineAnimeIdService)
     {
         _pluginManager = pluginManager;
         _knownFolders = knownFolders;
@@ -32,6 +34,7 @@ public class Initalizer : IInitializer
         _rssDownloader = rssDownloader;
         _connectivityService = connectivityService;
         _pluginOptionsStorage = pluginOptionsStorage;
+        _offlineAnimeIdService = offlineAnimeIdService;
         _updateService = updateService;
         _playbackStateStorage = playbackStateStorage;
         _torrentEngine = torrentEngine;
@@ -48,6 +51,7 @@ public class Initalizer : IInitializer
             await _rssDownloader.Initialize();
         }
         _pluginOptionsStorage.Initialize();
+        _offlineAnimeIdService.Initialize();
         RemoveObsoleteSettings();
     }
 

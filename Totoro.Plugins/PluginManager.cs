@@ -37,7 +37,7 @@ public class PluginManager : IPluginManager, IEnableLogger
         _mediaDetectionPluginFactory = mediaDetectionPluginFactory;
     }
 
-    public async ValueTask<PluginIndex> GetAllPlugins()
+    public async ValueTask<PluginIndex?> GetAllPlugins()
     {
         return _listedPlugins ?? await GetListedPlugins();
     }
@@ -51,7 +51,7 @@ public class PluginManager : IPluginManager, IEnableLogger
 
         _listedPlugins ??= await GetListedPlugins();
 
-        if (_autoDownloadAllPlugins)
+        if (_autoDownloadAllPlugins && _listedPlugins is not null)
         {
             var localAnimePlugins = GetLocalPlugins(animeFolder);
             var localTorrentsPlugins = GetLocalPlugins(torrentsFolder);
@@ -125,12 +125,18 @@ public class PluginManager : IPluginManager, IEnableLogger
     }
 
 
-    private async Task<PluginIndex> GetListedPlugins()
+    private async Task<PluginIndex?> GetListedPlugins()
     {
         try
         {
-            var plugins = await _baseUrl.AppendPathSegment("plugins.json").GetJsonAsync<PluginIndex>();
-            return plugins;
+            var response = await _baseUrl.AppendPathSegment("plugins.json").GetAsync();
+            if(response.StatusCode < 300)
+            {
+                var plugins = await response.GetJsonAsync<PluginIndex>();
+                return plugins;
+            }
+
+            return null;
         }
         catch (Exception ex)
         {

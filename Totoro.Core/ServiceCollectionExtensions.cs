@@ -27,7 +27,6 @@ namespace Totoro.Core
             services.AddSingleton<IDiscordRichPresense, DiscordRichPresense>();
             services.AddSingleton<IResumePlaybackService, PlaybackStateStorage>();
             services.AddSingleton<IVolatileStateStorage, VolatileStateStorage>();
-            services.AddSingleton<ITimestampsService, TimestampsService>();
             services.AddSingleton<ILocalMediaService, LocalMediaService>();
             services.AddSingleton<IAiredEpisodeNotifier, AiredEpisodeNotifier>();
             services.AddSingleton<IUpdateService, WindowsUpdateService>();
@@ -41,8 +40,10 @@ namespace Totoro.Core
             services.AddSingleton<ITorrentEngine, TorrentEngine>();
             services.AddSingleton<IRssDownloader, RssDownloader>();
             services.AddSingleton<INameService, NameService>();
+            services.AddSingleton<IOfflineAnimeIdService, OfflineAnimeIdService>();
 
             services.AddTransient<IFileService, FileService>();
+            services.AddTransient<ITimestampsService, TimestampsService>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();
             services.AddTransient<TotoroCommands>();

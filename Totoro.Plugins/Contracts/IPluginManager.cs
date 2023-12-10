@@ -5,7 +5,7 @@ namespace Totoro.Plugins.Contracts;
 public interface IPluginManager
 {
     Task Initialize(string folder);
-    ValueTask<PluginIndex> GetAllPlugins();
+    ValueTask<PluginIndex?> GetAllPlugins();
 }
 
 public interface IPluginFactory

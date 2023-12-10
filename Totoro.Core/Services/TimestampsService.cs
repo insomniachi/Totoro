@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using Splat;
+﻿using Splat;
 
 namespace Totoro.Core.Services;
 
@@ -8,19 +7,12 @@ public class TimestampsService : ITimestampsService, IEnableLogger
     private readonly ISettings _settings;
     private readonly IAnimeIdService _animeIdService;
     private readonly HttpClient _httpClient = new();
-    private readonly Dictionary<string, List<OpeningInfo>> _offlineSkipInfo = new();
 
     public TimestampsService(ISettings settings,
                              IAnimeIdService animeIdService)
     {
         _settings = settings;
         _animeIdService = animeIdService;
-
-        using var fs = File.OpenRead("aniskip.json");
-        if (JsonSerializer.Deserialize<Dictionary<string, List<OpeningInfo>>>(fs) is { } skipInfo)
-        {
-            _offlineSkipInfo = skipInfo;
-        }
     }
 
     public async Task<AniSkipResult> GetTimeStampsWithMalId(long malId, int ep, double duration)
@@ -37,14 +29,8 @@ public class TimestampsService : ITimestampsService, IEnableLogger
             return result;
         }
 
-        if (_offlineSkipInfo.TryGetValue(malId.ToString(), out List<OpeningInfo> value) && value.FirstOrDefault(x => x.Episode == ep) is { } info)
-        {
-            this.Log().Info("Timestamps found in offline db");
-            return info.ToAniSkipResult(duration);
-        }
-
         this.Log().Info($"Timestamps for MalId = {malId}, Ep = {ep}, Duration = {duration} not found");
-        return new AniSkipResult { Success = false, Items = Enumerable.Empty<AniSkipResultItem>().ToArray() };
+        return new AniSkipResult { Success = false, Items = Array.Empty<AniSkipResultItem>() };
     }
 
     public async Task<AniSkipResult> GetTimeStamps(long id, int ep, double duration)
@@ -116,51 +102,6 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         {
             return (await _animeIdService.GetId(id))?.MyAnimeList ?? 0;
         }
-    }
-}
-
-public class OpeningInfo
-{
-    public class Interval
-    {
-        [JsonPropertyName("start")]
-        public double Start { get; set; }
-
-        [JsonPropertyName("end")]
-        public double End { get; set; }
-    }
-
-
-    [JsonPropertyName("duration")]
-    public string Duration { get; set; }
-
-    [JsonPropertyName("number")]
-    public int Episode { get; set; }
-
-    [JsonPropertyName("intro")]
-    public Interval Intro { get; set; }
-
-    public AniSkipResult ToAniSkipResult(double actualDuration)
-    {
-        _ = double.TryParse(Duration, out double expectedDuration);
-
-        return new AniSkipResult
-        {
-            Success = true,
-            Items = new AniSkipResultItem[]
-            {
-                new AniSkipResultItem()
-                {
-                    SkipId = Guid.Empty.ToString(),
-                    SkipType = "op",
-                    Interval = new()
-                    {
-                        StartTime = Intro.Start,
-                        EndTime = Intro.End + actualDuration - expectedDuration,
-                    }
-                }
-            }
-        };
     }
 }
 

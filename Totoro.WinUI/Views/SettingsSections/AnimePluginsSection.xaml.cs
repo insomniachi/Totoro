@@ -26,7 +26,7 @@ public sealed partial class AnimePluginsSection : Page
     {
         InitializeComponent();
 
-        UpdateOfflineDb = ReactiveCommand.CreateFromTask(() => App.GetService<IAnimeIdService>().UpdateOfflineMappings());
+        UpdateOfflineDb = ReactiveCommand.CreateFromTask(() => App.GetService<IOfflineAnimeIdService>().UpdateOfflineMappings());
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
