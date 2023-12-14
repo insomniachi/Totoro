@@ -34,10 +34,10 @@
                 ItemsSource="{x:Bind ViewModel.TimeStampTypes}"
                 SelectedItem="{x:Bind ViewModel.SelectedTimeStampType, Mode=TwoWay}" />
             <Button Command="{x:Bind ViewModel.VoteUp}">
-                <FontIcon Foreground="Green" Glyph="&#xeb0f;" />
+                <FontIcon Foreground="Green" Glyph="&#xeb11;" />
             </Button>
             <Button Command="{x:Bind ViewModel.VoteDown}">
-                <FontIcon Foreground="Red" Glyph="&#xeb11;" />
+                <FontIcon Foreground="Red" Glyph="&#xeb0f;" />
             </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
