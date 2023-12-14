@@ -4,7 +4,6 @@ namespace Totoro.WinUI.Dialogs.ViewModels;
 
 public class SubmitTimeStampsViewModel : DialogViewModel
 {
-    private IDisposable _subscription;
     private readonly ITimestampsService _timestampsService;
 
     public SubmitTimeStampsViewModel(ITimestampsService timestampsService)
@@ -20,7 +19,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
             .Where(x => x.Item2 is not null)
             .Select(tuple =>
             {
-                (string type, AniSkipResult result) = tuple;
+                (string type, TimestampResult result) = tuple;
                 return type switch
                 {
                     "OP" => result.Opening is not null,
@@ -44,7 +43,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
         this.WhenAnyValue(x => x.SelectedTimeStampType, x => x.ExistingResult)
             .Subscribe(tuple =>
             {
-                (string type, AniSkipResult result) = tuple;
+                (string type, TimestampResult result) = tuple;
 
                 if (type == "OP")
                 {
@@ -71,7 +70,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     [Reactive] public string SelectedTimeStampType { get; set; } = "OP";
     [Reactive] public double CurrentPlayerPosition { get; set; }
     [Reactive] public VideoStreamModel Stream { get; set; }
-    [Reactive] public AniSkipResult ExistingResult { get; set; }
+    [Reactive] public TimestampResult ExistingResult { get; set; }
     [Reactive] public string Status { get; set; }
     public long MalId { get; set; }
     public int Episode { get; set; }

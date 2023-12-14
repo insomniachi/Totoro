@@ -93,12 +93,12 @@ public class TrackingUpdaterTests
                 WatchedEpisodes = 5,
             }
         };
-        var skipTime = new AniSkipResult
+        var skipTime = new TimestampResult
         {
             Success = true,
-            Items = new AniSkipResultItem[]
+            Items = new Timestamp[]
             {
-                new AniSkipResultItem
+                new Timestamp
                 {
                     SkipType = "ed",
                     EpisodeLength = 1420,

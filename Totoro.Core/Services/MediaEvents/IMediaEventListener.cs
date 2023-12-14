@@ -10,7 +10,7 @@ public interface IMediaEventListener
     void SetCurrentEpisode(int episode);
     void Stop();
     void SetVideoStreamModel(VideoStreamModel videoStreamModel);
-    void SetTimeStamps(AniSkipResult timeStamps);
+    void SetTimeStamps(TimestampResult timeStamps);
 }
 
 

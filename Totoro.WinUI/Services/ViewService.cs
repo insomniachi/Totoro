@@ -261,8 +261,9 @@ public class ViewService : IViewService, IEnableLogger
     }
 
 
-    public async Task SubmitTimeStamp(long malId, int ep, VideoStreamModel stream, AniSkipResult existingResult, double duration, double introStart)
+    public async Task SubmitTimeStamp(long malId, int ep, VideoStreamModel stream, TimestampResult existingResult, double duration, double introStart)
     {
+        introStart = introStart > 0 ? introStart : 0;
         var vm = new SubmitTimeStampsViewModel(App.GetService<ITimestampsService>()) // TODO fix later
         {
             Stream = stream,

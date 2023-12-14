@@ -162,7 +162,7 @@ public class NowPlayingViewModel : NavigatableViewModel
         await SetAnime(animeId);
     }
 
-    private Task<AniSkipResult> GetTimeStamps(AnimeModel anime, TimeSpan duration)
+    private Task<TimestampResult> GetTimeStamps(AnimeModel anime, TimeSpan duration)
     {
         return anime.MalId is { } malId
             ? _timestampsService.GetTimeStampsWithMalId(malId, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds)

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Refit;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
+using Totoro.Core.Services.Aniskip;
 using Totoro.Core.Services.Debrid;
 using Totoro.Core.Services.MediaEvents;
 using Totoro.Core.Services.MyAnimeList;
@@ -43,6 +44,7 @@ namespace Totoro.Core
             services.AddSingleton<IOfflineAnimeIdService, OfflineAnimeIdService>();
 
             services.AddTransient<IFileService, FileService>();
+            services.AddRefitClient<IAniskipClient>().ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.aniskip.com"));
             services.AddTransient<ITimestampsService, TimestampsService>();
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();

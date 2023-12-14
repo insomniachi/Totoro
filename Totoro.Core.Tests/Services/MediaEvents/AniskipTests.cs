@@ -12,11 +12,11 @@ public class AniskipTests
         var viewService = new Mock<IViewService>();
         var settings = new Mock<ISettings>();
         var service = new Aniskip(viewService.Object, settings.Object);
-        var skipTime = new AniSkipResult
+        var skipTime = new TimestampResult
         {
             Items = new[]
             {
-                new AniSkipResultItem()
+                new Timestamp()
                 {
                     SkipType = "op",
                     Interval = new Interval
@@ -25,7 +25,7 @@ public class AniskipTests
                         EndTime = 120
                     }
                 },
-                new AniSkipResultItem()
+                new Timestamp()
                 {
                     SkipType = "ed",
                     Interval = new Interval
@@ -59,11 +59,11 @@ public class AniskipTests
         var viewService = new Mock<IViewService>();
         var settings = new Mock<ISettings>();
         var service = new Aniskip(viewService.Object, settings.Object);
-        var skipTime = new AniSkipResult
+        var skipTime = new TimestampResult
         {
             Items = new[]
             {
-                new AniSkipResultItem()
+                new Timestamp()
                 {
                     SkipType = "op",
                     Interval = new Interval
@@ -94,11 +94,11 @@ public class AniskipTests
         var viewService = new Mock<IViewService>();
         var settings = new Mock<ISettings>();
         var service = new Aniskip(viewService.Object, settings.Object);
-        var skipTime = new AniSkipResult
+        var skipTime = new TimestampResult
         {
             Items = new[]
             {
-                new AniSkipResultItem()
+                new Timestamp()
                 {
                     SkipType = "ed",
                     Interval = new Interval

@@ -9,7 +9,7 @@ public abstract class MediaEventListener : IMediaEventListener
     protected int _currentEpisode;
     protected ICatalogItem _searchResult;
     protected VideoStreamModel _videoStreamModel;
-    protected AniSkipResult _timeStamps;
+    protected TimestampResult _timeStamps;
 
     public void SetAnime(AnimeModel anime)
     {
@@ -23,7 +23,7 @@ public abstract class MediaEventListener : IMediaEventListener
         OnEpisodeChanged();
     }
 
-    public void SetTimeStamps(AniSkipResult timeStamps)
+    public void SetTimeStamps(TimestampResult timeStamps)
     {
         _timeStamps = timeStamps;
         OnTimestampsChanged();

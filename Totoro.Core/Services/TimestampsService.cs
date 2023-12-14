@@ -1,39 +1,57 @@
-﻿using Splat;
+﻿using System.Text.Json.Nodes;
+using Refit;
+using Splat;
+using Totoro.Core.Services.Aniskip;
+using Interval = Totoro.Core.Models.Interval;
 
 namespace Totoro.Core.Services;
 
-public class TimestampsService : ITimestampsService, IEnableLogger
+internal class TimestampsService : ITimestampsService, IEnableLogger
 {
     private readonly ISettings _settings;
     private readonly IAnimeIdService _animeIdService;
-    private readonly HttpClient _httpClient = new();
+    private readonly IAniskipClient _aniskipClient;
 
     public TimestampsService(ISettings settings,
-                             IAnimeIdService animeIdService)
+                             IAnimeIdService animeIdService,
+                             IAniskipClient aniskipClient)
     {
         _settings = settings;
         _animeIdService = animeIdService;
+        _aniskipClient = aniskipClient;
     }
 
-    public async Task<AniSkipResult> GetTimeStampsWithMalId(long malId, int ep, double duration)
+    public async Task<TimestampResult> GetTimeStampsWithMalId(long malId, int ep, double duration)
     {
-        var url = $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}?types[]=op&types[]=ed&episodeLength={duration}";
-        this.Log().Debug("Requesting timestamps : {0}", url);
-        var response = await _httpClient.GetAsync(url);
-
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var stream = await response.Content.ReadAsStreamAsync();
-            var result = await JsonSerializer.DeserializeAsync(stream, AniSkipResultSerializerContext.Default.AniSkipResult);
-            this.Log().Info("Timestamps received : {0}", result.Success);
-            return result;
+            var query = new GetSkipTimesQueryV2
+            {
+                Types = new[] { SkipType.Opening, SkipType.Ending, SkipType.Recap },
+                EpisodeLength = duration
+            };
+            var result = await _aniskipClient.GetSkipTimes(malId, ep, query);
+            return new TimestampResult
+            {
+                Success = result.IsFound,
+                Items = result.Results.Select(x => new Timestamp
+                {
+                    Interval = new Interval { StartTime = x.Interval.StartTime, EndTime = x.Interval.EndTime },
+                    SkipId = x.SkipId,
+                    SkipType = x.SkipType.ToString(),
+                    EpisodeLength = x.EpisodeLength
+                }).ToArray(),
+            };
+        }
+        catch (ApiException)
+        {
+            this.Log().Info($"Timestamps for MalId = {malId}, Ep = {ep}, Duration = {duration} not found");
         }
 
-        this.Log().Info($"Timestamps for MalId = {malId}, Ep = {ep}, Duration = {duration} not found");
-        return new AniSkipResult { Success = false, Items = Array.Empty<AniSkipResultItem>() };
+        return new TimestampResult { Success = false, Items = Array.Empty<Timestamp>() };
     }
 
-    public async Task<AniSkipResult> GetTimeStamps(long id, int ep, double duration)
+    public async Task<TimestampResult> GetTimeStamps(long id, int ep, double duration)
     {
         var malId = await GetMalId(id);
         return await GetTimeStampsWithMalId(malId, ep, duration);
@@ -41,26 +59,24 @@ public class TimestampsService : ITimestampsService, IEnableLogger
 
     public async Task SubmitTimeStampWithMalId(long malId, int ep, string skipType, Interval interval, double episodeLength)
     {
-        var postData = new Dictionary<string, string>()
+        try
         {
-            ["skipType"] = skipType,
-            ["providerName"] = _settings.DefaultProviderType.ToString(),
-            ["startTime"] = interval.StartTime.ToString(),
-            ["endTime"] = interval.EndTime.ToString(),
-            ["episodeLength"] = episodeLength.ToString(),
-            ["submitterId"] = _settings.AniSkipId.ToString()
-        };
+            var payload = new PostCreateSkipTimeRequestBodyV2
+            {
+                SkipType = skipType == "op" ? SkipType.Opening : SkipType.Ending,
+                ProviderName = _settings.DefaultProviderType,
+                StartTime = interval.StartTime,
+                EndTime = interval.EndTime,
+                EpisodeLength = episodeLength,
+                SubmitterId = _settings.AniSkipId
+            };
 
-        this.Log().Info($"Submitting timestamp for MalID: {malId}, Ep: {ep}, Type: {skipType}, Start: {interval.StartTime}, End: {interval.EndTime}, Length: {episodeLength}");
-
-        using var content = new FormUrlEncodedContent(postData);
-        content.Headers.Clear();
-        content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"https://api.aniskip.com/v2/skip-times/{malId}/{ep}");
-        request.Content = content;
-        var response = await _httpClient.SendAsync(request);
-        this.Log().Info("Submitted : {0}", response.IsSuccessStatusCode);
+            await _aniskipClient.PostSkipTimes(malId, ep, payload);
+        }
+        catch (ApiException ex)
+        {
+            this.Log().Error(ex);
+        }
     }
 
     public async Task SubmitTimeStamp(long id, int ep, string skipType, Interval interval, double episodeLength)
@@ -69,27 +85,20 @@ public class TimestampsService : ITimestampsService, IEnableLogger
         await SubmitTimeStampWithMalId(malId, ep, skipType, interval, episodeLength);
     }
 
-    public async Task Vote(string skipId, bool isThumpsUp)
+    public async Task Vote(Guid skipId, bool isThumpsUp)
     {
-        if (skipId == Guid.Empty.ToString())
+        try
         {
-            return;
+            var payload = new PostVoteRequestBodyV2
+            {
+                VoteType = isThumpsUp ? VoteType.Upvote : VoteType.Downvote
+            };
+            await _aniskipClient.PostVote(skipId, payload);
         }
-
-        var voteType = isThumpsUp ? "upvote" : "downvote";
-        var postData = new Dictionary<string, string>()
+        catch (ApiException ex)
         {
-            ["voteType"] = voteType
-        };
-
-        using var content = new FormUrlEncodedContent(postData);
-        content.Headers.Clear();
-        content.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, $"https://api.aniskip.com/v2/skip-times/vote/{skipId}");
-        request.Content = content;
-        var response = await _httpClient.SendAsync(request);
-        this.Log().Info($"Vote ({voteType}) submitted");
+            this.Log().Error(ex);
+        }
     }
 
     private async ValueTask<long> GetMalId(long id)

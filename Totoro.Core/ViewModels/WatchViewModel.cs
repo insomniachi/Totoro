@@ -682,7 +682,7 @@ public partial class WatchViewModel : NavigatableViewModel
             });
     }
 
-    private Task<AniSkipResult> GetTimeStamps(TimeSpan duration)
+    private Task<TimestampResult> GetTimeStamps(TimeSpan duration)
     {
         return Anime.MalId is { } malId
             ? _timestampsService.GetTimeStampsWithMalId(malId, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds)
