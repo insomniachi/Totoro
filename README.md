@@ -24,7 +24,6 @@ Although you can use the application without login in with MyAnimeList, it's the
 ## Screenshots
 ![Alt text](Screenshots/home.jpg "home")
 ![Alt text](Screenshots/mylist.jpg "my_list")
-![Alt text](Screenshots/schedule.jpg "schedule")
 ![Alt text](Screenshots/seasonal.jpg "seasonal")
 ![Alt text](Screenshots/player.jpg "player")
 
@@ -32,11 +31,13 @@ Although you can use the application without login in with MyAnimeList, it's the
 - [X] Automatically update tracking while your watching.
     - [X] MyAnimeList
     - [X] AniList
+    - [X] Simkl 
     - [ ] Kitsu
 - [X] Resume video playback from where you last left off.
 - [X] Manually update tracking
     - [X] MyAnimeList
     - [X] AniList
+    - [X] Simkl 
     - [ ] Kitsu
 - [X] Skip openings. 
 - [X] Discord Rich Presense.
