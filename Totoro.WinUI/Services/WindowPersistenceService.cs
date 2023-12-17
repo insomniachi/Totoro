@@ -67,6 +67,11 @@ internal sealed class WindowPersistenceService : IDisposable
             return;
         }
 
+        if(e.X < 0 || e.Y < 0)
+        {
+            return;
+        }
+
         _persistence.Position = new(e.X, e.Y);
     }
 
@@ -74,6 +79,11 @@ internal sealed class WindowPersistenceService : IDisposable
     private void SizeChanged(object sender, Microsoft.UI.Xaml.WindowSizeChangedEventArgs args)
     {
         if (_window.Presenter is not OverlappedPresenter op || _windowService.IsFullWindow)
+        {
+            return;
+        }
+
+        if (args.Size.Height < 0 || args.Size.Width < 0)
         {
             return;
         }

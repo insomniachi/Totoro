@@ -5,31 +5,33 @@ namespace Totoro.Core.Services;
 public class PlaybackStateStorage : IResumePlaybackService, IEnableLogger
 {
     private readonly Dictionary<long, Dictionary<int, double>> _recents;
-    private readonly ILocalSettingsService _localSettingsService;
+    private readonly IKnownFolders _knownFolders;
+    private readonly IFileService _fileService;
+    private readonly string _fileName = @"recents.json";
 
-    public PlaybackStateStorage(ILocalSettingsService localSettingsService)
+    public PlaybackStateStorage(IKnownFolders knownFolders,
+                                IFileService fileService)
     {
-        _localSettingsService = localSettingsService;
-        _recents = _localSettingsService.ReadSetting<Dictionary<long, Dictionary<int, double>>>("Recents", new());
+        _recents = fileService.Read<Dictionary<long, Dictionary<int, double>>>(knownFolders.ApplicationData, _fileName) ?? new();
+        _knownFolders = knownFolders;
+        _fileService = fileService;
     }
 
     public double GetTime(long id, int episode)
     {
         this.Log().Info($"Checking saved time for Anime: {id}, Episode: {episode}");
 
-        if (!_recents.ContainsKey(id))
+        if (!_recents.TryGetValue(id, out Dictionary<int, double> anime))
         {
             this.Log().Info("Saved time not found");
             return 0;
         }
 
-        if (!_recents[id].ContainsKey(episode))
+        if (!anime.TryGetValue(episode, out double time))
         {
             this.Log().Info("Saved time not found");
             return 0;
         }
-
-        var time = _recents[id][episode];
 
         this.Log().Info($"Saved time found {time}");
         return time;
@@ -37,21 +39,20 @@ public class PlaybackStateStorage : IResumePlaybackService, IEnableLogger
 
     public void Reset(long id, int episode)
     {
-        if (!_recents.ContainsKey(id))
+        if (!_recents.TryGetValue(id, out Dictionary<int, double> anime))
         {
             return;
         }
 
-        if (!_recents[id].ContainsKey(episode))
+        if (!anime.ContainsKey(episode))
         {
             return;
         }
 
         this.Log().Info("Reset time for Id:{0} Ep:{1}", id, episode);
+        anime.Remove(episode);
 
-        _recents[id].Remove(episode);
-
-        if (_recents[id].Count == 0)
+        if (anime.Count == 0)
         {
             _recents.Remove(id);
         }
@@ -59,24 +60,25 @@ public class PlaybackStateStorage : IResumePlaybackService, IEnableLogger
 
     public void SaveState()
     {
-        _localSettingsService.SaveSetting("Recents", _recents);
+        _fileService.Save(_knownFolders.ApplicationData, _fileName, _recents);
         this.Log().Info("Saved playback state");
     }
 
     public void Update(long id, int episode, double time)
     {
-        if (!_recents.ContainsKey(id))
+        if (!_recents.TryGetValue(id, out Dictionary<int, double> value))
         {
-            _recents.Add(id, new Dictionary<int, double>() { [episode] = time });
+            value = new Dictionary<int, double>() { [episode] = time };
+            _recents.Add(id, value);
             return;
         }
 
-        if (!_recents[id].ContainsKey(episode))
+        if (!value.ContainsKey(episode))
         {
-            _recents[id].Add(episode, time);
+            value.Add(episode, time);
             return;
         }
 
-        _recents[id][episode] = time;
+        value[episode] = time;
     }
 }
