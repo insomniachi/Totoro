@@ -276,7 +276,7 @@ public partial class WatchViewModel : NavigatableViewModel
     {
         MediaPlayer
             .DurationChanged
-            .Where(_ => Anime is not null)
+            .Where(_ => Anime is not null && EpisodeModels?.Current is not null)
             .Throttle(TimeSpan.FromSeconds(1))
             .SelectMany(GetTimeStamps)
             .Where(timeStamp => timeStamp.Success)

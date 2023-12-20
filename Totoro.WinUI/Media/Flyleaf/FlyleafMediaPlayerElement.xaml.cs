@@ -27,6 +27,7 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
             FFmpegDevices = false,    // Prevents loading avdevice/avfilter dll files. Enable it only if you plan to use dshow/gdigrab etc.
 
 #if RELEASE
+            FFmpegPath = @"FFmpeg",
             FFmpegLogLevel      = FFmpegLogLevel.Quiet,
             LogLevel            = LogLevel.Quiet,
 

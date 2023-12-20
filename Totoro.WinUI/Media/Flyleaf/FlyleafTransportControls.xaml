@@ -52,20 +52,53 @@
 
             <StackPanel Orientation="Horizontal">
                 <Button
-                    x:Name="btnPlayback"
+                    x:Name="SkipBackwardButton"
+                    Click="SkipBackwardButton_Click"
+                    IsTapEnabled="False">
+                    <FontIcon Glyph="&#xED3C;" />
+                </Button>
+                <Button
+                    x:Name="PreviousTrackButton"
+                    IsTabStop="False"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(IsPreviousTrackButtonVisible), Mode=OneWay}">
+                    <SymbolIcon Symbol="Previous" />
+                </Button>
+                <Button
+                    x:Name="PlayPauseButton"
                     Command="{x:Bind Player.Commands.TogglePlayPause}"
                     IsEnabled="{x:Bind Player.CanPlay, Mode=OneWay}"
                     IsTabStop="False">
-                    <SymbolIcon Symbol="Play" />
+                    <SymbolIcon x:Name="PlayPauseSymbol" Symbol="Play" />
                 </Button>
                 <Button
-                    Margin="4,0"
-                    Command="{x:Bind Player.Commands.Stop}"
-                    IsTabStop="False">
-                    <SymbolIcon Symbol="Stop" />
+                    x:Name="NextTrackButton"
+                    IsTabStop="False"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(IsNextTrackButtonVisible), Mode=OneWay}">
+                    <SymbolIcon Symbol="Next" />
                 </Button>
-                <Button>
+                <Button
+                    x:Name="CCSelectionButton"
+                    IsTabStop="False"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(IsCCSelectionVisible), Mode=OneWay}">
                     <FontIcon Glyph="&#xED1E;" />
+                </Button>
+                <Button
+                    x:Name="SkipForwardButton"
+                    Click="SkipForwardButton_Click"
+                    IsTapEnabled="False">
+                    <FontIcon Glyph="&#xED3D;" />
+                </Button>
+                <Button x:Name="PlaybackRateButton" IsTabStop="False">
+                    <FontIcon Glyph="&#xEC58;" />
+                </Button>
+                <Button x:Name="SubmitTimeStampButton">
+                    <SymbolIcon Symbol="Clock" />
+                </Button>
+                <Button x:Name="QualitiesButton">
+                    <FontIcon Glyph="&#xe93e;" />
+                </Button>
+                <Button x:Name="SkipIntroButton">
+                    <FontIcon Glyph="&#xec4f;" />
                 </Button>
             </StackPanel>
 

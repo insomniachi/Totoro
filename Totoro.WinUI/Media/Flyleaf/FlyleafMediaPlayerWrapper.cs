@@ -56,16 +56,23 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public void Play(double offsetInSeconds)
         {
+            MediaPlayer.SeekAccurate((int)TimeSpan.FromSeconds(offsetInSeconds).TotalMilliseconds);
             MediaPlayer.Play();
         }
 
         public void Seek(TimeSpan ts, SeekDirection direction)
         {
-            MediaPlayer.Seek((int)ts.TotalMilliseconds, direction == SeekDirection.Forward);
+            var currentTime = new TimeSpan(MediaPlayer.CurTime);
+            var newTime = direction == SeekDirection.Forward
+                ? currentTime + ts
+                : currentTime - ts;
+
+            MediaPlayer.SeekAccurate((int)newTime.TotalMilliseconds);
         }
 
         public void SeekTo(TimeSpan ts)
         {
+            MediaPlayer.SeekAccurate((int)ts.TotalMilliseconds);
         }
 
         public Task<Unit> SetMedia(VideoStreamModel stream)
