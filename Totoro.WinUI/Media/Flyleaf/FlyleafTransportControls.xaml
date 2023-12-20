@@ -25,7 +25,7 @@
                 VerticalAlignment="Top"
                 VerticalContentAlignment="Center"
                 Content="Skip"
-                 FontSize="20"
+                FontSize="20"
                 FontWeight="Bold"
                 Foreground="White"
                 Visibility="{x:Bind help:Converters.BooleanToVisibility(IsSkipButtonVisible), Mode=OneWay}">
@@ -126,6 +126,9 @@
                     <SymbolIcon Symbol="Clock" />
                 </Button>
                 <Button x:Name="QualitiesButton">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="Top" />
+                    </Button.Flyout>
                     <FontIcon Glyph="&#xe93e;" />
                 </Button>
                 <Button x:Name="SkipIntroButton">

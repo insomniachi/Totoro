@@ -1,15 +1,15 @@
-using System.Numerics;
+using System.Reactive.Subjects;
 using FlyleafLib.MediaPlayer;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Hosting;
 using ReactiveMarbles.ObservableEvents;
 
 namespace Totoro.WinUI.Media.Flyleaf;
 
 public sealed partial class FlyleafTransportControls : UserControl, IMediaTransportControls
 {
+    private readonly Subject<string> _onQualityChanged = new();
+
     public bool IsNextTrackButtonVisible
     {
         get { return (bool)GetValue(IsNextTrackButtonVisibleProperty); }
@@ -40,6 +40,30 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         set { SetValue(IsCCSelectionVisibleProperty, value); }
     }
 
+    public string SelectedResolution
+    {
+        get { return (string)GetValue(SelectedResolutionProperty); }
+        set { SetValue(SelectedResolutionProperty, value); }
+    }
+
+    public Player Player
+    {
+        get { return (Player)GetValue(PlayerProperty); }
+        set { SetValue(PlayerProperty, value); }
+    }
+
+    public IEnumerable<string> Resolutions
+    {
+        get { return (IEnumerable<string>)GetValue(ResolutionsProperty); }
+        set { SetValue(ResolutionsProperty, value); }
+    }
+
+    public static readonly DependencyProperty ResolutionsProperty =
+        DependencyProperty.Register("Resolutions", typeof(IEnumerable<string>), typeof(FlyleafTransportControls), new PropertyMetadata(null, OnResolutionsChanged));
+
+    public static readonly DependencyProperty SelectedResolutionProperty =
+        DependencyProperty.Register("SelectedResolution", typeof(string), typeof(FlyleafTransportControls), new PropertyMetadata("", OnSelectedResolutionChanged));
+
     public static readonly DependencyProperty IsCCSelectionVisibleProperty =
         DependencyProperty.Register("IsCCSelectionVisible", typeof(bool), typeof(FlyleafTransportControls), new PropertyMetadata(false));
 
@@ -55,11 +79,61 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public static readonly DependencyProperty IsNextTrackButtonVisibleProperty =
         DependencyProperty.Register("IsNextTrackButtonVisible", typeof(bool), typeof(FlyleafTransportControls), new PropertyMetadata(false));
 
-
-    public Player Player
+    private static void OnSelectedResolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        get { return (Player)GetValue(PlayerProperty); }
-        set { SetValue(PlayerProperty, value); }
+        if (e.NewValue is not string s)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(s))
+        {
+            return;
+        }
+
+        var mtc = d as FlyleafTransportControls;
+        var flyout = mtc.QualitiesButton.Flyout as MenuFlyout;
+        foreach (var item in flyout.Items.OfType<ToggleMenuFlyoutItem>())
+        {
+            item.IsChecked = item.Text == s;
+        }
+    }
+
+    private static void OnResolutionsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var mtc = d as FlyleafTransportControls;
+        var flyout = mtc.QualitiesButton.Flyout as MenuFlyout;
+
+        foreach (var item in flyout.Items.OfType<MenuFlyoutItem>())
+        {
+            item.Click -= mtc.FlyoutItem_Click;
+        }
+
+        flyout.Items.Clear();
+
+        if (e.NewValue is IEnumerable<string> values)
+        {
+            var qualities = values.ToList();
+            if (qualities.Count == 1)
+            {
+                mtc.QualitiesButton.Visibility = Visibility.Collapsed;
+            }
+            else if (qualities.Count > 1)
+            {
+                mtc.QualitiesButton.IsEnabled = true;
+                foreach (var item in qualities)
+                {
+                    var flyoutItem = new ToggleMenuFlyoutItem { Text = item };
+                    flyoutItem.Click += mtc.FlyoutItem_Click;
+                    flyout.Items.Add(flyoutItem);
+                }
+            }
+        }
+    }
+    
+    private void FlyoutItem_Click(object sender, RoutedEventArgs e)
+    {
+        _onQualityChanged.OnNext((sender as MenuFlyoutItem).Text);
     }
 
     public IObservable<Unit> OnNextTrack { get; }
@@ -69,9 +143,6 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public IObservable<Unit> OnAddCc { get; }
     public IObservable<string> OnQualityChanged { get; }
     public IObservable<Unit> OnSubmitTimeStamp { get; }
-    public string SelectedResolution { get; set; }
-    public IEnumerable<string> Resolutions { get; set; }
-
     public IObservable<PlaybackRate> PlaybackRateChanged => Observable.Empty<PlaybackRate>();
 
     public static readonly DependencyProperty PlayerProperty =
@@ -79,16 +150,15 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
 
     public FlyleafTransportControls()
     {
-        this.InitializeComponent();
+        InitializeComponent();
 
         OnNextTrack = NextTrackButton.Events().Click.Select(_ => Unit.Default);
         OnPrevTrack = PreviousTrackButton.Events().Click.Select(_ => Unit.Default);
         OnStaticSkip = SkipIntroButton.Events().Click.Select(_ => Unit.Default);
         OnDynamicSkip = DynamicSkipIntroButton.Events().Click.Select(_ => Unit.Default);
         OnAddCc = Observable.Empty<Unit>();
-        OnQualityChanged = Observable.Empty<string>();
+        OnQualityChanged = _onQualityChanged;
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
-
     }
 
     private void SkipBackwardButton_Click(object sender, RoutedEventArgs e)
