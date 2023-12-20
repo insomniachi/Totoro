@@ -12,25 +12,9 @@
     <Grid x:Name="rootGrid">
         <winui:FullScreenContainer x:Name="FSC">
             <winui:FlyleafHost x:Name="flyleafHost" Player="{x:Bind Player, Mode=OneWay}">
-                <Grid
-                    Margin="0,0,0,0"
-                    VerticalAlignment="Bottom"
-                    AllowFocusOnInteraction="False"
-                    Background="Transparent">
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        FontSize="30"
-                        FontWeight="Bold"
-                        Foreground="White"
-                        Text="{x:Bind Player.Subtitles.SubsText, Mode=OneWay}" />
+                <Grid Margin="0,0,0,0">
                     <local:FlyleafTransportControls
                         x:Name="TransportControls"
-                        Grid.Row="1"
                         x:FieldModifier="public"
                         Player="{x:Bind Player, Mode=OneWay}" />
                 </Grid>

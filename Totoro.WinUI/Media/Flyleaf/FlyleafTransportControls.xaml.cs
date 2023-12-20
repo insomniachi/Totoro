@@ -1,6 +1,9 @@
+using System.Numerics;
 using FlyleafLib.MediaPlayer;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using ReactiveMarbles.ObservableEvents;
 
 namespace Totoro.WinUI.Media.Flyleaf;
@@ -81,10 +84,11 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         OnNextTrack = NextTrackButton.Events().Click.Select(_ => Unit.Default);
         OnPrevTrack = PreviousTrackButton.Events().Click.Select(_ => Unit.Default);
         OnStaticSkip = SkipIntroButton.Events().Click.Select(_ => Unit.Default);
-        OnDynamicSkip = Observable.Empty<Unit>();
+        OnDynamicSkip = DynamicSkipIntroButton.Events().Click.Select(_ => Unit.Default);
         OnAddCc = Observable.Empty<Unit>();
         OnQualityChanged = Observable.Empty<string>();
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
+
     }
 
     private void SkipBackwardButton_Click(object sender, RoutedEventArgs e)

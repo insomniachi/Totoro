@@ -52,12 +52,12 @@ internal class RealDebridService : IDebridService
 
     public async Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magnetLink)
     {
-        if(!IsAuthenticated)
+        if (!IsAuthenticated)
         {
-                            return Enumerable.Empty<DirectDownloadLink>();
-        }    
+            return Enumerable.Empty<DirectDownloadLink>();
+        }
 
-        if(_useMock)
+        if (_useMock)
         {
             await Task.Delay(0);
             IEnumerable<DirectDownloadLink> mock = new List<DirectDownloadLink>()

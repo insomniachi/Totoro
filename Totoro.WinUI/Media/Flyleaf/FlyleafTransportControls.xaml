@@ -6,15 +6,46 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
 
-    <Grid Background="#A3000000">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Margin="8,0,8,0">
+
+        <Grid>
+            <Button
+                x:Name="DynamicSkipIntroButton"
+                Width="150"
+                Height="50"
+                Margin="10,30"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                VerticalContentAlignment="Center"
+                Content="Skip"
+                 FontSize="20"
+                FontWeight="Bold"
+                Foreground="White"
+                Visibility="{x:Bind help:Converters.BooleanToVisibility(IsSkipButtonVisible), Mode=OneWay}">
+                <Button.Background>
+                    <SolidColorBrush Opacity="0.5" Color="Black" />
+                </Button.Background>
+            </Button>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                FontSize="50"
+                FontWeight="SemiBold"
+                Foreground="White"
+                Text="{x:Bind Player.Subtitles.SubsText, Mode=OneWay}"
+                TextAlignment="Center"
+                TextWrapping="Wrap"
+                Visibility="{x:Bind help:Converters.StringToVisibility(Player.Subtitles.SubsText), Mode=OneWay}" />
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="8,0,8,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="*" />
@@ -43,7 +74,7 @@
                 Text="{x:Bind help:Converters.TicksToTime(Player.Duration), Mode=OneWay}" />
         </Grid>
 
-        <Grid Grid.Row="1" Margin="8">
+        <Grid Grid.Row="2" Margin="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="*" />
@@ -117,5 +148,6 @@
                     Value="{x:Bind Player.Audio.Volume, Mode=TwoWay}" />
             </StackPanel>
         </Grid>
+
     </Grid>
 </UserControl>

@@ -31,8 +31,8 @@ namespace Totoro.WinUI.Media.Flyleaf
             Paused = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Paused).Select(x => Unit.Default);
             Playing = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Playing).Select(x => Unit.Default);
             PlaybackEnded = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended).Select(x => Unit.Default);
-            DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Select(x => TimeSpan.FromMilliseconds(x));
-            PositionChanged = MediaPlayer.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime)).Select(_ => TimeSpan.FromMilliseconds(MediaPlayer.CurTime));
+            DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Select(x => new TimeSpan(x));
+            PositionChanged = MediaPlayer.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime)).Select(_ => new TimeSpan(MediaPlayer.CurTime));
         }
 
         public ValueTask AddSubtitle(string file)
