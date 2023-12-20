@@ -56,5 +56,10 @@ namespace Totoro.Core.Tests.Helpers
         public Task<Unit> SetMedia(VideoStreamModel stream) => Task.FromResult(Unit.Default);
 
         public ValueTask AddSubtitle(string file) => ValueTask.CompletedTask;
+
+        public void SetPlaybackRate(PlaybackRate rate)
+        {
+
+        }
     }
 }

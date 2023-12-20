@@ -27,13 +27,13 @@
 	<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
 	<PackageReference Include="MonoTorrent" Version="2.0.7" />
 	<PackageReference Include="RD.NET" Version="2.1.4" />
-	<PackageReference Include="ReactiveUI.Fody" Version="19.5.1" />
+	<PackageReference Include="ReactiveUI.Fody" Version="19.5.31" />
 	<PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
 	<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-	<PackageReference Include="SharpCompress" Version="0.34.2" />
-	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.8.6" />
+	<PackageReference Include="SharpCompress" Version="0.35.0" />
+	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="14.8.12" />
 	<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-	<PackageReference Include="Splat.Serilog" Version="14.8.6" />
+	<PackageReference Include="Splat.Serilog" Version="14.8.12" />
 	<PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
 	<PackageReference Include="YoutubeExplode" Version="6.3.9" />
 	<PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />

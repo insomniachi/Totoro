@@ -7,11 +7,15 @@ namespace Totoro.Core.Services.Debrid;
 internal class RealDebridService : IDebridService
 {
     private readonly RdNetClient _client = new();
-    private bool _useMock = true;
+    private readonly bool _useMock = true;
 
-    public RealDebridService()
+    public RealDebridService(ISettings settings)
     {
-        _client.UseApiAuthentication("TWGXW4YJCPUVH2VAANZB7WCML5S54O6J7J2CJUBKMKY4K43IFYIA");
+        if(!string.IsNullOrEmpty(settings.PremiumizeApiKey))
+        {
+            _client.UseApiAuthentication(settings.PremiumizeApiKey);
+        }
+        IsAuthenticated = !string.IsNullOrEmpty(settings.PremiumizeApiKey);
     }
 
     public DebridServiceType Type => DebridServiceType.RealDebrid;
@@ -48,6 +52,11 @@ internal class RealDebridService : IDebridService
 
     public async Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magnetLink)
     {
+        if(!IsAuthenticated)
+        {
+                            return Enumerable.Empty<DirectDownloadLink>();
+        }    
+
         if(_useMock)
         {
             await Task.Delay(0);

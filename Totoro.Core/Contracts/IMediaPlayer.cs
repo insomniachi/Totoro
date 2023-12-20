@@ -7,6 +7,7 @@ public interface IMediaPlayer : IDisposable
     void Pause();
     void SeekTo(TimeSpan ts);
     void Seek(TimeSpan ts, SeekDirection direction);
+    void SetPlaybackRate(PlaybackRate rate);
     ValueTask AddSubtitle(string file);
     IObservable<Unit> Paused { get; }
     IObservable<Unit> Playing { get; }
@@ -22,5 +23,13 @@ public enum SeekDirection
 {
     Forward,
     Backward,
+}
+
+public enum PlaybackRate
+{
+    One,
+    OnePointTwoFive,
+    OnePointFive,
+    Two
 }
 

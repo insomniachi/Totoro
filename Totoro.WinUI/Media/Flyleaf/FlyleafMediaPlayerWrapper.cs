@@ -74,5 +74,9 @@ namespace Totoro.WinUI.Media.Flyleaf
             MediaPlayer.OpenAsync(stream.StreamUrl);
             return Task.FromResult(Unit.Default);
         }
+
+        public void SetPlaybackRate(PlaybackRate rate)
+        {
+        }
     }
 }

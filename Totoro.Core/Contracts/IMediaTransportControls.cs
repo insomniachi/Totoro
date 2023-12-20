@@ -9,6 +9,7 @@ public interface IMediaTransportControls
     IObservable<Unit> OnAddCc { get; }
     IObservable<string> OnQualityChanged { get; }
     IObservable<Unit> OnSubmitTimeStamp { get; }
+    IObservable<PlaybackRate> PlaybackRateChanged { get; }
     bool IsSkipButtonVisible { get; set; }
     bool IsNextTrackButtonVisible { get; set; }
     bool IsPreviousTrackButtonVisible { get; set; }

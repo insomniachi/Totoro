@@ -28,6 +28,8 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public string SelectedResolution { get; set; }
     public IEnumerable<string> Resolutions { get; set; }
 
+    public IObservable<PlaybackRate> PlaybackRateChanged => Observable.Empty<PlaybackRate>();
+
     public static readonly DependencyProperty PlayerProperty =
         DependencyProperty.Register("Player", typeof(Player), typeof(FlyleafTransportControls), new PropertyMetadata(null));
 

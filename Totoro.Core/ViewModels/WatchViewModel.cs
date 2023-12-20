@@ -92,7 +92,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(type =>
             {
                 Provider = _providerFactory.CreatePlugin(type);
-                if(MediaPlayer.TransportControls is { } transportControls)
+                if(MediaPlayer?.TransportControls is { } transportControls)
                 {
                     RxApp.MainThreadScheduler.Schedule(() => transportControls.IsAddCCButtonVisibile = UseTorrents || type == "zoro");
                 }

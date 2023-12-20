@@ -1,4 +1,5 @@
-﻿using System.Reactive.Subjects;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
@@ -15,6 +16,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     private readonly Subject<Unit> _onDynamicSkipIntro = new();
     private readonly Subject<Unit> _onSubmitTimeStamp = new();
     private readonly Subject<Unit> _onAddCc = new();
+    private readonly Subject<PlaybackRate> _onPlaybackRateChanged = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
     private AppBarButton _addCCButton;
@@ -144,6 +146,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     public IObservable<string> OnQualityChanged => _onQualityChanged;
     public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
+    public IObservable<PlaybackRate> PlaybackRateChanged => _onPlaybackRateChanged;
     public MediaPlayer MediaPlayer { get; set; }
 
     public CustomMediaTransportControls(IWindowService windowService)
@@ -159,6 +162,8 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         IsSkipForwardButtonVisible = true;
         IsSkipForwardEnabled = true;
         IsTextScaleFactorEnabled = true;
+        IsPlaybackRateButtonVisible = true;
+        IsPlaybackRateEnabled = true;
 
         windowService?
            .IsFullWindowChanged
@@ -178,7 +183,6 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
         var smallSkipForward = GetTemplateChild("SmallSkipForward") as AppBarButton;
         var smallSkipBackward = GetTemplateChild("SmallSkipBackward") as AppBarButton;
-
         _fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;

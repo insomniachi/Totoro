@@ -224,4 +224,15 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
     }
 
     private void ShowCCSelectionButton() => RxApp.MainThreadScheduler.Schedule(() => TransportControls.IsAddCCButtonVisibile = true);
+
+    public void SetPlaybackRate(PlaybackRate rate)
+    {
+        _player.PlaybackRate = rate switch
+        {
+            PlaybackRate.OnePointTwoFive => 1.25,
+            PlaybackRate.OnePointFive => 1.5,
+            PlaybackRate.Two => 2,
+            _ => 1
+        };
+    }
 }

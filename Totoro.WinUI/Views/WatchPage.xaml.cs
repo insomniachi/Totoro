@@ -79,6 +79,11 @@ public sealed partial class WatchPage : WatchPageBase
                             await wrapper.AddSubtitle(subtitleFile);
                         });
 
+                    //wrapper
+                    //    .TransportControls
+                    //    .PlaybackRateChanged
+                    //    .Subscribe(rate => wrapper.SetPlaybackRate(rate));
+
                     wrapper
                         .DurationChanged
                         .ObserveOn(RxApp.MainThreadScheduler)
