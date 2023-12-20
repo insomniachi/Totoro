@@ -22,7 +22,11 @@
 	<ItemGroup>
 	  <None Remove="Dialogs\Views\AuthenticateSimklView.xaml" />
 	  <None Remove="Dialogs\Views\PluginStoreView.xaml" />
+	  <None Remove="Media\Flyleaf\FlyleafMediaPlayerElement.xaml" />
+	  <None Remove="Media\Flyleaf\FlyleafTransportControls.xaml" />
 	  <None Remove="Styles\TextBlock.xaml" />
+	  <None Remove="UserControls\ShadowText.xaml" />
+	  <None Remove="Views\BlankPage1.xaml" />
 	  <None Remove="Views\DiscoverMangaPage.xaml" />
 	  <None Remove="Views\ReadPage.xaml" />
 	  <None Remove="Views\SettingsSections\MangaPluginsSection.xaml" />
@@ -40,6 +44,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Layout" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
+		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.20" />
 		
 		<!--<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="7.1.2" />-->
@@ -96,6 +101,18 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="UserControls\ShadowText.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Media\Flyleaf\FlyleafTransportControls.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Media\Flyleaf\FlyleafMediaPlayerElement.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\BlankPage1.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Dialogs\Views\AuthenticateSimklView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

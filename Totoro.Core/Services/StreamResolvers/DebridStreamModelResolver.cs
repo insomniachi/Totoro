@@ -9,7 +9,7 @@ public class DebridStreamModelResolver : IVideoStreamModelResolver, IEnableLogge
 {
     private readonly IDebridServiceContext _debridService;
     private readonly string _magnet;
-    private IEnumerable<DirectDownloadLink> _links;
+    private List<DirectDownloadLink> _links;
 
     public DebridStreamModelResolver(IDebridServiceContext debridService,
                                      string magnet)
@@ -20,7 +20,7 @@ public class DebridStreamModelResolver : IVideoStreamModelResolver, IEnableLogge
 
     public async Task Populate()
     {
-        _links = await _debridService.GetDirectDownloadLinks(_magnet);
+        _links = (await _debridService.GetDirectDownloadLinks(_magnet)).ToList();
 
         var options = new Options(title: false, extension: false, group: false);
         foreach (var item in _links)

@@ -251,12 +251,28 @@ public static partial class Converters
     public static PluginOptions GetTorrentsOptions(string pluginName) => GetOptions<ITorrentTracker>(pluginName);
     public static PluginOptions GetMediaOptions(string pluginName) => GetOptions<INativeMediaPlayer>(pluginName);
     public static PluginOptions GetMangaOptions(string pluginName) => GetOptions<MangaProvider>(pluginName);
+    
+    public static double TiksToSeconds(long value)
+    {
+        return value / 10000000.0;
+    }
+
+    public static long SecondsToTicks(double value)
+    {
+        return (long)(value * 10000000.0);
+    }
+
+    public static string TicksToTime(long value)
+    {
+        return new TimeSpan(value).ToString("hh\\:mm\\:ss");
+    }
 
     private static PluginOptions GetOptions<T>(string pluginName)
     {
         var options = App.GetService<IPluginOptionsStorage<T>>().GetOptions(pluginName).Options;
         return options;
     }
+
 
     [GeneratedRegex(@"(\d+)")]
     private static partial Regex GetNumber();

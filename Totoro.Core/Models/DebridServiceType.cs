@@ -2,5 +2,6 @@
 
 public enum DebridServiceType
 {
-    Premiumize
+    Premiumize,
+    RealDebrid
 }

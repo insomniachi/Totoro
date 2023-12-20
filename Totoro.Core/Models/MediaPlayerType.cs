@@ -3,6 +3,7 @@
 public enum MediaPlayerType
 {
     WindowsMediaPlayer,
-    Vlc
+    Vlc,
+    FFMpeg
 }
 

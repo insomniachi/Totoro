@@ -92,7 +92,10 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(type =>
             {
                 Provider = _providerFactory.CreatePlugin(type);
-                RxApp.MainThreadScheduler.Schedule(() => MediaPlayer.TransportControls.IsAddCCButtonVisibile = UseTorrents || type == "zoro");
+                if(MediaPlayer.TransportControls is { } transportControls)
+                {
+                    RxApp.MainThreadScheduler.Schedule(() => transportControls.IsAddCCButtonVisibile = UseTorrents || type == "zoro");
+                }
             });
 
         this.ObservableForProperty(x => x.Anime, x => x)
@@ -329,7 +332,7 @@ public partial class WatchViewModel : NavigatableViewModel
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         UseTorrents = parameters.ContainsKey("TorrentModel") || parameters.ContainsKey("TorrentManager");
-        MediaPlayerType = UseTorrents ? Models.MediaPlayerType.Vlc : _settings.MediaPlayerType;
+        MediaPlayerType = UseTorrents ? Models.MediaPlayerType.FFMpeg : _settings.MediaPlayerType;
         ProviderType = parameters.GetValueOrDefault("Provider", _settings.DefaultProviderType) as string;
         _providerOptions = _providerFactory.GetOptions(ProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";

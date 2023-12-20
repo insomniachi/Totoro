@@ -9,6 +9,7 @@ using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
 using Totoro.WinUI.Dialogs.Views;
 using Totoro.WinUI.Media;
+using Totoro.WinUI.Media.Flyleaf;
 using Totoro.WinUI.Media.Vlc;
 using Totoro.WinUI.Media.Wmp;
 using Totoro.WinUI.Services;
@@ -95,6 +96,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IMediaPlayerFactory, MediaPlayerFactory>();
         services.AddMediaPlayer<WinUIMediaPlayerWrapper>();
         services.AddMediaPlayer<LibVLCMediaPlayerWrapper>();
+        services.AddMediaPlayer<FlyleafMediaPlayerWrapper>();
 
 
         return services;
@@ -113,6 +115,7 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<NowPlayingViewModel, NowPlayingPage>(true);
         services.AddPageForNavigation<DiscoverMangaViewModel, DiscoverMangaPage>();
         services.AddPageForNavigation<ReadViewModel, ReadPage>();
+        services.AddPageForNavigation<BlankPageViewModel, BlankPage1>();
 
         return services;
     }
