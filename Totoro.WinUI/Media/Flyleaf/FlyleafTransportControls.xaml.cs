@@ -1,4 +1,5 @@
 using System.Reactive.Subjects;
+using FlyleafLib.MediaFramework.MediaStream;
 using FlyleafLib.MediaPlayer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -180,5 +181,35 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     {
         var rate = (PlaybackRate)((ToggleMenuFlyoutItem)sender).Tag;
         _onPlaybackRateChanged.OnNext(rate);
+    }
+
+    public void UpdateSubtitleFlyout(ObservableCollection<SubtitlesStream> streams)
+    {
+        var flyout = CCSelectionButton.Flyout as MenuFlyout;
+        foreach (var stream in streams)
+        {
+            flyout.Items.Add(new ToggleMenuFlyoutItem
+            {
+                Text = stream.Title,
+            });
+        }
+
+        foreach (var item in flyout.Items.OfType<ToggleMenuFlyoutItem>())
+        {
+            item.Click += Item_Click;
+        }
+    }
+
+    private void Item_Click(object sender, RoutedEventArgs e)
+    {
+        var title = ((ToggleMenuFlyoutItem)sender).Text;
+        var stream = Player.Subtitles.Streams.FirstOrDefault(x => x.Title == title);
+
+        if(stream is null)
+        {
+            return;
+        }
+
+        Player.OpenAsync(stream);
     }
 }

@@ -50,15 +50,15 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
         });
 
         _pointerMoved
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Do(_ => TransportControls.Bar.Visibility = Visibility.Visible)
             .Throttle(TimeSpan.FromSeconds(3))
-            .Subscribe(_ => TransportControls.Bar.Visibility = Visibility.Collapsed);
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => TransportControls.Bar.Visibility = Visibility.Collapsed, RxApp.DefaultExceptionHandler.OnError);
 
     }
 
     private void FSC_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
+        TransportControls.Bar.Visibility = Visibility.Visible;
         _pointerMoved.OnNext(Unit.Default);
     }
 }

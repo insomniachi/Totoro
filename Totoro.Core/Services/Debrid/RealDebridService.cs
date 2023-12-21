@@ -7,7 +7,7 @@ namespace Totoro.Core.Services.Debrid;
 internal class RealDebridService : IDebridService
 {
     private readonly RdNetClient _client = new();
-    private readonly bool _useMock = false;
+    private readonly bool _useMock = true;
 
     public RealDebridService(ISettings settings)
     {
@@ -52,11 +52,6 @@ internal class RealDebridService : IDebridService
 
     public async Task<IEnumerable<DirectDownloadLink>> GetDirectDownloadLinks(string magnetLink)
     {
-        if (!IsAuthenticated)
-        {
-            return Enumerable.Empty<DirectDownloadLink>();
-        }
-
         if (_useMock)
         {
             await Task.Delay(0);
@@ -69,6 +64,10 @@ internal class RealDebridService : IDebridService
                 }
             };
             return mock;
+        }
+        else if(!IsAuthenticated)
+        {
+            return Enumerable.Empty<DirectDownloadLink>();
         }
         else
         {

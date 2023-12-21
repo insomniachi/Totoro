@@ -1,4 +1,5 @@
-﻿using FlyleafLib.MediaPlayer;
+﻿using System.Reactive.Concurrency;
+using FlyleafLib.MediaPlayer;
 using Splat;
 
 namespace Totoro.WinUI.Media.Flyleaf
@@ -40,9 +41,23 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         private void MediaPlayer_OpenCompleted(object sender, OpenCompletedArgs e)
         {
+            if(e.IsSubtitles)
+            {
+                return;
+            }
+
             if(_offsetInSeconds is > 0)
             {
                 MediaPlayer.SeekAccurate((int)TimeSpan.FromSeconds(_offsetInSeconds.Value).TotalMilliseconds);
+            }
+
+            if(MediaPlayer.Subtitles.Streams.Count > 1)
+            {
+                RxApp.MainThreadScheduler.Schedule(() =>
+                {
+                    TransportControls.IsCCSelectionVisible = true;
+                    ((FlyleafTransportControls)TransportControls).UpdateSubtitleFlyout(MediaPlayer.Subtitles.Streams);
+                });
             }
         }
 
