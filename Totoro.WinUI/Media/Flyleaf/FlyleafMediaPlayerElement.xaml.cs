@@ -26,7 +26,6 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
 
         Engine.Start(new EngineConfig()
         {
-            FFmpegPath = @"E:\FFmpeg",
             FFmpegDevices = false,    // Prevents loading avdevice/avfilter dll files. Enable it only if you plan to use dshow/gdigrab etc.
 
 #if RELEASE
@@ -38,6 +37,7 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
             FFmpegLogLevel = FFmpegLogLevel.Warning,
             LogLevel = LogLevel.Debug,
             LogOutput = ":debug",
+            FFmpegPath = @"E:\FFmpeg",
             //LogOutput         = ":console",
             //LogOutput         = @"C:\Flyleaf\Logs\flyleaf.log",                
 #endif
