@@ -1,20 +1,27 @@
-﻿namespace Totoro.Core.Services;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Totoro.Core.Services;
 
 public class AnimeServiceContext : IAnimeServiceContext
 {
     private readonly ISettings _settings;
     private readonly IConnectivityService _connectivityService;
-    private readonly Dictionary<ListServiceType, IAnimeService> _services;
+    private readonly Dictionary<ListServiceType, Lazy<IAnimeService>> _services;
 
     public AnimeServiceContext(ISettings settings,
-                               IEnumerable<IAnimeService> services,
+                               [FromKeyedServices(ListServiceType.MyAnimeList)] Lazy<IAnimeService> myAnimeListService,
+                               [FromKeyedServices(ListServiceType.AniList)] Lazy<IAnimeService> anilistService,
+                               [FromKeyedServices(ListServiceType.Simkl)] Lazy<IAnimeService> simklService,
                                IConnectivityService connectivityService)
     {
         _settings = settings;
         _connectivityService = connectivityService;
-        _services = services.Any()
-            ? services.ToDictionary(x => x.Type, x => x)
-            : new();
+        _services = new()
+        {
+            { ListServiceType.MyAnimeList, myAnimeListService },
+            { ListServiceType.AniList, anilistService },
+            { ListServiceType.Simkl, simklService }
+        };
     }
 
     public ListServiceType Current => _settings.DefaultListService;
@@ -26,7 +33,7 @@ public class AnimeServiceContext : IAnimeServiceContext
             return Observable.Return(Enumerable.Empty<AnimeModel>());
         }
 
-        return _services[_settings.DefaultListService].GetAiringAnime();
+        return _services[_settings.DefaultListService].Value.GetAiringAnime();
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
@@ -36,7 +43,7 @@ public class AnimeServiceContext : IAnimeServiceContext
             return Observable.Return(Enumerable.Empty<AnimeModel>());
         }
 
-        return _services[_settings.DefaultListService].GetAnime(name);
+        return _services[_settings.DefaultListService].Value.GetAnime(name);
     }
 
     public IObservable<AnimeModel> GetInformation(long id)
@@ -46,7 +53,7 @@ public class AnimeServiceContext : IAnimeServiceContext
             return Observable.Return(new AnimeModel());
         }
 
-        return _services[_settings.DefaultListService].GetInformation(id);
+        return _services[_settings.DefaultListService].Value.GetInformation(id);
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
@@ -56,6 +63,6 @@ public class AnimeServiceContext : IAnimeServiceContext
             return Observable.Return(Enumerable.Empty<AnimeModel>());
         }
 
-        return _services[_settings.DefaultListService].GetSeasonalAnime();
+        return _services[_settings.DefaultListService].Value.GetSeasonalAnime();
     }
 }
