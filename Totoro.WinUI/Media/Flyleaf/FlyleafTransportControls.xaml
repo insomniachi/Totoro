@@ -33,6 +33,7 @@
                 </Button.Background>
             </Button>
             <TextBlock
+                Margin="0,0,0,20"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Bottom"
                 FontSize="50"

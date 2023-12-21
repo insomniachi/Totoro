@@ -7,7 +7,7 @@ namespace Totoro.Core.Services.Debrid;
 internal class RealDebridService : IDebridService
 {
     private readonly RdNetClient _client = new();
-    private readonly bool _useMock = true;
+    private readonly bool _useMock = false;
 
     public RealDebridService(ISettings settings)
     {
