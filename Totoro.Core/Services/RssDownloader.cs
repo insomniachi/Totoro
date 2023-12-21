@@ -15,7 +15,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
     private readonly IToastService _toastService;
     private readonly ITrackingServiceContext _trackingServiceContext;
     private readonly List<InfoHash> _infoHashes;
-    private readonly List<AnimeModel> _watchingAnime = new();
+    private readonly List<AnimeModel> _watchingAnime = [];
 
     public IList<RssFeed> Feeds { get; }
 
@@ -30,7 +30,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
         _settings = settings;
         _toastService = toastService;
         _trackingServiceContext = trackingServiceContext;
-        _infoHashes = localSettingsService.ReadSetting<List<string>>(HashKey, new()).Select(InfoHash.FromHex).ToList();
+        _infoHashes = localSettingsService.ReadSetting<List<string>>(HashKey, []).Select(InfoHash.FromHex).ToList();
 
         Feeds = new List<RssFeed>()
         {

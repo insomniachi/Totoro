@@ -212,18 +212,18 @@ namespace Totoro.Core.Services.AniList
         {
             if (trailer is null)
             {
-                return new List<Video>();
+                return [];
             }
 
-            return new List<Video>
-            {
+            return
+            [
                 new Video
                 {
                     Title = "Trailer",
                     Url = $"https://www.youtube.com/watch?v={trailer.Id}/",
                     Thumbnail = trailer.Thumbnail
                 }
-            };
+            ];
         }
 
         private static string ConvertSource(MediaSource? source)

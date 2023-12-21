@@ -4,7 +4,7 @@ namespace Totoro.Core;
 
 public class State : IState
 {
-    private readonly Dictionary<string, object> _state = new();
+    private readonly Dictionary<string, object> _state = [];
 
     public bool IsEmpty => !_state.Any();
 

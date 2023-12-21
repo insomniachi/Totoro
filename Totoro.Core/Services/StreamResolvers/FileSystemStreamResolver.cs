@@ -6,7 +6,7 @@ internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
 {
     private readonly DirectoryInfo _directory;
     private readonly string[] _videoFileExtensions = new[] { ".mkv", ".mp4" };
-    private readonly Dictionary<int, string> _episodes = new();
+    private readonly Dictionary<int, string> _episodes = [];
     private static Stream _prevStream;
 
     public FileSystemStreamResolver(string directory)

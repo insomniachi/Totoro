@@ -50,7 +50,7 @@ internal class StreamProvider : IAnimeStreamProvider
         var stream = new VideoStreamsForEpisode();
         var token = HttpUtility.UrlDecode(jar.First(x => x.Name == "XSRF-TOKEN").Value);
         stream.AdditionalInformation.Title = jObject?["props"]?["episode"]?["data"]?["title"]?.AsArray()[0]?["text"]?.ToString();
-        foreach (var item in jObject?["props"]?["video"]?["data"]?["mirror"]?.AsArray() ?? new JsonArray())
+        foreach (var item in jObject?["props"]?["video"]?["data"]?["mirror"]?.AsArray() ?? [])
         {
             var code = item?["code"];
             stream.Streams.Add(new VideoStream

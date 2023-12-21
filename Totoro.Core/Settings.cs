@@ -35,7 +35,7 @@ public static class Settings
     public static Key<string> DefaultMediaPlayer { get; } = new("DefaultMediaPlayer", "vlc");
     public static Key<bool> MediaDetectionEnabled { get; } = new("MediaDetectionEnabled", false);
     public static Key<bool> OnlyDetectMediaInLibraryFolders { get; } = new("OnlyDetectMediaInLibraryFolders", false);
-    public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", new ObservableCollection<string>());
+    public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", []);
     public static Key<StartupOptions> StartupOptions { get; } = new("StartupOptions", () => new StartupOptions());
     public static Key<DisplayMode> ListDisplayMode { get; } = new("ListDisplayMode", DisplayMode.Grid);
     public static Key<DataGridSettings> UserListDataGridSettings { get; } = new("UserListDataGridSettings", GetDefaultUserListDataGridSettings);
@@ -56,8 +56,8 @@ public static class Settings
         return new DataGridSettings
         {
             Sort = new("Title", true),
-            Columns = new List<DataGridColumnModel>()
-            {
+            Columns =
+            [
                 new()
                 {
                     Name = "Title",
@@ -114,7 +114,7 @@ public static class Settings
                     DisplayIndex = 9,
                     IsVisible = false
                 }
-            }
+            ]
         };
     }
 }

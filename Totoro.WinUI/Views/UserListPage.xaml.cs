@@ -16,16 +16,16 @@ public sealed partial class UserListPage : UserListPageBase
 {
     public const string DataGridSettingsKey = "UserListDataGridSettings";
 
-    public List<AnimeStatus> Statuses { get; set; } = new List<AnimeStatus>
-    {
+    public List<AnimeStatus> Statuses { get; set; } =
+    [
         AnimeStatus.Watching,
         AnimeStatus.PlanToWatch,
         AnimeStatus.OnHold,
         AnimeStatus.Completed,
         AnimeStatus.Dropped
-    };
+    ];
 
-    public static List<int?> Scores { get; } = new() { null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    public static List<int?> Scores { get; } = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     public static string ToStatusString(AnimeStatus status)
     {

@@ -7,7 +7,7 @@ namespace Totoro.WinUI.Services;
 
 public class AiredEpisodeToastService : IAiredEpisodeToastService
 {
-    public Dictionary<long, TimeRemaining> Dictionary { get; set; } = new();
+    public Dictionary<long, TimeRemaining> Dictionary { get; set; } = [];
 
     private readonly IAnimeServiceContext _animeService;
     private readonly HttpClient _httpClient;

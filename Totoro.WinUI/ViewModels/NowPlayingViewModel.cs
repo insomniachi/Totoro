@@ -106,15 +106,15 @@ public class NowPlayingViewModel : NavigatableViewModel
     {
         Anime = await _animeServiceContext.GetInformation(animeId);
 
-        Info = new ObservableCollection<KeyValuePair<string, string>>
-        {
+        Info =
+        [
             new KeyValuePair<string, string>("Title :", Anime.Title),
             new KeyValuePair<string, string>("Episode :", $"({Episode}/{(Anime.TotalEpisodes is null ? "?" : Anime.TotalEpisodes.ToString())})"),
             new KeyValuePair<string, string>("Airing Status :", Converters.EnumToDescription(Anime.AiringStatus)),
             new KeyValuePair<string, string>("Season :", $"{Anime.Season.SeasonName} {Anime.Season.Year}"),
             new KeyValuePair<string, string>("Rating :", Anime.MeanScore.ToString()),
             new KeyValuePair<string, string>("Genres :", string.Join(", ", Anime.Genres)),
-        };
+        ];
     }
 
     public async void InitializeFromPlayer(INativeMediaPlayer player)
@@ -146,11 +146,11 @@ public class NowPlayingViewModel : NavigatableViewModel
 
         Episode = parsedResults.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
 
-        Info = new ObservableCollection<KeyValuePair<string, string>>
-        {
+        Info =
+        [
             new KeyValuePair<string, string>("Title :", title),
             new KeyValuePair<string, string>("Episode :", Episode),
-        };
+        ];
 
         var id = await _animeDetectionService.DetectFromFileName(title, true);
 

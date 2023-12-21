@@ -33,10 +33,10 @@ public class SettingsViewModel : NavigatableViewModel
     public IEnumerable<PluginInfo> TrackerTypes => PluginFactory<ITorrentTracker>.Instance.Plugins;
     public IEnumerable<PluginInfo> MangaProviderTypes => PluginFactory<MangaProvider>.Instance.Plugins;
     public IEnumerable<DisplayMode> ListDisplayModes { get; } = Enum.GetValues<DisplayMode>().Cast<DisplayMode>().Take(2).ToList();
-    public List<LogLevel> LogLevels { get; } = new List<LogLevel> { LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical };
-    public List<ListServiceType> ServiceTypes { get; } = new List<ListServiceType> { ListServiceType.MyAnimeList, ListServiceType.AniList, ListServiceType.Simkl };
-    public List<string> HomePages { get; } = new List<string> { "Discover", "My List" };
-    public List<string> AnimeActions { get; } = new List<string> { "Watch", "Info" };
+    public List<LogLevel> LogLevels { get; } = [LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
+    public List<ListServiceType> ServiceTypes { get; } = [ListServiceType.MyAnimeList, ListServiceType.AniList, ListServiceType.Simkl];
+    public List<string> HomePages { get; } = ["Discover", "My List"];
+    public List<string> AnimeActions { get; } = ["Watch", "Info"];
     public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
     public List<DebridServiceType> DebridServices { get; } = Enum.GetValues<DebridServiceType>().Cast<DebridServiceType>().ToList();
     public List<MediaPlayerType> MediaPlayerTypes { get; } = Enum.GetValues<MediaPlayerType>().Cast<MediaPlayerType>().ToList();

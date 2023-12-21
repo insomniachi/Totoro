@@ -116,11 +116,11 @@ public class TorrentingViewModel : NavigatableViewModel
     public TorrentModel PastedTorrent { get; } = new();
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
     public ReadOnlyObservableCollection<Transfer> Transfers => _transfers;
-    public ObservableCollection<PivotItemModel> Sections { get; } = new()
-    {
+    public ObservableCollection<PivotItemModel> Sections { get; } =
+    [
         new PivotItemModel{ Header = "Torrents" },
         new PivotItemModel{ Header = "Downloads" }
-    };
+    ];
 
     public ObservableCollection<TorrentManagerModel> EngineTorrents { get; }
 

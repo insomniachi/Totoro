@@ -9,14 +9,14 @@ namespace Totoro.Core.ViewModels;
 
 public class AboutAnimeViewModel : NavigatableViewModel
 {
-    public ObservableCollection<PivotItemModel> Pages { get; } = new()
-    {
+    public ObservableCollection<PivotItemModel> Pages { get; } =
+    [
         new PivotItemModel { Header = "Previews" },
         new PivotItemModel { Header = "Related" },
         new PivotItemModel { Header = "Recommended" },
         new PivotItemModel { Header = "OST" },
         new PivotItemModel { Header = "Torrents" }
-    };
+    ];
 
     public AboutAnimeViewModel(IAnimeServiceContext animeService,
                                IViewService viewService,

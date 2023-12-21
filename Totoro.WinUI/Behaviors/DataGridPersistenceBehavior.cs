@@ -9,7 +9,7 @@ namespace Totoro.WinUI.Behaviors;
 
 public class DataGridPersistenceBehavior : Behavior<DataGrid>
 {
-    private readonly CompositeDisposable _disposables = new();
+    private readonly CompositeDisposable _disposables = [];
 
     public static readonly DependencyProperty SettingsProperty =
         DependencyProperty.Register("Settings", typeof(DataGridSettings), typeof(DataGridPersistenceBehavior), new PropertyMetadata(null));

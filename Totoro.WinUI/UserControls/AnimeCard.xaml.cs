@@ -89,7 +89,7 @@ public sealed partial class AnimeCard : UserControl
     {
         if (anime is not AnimeModel fa)
         {
-            return new();
+            return [];
         }
 
         return new Dictionary<string, string>

@@ -8,10 +8,10 @@ namespace Totoro.Plugins;
 
 public class PluginIndex
 {
-    public List<PluginInfoSlim> Anime { get; set; } = new();
-    public List<PluginInfoSlim> Manga { get; set; } = new();
-    public List<PluginInfoSlim> Torrent { get; set; } = new();
-    public List<PluginInfoSlim> MediaDetection { get; set; } = new();
+    public List<PluginInfoSlim> Anime { get; set; } = [];
+    public List<PluginInfoSlim> Manga { get; set; } = [];
+    public List<PluginInfoSlim> Torrent { get; set; } = [];
+    public List<PluginInfoSlim> MediaDetection { get; set; } = [];
 }
 
 public class PluginManager : IPluginManager, IEnableLogger
@@ -74,7 +74,7 @@ public class PluginManager : IPluginManager, IEnableLogger
     {
         if (!Directory.Exists(folder))
         {
-            return new();
+            return [];
         }
 
         return Directory

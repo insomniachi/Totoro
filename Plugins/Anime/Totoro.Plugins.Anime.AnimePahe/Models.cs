@@ -12,7 +12,7 @@ internal class AnimePaheEpisodePage
     public string prev_page_url { get; set; } = string.Empty;
     public int from { get; set; }
     public int to { get; set; }
-    public List<AnimePaheEpisodeInfo> data { get; set; } = new();
+    public List<AnimePaheEpisodeInfo> data { get; set; } = [];
 }
 
 internal class AnimePaheEpisodeInfo

@@ -28,8 +28,8 @@ public interface IPluginOptionsStorage<T>
 
 internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
 {
-    private readonly Dictionary<string, PluginOptionWrapper> _configs = new();
-    private readonly Dictionary<string, Dictionary<string, string>> _configValues = new();
+    private readonly Dictionary<string, PluginOptionWrapper> _configs = [];
+    private readonly Dictionary<string, Dictionary<string, string>> _configValues = [];
     private readonly ISettings _settings;
     private readonly ILocalSettingsService _localSettingsService;
 
@@ -38,7 +38,7 @@ internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
     {
         _settings = settings;
         _localSettingsService = localSettingsService;
-        _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>($"{typeof(T).Name}Configs", new());
+        _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>($"{typeof(T).Name}Configs", []);
     }
 
     public PluginOptionWrapper GetOptions(string pluginName) => _configs[pluginName];

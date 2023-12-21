@@ -29,7 +29,7 @@ public class OfflineAnimeIdService : IOfflineAnimeIdService
 
     public void Initialize()
     {
-        _ids = _fileService.Read<List<AnimeIdExtended>>(_knownFolders.ApplicationData, _fileName) ?? new();
+        _ids = _fileService.Read<List<AnimeIdExtended>>(_knownFolders.ApplicationData, _fileName) ?? [];
         _idsMap = GetMapping(_settings.DefaultListService);
     }
 

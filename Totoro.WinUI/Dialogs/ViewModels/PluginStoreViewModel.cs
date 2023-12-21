@@ -35,7 +35,7 @@ public class PluginStoreViewModel : DialogViewModel
         }
     }
 
-    public ObservableCollection<PluginInfoSlim> Plugins { get; } = new();
+    public ObservableCollection<PluginInfoSlim> Plugins { get; } = [];
 
     private static List<PluginInfoSlim> GetPluginsOfType(PluginIndex index, string type)
     {

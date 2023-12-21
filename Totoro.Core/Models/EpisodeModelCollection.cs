@@ -59,8 +59,8 @@ namespace Totoro.Core.Models
 
         public static EpisodeModelCollection FromEpisode(int episode)
         {
-            return new EpisodeModelCollection
-            {
+            return
+            [
                 new EpisodeModel
                 {
                     EpisodeNumber = episode,
@@ -68,7 +68,7 @@ namespace Totoro.Core.Models
                     SpecialEpisodeNumber = string.Empty,
                     EpisodeTitle = string.Empty,
                 }
-            };
+            ];
         }
 
         public static EpisodeModelCollection FromEpisodes(IEnumerable<int> episodes)
@@ -137,6 +137,6 @@ namespace Totoro.Core.Models
             return collecton;
         }
 
-        public static EpisodeModelCollection Empty { get; } = new EpisodeModelCollection();
+        public static EpisodeModelCollection Empty { get; } = [];
     }
 }

@@ -7,7 +7,7 @@ namespace Totoro.Core.Services;
 
 public class LocalSettingsService : ILocalSettingsService
 {
-    private readonly JsonObject _settings = new();
+    private readonly JsonObject _settings = [];
     private readonly string _file;
     private readonly JsonSerializerOptions _options;
     public LocalSettingsService(IKnownFolders knownFolders)

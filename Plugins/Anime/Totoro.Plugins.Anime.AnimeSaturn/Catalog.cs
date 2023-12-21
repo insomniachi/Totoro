@@ -26,7 +26,7 @@ internal class Catalog : IAnimeCatalog
             })
             .GetStringAsync();
 
-        foreach (var item in JsonNode.Parse(response)?.AsArray() ?? new JsonArray())
+        foreach (var item in JsonNode.Parse(response)?.AsArray() ?? [])
         {
             var title = item!["name"]!.ToString();
             var image = item!["image"]!.ToString();

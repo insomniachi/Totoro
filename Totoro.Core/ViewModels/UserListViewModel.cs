@@ -10,7 +10,7 @@ public partial class AnimeCollectionFilter : ReactiveObject
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string Year { get; set; }
     [Reactive] public AiringStatus? AiringStatus { get; set; }
-    [Reactive] public ObservableCollection<string> Genres { get; set; } = new();
+    [Reactive] public ObservableCollection<string> Genres { get; set; } = [];
 
     [GeneratedRegex(@"(19[5-9][0-9])|(20\d{2})")]
     private partial Regex YearRegex();
@@ -42,7 +42,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     private readonly SourceCache<AnimeModel, long> _searchCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
     private readonly ReadOnlyObservableCollection<AnimeModel> _searchResults;
-    private readonly HashSet<string> _genres = new();
+    private readonly HashSet<string> _genres = [];
 
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IAnimeServiceContext animeService,
@@ -168,7 +168,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     public bool IsAuthenticated { get; }
     public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
-    public List<string> SortableProperties { get; } = new() { "Title", "Mean Score", "User Score", "Date Started", "Date Completed", "Last Updated", "Type", "Next Episode" };
+    public List<string> SortableProperties { get; } = ["Title", "Mean Score", "User Score", "Date Started", "Date Completed", "Last Updated", "Type", "Next Episode"];
     public ICommand ChangeCurrentViewCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand SetDisplayMode { get; }

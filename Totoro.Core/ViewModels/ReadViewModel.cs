@@ -34,7 +34,7 @@ public class ReadViewModel : NavigatableViewModel
     [Reactive] public ChapterModel SelectedChapter { get; set; }
     [Reactive] public int NumberOfPages { get; set; }
     [Reactive] public int SelectedPage { get; set; }
-    public ObservableCollection<string> Pages { get; } = new();
+    public ObservableCollection<string> Pages { get; } = [];
 
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)

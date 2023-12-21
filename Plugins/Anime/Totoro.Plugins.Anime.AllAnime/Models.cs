@@ -12,9 +12,9 @@ class GetVersionResponse
 
 class EpisodeDetails
 {
-    public List<string> sub { get; set; } = new();
-    public List<string> dub { get; set; } = new();
-    public List<string> raw { get; set; } = new();
+    public List<string> sub { get; set; } = [];
+    public List<string> dub { get; set; } = [];
+    public List<string> raw { get; set; } = [];
 }
 
 class StreamLink

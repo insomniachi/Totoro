@@ -5,7 +5,7 @@ namespace Totoro.Core.Models
 {
     public class VideoStreamsForEpisodeModel
     {
-        private readonly Dictionary<string, VideoStreamModel> _streams = new();
+        private readonly Dictionary<string, VideoStreamModel> _streams = [];
         private readonly IEnumerable<StreamType> _streamTypes = Enumerable.Empty<StreamType>();
         private readonly IEnumerable<string> _qualities = Enumerable.Empty<string>();
 
