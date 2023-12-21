@@ -89,13 +89,28 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public Task<Unit> SetMedia(VideoStreamModel stream)
         {
-            this.Log().Debug($"Creating media from {stream.StreamUrl}");
-            MediaPlayer.OpenAsync(stream.StreamUrl);
+            if(stream.Stream is not null)
+            {
+                MediaPlayer.OpenAsync(stream.Stream);
+            }
+            else
+            {
+                this.Log().Debug($"Creating media from {stream.StreamUrl}");
+                MediaPlayer.OpenAsync(stream.StreamUrl);
+            }
+
             return Task.FromResult(Unit.Default);
         }
 
         public void SetPlaybackRate(PlaybackRate rate)
         {
+            MediaPlayer.Speed = rate switch
+            {
+                PlaybackRate.OnePointTwoFive => 1.25,
+                PlaybackRate.OnePointFive => 1.5,
+                PlaybackRate.Two => 2,
+                _ => 1
+            };
         }
     }
 }

@@ -53,6 +53,6 @@ public class RealDebrid
 
     private static IDebridService GetService()
     {
-        return new RealDebridService();
+        return new RealDebridService(Mock.Of<ISettings>());
     }
 }

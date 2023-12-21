@@ -10,6 +10,7 @@ namespace Totoro.WinUI.Media.Flyleaf;
 public sealed partial class FlyleafTransportControls : UserControl, IMediaTransportControls, IEnableLogger
 {
     private readonly Subject<string> _onQualityChanged = new();
+    private readonly Subject<PlaybackRate> _onPlaybackRateChanged = new();
 
     public bool IsNextTrackButtonVisible
     {
@@ -147,7 +148,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public IObservable<Unit> OnAddCc { get; }
     public IObservable<string> OnQualityChanged { get; }
     public IObservable<Unit> OnSubmitTimeStamp { get; }
-    public IObservable<PlaybackRate> PlaybackRateChanged => Observable.Empty<PlaybackRate>();
+    public IObservable<PlaybackRate> PlaybackRateChanged { get; }
 
     public FlyleafTransportControls()
     {
@@ -159,6 +160,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         OnDynamicSkip = DynamicSkipIntroButton.Events().Click.Select(_ => Unit.Default);
         OnAddCc = AddCcButton.Events().Click.Select(_ => Unit.Default);
         OnQualityChanged = _onQualityChanged;
+        PlaybackRateChanged = _onPlaybackRateChanged;
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
     }
 
@@ -174,11 +176,9 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         Player.SeekAccurate((int)ts.TotalMilliseconds);
     }
 
-    public void Show()
+    private void ToggleMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        bar.Visibility = Visibility.Visible;
-        Observable.Timer(TimeSpan.FromSeconds(3))
-                  .ObserveOn(RxApp.MainThreadScheduler)
-                  .Subscribe(_ => bar.Visibility = Visibility.Collapsed);
+        var rate = (PlaybackRate)((ToggleMenuFlyoutItem)sender).Tag;
+        _onPlaybackRateChanged.OnNext(rate);
     }
 }

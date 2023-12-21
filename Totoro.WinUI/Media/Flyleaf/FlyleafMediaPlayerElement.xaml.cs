@@ -1,3 +1,4 @@
+using System.Reactive.Subjects;
 using FlyleafLib;
 using FlyleafLib.MediaPlayer;
 using Microsoft.UI.Xaml;
@@ -8,6 +9,8 @@ namespace Totoro.WinUI.Media.Flyleaf;
 
 public sealed partial class FlyleafMediaPlayerElement : UserControl
 {
+    private readonly Subject<Unit> _pointerMoved = new();
+
     public Player Player
     {
         get { return (Player)GetValue(PlayerProperty); }
@@ -45,10 +48,17 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
             UIRefreshInterval = 250,      // How often (in ms) to notify the UI
             UICurTimePerSecond = true,     // Whether to notify UI for CurTime only when it's second changed or by UIRefreshInterval
         });
+
+        _pointerMoved
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(_ => TransportControls.Bar.Visibility = Visibility.Visible)
+            .Throttle(TimeSpan.FromSeconds(3))
+            .Subscribe(_ => TransportControls.Bar.Visibility = Visibility.Collapsed);
+
     }
 
     private void FSC_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        TransportControls.Show();
+        _pointerMoved.OnNext(Unit.Default);
     }
 }
