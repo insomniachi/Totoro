@@ -81,10 +81,6 @@
                     Icon="Video"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsWatchView), Mode=OneWay}" />
                 <NavigationViewItem
-                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.BlankPageViewModel"
-                    Content="Watch"
-                    Icon="Video" />
-                <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.AboutAnimeViewModel"
                     Content="About"
                     Icon="Document"

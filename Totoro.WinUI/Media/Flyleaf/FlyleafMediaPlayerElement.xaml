@@ -10,7 +10,7 @@
     xmlns:winui="using:FlyleafLib.Controls.WinUI"
     mc:Ignorable="d">
     <Grid x:Name="rootGrid">
-        <winui:FullScreenContainer x:Name="FSC">
+        <winui:FullScreenContainer x:Name="FSC" PointerMoved="FSC_PointerMoved">
             <winui:FlyleafHost x:Name="flyleafHost" Player="{x:Bind Player, Mode=OneWay}">
                 <Grid Margin="0,0,0,0">
                     <local:FlyleafTransportControls

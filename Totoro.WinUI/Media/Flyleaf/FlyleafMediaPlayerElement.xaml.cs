@@ -46,4 +46,9 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
             UICurTimePerSecond = true,     // Whether to notify UI for CurTime only when it's second changed or by UIRefreshInterval
         });
     }
+
+    private void FSC_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        TransportControls.Show();
+    }
 }

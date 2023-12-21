@@ -11,8 +11,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
     xmlns:uc="using:Totoro.WinUI.UserControls"
-    xmlns:viewmodels="using:Totoro.Core.ViewModels"
-    d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
 
     <Grid>

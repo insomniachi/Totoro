@@ -7,7 +7,7 @@ namespace Totoro.Core.Services.Debrid;
 internal class RealDebridService : IDebridService
 {
     private readonly RdNetClient _client = new();
-    private readonly bool _useMock = true;
+    private readonly bool _useMock = false;
 
     public RealDebridService(ISettings settings)
     {
@@ -62,7 +62,11 @@ internal class RealDebridService : IDebridService
             await Task.Delay(0);
             IEnumerable<DirectDownloadLink> mock = new List<DirectDownloadLink>()
             {
-                new DirectDownloadLink{ Path = "[Erai-raws] Hyakkano - 11 [1080p][Multiple Subtitle][D55CE876].mkv", Link = @"http://mum1.download.real-debrid.com/d/NKBC4XRHRYNTA41/%5BErai-raws%5D%20Hyakkano%20-%2011%20%5B1080p%5D%5BMultiple%20Subtitle%5D%5BD55CE876%5D.mkv"}
+                new ()
+                {
+                    Path = "[Erai-raws] Hyakkano - 11 [1080p][Multiple Subtitle][D55CE876].mkv", 
+                    Link = @"http://mum1.download.real-debrid.com/d/NKBC4XRHRYNTA41/%5BErai-raws%5D%20Hyakkano%20-%2011%20%5B1080p%5D%5BMultiple%20Subtitle%5D%5BD55CE876%5D.mkv"
+                }
             };
             return mock;
         }

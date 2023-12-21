@@ -26,7 +26,6 @@
 	  <None Remove="Media\Flyleaf\FlyleafTransportControls.xaml" />
 	  <None Remove="Styles\TextBlock.xaml" />
 	  <None Remove="UserControls\ShadowText.xaml" />
-	  <None Remove="Views\BlankPage1.xaml" />
 	  <None Remove="Views\DiscoverMangaPage.xaml" />
 	  <None Remove="Views\ReadPage.xaml" />
 	  <None Remove="Views\SettingsSections\MangaPluginsSection.xaml" />
@@ -108,9 +107,6 @@
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="Media\Flyleaf\FlyleafMediaPlayerElement.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</Page>
-		<Page Update="Views\BlankPage1.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
 		<Page Update="Dialogs\Views\AuthenticateSimklView.xaml">

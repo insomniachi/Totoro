@@ -115,7 +115,6 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<NowPlayingViewModel, NowPlayingPage>(true);
         services.AddPageForNavigation<DiscoverMangaViewModel, DiscoverMangaPage>();
         services.AddPageForNavigation<ReadViewModel, ReadPage>();
-        services.AddPageForNavigation<BlankPageViewModel, BlankPage1>();
 
         return services;
     }

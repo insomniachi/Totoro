@@ -3,10 +3,11 @@ using FlyleafLib.MediaPlayer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
+using Splat;
 
 namespace Totoro.WinUI.Media.Flyleaf;
 
-public sealed partial class FlyleafTransportControls : UserControl, IMediaTransportControls
+public sealed partial class FlyleafTransportControls : UserControl, IMediaTransportControls, IEnableLogger
 {
     private readonly Subject<string> _onQualityChanged = new();
 
@@ -79,6 +80,9 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public static readonly DependencyProperty IsNextTrackButtonVisibleProperty =
         DependencyProperty.Register("IsNextTrackButtonVisible", typeof(bool), typeof(FlyleafTransportControls), new PropertyMetadata(false));
 
+    public static readonly DependencyProperty PlayerProperty =
+    DependencyProperty.Register("Player", typeof(Player), typeof(FlyleafTransportControls), new PropertyMetadata(null));
+
     private static void OnSelectedResolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue is not string s)
@@ -145,9 +149,6 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public IObservable<Unit> OnSubmitTimeStamp { get; }
     public IObservable<PlaybackRate> PlaybackRateChanged => Observable.Empty<PlaybackRate>();
 
-    public static readonly DependencyProperty PlayerProperty =
-        DependencyProperty.Register("Player", typeof(Player), typeof(FlyleafTransportControls), new PropertyMetadata(null));
-
     public FlyleafTransportControls()
     {
         InitializeComponent();
@@ -156,7 +157,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         OnPrevTrack = PreviousTrackButton.Events().Click.Select(_ => Unit.Default);
         OnStaticSkip = SkipIntroButton.Events().Click.Select(_ => Unit.Default);
         OnDynamicSkip = DynamicSkipIntroButton.Events().Click.Select(_ => Unit.Default);
-        OnAddCc = Observable.Empty<Unit>();
+        OnAddCc = AddCcButton.Events().Click.Select(_ => Unit.Default);
         OnQualityChanged = _onQualityChanged;
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
     }
@@ -171,5 +172,13 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     {
         var ts = new TimeSpan(Player.CurTime) + TimeSpan.FromSeconds(30);
         Player.SeekAccurate((int)ts.TotalMilliseconds);
+    }
+
+    public void Show()
+    {
+        bar.Visibility = Visibility.Visible;
+        Observable.Timer(TimeSpan.FromSeconds(3))
+                  .ObserveOn(RxApp.MainThreadScheduler)
+                  .Subscribe(_ => bar.Visibility = Visibility.Collapsed);
     }
 }
