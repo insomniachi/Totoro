@@ -5,7 +5,10 @@ namespace Totoro.WinUI.ViewModels;
 
 public class NativeMediaPlayerTrackingUpdater : TrackingUpdater
 {
-    public NativeMediaPlayerTrackingUpdater(ITrackingServiceContext trackingService, ISettings settings, IViewService viewService, ISystemClock systemClock) : base(trackingService, settings, viewService, systemClock)
+    public NativeMediaPlayerTrackingUpdater(ITrackingServiceContext trackingService,
+                                            ISettings settings,
+                                            IViewService viewService,
+                                            TimeProvider timeProvider) : base(trackingService, settings, viewService, timeProvider)
     {
     }
 

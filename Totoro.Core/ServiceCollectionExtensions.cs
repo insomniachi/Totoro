@@ -49,7 +49,7 @@ namespace Totoro.Core
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();
             services.AddTransient<TotoroCommands>();
-            services.AddTransient<ISystemClock, SystemClock>();
+            services.AddTransient(_ => TimeProvider.System);
             services.AddTransient<ISchedulerProvider, SchedulerProvider>();
             services.AddTransient<IStreamPageMapper, StreamPageMapper>();
             services.AddTransient<IAnilistService, AnilistService>();
