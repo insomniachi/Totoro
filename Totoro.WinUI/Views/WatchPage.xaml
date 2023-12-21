@@ -4,14 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:flyleaf="using:Totoro.WinUI.Media.Flyleaf"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:Totoro.WinUI.Media"
     xmlns:uc="using:Totoro.WinUI.UserControls"
-    xmlns:viewmodels="using:Totoro.Core.ViewModels"
-    d:DataContext="{d:DesignInstance Type=viewmodels:WatchViewModel}"
     mc:Ignorable="d">
 
     <Grid>
@@ -32,12 +31,15 @@
             <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
                 <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" />
             </ctk:Case>
+            <ctk:Case Value="{x:Bind m:MediaPlayerType.FFMpeg}">
+                <flyleaf:FlyleafMediaPlayerElement x:Name="FlyleafMediaPlayerElement" />
+            </ctk:Case>
         </ctk:SwitchPresenter>
 
         <uc:Expander
             x:Name="EpisodesExpander"
             Grid.Column="1"
-            Margin="{StaticResource MediumTopMargin}"
+            Margin="{StaticResource LargeTopMargin}"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Top"

@@ -122,6 +122,7 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
     public IObservable<string> OnQualityChanged => _onQualityChanged;
     public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
+    public IObservable<PlaybackRate> PlaybackRateChanged => Observable.Empty<PlaybackRate>();
     public bool IsSkipButtonVisible
     {
         get => DynamicSkipButton?.Visibility == Visibility.Visible;
@@ -627,6 +628,8 @@ public class VlcMediaTransportControls : Control, IEnableLogger, IMediaTransport
         get { return (bool)GetValue(IsAddCCButtonVisibileProperty); }
         set { SetValue(IsAddCCButtonVisibileProperty, value); }
     }
+
+
 
     public static readonly DependencyProperty IsAddCCButtonVisibileProperty =
     DependencyProperty.Register("IsAddCCButtonVisibile", typeof(bool), typeof(VlcMediaTransportControls), new PropertyMetadata(false));

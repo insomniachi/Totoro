@@ -5,6 +5,7 @@ using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Media;
+using Totoro.WinUI.Media.Flyleaf;
 using Totoro.WinUI.Media.Vlc;
 using Totoro.WinUI.Media.Wmp;
 
@@ -42,6 +43,12 @@ public sealed partial class WatchPage : WatchPageBase
                         SubscribeDoubleTap(VlcMediaPlayerElement, windowService);
                         VlcMediaPlayerElement.MediaPlayer = vlcWrapper;
                     }
+                    else if(wrapper is FlyleafMediaPlayerWrapper flyleafWrapper)
+                    {
+                        SubscribeDoubleTap(FlyleafMediaPlayerElement, windowService);
+                        flyleafWrapper.SetTransportControls(FlyleafMediaPlayerElement.TransportControls);
+                        FlyleafMediaPlayerElement.Player = flyleafWrapper.MediaPlayer;
+                    }
 
                     this.WhenAnyValue(x => x.ViewModel.Qualities)
                         .Subscribe(resolutions => wrapper.TransportControls.Resolutions = resolutions);
@@ -71,6 +78,11 @@ public sealed partial class WatchPage : WatchPageBase
                             }
                             await wrapper.AddSubtitle(subtitleFile);
                         });
+
+                    //wrapper
+                    //    .TransportControls
+                    //    .PlaybackRateChanged
+                    //    .Subscribe(rate => wrapper.SetPlaybackRate(rate));
 
                     wrapper
                         .DurationChanged

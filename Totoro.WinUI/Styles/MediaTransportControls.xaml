@@ -291,6 +291,14 @@
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton
+                                                x:Name="PlaybackRateButton"
+                                                Style="{StaticResource AppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Playback Rate">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xEC58;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                            <AppBarButton
                                                 x:Name="CCSelectionButton"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=IsCCSelectionVisible, Mode=TwoWay, Converter={StaticResource BooleanToVisibilityConverter}}">

@@ -108,6 +108,7 @@ namespace Totoro.Core
         public static IServiceCollection AddTorrenting(this IServiceCollection services)
         {
             services.AddTransient<IDebridService, PremiumizeService>();
+            services.AddTransient<IDebridService, RealDebridService>();
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
 
             return services;

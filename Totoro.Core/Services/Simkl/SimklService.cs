@@ -80,13 +80,20 @@ internal class SimklService : ISimklService
             return id;
         }
 
-        var response = await _simklClient.Search(GetServiceType(_settings.DefaultListService), id);
-        if (response.FirstOrDefault() is not { Id.Simkl: not null } metaData)
+        try
+        {
+            var response = await _simklClient.Search(GetServiceType(_settings.DefaultListService), id);
+            if (response.FirstOrDefault() is not { Id.Simkl: not null } metaData)
+            {
+                return 0;
+            }
+
+            return metaData.Id.Simkl ?? 0;
+        }
+        catch (Exception)
         {
             return 0;
         }
-
-        return metaData.Id.Simkl ?? 0;
     }
 
     private static string GetServiceType(ListServiceType type)

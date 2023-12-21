@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.WinUI.Media.Flyleaf.FlyleafMediaPlayerElement"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Totoro.WinUI.Media.Flyleaf"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:winui="using:FlyleafLib.Controls.WinUI"
+    mc:Ignorable="d">
+    <Grid x:Name="rootGrid">
+        <winui:FullScreenContainer x:Name="FSC" PointerMoved="FSC_PointerMoved">
+            <winui:FlyleafHost x:Name="flyleafHost" Player="{x:Bind Player, Mode=OneWay}">
+                <Grid Margin="0,0,0,0">
+                    <local:FlyleafTransportControls
+                        x:Name="TransportControls"
+                        x:FieldModifier="public"
+                        Player="{x:Bind Player, Mode=OneWay}" />
+                </Grid>
+            </winui:FlyleafHost>
+        </winui:FullScreenContainer>
+    </Grid>
+</UserControl>

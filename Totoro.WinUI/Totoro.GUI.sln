@@ -88,13 +88,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.WitAnime.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.WitAnime.Tests\Totoro.Plugins.Anime.WitAnime.Tests.csproj", "{4B042113-D218-4018-B1AD-C67E57F6500D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga", "..\Totoro.Plugins.Manga\Totoro.Plugins.Manga.csproj", "{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Manga", "..\Totoro.Plugins.Manga\Totoro.Plugins.Manga.csproj", "{520ADEA3-B0ED-42CB-B5A9-D31700391BB1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Manga", "Manga", "{C3C023F8-74CB-4201-A926-C86D22DDB1CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex", "..\Plugins\Manga\Totoro.Plugins.Manga.MangaDex\Totoro.Plugins.Manga.MangaDex.csproj", "{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Manga.MangaDex", "..\Plugins\Manga\Totoro.Plugins.Manga.MangaDex\Totoro.Plugins.Manga.MangaDex.csproj", "{2D423284-85B6-4C57-B8CE-AC62DC3EBD75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Totoro.Plugins.Manga.MangaDex.Tests", "..\Plugins\Manga\Totoro.Plugins.Manga.MangaDex.Tests\Totoro.Plugins.Manga.MangaDex.Tests.csproj", "{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Manga.MangaDex.Tests", "..\Plugins\Manga\Totoro.Plugins.Manga.MangaDex.Tests\Totoro.Plugins.Manga.MangaDex.Tests.csproj", "{CC7B1FE4-CF75-45EC-9B64-6AE500D81E8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
