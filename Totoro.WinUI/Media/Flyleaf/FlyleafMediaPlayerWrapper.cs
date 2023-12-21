@@ -3,8 +3,10 @@ using Splat;
 
 namespace Totoro.WinUI.Media.Flyleaf
 {
-    public class FlyleafMediaPlayerWrapper : IMediaPlayer, IEnableLogger
+    public sealed class FlyleafMediaPlayerWrapper : IMediaPlayer, IEnableLogger
     {
+        private double? _offsetInSeconds;
+
         public Player MediaPlayer { get; set; } = new();
 
         public IObservable<Unit> Paused { get; }
@@ -33,6 +35,15 @@ namespace Totoro.WinUI.Media.Flyleaf
             PlaybackEnded = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended).Select(x => Unit.Default);
             DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Select(x => new TimeSpan(x));
             PositionChanged = MediaPlayer.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime)).Select(_ => new TimeSpan(MediaPlayer.CurTime));
+            MediaPlayer.OpenCompleted += MediaPlayer_OpenCompleted;
+        }
+
+        private void MediaPlayer_OpenCompleted(object sender, OpenCompletedArgs e)
+        {
+            if(_offsetInSeconds is > 0)
+            {
+                MediaPlayer.SeekAccurate((int)TimeSpan.FromSeconds(_offsetInSeconds.Value).TotalMilliseconds);
+            }
         }
 
         public ValueTask AddSubtitle(string file)
@@ -42,6 +53,7 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public void Dispose()
         {
+            MediaPlayer.Pause();
         }
 
         public void Pause()
@@ -56,7 +68,7 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public void Play(double offsetInSeconds)
         {
-            MediaPlayer.SeekAccurate((int)TimeSpan.FromSeconds(offsetInSeconds).TotalMilliseconds);
+            _offsetInSeconds = offsetInSeconds;
             MediaPlayer.Play();
         }
 
