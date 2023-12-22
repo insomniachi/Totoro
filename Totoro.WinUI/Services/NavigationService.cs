@@ -96,7 +96,7 @@ public class NavigationService : IWinUINavigationService, IEnableLogger
         {
             var @params = parameter is not null
                 ? new Dictionary<string, object>(parameter)
-                : new Dictionary<string, object>();
+                : [];
 
             @params.Add("ViewModel", viewModel);
 

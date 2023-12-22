@@ -7,15 +7,15 @@ namespace Totoro.Core.Services;
 public class TorrentEngine : ITorrentEngine, IEnableLogger
 {
     private ClientEngine _engine;
-    private readonly Dictionary<InfoHash, TorrentManager> _torrentManagers = new();
-    private readonly Dictionary<string, TorrentManager> _torrentManagerToMagnetMap = new();
+    private readonly Dictionary<InfoHash, TorrentManager> _torrentManagers = [];
+    private readonly Dictionary<string, TorrentManager> _torrentManagerToMagnetMap = [];
     private readonly string _torrentEngineState;
     private readonly ISettings _settings;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly HttpClient _httpClient;
     private readonly ScheduledSubject<string> _torrentRemoved = new(RxApp.MainThreadScheduler);
     private readonly ScheduledSubject<TorrentManager> _torrentAdded = new(RxApp.MainThreadScheduler);
-    private readonly List<InfoHash> _torrentDeleteRequests = new();
+    private readonly List<InfoHash> _torrentDeleteRequests = [];
 
     public TorrentEngine(IKnownFolders knownFolders,
                          ISettings settings,

@@ -37,7 +37,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 
         var jObject = JsonNode.Parse(releaseData);
 
-        foreach (var item in jObject?["props"]?["episode_list"]?["data"]?.AsArray() ?? new JsonArray())
+        foreach (var item in jObject?["props"]?["episode_list"]?["data"]?.AsArray() ?? [])
         {
             var epString = $"{item?["slug"]}";
             _ = int.TryParse(epString, out var epInt);

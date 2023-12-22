@@ -1,3 +1,4 @@
+using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using FlyleafLib;
 using FlyleafLib.MediaPlayer;
@@ -54,11 +55,23 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ => TransportControls.Bar.Visibility = Visibility.Collapsed, RxApp.DefaultExceptionHandler.OnError);
 
+        this.WhenAnyValue(x => x.Player.Status)
+            .Where(status => status is Status.Playing)
+            .Subscribe(_ => ShowTransportControls());
     }
 
     private void FSC_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        TransportControls.Bar.Visibility = Visibility.Visible;
+        ShowTransportControls();
+    }
+
+    private void ShowTransportControls()
+    {
+        RxApp.MainThreadScheduler.Schedule(() =>
+        {
+            TransportControls.Bar.Visibility = Visibility.Visible;
+        });
+
         _pointerMoved.OnNext(Unit.Default);
     }
 }

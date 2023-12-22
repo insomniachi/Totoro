@@ -15,9 +15,9 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
     private readonly Torrent _torrent;
     private readonly string _torrentUrl;
     private readonly string _saveDirectory;
-    private readonly Dictionary<string, int> _episodeToTorrentFileMap = new();
+    private readonly Dictionary<string, int> _episodeToTorrentFileMap = [];
     private readonly ScheduledSubject<(double, ConnectionMonitor)> _downloadStatus = new(RxApp.MainThreadScheduler);
-    private readonly CompositeDisposable _disposable = new();
+    private readonly CompositeDisposable _disposable = [];
     private static Stream _prevStream;
     private TorrentManager _torrentManager;
     private int _lastResolvedEp;

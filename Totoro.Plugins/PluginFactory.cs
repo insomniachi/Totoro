@@ -14,8 +14,8 @@ public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
         required public Lazy<T> Instance { get; init; }
     }
 
-    private readonly List<AssemblyLoadContext> _assemblyLoadContexts = new();
-    private readonly List<Plugin> _plugins = new();
+    private readonly List<AssemblyLoadContext> _assemblyLoadContexts = [];
+    private readonly List<Plugin> _plugins = [];
 
     public static PluginFactory<T> Instance { get; } = new();
     public IEnumerable<PluginInfo> Plugins => _plugins.Select(x => x.Info).OrderBy(x => x.DisplayName);

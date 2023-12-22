@@ -37,7 +37,7 @@ namespace Totoro.Core.Services.ShanaProject
             {
                 HasNextPage = doc.DocumentNode.InnerHtml.Contains($"/series/{id}/{page + 1}"),
                 HasPreviousPage = doc.DocumentNode.InnerHtml.Contains($"/series/{id}/{page - 1}"),
-                DownloadableContents = new List<ShanaProjectDownloadableContent>()
+                DownloadableContents = []
             };
 
             foreach (var releaseItem in nodes)

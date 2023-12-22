@@ -39,7 +39,8 @@ internal class RealDebridService : IDebridService
 
     public async IAsyncEnumerable<bool> Check(IEnumerable<string> magnetLinks)
     {
-        foreach (var item in magnetLinks)
+        await Task.Delay(0);
+        foreach (var _ in magnetLinks)
         {
             yield return true;
         }

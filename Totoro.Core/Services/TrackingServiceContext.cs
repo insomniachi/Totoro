@@ -1,27 +1,33 @@
 ﻿using System.Reactive.Subjects;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Totoro.Core.Services;
 
 public class TrackingServiceContext : ITrackingServiceContext
 {
-    private readonly Dictionary<ListServiceType, ITrackingService> _trackers;
+    private readonly Dictionary<ListServiceType, Lazy<ITrackingService>> _trackers;
     private readonly ISettings _settings;
     private readonly IConnectivityService _connectivityService;
     private readonly Subject<ListServiceType> _authenticatedSubject = new();
 
     public TrackingServiceContext(ISettings settings,
-                                  IEnumerable<ITrackingService> trackers,
+                                  [FromKeyedServices(ListServiceType.MyAnimeList)] Lazy<ITrackingService> myAnimeListService,
+                                  [FromKeyedServices(ListServiceType.AniList)] Lazy<ITrackingService> anilistService,
+                                  [FromKeyedServices(ListServiceType.Simkl)] Lazy<ITrackingService> simklService,
                                   IConnectivityService connectivityService)
     {
         _settings = settings;
         _connectivityService = connectivityService;
-        _trackers = trackers.Any()
-            ? trackers.ToDictionary(x => x.Type, x => x)
-            : new();
+        _trackers = new()
+        {
+            { ListServiceType.MyAnimeList, myAnimeListService },
+            { ListServiceType.AniList, anilistService },
+            { ListServiceType.Simkl, simklService }
+        };
     }
 
-    public bool IsAuthenticated => _trackers[_settings.DefaultListService].IsAuthenticated;
-    public bool IsTrackerAuthenticated(ListServiceType type) => _trackers[type].IsAuthenticated;
+    public bool IsAuthenticated => _trackers[_settings.DefaultListService].Value.IsAuthenticated;
+    public bool IsTrackerAuthenticated(ListServiceType type) => _trackers[type].Value.IsAuthenticated;
     public IObservable<ListServiceType> Authenticated => _authenticatedSubject;
     public IObservable<IEnumerable<AnimeModel>> GetAnime()
     {
@@ -30,7 +36,7 @@ public class TrackingServiceContext : ITrackingServiceContext
             return Observable.Return(Enumerable.Empty<AnimeModel>());
         }
 
-        return _trackers[_settings.DefaultListService].GetAnime();
+        return _trackers[_settings.DefaultListService].Value.GetAnime();
     }
 
     public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
@@ -40,12 +46,12 @@ public class TrackingServiceContext : ITrackingServiceContext
             return Observable.Return(Enumerable.Empty<AnimeModel>());
         }
 
-        return _trackers[_settings.DefaultListService].GetCurrentlyAiringTrackedAnime();
+        return _trackers[_settings.DefaultListService].Value.GetCurrentlyAiringTrackedAnime();
     }
 
     public void SetAccessToken(string token, ListServiceType type)
     {
-        _trackers[type].SetAccessToken(token);
+        _trackers[type].Value.SetAccessToken(token);
         _authenticatedSubject.OnNext(type);
     }
 
@@ -56,7 +62,7 @@ public class TrackingServiceContext : ITrackingServiceContext
             return Observable.Return(tracking);
         }
 
-        return _trackers[_settings.DefaultListService].Update(id, tracking);
+        return _trackers[_settings.DefaultListService].Value.Update(id, tracking);
     }
 
     public IObservable<bool> Delete(long id)
@@ -66,6 +72,6 @@ public class TrackingServiceContext : ITrackingServiceContext
             return Observable.Return(false);
         }
 
-        return _trackers[_settings.DefaultListService].Delete(id);
+        return _trackers[_settings.DefaultListService].Value.Delete(id);
     }
 }

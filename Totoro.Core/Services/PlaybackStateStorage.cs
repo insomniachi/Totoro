@@ -12,7 +12,7 @@ public class PlaybackStateStorage : IResumePlaybackService, IEnableLogger
     public PlaybackStateStorage(IKnownFolders knownFolders,
                                 IFileService fileService)
     {
-        _recents = fileService.Read<Dictionary<long, Dictionary<int, double>>>(knownFolders.ApplicationData, _fileName) ?? new();
+        _recents = fileService.Read<Dictionary<long, Dictionary<int, double>>>(knownFolders.ApplicationData, _fileName) ?? [];
         _knownFolders = knownFolders;
         _fileService = fileService;
     }

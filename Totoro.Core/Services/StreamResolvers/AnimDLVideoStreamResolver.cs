@@ -83,13 +83,13 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
             {
                 IMultiLanguageAnimeStreamProvider mp => await mp.GetStreams(url, episode..episode, streamType).ToListAsync(),
                 IAnimeStreamProvider sp => await sp.GetStreams(url, episode..episode).ToListAsync(),
-                _ => new List<VideoStreamsForEpisode>()
+                _ => []
             };
         }
         catch (Exception ex)
         {
             this.Log().Fatal(ex);
-            return new List<VideoStreamsForEpisode>();
+            return [];
         }
     }
 

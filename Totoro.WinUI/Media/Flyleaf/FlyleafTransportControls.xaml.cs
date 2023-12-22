@@ -163,6 +163,20 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         OnQualityChanged = _onQualityChanged;
         PlaybackRateChanged = _onPlaybackRateChanged;
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
+
+        this.WhenAnyValue(x => x.Player.Status)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(status =>
+            {
+                if (status == Status.Playing)
+                {
+                    PlayPauseSymbol.Symbol = Symbol.Pause;
+                }
+                else if (status == Status.Paused)
+                {
+                    PlayPauseSymbol.Symbol = Symbol.Play;
+                }
+            });
     }
 
     private void SkipBackwardButton_Click(object sender, RoutedEventArgs e)

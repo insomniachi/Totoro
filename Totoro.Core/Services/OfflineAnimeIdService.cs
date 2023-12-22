@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Frozen;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using Flurl.Http;
 using Totoro.Core.Services.Simkl;
@@ -13,7 +14,7 @@ public class OfflineAnimeIdService : IOfflineAnimeIdService
     private readonly string _dbUrl = @"https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-offline-database-reduced.json";
     private readonly string _fileName = @"ids.json";
     private List<AnimeIdExtended> _ids;
-    private IReadOnlyDictionary<long, AnimeIdExtended> _idsMap;
+    private FrozenDictionary<long, AnimeIdExtended> _idsMap;
 
     public OfflineAnimeIdService(IFileService fileService,
                         IKnownFolders knownFolders,
@@ -28,7 +29,7 @@ public class OfflineAnimeIdService : IOfflineAnimeIdService
 
     public void Initialize()
     {
-        _ids = _fileService.Read<List<AnimeIdExtended>>(_knownFolders.ApplicationData, _fileName) ?? new();
+        _ids = _fileService.Read<List<AnimeIdExtended>>(_knownFolders.ApplicationData, _fileName) ?? [];
         _idsMap = GetMapping(_settings.DefaultListService);
     }
 
@@ -118,15 +119,15 @@ public class OfflineAnimeIdService : IOfflineAnimeIdService
         };
     }
 
-    private IReadOnlyDictionary<long, AnimeIdExtended> GetMapping(ListServiceType type)
+    private FrozenDictionary<long, AnimeIdExtended> GetMapping(ListServiceType type)
     {
         return type switch
         {
-            ListServiceType.MyAnimeList => _ids.Where(x => x.MyAnimeList.HasValue).ToDictionary(x => x.MyAnimeList.Value),
-            ListServiceType.AniList => _ids.Where(x => x.AniList.HasValue).ToDictionary(x => x.AniList.Value),
-            ListServiceType.Kitsu => _ids.Where(x => x.Kitsu.HasValue).ToDictionary(x => x.Kitsu.Value),
-            ListServiceType.AniDb => _ids.Where(x => x.AniDb.HasValue).ToDictionary(x => x.AniDb.Value),
-            ListServiceType.Simkl => new(),
+            ListServiceType.MyAnimeList => _ids.Where(x => x.MyAnimeList.HasValue).ToFrozenDictionary(x => x.MyAnimeList.Value),
+            ListServiceType.AniList => _ids.Where(x => x.AniList.HasValue).ToFrozenDictionary(x => x.AniList.Value),
+            ListServiceType.Kitsu => _ids.Where(x => x.Kitsu.HasValue).ToFrozenDictionary(x => x.Kitsu.Value),
+            ListServiceType.AniDb => _ids.Where(x => x.AniDb.HasValue).ToFrozenDictionary(x => x.AniDb.Value),
+            ListServiceType.Simkl => FrozenDictionary<long,AnimeIdExtended>.Empty,
             _ => throw new UnreachableException(),
         };
     }

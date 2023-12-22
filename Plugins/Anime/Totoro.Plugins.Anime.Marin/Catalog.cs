@@ -37,7 +37,7 @@ internal class Catalog : IAnimeCatalog
 
         var jObject = JsonNode.Parse(json);
 
-        foreach (var item in jObject?["props"]?["anime_list"]?["data"]?.AsArray() ?? new JsonArray())
+        foreach (var item in jObject?["props"]?["anime_list"]?["data"]?.AsArray() ?? [])
         {
             yield return new SearchResult
             {

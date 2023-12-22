@@ -154,7 +154,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             }
 
             var sourceArray = jsonNode?["episode"]?["sourceUrls"];
-            var sourceObjs = sourceArray?.ToObject<List<SourceUrlObj>>() ?? new List<SourceUrlObj>();
+            var sourceObjs = sourceArray?.ToObject<List<SourceUrlObj>>() ?? [];
             sourceObjs.Sort((x, y) => y.priority.CompareTo(x.priority));
             var item = sourceObjs.First();
             item.sourceUrl = DecryptSourceUrl(item.sourceUrl);

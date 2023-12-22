@@ -3,7 +3,7 @@
 public abstract class NavigatableViewModel : ReactiveObject, INavigationAware, IDisposable
 {
     private bool _disposed;
-    public CompositeDisposable Garbage { get; } = new CompositeDisposable();
+    public CompositeDisposable Garbage { get; } = [];
 
     protected virtual void Dispose(bool disposing)
     {

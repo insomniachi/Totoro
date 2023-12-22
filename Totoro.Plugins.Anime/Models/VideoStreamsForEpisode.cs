@@ -48,7 +48,7 @@ public class VideoStreamsForEpisode
         }
     }
 
-    public VideoStreams Streams { get; } = new();
+    public VideoStreams Streams { get; } = [];
     public AdditionalVideoStreamInformation AdditionalInformation { get; set; } = new();
-    public List<StreamType> StreamTypes { get; } = new();
+    public List<StreamType> StreamTypes { get; } = [];
 }

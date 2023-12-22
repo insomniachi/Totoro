@@ -16,14 +16,14 @@ public class NameService : INameService
         _settings = settings;
         _knownFolders = knownFolders;
         _fileService = fileService;
-        _maps = fileService.Read<ListServiceToNameMap>(knownFolders.ApplicationData, _fileName) ?? new();
+        _maps = fileService.Read<ListServiceToNameMap>(knownFolders.ApplicationData, _fileName) ?? [];
     }
 
     public void AddOrUpdate(long id, string name)
     {
         if (!_maps.TryGetValue(_settings.DefaultListService, out _))
         {
-            _maps[_settings.DefaultListService] = new();
+            _maps[_settings.DefaultListService] = [];
         }
 
         _maps[_settings.DefaultListService][id] = name;

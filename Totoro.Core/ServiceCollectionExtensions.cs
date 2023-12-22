@@ -49,7 +49,7 @@ namespace Totoro.Core
             services.AddTransient<IAnimeIdService, AnimeIdService>();
             services.AddTransient<IShanaProjectService, ShanaProjectService>();
             services.AddTransient<TotoroCommands>();
-            services.AddTransient<ISystemClock, SystemClock>();
+            services.AddTransient(_ => TimeProvider.System);
             services.AddTransient<ISchedulerProvider, SchedulerProvider>();
             services.AddTransient<IStreamPageMapper, StreamPageMapper>();
             services.AddTransient<IAnilistService, AnilistService>();
@@ -78,16 +78,16 @@ namespace Totoro.Core
 
         public static IServiceCollection AddAniList(this IServiceCollection services)
         {
-            services.AddTransient<ITrackingService, AniListTrackingService>();
-            services.AddTransient<IAnimeService>(x => x.GetRequiredService<IAnilistService>());
+            services.AddKeyedLazy<ITrackingService, AniListTrackingService>(ListServiceType.AniList);
+            services.AddKeyedLazy<IAnimeService, AnilistService>(ListServiceType.AniList);
 
             return services;
         }
 
         public static IServiceCollection AddMyAnimeList(this IServiceCollection services)
         {
-            services.AddTransient<ITrackingService, MyAnimeListTrackingService>();
-            services.AddTransient<IAnimeService, MyAnimeListService>();
+            services.AddKeyedLazy<ITrackingService, MyAnimeListTrackingService>(ListServiceType.MyAnimeList);
+            services.AddKeyedLazy<IAnimeService, MyAnimeListService>(ListServiceType.MyAnimeList);
             services.AddSingleton<IMalClient, MalClient>();
 
             return services;
@@ -99,18 +99,27 @@ namespace Totoro.Core
             services.AddRefitClient<ISimklClient>()
                     .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://api.simkl.com"))
                     .AddHttpMessageHandler<SimklHttpMessageHandler>();
-            services.AddTransient<ITrackingService, SimklTrackingService>();
-            services.AddTransient<IAnimeService, SimklAnimeService>();
+            services.AddKeyedLazy<ITrackingService, SimklTrackingService>(ListServiceType.Simkl);
+            services.AddKeyedLazy<IAnimeService, SimklAnimeService>(ListServiceType.Simkl);
 
             return services;
         }
 
         public static IServiceCollection AddTorrenting(this IServiceCollection services)
         {
-            services.AddTransient<IDebridService, PremiumizeService>();
-            services.AddTransient<IDebridService, RealDebridService>();
+            services.AddKeyedLazy<IDebridService, PremiumizeService>(DebridServiceType.Premiumize);
+            services.AddKeyedLazy<IDebridService, RealDebridService>(DebridServiceType.RealDebrid);
             services.AddSingleton<IDebridServiceContext, DebridServiceContext>();
 
+            return services;
+        }
+
+        public static IServiceCollection AddKeyedLazy<TInterface, TImplementation>(this IServiceCollection services, object key)
+            where TImplementation : class, TInterface
+            where TInterface : class
+        {
+            services.AddKeyedTransient<TInterface,TImplementation>(key);
+            services.AddKeyedTransient(key, (scope, key) => new Lazy<TInterface>(scope.GetRequiredKeyedService<TInterface>(key)));
             return services;
         }
 

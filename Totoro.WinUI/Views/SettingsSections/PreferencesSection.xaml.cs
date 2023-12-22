@@ -15,7 +15,7 @@ namespace Totoro.WinUI.Views.SettingsSections;
 
 public sealed partial class PreferencesSection : Page
 {
-    private CompositeDisposable _disposables = new();
+    private CompositeDisposable _disposables = [];
 
     public SettingsViewModel ViewModel
     {

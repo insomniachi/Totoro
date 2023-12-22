@@ -13,7 +13,7 @@ public class RssFeed
     private IDisposable _disposable;
 
     public RssFeedOptions Options { get; }
-    public List<RssFeedItem> Current { get; private set; } = new();
+    public List<RssFeedItem> Current { get; private set; } = [];
     public IObservable<RssFeedItem> OnNew => _onNew;
 
     public RssFeed(RssFeedOptions options)

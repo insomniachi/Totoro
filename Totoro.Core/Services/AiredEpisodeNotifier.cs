@@ -6,7 +6,7 @@ namespace Totoro.Core.Services;
 
 public class AiredEpisodeNotifier : IAiredEpisodeNotifier
 {
-    private List<IAiredAnimeEpisode> _previousState = new();
+    private List<IAiredAnimeEpisode> _previousState = [];
     private readonly Subject<IAiredAnimeEpisode> _onNewEpisode = new();
     private readonly ISettings _settings;
     private bool _isStarted;

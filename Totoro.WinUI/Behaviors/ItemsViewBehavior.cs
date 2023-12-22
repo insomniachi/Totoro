@@ -6,7 +6,7 @@ namespace Totoro.WinUI.Behaviors;
 
 public class ItemsViewBehavior : Behavior<ItemsView>
 {
-    private CompositeDisposable _disposables = new();
+    private CompositeDisposable _disposables = [];
 
     public GridViewSettings Settings
     {
@@ -24,7 +24,7 @@ public class ItemsViewBehavior : Behavior<ItemsView>
         if (e.OldValue is { })
         {
             behavior._disposables.Dispose();
-            behavior._disposables = new();
+            behavior._disposables = [];
         }
 
         if (e.NewValue is not GridViewSettings settings)

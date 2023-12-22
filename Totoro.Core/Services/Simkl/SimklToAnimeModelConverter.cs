@@ -103,7 +103,7 @@
         {
             if (trailers is null)
             {
-                return new List<Video>();
+                return [];
             }
 
             return trailers.Select((x, i) => new Video

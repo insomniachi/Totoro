@@ -8,10 +8,10 @@ public class SeasonalPageBase : ReactivePage<SeasonalViewModel> { }
 
 public sealed partial class SeasonalPage : SeasonalPageBase
 {
-    public List<string> Seasons { get; } = new List<string>()
-    {
+    public List<string> Seasons { get; } =
+    [
         "Previous","Current","Next"
-    };
+    ];
 
     public SeasonalPage()
     {

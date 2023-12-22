@@ -114,8 +114,8 @@ public partial class WatchViewModel : NavigatableViewModel
                 {
                     await CreateAnimDLResolver(x.Sub.Url, x.Dub.Url);
                     SubStreams = ProviderType is "gogo-anime"
-                        ? new List<StreamType>() { StreamType.EnglishSubbed, StreamType.EnglishDubbed }
-                        : new List<StreamType>() { StreamType.ItalianSubbed, StreamType.ItalianDubbed };
+                        ? [StreamType.EnglishSubbed, StreamType.EnglishDubbed]
+                        : [StreamType.ItalianSubbed, StreamType.ItalianDubbed];
                     SelectedAudioStream = _settings.PreferSubs ? SubStreams.First() : SubStreams.Last();
                 }
                 else
@@ -440,6 +440,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private void OnSubmitTimeStamps()
     {
+        if(Anime is null)
+        {
+            return;
+        }
+
         RxApp.MainThreadScheduler.Schedule(async () =>
         {
             await GetMediaEventListener<IAniskip>()?.SubmitTimeStamp();

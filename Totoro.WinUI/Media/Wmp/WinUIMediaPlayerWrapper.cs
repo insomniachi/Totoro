@@ -19,7 +19,7 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
     private readonly CustomMediaTransportControls _transportControls;
     private readonly MediaPlayer _player = new();
     private readonly HttpClient _httpClient = new();
-    private readonly Dictionary<TimedTextSource, string> _ttsMap = new();
+    private readonly Dictionary<TimedTextSource, string> _ttsMap = [];
     private bool _isHardSub;
     private bool _isDisposed;
 

@@ -13,7 +13,7 @@ namespace Totoro.Plugins.MediaDetection;
 
 public class ProcessWatcher : IEnableLogger
 {
-    private readonly List<Process> _processes = new();
+    private readonly List<Process> _processes = [];
     private readonly Subject<INativeMediaPlayer> _mediaPlayerDetected = new();
     private readonly Subject<int> _mediaPlayerClosed = new();
     private readonly FlaUI.UIA3.UIA3Automation _automation = new();
@@ -89,7 +89,7 @@ public class ProcessWatcher : IEnableLogger
 
     private void DetectMediaProcess()
     {
-        List<Process> exited = new();
+        List<Process> exited = [];
 
         lock (_lock)
         {
