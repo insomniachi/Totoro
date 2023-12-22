@@ -8,6 +8,18 @@
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <Style
+            x:Key="AppBarButtonStyle"
+            BasedOn="{StaticResource DefaultAppBarButtonStyle}"
+            TargetType="AppBarButton">
+            <Setter Property="Height" Value="45" />
+            <Setter Property="Width" Value="45" />
+            <Setter Property="AllowFocusOnInteraction" Value="True" />
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -50,7 +62,8 @@
             Grid.Row="1"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            x:FieldModifier="public">
+            x:FieldModifier="public"
+            Visibility="Collapsed">
             <animations:Implicit.ShowAnimations>
                 <animations:OpacityAnimation
                     From="0"
@@ -104,55 +117,25 @@
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Horizontal">
-                    <Button
-                        x:Name="SkipBackwardButton"
-                        Click="SkipBackwardButton_Click"
-                        IsTapEnabled="False">
-                        <FontIcon Glyph="&#xED3C;" />
-                    </Button>
-                    <Button
-                        x:Name="PreviousTrackButton"
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <AppBarButton x:Name="SubmitTimeStampButton" Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <SymbolIcon Symbol="Clock" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton x:Name="QualitiesButton" Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout Placement="Top" />
+                        </AppBarButton.Flyout>
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xe93e;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        x:Name="PlaybackRateButton"
                         IsTabStop="False"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsPreviousTrackButtonVisible), Mode=OneWay}">
-                        <SymbolIcon Symbol="Previous" />
-                    </Button>
-                    <Button
-                        x:Name="PlayPauseButton"
-                        Command="{x:Bind Player.Commands.TogglePlayPause}"
-                        IsEnabled="{x:Bind Player.CanPlay, Mode=OneWay}"
-                        IsTabStop="False">
-                        <SymbolIcon x:Name="PlayPauseSymbol" Symbol="Play" />
-                    </Button>
-                    <Button
-                        x:Name="NextTrackButton"
-                        IsTabStop="False"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsNextTrackButtonVisible), Mode=OneWay}">
-                        <SymbolIcon Symbol="Next" />
-                    </Button>
-                    <Button
-                        x:Name="CCSelectionButton"
-                        IsTabStop="False"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsCCSelectionVisible), Mode=OneWay}">
-                        <Button.Flyout>
-                            <MenuFlyout />
-                        </Button.Flyout>
-                        <FontIcon Glyph="&#xED1E;" />
-                    </Button>
-                    <Button
-                        x:Name="AddCcButton"
-                        IsTabStop="False"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsAddCCButtonVisibile), Mode=OneWay}">
-                        <FontIcon Glyph="&#xed11;" />
-                    </Button>
-                    <Button
-                        x:Name="SkipForwardButton"
-                        Click="SkipForwardButton_Click"
-                        IsTapEnabled="False">
-                        <FontIcon Glyph="&#xED3D;" />
-                    </Button>
-                    <Button x:Name="PlaybackRateButton" IsTabStop="False">
-                        <Button.Flyout>
+                        Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Flyout>
                             <MenuFlyout>
                                 <ToggleMenuFlyoutItem
                                     Click="ToggleMenuFlyoutItem_Click"
@@ -172,29 +155,109 @@
                                     Tag="{x:Bind c:PlaybackRate.Two}"
                                     Text="2x" />
                             </MenuFlyout>
-                        </Button.Flyout>
-                        <FontIcon Glyph="&#xEC58;" />
-                    </Button>
-                    <Button x:Name="SubmitTimeStampButton">
-                        <SymbolIcon Symbol="Clock" />
-                    </Button>
-                    <Button x:Name="QualitiesButton">
-                        <Button.Flyout>
-                            <MenuFlyout Placement="Top" />
-                        </Button.Flyout>
-                        <FontIcon Glyph="&#xe93e;" />
-                    </Button>
-                    <Button x:Name="SkipIntroButton">
-                        <FontIcon Glyph="&#xec4f;" />
-                    </Button>
+                        </AppBarButton.Flyout>
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xEC58;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                 </StackPanel>
-
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Slider
-                        Width="100"
+                <StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <AppBarButton
+                        x:Name="SkipBackwardButton"
+                        Click="SkipBackwardButton_Click"
+                        IsTapEnabled="False"
+                        Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xED3C;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        x:Name="PreviousTrackButton"
                         IsTabStop="False"
-                        Maximum="{x:Bind Player.Config.Player.VolumeMax, Mode=OneWay}"
-                        Value="{x:Bind Player.Audio.Volume, Mode=TwoWay}" />
+                        Style="{StaticResource AppBarButtonStyle}"
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsPreviousTrackButtonVisible), Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <SymbolIcon Symbol="Previous" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        x:Name="PlayPauseButton"
+                        Command="{x:Bind Player.Commands.TogglePlayPause}"
+                        IsEnabled="{x:Bind Player.CanPlay, Mode=OneWay}"
+                        IsTabStop="False"
+                        Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <SymbolIcon x:Name="PlayPauseSymbol" Symbol="Play" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        x:Name="NextTrackButton"
+                        IsTabStop="False"
+                        Style="{StaticResource AppBarButtonStyle}"
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsNextTrackButtonVisible), Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <SymbolIcon Symbol="Next" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        x:Name="SkipForwardButton"
+                        Click="SkipForwardButton_Click"
+                        IsTapEnabled="False"
+                        Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xED3D;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                </StackPanel>
+                <StackPanel
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <AppBarButton
+                        x:Name="CCSelectionButton"
+                        IsTabStop="False"
+                        Style="{StaticResource AppBarButtonStyle}"
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsCCSelectionVisible), Mode=OneWay}">
+                        <AppBarButton.Flyout>
+                            <MenuFlyout />
+                        </AppBarButton.Flyout>
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xED1E;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
+                        x:Name="AddCcButton"
+                        IsTabStop="False"
+                        Style="{StaticResource AppBarButtonStyle}"
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsAddCCButtonVisibile), Mode=OneWay}">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xed11;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton x:Name="SkipIntroButton" Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xec4f;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <SymbolIcon Symbol="Volume" />
+                        </AppBarButton.Icon>
+                        <AppBarButton.Flyout>
+                            <Flyout>
+                                <Slider
+                                    Width="100"
+                                    IsTabStop="False"
+                                    Maximum="{x:Bind Player.Config.Player.VolumeMax, Mode=OneWay}"
+                                    Value="{x:Bind Player.Audio.Volume, Mode=TwoWay}" />
+                            </Flyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+
                 </StackPanel>
             </Grid>
 

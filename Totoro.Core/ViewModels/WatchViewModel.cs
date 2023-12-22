@@ -440,6 +440,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private void OnSubmitTimeStamps()
     {
+        if(Anime is null)
+        {
+            return;
+        }
+
         RxApp.MainThreadScheduler.Schedule(async () =>
         {
             await GetMediaEventListener<IAniskip>()?.SubmitTimeStamp();
