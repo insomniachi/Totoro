@@ -19,17 +19,6 @@
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Remove="Dialogs\Views\AuthenticateSimklView.xaml" />
-	  <None Remove="Dialogs\Views\PluginStoreView.xaml" />
-	  <None Remove="Media\Flyleaf\FlyleafMediaPlayerElement.xaml" />
-	  <None Remove="Media\Flyleaf\FlyleafTransportControls.xaml" />
-	  <None Remove="Styles\TextBlock.xaml" />
-	  <None Remove="UserControls\ShadowText.xaml" />
-	  <None Remove="Views\DiscoverMangaPage.xaml" />
-	  <None Remove="Views\ReadPage.xaml" />
-	  <None Remove="Views\SettingsSections\MangaPluginsSection.xaml" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.230830" />
@@ -45,8 +34,6 @@
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
 		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.20" />
 		
-		<!--<PackageReference Include="CommunityToolkit.WinUI.UI.Behaviors" Version="7.1.2" />
-		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="7.1.2" />-->
 		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.123" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
@@ -100,9 +87,6 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<Page Update="UserControls\ShadowText.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</Page>
 		<Page Update="Media\Flyleaf\FlyleafTransportControls.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

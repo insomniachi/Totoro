@@ -14,7 +14,15 @@ public sealed partial class AnimeCard : UserControl
         DependencyProperty.Register("ShowNextEpisodeTime", typeof(bool), typeof(AnimeCard), new PropertyMetadata(false));
     public static readonly DependencyProperty CommandProperty =
         DependencyProperty.Register("Command", typeof(ICommand), typeof(AnimeCard), new PropertyMetadata(null));
+    public static readonly DependencyProperty HasMeanScoreProperty =
+        DependencyProperty.Register("HasMeanScore", typeof(bool), typeof(AnimeCard), new PropertyMetadata(false));
 
+
+    public bool HasMeanScore
+    {
+        get { return (bool)GetValue(HasMeanScoreProperty); }
+        set { SetValue(HasMeanScoreProperty, value); }
+    }
 
     public ICommand Command
     {
@@ -50,6 +58,7 @@ public sealed partial class AnimeCard : UserControl
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Do(anime => HasMeanScore = anime.MeanScore > 0)
             .Do(anime => ShowNextEpisodeTime = anime.NextEpisodeAt is not null)
             .SelectMany(x => x.WhenAnyValue(y => y.NextEpisodeAt).DistinctUntilChanged())
             .Subscribe(date => ShowNextEpisodeTime = date is not null);

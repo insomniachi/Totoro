@@ -6,8 +6,6 @@
     xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
-    xmlns:mal="using:MalApi"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"

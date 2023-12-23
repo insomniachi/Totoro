@@ -81,7 +81,7 @@
                         Background="{ThemeResource ControlOnImageFillColorDefault}"
                         Orientation="Horizontal"
                         Spacing="10"
-                        Visibility="{x:Bind help:Converters.NullToVisibility(Anime.MeanScore)}">
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(HasMeanScore), Mode=OneWay}">
                         <FontIcon FontSize="12" Glyph="&#xE735;" />
                         <TextBlock FontSize="12" Text="{x:Bind Anime.MeanScore, Mode=OneWay}" />
                     </StackPanel>
@@ -144,6 +144,7 @@
                             </StackPanel>
                         </StackPanel>
                         <Button
+                            Padding="0"
                             HorizontalAlignment="Right"
                             Command="{x:Bind root:App.Commands.UpdateTracking}"
                             CommandParameter="{x:Bind Anime, Mode=OneWay}"
@@ -167,11 +168,23 @@
                     <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
 
-                <Image
-                    Grid.Column="0"
-                    CacheMode="BitmapCache"
-                    Source="{x:Bind Anime.Image, Mode=OneWay}"
-                    Stretch="UniformToFill" />
+                <Grid Grid.Column="0">
+                    <Image
+                        CacheMode="BitmapCache"
+                        Source="{x:Bind Anime.Image, Mode=OneWay}"
+                        Stretch="UniformToFill" />
+                    <StackPanel
+                        Padding="5"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Background="{ThemeResource ControlOnImageFillColorDefault}"
+                        Orientation="Horizontal"
+                        Spacing="10"
+                        Visibility="{x:Bind help:Converters.BooleanToVisibility(HasMeanScore), Mode=OneWay}">
+                        <FontIcon FontSize="12" Glyph="&#xE735;" />
+                        <TextBlock FontSize="12" Text="{x:Bind Anime.MeanScore, Mode=OneWay}" />
+                    </StackPanel>
+                </Grid>
 
                 <Grid
                     Grid.Column="1"

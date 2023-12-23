@@ -20,6 +20,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <x:Double x:Key="MinCardWidth">150</x:Double>
             <local:TorrentStateConverter x:Key="StateConverter" />
         </ResourceDictionary>
     </local:AboutAnimePageBase.Resources>
@@ -229,7 +230,7 @@
                                 </DataTemplate>
                             </ItemsView.ItemTemplate>
                             <ItemsView.Layout>
-                                <UniformGridLayout MinItemWidth="230" />
+                                <UniformGridLayout MinItemWidth="{StaticResource MinCardWidth}" />
                             </ItemsView.Layout>
                         </ItemsView>
                     </ctk:Case>
@@ -246,7 +247,7 @@
                                 </DataTemplate>
                             </ItemsView.ItemTemplate>
                             <ItemsView.Layout>
-                                <UniformGridLayout MinItemWidth="230" />
+                                <UniformGridLayout MinItemWidth="{StaticResource MinCardWidth}" />
                             </ItemsView.Layout>
                         </ItemsView>
                     </ctk:Case>
