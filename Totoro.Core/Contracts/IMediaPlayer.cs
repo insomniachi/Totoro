@@ -18,18 +18,3 @@ public interface IMediaPlayer : IDisposable
     IMediaTransportControls TransportControls { get; }
     MediaPlayerType Type { get; }
 }
-
-public enum SeekDirection
-{
-    Forward,
-    Backward,
-}
-
-public enum PlaybackRate
-{
-    One,
-    OnePointTwoFive,
-    OnePointFive,
-    Two
-}
-

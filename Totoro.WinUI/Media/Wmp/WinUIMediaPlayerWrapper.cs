@@ -227,12 +227,6 @@ public sealed class WinUIMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     public void SetPlaybackRate(PlaybackRate rate)
     {
-        _player.PlaybackRate = rate switch
-        {
-            PlaybackRate.OnePointTwoFive => 1.25,
-            PlaybackRate.OnePointFive => 1.5,
-            PlaybackRate.Two => 2,
-            _ => 1
-        };
+        _player.PlaybackRate = rate.ToDouble();
     }
 }

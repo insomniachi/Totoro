@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Concurrency;
 using FlyleafLib.MediaPlayer;
 using Splat;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.WinUI.Media.Flyleaf
 {
@@ -63,12 +64,14 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public ValueTask AddSubtitle(string file)
         {
+            MediaPlayer.OpenAsync(file);
             return ValueTask.CompletedTask;
         }
 
         public void Dispose()
         {
             MediaPlayer.Pause();
+            MediaPlayer.Dispose();
         }
 
         public void Pause()
@@ -104,6 +107,11 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public Task<Unit> SetMedia(VideoStreamModel stream)
         {
+            if(stream.HasHeaders)
+            {
+                MediaPlayer.Config.Demuxer.FormatOpt["header"] = string.Join("\r\n", stream.Headers.Select(x => $"{x.Key}:{x.Value}"));
+            }
+
             if(stream.Stream is not null)
             {
                 MediaPlayer.OpenAsync(stream.Stream);
@@ -114,18 +122,25 @@ namespace Totoro.WinUI.Media.Flyleaf
                 MediaPlayer.OpenAsync(stream.StreamUrl);
             }
 
+            if (stream.AdditionalInformation.Subtitles.Count != 0)
+            {
+                OpenSubtitles(stream.AdditionalInformation.Subtitles);
+            }
+
             return Task.FromResult(Unit.Default);
+        }
+
+        private void OpenSubtitles(List<Subtitle> subtitles)
+        {
+            foreach (var subtitle in subtitles)
+            {
+                MediaPlayer.OpenAsync(subtitle.Url);
+            }
         }
 
         public void SetPlaybackRate(PlaybackRate rate)
         {
-            MediaPlayer.Speed = rate switch
-            {
-                PlaybackRate.OnePointTwoFive => 1.25,
-                PlaybackRate.OnePointFive => 1.5,
-                PlaybackRate.Two => 2,
-                _ => 1
-            };
+            MediaPlayer.Speed = rate.ToDouble();
         }
     }
 }

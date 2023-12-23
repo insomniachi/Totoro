@@ -155,14 +155,6 @@ internal class LibVLCMediaPlayerWrapper : IMediaPlayer, IEnableLogger
 
     public void SetPlaybackRate(PlaybackRate rate)
     {
-        var rateValue = rate switch
-        {
-            PlaybackRate.OnePointTwoFive => 1.25f,
-            PlaybackRate.OnePointFive => 1.5f,
-            PlaybackRate.Two => 2f,
-            _ => 1f
-        };
-
-        _mp.SetRate(rateValue);
+        _mp.SetRate(rate.ToFloat());
     }
 }
