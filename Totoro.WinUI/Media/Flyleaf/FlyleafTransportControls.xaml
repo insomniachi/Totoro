@@ -88,7 +88,7 @@
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
 
-                <!--  Current Time | Slider | Duration  -->
+                <!--  Current Time | Slider | Remaining Time  -->
                 <TextBlock
                     Grid.Column="0"
                     HorizontalAlignment="Left"
@@ -107,7 +107,7 @@
                     Grid.Column="2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Text="{x:Bind help:Converters.TicksToTime(Player.Duration), Mode=OneWay}" />
+                    Text="{x:Bind TimeRemaning(Player.CurTime, Player.Duration), Mode=OneWay}" />
             </Grid>
 
             <Grid Grid.Row="1" Margin="8">

@@ -179,6 +179,12 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
             });
     }
 
+    public string TimeRemaning(long currentTime, long duration)
+    {
+        var remaning = duration - currentTime;
+        return new TimeSpan(remaning).ToString("hh\\:mm\\:ss");
+    }
+
     private void SkipBackwardButton_Click(object sender, RoutedEventArgs e)
     {
         var ts = new TimeSpan(Player.CurTime) - TimeSpan.FromSeconds(10);
