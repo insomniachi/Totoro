@@ -15,7 +15,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
     [GeneratedRegex("let id = \"(.+?)\"", RegexOptions.Compiled)]
     private static partial Regex IdRegex();
 
-    [GeneratedRegex("<a href=\"(.+?)\" .+?>Redirect me</a>")]
+    [GeneratedRegex(@"\(""href"",\s*""(https://[^()]+)""\)")]
     private static partial Regex KwikRedirectionRegex();
 
     [GeneratedRegex(@"\(""(\w+)"",\d+,""(\w+)"",(\d+),(\d+),\d+\)")]
