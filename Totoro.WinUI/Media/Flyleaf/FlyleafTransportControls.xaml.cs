@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
 using Splat;
+using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Media.Flyleaf;
 
@@ -163,6 +164,12 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         OnQualityChanged = _onQualityChanged;
         PlaybackRateChanged = _onPlaybackRateChanged;
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
+
+        TimeSlider
+            .Events()
+            .ValueChanged
+            .Where(x => x.NewValue > Converters.TiksToSeconds(Player.CurTime))
+            .Subscribe(x => Player.SeekAccurate((int)TimeSpan.FromSeconds(x.NewValue).TotalMilliseconds));
 
         this.WhenAnyValue(x => x.Player.Status)
             .ObserveOn(RxApp.MainThreadScheduler)

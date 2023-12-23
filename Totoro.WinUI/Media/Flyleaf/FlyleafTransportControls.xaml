@@ -96,12 +96,13 @@
                     Text="{x:Bind help:Converters.TicksToTime(Player.CurTime), Mode=OneWay}" />
 
                 <Slider
+                    x:Name="TimeSlider"
                     Grid.Column="1"
                     Margin="10,0,10,0"
                     VerticalAlignment="Center"
                     IsTabStop="False"
                     Maximum="{x:Bind help:Converters.TiksToSeconds(Player.Duration), Mode=OneWay}"
-                    Value="{x:Bind help:Converters.TiksToSeconds(Player.CurTime), BindBack=help:Converters.SecondsToTicks, Mode=TwoWay}" />
+                    Value="{x:Bind help:Converters.TiksToSeconds(Player.CurTime), Mode=OneWay}" />
 
                 <TextBlock
                     Grid.Column="2"
