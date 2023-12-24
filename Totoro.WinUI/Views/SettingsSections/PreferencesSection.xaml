@@ -4,44 +4,46 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.WinUI.Controls"
+    xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
-        <labs:SettingsCard Description="Set color scheme of application" Header="Theme">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE790;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Set color scheme of application"
+            Header="Theme"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
             <ComboBox
                 Width="150"
-                ItemsSource="{x:Bind ViewModel.Themes}"
+                ItemsSource="{ui:EnumValues Type=m:ElementTheme}"
                 SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Choose which page loads at startup" Header="Home Page">
-            <labs:SettingsCard.HeaderIcon>
-                <SymbolIcon Symbol="Home" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Choose which page loads at startup"
+            Header="Home Page"
+            HeaderIcon="{ui:SymbolIcon Symbol=Home}">
             <ComboBox
                 Width="150"
                 ItemsSource="{x:Bind ViewModel.HomePages}"
                 SelectedItem="{x:Bind ViewModel.Settings.HomePage, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Choose what happens when you click an anime card" Header="Anime Card Action">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE7E7;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Choose what happens when you click an anime card"
+            Header="Anime Card Action"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE7E7;}">
             <ComboBox
                 Width="150"
                 ItemsSource="{x:Bind ViewModel.AnimeActions}"
                 SelectedItem="{x:Bind ViewModel.Settings.AnimeCardClickAction, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Choose how your list should be displayed" Header="Default List Display Mode">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE890;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Choose how your list should be displayed"
+            Header="Default List Display Mode"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE890;}">
             <ComboBox
                 Width="150"
                 ItemsSource="{x:Bind ViewModel.ListDisplayModes}"
@@ -53,41 +55,38 @@
             CommandParameter="Grid View Settings"
             Description="Customize how anime is displayed in a grid"
             Header="Grid View Settings"
-            IsClickEnabled="True">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xf0e2;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xf0e2;}"
+            IsClickEnabled="True" />
 
         <TextBlock
             FontSize="16"
             FontWeight="SemiBold"
             Text="Startup" />
 
-        <labs:SettingsCard Description="Run application on system start" Header="Run on Startup">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xEC4A;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Run application on system start"
+            Header="Run on Startup"
+            HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.StartupOptions.RunOnStartup, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Start application minimized to tray" Header="Start Minimized">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xEE47;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Start application minimized to tray"
+            Header="Start Minimized"
+            HeaderIcon="{ui:FontIcon Glyph=&#xEE47;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.StartupOptions.StartMinimizedToTray, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="When closing application, minimize to system tray" Header="Close to Tray">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE770;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="When closing application, minimize to system tray"
+            Header="Close to Tray"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE770;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.StartupOptions.MinimizeToTrayOnClose, Mode=TwoWay}"
                 OffContent="Off"

@@ -6,10 +6,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:labs="using:CommunityToolkit.WinUI.Controls"
+    xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:plugins="using:Totoro.Plugins"
     xmlns:po="using:Totoro.Plugins.Options"
     xmlns:root="using:Totoro.WinUI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -52,13 +54,11 @@
         <labs:SettingsExpander
             Description="Select and cofigure debrid service"
             Header="Debrid Service"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE78C;}"
             IsExpanded="True">
-            <labs:SettingsExpander.HeaderIcon>
-                <FontIcon Glyph="&#xE78C;" />
-            </labs:SettingsExpander.HeaderIcon>
             <ComboBox
                 Width="150"
-                ItemsSource="{x:Bind ViewModel.DebridServices}"
+                ItemsSource="{ui:EnumValues Type=m:DebridServiceType}"
                 SelectedItem="{x:Bind ViewModel.Settings.DebridServiceType, Mode=TwoWay}" />
             <labs:SettingsExpander.Items>
                 <labs:SettingsCard Header="API Key">
@@ -70,10 +70,10 @@
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
 
-        <labs:SettingsCard Description="Site to search for torrents" Header="Torrent Provider">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE93E;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Site to search for torrents"
+            Header="Torrent Provider"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE93E;}">
             <ComboBox
                 Width="150"
                 DisplayMemberPath="DisplayName"
@@ -81,10 +81,10 @@
                 SelectedItem="{x:Bind ViewModel.SelectedTracker, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsExpander Description="some filtering options to find your torrents better" Header="Advanced Search">
-            <labs:SettingsExpander.HeaderIcon>
-                <FontIcon Glyph="&#xE71C;" />
-            </labs:SettingsExpander.HeaderIcon>
+        <labs:SettingsExpander
+            Description="some filtering options to find your torrents better"
+            Header="Advanced Search"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE71C;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.TorrentSearchOptions.IsEnabled, Mode=TwoWay}"
                 OffContent="Off"
@@ -99,20 +99,20 @@
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
 
-        <labs:SettingsCard Description="Downloads first and last piece before the stream is created." Header="Prebuffer Torrents">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE9F5;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Downloads first and last piece before the stream is created."
+            Header="Prebuffer Torrents"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE9F5;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.PreBufferTorrents, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Remove torrents which you have watched already to save space." Header="Auto Remove Completed">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE74D;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Remove torrents which you have watched already to save space."
+            Header="Auto Remove Completed"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE74D;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.AutoRemoveWatchedTorrents, Mode=TwoWay}"
                 OffContent="Off"
@@ -120,26 +120,22 @@
         </labs:SettingsCard>
 
         <labs:SettingsCard
+            ActionIcon="{ui:FontIcon Glyph=&#xE70F;}"
             Command="{x:Bind ViewModel.EditUserTorrentDirectory}"
             Description="Directory to save torrent downloads"
             Header="Download Directory"
+            HeaderIcon="{ui:FontIcon Glyph=&#xEBD3;}"
             IsClickEnabled="True">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xEBD3;" />
-            </labs:SettingsCard.HeaderIcon>
-            <labs:SettingsCard.ActionIcon>
-                <FontIcon Glyph="&#xE70F;" />
-            </labs:SettingsCard.ActionIcon>
             <TextBlock
                 Text="{x:Bind ViewModel.Settings.UserTorrentsDownloadDirectory, Mode=OneWay}"
                 TextTrimming="CharacterEllipsis"
                 ToolTipService.ToolTip="{x:Bind ViewModel.Settings.UserTorrentsDownloadDirectory, Mode=OneWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Auto download currently watching airing anime" Header="Auto Download">
-            <labs:SettingsCard.HeaderIcon>
-                <SymbolIcon Symbol="Download" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Auto download currently watching airing anime"
+            Header="Auto Download"
+            HeaderIcon="{ui:SymbolIcon Symbol=Download}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.AutoDownloadTorrents, Mode=TwoWay}"
                 OffContent="Off"
@@ -149,17 +145,12 @@
         <labs:SettingsExpander
             Description="Torrents which are not completed or not downloading"
             Header="Inactive Torrents"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE896;}"
             ItemsSource="{x:Bind ViewModel.InactiveTorrents, Mode=OneWay}"
             Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.HasInactiveTorrents), Mode=OneWay}">
-            <labs:SettingsExpander.HeaderIcon>
-                <FontIcon Glyph="&#xE896;" />
-            </labs:SettingsExpander.HeaderIcon>
             <labs:SettingsExpander.ItemTemplate>
                 <DataTemplate x:DataType="client:TorrentManager">
-                    <labs:SettingsCard Header="{x:Bind Torrent.Name}">
-                        <labs:SettingsCard.ActionIcon>
-                            <FontIcon Glyph="&#xE74D;" />
-                        </labs:SettingsCard.ActionIcon>
+                    <labs:SettingsCard ActionIcon="{ui:FontIcon Glyph=&#xE74D;}" Header="{x:Bind Torrent.Name}">
                         <Button>
                             <SymbolIcon Symbol="More" />
                             <Button.Flyout>
@@ -167,28 +158,19 @@
                                     <MenuFlyoutItem
                                         Command="{x:Bind root:App.Commands.RemoveTorrent}"
                                         CommandParameter="{x:Bind Torrent.Name}"
-                                        Text="Delete">
-                                        <MenuFlyoutItem.Icon>
-                                            <SymbolIcon Symbol="Remove" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
+                                        Icon="{ui:SymbolIcon Symbol=Remove}"
+                                        Text="Delete" />
                                     <MenuFlyoutItem
                                         Command="{x:Bind root:App.Commands.RemoveTorrentWithFiles}"
                                         CommandParameter="{x:Bind Torrent.Name}"
-                                        Text="Delete with files">
-                                        <MenuFlyoutItem.Icon>
-                                            <SymbolIcon Symbol="Delete" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
+                                        Icon="{ui:SymbolIcon Symbol=Delete}"
+                                        Text="Delete with files" />
                                     <MenuFlyoutItem
                                         Command="{x:Bind root:App.Commands.PlayLocalFolder}"
                                         CommandParameter="{x:Bind SavePath}"
+                                        Icon="{ui:SymbolIcon Symbol=Play}"
                                         Text="Play"
-                                        Visibility="{x:Bind help:Converters.BooleanToVisibility(Complete)}">
-                                        <MenuFlyoutItem.Icon>
-                                            <SymbolIcon Symbol="Play" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
+                                        Visibility="{x:Bind help:Converters.BooleanToVisibility(Complete)}" />
                                 </MenuFlyout>
                             </Button.Flyout>
                         </Button>
@@ -215,11 +197,10 @@
                             <ImageIcon Source="{x:Bind help:Converters.StreamToImage(Icon)}" />
                         </labs:SettingsExpander.HeaderIcon>
                         <labs:SettingsExpander.ItemsFooter>
-                            <labs:SettingsCard Description="{x:Bind help:Converters.GetTorrentsPluginVersion(Name)}" Header="Version">
-                                <labs:SettingsCard.HeaderIcon>
-                                    <FontIcon Glyph="&#xE946;" />
-                                </labs:SettingsCard.HeaderIcon>
-                            </labs:SettingsCard>
+                            <labs:SettingsCard
+                                Description="{x:Bind help:Converters.GetTorrentsPluginVersion(Name)}"
+                                Header="Version"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE946;}" />
                         </labs:SettingsExpander.ItemsFooter>
                     </labs:SettingsExpander>
                 </DataTemplate>

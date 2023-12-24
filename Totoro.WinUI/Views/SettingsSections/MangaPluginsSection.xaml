@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:plugins="using:Totoro.Plugins"
     xmlns:po="using:Totoro.Plugins.Options"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -41,10 +42,10 @@
             FontSize="16"
             FontWeight="SemiBold"
             Text="General" />
-        <labs:SettingsCard Description="Default provider used to read." Header="Default Provider">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe93e;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Default provider used to read."
+            Header="Default Provider"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe93e;}">
             <ComboBox
                 Width="150"
                 DisplayMemberPath="DisplayName"
@@ -70,11 +71,10 @@
                             <ImageIcon Source="{x:Bind help:Converters.StreamToImage(Icon)}" />
                         </labs:SettingsExpander.HeaderIcon>
                         <labs:SettingsExpander.ItemsFooter>
-                            <labs:SettingsCard Description="{x:Bind help:Converters.GetMangaPluginVersion(Name)}" Header="Version">
-                                <labs:SettingsCard.HeaderIcon>
-                                    <FontIcon Glyph="&#xE946;" />
-                                </labs:SettingsCard.HeaderIcon>
-                            </labs:SettingsCard>
+                            <labs:SettingsCard
+                                Description="{x:Bind help:Converters.GetMangaPluginVersion(Name)}"
+                                Header="Version"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE946;}" />
                         </labs:SettingsExpander.ItemsFooter>
                     </labs:SettingsExpander>
                 </DataTemplate>

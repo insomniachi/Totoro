@@ -9,6 +9,7 @@
     xmlns:plugins="using:Totoro.Plugins"
     xmlns:po="using:Totoro.Plugins.Options"
     xmlns:root="using:Totoro.WinUI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -48,20 +49,20 @@
             FontWeight="SemiBold"
             Text="General" />
 
-        <labs:SettingsCard Description="Default external media player used to stream." Header="Default Media Player">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xEC15;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Default external media player used to stream."
+            Header="Default Media Player"
+            HeaderIcon="{ui:FontIcon Glyph=&#xEC15;}">
             <ComboBox
                 DisplayMemberPath="DisplayName"
                 ItemsSource="{x:Bind MediaPlayers}"
                 SelectedItem="{x:Bind SelectedMediaPlayer, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Automatical detect and track media playing in external media players" Header="Enable Media Detection">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE773;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Automatical detect and track media playing in external media players"
+            Header="Enable Media Detection"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE773;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.MediaDetectionEnabled, Mode=TwoWay}"
                 OffContent="Off"
@@ -71,11 +72,9 @@
         <labs:SettingsExpander
             Description="Only detect media that are in library folders"
             Header="Library Folders"
+            HeaderIcon="{ui:SymbolIcon Symbol=Library}"
             IsExpanded="True"
             ItemsSource="{x:Bind ViewModel.Settings.LibraryFolders, Mode=OneWay}">
-            <labs:SettingsExpander.HeaderIcon>
-                <SymbolIcon Symbol="Library" />
-            </labs:SettingsExpander.HeaderIcon>
             <labs:SettingsExpander.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
                     <labs:SettingsCard Header="{x:Bind}" IsClickEnabled="True">
@@ -123,11 +122,10 @@
                             <ImageIcon Source="{x:Bind help:Converters.StreamToImage(Icon)}" />
                         </labs:SettingsExpander.HeaderIcon>
                         <labs:SettingsExpander.ItemsFooter>
-                            <labs:SettingsCard Description="{x:Bind help:Converters.GetMediaPluginVersion(Name)}" Header="Version">
-                                <labs:SettingsCard.HeaderIcon>
-                                    <FontIcon Glyph="&#xE946;" />
-                                </labs:SettingsCard.HeaderIcon>
-                            </labs:SettingsCard>
+                            <labs:SettingsCard
+                                Description="{x:Bind help:Converters.GetMediaPluginVersion(Name)}"
+                                Header="Version"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE946;}" />
                         </labs:SettingsExpander.ItemsFooter>
                     </labs:SettingsExpander>
                 </DataTemplate>

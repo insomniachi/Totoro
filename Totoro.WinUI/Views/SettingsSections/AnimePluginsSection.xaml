@@ -9,6 +9,7 @@
     xmlns:plugins="using:Totoro.Plugins"
     xmlns:po="using:Totoro.Plugins.Options"
     xmlns:root="using:Totoro.WinUI"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
     mc:Ignorable="d">
 
@@ -42,10 +43,10 @@
             FontSize="16"
             FontWeight="SemiBold"
             Text="General" />
-        <labs:SettingsCard Description="Default provider used to stream." Header="Default Stream Provider">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe93e;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Default provider used to stream."
+            Header="Default Stream Provider"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe93e;}">
             <ComboBox
                 Width="150"
                 DisplayMemberPath="DisplayName"
@@ -53,30 +54,30 @@
                 SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Prefer subs for search result, excludes dubs from the result." Header="Prefer Subs over Dubs">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe986;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Prefer subs for search result, excludes dubs from the result."
+            Header="Prefer Subs over Dubs"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe986;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.PreferSubs, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Allow sideloading 3rd party provider plugins" Header="Sideload plugins">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe836;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Allow sideloading 3rd party provider plugins"
+            Header="Sideload plugins"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe836;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.AllowSideLoadingPlugins, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="This repository is to store and provide the mapping between various anime sources, (https://github.com/Fribb/anime-lists)" Header="Offline Anime DB">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE78C;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="This repository is to store and provide the mapping between various anime sources, (https://github.com/Fribb/anime-lists)"
+            Header="Offline Anime DB"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE78C;}">
             <Button
                 Command="{x:Bind UpdateOfflineDb}"
                 Content="Update"

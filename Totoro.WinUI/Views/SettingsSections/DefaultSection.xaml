@@ -1,6 +1,3 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
-<!--  Licensed under the MIT License.  -->
-
 <Page
     x:Class="Totoro.WinUI.Views.SettingsSections.DefaultSection"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
@@ -21,85 +19,62 @@
             CommandParameter="Preferences"
             Description="User preferences for how the application behaves"
             Header="User Preferences"
-            IsClickEnabled="True">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE771;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xE771;}"
+            IsClickEnabled="True" />
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="Media Player"
             Description="Options for in-built media player"
             Header="Media Player"
-            IsClickEnabled="True">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xEA69;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xEA69;}"
+            IsClickEnabled="True" />
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="Anime Plugins"
             Description="Options related to anime website scrapers"
             Header="Anime Plugins"
-            IsClickEnabled="True">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE8B2;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xE8B2;}"
+            IsClickEnabled="True" />
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="Manga Plugins"
             Description="Options related to manga website scrapers"
             Header="Manga Plugins"
-            IsClickEnabled="True">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE736;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xE736;}"
+            IsClickEnabled="True" />
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="Tracking"
             Description="Configure tracking services"
             Header="Tracking"
-            IsClickEnabled="true">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xEADF;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xEADF;}"
+            IsClickEnabled="true" />
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="Torrenting"
             Description="Option for torrenting"
             Header="Torrenting"
-            IsClickEnabled="true">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xF080;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xF080;}"
+            IsClickEnabled="true" />
 
         <labs:SettingsCard
             Command="{x:Bind ViewModel.Navigate}"
             CommandParameter="External Media"
             Description="Option for External Media"
             Header="External Media"
-            IsClickEnabled="true">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xEC15;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xEC15;}"
+            IsClickEnabled="true" />
 
         <labs:SettingsExpander
             Description="Let discord know what anime you're watching."
             Header="Use discord rich presense"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe7fc;}"
             IsExpanded="True">
-            <labs:SettingsExpander.HeaderIcon>
-                <FontIcon Glyph="&#xe7fc;" />
-            </labs:SettingsExpander.HeaderIcon>
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.UseDiscordRichPresense, Mode=TwoWay}"
                 OffContent="Off"
@@ -114,30 +89,30 @@
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
 
-        <labs:SettingsCard Description="Contribute opening and ending timestamps to the community." Header="Contribute Timestamps">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe82e;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Contribute opening and ending timestamps to the community."
+            Header="Contribute Timestamps"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe82e;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.ContributeTimeStamps, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Set the minumum log level." Header="Logging">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe9f9;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Set the minumum log level."
+            Header="Logging"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe9f9;}">
             <ComboBox
                 Width="150"
                 ItemsSource="{x:Bind ViewModel.LogLevels}"
                 SelectedItem="{x:Bind ViewModel.Settings.MinimumLogLevel, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Auto update application when available" Header="Upates">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xecc5;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Auto update application when available"
+            Header="Upates"
+            HeaderIcon="{ui:FontIcon Glyph=&#xecc5;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.AutoUpdate, Mode=TwoWay}"
                 OffContent="Off"
@@ -148,11 +123,8 @@
             Command="{x:Bind ViewModel.ShowAbout}"
             Description="{x:Bind ViewModel.GetDescripton()}"
             Header="About"
-            IsClickEnabled="True">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE946;" />
-            </labs:SettingsCard.HeaderIcon>
-        </labs:SettingsCard>
+            HeaderIcon="{ui:FontIcon Glyph=&#xE946;}"
+            IsClickEnabled="True" />
 
     </StackPanel>
 </Page>

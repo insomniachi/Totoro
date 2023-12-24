@@ -8,6 +8,7 @@
     xmlns:labs="using:CommunityToolkit.WinUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Totoro.Core.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
@@ -18,19 +19,14 @@
         <labs:SettingsExpander
             Description="Choose default list service"
             Header="List service"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe71b;}"
             IsExpanded="True">
-            <labs:SettingsExpander.HeaderIcon>
-                <FontIcon Glyph="&#xe71b;" />
-            </labs:SettingsExpander.HeaderIcon>
             <ComboBox
                 Width="150"
                 ItemsSource="{x:Bind ViewModel.ServiceTypes}"
                 SelectedItem="{x:Bind ViewModel.Settings.DefaultListService, Mode=TwoWay}" />
             <labs:SettingsExpander.Items>
-                <labs:SettingsCard Header="MyAnimeList">
-                    <labs:SettingsCard.HeaderIcon>
-                        <ImageIcon Source="/Assets/mal.png" />
-                    </labs:SettingsCard.HeaderIcon>
+                <labs:SettingsCard Header="MyAnimeList" HeaderIcon="{ui:BitmapIcon Source=/Assets/mal.png}">
                     <Button
                         Name="MalButton"
                         Width="150"
@@ -52,10 +48,7 @@
                         </Interactivity:Interaction.Behaviors>
                     </Button>
                 </labs:SettingsCard>
-                <labs:SettingsCard Header="AniList">
-                    <labs:SettingsCard.HeaderIcon>
-                        <ImageIcon Source="/Assets/anilist.png" />
-                    </labs:SettingsCard.HeaderIcon>
+                <labs:SettingsCard Header="AniList" HeaderIcon="{ui:BitmapIcon Source=/Assets/anilist.png}">
                     <Button
                         Name="AniListButton"
                         Width="150"
@@ -77,10 +70,7 @@
                         </Interactivity:Interaction.Behaviors>
                     </Button>
                 </labs:SettingsCard>
-                <labs:SettingsCard Header="Simkl">
-                    <labs:SettingsCard.HeaderIcon>
-                        <ImageIcon Source="/Assets/simkl.png" />
-                    </labs:SettingsCard.HeaderIcon>
+                <labs:SettingsCard Header="Simkl" HeaderIcon="{ui:BitmapIcon Source=/Assets/simkl.png}">
                     <Button
                         Name="SimklButton"
                         Width="150"
@@ -105,20 +95,20 @@
             </labs:SettingsExpander.Items>
         </labs:SettingsExpander>
 
-        <labs:SettingsCard Description="Show results which are not safe for work" Header="Include Nsfw">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe814;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Show results which are not safe for work"
+            Header="Include Nsfw"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe814;}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.IncludeNsfw, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Auto update tracking when configured number of seconds is remaining" Header="Auto update tracking">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe930;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Auto update tracking when configured number of seconds is remaining"
+            Header="Auto update tracking"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe930;}">
             <NumberBox
                 LargeChange="5"
                 SmallChange="1"

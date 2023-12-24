@@ -7,43 +7,45 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.WinUI.Controls"
+    xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <StackPanel Spacing="10">
-        <labs:SettingsCard Description="Media engine used to render videos, (choose vlc if playing streaming torrents)" Header="Media Player">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE955;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Media engine used to render videos, (choose vlc if playing streaming torrents)"
+            Header="Media Player"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE955;}">
             <ComboBox
                 Width="200"
-                ItemsSource="{x:Bind ViewModel.MediaPlayerTypes}"
+                ItemsSource="{ui:EnumValues Type=m:MediaPlayerType}"
                 SelectedItem="{x:Bind ViewModel.Settings.MediaPlayerType, Mode=TwoWay}" />
         </labs:SettingsCard>
-        <labs:SettingsCard Description="Decides how to choose stream qualitiy when multiple qualities as available" Header="Default Stream Quality">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe786;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Decides how to choose stream qualitiy when multiple qualities as available"
+            Header="Default Stream Quality"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe786;}">
             <ComboBox
                 Width="150"
-                ItemsSource="{x:Bind ViewModel.QualitySelections}"
+                ItemsSource="{ui:EnumValues Type=m:StreamQualitySelection}"
                 SelectedItem="{x:Bind ViewModel.Settings.DefaultStreamQualitySelection, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Make the video player go fullscreen when it first starts playing if not already" Header="Auto Fullscreen">
-            <labs:SettingsCard.HeaderIcon>
-                <SymbolIcon Symbol="FullScreen" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Make the video player go fullscreen when it first starts playing if not already"
+            Header="Auto Fullscreen"
+            HeaderIcon="{ui:SymbolIcon Symbol=FullScreen}">
             <ToggleSwitch
                 IsOn="{x:Bind ViewModel.Settings.EnterFullScreenWhenPlaying, Mode=TwoWay}"
                 OffContent="Off"
                 OnContent="On" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Amount to seconds to skip when skip opening button is clicked during media playback" Header="Opening duration">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xe916;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Amount to seconds to skip when skip opening button is clicked during media playback"
+            Header="Opening duration"
+            HeaderIcon="{ui:FontIcon Glyph=&#xe916;}">
             <NumberBox
                 LargeChange="5"
                 SmallChange="1"
@@ -51,10 +53,10 @@
                 Value="{x:Bind ViewModel.Settings.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard Description="Small skip amount in seconds" Header="Small Skip">
-            <labs:SettingsCard.HeaderIcon>
-                <FontIcon Glyph="&#xE893;" />
-            </labs:SettingsCard.HeaderIcon>
+        <labs:SettingsCard
+            Description="Small skip amount in seconds"
+            Header="Small Skip"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE893;}">
             <NumberBox
                 LargeChange="5"
                 SmallChange="1"

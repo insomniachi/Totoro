@@ -28,7 +28,6 @@ public class SettingsViewModel : NavigatableViewModel
     public ISettings Settings { get; }
     public Version Version { get; }
     public Version ScrapperVersion { get; }
-    public List<ElementTheme> Themes { get; } = Enum.GetValues<ElementTheme>().Cast<ElementTheme>().ToList();
     public IEnumerable<PluginInfo> ProviderTypes => PluginFactory<AnimeProvider>.Instance.Plugins;
     public IEnumerable<PluginInfo> TrackerTypes => PluginFactory<ITorrentTracker>.Instance.Plugins;
     public IEnumerable<PluginInfo> MangaProviderTypes => PluginFactory<MangaProvider>.Instance.Plugins;
@@ -37,9 +36,6 @@ public class SettingsViewModel : NavigatableViewModel
     public List<ListServiceType> ServiceTypes { get; } = [ListServiceType.MyAnimeList, ListServiceType.AniList, ListServiceType.Simkl];
     public List<string> HomePages { get; } = ["Discover", "My List"];
     public List<string> AnimeActions { get; } = ["Watch", "Info"];
-    public List<StreamQualitySelection> QualitySelections { get; } = Enum.GetValues<StreamQualitySelection>().Cast<StreamQualitySelection>().ToList();
-    public List<DebridServiceType> DebridServices { get; } = Enum.GetValues<DebridServiceType>().Cast<DebridServiceType>().ToList();
-    public List<MediaPlayerType> MediaPlayerTypes { get; } = Enum.GetValues<MediaPlayerType>().Cast<MediaPlayerType>().ToList();
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }
     public ICommand ConfigureProvider { get; }
@@ -52,7 +48,6 @@ public class SettingsViewModel : NavigatableViewModel
                              ITrackingServiceContext trackingServiceContext,
                              IViewService viewService,
                              IUpdateService updateService,
-                             ILocalSettingsService localSettingsService,
                              IThemeSelectorService themeSelectorService,
                              ITorrentEngine torrentEngine)
     {
