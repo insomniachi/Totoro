@@ -115,6 +115,13 @@
                         <labs:SettingsExpander.HeaderIcon>
                             <ImageIcon Source="{x:Bind help:Converters.StreamToImage(Icon)}" />
                         </labs:SettingsExpander.HeaderIcon>
+                        <labs:SettingsExpander.ItemsFooter>
+                            <labs:SettingsCard Description="{x:Bind help:Converters.GetAnimePluginVersion(Name)}" Header="Version">
+                                <labs:SettingsCard.HeaderIcon>
+                                    <FontIcon Glyph="&#xE946;" />
+                                </labs:SettingsCard.HeaderIcon>
+                            </labs:SettingsCard>
+                        </labs:SettingsExpander.ItemsFooter>
                     </labs:SettingsExpander>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

@@ -253,6 +253,11 @@ public static partial class Converters
     public static PluginOptions GetTorrentsOptions(string pluginName) => GetOptions<ITorrentTracker>(pluginName);
     public static PluginOptions GetMediaOptions(string pluginName) => GetOptions<INativeMediaPlayer>(pluginName);
     public static PluginOptions GetMangaOptions(string pluginName) => GetOptions<MangaProvider>(pluginName);
+    public static string GetAnimePluginVersion(string pluginName) => GetPluginVersion<AnimeProvider>(pluginName);
+    public static string GetMangaPluginVersion(string pluginName) => GetPluginVersion<MangaProvider>(pluginName);
+    public static string GetTorrentsPluginVersion(string pluginName) => GetPluginVersion<ITorrentTracker>(pluginName);
+    public static string GetMediaPluginVersion(string pluginName) => GetPluginVersion<INativeMediaPlayer>(pluginName);
+    public static string GetPluginVersion<T>(string pluginName) => PluginFactory<T>.Instance.Plugins.First(x => x.Name == pluginName).Version.ToString();
     
     public static double TiksToSeconds(long value)
     {

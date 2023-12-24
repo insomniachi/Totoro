@@ -1,4 +1,5 @@
-﻿using Totoro.Plugins.Contracts;
+﻿using System.Reflection;
+using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Manga.MangaDex
@@ -15,6 +16,7 @@ namespace Totoro.Plugins.Manga.MangaDex
         {
             DisplayName = "Manga Dex",
             Name = "manga-dex",
+            Version = Assembly.GetExecutingAssembly().GetName().Version!
         };
 
         public PluginOptions GetOptions() => new();
