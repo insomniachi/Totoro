@@ -5,19 +5,14 @@ using Xunit.Abstractions;
 namespace Totoro.Plugins.Anime.AllAnime.Tests;
 
 [ExcludeFromCodeCoverage]
-public class CatalogTests
+public class CatalogTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
+    private readonly ITestOutputHelper _output = output;
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
-
-    public CatalogTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
 
     [Theory]
     [InlineData("hyouka")]
-    [InlineData("one pi")]
+    [InlineData("hyakkano")]
     public async Task Search(string query)
     {
         // arrange

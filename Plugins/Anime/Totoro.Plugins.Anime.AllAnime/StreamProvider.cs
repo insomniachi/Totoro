@@ -156,27 +156,32 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             var sourceArray = jsonNode?["episode"]?["sourceUrls"];
             var sourceObjs = sourceArray?.ToObject<List<SourceUrlObj>>() ?? [];
             sourceObjs.Sort((x, y) => y.priority.CompareTo(x.priority));
-            var item = sourceObjs.First();
-            item.sourceUrl = DecryptSourceUrl(item.sourceUrl);
-            if (item.type == "iframe")
-            {
-                var clockUrl = ClockRegex().Replace(apiEndPoint + item.sourceUrl, ".json");
-                var stream = await Extract(clockUrl);
-                if (stream is not null)
-                {
-                    stream.Episode = e;
-                    yield return stream;
-                }
-            }
-            else
-            {
-                if (await Unpack(item.sourceUrl) is { } stream)
-                {
-                    stream.Episode = e;
-                    yield return stream;
-                }
-            }
 
+            foreach (var item in sourceObjs)
+            {
+                item.sourceUrl = DecryptSourceUrl(item.sourceUrl);
+
+                if (item.type == "iframe")
+                {
+                    var clockUrl = ClockRegex().Replace(apiEndPoint + item.sourceUrl, ".json");
+                    var stream = await Extract(clockUrl);
+                    if (stream is not null)
+                    {
+                        stream.Episode = e;
+                        yield return stream;
+                        yield break;
+                    }
+                }
+                //else
+                //{
+                //    if (await Unpack(item.sourceUrl) is { } stream)
+                //    {
+                //        stream.Episode = e;
+                //        yield return stream;
+                //        yield break;
+                //    }
+                //}
+            }
         }
     }
 
