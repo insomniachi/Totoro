@@ -58,6 +58,8 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
         this.WhenAnyValue(x => x.Player.Status)
             .Where(status => status is Status.Playing)
             .Subscribe(_ => ShowTransportControls());
+
+        TransportControls.DoubleTapped += (sender, args) => args.Handled = true;
     }
 
     private void FSC_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
