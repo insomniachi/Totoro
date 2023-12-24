@@ -219,6 +219,14 @@
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
                     <AppBarButton
+                        x:Name="FullWindowButton"
+                        IsTabStop="False"
+                        Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <SymbolIcon x:Name="FullWindowSymbol" Symbol="FullScreen" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton
                         x:Name="CCSelectionButton"
                         IsTabStop="False"
                         Style="{StaticResource AppBarButtonStyle}"

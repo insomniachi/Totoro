@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
 using Splat;
+using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Media.Flyleaf;
@@ -156,6 +157,8 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     {
         InitializeComponent();
 
+        var windowService = App.GetService<IWindowService>();
+
         OnNextTrack = NextTrackButton.Events().Click.Select(_ => Unit.Default);
         OnPrevTrack = PreviousTrackButton.Events().Click.Select(_ => Unit.Default);
         OnStaticSkip = SkipIntroButton.Events().Click.Select(_ => Unit.Default);
@@ -164,6 +167,11 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         OnQualityChanged = _onQualityChanged;
         PlaybackRateChanged = _onPlaybackRateChanged;
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
+
+        FullWindowButton
+            .Events()
+            .Click
+            .Subscribe(_ => windowService.ToggleIsFullWindow());
 
         TimeSlider
             .Events()
@@ -184,6 +192,14 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
                     PlayPauseSymbol.Symbol = Symbol.Play;
                 }
             });
+
+        windowService
+           .IsFullWindowChanged
+           .Where(_ => FullWindowSymbol is not null)
+           .Subscribe(isFullWindwow =>
+           {
+               FullWindowSymbol.Symbol = isFullWindwow ? Symbol.BackToWindow : Symbol.FullScreen;
+           });
     }
 
     public string TimeRemaning(long currentTime, long duration)
