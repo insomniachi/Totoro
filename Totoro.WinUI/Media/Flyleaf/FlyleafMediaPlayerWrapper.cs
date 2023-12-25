@@ -35,7 +35,7 @@ namespace Totoro.WinUI.Media.Flyleaf
             Paused = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Paused).Select(x => Unit.Default);
             Playing = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Playing).Select(x => Unit.Default);
             PlaybackEnded = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended).Select(x => Unit.Default);
-            DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Select(x => new TimeSpan(x));
+            DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Where(x => x > 0).Select(x => new TimeSpan(x));
             PositionChanged = MediaPlayer.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime)).Select(_ => new TimeSpan(MediaPlayer.CurTime));
             MediaPlayer.OpenCompleted += MediaPlayer_OpenCompleted;
         }
@@ -50,6 +50,7 @@ namespace Totoro.WinUI.Media.Flyleaf
             if(_offsetInSeconds is > 0)
             {
                 MediaPlayer.SeekAccurate((int)TimeSpan.FromSeconds(_offsetInSeconds.Value).TotalMilliseconds);
+                _offsetInSeconds = null;
             }
 
             if(MediaPlayer.Subtitles.Streams.Count > 1)

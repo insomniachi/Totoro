@@ -5,31 +5,23 @@ public interface ITrackingUpdater
     public event EventHandler TrackingUpdated;
 }
 
-public class TrackingUpdater : MediaEventListener, ITrackingUpdater
+public class TrackingUpdater(ITrackingServiceContext trackingService,
+                             ISettings settings,
+                             IViewService viewService,
+                             TimeProvider timeProvider) : MediaEventListener, ITrackingUpdater
 {
-    private readonly ITrackingServiceContext _trackingService;
-    private readonly ISettings _settings;
-    private readonly IViewService _viewService;
-    private readonly TimeProvider _timeProvider;
+    private readonly ITrackingServiceContext _trackingService = trackingService;
+    private readonly ISettings _settings = settings;
+    private readonly IViewService _viewService = viewService;
+    private readonly TimeProvider _timeProvider = timeProvider;
     private TimeSpan _updateAt = TimeSpan.MaxValue;
     private TimeSpan _position;
     private TimeSpan _duration;
     private static readonly TimeSpan _nextBuffer = TimeSpan.FromMinutes(3);
     private bool _isUpdated;
-    private readonly object _lock = new object();
+    private readonly object _lock = new();
 
     public event EventHandler TrackingUpdated;
-
-    public TrackingUpdater(ITrackingServiceContext trackingService,
-                           ISettings settings,
-                           IViewService viewService,
-                           TimeProvider timeProvider)
-    {
-        _trackingService = trackingService;
-        _settings = settings;
-        _viewService = viewService;
-        _timeProvider = timeProvider;
-    }
 
     protected override void OnDurationChanged(TimeSpan duration)
     {
