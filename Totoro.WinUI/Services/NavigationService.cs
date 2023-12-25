@@ -68,11 +68,18 @@ public class NavigationService : IWinUINavigationService, IEnableLogger
         {
             var vmBeforeNavigation = _frame.GetPageViewModel();
 
-            _frame.GoBack();
-
-            if (vmBeforeNavigation is INavigationAware navigationAware)
+            if(vmBeforeNavigation is IHandleNavigation ihn && ihn.CanHandle())
             {
-                navigationAware.OnNavigatedFrom();
+                ihn.GoBack();
+            }
+            else
+            {
+                _frame.GoBack();
+
+                if (vmBeforeNavigation is INavigationAware navigationAware)
+                {
+                    navigationAware.OnNavigatedFrom();
+                }
             }
 
             return true;

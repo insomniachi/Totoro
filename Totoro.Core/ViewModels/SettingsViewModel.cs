@@ -10,7 +10,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
 
-public class SettingsViewModel : NavigatableViewModel
+public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
 {
     private readonly ITrackingServiceContext _trackingServiceContext;
 
@@ -116,6 +116,9 @@ public class SettingsViewModel : NavigatableViewModel
 
         UpdateConnectionStatus();
     }
+
+    public bool CanHandle() => BreadCrumbBar.BreadCrumbs.Count > 0;
+    public void GoBack() => BreadCrumbBar.BreadCrumbs.RemoveAt(BreadCrumbBar.BreadCrumbs.Count - 1);
 
     private void UpdateConnectionStatus()
     {

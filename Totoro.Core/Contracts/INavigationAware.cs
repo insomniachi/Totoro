@@ -6,3 +6,9 @@ public interface INavigationAware
 
     Task OnNavigatedFrom();
 }
+
+public interface IHandleNavigation
+{
+    void GoBack();
+    bool CanHandle();
+}
