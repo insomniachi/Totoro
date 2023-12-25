@@ -1,15 +1,16 @@
-﻿using System.Reactive.Concurrency;
+﻿using System.ComponentModel;
+using System.Reactive.Concurrency;
 using FlyleafLib.MediaPlayer;
 using Splat;
 using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.WinUI.Media.Flyleaf
 {
-    public sealed class FlyleafMediaPlayerWrapper : IMediaPlayer, IEnableLogger
+    public sealed class FlyleafMediaPlayerWrapper : ReactiveObject, IMediaPlayer, IEnableLogger
     {
         private double? _offsetInSeconds;
 
-        public Player MediaPlayer { get; set; } = new();
+        [Reactive] public Player MediaPlayer { get; set; } = new();
 
         public IObservable<Unit> Paused { get; }
 
@@ -32,11 +33,17 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public FlyleafMediaPlayerWrapper()
         {
-            Paused = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Paused).Select(x => Unit.Default);
-            Playing = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Playing).Select(x => Unit.Default);
-            PlaybackEnded = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended).Select(x => Unit.Default);
-            DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Where(x => x > 0).Select(x => new TimeSpan(x));
-            PositionChanged = MediaPlayer.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime)).Select(_ => new TimeSpan(MediaPlayer.CurTime));
+            Paused = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyValue(x => x.Status).Where(x => x is Status.Paused)).Select(_ => Unit.Default);
+            Playing = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyValue(x => x.Status).Where(x => x is Status.Playing)).Select(_ => Unit.Default);
+            PlaybackEnded = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended)).Select(_ => Unit.Default);
+            DurationChanged = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyValue(x => x.Duration).Where(x => x > 0)).Select(x => new TimeSpan(x));
+            PositionChanged = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime))).Select(x => new TimeSpan(x.CurTime));
+
+            //Paused = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Paused).Select(x => Unit.Default);
+            //Playing = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Playing).Select(x => Unit.Default);
+            //PlaybackEnded = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended).Select(x => Unit.Default);
+            //DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Where(x => x > 0).Select(x => new TimeSpan(x));
+            //PositionChanged = MediaPlayer.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime)).Select(_ => new TimeSpan(MediaPlayer.CurTime));
             MediaPlayer.OpenCompleted += MediaPlayer_OpenCompleted;
         }
 
@@ -49,6 +56,7 @@ namespace Totoro.WinUI.Media.Flyleaf
 
             if(_offsetInSeconds is > 0)
             {
+                MediaPlayer.Play();
                 MediaPlayer.SeekAccurate((int)TimeSpan.FromSeconds(_offsetInSeconds.Value).TotalMilliseconds);
                 _offsetInSeconds = null;
             }
@@ -108,7 +116,12 @@ namespace Totoro.WinUI.Media.Flyleaf
 
         public Task<Unit> SetMedia(VideoStreamModel stream)
         {
-            if(stream.HasHeaders)
+            MediaPlayer.Stop();
+            MediaPlayer.OpenCompleted -= MediaPlayer_OpenCompleted;
+            MediaPlayer = new();
+            MediaPlayer.OpenCompleted += MediaPlayer_OpenCompleted;
+
+            if (stream.HasHeaders)
             {
                 MediaPlayer.Config.Demuxer.FormatOpt["header"] = string.Join("\r\n", stream.Headers.Select(x => $"{x.Key}:{x.Value}"));
             }

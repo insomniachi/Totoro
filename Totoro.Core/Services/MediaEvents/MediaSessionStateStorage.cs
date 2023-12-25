@@ -1,14 +1,10 @@
 ﻿
 namespace Totoro.Core.Services.MediaEvents;
 
-internal class MediaSessionStateStorage : MediaEventListener
+internal class MediaSessionStateStorage(IResumePlaybackService playbackStateStorage) : MediaEventListener
 {
-    private readonly IResumePlaybackService _playbackStateStorage;
-
-    public MediaSessionStateStorage(IResumePlaybackService playbackStateStorage)
-    {
-        _playbackStateStorage = playbackStateStorage;
-    }
+    private readonly IResumePlaybackService _playbackStateStorage = playbackStateStorage;
+    private bool _canUpdate;
 
     protected override void OnPositionChanged(TimeSpan position)
     {
@@ -30,12 +26,27 @@ internal class MediaSessionStateStorage : MediaEventListener
         _playbackStateStorage.Reset(_animeModel.Id, _currentEpisode);
     }
 
+    protected override void OnEpisodeChanged()
+    {
+        _canUpdate = false;
+    }
+
+    protected override void OnPlay()
+    {
+        _canUpdate = true;
+    }
+
+    protected override void OnPaused()
+    {
+        _canUpdate = false;
+    }
+
     public override void Stop()
     {
         _playbackStateStorage.SaveState();
     }
 
-    private bool IsEnabled => _animeModel is not null && _currentEpisode > 0;
+    private bool IsEnabled => _animeModel is not null && _currentEpisode > 0 && _canUpdate;
 
 }
 

@@ -47,7 +47,9 @@ public sealed partial class WatchPage : WatchPageBase
                     {
                         SubscribeDoubleTap(FlyleafMediaPlayerElement, windowService);
                         flyleafWrapper.SetTransportControls(FlyleafMediaPlayerElement.TransportControls);
-                        FlyleafMediaPlayerElement.Player = flyleafWrapper.MediaPlayer;
+                        flyleafWrapper.WhenAnyValue(x => x.MediaPlayer)
+                                      .ObserveOn(RxApp.MainThreadScheduler)
+                                      .Subscribe(mp => FlyleafMediaPlayerElement.Player = mp);
                     }
 
                     this.WhenAnyValue(x => x.ViewModel.Qualities)

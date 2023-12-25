@@ -29,7 +29,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IAnimeDetectionService _animeDetectionService;
     private readonly INameService _nameService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
-    private readonly string[] _subDubProviders = new[] { "gogo-anime", "anime-saturn" };
+    private readonly string[] _subDubProviders = ["gogo-anime", "anime-saturn"];
 
     private PluginOptions _providerOptions;
     private bool _isCrunchyroll;
