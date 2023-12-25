@@ -117,7 +117,7 @@ public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
         UpdateConnectionStatus();
     }
 
-    public bool CanHandle() => BreadCrumbBar.BreadCrumbs.Count > 0;
+    public bool CanHandle() => BreadCrumbBar.BreadCrumbs.Count > 1;
     public void GoBack() => BreadCrumbBar.BreadCrumbs.RemoveAt(BreadCrumbBar.BreadCrumbs.Count - 1);
 
     private void UpdateConnectionStatus()

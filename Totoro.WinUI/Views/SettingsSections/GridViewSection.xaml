@@ -22,44 +22,32 @@
             Description="Value -1 means auto calculate number of columns based on item height and width"
             Header="Max Number of Columns"
             HeaderIcon="{ui:FontIcon Glyph=&#xF0E2;}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock VerticalAlignment="Center" Text="{x:Bind ColumnsSlider.Value, Mode=OneWay}" />
-                <Slider
-                    x:Name="ColumnsSlider"
-                    Maximum="20"
-                    Minimum="-1"
-                    Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.MaxNumberOfColumns, Mode=TwoWay}" />
-            </StackPanel>
+            <NumberBox
+                Maximum="20"
+                Minimum="-1"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.MaxNumberOfColumns, Mode=TwoWay}" />
         </ctk:SettingsCard>
         <ctk:SettingsCard Header="Item Height" HeaderIcon="{ui:FontIcon Glyph=&#xE76F;}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock VerticalAlignment="Center" Text="{x:Bind HeightSlider.Value, Mode=OneWay}" />
-                <Slider
-                    x:Name="HeightSlider"
-                    Maximum="400"
-                    Minimum="100"
-                    Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.ItemHeight, Mode=TwoWay}" />
-            </StackPanel>
+            <NumberBox
+                Maximum="400"
+                Minimum="100"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.ItemHeight, Mode=TwoWay}" />
         </ctk:SettingsCard>
         <ctk:SettingsCard Header="Desired Item Width" HeaderIcon="{ui:FontIcon Glyph=&#xE784;}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock VerticalAlignment="Center" Text="{x:Bind WidthSlider.Value, Mode=OneWay}" />
-                <Slider
-                    x:Name="WidthSlider"
-                    Maximum="400"
-                    Minimum="100"
-                    Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.DesiredWidth, Mode=TwoWay}" />
-            </StackPanel>
+            <NumberBox
+                Maximum="400"
+                Minimum="100"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.DesiredWidth, Mode=TwoWay}" />
         </ctk:SettingsCard>
         <ctk:SettingsCard Header="Spacing Between Items" HeaderIcon="{ui:FontIcon Glyph=&#xF573;}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock VerticalAlignment="Center" Text="{x:Bind SpacingSlider.Value, Mode=OneWay}" />
-                <Slider
-                    x:Name="SpacingSlider"
-                    Maximum="20"
-                    Minimum="0"
-                    Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.SpacingBetweenItems, Mode=TwoWay}" />
-            </StackPanel>
+            <NumberBox
+                Maximum="20"
+                Minimum="0"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.Settings.UserListGridViewSettings.SpacingBetweenItems, Mode=TwoWay}" />
         </ctk:SettingsCard>
 
         <TextBlock
