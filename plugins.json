@@ -21,19 +21,9 @@
       "FileName": "Totoro.Plugins.Anime.GogoAnime.dll"
     },
     {
-      "DisplayName": "Marin",
-      "Version": "1.6.0.0",
-      "FileName": "Totoro.Plugins.Anime.Marin.dll"
-    },
-    {
       "DisplayName": "Anime Saturn",
       "Version": "1.1.0.0",
       "FileName": "Totoro.Plugins.Anime.AnimeSaturn.dll"
-    },
-    {
-      "DisplayName": "Aniwave",
-      "Version": "1.1.0.0",
-      "FileName": "Totoro.Plugins.Anime.Aniwave.dll"
     },
     {
       "DisplayName": "Wit Anime",
