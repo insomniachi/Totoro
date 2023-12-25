@@ -1,9 +1,12 @@
 ﻿using System.Diagnostics;
+using DynamicData;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
+using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
 using Windows.System;
 using WinUIEx;
@@ -56,6 +59,10 @@ public sealed partial class ShellPage : Page
 
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
+
+        var accelerator = new KeyboardAccelerator { Key = VirtualKey.S, Modifiers = VirtualKeyModifiers.Menu | VirtualKeyModifiers.Control };
+        accelerator.Invoked += (_, _ ) => ViewModel.NavigationService.NavigateTo<SettingsViewModel>();
+        KeyboardAccelerators.Add(accelerator);
     }
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -94,7 +101,7 @@ public sealed partial class ShellPage : Page
 
     private void Feedback_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        Process.Start(new ProcessStartInfo(@"https://github.com/athulrajts/AnimDL.GUI/issues")
+        Process.Start(new ProcessStartInfo(@"https://github.com/insomniachi/Totoro/issues")
         {
             UseShellExecute = true
         });

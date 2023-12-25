@@ -53,7 +53,7 @@ public class NavigationViewService : INavigationViewService
         }
     }
 
-    private NavigationViewItem GetSelectedItem(IEnumerable<object> menuItems, Type vmType)
+    private static NavigationViewItem GetSelectedItem(IEnumerable<object> menuItems, Type vmType)
     {
         foreach (var item in menuItems.OfType<NavigationViewItem>())
         {

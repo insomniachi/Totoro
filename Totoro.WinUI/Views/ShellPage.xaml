@@ -5,6 +5,7 @@
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:helpers="using:Totoro.WinUI.Helpers"
     xmlns:tb="using:H.NotifyIcon"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Loaded="OnLoaded">
 
     <Grid>
@@ -51,30 +52,45 @@
                     Icon="World"
                     IsExpanded="true">
                     <NavigationViewItem.MenuItems>
-                        <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverViewModel" Content="Anime">
-                            <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE714;" />
-                            </NavigationViewItem.Icon>
+                        <NavigationViewItem
+                            x:Name="DiscoverAnimeItem"
+                            helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverViewModel"
+                            Content="Anime"
+                            Icon="{ui:FontIcon Glyph=&#xE714;}">
+                            <NavigationViewItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="D" Modifiers="Menu" />
+                            </NavigationViewItem.KeyboardAccelerators>
                         </NavigationViewItem>
-                        <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverMangaViewModel" Content="Manga">
-                            <NavigationViewItem.Icon>
-                                <FontIcon Glyph="&#xE736;" />
-                            </NavigationViewItem.Icon>
-                        </NavigationViewItem>
+                        <NavigationViewItem
+                            helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverMangaViewModel"
+                            Content="Manga"
+                            Icon="{ui:FontIcon Glyph=&#xE736;}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.UserListViewModel"
                     Content="My List"
-                    Icon="Library" />
+                    Icon="Library">
+                    <NavigationViewItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="L" Modifiers="Menu" />
+                    </NavigationViewItem.KeyboardAccelerators>
+                </NavigationViewItem>
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.SeasonalViewModel"
                     Content="Seasonal"
-                    Icon="Calendar" />
+                    Icon="Calendar">
+                    <NavigationViewItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="S" Modifiers="Menu" />
+                    </NavigationViewItem.KeyboardAccelerators>
+                </NavigationViewItem>
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.TorrentingViewModel"
                     Content="Torrenting"
-                    Icon="People" />
+                    Icon="People">
+                    <NavigationViewItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="T" Modifiers="Menu" />
+                    </NavigationViewItem.KeyboardAccelerators>
+                </NavigationViewItem>
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.WatchViewModel"
                     Content="Watch"
@@ -85,18 +101,16 @@
                     Content="About"
                     Icon="Document"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAboutView), Mode=OneWay}" />
-                <NavigationViewItem helpers:NavigationHelper.NavigateTo="Totoro.WinUI.ViewModels.NowPlayingViewModel" Content="Now Playing">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xEC15;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="Totoro.WinUI.ViewModels.NowPlayingViewModel"
+                    Content="Now Playing"
+                    Icon="{ui:FontIcon Glyph=&#xEC15;}" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
-                <NavigationViewItem Content="Give Feedback" Tapped="Feedback_Tapped">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xed15;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                <NavigationViewItem
+                    Content="Give Feedback"
+                    Icon="{ui:FontIcon Glyph=&#xed15;}"
+                    Tapped="Feedback_Tapped" />
             </NavigationView.PaneFooter>
             <Grid>
                 <Frame x:Name="NavigationFrame" Margin="0" />
