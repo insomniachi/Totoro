@@ -19,6 +19,12 @@
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Media\Vlc\**" />
+	  <EmbeddedResource Remove="Media\Vlc\**" />
+	  <None Remove="Media\Vlc\**" />
+	  <Page Remove="Media\Vlc\**" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.230830" />
@@ -48,8 +54,6 @@
 		<PackageReference Include="ReactiveUI.WinUI" Version="19.5.31" />
 		<PackageReference Include="System.Reactive" Version="6.0.0" />
 		<PackageReference Include="WinUIEx" Version="2.3.3" />
-		<PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.20" />
-		<PackageReference Include="LibVLCSharp" Version="3.8.2" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -227,4 +231,8 @@
 			<FrameworkSdkReference Remove="@(FrameworkSdkReference)" Condition="$([System.String]::Copy('%(FrameworkSdkReference.SDKName)').StartsWith('Microsoft.WindowsAppRuntime.'))" />
 		</ItemGroup>
 	</Target>
+
+	<ItemGroup>
+	  <PRIResource Remove="Media\Vlc\**" />
+	</ItemGroup>
 </Project>

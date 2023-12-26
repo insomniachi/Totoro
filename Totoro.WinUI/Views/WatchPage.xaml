@@ -28,9 +28,9 @@
                     AutoPlay="False"
                     IsDoubleTapEnabled="True" />
             </ctk:Case>
-            <ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
+            <!--<ctk:Case Value="{x:Bind m:MediaPlayerType.Vlc}">
                 <media:VlcMediaPlayerElement x:Name="VlcMediaPlayerElement" />
-            </ctk:Case>
+            </ctk:Case>-->
             <ctk:Case Value="{x:Bind m:MediaPlayerType.FFMpeg}">
                 <flyleaf:FlyleafMediaPlayerElement x:Name="FlyleafMediaPlayerElement" />
             </ctk:Case>

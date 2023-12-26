@@ -5,20 +5,13 @@ using Splat;
 
 namespace Totoro.Core.Services;
 
-internal class AnimeDetectionService : IAnimeDetectionService, IEnableLogger
+internal class AnimeDetectionService(IViewService viewService,
+                                     IToastService toastService,
+                                     IAnimeServiceContext animeServiceContext) : IAnimeDetectionService, IEnableLogger
 {
-    private readonly IViewService _viewService;
-    private readonly IToastService _toastService;
-    private readonly IAnimeServiceContext _animeServiceContext;
-
-    public AnimeDetectionService(IViewService viewService,
-                                 IToastService toastService,
-                                 IAnimeServiceContext animeServiceContext)
-    {
-        _viewService = viewService;
-        _toastService = toastService;
-        _animeServiceContext = animeServiceContext;
-    }
+    private readonly IViewService _viewService = viewService;
+    private readonly IToastService _toastService = toastService;
+    private readonly IAnimeServiceContext _animeServiceContext = animeServiceContext;
 
     public Task<long?> DetectFromFileName(string fileName, bool useNotification = false)
     {

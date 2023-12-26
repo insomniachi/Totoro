@@ -610,13 +610,15 @@
         </Setter>
     </Style>
 
-    <Style TargetType="vlc:VlcMediaTransportControls">
+    <!--<Style TargetType="vlc:VlcMediaTransportControls">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="vlc:VlcMediaTransportControls">
                     <Grid x:Name="RootGrid" Background="Transparent">
                         <Grid.Resources>
-                            <!--  New AppBar button style 40x40 pixels in size  -->
+    -->
+    <!--  New AppBar button style 40x40 pixels in size  -->
+    <!--
                             <Style
                                 x:Key="AppBarButtonStyle"
                                 BasedOn="{StaticResource DefaultAppBarButtonStyle}"
@@ -625,7 +627,9 @@
                                 <Setter Property="Width" Value="45" />
                                 <Setter Property="AllowFocusOnInteraction" Value="True" />
                             </Style>
-                            <!--  New AppBarToggle button style 40x40 pixels in size  -->
+    -->
+    <!--  New AppBarToggle button style 40x40 pixels in size  -->
+    <!--
                             <Style
                                 x:Key="AppBarToggleButtonStyle"
                                 BasedOn="{StaticResource DefaultAppBarToggleButtonStyle}"
@@ -634,7 +638,9 @@
                                 <Setter Property="Width" Value="{ThemeResource MediaTransportControlsAppBarButtonWidth}" />
                                 <Setter Property="AllowFocusOnInteraction" Value="True" />
                             </Style>
-                            <!--  New CommandBar Style  -->
+    -->
+    <!--  New CommandBar Style  -->
+    <!--
                             <Style
                                 x:Key="CommandBarStyle"
                                 BasedOn="{StaticResource DefaultCommandBarStyle}"
@@ -642,7 +648,9 @@
                                 <Setter Property="Background" Value="Transparent" />
                                 <Setter Property="DefaultLabelPosition" Value="Collapsed" />
                             </Style>
-                            <!--  Style for Error Message text  -->
+    -->
+    <!--  Style for Error Message text  -->
+    <!--
                             <Style x:Key="MediaTextBlockStyle" TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Setter Property="Foreground" Value="{ThemeResource MediaTransportControlsFillMediaText}" />
@@ -651,7 +659,9 @@
                                 <Setter Property="Style" Value="{ThemeResource CaptionTextBlockStyle}" />
                                 <Setter Property="IsTextScaleFactorEnabled" Value="False" />
                             </Style>
-                            <!--  Style for Volume Flyout used in Media Transport Controls  -->
+    -->
+    <!--  Style for Volume Flyout used in Media Transport Controls  -->
+    <!--
                             <Style
                                 x:Key="FlyoutStyle"
                                 BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
@@ -985,7 +995,9 @@
                         </Border>
 
                         <VisualStateManager.VisualStateGroups>
-                            <!--  ControlPanel Visibility states  -->
+    -->
+    <!--  ControlPanel Visibility states  -->
+    <!--
                             <VisualStateGroup x:Name="ControlPanelVisibilityStates">
                                 <VisualState x:Name="ControlPanelFadeIn">
                                     <Storyboard>
@@ -1020,8 +1032,10 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <!--  ControlPanel Visibility states  -->
-                            <!--  Media state visual states  -->
+    -->
+    <!--  ControlPanel Visibility states  -->
+    <!--  Media state visual states  -->
+    <!--
                             <VisualStateGroup x:Name="MediaStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Buffering">
@@ -1058,8 +1072,10 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <!--  Media state visual states  -->
-                            <!--  Audio Selection Button visibility states  -->
+    -->
+    <!--  Media state visual states  -->
+    <!--  Audio Selection Button visibility states  -->
+    <!--
                             <VisualStateGroup x:Name="AudioSelectionAvailablityStates">
                                 <VisualState x:Name="AudioSelectionAvailable">
                                     <VisualState.Setters>
@@ -1069,8 +1085,10 @@
                                 <VisualState x:Name="AudioSelectionUnavailable" />
 
                             </VisualStateGroup>
-                            <!--  Video volume visibility states  -->
-                            <!--  Closed Captioning Selection Button visibility states  -->
+    -->
+    <!--  Video volume visibility states  -->
+    <!--  Closed Captioning Selection Button visibility states  -->
+    <!--
                             <VisualStateGroup x:Name="CCSelectionAvailablityStates">
                                 <VisualState x:Name="CCSelectionAvailable">
                                     <VisualState.Setters>
@@ -1080,8 +1098,10 @@
                                 <VisualState x:Name="CCSelectionUnavailable" />
 
                             </VisualStateGroup>
-                            <!--  Closed Captioning  visibility states  -->
-                            <!--  Focus states  -->
+    -->
+    <!--  Closed Captioning  visibility states  -->
+    <!--  Focus states  -->
+    <!--
                             <VisualStateGroup x:Name="FocusStates">
                                 <VisualState x:Name="Focused">
                                     <Storyboard>
@@ -1101,7 +1121,9 @@
                                 <VisualState x:Name="PointerFocused" />
 
                             </VisualStateGroup>
-                            <!--  Focus states  -->
+    -->
+    <!--  Focus states  -->
+    <!--
                             <VisualStateGroup x:Name="MediaTransportControlMode">
                                 <VisualState x:Name="NormalMode" />
                                 <VisualState x:Name="CompactMode">
@@ -1119,7 +1141,9 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <!--  PlayPause states  -->
+    -->
+    <!--  PlayPause states  -->
+    <!--
                             <VisualStateGroup x:Name="PlayPauseStates">
                                 <VisualState x:Name="PlayState" />
                                 <VisualState x:Name="PauseState">
@@ -1130,7 +1154,9 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <!--  VolumeMute states  -->
+    -->
+    <!--  VolumeMute states  -->
+    <!--
                             <VisualStateGroup x:Name="VolumeMuteStates">
                                 <VisualState x:Name="VolumeState" />
                                 <VisualState x:Name="MuteState">
@@ -1142,7 +1168,9 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-                            <!--  Repeat states  -->
+    -->
+    <!--  Repeat states  -->
+    <!--
                             <VisualStateGroup x:Name="RepeatStates">
                                 <VisualState x:Name="RepeatNoneState" />
                                 <VisualState x:Name="RepeatOneState">
@@ -1166,6 +1194,6 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
+    </Style>-->
 
 </ResourceDictionary>

@@ -4,9 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
-using Totoro.WinUI.Media;
 using Totoro.WinUI.Media.Flyleaf;
-using Totoro.WinUI.Media.Vlc;
 using Totoro.WinUI.Media.Wmp;
 
 namespace Totoro.WinUI.Views;
@@ -38,11 +36,11 @@ public sealed partial class WatchPage : WatchPageBase
                         MediaPlayerElement.SetMediaPlayer(wmpWrapper.GetMediaPlayer());
                         MediaPlayerElement.TransportControls = wmpWrapper.TransportControls as CustomMediaTransportControls;
                     }
-                    else if (wrapper is LibVLCMediaPlayerWrapper vlcWrapper)
-                    {
-                        SubscribeDoubleTap(VlcMediaPlayerElement, windowService);
-                        VlcMediaPlayerElement.MediaPlayer = vlcWrapper;
-                    }
+                    //else if (wrapper is LibVLCMediaPlayerWrapper vlcWrapper)
+                    //{
+                    //    SubscribeDoubleTap(VlcMediaPlayerElement, windowService);
+                    //    VlcMediaPlayerElement.MediaPlayer = vlcWrapper;
+                    //}
                     else if(wrapper is FlyleafMediaPlayerWrapper flyleafWrapper)
                     {
                         SubscribeDoubleTap(FlyleafMediaPlayerElement, windowService);

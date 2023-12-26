@@ -10,7 +10,6 @@ using Totoro.WinUI.Dialogs.ViewModels;
 using Totoro.WinUI.Dialogs.Views;
 using Totoro.WinUI.Media;
 using Totoro.WinUI.Media.Flyleaf;
-using Totoro.WinUI.Media.Vlc;
 using Totoro.WinUI.Media.Wmp;
 using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
@@ -95,7 +94,7 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<IMediaPlayerFactory, MediaPlayerFactory>();
         services.AddMediaPlayer<WinUIMediaPlayerWrapper>();
-        services.AddMediaPlayer<LibVLCMediaPlayerWrapper>();
+        //services.AddMediaPlayer<LibVLCMediaPlayerWrapper>();
         services.AddMediaPlayer<FlyleafMediaPlayerWrapper>();
 
 

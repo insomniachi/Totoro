@@ -22,7 +22,7 @@ public class TrackingUpdaterTests
                 WatchedEpisodes = 5,
             }
         };
-        var service = new TrackingUpdater(trackingService.Object, settings.Object, viewService.Object, Mock.Of<ISystemClock>());
+        var service = new TrackingUpdater(trackingService.Object, settings.Object, viewService.Object, Mock.Of<TimeProvider>());
         service.SetMediaPlayer(mediaPlayer);
         service.SetAnime(animeModel);
         service.SetCurrentEpisode(animeModel.Tracking.WatchedEpisodes.Value + 1);
@@ -49,9 +49,9 @@ public class TrackingUpdaterTests
         settings.Setup(x => x.TimeRemainingWhenEpisodeCompletesInSeconds).Returns(120);
         var viewService = new Mock<IViewService>();
         var mediaPlayer = new MockMediaPlayer();
-        var systemClock = new Mock<ISystemClock>();
-        var today = DateTime.Today;
-        systemClock.Setup(x => x.Today).Returns(today);
+        var systemClock = new Mock<TimeProvider>();
+        var today = DateTimeOffset.Now;
+        systemClock.Setup(x => x.GetLocalNow()).Returns(today);
         var animeModel = new AnimeModel
         {
             Id = 10,
@@ -69,7 +69,7 @@ public class TrackingUpdaterTests
         var expectedTracking = new Tracking
         {
             WatchedEpisodes = 1,
-            StartDate = today,
+            StartDate = today.Date,
             Status = AnimeStatus.Watching
         };
         trackingService.Verify(x => x.Update(animeModel.Id, expectedTracking), Times.Once);
@@ -110,7 +110,7 @@ public class TrackingUpdaterTests
                 }
             }
         };
-        var service = new TrackingUpdater(trackingService.Object, settings.Object, viewService.Object, Mock.Of<ISystemClock>());
+        var service = new TrackingUpdater(trackingService.Object, settings.Object, viewService.Object, Mock.Of<TimeProvider>());
         service.SetMediaPlayer(mediaPlayer);
         service.SetAnime(animeModel);
         service.SetCurrentEpisode(animeModel.Tracking.WatchedEpisodes.Value + 1);
@@ -137,9 +137,9 @@ public class TrackingUpdaterTests
         settings.Setup(x => x.TimeRemainingWhenEpisodeCompletesInSeconds).Returns(120);
         var viewService = new Mock<IViewService>();
         var mediaPlayer = new MockMediaPlayer();
-        var systemClock = new Mock<ISystemClock>();
-        var today = DateTime.Today;
-        systemClock.Setup(x => x.Today).Returns(today);
+        var systemClock = new Mock<TimeProvider>();
+        var today = DateTimeOffset.Now;
+        systemClock.Setup(x => x.GetLocalNow()).Returns(today);
         var animeModel = new AnimeModel
         {
             Id = 10,
@@ -164,7 +164,7 @@ public class TrackingUpdaterTests
         {
             WatchedEpisodes = animeModel.Tracking.WatchedEpisodes.Value + 1,
             Status = AnimeStatus.Completed,
-            FinishDate = today,
+            FinishDate = today.Date,
         };
 
         trackingService.Verify(x => x.Update(animeModel.Id, expectedTracking), Times.Once);
@@ -179,9 +179,9 @@ public class TrackingUpdaterTests
         settings.Setup(x => x.TimeRemainingWhenEpisodeCompletesInSeconds).Returns(120);
         var viewService = new Mock<IViewService>();
         var mediaPlayer = new MockMediaPlayer();
-        var systemClock = new Mock<ISystemClock>();
-        var today = DateTime.Today;
-        systemClock.Setup(x => x.Today).Returns(today);
+        var systemClock = new Mock<TimeProvider>();
+        var today = DateTimeOffset.Now;
+        systemClock.Setup(x => x.GetLocalNow()).Returns(today);
         var animeModel = new AnimeModel
         {
             Id = 10,

@@ -45,7 +45,7 @@ namespace Totoro.Core.Tests.Helpers
         public IObservable<TimeSpan> PositionChanged => PositionChangedSubject;
         public IObservable<TimeSpan> DurationChanged => DurationChangedSubject;
         public IMediaTransportControls TransportControls => TransportControlsMock.Object;
-        public MediaPlayerType Type => MediaPlayerType.Vlc;
+        public MediaPlayerType Type => MediaPlayerType.WindowsMediaPlayer;
 
         public void Dispose() { }
         public void Pause() { PausedSubject.OnNext(Unit.Default); }
