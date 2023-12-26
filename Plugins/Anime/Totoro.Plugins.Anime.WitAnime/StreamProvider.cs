@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -16,6 +17,9 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
     [GeneratedRegex(@"go_to_player\('(?<Url>.+)'\)")]
     private static partial Regex PlayerListRegex();
+
+    [GeneratedRegex(@"'([^']+)'")]
+    public static partial Regex EpUrlRegex();
 
     private int GetNumberOfStreams(HtmlDocument doc)
     {
@@ -50,13 +54,15 @@ internal partial class StreamProvider : IAnimeStreamProvider
                 break;
             }
 
-            var epUrl = titleNode.Attributes["href"].Value;
+            var onClick = titleNode.Attributes["onclick"].Value;
+            var epUrlEncoded = EpUrlRegex().Match(onClick).Groups[1].Value;
+            var epUrl = Encoding.UTF8.GetString(Convert.FromBase64String(epUrlEncoded));
             var doc2 = await epUrl.GetHtmlDocumentAsync();
 
             foreach (var server in doc2.QuerySelectorAll("#episode-servers li a"))
             {
-                var serverUrl = server.Attributes["data-ep-url"].Value;
-                //var serverName = server.InnerHtml;
+                var serverUrlEncoded = server.Attributes["data-url"].Value;
+                var serverUrl = Encoding.UTF8.GetString(Convert.FromBase64String(serverUrlEncoded));
 
                 var stream = await GetStreams(serverUrl);
                 if (stream is null)

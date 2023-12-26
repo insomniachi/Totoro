@@ -1,4 +1,5 @@
-﻿using Flurl;
+﻿using System.Text;
+using Flurl;
 using Flurl.Http;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
@@ -27,7 +28,9 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
             var match = RegexHelper.IntegerRegex().Match(titleNode.InnerHtml);
             var ep = (int)double.Parse(match.Groups[1].Value);
             var animeNode = item.QuerySelector(".anime-card-title a");
-            var url = animeNode.Attributes["href"].Value;
+            var redirect = animeNode.Attributes["onclick"].Value;
+            var encoded = StreamProvider.EpUrlRegex().Match(redirect).Groups[1].Value;
+            var url = Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
             var title = animeNode.InnerHtml;
             var image = item.QuerySelector("img").Attributes["src"].Value;
 
