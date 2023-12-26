@@ -127,8 +127,7 @@ public class OfflineAnimeIdService : IOfflineAnimeIdService
             ListServiceType.AniList => _ids.Where(x => x.AniList.HasValue).ToFrozenDictionary(x => x.AniList.Value),
             ListServiceType.Kitsu => _ids.Where(x => x.Kitsu.HasValue).ToFrozenDictionary(x => x.Kitsu.Value),
             ListServiceType.AniDb => _ids.Where(x => x.AniDb.HasValue).ToFrozenDictionary(x => x.AniDb.Value),
-            ListServiceType.Simkl => FrozenDictionary<long,AnimeIdExtended>.Empty,
-            _ => throw new UnreachableException(),
+            _ => FrozenDictionary<long, AnimeIdExtended>.Empty,
         };
     }
 }

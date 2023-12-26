@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using Flurl;
 using Flurl.Http;
 using Splat;
@@ -35,6 +36,11 @@ public class PluginManager : IPluginManager, IEnableLogger
         _mangaPluginFactory = mangaPluginFactory;
         _torrentPluginFactory = torrentPluginFactory;
         _mediaDetectionPluginFactory = mediaDetectionPluginFactory;
+
+        if(RegionInfo.CurrentRegion.EnglishName.Equals("India", StringComparison.OrdinalIgnoreCase))
+        {
+            _baseUrl = "https://rawgithubusercontent.deno.dev/insomniachi/Totoro/main";
+        }
     }
 
     public async ValueTask<PluginIndex?> GetAllPlugins()
