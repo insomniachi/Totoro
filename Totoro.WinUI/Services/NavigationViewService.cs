@@ -5,19 +5,14 @@ using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Services;
 
-public class NavigationViewService : INavigationViewService
+public class NavigationViewService(INavigationService navigationService) : INavigationViewService
 {
-    private readonly INavigationService _navigationService;
+    private readonly INavigationService _navigationService = navigationService;
     private NavigationView _navigationView;
 
     public IList<object> MenuItems => _navigationView.MenuItems;
 
     public object SettingsItem => _navigationView.SettingsItem;
-
-    public NavigationViewService(INavigationService navigationService)
-    {
-        _navigationService = navigationService;
-    }
 
     public void Initialize(NavigationView navigationView)
     {

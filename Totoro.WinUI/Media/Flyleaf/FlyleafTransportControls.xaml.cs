@@ -1,9 +1,11 @@
+using System.IO;
 using System.Reactive.Subjects;
 using FlyleafLib.MediaFramework.MediaStream;
 using FlyleafLib.MediaPlayer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
+using SharpCompress;
 using Splat;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
@@ -229,17 +231,17 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public void UpdateSubtitleFlyout(ObservableCollection<SubtitlesStream> streams)
     {
         var flyout = CCSelectionButton.Flyout as MenuFlyout;
-        foreach (var stream in streams)
+        flyout.Items.Clear();
+        for (int i = 0; i < streams.Count; i++)
         {
-            flyout.Items.Add(new ToggleMenuFlyoutItem
+            var item = new ToggleMenuFlyoutItem
             {
-                Text = stream.Title,
-            });
-        }
-
-        foreach (var item in flyout.Items.OfType<ToggleMenuFlyoutItem>())
-        {
+                Text = streams[i].Title,
+                IsChecked = i == 0,
+            };
             item.Click += Item_Click;
+
+            flyout.Items.Add(item);
         }
     }
 
@@ -251,6 +253,15 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         if(stream is null)
         {
             return;
+        }
+
+        var flyout = CCSelectionButton.Flyout as MenuFlyout;
+        foreach (var item in flyout.Items.OfType<ToggleMenuFlyoutItem>())
+        {
+            if(item.Text != title)
+            {
+                item.IsChecked = false;
+            }
         }
 
         Player.OpenAsync(stream);

@@ -1,36 +1,27 @@
 ﻿using MonoTorrent;
 using MonoTorrent.Client;
 using Splat;
+using Totoro.Core.Contracts;
 
 namespace Totoro.Core.Services;
 
-public class TorrentEngine : ITorrentEngine, IEnableLogger
+public class TorrentEngine(IKnownFolders knownFolders,
+                           ISettings settings,
+                           ILocalSettingsService localSettingsService,
+                           HttpClient httpClient) : ITorrentEngine, IEnableLogger
 {
     private ClientEngine _engine;
     private readonly Dictionary<InfoHash, TorrentManager> _torrentManagers = [];
     private readonly Dictionary<string, TorrentManager> _torrentManagerToMagnetMap = [];
-    private readonly string _torrentEngineState;
-    private readonly ISettings _settings;
-    private readonly ILocalSettingsService _localSettingsService;
-    private readonly HttpClient _httpClient;
+    private readonly string _torrentEngineState = Path.Combine(knownFolders.Torrents, "state.bin");
+    private readonly ISettings _settings = settings;
+    private readonly ILocalSettingsService _localSettingsService = localSettingsService;
+    private readonly HttpClient _httpClient = httpClient;
     private readonly ScheduledSubject<string> _torrentRemoved = new(RxApp.MainThreadScheduler);
     private readonly ScheduledSubject<TorrentManager> _torrentAdded = new(RxApp.MainThreadScheduler);
-    private readonly List<InfoHash> _torrentDeleteRequests = [];
+    private readonly List<InfoHash> _torrentDeleteRequests = localSettingsService.ReadSetting("TorrentDeleteRequests", new List<string>()).Select(InfoHash.FromHex).ToList();
 
-    public TorrentEngine(IKnownFolders knownFolders,
-                         ISettings settings,
-                         ILocalSettingsService localSettingsService,
-                         HttpClient httpClient)
-    {
-        _torrentEngineState = Path.Combine(knownFolders.Torrents, "state.bin");
-        _engine = new(new EngineSettingsBuilder() { CacheDirectory = Path.Combine(knownFolders.Torrents, "cache") }.ToSettings());
-        _settings = settings;
-        _localSettingsService = localSettingsService;
-        _httpClient = httpClient;
-        _torrentDeleteRequests = localSettingsService.ReadSetting("TorrentDeleteRequests", new List<string>()).Select(InfoHash.FromHex).ToList();
-    }
-
-    public IEnumerable<TorrentManager> TorrentManagers => _engine.Torrents;
+    public IEnumerable<TorrentManager> TorrentManagers => _engine?.Torrents ?? Enumerable.Empty<TorrentManager>();
     public IObservable<string> TorrentRemoved => _torrentRemoved;
     public IObservable<TorrentManager> TorrentAdded => _torrentAdded;
 
@@ -65,6 +56,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
     {
         if (!File.Exists(_torrentEngineState))
         {
+            _engine = new(new EngineSettingsBuilder() { CacheDirectory = Path.Combine(knownFolders.Torrents, "cache") }.ToSettings());
             return false;
         }
 
@@ -199,13 +191,9 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
                 _torrentAdded.OnNext(torrentManager);
             }
 
-            if (torrentManager.State != TorrentState.Downloading)
+            if (torrentManager.State != TorrentState.Downloading && !torrentManager.Complete)
             {
-                SubscribeEvents(torrentManager);
-                if (!torrentManager.Complete)
-                {
-                    await torrentManager.StartAsync();
-                }
+                await torrentManager.StartAsync();
             }
 
             return torrentManager;
@@ -281,7 +269,7 @@ public class TorrentEngine : ITorrentEngine, IEnableLogger
             return;
         }
 
-        if (!Directory.GetFiles(torrentManager.SavePath, "*", SearchOption.AllDirectories).Any())
+        if (Directory.GetFiles(torrentManager.SavePath, "*", SearchOption.AllDirectories).Length == 0)
         {
             Directory.Delete(torrentManager.SavePath, true);
         }

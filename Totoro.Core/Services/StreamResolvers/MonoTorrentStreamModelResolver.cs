@@ -49,8 +49,8 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         _prevStream?.Dispose();
         _prevStream = null;
         _disposable.Dispose();
-        await _torrentManager?.StopAsync();
         await _torrentEngine.SaveState();
+        _ = _torrentManager?.StopAsync();
     }
 
     public IObservable<(double, ConnectionMonitor)> Status => _downloadStatus;

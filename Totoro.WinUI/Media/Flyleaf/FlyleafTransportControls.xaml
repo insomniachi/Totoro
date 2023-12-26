@@ -45,7 +45,7 @@
                 </Button.Background>
             </Button>
             <TextBlock
-                Margin="0,0,0,20"
+                Margin="0,0,0,50"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Bottom"
                 FontSize="50"

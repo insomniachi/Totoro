@@ -9,9 +9,9 @@ using Totoro.WinUI.Helpers;
 namespace Totoro.WinUI.Services;
 
 
-public class NavigationService : IWinUINavigationService, IEnableLogger
+public class NavigationService(IVolatileStateStorage stateStorage) : IWinUINavigationService, IEnableLogger
 {
-    private readonly IVolatileStateStorage _stateStorage;
+    private readonly IVolatileStateStorage _stateStorage = stateStorage;
     private object _lastParameterUsed;
     private Frame _frame;
     private readonly Subject<NavigationEventArgs> _subject = new();
@@ -40,11 +40,6 @@ public class NavigationService : IWinUINavigationService, IEnableLogger
     public IObservable<NavigationEventArgs> Navigated => _subject;
 
     public bool CanGoBack => Frame.CanGoBack;
-
-    public NavigationService(IVolatileStateStorage stateStorage)
-    {
-        _stateStorage = stateStorage;
-    }
 
     private void RegisterFrameEvents()
     {

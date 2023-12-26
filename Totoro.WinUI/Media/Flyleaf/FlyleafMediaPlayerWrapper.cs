@@ -38,23 +38,11 @@ namespace Totoro.WinUI.Media.Flyleaf
             PlaybackEnded = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended)).Select(_ => Unit.Default);
             DurationChanged = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyValue(x => x.Duration).Where(x => x > 0)).Select(x => new TimeSpan(x));
             PositionChanged = this.WhenAnyValue(x => x.MediaPlayer).SelectMany(mp => mp.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime))).Select(x => new TimeSpan(x.CurTime));
-
-            //Paused = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Paused).Select(x => Unit.Default);
-            //Playing = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Playing).Select(x => Unit.Default);
-            //PlaybackEnded = MediaPlayer.WhenAnyValue(x => x.Status).Where(x => x is Status.Ended).Select(x => Unit.Default);
-            //DurationChanged = MediaPlayer.WhenAnyValue(x => x.Duration).Where(x => x > 0).Select(x => new TimeSpan(x));
-            //PositionChanged = MediaPlayer.WhenAnyPropertyChanged(nameof(MediaPlayer.CurTime)).Select(_ => new TimeSpan(MediaPlayer.CurTime));
-            MediaPlayer.OpenCompleted += MediaPlayer_OpenCompleted;
         }
 
         private void MediaPlayer_OpenCompleted(object sender, OpenCompletedArgs e)
         {
-            if(e.IsSubtitles)
-            {
-                return;
-            }
-
-            if(_offsetInSeconds is > 0)
+            if(_offsetInSeconds is > 0 && !e.IsSubtitles)
             {
                 MediaPlayer.Play();
                 MediaPlayer.SeekAccurate((int)TimeSpan.FromSeconds(_offsetInSeconds.Value).TotalMilliseconds);
