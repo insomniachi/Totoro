@@ -106,6 +106,7 @@ public class PluginManager : IPluginManager, IEnableLogger
                 File.Delete(path);
             }
 
+            this.Log().Info($"Downloading plugin : {item.FileName} {item.Version}");
             var url = Url.Combine(_baseUrl, "Plugins Store", item.FileName);
             using var s = await url.GetStreamAsync();
             using var fs = new FileStream(path, FileMode.OpenOrCreate);
