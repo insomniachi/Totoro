@@ -9,8 +9,6 @@
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:media="using:Totoro.WinUI.Media"
-    xmlns:pm="using:Totoro.Plugins.Anime.Models"
     xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
 
@@ -71,13 +69,8 @@
                     <ComboBox
                         Width="150"
                         ItemsSource="{x:Bind ViewModel.SubStreams, Mode=OneWay}"
-                        SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="pm:StreamType">
-                                <TextBlock Text="{x:Bind help:Converters.StreamTypeToDisplayName((pm:StreamType))}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                        SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}" />
+
                 </StackPanel>
 
                 <StackPanel

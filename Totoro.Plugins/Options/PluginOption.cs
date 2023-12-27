@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
@@ -59,15 +58,7 @@ public class PluginOptionBuilder
 
     public PluginOptionBuilder WithValue<T>(T value)
     {
-        if(typeof(T).IsClass)
-        {
-            _value = JsonSerializer.Serialize(value);
-        }
-        else
-        {
-            _value = value.ToString();
-        }
-
+        _value = value.ToString();
         return this;
     }
 

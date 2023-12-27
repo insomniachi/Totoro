@@ -574,7 +574,7 @@ public partial class WatchViewModel : NavigatableViewModel
         }
 
         var key = "StreamType";
-        return _providerOptions.GetRecord(key, StreamType.Subbed(Languages.English));
+        return _providerOptions.GetStreamType(key, StreamType.Subbed(Languages.English));
     }
 
     private double GetPlayerTime()

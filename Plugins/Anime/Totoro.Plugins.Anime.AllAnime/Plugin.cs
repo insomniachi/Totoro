@@ -57,7 +57,7 @@ public class Plugin : IPlugin<AnimeProvider>
     public void SetOptions(PluginOptions options)
     {
         Config.Url = options.GetString(nameof(Config.Url), Config.Url);
-        Config.StreamType = options.GetRecord(nameof(Config.StreamType), Config.StreamType);
+        Config.StreamType = options.GetStreamType(nameof(Config.StreamType), Config.StreamType);
         Config.CountryOfOrigin = options.GetString(nameof(Config.CountryOfOrigin), Config.CountryOfOrigin);
     }
 
