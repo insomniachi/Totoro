@@ -79,6 +79,12 @@ namespace Totoro.Core.Services.AniList
         {
             if (listEntry == null)
             {
+                // uncomment for debuging other people list
+                //return new Tracking
+                //{
+                //    Status = AnimeStatus.Dropped
+                //};
+
                 return null;
             }
 
