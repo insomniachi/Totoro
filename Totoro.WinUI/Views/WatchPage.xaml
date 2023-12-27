@@ -112,10 +112,19 @@
                 <ListView
                     Grid.Row="3"
                     MinWidth="300"
+                    MaxWidth="400"
                     VerticalAlignment="Top"
-                    DisplayMemberPath="DisplayName"
                     ItemsSource="{x:Bind ViewModel.EpisodeModels, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}" />
+                    SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="m:EpisodeModel">
+                            <TextBlock
+                                Text="{x:Bind DisplayName, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTipService.ToolTip="{x:Bind DisplayName, Mode=OneWay}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
 
             </Grid>
         </uc:Expander>
