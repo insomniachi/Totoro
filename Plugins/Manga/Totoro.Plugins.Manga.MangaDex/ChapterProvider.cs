@@ -2,6 +2,7 @@
 using Flurl.Http;
 using Totoro.Plugins.Helpers;
 using Totoro.Plugins.Manga.Contracts;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Manga.MangaDex;
 
@@ -9,7 +10,7 @@ internal class ChapterProvider : IChapterProvider
 {
     public async IAsyncEnumerable<ChapterModel> GetChapters(string url)
     {
-        var response = await Config.Api
+        var response = await ConfigManager<Config>.Current.Api
             .WithDefaultUserAgent()
             .AppendPathSegment($"/manga/{url}/feed")
             .SetQueryParam("translatedLanguage[]", "en")
@@ -35,7 +36,7 @@ internal class ChapterProvider : IChapterProvider
 
     public async IAsyncEnumerable<string> GetImages(ChapterModel chapterModel)
     {
-        var response = await Config.Api
+        var response = await ConfigManager<Config>.Current.Api
             .WithDefaultUserAgent()
             .AppendPathSegment("/at-home/server")
             .AppendPathSegment(chapterModel.Id)

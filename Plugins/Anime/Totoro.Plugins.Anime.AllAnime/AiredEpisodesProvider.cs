@@ -3,6 +3,7 @@ using FlurlGraphQL.Querying;
 using Newtonsoft.Json.Linq;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
@@ -47,7 +48,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)
     {
-        var jObject = await Config.Api
+        var jObject = await ConfigManager<Config>.Current.Api
             .WithGraphQLQuery(SHOWS_QUERY)
             .SetGraphQLVariables(new
             {
@@ -58,8 +59,8 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
                 },
                 limit = 26,
                 page,
-                translationType = Config.StreamType.ConvertToTranslationType(),
-                countryOrigin = Config.CountryOfOrigin
+                translationType = ConfigManager<Config>.Current.StreamType.ConvertToTranslationType(),
+                countryOrigin = ConfigManager<Config>.Current.CountryOfOrigin
             })
             .PostGraphQLQueryAsync()
             .ReceiveGraphQLRawJsonResponse();
@@ -76,7 +77,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
             var ep = $"{item?["lastEpisodeInfo"]?["sub"]?["episodeString"]}";
             _ = int.TryParse(ep, out int epInt);
             var datetime = new DateTime(year, month, day, hour, min, 0).ToLocalTime();
-            var animeUrl = Url.Combine(Config.Url, $"/anime/{item?["_id"]}");
+            var animeUrl = Url.Combine(ConfigManager<Config>.Current.Url, $"/anime/{item?["_id"]}");
             var malId = $"{item?["malId"]}";
             var aniListId = $"{item?["aniListId"]}";
 

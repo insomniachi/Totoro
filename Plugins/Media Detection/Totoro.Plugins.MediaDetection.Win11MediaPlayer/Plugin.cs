@@ -8,7 +8,6 @@ namespace Totoro.Plugins.MediaDetection.Win11MediaPlayer;
 public class Plugin : IPlugin<INativeMediaPlayer>
 {
     public INativeMediaPlayer Create() => new MediaPlayer();
-
     public PluginInfo GetInfo()
     {
         return new PluginInfo
@@ -20,9 +19,11 @@ public class Plugin : IPlugin<INativeMediaPlayer>
         };
     }
 
-    public PluginOptions GetOptions() => new();
+    public PluginOptions GetCurrentConfig() => new();
 
-    public void SetOptions(PluginOptions options) { }
+    public void SetConfig(PluginOptions options) { }
 
     object IPlugin.Create() => Create();
+
+    public PluginOptions GetDefaultConfig() => new();
 }

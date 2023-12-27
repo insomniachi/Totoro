@@ -3,6 +3,7 @@ using Flurl;
 using Flurl.Http;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AnimeSaturn;
 
@@ -17,7 +18,7 @@ internal class Catalog : IAnimeCatalog
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var response = await Config.Url
+        var response = await ConfigManager<Config>.Current.Url
             .AppendPathSegment("/index.php")
             .SetQueryParams(new
             {
@@ -30,7 +31,7 @@ internal class Catalog : IAnimeCatalog
         {
             var title = item!["name"]!.ToString();
             var image = item!["image"]!.ToString();
-            var link = Url.Combine(Config.Url, "anime", item!["link"]!.ToString());
+            var link = Url.Combine(ConfigManager<Config>.Current.Url, "anime", item!["link"]!.ToString());
 
             yield return new SearchResult
             {

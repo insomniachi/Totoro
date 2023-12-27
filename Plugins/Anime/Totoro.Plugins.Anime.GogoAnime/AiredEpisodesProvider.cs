@@ -3,6 +3,7 @@ using Flurl;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.GogoAnime;
 
@@ -32,7 +33,7 @@ internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
         {
             var title = item.SelectSingleNode("div/a").Attributes["title"].Value;
             var path = item.SelectSingleNode("div/a").Attributes["href"].Value;
-            var url = Url.Combine(Config.Url, path);
+            var url = Url.Combine(ConfigManager<Config>.Current.Url, path);
             var img = item.SelectSingleNode("div/a/img").Attributes["src"].Value;
             var epString = EpisodeRegex().Match(url).Groups[1].Value;
             yield return new AiredEpisode

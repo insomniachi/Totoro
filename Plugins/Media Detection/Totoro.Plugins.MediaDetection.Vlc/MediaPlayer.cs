@@ -9,6 +9,7 @@ using FlaUI.UIA3;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Totoro.Plugins.MediaDetection.Contracts;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.MediaDetection.Vlc
 {
@@ -52,7 +53,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
         {
             _hasCustomTitle = true;
             _customTitle = title;
-            _application = Application.Launch(Config.FileName, $"{url} --meta-title=\"{title}\" -f");
+            _application = Application.Launch(ConfigManager<Config>.Current.FileName, $"{url} --meta-title=\"{title}\" -f");
             InitializeInternal();
         }
 

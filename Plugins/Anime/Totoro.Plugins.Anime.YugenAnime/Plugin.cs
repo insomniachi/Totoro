@@ -1,14 +1,12 @@
 ﻿using System.Reflection;
 using Totoro.Plugins.Anime.Contracts;
-using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Contracts;
-using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.YugenAnime;
 
-public class Plugin : IPlugin<AnimeProvider>
+public class Plugin : Plugin<AnimeProvider, Config>
 {
-    public AnimeProvider Create() => new()
+    public override AnimeProvider Create() => new()
     {
         Catalog = new Catalog(),
         StreamProvider = new StreamProvider(),
@@ -16,7 +14,7 @@ public class Plugin : IPlugin<AnimeProvider>
         IdMapper = new IdMapper(),
     };
 
-    public PluginInfo GetInfo() => new()
+    public override PluginInfo GetInfo() => new()
     {
         DisplayName = "Yugen Anime",
         Name = "yugen-anime",
@@ -24,30 +22,4 @@ public class Plugin : IPlugin<AnimeProvider>
         Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.YugenAnime.yugen-anime-icon.png"),
         Description = "A gogo anime scrapper site"
     };
-
-    public PluginOptions GetOptions()
-    {
-        return new PluginOptions()
-            .AddOption(x => x.WithName(nameof(Config.Url))
-                             .WithDisplayName("Url")
-                             .WithDescription("Url to home page")
-                             .WithGlyph("\uE71B")
-                             .WithValue(Config.Url)
-                             .ToPluginOption())
-            .AddOption(x => x.WithName(nameof(Config.StreamType))
-                             .WithDisplayName("Default Stream Type")
-                             .WithDescription("Choose what to play by default, sub/dub")
-                             .WithGlyph("\uF2B7")
-                             .WithValue(Config.StreamType)
-                             .WithAllowedValues(new[] { StreamType.Subbed(Languages.English), StreamType.Dubbed(Languages.English) })
-                             .ToSelectablePluginOption());
-    }
-
-    public void SetOptions(PluginOptions options)
-    {
-        Config.Url = options.GetString(nameof(Config.Url), Config.Url);
-        Config.StreamType = options.GetStreamType(nameof(Config.StreamType), Config.StreamType);
-    }
-
-    object IPlugin.Create() => Create();
 }

@@ -5,7 +5,7 @@ namespace Totoro.Plugins.Anime.Models;
 
 public static class Languages
 {
-    public const string English = @"Engilish";
+    public const string English = @"English";
     public const string Italian = @"Italian";
     public const string Spanish = @"Spanish";
     public const string Japanese = @"Japanese";

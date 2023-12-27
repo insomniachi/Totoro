@@ -5,11 +5,11 @@ using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.MediaDetection.Vlc;
 
-public class Plugin : IPlugin<INativeMediaPlayer>
+public class Plugin : Plugin<INativeMediaPlayer, Config>
 {
-    public INativeMediaPlayer Create() => new MediaPlayer();
+    public override INativeMediaPlayer Create() => new MediaPlayer();
 
-    public PluginInfo GetInfo()
+    public override PluginInfo GetInfo()
     {
         return new PluginInfo
         {
@@ -19,20 +19,9 @@ public class Plugin : IPlugin<INativeMediaPlayer>
             Version = Assembly.GetExecutingAssembly().GetName().Version!
         };
     }
-
-    public PluginOptions GetOptions() => new PluginOptions()
-        .AddOption(x => x.WithNameAndValue(Config.FileName)
-                         .ToPluginOption());
-
-    public void SetOptions(PluginOptions options)
-    {
-        Config.FileName = options.GetString(nameof(Config.FileName), Config.FileName);
-    }
-
-    object IPlugin.Create() => Create();
 }
 
-public static class Config
+public class Config : ConfigObject
 {
-    public static string FileName { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"VideoLAN\VLC\vlc.exe");
+    public string FileName { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"VideoLAN\VLC\vlc.exe");
 }

@@ -1,10 +1,24 @@
-﻿namespace Totoro.Plugins.Torrents.Nya;
+﻿using System.ComponentModel;
+using Totoro.Plugins.Options;
 
-internal static class Config
+namespace Totoro.Plugins.Torrents.Nya;
+
+public class Config : ConfigObject
 {
-    public static string Url { get; set; } = "https://nyaa.ink/";
-    public static Filter Filter { get; set; } = Filter.TrustedOnly;
-    public static Category Category { get; set; } = Category.Anime;
-    public static SortBy SortBy { get; set; } = SortBy.Seeders;
-    public static SortDirection SortDirection { get; set; } = SortDirection.Descending;
+    [Glyph(Glyphs.Url)]
+    public string Url { get; set; } = "https://nyaa.ink/";
+
+    [Glyph(Glyphs.Filter)]
+    public Filter Filter { get; set; } = Filter.TrustedOnly;
+
+    [Glyph(Glyphs.Category)]
+    public Category Category { get; set; } = Category.Anime;
+
+    [Glyph(Glyphs.Sort)]
+    [DisplayName("Sort By")]
+    public SortBy SortBy { get; set; } = SortBy.Seeders;
+    
+    [Glyph(Glyphs.SortDirection)]
+    [DisplayName("Sort Direction")]
+    public SortDirection SortDirection { get; set; } = SortDirection.Descending;
 }

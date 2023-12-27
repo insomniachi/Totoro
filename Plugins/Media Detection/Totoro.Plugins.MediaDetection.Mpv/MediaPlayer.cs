@@ -2,6 +2,7 @@
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using Totoro.Plugins.MediaDetection.Contracts;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.MediaDetection.Generic;
 
@@ -29,7 +30,7 @@ public class Mpv : GenericMediaPlayer, ICanLaunch
     {
         _hasCustomTitle = true;
         _customTitle = title;
-        Application.Launch(MpvConfig.FileName, $"{url} --title=\"{title}\" --fs");
+        Application.Launch(ConfigManager<MpvConfig>.Current.FileName, $"{url} --title=\"{title}\" --fs");
     }
 }
 
@@ -70,6 +71,6 @@ public sealed class MpcHc : INativeMediaPlayer, ICanLaunch
     {
         _hasCustomTitle = true;
         _customTitle = title;
-        Application.Launch(MpcConfig.FileName, $"{url} /fullscreen");
+        Application.Launch(ConfigManager<MpcConfig>.Current.FileName, $"{url} /fullscreen");
     }
 }

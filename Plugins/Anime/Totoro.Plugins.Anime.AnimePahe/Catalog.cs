@@ -4,6 +4,7 @@ using Flurl.Http;
 using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
@@ -21,7 +22,7 @@ internal class Catalog : IAnimeCatalog, IEnableLogger
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var json = await Config.Url
+        var json = await ConfigManager<Config>.Current.Url
             .AppendPathSegment("api")
             .SetQueryParams(new
             {
@@ -52,7 +53,7 @@ internal class Catalog : IAnimeCatalog, IEnableLogger
             yield break;
         }
 
-        var baseAnimeUrl = new Url(Config.Url).AppendPathSegment("anime");
+        var baseAnimeUrl = new Url(ConfigManager<Config>.Current.Url).AppendPathSegment("anime");
         foreach (var item in results)
         {
             yield return new SearchResult

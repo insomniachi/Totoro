@@ -4,6 +4,7 @@ using Flurl.Http;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.WitAnime;
 
@@ -20,7 +21,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)
     {
-        var doc = await Config.Url.AppendPathSegment($"episode/page/{page}").GetHtmlDocumentAsync();
+        var doc = await ConfigManager<Config>.Current.Url.AppendPathSegment($"episode/page/{page}").GetHtmlDocumentAsync();
 
         foreach (var item in doc.QuerySelectorAll(".anime-card-container"))
         {

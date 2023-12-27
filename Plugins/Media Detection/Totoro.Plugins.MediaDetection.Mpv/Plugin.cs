@@ -5,18 +5,14 @@ using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.MediaDetection.Generic;
 
-public abstract class GenericPlugin<T> : IPlugin<INativeMediaPlayer>
+public abstract class GenericPlugin<T, TConfig> : Plugin<INativeMediaPlayer, TConfig>
     where T : INativeMediaPlayer, new()
+    where TConfig : ConfigObject, new()
 {
-    public INativeMediaPlayer Create() => new T();
-
-    public abstract PluginInfo GetInfo();
-    public virtual PluginOptions GetOptions() => new();
-    public virtual void SetOptions(PluginOptions options) { }
-    object IPlugin.Create() => Create();
+    public override INativeMediaPlayer Create() => new T();
 }
 
-public class MpvPlugin : GenericPlugin<Mpv>
+public class MpvPlugin : GenericPlugin<Mpv, MpvConfig>
 {
     public override PluginInfo GetInfo()
     {
@@ -28,18 +24,9 @@ public class MpvPlugin : GenericPlugin<Mpv>
             Version = Assembly.GetExecutingAssembly().GetName().Version!
         };
     }
-
-    public override PluginOptions GetOptions() => new PluginOptions()
-        .AddOption(x => x.WithNameAndValue(MpvConfig.FileName)
-                         .ToPluginOption());
-
-    public override void SetOptions(PluginOptions options)
-    {
-        MpvConfig.FileName = options.GetString(nameof(MpvConfig.FileName), MpvConfig.FileName);
-    }
 }
 
-public class MpcHcPlugin : GenericPlugin<MpcHc>
+public class MpcHcPlugin : GenericPlugin<MpcHc, MpcConfig>
 {
     public override PluginInfo GetInfo()
     {
@@ -50,14 +37,5 @@ public class MpcHcPlugin : GenericPlugin<MpcHc>
             Description = "",
             Version = Assembly.GetExecutingAssembly().GetName().Version!
         };
-    }
-
-    public override PluginOptions GetOptions() => new PluginOptions()
-        .AddOption(x => x.WithNameAndValue(MpcConfig.FileName)
-                         .ToPluginOption());
-
-    public override void SetOptions(PluginOptions options)
-    {
-        MpvConfig.FileName = options.GetString(nameof(MpcConfig.FileName), MpvConfig.FileName);
     }
 }

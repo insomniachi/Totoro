@@ -4,6 +4,7 @@ using Flurl;
 using Flurl.Http;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
@@ -21,7 +22,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)
     {
-        var json = await Config.Url.AppendPathSegment("api")
+        var json = await ConfigManager<Config>.Current.Url.AppendPathSegment("api")
             .SetQueryParams(new
             {
                 m = "airing",
@@ -36,7 +37,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
         {
             var title = $"{item!["anime_title"]}";
             var image = $"{item["snapshot"]}";
-            var url = Url.Combine(Config.Url, "anime", $"{item["anime_session"]}");
+            var url = Url.Combine(ConfigManager<Config>.Current.Url, "anime", $"{item["anime_session"]}");
             var episode = (int)(double)item!["episode"]!.AsValue();
             var createdAt = DateTime.ParseExact($"{item["created_at"]}", "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture).ToLocalTime();
 

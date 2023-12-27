@@ -4,6 +4,7 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.YugenAnime;
 
@@ -22,7 +23,7 @@ internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)
     {
-        var doc = await Config.Url.AppendPathSegment("latest")
+        var doc = await ConfigManager<Config>.Current.Url.AppendPathSegment("latest")
             .SetQueryParam("page", page.ToString())
             .GetHtmlDocumentAsync();
 
@@ -32,7 +33,7 @@ internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
         {
             var title = item.QuerySelector(".ep-origin-name").InnerText.Trim();
             var path = item.QuerySelector(".ep-details").Attributes["href"].Value;
-            var url = Url.Combine(Config.Url, path);
+            var url = Url.Combine(ConfigManager<Config>.Current.Url, path);
             var img = item.QuerySelector("img").Attributes["data-src"].Value;
             var time = item.QuerySelector("time").Attributes["datetime"].Value;
             var epString = EpisodeRegex().Match(url).Groups[1].Value;

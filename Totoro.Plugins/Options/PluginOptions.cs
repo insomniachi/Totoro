@@ -28,6 +28,7 @@ public class PluginOptions : Collection<PluginOption>
     public int GetInt32(string name, int defaultValue) => GetValue(name, defaultValue, int.Parse);
     public double GetDouble(string name, double defaultValue) => GetValue(name, defaultValue, double.Parse);
     public TEnum GetEnum<TEnum>(string name, TEnum defaultValue) where TEnum : Enum => GetValue(name, defaultValue, x => (TEnum)Enum.Parse(typeof(TEnum), x));
+    public object GetEnum(Type enumType, string name, object defaultValue) => GetValue(name, defaultValue, s => Enum.Parse(enumType, s));
 
     public T GetValue<T>(string name, T defaultValue, Func<string, T> parser)
     {

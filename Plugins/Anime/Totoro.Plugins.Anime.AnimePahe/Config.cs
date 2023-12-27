@@ -1,6 +1,11 @@
-﻿namespace Totoro.Plugins.Anime.AnimePahe;
+﻿using System.ComponentModel;
+using Totoro.Plugins.Options;
 
-public static class Config
+namespace Totoro.Plugins.Anime.AnimePahe;
+
+public class Config : AnimeProviderConfigObject
 {
-    public static string Url { get; set; } = "https://animepahe.ru/";
+    [Description("Url to home page")]
+    [Glyph(Glyphs.Url)]
+    public string Url { get; set; } = "https://animepahe.ru/";
 }

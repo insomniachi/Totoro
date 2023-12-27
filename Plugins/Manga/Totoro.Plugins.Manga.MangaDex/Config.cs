@@ -1,6 +1,10 @@
-﻿namespace Totoro.Plugins.Manga.MangaDex;
+﻿using System.Runtime.Serialization;
+using Totoro.Plugins.Options;
 
-internal static class Config
+namespace Totoro.Plugins.Manga.MangaDex;
+
+public class Config : ConfigObject
 {
-    public static string Api { get; set; } = "https://api.mangadex.org/";
+    [IgnoreDataMember]
+    public string Api { get; set; } = "https://api.mangadex.org/";
 }

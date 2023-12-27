@@ -6,6 +6,7 @@ using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.GogoAnime;
 
@@ -117,7 +118,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
         foreach (var item in doc.QuerySelectorAll("a[class=\"\"] , a[class=\"\"]").Reverse())
         {
             var path = item.Attributes["href"].Value.Trim();
-            var embedUrl = Url.Combine(Config.Url, path);
+            var embedUrl = Url.Combine(ConfigManager<Config>.Current.Url, path);
             var epMatch = EpisodeRegex().Match(item.InnerHtml);
             int ep = -1;
 
@@ -142,7 +143,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     private static string ConvertHost(string url)
     {
-        var converted = UrlRegex().Replace(url, Config.Url);
+        var converted = UrlRegex().Replace(url, ConfigManager<Config>.Current.Url);
         return converted;
     }
 

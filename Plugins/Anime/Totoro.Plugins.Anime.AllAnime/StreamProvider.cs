@@ -10,6 +10,7 @@ using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
@@ -55,11 +56,11 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
     [GeneratedRegex("(?<=/clock)(?=[?&#])")]
     private static partial Regex ClockRegex();
 
-    public Task<int> GetNumberOfStreams(string url) => GetNumberOfStreams(url, Config.StreamType);
+    public Task<int> GetNumberOfStreams(string url) => GetNumberOfStreams(url, ConfigManager<Config>.Current.StreamType);
 
     public async Task<int> GetNumberOfStreams(string url, StreamType streamType)
     {
-        var jObject = await Config.Api
+        var jObject = await ConfigManager<Config>.Current.Api
             .WithGraphQLQuery(SHOW_QUERY)
             .SetGraphQLVariable("showId", url.Split('/').LastOrDefault()?.Trim())
             .PostGraphQLQueryAsync()
@@ -79,15 +80,15 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         return total;
     }
 
-    public IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range) => GetStreams(url, range, Config.StreamType);
+    public IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range) => GetStreams(url, range, ConfigManager<Config>.Current.StreamType);
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range, StreamType streamType)
     {
-        var versionResponse = await Config.Url.AppendPathSegment("getVersion").GetJsonAsync<GetVersionResponse>();
+        var versionResponse = await ConfigManager<Config>.Current.Url.AppendPathSegment("getVersion").GetJsonAsync<GetVersionResponse>();
         var apiEndPoint = new Url(versionResponse?.episodeIframeHead ?? "");
         var id = url.Split('/').LastOrDefault()?.Trim();
 
-        var jObject = await Config.Api
+        var jObject = await ConfigManager<Config>.Current.Api
             .WithGraphQLQuery(SHOW_QUERY)
             .SetGraphQLVariable("showId", id)
             .PostGraphQLQueryAsync()
@@ -106,7 +107,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             yield break;
         }
 
-        var sorted = GetEpisodes(episodesDetail!, Config.StreamType).OrderBy(x => x.Length).ThenBy(x => x).ToList();
+        var sorted = GetEpisodes(episodesDetail!, ConfigManager<Config>.Current.StreamType).OrderBy(x => x.Length).ThenBy(x => x).ToList();
         var total = int.Parse(sorted.LastOrDefault(x => int.TryParse(x, out int e))!);
         var (start, end) = range.Extract(total);
         foreach (var ep in sorted)
@@ -138,7 +139,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
                 streamTypes.Add(StreamType.Raw());
             }
 
-            var jsonNode = await Config.Api
+            var jsonNode = await ConfigManager<Config>.Current.Api
                 .WithGraphQLQuery(EPISODE_QUERY)
                 .SetGraphQLVariables(new
                 {

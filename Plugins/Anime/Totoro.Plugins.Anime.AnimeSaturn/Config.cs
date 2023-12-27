@@ -1,6 +1,11 @@
-﻿namespace Totoro.Plugins.Anime.AnimeSaturn;
+﻿using System.ComponentModel;
+using Totoro.Plugins.Options;
 
-internal class Config
+namespace Totoro.Plugins.Anime.AnimeSaturn;
+
+public class Config : AnimeProviderConfigObject
 {
-    internal static string Url { get; set; } = "https://www.animesaturn.tv/";
+    [Description("Url to home page")]
+    [Glyph(Glyphs.Url)]
+    public string Url { get; set; } = "https://www.animesaturn.tv/";
 }

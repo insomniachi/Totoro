@@ -39,7 +39,7 @@ public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
             return false;
         }
 
-        plugin.Module.SetOptions(options);
+        plugin.Module.SetConfig(options);
         return true;
     }
 
@@ -50,7 +50,7 @@ public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
             return default;
         }
 
-        return plugin.Module.GetOptions();
+        return plugin.Module.GetCurrentConfig();
     }
 
     public void LoadPlugin(IPlugin<T> plugIn)

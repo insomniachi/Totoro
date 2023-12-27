@@ -2,6 +2,7 @@
 using Flurl.Http;
 using Totoro.Plugins.Helpers;
 using Totoro.Plugins.Manga.Contracts;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Manga.MangaDex;
 
@@ -18,7 +19,7 @@ internal class Catalog : IMangaCatalog
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var response = await Config.Api.AppendPathSegment("/manga")
+        var response = await ConfigManager<Config>.Current.Api.AppendPathSegment("/manga")
             .WithDefaultUserAgent()
             .SetQueryParam("title", query)
             .SetQueryParam("limit", 5)

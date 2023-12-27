@@ -1,25 +1,25 @@
 ﻿namespace Totoro.Plugins.Torrents.Nya;
 
-internal enum Filter
+public enum Filter
 {
     None = 0,
     NoRemakes = 1,
     TrustedOnly = 2
 }
 
-internal enum SortBy
+public enum SortBy
 {
     Seeders,
     Leechers
 }
 
-internal enum SortDirection
+public enum SortDirection
 {
     Ascending,
     Descending
 }
 
-internal enum Category
+public enum Category
 {
     None,
     Anime,

@@ -24,7 +24,7 @@ public class PluginOptionBuilder
     private string _description;
     private string _glyph;
     private string _value;
-    private IEnumerable<string> _allowedValues;
+    private IEnumerable<string> _allowedValues = Enumerable.Empty<string>();
 
     public PluginOptionBuilder WithName(string name)
     {
@@ -88,6 +88,8 @@ public class PluginOptionBuilder
         _allowedValues = Enum.GetNames<T>();
         return this;
     }
+
+    public bool HasAllowedValues() => _allowedValues.Any();
 
     public PluginOption ToPluginOption()
     {
