@@ -27,6 +27,8 @@ public class Plugin : IPlugin<AnimeProvider>
         Description = "AllAnime's goal is to provide you with the highest possible amount of daily anime episodes/manga chapters for free and without any kind of limitation."
     };
 
+    private static readonly string[] _allowedValues = ["ALL", "JP", "CN", "KR"];
+
     public PluginOptions GetOptions()
     {
         return new PluginOptions()
@@ -41,21 +43,21 @@ public class Plugin : IPlugin<AnimeProvider>
                              .WithDescription("Choose what to play by default, sub/dub")
                              .WithGlyph("\uF2B7")
                              .WithValue(Config.StreamType)
-                             .WithAllowedValues(new[] { StreamType.EnglishSubbed, StreamType.EnglishDubbed, StreamType.Raw })
+                             .WithAllowedValues(new[] { StreamType.Subbed(Languages.English), StreamType.Dubbed(Languages.English), StreamType.Raw() })
                              .ToSelectablePluginOption())
             .AddOption(x => x.WithName(nameof(Config.CountryOfOrigin))
                              .WithDisplayName("Country Of Origin")
                              .WithDescription("Filter anime by country")
                              .WithGlyph("\uE909")
                              .WithValue(Config.CountryOfOrigin)
-                             .WithAllowedValues(new[] { "ALL", "JP", "CN", "KR" })
+                             .WithAllowedValues(_allowedValues)
                              .ToSelectablePluginOption());
     }
 
     public void SetOptions(PluginOptions options)
     {
         Config.Url = options.GetString(nameof(Config.Url), Config.Url);
-        Config.StreamType = options.GetEnum(nameof(Config.StreamType), Config.StreamType);
+        Config.StreamType = options.GetRecord(nameof(Config.StreamType), Config.StreamType);
         Config.CountryOfOrigin = options.GetString(nameof(Config.CountryOfOrigin), Config.CountryOfOrigin);
     }
 

@@ -19,7 +19,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
     {
         var doc = await url.AppendPathSegment("watch").GetHtmlDocumentAsync();
 
-        var episodeText = streamType == StreamType.EnglishSubbed
+        var episodeText = streamType == StreamType.Subbed(Languages.English)
             ? "Episodes"
             : "Episodes (Dub)";
 
@@ -81,7 +81,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             var jObject = JsonNode.Parse(json);
 
             var stream = new VideoStreamsForEpisode { Episode = ep };
-            stream.StreamTypes.AddRange(hasDub ? new[] { StreamType.EnglishSubbed, StreamType.EnglishDubbed } : Enumerable.Empty<StreamType>());
+            stream.StreamTypes.AddRange(hasDub ? [ StreamType.Subbed(Languages.English), StreamType.Dubbed(Languages.English) ] : [ StreamType.Subbed(Languages.English) ]);
             stream.Streams.Add(new VideoStream
             {
                 Resolution = "default",
@@ -97,7 +97,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
     private static string ToBase64String(string str) => Convert.ToBase64String(Encoding.UTF8.GetBytes(str));
     private static string GetStreamKey(string id, int ep, StreamType streamType)
     {
-        if (streamType == StreamType.EnglishSubbed)
+        if (streamType == StreamType.Subbed(Languages.English))
         {
             return ToBase64String($"{id}|{ep}");
         }

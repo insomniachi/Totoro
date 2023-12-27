@@ -95,12 +95,9 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
 
     private string GetUrlForStreamType(StreamType streamType)
     {
-        return _settings.DefaultProviderType switch
-        {
-            "gogo-anime" => streamType is StreamType.EnglishDubbed ? _baseUrlDub : _baseUrlSub,
-            "anime-saturn" => streamType is StreamType.ItalianDubbed ? _baseUrlDub : _baseUrlSub,
-            _ => _baseUrlSub
-        };
+        return streamType.AudioLanguage == Languages.Japanese
+            ? _baseUrlSub
+            : _baseUrlDub ?? _baseUrlSub;
     }
 }
 

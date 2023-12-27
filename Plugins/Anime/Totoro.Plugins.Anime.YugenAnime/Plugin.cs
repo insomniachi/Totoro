@@ -39,14 +39,14 @@ public class Plugin : IPlugin<AnimeProvider>
                              .WithDescription("Choose what to play by default, sub/dub")
                              .WithGlyph("\uF2B7")
                              .WithValue(Config.StreamType)
-                             .WithAllowedValues(new[] { StreamType.EnglishSubbed, StreamType.EnglishDubbed })
+                             .WithAllowedValues(new[] { StreamType.Subbed(Languages.English), StreamType.Dubbed(Languages.English) })
                              .ToSelectablePluginOption());
     }
 
     public void SetOptions(PluginOptions options)
     {
         Config.Url = options.GetString(nameof(Config.Url), Config.Url);
-        Config.StreamType = options.GetEnum(nameof(Config.StreamType), Config.StreamType);
+        Config.StreamType = options.GetRecord(nameof(Config.StreamType), Config.StreamType);
     }
 
     object IPlugin.Create() => Create();

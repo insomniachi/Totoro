@@ -5,7 +5,7 @@ namespace Totoro.Plugins.Anime.AllAnime;
 internal static class Config
 {
     public static string Url { get; set; } = "https://allanime.to/";
-    public static StreamType StreamType { get; set; } = StreamType.EnglishSubbed;
+    public static StreamType StreamType { get; set; } = StreamType.Subbed(Languages.English);
     public static string CountryOfOrigin { get; set; } = "JP";
     public static string Api = "https://api.allanime.day/api";
 }

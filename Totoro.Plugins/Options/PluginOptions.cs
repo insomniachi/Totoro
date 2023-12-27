@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reactive.Linq;
+using System.Text.Json;
 using DynamicData.Binding;
 
 namespace Totoro.Plugins.Options;
@@ -28,6 +29,7 @@ public class PluginOptions : Collection<PluginOption>
     public int GetInt32(string name, int defaultValue) => GetValue(name, defaultValue, int.Parse);
     public double GetDouble(string name, double defaultValue) => GetValue(name, defaultValue, double.Parse);
     public TEnum GetEnum<TEnum>(string name, TEnum defaultValue) where TEnum : Enum => GetValue(name, defaultValue, x => (TEnum)Enum.Parse(typeof(TEnum), x));
+    public TRecord GetRecord<TRecord>(string name, TRecord defaultValue) => GetValue(name, defaultValue, x => JsonSerializer.Deserialize<TRecord>(x)!);
 
     private T GetValue<T>(string name, T defaultValue, Func<string, T> parser)
     {
@@ -43,4 +45,5 @@ public class PluginOptions : Collection<PluginOption>
 
         return parser(option.Value);
     }
+
 }

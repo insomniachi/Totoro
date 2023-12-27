@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Flurl;
+using Totoro.Plugins.Anime.Models;
 using Xunit.Abstractions;
 
 namespace Totoro.Plugins.Anime.AllAnime.Tests;
@@ -30,7 +31,7 @@ public class StreamProviderTests(ITestOutputHelper output)
         var sut = new StreamProvider();
 
         // act
-        var actual = await sut.GetNumberOfStreams(url, Models.StreamType.EnglishSubbed);
+        var actual = await sut.GetNumberOfStreams(url, Models.StreamType.Subbed(Languages.English));
 
         // assert
         Assert.Equal(expected, actual);
@@ -46,7 +47,7 @@ public class StreamProviderTests(ITestOutputHelper output)
         var sut = new StreamProvider();
 
         // act
-        var result = await sut.GetStreams(url, _allEpisodes ? Range.All : 12..12, Models.StreamType.EnglishSubbed).ToListAsync();
+        var result = await sut.GetStreams(url, _allEpisodes ? Range.All : 12..12, Models.StreamType.Subbed(Languages.English)).ToListAsync();
 
         Assert.NotEmpty(result);
         foreach (var item in result)

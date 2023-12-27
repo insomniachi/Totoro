@@ -11,6 +11,7 @@ using MonoTorrent.Client;
 using Totoro.Core.Services;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Manga;
 using Totoro.Plugins.Manga.Contracts;
 using Totoro.Plugins.MediaDetection.Contracts;
@@ -272,6 +273,22 @@ public static partial class Converters
     public static string TicksToTime(long value)
     {
         return new TimeSpan(value).ToString("hh\\:mm\\:ss");
+    }
+
+    public static string StreamTypeToDisplayName(StreamType streamType)
+    {
+        if(streamType.AudioLanguage != Languages.Japanese)
+        {
+            return @$"{streamType.AudioLanguage} Dubbed";
+        }
+        else if(!string.IsNullOrEmpty(streamType.SubtitleLanguage))
+        {
+            return @$"{streamType.SubtitleLanguage} Subbed";
+        }
+        else
+        {
+            return @"Raw";
+        }
     }
 
     private static PluginOptions GetOptions<T>(string pluginName)

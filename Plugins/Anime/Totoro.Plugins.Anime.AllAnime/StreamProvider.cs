@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -126,15 +127,15 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
                 continue;
             }
 
-            var streamTypes = new List<StreamType>() { StreamType.EnglishSubbed };
+            var streamTypes = new List<StreamType>() { StreamType.Subbed(Languages.English) };
 
             if (episodesDetail.dub?.Contains(ep) == true)
             {
-                streamTypes.Add(StreamType.EnglishDubbed);
+                streamTypes.Add(StreamType.Dubbed(Languages.English));
             }
             if (episodesDetail.raw?.Contains(ep) == true)
             {
-                streamTypes.Add(StreamType.Raw);
+                streamTypes.Add(StreamType.Raw());
             }
 
             var jsonNode = await Config.Api
@@ -168,6 +169,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
                     if (stream is not null)
                     {
                         stream.Episode = e;
+                        stream.StreamTypes.AddRange(streamTypes);
                         yield return stream;
                         yield break;
                     }
@@ -319,10 +321,10 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
     {
         return streamType switch
         {
-            StreamType.EnglishSubbed => episodeDetails.sub,
-            StreamType.EnglishDubbed => episodeDetails.dub,
-            StreamType.Raw => episodeDetails.raw,
-            _ => throw new NotSupportedException(streamType.ToString())
+            { AudioLanguage: Languages.Japanese, SubtitleLanguage: Languages.English } => episodeDetails.sub,
+            { AudioLanguage: Languages.English, SubtitleLanguage: _ } => episodeDetails.dub,
+            { AudioLanguage: Languages.Japanese, SubtitleLanguage: "" } => episodeDetails.raw,
+            _ => throw new UnreachableException(streamType.ToString())
         };
     }
 
