@@ -333,7 +333,7 @@ public partial class WatchViewModel : NavigatableViewModel
         UseTorrents = parameters.ContainsKey("TorrentModel") || parameters.ContainsKey("TorrentManager");
         MediaPlayerType = UseTorrents ? Models.MediaPlayerType.FFMpeg : _settings.MediaPlayerType;
         ProviderType = parameters.GetValueOrDefault("Provider", _settings.DefaultProviderType) as string;
-        _providerOptions = _providerFactory.GetOptions(ProviderType);
+        _providerOptions = _providerFactory.GetCurrentConfig(ProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
         SelectedAudioStream = GetDefaultAudioStream();
 

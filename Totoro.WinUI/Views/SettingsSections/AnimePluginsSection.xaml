@@ -11,6 +11,7 @@
     xmlns:root="using:Totoro.WinUI"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
+    x:Name="Page"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -105,7 +106,7 @@
                 Style="{ThemeResource AccentButtonStyle}" />
         </Grid>
 
-        <ItemsControl ItemsSource="{x:Bind ViewModel.ProviderTypes}">
+        <ItemsControl ItemsSource="{x:Bind ViewModel.ProviderTypes, Mode=OneWay}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="plugins:PluginInfo">
                     <labs:SettingsExpander
@@ -121,6 +122,11 @@
                                 <labs:SettingsCard.HeaderIcon>
                                     <FontIcon Glyph="&#xE946;" />
                                 </labs:SettingsCard.HeaderIcon>
+                                <Button
+                                    Command="{Binding ElementName=Page, Path=ResetProvider}"
+                                    CommandParameter="{x:Bind Name}"
+                                    Content="Reset to defaults"
+                                    Style="{ThemeResource AccentButtonStyle}" />
                             </labs:SettingsCard>
                         </labs:SettingsExpander.ItemsFooter>
                     </labs:SettingsExpander>

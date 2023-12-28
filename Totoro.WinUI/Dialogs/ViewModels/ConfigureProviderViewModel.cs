@@ -20,7 +20,7 @@ public class ConfigureProviderViewModel : DialogViewModel
 
         this.WhenAnyValue(x => x.ProviderType)
             .WhereNotNull()
-            .Select(PluginFactory<AnimeModel>.Instance.GetOptions)
+            .Select(PluginFactory<AnimeModel>.Instance.GetCurrentConfig)
             .ToPropertyEx(this, x => x.Config);
     }
 

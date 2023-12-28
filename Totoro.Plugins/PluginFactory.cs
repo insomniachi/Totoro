@@ -43,7 +43,7 @@ public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
         return true;
     }
 
-    public PluginOptions? GetOptions(string name)
+    public PluginOptions? GetCurrentConfig(string name)
     {
         if (_plugins.FirstOrDefault(x => x.Info.Name == name) is not { } plugin)
         {
@@ -51,6 +51,16 @@ public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
         }
 
         return plugin.Module.GetCurrentConfig();
+    }
+
+    public PluginOptions? GetDefaultConfig(string name)
+    {
+        if (_plugins.FirstOrDefault(x => x.Info.Name == name) is not { } plugin)
+        {
+            return default;
+        }
+
+        return plugin.Module.GetDefaultConfig();
     }
 
     public void LoadPlugin(IPlugin<T> plugIn)

@@ -40,7 +40,7 @@ namespace Totoro.Core.Services.AniList
         {
             if (media is null)
             {
-                return Array.Empty<AnimeModel>();
+                return [];
             }
 
             return media.Where(x => x.Type == MediaType.Anime)
