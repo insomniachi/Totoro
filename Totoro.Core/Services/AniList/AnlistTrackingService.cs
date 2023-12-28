@@ -47,7 +47,7 @@ public class AniListTrackingService : ITrackingService
 
                 response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
                 {
-                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime).Build(),
+                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime, statusNot: MediaListStatus.Current).Build(),
                 });
 
                 observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));

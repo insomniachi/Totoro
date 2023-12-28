@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Flurl;
 using Totoro.Plugins.Anime.Models;
+using Totoro.Plugins.Options;
 using Xunit.Abstractions;
 
 namespace Totoro.Plugins.Anime.AllAnime.Tests;
@@ -16,8 +17,8 @@ public class StreamProviderTests(ITestOutputHelper output)
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
     private readonly Dictionary<string, string> _urlMap = new()
     {
-        { Hyouka, Url.Combine(Config.Url, "/anime/dxxqKsaMhdrdQxczP") },
-        { Hyakkano, Url.Combine(Config.Url, "/anime/pp9g8Qt7iem4RMjbJ") }
+        { Hyouka, Url.Combine(ConfigManager<Config>.Current.Url, "/anime/dxxqKsaMhdrdQxczP") },
+        { Hyakkano, Url.Combine(ConfigManager<Config>.Current.Url, "/anime/pp9g8Qt7iem4RMjbJ") }
     };
     private readonly bool _allEpisodes = false;
 
