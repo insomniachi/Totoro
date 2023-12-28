@@ -281,73 +281,79 @@
                                 ExpandDirection="Right"
                                 Header="Episodes"
                                 IsExpanded="True">
-                                <ListView ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedEpisode, Mode=TwoWay}">
+                                <ListView
+                                    MaxWidth="400"
+                                    ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+                                    SelectedItem="{x:Bind ViewModel.SelectedEpisode, Mode=TwoWay}">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="models:EpisodeModel">
-                                            <TextBlock Text="{x:Bind DisplayName}" />
+                                            <TextBlock Text="{x:Bind DisplayName}" TextTrimming="CharacterEllipsis" />
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
                             </uc:Expander>
 
                             <Grid Grid.Column="1">
-                                <ListView ItemsSource="{x:Bind ViewModel.Torrents, Mode=OneWay}" SelectionMode="None">
-                                    <ListView.ItemTemplate>
-                                        <DataTemplate x:DataType="torrents:TorrentModel">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="100" />
-                                                    <ColumnDefinition Width="100" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{x:Bind Name}" />
-                                                <TextBlock
-                                                    Grid.Column="1"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="20"
-                                                    Foreground="Green"
-                                                    Text="{x:Bind Seeders}" />
-                                                <TextBlock
-                                                    Grid.Column="2"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="20"
-                                                    Foreground="Red"
-                                                    Text="{x:Bind Leeches}" />
-                                                <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                                    <StackPanel.Resources>
-                                                        <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
-                                                            <Setter Property="Margin" Value="5,0" />
-                                                        </Style>
-                                                    </StackPanel.Resources>
-                                                    <Button
-                                                        Width="100"
-                                                        Command="{x:Bind root:App.Commands.StreamWithDebrid}"
-                                                        CommandParameter="{x:Bind}"
-                                                        Content="{Binding State, Converter={StaticResource StateConverter}}" />
-                                                    <Button
-                                                        Command="{x:Bind root:App.Commands.TorrentCommand}"
-                                                        CommandParameter="{x:Bind}"
-                                                        ToolTipService.ToolTip="Stream">
-                                                        <FontIcon Glyph="&#xE93E;" />
-                                                    </Button>
-                                                    <Button
-                                                        Command="{x:Bind root:App.Commands.DownloadTorrentCommand}"
-                                                        CommandParameter="{x:Bind}"
-                                                        ToolTipService.ToolTip="Download">
-                                                        <SymbolIcon Symbol="Download" />
-                                                    </Button>
-                                                </StackPanel>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ListView.ItemTemplate>
-                                </ListView>
-                                <uc:Loading
-                                    x:Name="LoadingControl"
-                                    Grid.Row="1"
-                                    IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-                                    <ProgressRing Margin="0,0,12,0" IsActive="True" />
-                                </uc:Loading>
+                                <ctk:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+                                    <ctk:Case Value="True">
+                                        <Grid>
+                                            <ProgressRing IsActive="True" />
+                                        </Grid>
+                                    </ctk:Case>
+                                    <ctk:Case Value="False">
+                                        <ListView ItemsSource="{x:Bind ViewModel.Torrents, Mode=OneWay}" SelectionMode="None">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="torrents:TorrentModel">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="100" />
+                                                            <ColumnDefinition Width="100" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="{x:Bind Name}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="20"
+                                                            Foreground="Green"
+                                                            Text="{x:Bind Seeders}" />
+                                                        <TextBlock
+                                                            Grid.Column="2"
+                                                            VerticalAlignment="Center"
+                                                            FontSize="20"
+                                                            Foreground="Red"
+                                                            Text="{x:Bind Leeches}" />
+                                                        <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                            <StackPanel.Resources>
+                                                                <Style BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                                                                    <Setter Property="Margin" Value="5,0" />
+                                                                </Style>
+                                                            </StackPanel.Resources>
+                                                            <Button
+                                                                Width="100"
+                                                                Command="{x:Bind root:App.Commands.StreamWithDebrid}"
+                                                                CommandParameter="{x:Bind}"
+                                                                Content="{Binding State, Converter={StaticResource StateConverter}}" />
+                                                            <Button
+                                                                Command="{x:Bind root:App.Commands.TorrentCommand}"
+                                                                CommandParameter="{x:Bind}"
+                                                                ToolTipService.ToolTip="Stream">
+                                                                <FontIcon Glyph="&#xE93E;" />
+                                                            </Button>
+                                                            <Button
+                                                                Command="{x:Bind root:App.Commands.DownloadTorrentCommand}"
+                                                                CommandParameter="{x:Bind}"
+                                                                ToolTipService.ToolTip="Download">
+                                                                <SymbolIcon Symbol="Download" />
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </ctk:Case>
+                                </ctk:SwitchPresenter>
                             </Grid>
 
                         </Grid>

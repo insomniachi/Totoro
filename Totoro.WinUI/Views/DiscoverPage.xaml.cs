@@ -1,4 +1,6 @@
-﻿using ReactiveMarbles.ObservableEvents;
+﻿using System.Windows;
+using Microsoft.UI.Xaml.Controls;
+using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 
 namespace Totoro.WinUI.Views;
@@ -17,6 +19,25 @@ public sealed partial class DiscoverPage : DiscoverPageBase
             .QuerySubmitted
             .Select(x => x.sender.Text)
             .InvokeCommand(ViewModel.SearchProvider);
+
+            SearchResultView
+            .Events()
+            .ItemInvoked
+            .Select(x => x.args.InvokedItem)
+            .InvokeCommand(ViewModel.SelectSearchResult);
+
+            EpisodeView
+            .Events()
+            .ItemInvoked
+            .Select(x => x.args.InvokedItem)
+            .InvokeCommand(ViewModel.SelectEpisode);
+
         });
+    }
+
+    private void MainGrid_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var element = (Grid)sender;
+        element.Width = ViewModel.CardWidth;
     }
 }

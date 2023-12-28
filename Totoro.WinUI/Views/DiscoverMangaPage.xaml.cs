@@ -19,4 +19,9 @@ public sealed partial class DiscoverMangaPage : DiscoverMangaPageBase
             .InvokeCommand(ViewModel.SearchProvider);
         });
     }
+
+    private void ItemsView_ItemInvoked(Microsoft.UI.Xaml.Controls.ItemsView sender, Microsoft.UI.Xaml.Controls.ItemsViewItemInvokedEventArgs args)
+    {
+        ViewModel.SelectSearchResult.Execute(args.InvokedItem);
+    }
 }

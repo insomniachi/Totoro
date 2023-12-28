@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uc="using:Totoro.WinUI.UserControls"
     x:Name="Page"
     mc:Ignorable="d">
 
@@ -37,14 +36,19 @@
             </ctk:Segmented.ItemContainerStyle>
         </ctk:Segmented>
 
-        <Frame x:Name="NavFrame" Grid.Row="1" />
-
-        <uc:Loading
-            x:Name="LoadingControl"
+        <ctk:SwitchPresenter
             Grid.Row="1"
-            IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </uc:Loading>
+            TargetType="x:Boolean"
+            Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+            <ctk:Case Value="True">
+                <Grid>
+                    <ProgressRing IsActive="True" />
+                </Grid>
+            </ctk:Case>
+            <ctk:Case Value="False">
+                <Frame x:Name="NavFrame" />
+            </ctk:Case>
+        </ctk:SwitchPresenter>
 
     </Grid>
 

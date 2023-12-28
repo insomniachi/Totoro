@@ -107,7 +107,6 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<UserListViewModel, UserListPage>();
         services.AddPageForNavigation<WatchViewModel, WatchPage>();
         services.AddPageForNavigation<SeasonalViewModel, SeasonalPage>();
-        services.AddPageForNavigation<ScheduleViewModel, SchedulePage>();
         services.AddPageForNavigation<DiscoverViewModel, DiscoverPage>();
         services.AddPageForNavigation<AboutAnimeViewModel, AboutAnimePage>();
         services.AddPageForNavigation<TorrentingViewModel, TorrentingView>();

@@ -212,9 +212,6 @@
 		<Page Update="Dialogs\Views\UpdateAnimeStatusView.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
-		<Page Update="Views\SchedulePage.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
 		<Page Update="Styles\RadioButton.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
