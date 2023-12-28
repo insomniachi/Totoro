@@ -1,9 +1,7 @@
 ﻿namespace Totoro.WinUI.UserControls;
 
-public class Loading : CommunityToolkit.WinUI.UI.Controls.Loading { }
 public class ImageEx : CommunityToolkit.WinUI.UI.Controls.ImageEx { }
 public class WrapPanel : CommunityToolkit.WinUI.UI.Controls.WrapPanel { }
-public class AdaptiveGridView : CommunityToolkit.WinUI.UI.Controls.AdaptiveGridView { }
 public class Expander : CommunityToolkit.WinUI.UI.Controls.Expander { }
 public class DataGrid : CommunityToolkit.WinUI.UI.Controls.DataGrid { }
 public class DataGridTemplateColumn : CommunityToolkit.WinUI.UI.Controls.DataGridTemplateColumn { }

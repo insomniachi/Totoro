@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Flurl;
+using Totoro.Plugins.Options;
 using Xunit.Abstractions;
 
 namespace Totoro.Plugins.Anime.GogoAnime.Tests;
@@ -14,7 +15,7 @@ public class StreamProviderTests
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
     private readonly Dictionary<string, string> _urlMap = new()
     {
-        { Hyouka, Url.Combine(Config.Url, "/category/hyouka") }
+        { Hyouka, Url.Combine(ConfigManager<Config>.Current.Url, "/category/hyouka") }
     };
     private readonly bool _allEpisodes = false;
 

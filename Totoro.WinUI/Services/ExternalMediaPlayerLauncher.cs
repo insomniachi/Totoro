@@ -34,8 +34,8 @@ namespace Totoro.WinUI.Services
                 .SelectMany(x => x.WhenAnyValue(x => x.Current))
                 .WhereNotNull()
                 .SelectMany(epModel => epModel.IsSpecial
-                        ? ((ISpecialVideoStreamModelResolver)_videoStreamResolver).ResolveSpecialEpisode(epModel.SpecialEpisodeNumber, StreamType.EnglishSubbed)
-                        : _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, StreamType.EnglishSubbed))
+                        ? ((ISpecialVideoStreamModelResolver)_videoStreamResolver).ResolveSpecialEpisode(epModel.SpecialEpisodeNumber, StreamType.Subbed(Languages.English))
+                        : _videoStreamResolver.ResolveEpisode(epModel.EpisodeNumber, StreamType.Subbed(Languages.English)))
                 .Subscribe(stream =>
                 {
                     var quality = GetDefaultQuality(stream.Qualities);
@@ -61,7 +61,7 @@ namespace Totoro.WinUI.Services
                 _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(ProviderType, searResult.Url);
             }
 
-            EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(StreamType.EnglishSubbed);
+            EpisodeModels = await _videoStreamResolver.ResolveAllEpisodes(StreamType.Subbed(Languages.English));
             var currentEp = (anime?.Tracking?.WatchedEpisodes ?? 0) + 1;
             _title = $"{anime.Title} - {currentEp.ToString().PadLeft(2, '0')}";
             EpisodeModels.SelectEpisode(currentEp);

@@ -4,7 +4,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Totoro.Core.Services;
 using Totoro.Core.ViewModels;
+using Totoro.Plugins.Anime.Contracts;
 
 namespace Totoro.WinUI.Views.SettingsSections;
 
@@ -21,12 +23,14 @@ public sealed partial class AnimePluginsSection : Page
 
 
     public ICommand UpdateOfflineDb { get; }
+    public ICommand ResetProvider { get; }
 
     public AnimePluginsSection()
     {
         InitializeComponent();
 
         UpdateOfflineDb = ReactiveCommand.CreateFromTask(() => App.GetService<IOfflineAnimeIdService>().UpdateOfflineMappings());
+        ResetProvider = ReactiveCommand.Create<string>(provider => App.GetService<IPluginOptionsStorage<AnimeProvider>>().ResetConfig(provider));
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

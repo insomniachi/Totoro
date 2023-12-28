@@ -13,6 +13,7 @@
     xmlns:root="using:Totoro.WinUI"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:view="using:Totoro.WinUI.Dialogs.Views"
+    x:Name="Page"
     mc:Ignorable="d">
 
     <Page.Resources>
@@ -200,7 +201,13 @@
                             <labs:SettingsCard
                                 Description="{x:Bind help:Converters.GetTorrentsPluginVersion(Name)}"
                                 Header="Version"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE946;}" />
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+                                <Button
+                                    Command="{Binding ElementName=Page, Path=ResetProvider}"
+                                    CommandParameter="{x:Bind Name}"
+                                    Content="Reset to defaults"
+                                    Style="{ThemeResource AccentButtonStyle}" />
+                            </labs:SettingsCard>
                         </labs:SettingsExpander.ItemsFooter>
                     </labs:SettingsExpander>
                 </DataTemplate>

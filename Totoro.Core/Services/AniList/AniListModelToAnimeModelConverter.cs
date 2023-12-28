@@ -40,7 +40,7 @@ namespace Totoro.Core.Services.AniList
         {
             if (media is null)
             {
-                return Array.Empty<AnimeModel>();
+                return [];
             }
 
             return media.Where(x => x.Type == MediaType.Anime)
@@ -79,6 +79,12 @@ namespace Totoro.Core.Services.AniList
         {
             if (listEntry == null)
             {
+                // uncomment for debuging other people list
+                //return new Tracking
+                //{
+                //    Status = AnimeStatus.Dropped
+                //};
+
                 return null;
             }
 

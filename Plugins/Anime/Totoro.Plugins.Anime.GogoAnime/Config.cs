@@ -1,6 +1,11 @@
-﻿namespace Totoro.Plugins.Anime.GogoAnime;
+﻿using System.ComponentModel;
+using Totoro.Plugins.Options;
 
-public static class Config
+namespace Totoro.Plugins.Anime.GogoAnime;
+
+public class Config : AnimeProviderConfigObject
 {
-    public static string Url { get; set; } = "https://anitaku.to/";
+    [Description("Url to home page")]
+    [Glyph(Glyphs.Url)]
+    public string Url { get; set; } = "https://anitaku.to/";
 }

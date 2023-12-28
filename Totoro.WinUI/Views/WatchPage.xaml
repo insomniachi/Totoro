@@ -9,7 +9,6 @@
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:media="using:Totoro.WinUI.Media"
     xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
 
@@ -71,6 +70,7 @@
                         Width="150"
                         ItemsSource="{x:Bind ViewModel.SubStreams, Mode=OneWay}"
                         SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}" />
+
                 </StackPanel>
 
                 <StackPanel
@@ -105,10 +105,19 @@
                 <ListView
                     Grid.Row="3"
                     MinWidth="300"
+                    MaxWidth="400"
                     VerticalAlignment="Top"
-                    DisplayMemberPath="DisplayName"
                     ItemsSource="{x:Bind ViewModel.EpisodeModels, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}" />
+                    SelectedItem="{x:Bind ViewModel.EpisodeModels.Current, Mode=TwoWay}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="m:EpisodeModel">
+                            <TextBlock
+                                Text="{x:Bind DisplayName, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis"
+                                ToolTipService.ToolTip="{x:Bind DisplayName, Mode=OneWay}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
 
             </Grid>
         </uc:Expander>

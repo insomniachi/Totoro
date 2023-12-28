@@ -72,242 +72,254 @@
                     </ctk:Segmented>
                 </Grid>
 
-                <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-                        <ItemsView ItemsSource="{x:Bind ViewModel.Anime}" SelectionMode="None">
-                            <ItemsView.ItemTransitionProvider>
-                                <LinedFlowLayoutItemCollectionTransitionProvider />
-                            </ItemsView.ItemTransitionProvider>
-                            <ItemsView.ItemTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <ItemContainer>
-                                        <uc:AnimeCard
-                                            Margin="3"
-                                            Anime="{x:Bind}"
-                                            Command="{x:Bind root:App.Commands.AnimeCard}"
-                                            ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
-                                    </ItemContainer>
-                                </DataTemplate>
-                            </ItemsView.ItemTemplate>
-                            <ItemsView.Layout>
-                                <UniformGridLayout />
-                            </ItemsView.Layout>
-                            <Interactivity:Interaction.Behaviors>
-                                <b:ItemsViewBehavior Settings="{x:Bind ViewModel.GridViewSettings}" />
-                            </Interactivity:Interaction.Behaviors>
-                        </ItemsView>
+                <ctk:SwitchPresenter
+                    Grid.Row="1"
+                    TargetType="x:Boolean"
+                    Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+                    <ctk:Case Value="True">
+                        <Grid>
+                            <ProgressRing IsActive="True" />
+                        </Grid>
                     </ctk:Case>
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
-                        <uc:DataGrid
-                            x:Name="ListDataGrid"
-                            AlternatingRowBackground="{ThemeResource SubtleFillColorTransparentBrush}"
-                            AreRowDetailsFrozen="True"
-                            AutoGenerateColumns="False"
-                            CanUserReorderColumns="True"
-                            CanUserResizeColumns="True"
-                            CanUserSortColumns="True"
-                            GridLinesVisibility="Vertical"
-                            HeadersVisibility="All"
-                            ItemsSource="{x:Bind ViewModel.Anime}"
-                            LoadingRow="OnLoadingRow"
-                            RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            RowDetailsVisibilityMode="Collapsed"
-                            RowHeaderWidth="5"
-                            SelectionMode="Single">
-                            <Interactivity:Interaction.Behaviors>
-                                <b:DataGridPersistenceBehavior Settings="{x:Bind ViewModel.DataGridSettings, Mode=OneWay}" />
-                            </Interactivity:Interaction.Behaviors>
-                            <uc:DataGrid.RowHeaderStyle>
-                                <Style TargetType="primitives:DataGridRowHeader">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="primitives:DataGridRowHeader">
-                                                <Grid Background="{Binding AiringStatus, Converter={StaticResource StatusConverter}}" />
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </uc:DataGrid.RowHeaderStyle>
-                            <uc:DataGrid.RowDetailsTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <Image
-                                            Width="160"
-                                            Margin="10"
-                                            Source="{x:Bind Image}"
-                                            Stretch="UniformToFill"
-                                            Tapped="ImageTapped" />
-
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            Padding="10"
-                                            Spacing="10">
-                                            <TextBlock Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </uc:DataGrid.RowDetailsTemplate>
-                            <uc:DataGrid.Columns>
-                                <uc:DataGridTemplateColumn
-                                    Header="Title"
-                                    IsReadOnly="True"
-                                    Tag="Title">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
+                    <ctk:Case Value="False">
+                        <ctk:SwitchPresenter Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
+                            <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
+                                <ItemsView ItemsSource="{x:Bind ViewModel.Anime}" SelectionMode="None">
+                                    <ItemsView.ItemTransitionProvider>
+                                        <LinedFlowLayoutItemCollectionTransitionProvider />
+                                    </ItemsView.ItemTransitionProvider>
+                                    <ItemsView.ItemTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock
-                                                    Margin="10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding Title}" />
-                                                <uc:UnwatchedEpisodesBadge
-                                                    VerticalAlignment="Center"
+                                            <ItemContainer>
+                                                <uc:AnimeCard
+                                                    Margin="3"
                                                     Anime="{x:Bind}"
-                                                    Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
-                                            </StackPanel>
+                                                    Command="{x:Bind root:App.Commands.AnimeCard}"
+                                                    ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
+                                            </ItemContainer>
                                         </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    CanUserSort="False"
-                                    Header="Season"
-                                    IsReadOnly="True"
-                                    Tag="Season">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
+                                    </ItemsView.ItemTemplate>
+                                    <ItemsView.Layout>
+                                        <UniformGridLayout />
+                                    </ItemsView.Layout>
+                                    <Interactivity:Interaction.Behaviors>
+                                        <b:ItemsViewBehavior Settings="{x:Bind ViewModel.GridViewSettings}" />
+                                    </Interactivity:Interaction.Behaviors>
+                                </ItemsView>
+                            </ctk:Case>
+                            <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
+                                <uc:DataGrid
+                                    x:Name="ListDataGrid"
+                                    AlternatingRowBackground="{ThemeResource SubtleFillColorTransparentBrush}"
+                                    AreRowDetailsFrozen="True"
+                                    AutoGenerateColumns="False"
+                                    CanUserReorderColumns="True"
+                                    CanUserResizeColumns="True"
+                                    CanUserSortColumns="True"
+                                    GridLinesVisibility="Vertical"
+                                    HeadersVisibility="All"
+                                    ItemsSource="{x:Bind ViewModel.Anime}"
+                                    LoadingRow="OnLoadingRow"
+                                    RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                    RowDetailsVisibilityMode="Collapsed"
+                                    RowHeaderWidth="5"
+                                    SelectionMode="Single">
+                                    <Interactivity:Interaction.Behaviors>
+                                        <b:DataGridPersistenceBehavior Settings="{x:Bind ViewModel.DataGridSettings, Mode=OneWay}" />
+                                    </Interactivity:Interaction.Behaviors>
+                                    <uc:DataGrid.RowHeaderStyle>
+                                        <Style TargetType="primitives:DataGridRowHeader">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="primitives:DataGridRowHeader">
+                                                        <Grid Background="{Binding AiringStatus, Converter={StaticResource StatusConverter}}" />
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </uc:DataGrid.RowHeaderStyle>
+                                    <uc:DataGrid.RowDetailsTemplate>
                                         <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock Margin="10,0" VerticalAlignment="Center">
-                                                <Run Text="{x:Bind Season.SeasonName}" />
-                                                <Run Text="{x:Bind Season.Year}" />
-                                            </TextBlock>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <Image
+                                                    Width="160"
+                                                    Margin="10"
+                                                    Source="{x:Bind Image}"
+                                                    Stretch="UniformToFill"
+                                                    Tapped="ImageTapped" />
+
+                                                <StackPanel
+                                                    Grid.Column="1"
+                                                    Padding="10"
+                                                    Spacing="10">
+                                                    <TextBlock Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
+                                                </StackPanel>
+                                            </Grid>
                                         </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Average"
-                                    IsReadOnly="True"
-                                    Tag="Mean Score">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind MeanScore}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn Header="Score" Tag="User Score">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                    <uc:DataGridTemplateColumn.CellEditingTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <uc:RatingPicker
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Anime="{x:Bind}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellEditingTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    MinWidth="109"
-                                    CanUserSort="False"
-                                    Header="Progress"
-                                    IsReadOnly="True"
-                                    Tag="Tracking">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <StackPanel
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal"
-                                                Spacing="10">
-                                                <Button
-                                                    Padding="0"
-                                                    Command="{x:Bind root:App.Commands.DecrementTracking}"
-                                                    CommandParameter="{x:Bind}">
-                                                    <FontIcon FontSize="12" Glyph="&#xECC9;" />
-                                                </Button>
-                                                <TextBlock
-                                                    MinWidth="30"
-                                                    VerticalAlignment="Center"
-                                                    Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}"
-                                                    TextAlignment="Center" />
-                                                <Button
-                                                    Padding="0"
-                                                    Command="{x:Bind root:App.Commands.IncrementTracking}"
-                                                    CommandParameter="{x:Bind}">
-                                                    <FontIcon FontSize="12" Glyph="&#xECC8;" />
-                                                </Button>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Started"
-                                    IsReadOnly="True"
-                                    Tag="Date Started">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind Tracking.StartDate, Converter={StaticResource HumanizeConverter}}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Completed"
-                                    IsReadOnly="True"
-                                    Tag="Date Completed">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind Tracking.FinishDate, Converter={StaticResource HumanizeConverter}}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Last updated"
-                                    IsReadOnly="True"
-                                    Tag="Last Updated">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind Tracking.UpdatedAt, Converter={StaticResource HumanizeConverter}}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTextColumn
-                                    Binding="{Binding Type}"
-                                    Header="Type"
-                                    IsReadOnly="True"
-                                    Tag="Type" />
-                                <uc:DataGridTemplateColumn
-                                    Header="Next Episode"
-                                    IsReadOnly="True"
-                                    Tag="Next Episode">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind NextEpisodeAt, Converter={StaticResource HumanizeConverter}, Mode=OneWay, ConverterParameter=1}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                            </uc:DataGrid.Columns>
-                        </uc:DataGrid>
+                                    </uc:DataGrid.RowDetailsTemplate>
+                                    <uc:DataGrid.Columns>
+                                        <uc:DataGridTemplateColumn
+                                            Header="Title"
+                                            IsReadOnly="True"
+                                            Tag="Title">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock
+                                                            Margin="10,0"
+                                                            VerticalAlignment="Center"
+                                                            Text="{Binding Title}" />
+                                                        <uc:UnwatchedEpisodesBadge
+                                                            VerticalAlignment="Center"
+                                                            Anime="{x:Bind}"
+                                                            Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTemplateColumn
+                                            CanUserSort="False"
+                                            Header="Season"
+                                            IsReadOnly="True"
+                                            Tag="Season">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <TextBlock Margin="10,0" VerticalAlignment="Center">
+                                                        <Run Text="{x:Bind Season.SeasonName}" />
+                                                        <Run Text="{x:Bind Season.Year}" />
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTemplateColumn
+                                            Header="Average"
+                                            IsReadOnly="True"
+                                            Tag="Mean Score">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Text="{x:Bind MeanScore}" />
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTemplateColumn Header="Score" Tag="User Score">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}" />
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                            <uc:DataGridTemplateColumn.CellEditingTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <uc:RatingPicker
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Anime="{x:Bind}" />
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellEditingTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTemplateColumn
+                                            MinWidth="109"
+                                            CanUserSort="False"
+                                            Header="Progress"
+                                            IsReadOnly="True"
+                                            Tag="Tracking">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <StackPanel
+                                                        HorizontalAlignment="Center"
+                                                        Orientation="Horizontal"
+                                                        Spacing="10">
+                                                        <Button
+                                                            Padding="0"
+                                                            Command="{x:Bind root:App.Commands.DecrementTracking}"
+                                                            CommandParameter="{x:Bind}">
+                                                            <FontIcon FontSize="12" Glyph="&#xECC9;" />
+                                                        </Button>
+                                                        <TextBlock
+                                                            MinWidth="30"
+                                                            VerticalAlignment="Center"
+                                                            Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}"
+                                                            TextAlignment="Center" />
+                                                        <Button
+                                                            Padding="0"
+                                                            Command="{x:Bind root:App.Commands.IncrementTracking}"
+                                                            CommandParameter="{x:Bind}">
+                                                            <FontIcon FontSize="12" Glyph="&#xECC8;" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTemplateColumn
+                                            Header="Started"
+                                            IsReadOnly="True"
+                                            Tag="Date Started">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <TextBlock
+                                                        Margin="10,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{x:Bind Tracking.StartDate, Converter={StaticResource HumanizeConverter}}" />
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTemplateColumn
+                                            Header="Completed"
+                                            IsReadOnly="True"
+                                            Tag="Date Completed">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <TextBlock
+                                                        Margin="10,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{x:Bind Tracking.FinishDate, Converter={StaticResource HumanizeConverter}}" />
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTemplateColumn
+                                            Header="Last updated"
+                                            IsReadOnly="True"
+                                            Tag="Last Updated">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <TextBlock
+                                                        Margin="10,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{x:Bind Tracking.UpdatedAt, Converter={StaticResource HumanizeConverter}}" />
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                        <uc:DataGridTextColumn
+                                            Binding="{Binding Type}"
+                                            Header="Type"
+                                            IsReadOnly="True"
+                                            Tag="Type" />
+                                        <uc:DataGridTemplateColumn
+                                            Header="Next Episode"
+                                            IsReadOnly="True"
+                                            Tag="Next Episode">
+                                            <uc:DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="cm:AnimeModel">
+                                                    <TextBlock
+                                                        Margin="10,0"
+                                                        VerticalAlignment="Center"
+                                                        Text="{x:Bind NextEpisodeAt, Converter={StaticResource HumanizeConverter}, Mode=OneWay, ConverterParameter=1}" />
+                                                </DataTemplate>
+                                            </uc:DataGridTemplateColumn.CellTemplate>
+                                        </uc:DataGridTemplateColumn>
+                                    </uc:DataGrid.Columns>
+                                </uc:DataGrid>
+                            </ctk:Case>
+                        </ctk:SwitchPresenter>
                     </ctk:Case>
                 </ctk:SwitchPresenter>
 
@@ -373,13 +385,7 @@
                     </TeachingTip>
                 </Grid>
 
-                <uc:Loading
-                    x:Name="LoadingControl"
-                    Grid.Row="1"
-                    IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-                    <ProgressRing Margin="0,0,12,0" IsActive="True" />
-                </uc:Loading>
-
+                <!--  Bottom Command Bar  -->
                 <Grid Grid.Row="2" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
@@ -581,6 +587,7 @@
                     </CommandBar>
 
                 </Grid>
+
             </Grid>
         </ctk:Case>
         <ctk:Case>

@@ -1,13 +1,13 @@
 ﻿namespace Totoro.Plugins.Torrents.AnimeTosho;
 
-internal enum Filter
+public enum Filter
 {
     None,
     NoRemakes,
     TrustedOnly
 }
 
-internal enum Sort
+public enum Sort
 {
     NewestFirst,
     OldestFirst,

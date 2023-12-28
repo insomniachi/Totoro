@@ -24,22 +24,16 @@ public interface IPluginOptionsStorage<T>
 {
     void Initialize();
     PluginOptionWrapper GetOptions(string pluginName);
+    void ResetConfig(string pluginName);
 }
 
-internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
+internal class PluginOptionStorage<T>(ISettings settings,
+                                      ILocalSettingsService localSettingsService) : IPluginOptionsStorage<T>, IEnableLogger
 {
     private readonly Dictionary<string, PluginOptionWrapper> _configs = [];
-    private readonly Dictionary<string, Dictionary<string, string>> _configValues = [];
-    private readonly ISettings _settings;
-    private readonly ILocalSettingsService _localSettingsService;
-
-    public PluginOptionStorage(ISettings settings,
-                               ILocalSettingsService localSettingsService)
-    {
-        _settings = settings;
-        _localSettingsService = localSettingsService;
-        _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>($"{typeof(T).Name}Configs", []);
-    }
+    private readonly Dictionary<string, Dictionary<string, string>> _configValues = localSettingsService.ReadSetting<Dictionary<string, Dictionary<string, string>>>($"{typeof(T).Name}Configs", []);
+    private readonly ISettings _settings = settings;
+    private readonly ILocalSettingsService _localSettingsService = localSettingsService;
 
     public PluginOptionWrapper GetOptions(string pluginName) => _configs[pluginName];
 
@@ -48,20 +42,20 @@ internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
         var hasNewConfig = false;
         foreach (var item in PluginFactory<T>.Instance.Plugins)
         {
-            var baseConfig = PluginFactory<T>.Instance.GetOptions(item.Name);
+            var baseConfig = PluginFactory<T>.Instance.GetCurrentConfig(item.Name);
             _configs.Add(item.Name, new PluginOptionWrapper
             {
                 Options = baseConfig,
                 PluginName = item.Name
             });
 
-            if (!_configValues.ContainsKey(item.Name))
+            if (!_configValues.TryGetValue(item.Name, out Dictionary<string, string> value))
             {
                 hasNewConfig = true;
             }
             else
             {
-                foreach (var option in _configValues[item.Name])
+                foreach (var option in value)
                 {
                     baseConfig.TrySetValue(option.Key, option.Value);
                 }
@@ -88,11 +82,24 @@ internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
 
         foreach (var item in _configs.Values)
         {
-            item.OptionsChaged += (option, name) =>
-            {
-                PluginFactory<T>.Instance.SetOptions(name, (PluginOptions)option);
-                SaveConfig();
-            };
+            item.OptionsChaged += Item_OptionsChaged;
+        }
+    }
+
+    private void Item_OptionsChaged(object sender, string name)
+    {
+        PluginFactory<T>.Instance.SetOptions(name, (PluginOptions)sender);
+        SaveConfig();
+    }
+
+    public void ResetConfig(string pluginName)
+    {
+        var defaultConfig = PluginFactory<T>.Instance.GetDefaultConfig(pluginName);
+        var existingOptions = _configs[pluginName];
+
+        foreach (var item in defaultConfig)
+        {
+            existingOptions.Options.TrySetValue(item.Name, item.Value);
         }
     }
 
@@ -101,4 +108,5 @@ internal class PluginOptionStorage<T> : IPluginOptionsStorage<T>, IEnableLogger
         var configValues = _configs.ToDictionary(x => x.Key, x => x.Value.Options.ToDictionary(x => x.Name, x => x.Value));
         _localSettingsService.SaveSetting($"{typeof(T).Name}Configs", configValues);
     }
+
 }

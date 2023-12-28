@@ -2,6 +2,7 @@
 using Flurl.Http;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Contracts;
 using Totoro.Plugins.Torrents.Models;
 
@@ -14,13 +15,13 @@ internal class Tracker : ITorrentTracker
 
     public async IAsyncEnumerable<TorrentModel> Search(string query)
     {
-        var doc = await Config.Url.SetQueryParams(new
+        var doc = await ConfigManager<Config>.Current.Url.SetQueryParams(new
         {
-            f = (int)Config.Filter,
-            c = Config.Category.ToQueryParam(),
+            f = (int)ConfigManager<Config>.Current.Filter,
+            c = ConfigManager<Config>.Current.Category.ToQueryParam(),
             q = query,
-            s = Config.SortBy.ToString().ToLower(),
-            o = Config.SortDirection.ToQueryString()
+            s = ConfigManager<Config>.Current.SortBy.ToString().ToLower(),
+            o = ConfigManager<Config>.Current.SortDirection.ToQueryString()
         }).GetHtmlDocumentAsync();
 
         foreach (var item in doc.QuerySelectorAll("table tr .success"))
@@ -40,10 +41,10 @@ internal class Tracker : ITorrentTracker
 
             yield return new TorrentModel
             {
-                CategoryImage = Url.Combine(Config.Url, image),
+                CategoryImage = Url.Combine(ConfigManager<Config>.Current.Url, image),
                 Category = category,
                 Name = name,
-                Link = Url.Combine(Config.Url, link),
+                Link = Url.Combine(ConfigManager<Config>.Current.Url, link),
                 Magnet = magnet,
                 Size = size,
                 Date = DateTimeOffset.FromUnixTimeSeconds(long.Parse(date)).UtcDateTime.ToLocalTime(),

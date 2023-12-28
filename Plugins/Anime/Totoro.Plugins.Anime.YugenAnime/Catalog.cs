@@ -4,6 +4,7 @@ using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.YugenAnime;
 
@@ -22,7 +23,7 @@ internal class Catalog : IAnimeCatalog, IEnableLogger
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var doc = await Config.Url.AppendPathSegment("discover")
+        var doc = await ConfigManager<Config>.Current.Url.AppendPathSegment("discover")
             .SetQueryParam("q", query)
             .GetHtmlDocumentAsync();
         var nodes = doc.QuerySelectorAll(".anime-meta");
@@ -36,7 +37,7 @@ internal class Catalog : IAnimeCatalog, IEnableLogger
         foreach (var node in nodes)
         {
             var title = node.Attributes["title"].Value;
-            var url = Url.Combine(Config.Url, node.Attributes["href"].Value);
+            var url = Url.Combine(ConfigManager<Config>.Current.Url, node.Attributes["href"].Value);
             var image = node.QuerySelector("img").Attributes["data-src"].Value;
             var season = node.QuerySelector(".anime-details span").InnerText.Split(" ");
             var rating = node.QuerySelector(".option")?.ChildNodes[1]?.InnerText?.Trim() ?? string.Empty;

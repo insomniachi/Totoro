@@ -1,28 +1,20 @@
 ﻿using System.Reflection;
 using Totoro.Plugins.Contracts;
-using Totoro.Plugins.Options;
 
-namespace Totoro.Plugins.Manga.MangaDex
+namespace Totoro.Plugins.Manga.MangaDex;
+
+public class Plugin : Plugin<MangaProvider, Config>
 {
-    public class Plugin : IPlugin<MangaProvider>
+    public override MangaProvider Create() => new()
     {
-        public MangaProvider Create() => new()
-        {
-            Catalog = new Catalog(),
-            ChapterProvider = new ChapterProvider(),
-        };
+        Catalog = new Catalog(),
+        ChapterProvider = new ChapterProvider(),
+    };
 
-        public PluginInfo GetInfo() => new()
-        {
-            DisplayName = "Manga Dex",
-            Name = "manga-dex",
-            Version = Assembly.GetExecutingAssembly().GetName().Version!
-        };
-
-        public PluginOptions GetOptions() => new();
-
-        public void SetOptions(PluginOptions options) { }
-
-        object IPlugin.Create() => Create();
-    }
+    public override PluginInfo GetInfo() => new()
+    {
+        DisplayName = "Manga Dex",
+        Name = "manga-dex",
+        Version = Assembly.GetExecutingAssembly().GetName().Version!
+    };
 }

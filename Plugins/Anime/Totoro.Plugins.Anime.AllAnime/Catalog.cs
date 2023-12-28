@@ -3,6 +3,7 @@ using FlurlGraphQL.Querying;
 using Newtonsoft.Json.Linq;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AllAnime;
 
@@ -55,7 +56,7 @@ internal class Catalog : IAnimeCatalog
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var jObject = await Config.Api
+        var jObject = await ConfigManager<Config>.Current.Api
             .WithGraphQLQuery(SEARCH_QUERY)
             .SetGraphQLVariables(new
             {
@@ -75,7 +76,7 @@ internal class Catalog : IAnimeCatalog
             _ = long.TryParse($"{item?["malId"]}", out long malId);
             _ = long.TryParse($"{item?["aniListId"]}", out long aniListId);
             var title = $"{item?["name"]}";
-            var url = Url.Combine(Config.Url, $"/anime/{item?["_id"]}");
+            var url = Url.Combine(ConfigManager<Config>.Current.Url, $"/anime/{item?["_id"]}");
             var season = "";
             var year = "";
             if (item?["season"]?.HasValues == true)

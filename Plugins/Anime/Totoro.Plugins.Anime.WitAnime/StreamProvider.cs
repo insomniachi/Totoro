@@ -7,6 +7,7 @@ using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Extractors;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.WitAnime;
 
@@ -85,12 +86,12 @@ internal partial class StreamProvider : IAnimeStreamProvider
             {
                 string x when x.Contains("yonaplay") => await ExtractFromMultiUrl(serverUrl),
                 string x when x.Contains("4shared") => await FourSharedExtractor.Extract(serverUrl),
-                string x when x.Contains("soraplay") => await SoraPlayExtractor.Extract(serverUrl, Config.Url),
+                string x when x.Contains("soraplay") => await SoraPlayExtractor.Extract(serverUrl, ConfigManager<Config>.Current.Url),
                 string x when x.Contains("drive.google.com") => await GoogleDriveExtractor.Extract(serverUrl),
-                string x when x.Contains("dailymotion") => await DailyMotionExtractor.Extract(serverUrl, Config.Url),
+                string x when x.Contains("dailymotion") => await DailyMotionExtractor.Extract(serverUrl, ConfigManager<Config>.Current.Url),
                 string x when x.Contains("ok.ru") => await OkRuExtractor.Extract(serverUrl),
                 string x when x.Contains("dood") => await DoodExtractor.Extract(serverUrl, "Dood mirror"),
-                string x when x.Contains("mp4upload.com") => await Mp4UploadExtractor.Extract(serverUrl, Config.Url),
+                string x when x.Contains("mp4upload.com") => await Mp4UploadExtractor.Extract(serverUrl, ConfigManager<Config>.Current.Url),
                 _ => null
             };
         }
@@ -103,7 +104,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
     private async Task<VideoStreamsForEpisode?> ExtractFromMultiUrl(string url)
     {
         var html = await url
-            .WithReferer(Config.Url)
+            .WithReferer(ConfigManager<Config>.Current.Url)
             .WithDefaultUserAgent()
             .GetStringAsync();
 

@@ -8,7 +8,7 @@ namespace Totoro.Core.Services.AniList;
 public class AniListTrackingService : ITrackingService
 {
     private readonly GraphQLHttpClient _anilistClient = new("https://graphql.anilist.co/", new NewtonsoftJsonSerializer());
-    private int? _userId;
+    private string _userName;
 
     public AniListTrackingService(ILocalSettingsService localSettingsService)
     {
@@ -36,18 +36,18 @@ public class AniListTrackingService : ITrackingService
         {
             return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
             {
-                var userId = await GetUserId();
+                var userName = await GetUserName();
 
                 var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
                 {
-                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime, status: MediaListStatus.Current).Build(),
+                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime, status: MediaListStatus.Current).Build(),
                 });
 
                 observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
 
                 response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
                 {
-                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userId: userId, type: MediaType.Anime).Build(),
+                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime, statusNot: MediaListStatus.Current).Build(),
                 });
 
                 observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
@@ -69,7 +69,7 @@ public class AniListTrackingService : ITrackingService
                 var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
                 {
                     Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(),
-                        userId: await GetUserId(),
+                        userName: await GetUserName(),
                         type: MediaType.Anime,
                         status: MediaListStatus.Current)
                     .Build(),
@@ -189,20 +189,20 @@ public class AniListTrackingService : ITrackingService
 
         return DateTime.Today == dt;
     }
-    private async ValueTask<int?> GetUserId()
+    private async ValueTask<string> GetUserName()
     {
-        _userId ??= await FetchUserId();
-        return _userId;
+        _userName ??= await FetchUserName();
+        return _userName;
     }
 
-    public async Task<int> FetchUserId()
+    private async Task<string> FetchUserName()
     {
         var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
-            Query = new QueryQueryBuilder().WithViewer(new UserQueryBuilder().WithId()).Build(),
+            Query = new QueryQueryBuilder().WithViewer(new UserQueryBuilder().WithName()).Build(),
         });
 
-        return response?.Data?.Viewer?.Id ?? 0;
+        return response?.Data?.Viewer?.Name;
     }
 
     private static MediaListCollectionQueryBuilder MediaListCollectionBuilder()

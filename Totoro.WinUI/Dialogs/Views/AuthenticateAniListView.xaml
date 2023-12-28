@@ -2,31 +2,38 @@
     x:Class="Totoro.WinUI.Dialogs.Views.AuthenticateAniListView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Dialogs.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
 
     <Grid Width="550" Height="900">
-        <WebView2
-            x:Name="Webview"
-            Source="{x:Bind ViewModel.AuthUrl, Mode=TwoWay}"
-            Visibility="{x:Bind help:Converters.InvertedBooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
-        <TextBlock
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            FontSize="20"
-            FontWeight="Bold"
-            Text="Authenticated"
-            Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}" />
-        <uc:Loading
-            x:Name="LoadingControl"
-            Grid.Row="1"
-            IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </uc:Loading>
+        <ctk:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+            <ctk:Case Value="True">
+                <Grid>
+                    <ProgressRing IsActive="True" />
+                </Grid>
+            </ctk:Case>
+            <ctk:Case Value="False">
+                <ctk:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsAuthenticated, Mode=OneWay}">
+                    <ctk:Case Value="True">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="20"
+                                FontWeight="Bold"
+                                Text="Authenticated" />
+                        </Grid>
+                    </ctk:Case>
+                    <ctk:Case Value="False">
+                        <Grid>
+                            <WebView2 x:Name="Webview" Source="{x:Bind ViewModel.AuthUrl, Mode=TwoWay}" />
+                        </Grid>
+                    </ctk:Case>
+                </ctk:SwitchPresenter>
+            </ctk:Case>
+        </ctk:SwitchPresenter>
     </Grid>
 </local:AuthenticateAniListViewBase>

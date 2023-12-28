@@ -1,6 +1,7 @@
 ﻿using MalApi;
 using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Totoro.WinUI.Views;
 
@@ -19,6 +20,12 @@ public sealed partial class SeasonalPage : SeasonalPageBase
 
         this.WhenActivated(d =>
         {
+            AnimeListView
+                .Events()
+                .ItemInvoked
+                .Select(x => x.args.InvokedItem)
+                .InvokeCommand(ViewModel.ItemClickedCommand);
+
             this.WhenAnyValue(x => x.ViewModel.Season)
                 .WhereNotNull()
                 .Subscribe(season =>

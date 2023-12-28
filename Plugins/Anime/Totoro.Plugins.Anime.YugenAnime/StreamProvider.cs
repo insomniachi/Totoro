@@ -8,18 +8,19 @@ using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.YugenAnime;
 
 internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnimeStreamProvider, IEnableLogger
 {
-    public Task<int> GetNumberOfStreams(string url) => GetNumberOfStreams(url, Config.StreamType);
+    public Task<int> GetNumberOfStreams(string url) => GetNumberOfStreams(url, ConfigManager<Config>.Current.StreamType);
 
     public async Task<int> GetNumberOfStreams(string url, StreamType streamType)
     {
         var doc = await url.AppendPathSegment("watch").GetHtmlDocumentAsync();
 
-        var episodeText = streamType == StreamType.EnglishSubbed
+        var episodeText = streamType == StreamType.Subbed(Languages.English)
             ? "Episodes"
             : "Episodes (Dub)";
 
@@ -61,7 +62,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         var slug = uri.Segments[^1].TrimEnd('/');
         var number = uri.Segments[^2].TrimEnd('/');
 
-        var baseUrl = Config.Url.TrimEnd('/');
+        var baseUrl = ConfigManager<Config>.Current.Url.TrimEnd('/');
         for (int ep = start; ep <= end; ep++)
         {
             var epUrl = $"{baseUrl}/watch/{number}/{slug}/{ep}/";
@@ -69,7 +70,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             var hasDub = doc.DocumentNode.SelectSingleNode(@"/html/body/main/div/div/div[1]/div[2]/div[2]/div[2]/a")?.InnerText.Trim().StartsWith("Dub") == true;
             var streamKey = GetStreamKey(number, ep, streamType);
 
-            var json = await Config.Url.AppendPathSegment("/api/embed/")
+            var json = await ConfigManager<Config>.Current.Url.AppendPathSegment("/api/embed/")
                 .WithHeader(HeaderNames.XRequestedWith, "XMLHttpRequest")
                 .PostUrlEncodedAsync(new
                 {
@@ -81,7 +82,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             var jObject = JsonNode.Parse(json);
 
             var stream = new VideoStreamsForEpisode { Episode = ep };
-            stream.StreamTypes.AddRange(hasDub ? new[] { StreamType.EnglishSubbed, StreamType.EnglishDubbed } : Enumerable.Empty<StreamType>());
+            stream.StreamTypes.AddRange(hasDub ? [ StreamType.Subbed(Languages.English), StreamType.Dubbed(Languages.English) ] : [ StreamType.Subbed(Languages.English) ]);
             stream.Streams.Add(new VideoStream
             {
                 Resolution = "default",
@@ -92,12 +93,12 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         }
     }
 
-    public IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range) => GetStreams(url, range, Config.StreamType);
+    public IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range) => GetStreams(url, range, ConfigManager<Config>.Current.StreamType);
 
     private static string ToBase64String(string str) => Convert.ToBase64String(Encoding.UTF8.GetBytes(str));
     private static string GetStreamKey(string id, int ep, StreamType streamType)
     {
-        if (streamType == StreamType.EnglishSubbed)
+        if (streamType == StreamType.Subbed(Languages.English))
         {
             return ToBase64String($"{id}|{ep}");
         }

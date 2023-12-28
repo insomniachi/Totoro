@@ -14,7 +14,7 @@ public interface IPluginFactory
     void LoadPlugins(string folder);
     object? CreatePlugin(string name);
     bool SetOptions(string name, PluginOptions options);
-    PluginOptions? GetOptions(string name);
+    PluginOptions? GetCurrentConfig(string name);
 }
 
 public interface IPluginFactory<T> : IPluginFactory

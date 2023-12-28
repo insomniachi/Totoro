@@ -67,56 +67,61 @@
 
         </Grid>
 
-
-
-        <uc:AdaptiveGridView
-            x:Name="AnimeListView"
+        <ctk:SwitchPresenter
             Grid.Row="2"
-            animations:ItemsReorderAnimation.Duration="00:00:00.4000000"
-            ui:ListViewExtensions.Command="{x:Bind ViewModel.ItemClickedCommand}"
-            DesiredWidth="710"
-            IsItemClickEnabled="True"
-            ItemsSource="{x:Bind ViewModel.Anime}"
-            StretchContentForSingleRow="False">
-            <uc:AdaptiveGridView.ItemTemplate>
-                <DataTemplate x:DataType="cm:AnimeModel">
-                    <uc:AnimeCard
-                        x:Name="Card"
-                        Margin="7"
-                        Anime="{x:Bind}"
-                        DisplayMode="DetailedGrid">
-                        <uc:AnimeCard.Flyout>
-                            <MenuFlyout>
-                                <MenuFlyoutItem
-                                    Command="{x:Bind root:App.Commands.UpdateTracking}"
-                                    CommandParameter="{x:Bind}"
-                                    Text="Update">
-                                    <MenuFlyoutItem.Icon>
-                                        <SymbolIcon Symbol="PostUpdate" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                                <MenuFlyoutItem
-                                    Command="{x:Bind root:App.Commands.Watch}"
-                                    CommandParameter="{x:Bind}"
-                                    Text="Watch">
-                                    <MenuFlyoutItem.Icon>
-                                        <SymbolIcon Symbol="Video" />
-                                    </MenuFlyoutItem.Icon>
-                                </MenuFlyoutItem>
-                            </MenuFlyout>
-                        </uc:AnimeCard.Flyout>
-                    </uc:AnimeCard>
-                </DataTemplate>
-            </uc:AdaptiveGridView.ItemTemplate>
-        </uc:AdaptiveGridView>
-
-        <uc:Loading
-            x:Name="LoadingControl"
-            Grid.Row="2"
-            IsLoading="{x:Bind ViewModel.IsLoading, Mode=TwoWay}">
-            <ProgressRing Margin="0,0,12,0" IsActive="True" />
-        </uc:Loading>
-
+            TargetType="x:Boolean"
+            Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+            <ctk:Case Value="True">
+                <Grid>
+                    <ProgressRing IsActive="True" />
+                </Grid>
+            </ctk:Case>
+            <ctk:Case Value="False">
+                <ItemsView
+                    x:Name="AnimeListView"
+                    IsItemInvokedEnabled="True"
+                    ItemsSource="{x:Bind ViewModel.Anime}">
+                    <ItemsView.ItemTemplate>
+                        <DataTemplate x:DataType="cm:AnimeModel">
+                            <ItemContainer>
+                                <uc:AnimeCard
+                                    x:Name="Card"
+                                    Width="710"
+                                    Anime="{x:Bind}"
+                                    DisplayMode="DetailedGrid">
+                                    <uc:AnimeCard.Flyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem
+                                                Command="{x:Bind root:App.Commands.UpdateTracking}"
+                                                CommandParameter="{x:Bind}"
+                                                Text="Update">
+                                                <MenuFlyoutItem.Icon>
+                                                    <SymbolIcon Symbol="PostUpdate" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                            <MenuFlyoutItem
+                                                Command="{x:Bind root:App.Commands.Watch}"
+                                                CommandParameter="{x:Bind}"
+                                                Text="Watch">
+                                                <MenuFlyoutItem.Icon>
+                                                    <SymbolIcon Symbol="Video" />
+                                                </MenuFlyoutItem.Icon>
+                                            </MenuFlyoutItem>
+                                        </MenuFlyout>
+                                    </uc:AnimeCard.Flyout>
+                                </uc:AnimeCard>
+                            </ItemContainer>
+                        </DataTemplate>
+                    </ItemsView.ItemTemplate>
+                    <ItemsView.Layout>
+                        <UniformGridLayout MinColumnSpacing="7" MinRowSpacing="7" />
+                    </ItemsView.Layout>
+                    <ItemsView.ItemTransitionProvider>
+                        <LinedFlowLayoutItemCollectionTransitionProvider />
+                    </ItemsView.ItemTransitionProvider>
+                </ItemsView>
+            </ctk:Case>
+        </ctk:SwitchPresenter>
 
         <CommandBar
             Grid.Row="3"

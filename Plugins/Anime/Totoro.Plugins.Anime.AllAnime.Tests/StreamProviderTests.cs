@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Flurl;
+using Totoro.Plugins.Anime.Models;
+using Totoro.Plugins.Options;
 using Xunit.Abstractions;
 
 namespace Totoro.Plugins.Anime.AllAnime.Tests;
@@ -15,8 +17,8 @@ public class StreamProviderTests(ITestOutputHelper output)
     private readonly JsonSerializerOptions _searializerOption = new() { WriteIndented = true };
     private readonly Dictionary<string, string> _urlMap = new()
     {
-        { Hyouka, Url.Combine(Config.Url, "/anime/dxxqKsaMhdrdQxczP") },
-        { Hyakkano, Url.Combine(Config.Url, "/anime/pp9g8Qt7iem4RMjbJ") }
+        { Hyouka, Url.Combine(ConfigManager<Config>.Current.Url, "/anime/dxxqKsaMhdrdQxczP") },
+        { Hyakkano, Url.Combine(ConfigManager<Config>.Current.Url, "/anime/pp9g8Qt7iem4RMjbJ") }
     };
     private readonly bool _allEpisodes = false;
 
@@ -30,7 +32,7 @@ public class StreamProviderTests(ITestOutputHelper output)
         var sut = new StreamProvider();
 
         // act
-        var actual = await sut.GetNumberOfStreams(url, Models.StreamType.EnglishSubbed);
+        var actual = await sut.GetNumberOfStreams(url, Models.StreamType.Subbed(Languages.English));
 
         // assert
         Assert.Equal(expected, actual);
@@ -46,7 +48,7 @@ public class StreamProviderTests(ITestOutputHelper output)
         var sut = new StreamProvider();
 
         // act
-        var result = await sut.GetStreams(url, _allEpisodes ? Range.All : 12..12, Models.StreamType.EnglishSubbed).ToListAsync();
+        var result = await sut.GetStreams(url, _allEpisodes ? Range.All : 12..12, Models.StreamType.Subbed(Languages.English)).ToListAsync();
 
         Assert.NotEmpty(result);
         foreach (var item in result)

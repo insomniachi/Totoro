@@ -7,6 +7,7 @@ using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
@@ -113,7 +114,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     private async Task<AnimePaheEpisodePage> GetSessionPage(string releaseId, int page)
     {
-        return await Config.Url.AppendPathSegment("api")
+        return await ConfigManager<Config>.Current.Url.AppendPathSegment("api")
             .SetQueryParams(new
             {
                 m = "release",
@@ -126,7 +127,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     private async Task<Dictionary<string, string>> GetStreamUrl(string releaseId, string streamSession)
     {
-        var streamData = await Config.Url.AppendPathSegments("play", releaseId, streamSession).GetStringAsync();
+        var streamData = await ConfigManager<Config>.Current.Url.AppendPathSegments("play", releaseId, streamSession).GetStringAsync();
         var result = new Dictionary<string, string>();
 
         foreach (var match in StreamsRegex().Matches(streamData).Cast<Match>())

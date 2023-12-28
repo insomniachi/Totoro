@@ -3,6 +3,7 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.GogoAnime;
 
@@ -18,7 +19,7 @@ internal class Catalog : IAnimeCatalog
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var doc = await Config.Url.AppendPathSegment("/search.html")
+        var doc = await ConfigManager<Config>.Current.Url.AppendPathSegment("/search.html")
                 .SetQueryParam("keyword", query)
                 .GetHtmlDocumentAsync();
 
@@ -32,7 +33,7 @@ internal class Catalog : IAnimeCatalog
             yield return new SearchResult
             {
                 Title = title,
-                Url = Url.Combine(Config.Url, url),
+                Url = Url.Combine(ConfigManager<Config>.Current.Url, url),
                 Image = image,
                 Year = year
             };

@@ -103,8 +103,8 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     private async Task AddToList(AnimeModel a) => await _viewService.UpdateTracking(a);
     private static Func<AnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
     private static Func<AnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
-                                                                                      x.Title.ToLower().Contains(title) ||
-                                                                                      (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true);
+                                                                                      x.Title.Contains(title, StringComparison.CurrentCultureIgnoreCase) ||
+                                                                                      (x.AlternativeTitles?.Any(x => x.Contains(title, StringComparison.CurrentCultureIgnoreCase)) ?? true);
     public static Season Current => AnimeHelpers.CurrentSeason();
     public static Season Next => AnimeHelpers.NextSeason();
     public static Season Prev => AnimeHelpers.PrevSeason();

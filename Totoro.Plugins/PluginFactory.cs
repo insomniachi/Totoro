@@ -39,18 +39,28 @@ public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
             return false;
         }
 
-        plugin.Module.SetOptions(options);
+        plugin.Module.SetConfig(options);
         return true;
     }
 
-    public PluginOptions? GetOptions(string name)
+    public PluginOptions? GetCurrentConfig(string name)
     {
         if (_plugins.FirstOrDefault(x => x.Info.Name == name) is not { } plugin)
         {
             return default;
         }
 
-        return plugin.Module.GetOptions();
+        return plugin.Module.GetCurrentConfig();
+    }
+
+    public PluginOptions? GetDefaultConfig(string name)
+    {
+        if (_plugins.FirstOrDefault(x => x.Info.Name == name) is not { } plugin)
+        {
+            return default;
+        }
+
+        return plugin.Module.GetDefaultConfig();
     }
 
     public void LoadPlugin(IPlugin<T> plugIn)

@@ -3,6 +3,7 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.WitAnime;
 
@@ -18,7 +19,7 @@ internal class Catalog : IAnimeCatalog
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var doc = await Config.Url
+        var doc = await ConfigManager<Config>.Current.Url
             .SetQueryParams(new
             {
                 search_param = "animes",

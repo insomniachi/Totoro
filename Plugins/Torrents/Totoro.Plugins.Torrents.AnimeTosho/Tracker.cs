@@ -4,6 +4,7 @@ using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 using Totoro.Plugins.Torrents.Contracts;
 using Totoro.Plugins.Torrents.Models;
 
@@ -13,10 +14,10 @@ internal partial class Tracker : ITorrentTracker
 {
     public async IAsyncEnumerable<TorrentModel> Recents()
     {
-        var doc = await Config.Url
+        var doc = await ConfigManager<Config>.Current.Url
             .SetQueryParam("filter[0][t]", "nyaa_class")
-            .SetQueryParam("filter[0][v]", Config.Filter.ToQueryParamter())
-            .SetQueryParam("order", Config.Sort.ToQueryParamter())
+            .SetQueryParam("filter[0][v]", ConfigManager<Config>.Current.Filter.ToQueryParamter())
+            .SetQueryParam("order", ConfigManager<Config>.Current.Sort.ToQueryParamter())
             .GetHtmlDocumentAsync();
 
         foreach (var item in Parse(doc))
@@ -27,12 +28,12 @@ internal partial class Tracker : ITorrentTracker
 
     public async IAsyncEnumerable<TorrentModel> Search(string query)
     {
-        var doc = await Config.Url
+        var doc = await ConfigManager<Config>.Current.Url
             .AppendPathSegment("search")
             .SetQueryParam("q", query)
             .SetQueryParam("filter[0][t]", "nyaa_class")
-            .SetQueryParam("filter[0][v]", Config.Filter.ToQueryParamter())
-            .SetQueryParam("order", Config.Sort.ToQueryParamter())
+            .SetQueryParam("filter[0][v]", ConfigManager<Config>.Current.Filter.ToQueryParamter())
+            .SetQueryParam("order", ConfigManager<Config>.Current.Sort.ToQueryParamter())
             .GetHtmlDocumentAsync();
 
         foreach (var item in Parse(doc))

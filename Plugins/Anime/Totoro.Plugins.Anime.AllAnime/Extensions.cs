@@ -8,9 +8,9 @@ internal static class Extensions
     {
         return streamType switch
         {
-            StreamType.EnglishSubbed => "sub",
-            StreamType.EnglishDubbed => "dub",
-            StreamType.Raw => "raw",
+            { AudioLanguage: Languages.Japanese, SubtitleLanguage: Languages.English } => "sub",
+            { AudioLanguage: Languages.English, SubtitleLanguage: _ } => "dub",
+            { AudioLanguage: Languages.Japanese, SubtitleLanguage: "" } => "raw",
             _ => throw new NotSupportedException(streamType.ToString())
         };
     }

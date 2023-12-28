@@ -1,11 +1,13 @@
-﻿namespace Totoro.Plugins.MediaDetection.Generic;
+﻿using Totoro.Plugins.Options;
 
-public class MpcConfig
+namespace Totoro.Plugins.MediaDetection.Generic;
+
+public class MpcConfig : ConfigObject
 {
-    public static string FileName { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"MPC-HC\mpc-hc64.exe");
+    public string FileName { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), @"MPC-HC\mpc-hc64.exe");
 }
 
-public class MpvConfig
+public class MpvConfig : ConfigObject
 {
-    public static string FileName { get; set; } = @"";
+    public string FileName { get; set; } = @"";
 }

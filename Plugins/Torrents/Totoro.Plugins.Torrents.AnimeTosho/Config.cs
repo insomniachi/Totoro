@@ -1,8 +1,18 @@
-﻿namespace Totoro.Plugins.Torrents.AnimeTosho;
+﻿using System.ComponentModel;
+using Totoro.Plugins.Options;
 
-internal static class Config
+namespace Totoro.Plugins.Torrents.AnimeTosho;
+
+public class Config : ConfigObject
 {
-    internal static string Url { get; set; } = @"https://animetosho.org/";
-    internal static Filter Filter { get; set; } = Filter.TrustedOnly;
-    internal static Sort Sort { get; set; } = Sort.NewestFirst;
+    [Description("Url to home page")]
+    [Glyph(Glyphs.Url)]
+    public string Url { get; set; } = @"https://animetosho.org/";
+
+    [Glyph(Glyphs.Filter)]
+    public Filter Filter { get; set; } = Filter.TrustedOnly;
+
+    [Glyph(Glyphs.Sort)]
+    [DisplayName("Sort By")]
+    public Sort Sort { get; set; } = Sort.NewestFirst;
 }
