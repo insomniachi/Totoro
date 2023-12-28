@@ -2,6 +2,8 @@
     x:Class="Totoro.WinUI.Views.AboutAnimePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:b="using:Totoro.WinUI.Behaviors"
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
@@ -193,10 +195,13 @@
                             IsItemInvokedEnabled="True"
                             ItemInvoked="PlayVideo"
                             ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}">
+                            <Interactivity:Interaction.Behaviors>
+                                <b:AdaptiveItemsViewBehavior DesiredWidth="360" Spacing="5" />
+                            </Interactivity:Interaction.Behaviors>
                             <ItemsView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Video">
-                                    <ItemContainer>
-                                        <Grid Margin="3">
+                                    <ItemContainer Height="240">
+                                        <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="*" />
                                                 <RowDefinition Height="Auto" />
@@ -213,7 +218,7 @@
                                 </DataTemplate>
                             </ItemsView.ItemTemplate>
                             <ItemsView.Layout>
-                                <UniformGridLayout MinItemHeight="240" MinItemWidth="360" />
+                                <UniformGridLayout MinColumnSpacing="5" MinRowSpacing="5" />
                             </ItemsView.Layout>
                         </ItemsView>
                     </ctk:Case>

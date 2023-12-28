@@ -34,10 +34,4 @@ public sealed partial class DiscoverPage : DiscoverPageBase
 
         });
     }
-
-    private void MainGrid_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        var element = (Grid)sender;
-        element.Width = ViewModel.CardWidth;
-    }
 }

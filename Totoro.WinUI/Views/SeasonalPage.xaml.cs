@@ -2,6 +2,9 @@
 using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
 using ReactiveMarbles.ObservableEvents;
+using Totoro.WinUI.UserControls;
+using Totoro.WinUI.Helpers;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Totoro.WinUI.Views;
 
