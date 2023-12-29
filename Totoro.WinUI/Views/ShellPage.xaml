@@ -48,6 +48,15 @@
             </NavigationView.PaneHeader>
             <NavigationView.MenuItems>
                 <NavigationViewItem
+                    x:Name="DiscoverAnimeItem"
+                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverViewModel"
+                    Content="Discover"
+                    Icon="World">
+                    <NavigationViewItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="D" Modifiers="Menu" />
+                    </NavigationViewItem.KeyboardAccelerators>
+                </NavigationViewItem>
+                <!--<NavigationViewItem
                     Content="Discover"
                     Icon="World"
                     IsExpanded="true">
@@ -66,7 +75,7 @@
                             Content="Manga"
                             Icon="{ui:FontIcon Glyph=&#xE736;}" />
                     </NavigationViewItem.MenuItems>
-                </NavigationViewItem>
+                </NavigationViewItem>-->
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.UserListViewModel"
                     Content="My List"

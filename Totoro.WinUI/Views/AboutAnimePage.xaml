@@ -195,9 +195,6 @@
                             IsItemInvokedEnabled="True"
                             ItemInvoked="PlayVideo"
                             ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}">
-                            <Interactivity:Interaction.Behaviors>
-                                <b:AdaptiveItemsViewBehavior DesiredWidth="360" Spacing="5" />
-                            </Interactivity:Interaction.Behaviors>
                             <ItemsView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Video">
                                     <ItemContainer Height="240">
@@ -218,7 +215,12 @@
                                 </DataTemplate>
                             </ItemsView.ItemTemplate>
                             <ItemsView.Layout>
-                                <UniformGridLayout MinColumnSpacing="5" MinRowSpacing="5" />
+                                <UniformGridLayout
+                                    ItemsStretch="Fill"
+                                    MinColumnSpacing="5"
+                                    MinItemHeight="240"
+                                    MinItemWidth="360"
+                                    MinRowSpacing="5" />
                             </ItemsView.Layout>
                         </ItemsView>
                     </ctk:Case>
@@ -247,12 +249,16 @@
                             <ItemsView.ItemTemplate>
                                 <DataTemplate x:DataType="models:AnimeModel">
                                     <ItemContainer>
-                                        <usercontrols:AnimeCard Margin="3" Anime="{x:Bind}" />
+                                        <usercontrols:AnimeCard Anime="{x:Bind}" />
                                     </ItemContainer>
                                 </DataTemplate>
                             </ItemsView.ItemTemplate>
                             <ItemsView.Layout>
-                                <UniformGridLayout MinItemWidth="{StaticResource MinCardWidth}" />
+                                <UniformGridLayout
+                                    ItemsStretch="Fill"
+                                    MinColumnSpacing="3"
+                                    MinItemWidth="{StaticResource MinCardWidth}"
+                                    MinRowSpacing="3" />
                             </ItemsView.Layout>
                         </ItemsView>
                     </ctk:Case>

@@ -2,12 +2,10 @@
     x:Class="Totoro.WinUI.Views.DiscoverMangaPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pc="using:Totoro.Plugins.Manga.Contracts"
-    xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
     xmlns:views="using:Totoro.WinUI.Views"
     x:Name="Page"
@@ -59,11 +57,7 @@
                                 <ItemsView.ItemTemplate>
                                     <DataTemplate x:DataType="pc:ICatalogItem">
                                         <ItemContainer>
-                                            <Grid
-                                                x:Name="MainGrid"
-                                                Width="190"
-                                                Height="320"
-                                                Margin="3">
+                                            <Grid x:Name="MainGrid">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition />
                                                     <RowDefinition Height="Auto" />
@@ -108,7 +102,12 @@
                                     </DataTemplate>
                                 </ItemsView.ItemTemplate>
                                 <ItemsView.Layout>
-                                    <UniformGridLayout />
+                                    <UniformGridLayout
+                                        ItemsStretch="Fill"
+                                        MinColumnSpacing="3"
+                                        MinItemHeight="320"
+                                        MinItemWidth="190"
+                                        MinRowSpacing="3" />
                                 </ItemsView.Layout>
                                 <ItemsView.ItemTransitionProvider>
                                     <LinedFlowLayoutItemCollectionTransitionProvider />

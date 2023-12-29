@@ -84,9 +84,6 @@
                     x:Name="AnimeListView"
                     IsItemInvokedEnabled="True"
                     ItemsSource="{x:Bind ViewModel.Anime}">
-                    <Interactivity:Interaction.Behaviors>
-                        <b:AdaptiveItemsViewBehavior DesiredWidth="710" Spacing="7" />
-                    </Interactivity:Interaction.Behaviors>
                     <ItemsView.ItemTemplate>
                         <DataTemplate x:DataType="cm:AnimeModel">
                             <ItemContainer>
@@ -119,7 +116,11 @@
                         </DataTemplate>
                     </ItemsView.ItemTemplate>
                     <ItemsView.Layout>
-                        <UniformGridLayout MinColumnSpacing="7" MinRowSpacing="7" />
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="7"
+                            MinItemWidth="710"
+                            MinRowSpacing="7" />
                     </ItemsView.Layout>
                     <ItemsView.ItemTransitionProvider>
                         <LinedFlowLayoutItemCollectionTransitionProvider />

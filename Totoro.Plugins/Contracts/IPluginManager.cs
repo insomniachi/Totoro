@@ -15,6 +15,7 @@ public interface IPluginFactory
     object? CreatePlugin(string name);
     bool SetOptions(string name, PluginOptions options);
     PluginOptions? GetCurrentConfig(string name);
+    IEnumerable<PluginInfo> Plugins { get; }
 }
 
 public interface IPluginFactory<T> : IPluginFactory

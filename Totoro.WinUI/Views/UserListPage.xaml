@@ -100,7 +100,7 @@
                                         </DataTemplate>
                                     </ItemsView.ItemTemplate>
                                     <ItemsView.Layout>
-                                        <UniformGridLayout />
+                                        <UniformGridLayout ItemsStretch="Fill" />
                                     </ItemsView.Layout>
                                     <Interactivity:Interaction.Behaviors>
                                         <b:ItemsViewBehavior Settings="{x:Bind ViewModel.GridViewSettings}" />

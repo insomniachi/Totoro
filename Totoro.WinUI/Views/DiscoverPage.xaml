@@ -42,6 +42,11 @@
                                 PlaceholderText="Search"
                                 QueryIcon="Find"
                                 Text="{x:Bind ViewModel.FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <ComboBox
+                                VerticalAlignment="Center"
+                                DisplayMemberPath="DisplayName"
+                                ItemsSource="{x:Bind ViewModel.Plugins}"
+                                SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
                             <Button Command="{x:Bind ViewModel.LoadMore}" Content="Load More" />
                         </StackPanel>
 
@@ -50,7 +55,7 @@
                     <ctk:SwitchPresenter
                         Grid.Row="2"
                         TargetType="x:Boolean"
-                        Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+                        Value="{x:Bind ViewModel.IsEpisodesLoading, Mode=OneWay}">
                         <ctk:Case Value="True">
                             <Grid>
                                 <ProgressRing IsActive="True" />
@@ -62,9 +67,6 @@
                                     x:Name="EpisodeView"
                                     IsItemInvokedEnabled="True"
                                     ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}">
-                                    <Interactivity:Interaction.Behaviors>
-                                        <b:AdaptiveItemsViewBehavior DesiredWidth="{x:Bind ViewModel.CardWidth, Mode=OneWay}" Spacing="5" />
-                                    </Interactivity:Interaction.Behaviors>
                                     <ItemsView.ItemTemplate>
                                         <DataTemplate x:DataType="pc:IAiredAnimeEpisode">
                                             <ItemContainer Height="320">
@@ -140,7 +142,11 @@
                                         </DataTemplate>
                                     </ItemsView.ItemTemplate>
                                     <ItemsView.Layout>
-                                        <UniformGridLayout MinColumnSpacing="5" MinRowSpacing="5" />
+                                        <UniformGridLayout
+                                            ItemsStretch="Fill"
+                                            MinColumnSpacing="5"
+                                            MinItemWidth="{x:Bind ViewModel.CardWidth, Mode=OneWay}"
+                                            MinRowSpacing="5" />
                                     </ItemsView.Layout>
                                     <ItemsView.ItemTransitionProvider>
                                         <LinedFlowLayoutItemCollectionTransitionProvider />
@@ -173,12 +179,17 @@
                             PlaceholderText="Search"
                             QueryIcon="Find"
                             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ComboBox
+                            VerticalAlignment="Center"
+                            DisplayMemberPath="DisplayName"
+                            ItemsSource="{x:Bind ViewModel.Plugins}"
+                            SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
                     </StackPanel>
 
                     <ctk:SwitchPresenter
                         Grid.Row="1"
                         TargetType="x:Boolean"
-                        Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+                        Value="{x:Bind ViewModel.IsSearchResultsLoading, Mode=OneWay}">
                         <ctk:Case Value="True">
                             <Grid>
                                 <ProgressRing IsActive="True" />
