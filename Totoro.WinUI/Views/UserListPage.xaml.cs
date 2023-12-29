@@ -75,23 +75,13 @@ public sealed partial class UserListPage : UserListPageBase
             QuickAdd
             .Events()
             .Click
-            .Do(_ => ViewModel.ClearSearch())
-            .Subscribe(_ => QuickAddPopup.IsOpen ^= true)
+            .Subscribe(async _ => await ViewModel.ShowSearchDialog())
             .DisposeWith(d);
 
             GenresButton
             .Events()
             .Click
             .Subscribe(_ => GenresTeachingTip.IsOpen ^= true);
-
-            QuickAddResult
-            .Events()
-            .ItemClick
-            .Select(args => args.ClickedItem as IAnimeModel)
-            .Do(_ => QuickAddPopup.IsOpen = false)
-            .SelectMany(model => ViewModel.UpdateAnime(model))
-            .Subscribe()
-            .DisposeWith(d);
         });
 
         ViewInBrowser = ReactiveCommand.Create<AnimeModel>(async anime =>

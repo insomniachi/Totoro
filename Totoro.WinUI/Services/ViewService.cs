@@ -1,6 +1,9 @@
-﻿using FuzzySharp;
+﻿using System.ComponentModel;
+using FuzzySharp;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Splat;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
@@ -13,34 +16,49 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinUIEx;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Application = Microsoft.UI.Xaml.Application;
 
 namespace Totoro.WinUI.Services;
 
-public class ViewService : IViewService, IEnableLogger
+public class ViewService(IContentDialogService contentDialogService,
+                         IAnimeServiceContext animeService,
+                         IToastService toastService,
+                         INameService nameService) : IViewService, IEnableLogger
 {
-    private readonly IContentDialogService _contentDialogService;
-    private readonly IAnimeServiceContext _animeService;
-    private readonly IToastService _toastService;
-    private readonly INameService _nameService;
-    private readonly ICommand _copyToClipboard;
-
-
-    public ViewService(IContentDialogService contentDialogService,
-                       IAnimeServiceContext animeService,
-                       IToastService toastService,
-                       INameService nameService)
+    private readonly IContentDialogService _contentDialogService = contentDialogService;
+    private readonly IAnimeServiceContext _animeService = animeService;
+    private readonly IToastService _toastService = toastService;
+    private readonly INameService _nameService = nameService;
+    private readonly ICommand _copyToClipboard = ReactiveCommand.Create<Exception>(ex =>
     {
-        _contentDialogService = contentDialogService;
-        _animeService = animeService;
-        _toastService = toastService;
-        _nameService = nameService;
-        _copyToClipboard = ReactiveCommand.Create<Exception>(ex =>
+        var package = new DataPackage();
+        package.SetText(ex.ToString());
+        Clipboard.SetContent(package);
+    });
+
+    private static async Task ShowContentDialog<TViewModel>(TViewModel vm)
+        where TViewModel: class, INotifyPropertyChanged
+    {
+        var view = App.GetService<IViewFor<TViewModel>>();
+        view.ViewModel = vm;
+
+        var contentDialog = (ContentDialog)view;
+        contentDialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
+        contentDialog.XamlRoot = App.MainWindow.Content.XamlRoot;
+        contentDialog.DefaultButton = ContentDialogButton.Primary;
+        contentDialog.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            var package = new DataPackage();
-            package.SetText(ex.ToString());
-            Clipboard.SetContent(package);
-        });
+            if (!e.IsInertial)
+            {
+                contentDialog.Margin = new Thickness(contentDialog.Margin.Left + e.Delta.Translation.X,
+                                                     contentDialog.Margin.Top + e.Delta.Translation.Y,
+                                                     contentDialog.Margin.Left - e.Delta.Translation.X,
+                                                     contentDialog.Margin.Top - e.Delta.Translation.Y);
+            }
+        };
+
+        await contentDialog.ShowAsync();
     }
 
     public async Task<Unit> UpdateTracking(IAnimeModel anime)
@@ -453,6 +471,12 @@ public class ViewService : IViewService, IEnableLogger
             d.IsPrimaryButtonEnabled = true;
             d.PrimaryButtonText = "Close";
         });
+    }
+
+    public async Task ShowSearchListServiceDialog()
+    {
+        var vm = App.GetService<SearchListServiceViewModel>();
+        await ShowContentDialog(vm);
     }
 
     public async Task PromptAnimeName(long id)

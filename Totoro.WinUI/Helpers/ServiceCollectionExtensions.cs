@@ -129,6 +129,8 @@ public static class ServiceCollectionExtensions
         services.AddPage<ConfigureProviderViewModel, ConfigureProviderView>();
         services.AddPage<RequestRatingViewModel, RequestRatingView>();
         services.AddPage<PluginStoreViewModel, PluginStoreView>();
+        services.AddPage<SearchListServiceViewModel, SearchListServicePage>();
+
         return services;
     }
 

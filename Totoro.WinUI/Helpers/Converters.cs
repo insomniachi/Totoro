@@ -67,6 +67,8 @@ public static partial class Converters
 
     public static Visibility NullToVisibility(object value) => value is null ? Visibility.Collapsed : Visibility.Visible;
 
+    public static Visibility InvertedNullToVisibility(object value) => value is null ? Visibility.Visible : Visibility.Collapsed;
+
     public static Visibility StringToVisibility(string value) => string.IsNullOrEmpty(value) ? Visibility.Collapsed : Visibility.Visible;
 
     public static Brush AiringStatusToBrush(AiringStatus status) => status switch

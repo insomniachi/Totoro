@@ -91,6 +91,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Dialogs\Views\SearchListServicePage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Media\Flyleaf\FlyleafTransportControls.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -231,5 +234,9 @@
 
 	<ItemGroup>
 	  <PRIResource Remove="Media\Vlc\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
 	</ItemGroup>
 </Project>

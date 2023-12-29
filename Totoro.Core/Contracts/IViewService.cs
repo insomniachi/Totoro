@@ -22,4 +22,5 @@ public interface IViewService
     Task UnhandledException(Exception ex);
     Task ShowPluginStore(string pluginType);
     Task PromptAnimeName(long id);
+    Task ShowSearchListServiceDialog();
 }

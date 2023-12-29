@@ -39,13 +39,10 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     private readonly ITrackingServiceContext _trackingService;
     private readonly IViewService _viewService;
     private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
-    private readonly SourceCache<AnimeModel, long> _searchCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
-    private readonly ReadOnlyObservableCollection<AnimeModel> _searchResults;
     private readonly HashSet<string> _genres = [];
 
     public UserListViewModel(ITrackingServiceContext trackingService,
-                             IAnimeServiceContext animeService,
                              IViewService viewService,
                              ISettings settings,
                              IConnectivityService connectivityService,
@@ -110,22 +107,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Subscribe()
             .DisposeWith(Garbage);
 
-        _searchCache
-            .Connect()
-            .RefCount()
-            .Bind(out _searchResults)
-            .DisposeMany()
-            .Subscribe()
-            .DisposeWith(Garbage);
-
-        this.WhenAnyValue(x => x.QuickAddSearchText)
-            .Where(text => text is { Length: > 3 })
-            .Throttle(TimeSpan.FromMilliseconds(500))
-            .ObserveOn(RxApp.TaskpoolScheduler)
-            .SelectMany(animeService.GetAnime)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(list => _searchCache.EditDiff(list, (first, second) => first.Id == second.Id));
-
         connectivityService
             .Connected
             .Subscribe(_ => FetchAnime())
@@ -154,8 +135,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public DisplayMode Mode { get; set; }
-    [Reactive] public string SearchText { get; set; }
-    [Reactive] public string QuickAddSearchText { get; set; }
     [Reactive] public List<string> Genres { get; set; }
     [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
     [Reactive] public DataGridSettings DataGridSettings { get; set; }
@@ -166,7 +145,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public ListServiceType ListType { get; }
     public bool IsAuthenticated { get; }
-    public ReadOnlyObservableCollection<AnimeModel> QuickSearchResults => _searchResults;
     public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
     public List<string> SortableProperties { get; } = ["Title", "Mean Score", "User Score", "Date Started", "Date Completed", "Last Updated", "Type", "Next Episode"];
     public ICommand ChangeCurrentViewCommand { get; }
@@ -188,6 +166,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
         return Task.CompletedTask;
     }
+
+    public async Task ShowSearchDialog() => await _viewService.ShowSearchListServiceDialog();
 
     private void FetchAnime()
     {
@@ -238,12 +218,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     }
 
     public async Task<Unit> UpdateAnime(IAnimeModel model) => await _viewService.UpdateTracking(model);
-
-    public void ClearSearch()
-    {
-        QuickAddSearchText = string.Empty;
-        _searchCache.Clear();
-    }
 
     private static IComparer<AnimeModel> GetSortComparer(DataGridSort sort)
     {

@@ -24,6 +24,12 @@ public class TotoroCommands : IEnableLogger
                           ISettings settings)
     {
         UpdateTracking = ReactiveCommand.CreateFromTask<AnimeModel>(viewService.UpdateTracking);
+        AddToPlanToWatch = ReactiveCommand.Create<AnimeModel>(anime =>
+        {
+            trackingServiceContext.Update(anime.Id, new Tracking { Status = AnimeStatus.PlanToWatch })
+                                  .ObserveOn(RxApp.MainThreadScheduler)
+                                  .Subscribe(tracking => anime.Tracking = tracking);
+        });
 
         Watch = ReactiveCommand.Create<object>(param =>
         {
@@ -211,6 +217,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand DecrementTracking { get; }
     public ICommand ShowPluginsStore { get; }
     public ICommand SetName { get; }
+    public ICommand AddToPlanToWatch { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)
     {
