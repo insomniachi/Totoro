@@ -1,9 +1,10 @@
 using ReactiveMarbles.ObservableEvents;
 using Totoro.WinUI.Dialogs.ViewModels;
+using Totoro.WinUI.UserControls;
 
 namespace Totoro.WinUI.Dialogs.Views;
 
-public class SubmitTimeStampsViewBase : ReactivePage<SubmitTimeStampsViewModel> { }
+public class SubmitTimeStampsViewBase : ReactiveContentDialog<SubmitTimeStampsViewModel> { }
 
 public sealed partial class SubmitTimeStampsView : SubmitTimeStampsViewBase
 {
@@ -32,5 +33,22 @@ public sealed partial class SubmitTimeStampsView : SubmitTimeStampsViewBase
             .InvokeCommand(ViewModel.SetEndPosition)
             .DisposeWith(d);
         });
+    }
+
+    private void SubmitTimeStampsViewBase_CloseButtonClick(Microsoft.UI.Xaml.Controls.ContentDialog sender, Microsoft.UI.Xaml.Controls.ContentDialogButtonClickEventArgs args)
+    {
+        ViewModel.HandleClose = false;
+    }
+
+    private void SubmitTimeStampsViewBase_Closing(Microsoft.UI.Xaml.Controls.ContentDialog sender, Microsoft.UI.Xaml.Controls.ContentDialogClosingEventArgs args)
+    {
+        if (ViewModel.HandleClose)
+        {
+            args.Cancel = true;
+        }
+        else
+        {
+            ViewModel.MediaPlayer.Pause();
+        }
     }
 }

@@ -11,6 +11,7 @@
     x:Name="Page"
     Title="Search"
     CloseButtonText="Close"
+    DefaultButton="Close"
     mc:Ignorable="d">
 
     <Grid

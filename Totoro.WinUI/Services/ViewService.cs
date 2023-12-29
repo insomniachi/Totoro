@@ -2,12 +2,9 @@
 using FuzzySharp;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Splat;
-using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
-using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Dialogs.ViewModels;
@@ -16,7 +13,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinUIEx;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Application = Microsoft.UI.Xaml.Application;
 
 namespace Totoro.WinUI.Services;
@@ -37,44 +33,41 @@ public class ViewService(IContentDialogService contentDialogService,
         Clipboard.SetContent(package);
     });
 
-    private static async Task ShowContentDialog<TViewModel>(TViewModel vm)
+    private static async Task<TViewModel> ShowContentDialog<TViewModel>(Action<TViewModel> configure = null, bool allowMoving = true)
         where TViewModel: class, INotifyPropertyChanged
     {
         var view = App.GetService<IViewFor<TViewModel>>();
+        var vm = App.GetService<TViewModel>();
+        configure?.Invoke(vm);
         view.ViewModel = vm;
 
         var contentDialog = (ContentDialog)view;
         contentDialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
         contentDialog.XamlRoot = App.MainWindow.Content.XamlRoot;
-        contentDialog.DefaultButton = ContentDialogButton.Primary;
-        contentDialog.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
+        
+        if (allowMoving)
         {
-            if (!e.IsInertial)
+            contentDialog.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
             {
-                contentDialog.Margin = new Thickness(contentDialog.Margin.Left + e.Delta.Translation.X,
-                                                     contentDialog.Margin.Top + e.Delta.Translation.Y,
-                                                     contentDialog.Margin.Left - e.Delta.Translation.X,
-                                                     contentDialog.Margin.Top - e.Delta.Translation.Y);
-            }
-        };
+                if (!e.IsInertial)
+                {
+                    contentDialog.Margin = new Thickness(contentDialog.Margin.Left + e.Delta.Translation.X,
+                                                         contentDialog.Margin.Top + e.Delta.Translation.Y,
+                                                         contentDialog.Margin.Left - e.Delta.Translation.X,
+                                                         contentDialog.Margin.Top - e.Delta.Translation.Y);
+                }
+            }; 
+        }
 
         await contentDialog.ShowAsync();
+        return vm;
     }
 
     public async Task<Unit> UpdateTracking(IAnimeModel anime)
     {
-        var vm = App.GetService<UpdateAnimeStatusViewModel>();
-        vm.Anime = anime;
-
-        var result = await _contentDialogService.ShowDialog(vm, d =>
+        await ShowContentDialog<UpdateAnimeStatusViewModel>(vm =>
         {
-            d.Title = anime.Title;
-            d.PrimaryButtonText = "Update";
-            d.PrimaryButtonCommand = vm.Update;
-            d.SecondaryButtonText = "Delete";
-            d.IsSecondaryButtonEnabled = true;
-            d.SecondaryButtonCommand = vm.Delete;
-            d.CloseButtonText = "Cancel";
+            vm.Anime = anime;
         });
 
         return Unit.Default;
@@ -102,28 +95,23 @@ public class ViewService(IContentDialogService contentDialogService,
 
     public async Task<ICatalogItem> ChoooseSearchResult(ICatalogItem closestMatch, List<ICatalogItem> searchResults, string providerType)
     {
-        var vm = App.GetService<ChooseSearchResultViewModel>();
-        vm.SetValues(searchResults);
-        vm.SelectedSearchResult = closestMatch;
-        vm.SelectedProviderType = providerType;
-
-        await _contentDialogService.ShowDialog(vm, d =>
+        var viewModel = await ShowContentDialog<ChooseSearchResultViewModel>(vm =>
         {
-            d.Title = "Choose title";
-            d.IsPrimaryButtonEnabled = false;
-            d.IsSecondaryButtonEnabled = false;
-            d.CloseButtonText = "Ok";
+            vm.SetValues(searchResults);
+            vm.SelectedSearchResult = closestMatch;
+            vm.SelectedProviderType = providerType;
         });
 
-        vm.Dispose();
-        return vm.SelectedSearchResult;
+        viewModel.Dispose();
+        return viewModel.SelectedSearchResult;
     }
 
     public Task Authenticate(ListServiceType type)
     {
-        if (type == ListServiceType.AniList)
+        Task<ContentDialogResult> ShowDialog<TViewModel>()
+            where TViewModel : class
         {
-            return _contentDialogService.ShowDialog<AuthenticateAniListViewModel>(d =>
+            return _contentDialogService.ShowDialog<TViewModel>(d =>
             {
                 d.Title = "Authenticate";
                 d.IsPrimaryButtonEnabled = false;
@@ -131,28 +119,19 @@ public class ViewService(IContentDialogService contentDialogService,
                 d.CloseButtonText = "Ok";
                 d.Width = App.MainWindow.Bounds.Width;
             });
+        }
+
+        if (type == ListServiceType.AniList)
+        {
+            return ShowDialog<AuthenticateAniListViewModel>();
         }
         else if (type == ListServiceType.MyAnimeList)
         {
-            return _contentDialogService.ShowDialog<AuthenticateMyAnimeListViewModel>(d =>
-            {
-                d.Title = "Authenticate";
-                d.IsPrimaryButtonEnabled = false;
-                d.IsSecondaryButtonEnabled = false;
-                d.CloseButtonText = "Ok";
-                d.Width = App.MainWindow.Bounds.Width;
-            });
+            return ShowDialog<AuthenticateMyAnimeListViewModel>();
         }
         else if (type == ListServiceType.Simkl)
         {
-            return _contentDialogService.ShowDialog<AuthenticateSimklViewModel>(d =>
-            {
-                d.Title = "Authenticate";
-                d.IsPrimaryButtonEnabled = false;
-                d.IsSecondaryButtonEnabled = false;
-                d.CloseButtonText = "Ok";
-                d.Width = App.MainWindow.Bounds.Width;
-            });
+            return ShowDialog<AuthenticateSimklViewModel>();
         }
 
         return Task.CompletedTask;
@@ -282,37 +261,18 @@ public class ViewService(IContentDialogService contentDialogService,
     public async Task SubmitTimeStamp(long malId, int ep, VideoStreamModel stream, TimestampResult existingResult, double duration, double introStart)
     {
         introStart = introStart > 0 ? introStart : 0;
-        var vm = new SubmitTimeStampsViewModel(App.GetService<ITimestampsService>()) // TODO fix later
+        
+        await ShowContentDialog<SubmitTimeStampsViewModel>(vm =>
         {
-            Stream = stream,
-            MalId = malId,
-            Episode = ep,
-            StartPosition = introStart,
-            SuggestedStartPosition = introStart,
-            EndPosition = introStart + 85,
-            Duration = duration,
-            ExistingResult = existingResult
-        };
-
-        await _contentDialogService.ShowDialog(vm, d =>
-        {
-            d.Title = "Submit Timestamp";
-            d.IsPrimaryButtonEnabled = true;
-            d.IsSecondaryButtonEnabled = true;
-            d.PrimaryButtonText = "Submit";
-            d.SecondaryButtonText = "Close";
-            d.PrimaryButtonCommand = vm.Submit;
-            d.SecondaryButtonClick += (_, _) => vm.HandleClose = false;
-            d.Closing += (_, args) =>
-            {
-                if (vm.HandleClose)
-                {
-                    args.Cancel = true;
-                }
-            };
+            vm.Stream = stream;
+            vm.MalId = malId;
+            vm.Episode = ep;
+            vm.StartPosition = introStart;
+            vm.SuggestedStartPosition = introStart;
+            vm.EndPosition = introStart + 85;
+            vm.Duration = duration;
+            vm.ExistingResult = existingResult;
         });
-
-        vm.MediaPlayer.Pause();
     }
 
     public async Task<bool> Question(string title, string message)
@@ -379,26 +339,6 @@ public class ViewService(IContentDialogService contentDialogService,
         return Unit.Default;
     }
 
-    public async Task<Unit> ConfigureProvider(PluginInfo provider)
-    {
-        var vm = new ConfigureProviderViewModel(App.GetService<IPluginManager>())
-        {
-            ProviderType = provider.Name
-        };
-
-        var result = await _contentDialogService.ShowDialog(vm, d =>
-        {
-            d.Title = $"{provider.DisplayName} {provider.Version}";
-            d.IsPrimaryButtonEnabled = true;
-            d.IsSecondaryButtonEnabled = true;
-            d.PrimaryButtonText = "Save";
-            d.SecondaryButtonText = "Cancel";
-            d.PrimaryButtonCommand = vm.Save;
-        });
-
-        return Unit.Default;
-    }
-
     public async Task<Unit> ConfigureOptions<T>(T type, Func<T, PluginOptions> getFunc, Action<T, PluginOptions> saveFunc)
     {
         var vm = new ConfigureOptionsViewModel<T>(getFunc, saveFunc)
@@ -462,21 +402,12 @@ public class ViewService(IContentDialogService contentDialogService,
 
     public async Task ShowPluginStore(string pluginType)
     {
-        var vm = App.GetService<PluginStoreViewModel>();
-        await vm.Initalize(pluginType);
-
-        var result = await _contentDialogService.ShowDialog(vm, d =>
-        {
-            d.Title = $"Plugin Store";
-            d.IsPrimaryButtonEnabled = true;
-            d.PrimaryButtonText = "Close";
-        });
+        await ShowContentDialog<PluginStoreViewModel>(async vm => await vm.Initalize(pluginType));
     }
 
     public async Task ShowSearchListServiceDialog()
     {
-        var vm = App.GetService<SearchListServiceViewModel>();
-        await ShowContentDialog(vm);
+        await ShowContentDialog<SearchListServiceViewModel>();
     }
 
     public async Task PromptAnimeName(long id)

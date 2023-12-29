@@ -5,9 +5,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Totoro.WinUI.Dialogs.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Submit Timestamp"
+    CloseButtonClick="SubmitTimeStampsViewBase_CloseButtonClick"
+    CloseButtonText="Close"
+    Closing="SubmitTimeStampsViewBase_Closing"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="True"
+    PrimaryButtonCommand="{x:Bind ViewModel.Submit}"
+    PrimaryButtonText="Submit"
     mc:Ignorable="d">
 
-    <StackPanel Spacing="10">
+    <StackPanel
+        Padding="5"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        CornerRadius="5"
+        Spacing="10">
         <Grid Width="360">
             <MediaPlayerElement
                 x:Name="MediaPlayerElement"

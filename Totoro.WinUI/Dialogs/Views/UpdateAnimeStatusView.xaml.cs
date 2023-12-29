@@ -1,9 +1,11 @@
 ﻿using ReactiveMarbles.ObservableEvents;
 using Totoro.WinUI.Dialogs.ViewModels;
+using Totoro.WinUI.UserControls;
 
 namespace Totoro.WinUI.Dialogs.Views;
 
-public class UpdateAnimeStatusViewBase : ReactivePage<UpdateAnimeStatusViewModel> { }
+public class UpdateAnimeStatusViewBase : ReactiveContentDialog<UpdateAnimeStatusViewModel> { }
+
 public sealed partial class UpdateAnimeStatusView : UpdateAnimeStatusViewBase
 {
     public List<AnimeStatus> Statuses { get; } = Enum.GetValues<AnimeStatus>().Cast<AnimeStatus>().Take(5).ToList();

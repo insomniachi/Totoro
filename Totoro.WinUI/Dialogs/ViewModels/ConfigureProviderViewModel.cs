@@ -1,31 +1,25 @@
 ﻿using Totoro.Plugins;
-using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
 
 namespace Totoro.WinUI.Dialogs.ViewModels;
 
 public class ConfigureProviderViewModel : DialogViewModel
 {
-    private readonly IPluginManager _pluginManager;
-
-    [Reactive] public string ProviderType { get; set; }
+    [Reactive] public PluginInfo PluginInfo { get; set; }
+    [ObservableAsProperty] public string ProviderType { get; }
     [ObservableAsProperty] public PluginOptions Config { get; }
     public ICommand Save { get; }
 
-    public ConfigureProviderViewModel(IPluginManager pluginManager)
+    public ConfigureProviderViewModel()
     {
-        _pluginManager = pluginManager;
-
-        Save = ReactiveCommand.Create(OnSave);
+        this.WhenAnyValue(x => x.PluginInfo)
+            .WhereNotNull()
+            .Select(x => x.Name)
+            .ToPropertyEx(this, x => x.ProviderType);
 
         this.WhenAnyValue(x => x.ProviderType)
             .WhereNotNull()
             .Select(PluginFactory<AnimeModel>.Instance.GetCurrentConfig)
             .ToPropertyEx(this, x => x.Config);
-    }
-
-    void OnSave()
-    {
-        //_pluginManager.SaveConfig(ProviderType, Config);
     }
 }

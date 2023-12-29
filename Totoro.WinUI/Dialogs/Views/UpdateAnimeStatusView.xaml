@@ -5,12 +5,26 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:Totoro.WinUI.Dialogs.Views"
+    Title="{x:Bind ViewModel.Anime.Title, Mode=OneWay}"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="True"
+    IsSecondaryButtonEnabled="True"
+    PrimaryButtonCommand="{x:Bind ViewModel.Update}"
+    PrimaryButtonText="Update"
+    SecondaryButtonCommand="{x:Bind ViewModel.Delete}"
+    SecondaryButtonText="Delete"
     mc:Ignorable="d">
     <views:UpdateAnimeStatusViewBase.Resources>
         <x:Double x:Key="TextBlockWidth">150</x:Double>
     </views:UpdateAnimeStatusViewBase.Resources>
 
-    <StackPanel Orientation="Vertical" Spacing="10">
+    <StackPanel
+        Padding="10"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        CornerRadius="5"
+        Orientation="Vertical"
+        Spacing="10">
         <StackPanel.Resources>
             <Style TargetType="StackPanel">
                 <Setter Property="Orientation" Value="Horizontal" />
@@ -58,6 +72,6 @@
             <DatePicker x:Name="FinishDate" />
         </StackPanel>
 
-
     </StackPanel>
+
 </views:UpdateAnimeStatusViewBase>

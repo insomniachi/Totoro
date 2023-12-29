@@ -75,7 +75,7 @@ public class SubmitTimeStampsViewModel : DialogViewModel
     public long MalId { get; set; }
     public int Episode { get; set; }
     public double Duration { get; set; }
-    public string[] TimeStampTypes = new[] { "OP", "ED" };
+    public string[] TimeStampTypes = ["OP", "ED"];
     public double SuggestedStartPosition { get; set; }
     public double SuggestedEndPosition => Duration - 120;
     public WinUIMediaPlayerWrapper MediaPlayer { get; } = App.GetService<IMediaPlayerFactory>().Create(MediaPlayerType.WindowsMediaPlayer) as WinUIMediaPlayerWrapper;

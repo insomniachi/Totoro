@@ -1,14 +1,14 @@
 using Microsoft.UI.Xaml;
 using Totoro.WinUI.Dialogs.ViewModels;
+using Totoro.WinUI.UserControls;
 
 namespace Totoro.WinUI.Dialogs.Views;
 
 
-public class PluginStoreViewBase : ReactivePage<PluginStoreViewModel> { }
+public class PluginStoreViewBase : ReactiveContentDialog<PluginStoreViewModel> { }
 
 public sealed partial class PluginStoreView : PluginStoreViewBase
 {
-    private readonly IKnownFolders _knownFolders = App.GetService<IKnownFolders>();
     public PluginStoreView()
     {
         InitializeComponent();

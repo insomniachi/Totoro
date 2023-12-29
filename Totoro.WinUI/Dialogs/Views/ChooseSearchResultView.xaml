@@ -5,11 +5,18 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pac="using:Totoro.Plugins.Anime.Contracts"
-    xmlns:po="using:Totoro.Plugins.Options"
     xmlns:views="using:Totoro.WinUI.Dialogs.Views"
+    Title="Choose title"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    IsPrimaryButtonEnabled="True"
+    PrimaryButtonText="Select"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid
+        Padding="5"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        CornerRadius="5">
         <StackPanel Spacing="10">
             <Grid>
                 <TextBox

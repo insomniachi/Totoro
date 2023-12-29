@@ -2,7 +2,6 @@
 using MonoTorrent.Client;
 using Splat;
 using Totoro.Core.ViewModels;
-using Totoro.Plugins;
 using Totoro.Plugins.Torrents.Models;
 using YoutubeExplode;
 using YoutubeExplode.Videos;
@@ -146,7 +145,6 @@ public class TotoroCommands : IEnableLogger
 
         });
 
-        ConfigureProvider = ReactiveCommand.CreateFromTask<PluginInfo>(viewService.ConfigureProvider);
         RemoveTorrent = ReactiveCommand.CreateFromTask<string>(async name => await torrentEngine.RemoveTorrent(name, false));
         RemoveTorrentWithFiles = ReactiveCommand.CreateFromTask<string>(async name =>
         {
@@ -203,7 +201,6 @@ public class TotoroCommands : IEnableLogger
     public ICommand Watch { get; }
     public ICommand WatchExternal { get; }
     public ICommand PlayVideo { get; }
-    public ICommand ConfigureProvider { get; }
     public ICommand TorrentCommand { get; }
     public ICommand StreamWithDebrid { get; }
     public ICommand DownloadTorrentCommand { get; }

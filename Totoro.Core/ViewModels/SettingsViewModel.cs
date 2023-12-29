@@ -38,7 +38,6 @@ public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
     public List<string> AnimeActions { get; } = ["Watch", "Info"];
     public ICommand AuthenticateCommand { get; }
     public ICommand ShowAbout { get; }
-    public ICommand ConfigureProvider { get; }
     public ICommand Navigate { get; }
     public ICommand EditUserTorrentDirectory { get; }
 
@@ -71,7 +70,6 @@ public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
             }
             await viewService.Information($"{currentInfo.Version}", currentInfo.Body);
         });
-        ConfigureProvider = ReactiveCommand.CreateFromTask(() => viewService.ConfigureProvider(SelectedProvider));
         Navigate = ReactiveCommand.Create<string>(BreadCrumbBar.BreadCrumbs.Add);
         EditUserTorrentDirectory = ReactiveCommand.Create(async () =>
         {

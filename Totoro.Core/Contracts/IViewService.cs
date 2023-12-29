@@ -1,6 +1,4 @@
-﻿using Totoro.Plugins;
-using Totoro.Plugins.Anime.Contracts;
-using Totoro.Plugins.Options;
+﻿using Totoro.Plugins.Anime.Contracts;
 
 namespace Totoro.Core.Contracts;
 
@@ -15,8 +13,6 @@ public interface IViewService
     Task SubmitTimeStamp(long malId, int ep, VideoStreamModel stream, TimestampResult existingResult, double duration, double introStart);
     Task<bool> Question(string title, string message);
     Task<Unit> Information(string title, string message);
-    Task<Unit> ConfigureProvider(PluginInfo providerType);
-    Task<Unit> ConfigureOptions<T>(T keyType, Func<T, PluginOptions> getFunc, Action<T, PluginOptions> saveFunc);
     Task<string> BrowseFolder();
     Task<string> BrowseSubtitle();
     Task UnhandledException(Exception ex);
