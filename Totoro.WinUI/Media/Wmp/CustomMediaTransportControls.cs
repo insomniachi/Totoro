@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
 using Windows.Media.Playback;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Totoro.WinUI.Media.Wmp;
 
@@ -17,11 +18,15 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     private readonly Subject<Unit> _onSubmitTimeStamp = new();
     private readonly Subject<Unit> _onAddCc = new();
     private readonly Subject<PlaybackRate> _onPlaybackRateChanged = new();
+    private readonly Subject<bool> _onPiPModeToggle = new();
     private readonly MenuFlyout _qualitiesFlyout = new() { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Top };
     private AppBarButton _qualitiesButton;
+    private AppBarButton _pipButton;
     private AppBarButton _addCCButton;
     private Button _dynamicSkipIntroButton;
     private SymbolIcon _fullWindowSymbol;
+    private AppBarButton _fullWindowButton;
+    private bool _isInPiPMode;
     private readonly IWindowService _windowService;
 
     public static readonly DependencyProperty ResolutionsProperty =
@@ -147,6 +152,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
     public IObservable<Unit> OnDynamicSkip => _onDynamicSkipIntro;
     public IObservable<Unit> OnSubmitTimeStamp => _onSubmitTimeStamp;
     public IObservable<PlaybackRate> PlaybackRateChanged => _onPlaybackRateChanged;
+    public IObservable<bool> OnPiPModeToggle => _onPiPModeToggle;
     public MediaPlayer MediaPlayer { get; set; }
 
     public CustomMediaTransportControls(IWindowService windowService)
@@ -180,9 +186,10 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         var prevTrackButton = GetTemplateChild("PreviousTrackButton") as AppBarButton;
         var skipIntroButton = GetTemplateChild("SkipIntroButton") as AppBarButton;
         var submitTimeStamp = GetTemplateChild("SubmitTimeStampsButton") as AppBarButton;
-        var fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
         var smallSkipForward = GetTemplateChild("SmallSkipForward") as AppBarButton;
         var smallSkipBackward = GetTemplateChild("SmallSkipBackward") as AppBarButton;
+        _fullWindowButton = GetTemplateChild("FullWindowButton") as AppBarButton;
+        _pipButton = GetTemplateChild("PiPButton") as AppBarButton;
         _fullWindowSymbol = GetTemplateChild("FullWindowSymbol") as SymbolIcon;
         _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
         _qualitiesButton.Flyout = _qualitiesFlyout;
@@ -193,7 +200,8 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         nextTrackButton.Click += (_, _) => _onNextTrack.OnNext(Unit.Default);
         skipIntroButton.Click += (_, _) => _onSkipIntro.OnNext(Unit.Default);
         submitTimeStamp.Click += (_, _) => _onSubmitTimeStamp.OnNext(Unit.Default);
-        fullWindowButton.Click += (_, _) => _windowService?.ToggleIsFullWindow();
+        _fullWindowButton.Click += (_, _) => _windowService?.ToggleIsFullWindow();
+        _pipButton.Click += (_, _) => TogglePiPMode();
         _dynamicSkipIntroButton.Click += (_, _) => _onDynamicSkipIntro.OnNext(Unit.Default);
         _addCCButton.Click += (_, _) => _onAddCc.OnNext(Unit.Default);
 
@@ -202,6 +210,14 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         smallSkipBackward.Click += (_, _) => MediaPlayer.Position -= TimeSpan.FromSeconds(skipTime);
 
         base.OnApplyTemplate();
+    }
+
+    public void TogglePiPMode()
+    {
+        _isInPiPMode ^= true;
+        _pipButton.Visibility = _isInPiPMode ? Visibility.Collapsed : Visibility.Visible;
+        _fullWindowButton.Visibility = _isInPiPMode ? Visibility.Collapsed : Visibility.Visible;
+        _onPiPModeToggle.OnNext(_isInPiPMode);
     }
 
     private void FlyoutItem_Click(object sender, RoutedEventArgs e)

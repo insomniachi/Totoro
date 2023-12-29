@@ -6,6 +6,7 @@ using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Media.Flyleaf;
 using Totoro.WinUI.Media.Wmp;
+using WinUIEx;
 
 namespace Totoro.WinUI.Views;
 
@@ -13,6 +14,8 @@ public class WatchPageBase : ReactivePage<WatchViewModel> { }
 
 public sealed partial class WatchPage : WatchPageBase
 {
+    private WindowEx _pipWindow;
+
     public WatchPage()
     {
         InitializeComponent();
@@ -79,6 +82,12 @@ public sealed partial class WatchPage : WatchPageBase
                             await wrapper.AddSubtitle(subtitleFile);
                         });
 
+                    wrapper
+                        .TransportControls
+                        .OnPiPModeToggle
+                        .Where(x => x)
+                        .Subscribe(_ => EnterPiPMode());
+
                     //wrapper
                     //    .TransportControls
                     //    .PlaybackRateChanged
@@ -112,5 +121,41 @@ public sealed partial class WatchPage : WatchPageBase
             .Subscribe(_ => windowService.ToggleIsFullWindow());
     }
 
+    private void EnterPiPMode()
+    {
+        MainGrid.Children.Remove(MediaPlayer);
+        _pipWindow = new WindowEx()
+        {
+            WindowContent = new Grid()
+            {
+                Children = { MediaPlayer }
+            },
+            Title = GetWindowTitle(),
+            IsMaximizable = false,
+            IsMinimizable = false,
+            IsResizable = true,
+            IsAlwaysOnTop = true,
+            IsTitleBarVisible = true,
+            Height = 400,
+            Width = 570
+        };
+        _pipWindow.Activate();
+        _pipWindow.Closed += (_, _) =>
+        {
+            var grid = _pipWindow.WindowContent as Grid;
+            grid.Children.Remove(MediaPlayer);
+            MainGrid.Children.Add(MediaPlayer);
+            ViewModel.MediaPlayer.TransportControls.TogglePiPMode();
+        };
+    }
 
+    private string GetWindowTitle()
+    {
+        if(ViewModel.Anime is null)
+        {
+            return ViewModel.EpisodeModels?.Current?.EpisodeTitle;
+        }
+
+        return $"{ViewModel.Anime.Title} - {ViewModel.EpisodeModels?.Current?.EpisodeNumber} - {ViewModel.EpisodeModels?.Current?.EpisodeTitle}";
+    }
 }

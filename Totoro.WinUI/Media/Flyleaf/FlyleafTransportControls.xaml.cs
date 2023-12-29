@@ -1,11 +1,9 @@
-using System.IO;
 using System.Reactive.Subjects;
 using FlyleafLib.MediaFramework.MediaStream;
 using FlyleafLib.MediaPlayer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
-using SharpCompress;
 using Splat;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Helpers;
@@ -16,6 +14,8 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
 {
     private readonly Subject<string> _onQualityChanged = new();
     private readonly Subject<PlaybackRate> _onPlaybackRateChanged = new();
+    private readonly Subject<bool> _onPiPModelToggle = new();
+    private bool _isInPiPMode;
 
     public bool IsNextTrackButtonVisible
     {
@@ -140,7 +140,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
             }
         }
     }
-    
+
     private void FlyoutItem_Click(object sender, RoutedEventArgs e)
     {
         _onQualityChanged.OnNext((sender as MenuFlyoutItem).Text);
@@ -154,6 +154,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
     public IObservable<string> OnQualityChanged { get; }
     public IObservable<Unit> OnSubmitTimeStamp { get; }
     public IObservable<PlaybackRate> PlaybackRateChanged { get; }
+    public IObservable<bool> OnPiPModeToggle { get; }
 
     public FlyleafTransportControls()
     {
@@ -168,6 +169,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         OnAddCc = AddCcButton.Events().Click.Select(_ => Unit.Default);
         OnQualityChanged = _onQualityChanged;
         PlaybackRateChanged = _onPlaybackRateChanged;
+        OnPiPModeToggle = _onPiPModelToggle;
         OnSubmitTimeStamp = SubmitTimeStampButton.Events().Click.Select(_ => Unit.Default);
 
         FullWindowButton
@@ -265,5 +267,18 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         }
 
         Player.OpenAsync(stream);
+    }
+
+    private void PiPButton_Click(object sender, RoutedEventArgs e)
+    {
+        TogglePiPMode();
+    }
+
+    public void TogglePiPMode()
+    {
+        _isInPiPMode ^= true;
+        PiPButton.Visibility = _isInPiPMode ? Visibility.Collapsed : Visibility.Visible;
+        FullWindowButton.Visibility = _isInPiPMode ? Visibility.Collapsed : Visibility.Visible;
+        _onPiPModelToggle.OnNext(_isInPiPMode);
     }
 }

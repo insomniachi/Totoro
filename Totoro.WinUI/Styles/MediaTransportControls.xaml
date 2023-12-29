@@ -388,6 +388,11 @@
                                                     <FontIcon Glyph="&#xec4f;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <AppBarButton x:Name="PiPButton" Style="{StaticResource AppBarButtonStyle}">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon x:Name="PiPFontIcon" Glyph="&#xEE49;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                             <AppBarButton
                                                 x:Name="ZoomButton"
                                                 MediaTransportControlsHelper.DropoutOrder="9"

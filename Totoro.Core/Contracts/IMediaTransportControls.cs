@@ -9,6 +9,7 @@ public interface IMediaTransportControls
     IObservable<Unit> OnAddCc { get; }
     IObservable<string> OnQualityChanged { get; }
     IObservable<Unit> OnSubmitTimeStamp { get; }
+    IObservable<bool> OnPiPModeToggle { get; }
     IObservable<PlaybackRate> PlaybackRateChanged { get; }
     bool IsSkipButtonVisible { get; set; }
     bool IsNextTrackButtonVisible { get; set; }
@@ -17,5 +18,6 @@ public interface IMediaTransportControls
     bool IsCCSelectionVisible { get; set; }
     string SelectedResolution { get; set; }
     IEnumerable<string> Resolutions { get; set; }
+    void TogglePiPMode();
 }
 

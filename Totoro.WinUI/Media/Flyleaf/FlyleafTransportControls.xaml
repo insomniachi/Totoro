@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -218,6 +219,14 @@
                     Grid.Column="2"
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
+                    <AppBarButton
+                        x:Name="PiPButton"
+                        Click="PiPButton_Click"
+                        Style="{StaticResource AppBarButtonStyle}">
+                        <AppBarButton.Icon>
+                            <FontIcon x:Name="PiPFontIcon" Glyph="&#xEE49;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarButton
                         x:Name="FullWindowButton"
                         IsTabStop="False"

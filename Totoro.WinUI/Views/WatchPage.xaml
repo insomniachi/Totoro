@@ -12,13 +12,13 @@
     xmlns:uc="using:Totoro.WinUI.UserControls"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <ctk:SwitchPresenter Value="{x:Bind ViewModel.MediaPlayerType, Mode=OneWay}">
+        <ctk:SwitchPresenter x:Name="MediaPlayer" Value="{x:Bind ViewModel.MediaPlayerType, Mode=OneWay}">
             <ctk:Case IsDefault="True" Value="{x:Null}" />
             <ctk:Case Value="{x:Bind m:MediaPlayerType.WindowsMediaPlayer}">
                 <MediaPlayerElement
