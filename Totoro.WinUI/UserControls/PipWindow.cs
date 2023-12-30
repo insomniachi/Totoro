@@ -8,7 +8,7 @@ namespace Totoro.WinUI.UserControls
 {
     internal sealed class PipWindow() : WindowEx
     {
-        private WindowPersistenceService _persistenceService;
+        private readonly WindowPersistenceService _persistenceService;
 
         public PipWindow(ILocalSettingsService localSettingsService,
                          IWindowService windowService): this()

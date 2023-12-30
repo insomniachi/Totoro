@@ -1,9 +1,7 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:settingssections="using:Totoro.WinUI.Views.SettingsSections"
-    xmlns:vlc="using:Totoro.WinUI.Media.Vlc"
     xmlns:wmp="using:Totoro.WinUI.Media.Wmp">
 
     <settingssections:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
