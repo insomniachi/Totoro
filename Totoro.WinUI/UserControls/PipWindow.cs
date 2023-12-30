@@ -18,6 +18,7 @@ namespace Totoro.WinUI.UserControls
             IsResizable = true;
             IsAlwaysOnTop = true;
             IsTitleBarVisible = true;
+            ExtendsContentIntoTitleBar = true;
 
             var persistence = new WindowPersistenceService.WindowPersistence()
             {
