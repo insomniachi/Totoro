@@ -2,9 +2,6 @@
     x:Class="Totoro.WinUI.Views.SeasonalPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
-    xmlns:b="using:Totoro.WinUI.Behaviors"
     xmlns:cm="using:Totoro.Core.Models"
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -118,9 +115,10 @@
                     <ItemsView.Layout>
                         <UniformGridLayout
                             ItemsStretch="Fill"
-                            MinColumnSpacing="7"
-                            MinItemWidth="710"
-                            MinRowSpacing="7" />
+                            MinColumnSpacing="15"
+                            MinItemHeight="275"
+                            MinItemWidth="500"
+                            MinRowSpacing="15" />
                     </ItemsView.Layout>
                     <ItemsView.ItemTransitionProvider>
                         <LinedFlowLayoutItemCollectionTransitionProvider />
@@ -138,16 +136,8 @@
             <AppBarButton Icon="View" Label="Display mode">
                 <AppBarButton.Flyout>
                     <MenuFlyout>
-                        <RadioMenuFlyoutItem Text="Grid view">
-                            <RadioMenuFlyoutItem.Icon>
-                                <FontIcon Glyph="&#xf0e2;" />
-                            </RadioMenuFlyoutItem.Icon>
-                        </RadioMenuFlyoutItem>
-                        <RadioMenuFlyoutItem Text="List view">
-                            <RadioMenuFlyoutItem.Icon>
-                                <FontIcon Glyph="&#xf0e4;" />
-                            </RadioMenuFlyoutItem.Icon>
-                        </RadioMenuFlyoutItem>
+                        <RadioMenuFlyoutItem Icon="{ui:FontIcon Glyph=&#xf0e2;}" Text="Grid view" />
+                        <RadioMenuFlyoutItem Icon="{ui:FontIcon Glyph=&#xf0e4;}" Text="List view" />
                     </MenuFlyout>
                 </AppBarButton.Flyout>
             </AppBarButton>

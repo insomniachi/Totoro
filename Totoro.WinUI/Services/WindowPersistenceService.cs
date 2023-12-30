@@ -12,7 +12,7 @@ internal sealed class WindowPersistenceService : IDisposable
     private readonly WindowPersistence _persistence;
     private readonly IWindowService _windowService;
 
-    class WindowPersistence : ReactiveObject
+    public class WindowPersistence : ReactiveObject
     {
         [Reactive] public Size Size { get; set; }
         [Reactive] public Point Position { get; set; }
@@ -22,11 +22,12 @@ internal sealed class WindowPersistenceService : IDisposable
     public WindowPersistenceService(ILocalSettingsService localSettingsService,
                                     IWindowService windowService,
                                     WindowEx window,
-                                    string name)
+                                    string name,
+                                    WindowPersistence persistence = null)
     {
         _window = window;
         _windowService = windowService;
-        _persistence = localSettingsService.ReadSetting($"Persistence{name}", new WindowPersistence());
+        _persistence = localSettingsService.ReadSetting($"Persistence{name}", persistence ?? new WindowPersistence());
 
         _window.SizeChanged += SizeChanged;
         _window.PositionChanged += PositionChanged;

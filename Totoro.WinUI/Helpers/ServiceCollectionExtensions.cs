@@ -12,6 +12,7 @@ using Totoro.WinUI.Media;
 using Totoro.WinUI.Media.Flyleaf;
 using Totoro.WinUI.Media.Wmp;
 using Totoro.WinUI.Services;
+using Totoro.WinUI.UserControls;
 using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;
 
@@ -91,6 +92,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
         services.AddSingleton<IWindowService, WindowService>();
+        services.AddTransient<PipWindow>();
 
         services.AddTransient<IMediaPlayerFactory, MediaPlayerFactory>();
         services.AddMediaPlayer<WinUIMediaPlayerWrapper>();

@@ -6,6 +6,7 @@ using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Media.Flyleaf;
 using Totoro.WinUI.Media.Wmp;
+using Totoro.WinUI.UserControls;
 using WinUIEx;
 
 namespace Totoro.WinUI.Views;
@@ -14,7 +15,7 @@ public class WatchPageBase : ReactivePage<WatchViewModel> { }
 
 public sealed partial class WatchPage : WatchPageBase
 {
-    private WindowEx _pipWindow;
+    private PipWindow _pipWindow;
 
     public WatchPage()
     {
@@ -124,21 +125,8 @@ public sealed partial class WatchPage : WatchPageBase
     private void EnterPiPMode()
     {
         MainGrid.Children.Remove(MediaPlayer);
-        _pipWindow = new WindowEx()
-        {
-            WindowContent = new Grid()
-            {
-                Children = { MediaPlayer }
-            },
-            Title = GetWindowTitle(),
-            IsMaximizable = false,
-            IsMinimizable = false,
-            IsResizable = true,
-            IsAlwaysOnTop = true,
-            IsTitleBarVisible = true,
-            Height = 400,
-            Width = 570
-        };
+        _pipWindow = App.GetService<PipWindow>();
+        _pipWindow.Initalize(MediaPlayer, GetWindowTitle());
         _pipWindow.Activate();
         _pipWindow.Closed += (_, _) =>
         {
