@@ -139,9 +139,9 @@
                     <AppBarButton
                         x:Name="NextTrackButton"
                         Icon="Next"
+                        IsEnabled="{x:Bind IsNextTrackButtonVisible, Mode=OneWay}"
                         IsTabStop="False"
-                        Label="Next Episode"
-                        Visibility="{x:Bind help:Converters.BooleanToVisibility(IsNextTrackButtonVisible), Mode=OneWay}">
+                        Label="Next Episode">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="Right" Modifiers="Control" />
                         </AppBarButton.KeyboardAccelerators>
