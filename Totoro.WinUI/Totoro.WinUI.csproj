@@ -91,6 +91,15 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="UserControls\PivotNavigation.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\DiscoverSections\SearchProviderSection.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Views\DiscoverSections\RecentEpisodesSection.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Dialogs\Views\SearchListServicePage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -238,5 +247,8 @@
 
 	<ItemGroup>
 	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
+	  <None Remove="UserControls\PivotNavigation.xaml" />
+	  <None Remove="Views\DiscoverSections\RecentEpisodesSection.xaml" />
+	  <None Remove="Views\DiscoverSections\SearchProviderSection.xaml" />
 	</ItemGroup>
 </Project>

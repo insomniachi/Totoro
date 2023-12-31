@@ -1,7 +1,5 @@
-﻿using System.Windows;
-using Microsoft.UI.Xaml.Controls;
-using ReactiveMarbles.ObservableEvents;
-using Totoro.Core.ViewModels;
+﻿using Totoro.Core.ViewModels;
+using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Views;
 
@@ -11,27 +9,5 @@ public sealed partial class DiscoverPage : DiscoverPageBase
     public DiscoverPage()
     {
         InitializeComponent();
-
-        this.WhenActivated(d =>
-        {
-            ProviderSearchBox
-            .Events()
-            .QuerySubmitted
-            .Select(x => x.sender.Text)
-            .InvokeCommand(ViewModel.SearchProvider);
-
-            SearchResultView
-            .Events()
-            .ItemInvoked
-            .Select(x => x.args.InvokedItem)
-            .InvokeCommand(ViewModel.SelectSearchResult);
-
-            EpisodeView
-            .Events()
-            .ItemInvoked
-            .Select(x => x.args.InvokedItem)
-            .InvokeCommand(ViewModel.SelectEpisode);
-
-        });
     }
 }

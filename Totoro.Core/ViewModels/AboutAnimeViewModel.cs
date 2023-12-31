@@ -185,5 +185,6 @@ public class PivotItemModel : ReactiveObject
 {
     public string Header { get; set; }
     [Reactive] public bool Visible { get; set; } = true;
+    public Type ViewModel { get; set; }
 }
 

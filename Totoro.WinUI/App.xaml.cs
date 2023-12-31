@@ -75,7 +75,22 @@ public partial class App : Application, IEnableLogger
     {
         try
         {
-            return _host.Services.GetService(typeof(T)) as T;
+            return _host.Services.GetService<T>();
+        }
+        catch (Exception ex)
+        {
+            LogHost.Default.Error(ex, ex.Message);
+            throw;
+        }
+    }
+
+
+    public static T GetService<T>(object key)
+        where T : class
+    {
+        try
+        {
+            return _host.Services.GetKeyedService<T>(key);
         }
         catch (Exception ex)
         {

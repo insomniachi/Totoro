@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
+using Totoro.Core.ViewModels.Discover;
 using Totoro.Plugins;
 using Totoro.Plugins.MediaDetection;
 using Totoro.Plugins.MediaDetection.Contracts;
@@ -15,6 +16,7 @@ using Totoro.WinUI.Services;
 using Totoro.WinUI.UserControls;
 using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;
+using Totoro.WinUI.Views.DiscoverSections;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -82,6 +84,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<IActivationService, ActivationService>();
         services.AddSingleton<IWinUINavigationService, NavigationService>();
+        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(typeof(DiscoverViewModel).Name);
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
         services.AddSingleton<IAiredEpisodeToastService, AiredEpisodeToastService>();
         services.AddSingleton<IConnectivityService, ConnectivityService>();
@@ -106,6 +109,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddTopLevelPages(this IServiceCollection services)
     {
         services.AddCommonPages();
+        
         services.AddPageForNavigation<UserListViewModel, UserListPage>();
         services.AddPageForNavigation<WatchViewModel, WatchPage>();
         services.AddPageForNavigation<SeasonalViewModel, SeasonalPage>();
@@ -115,6 +119,17 @@ public static class ServiceCollectionExtensions
         services.AddPageForNavigation<NowPlayingViewModel, NowPlayingPage>(true);
         services.AddPageForNavigation<DiscoverMangaViewModel, DiscoverMangaPage>();
         services.AddPageForNavigation<ReadViewModel, ReadPage>();
+
+        services.AddChildPages();
+
+        return services;
+    }
+
+    private static IServiceCollection AddChildPages(this IServiceCollection services)
+    {
+        // Discover
+        services.AddPageForNavigation<RecentEpisodesViewModel, RecentEpisodesSection>();
+        services.AddPageForNavigation<SearchProviderViewModel, SearchProviderSection>();
 
         return services;
     }
