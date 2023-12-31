@@ -148,7 +148,7 @@
                     </AppBarButton>
                     <AppBarButton
                         x:Name="PlayPauseButton"
-                        Command="{x:Bind Player.Commands.TogglePlayPause}"
+                        Command="{x:Bind Player.Commands.TogglePlayPause, Mode=OneWay}"
                         IsEnabled="{x:Bind Player.CanPlay, Mode=OneWay}"
                         IsTabStop="False"
                         Label="Play/Pause">
