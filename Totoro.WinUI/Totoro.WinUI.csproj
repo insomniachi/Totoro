@@ -38,7 +38,7 @@
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Layout" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
-		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.20" />
+		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.21" />
 		
 		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.123" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />

@@ -35,17 +35,29 @@
                     <SolidColorBrush Opacity="0.5" Color="Black" />
                 </Button.Background>
             </Button>
-            <TextBlock
-                Margin="0,0,0,50"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Bottom"
-                FontSize="50"
-                FontWeight="SemiBold"
-                Foreground="White"
-                Text="{x:Bind Player.Subtitles.SubsText, Mode=OneWay}"
-                TextAlignment="Center"
-                TextWrapping="Wrap"
-                Visibility="{x:Bind help:Converters.StringToVisibility(Player.Subtitles.SubsText), Mode=OneWay}" />
+            <Grid>
+                <Border x:Name="ShadowTarget" />
+                <TextBlock
+                    Margin="0,0,0,50"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    FontSize="50"
+                    FontWeight="SemiBold"
+                    Foreground="White"
+                    Text="{x:Bind Player.Subtitles.SubsText, Mode=OneWay}"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind help:Converters.StringToVisibility(Player.Subtitles.SubsText), Mode=OneWay}">
+                    <ui:Effects.Shadow>
+                        <ui:AttachedDropShadow
+                            BlurRadius="10"
+                            CastTo="{x:Bind ShadowTarget}"
+                            CornerRadius="0"
+                            Offset="0" />
+                    </ui:Effects.Shadow>
+                </TextBlock>
+            </Grid>
+
         </Grid>
 
         <Grid
