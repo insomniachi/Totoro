@@ -203,11 +203,7 @@
                                 <ItemsView.ItemTemplate>
                                     <DataTemplate x:DataType="pc:ICatalogItem">
                                         <ItemContainer>
-                                            <Grid
-                                                x:Name="MainGrid"
-                                                Width="190"
-                                                Height="320"
-                                                Margin="3">
+                                            <Grid x:Name="MainGrid">
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition />
                                                     <RowDefinition Height="Auto" />
@@ -274,7 +270,11 @@
                                     </DataTemplate>
                                 </ItemsView.ItemTemplate>
                                 <ItemsView.Layout>
-                                    <UniformGridLayout />
+                                    <UniformGridLayout
+                                        MinColumnSpacing="5"
+                                        MinItemHeight="320"
+                                        MinItemWidth="190"
+                                        MinRowSpacing="5" />
                                 </ItemsView.Layout>
                                 <ItemsView.ItemTransitionProvider>
                                     <LinedFlowLayoutItemCollectionTransitionProvider />

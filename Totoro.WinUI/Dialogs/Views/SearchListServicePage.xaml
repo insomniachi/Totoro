@@ -16,7 +16,7 @@
 
     <Grid
         Width="500"
-        Height="585"
+        Height="400"
         Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
         CornerRadius="5">
         <Grid.RowDefinitions>
@@ -25,13 +25,14 @@
         </Grid.RowDefinitions>
 
         <AutoSuggestBox
-            Margin="5"
+            Margin="5,5,5,0"
             QueryIcon="Find"
             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}" />
 
         <ItemsView
             x:Name="ItemsView"
             Grid.Row="1"
+            Padding="0,5"
             ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
             SelectionMode="Single">
             <ItemsView.ItemTemplate>
@@ -55,7 +56,7 @@
 
                             <StackPanel
                                 Grid.Column="1"
-                                Margin="10,0"
+                                Margin="10,5"
                                 Spacing="10">
                                 <TextBlock
                                     FontWeight="Bold"
