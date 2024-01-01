@@ -1,5 +1,5 @@
-<Page
-    x:Class="Totoro.WinUI.Views.SettingsSections.SearchSection"
+<ts:SearchSectionBase
+    x:Class="Totoro.WinUI.Views.TorrentingSections.SearchSection"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctk="using:CommunityToolkit.WinUI.UI.Controls"
@@ -7,7 +7,7 @@
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
-    xmlns:settingssections="using:Totoro.WinUI.Views.SettingsSections"
+    xmlns:ts="using:Totoro.WinUI.Views.TorrentingSections"
     xmlns:uc="using:Totoro.WinUI.UserControls"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     x:Name="Page"
@@ -16,7 +16,7 @@
     <Page.Resources>
         <local:TorrentStateConverter x:Key="StateConverter" />
         <local:HumanizeConverter x:Key="HumanizeConverter" />
-        <settingssections:BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
+        <ts:BooleanToVisibilityConverter x:Key="BooleanToVisibility" />
     </Page.Resources>
 
     <Grid>
@@ -131,8 +131,7 @@
                                     HorizontalAlignment="Stretch"
                                     ui:FrameworkElementExtensions.AncestorType="ctk:DataGrid"
                                     Click="TorrentAction"
-                                    Content="{Binding State, Converter={StaticResource StateConverter}}"
-                                    Visibility="{Binding (ui:FrameworkElementExtensions.Ancestor).Tag, RelativeSource={RelativeSource Mode=Self}, Converter={StaticResource BooleanToVisibility}}" />
+                                    Content="Debrid" />
                                 <Button
                                     x:Name="StreamButton"
                                     HorizontalAlignment="Stretch"
@@ -162,4 +161,4 @@
         </uc:DataGrid>
     </Grid>
 
-</Page>
+</ts:SearchSectionBase>

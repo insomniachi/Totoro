@@ -3,10 +3,11 @@ using System.Diagnostics;
 using Humanizer;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Navigation;
 using Totoro.Core.ViewModels;
+using Totoro.Core.ViewModels.Torrenting;
 using Totoro.Plugins.Torrents.Models;
-using Totoro.WinUI.Views.SettingsSections;
+using Totoro.WinUI.Contracts;
 
 namespace Totoro.WinUI.Views;
 
@@ -14,42 +15,23 @@ public class TorrentingViewBase : ReactivePage<TorrentingViewModel> { }
 
 public sealed partial class TorrentingView : TorrentingViewBase
 {
-    private static readonly NavigationTransitionInfo _fromLeft = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
-    private static readonly NavigationTransitionInfo _fromRight = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
-    private int _prevIndex = -1;
+    //private static readonly NavigationTransitionInfo _fromLeft = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
+    //private static readonly NavigationTransitionInfo _fromRight = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
+    //private int _prevIndex = -1;
 
     public TorrentingView()
     {
         InitializeComponent();
-
-        this.WhenActivated(d =>
-        {
-            this.WhenAnyValue(x => x.ViewModel.SelectedSection)
-                .WhereNotNull()
-                .Subscribe(Navigate);
-        });
     }
 
-    private void Navigate(PivotItemModel section)
+    protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        var type = section.Header switch
-        {
-            "Torrents" => typeof(SearchSection),
-            "Downloads" => typeof(DownloadsSection),
-            "Transfers" => typeof(TransfersSection),
-            _ => null
-        };
-
-        if (type is null)
+        if(e.Parameter is not IReadOnlyDictionary<string,object> parameters)
         {
             return;
         }
 
-        var index = ViewModel.Sections.IndexOf(section);
-        var transition = index > _prevIndex ? _fromLeft : _fromRight;
-        _prevIndex = index;
-
-        NavFrame.Navigate(type, ViewModel, transition);
+        App.GetService<IWinUINavigationService>(nameof(TorrentingViewModel)).NavigateTo<SearchTorrentViewModel>(parameter: parameters);
     }
 }
 

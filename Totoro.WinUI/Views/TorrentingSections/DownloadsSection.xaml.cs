@@ -1,35 +1,17 @@
-// Copyright (c) Microsoft Corporation and Contributors.
-// Licensed under the MIT License.
-
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Navigation;
-using Totoro.Core.ViewModels;
+using Totoro.Core.ViewModels.Torrenting;
 using Totoro.WinUI.Helpers;
 
-namespace Totoro.WinUI.Views.SettingsSections;
+namespace Totoro.WinUI.Views.TorrentingSections;
 
-public sealed partial class DownloadsSection : Page
+public class DownloadsSectionBase : ReactivePage<TorrentDownloadsViewModel> { }
+
+public sealed partial class DownloadsSection : DownloadsSectionBase
 {
-    public TorrentingViewModel ViewModel
-    {
-        get { return (TorrentingViewModel)GetValue(ViewModelProperty); }
-        set { SetValue(ViewModelProperty, value); }
-    }
-
-    public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register("ViewModel", typeof(TorrentingViewModel), typeof(DownloadsSection), new PropertyMetadata(null));
-
-
     public DownloadsSection()
     {
         InitializeComponent();
-    }
-
-    protected override void OnNavigatedTo(NavigationEventArgs e)
-    {
-        ViewModel = e.Parameter as TorrentingViewModel;
     }
 }
 

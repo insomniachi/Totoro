@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 
@@ -8,6 +9,9 @@ namespace Totoro.WinUI.UserControls;
 public sealed partial class PivotNavigation : UserControl
 {
     private IWinUINavigationService _navigationService;
+    private static readonly NavigationTransitionInfo _fromLeft = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
+    private static readonly NavigationTransitionInfo _fromRight = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
+    private int _prevIndex = -1;
 
     public PivotItemModel SelectedItem
     {
@@ -44,7 +48,11 @@ public sealed partial class PivotNavigation : UserControl
             return;
         }
 
-        control._navigationService.NavigateTo(selectedItem.ViewModel);
+        var index = control.ItemSource.IndexOf(selectedItem);
+        var transition = index > control._prevIndex ? _fromRight : _fromLeft;
+        control._prevIndex = index;
+
+        control._navigationService.NavigateTo(selectedItem.ViewModel, transitionInfo: transition);
     }
 
     private static void OnSectionGroupNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -54,10 +62,19 @@ public sealed partial class PivotNavigation : UserControl
         control._navigationService.Frame = control.NavFrame;
     }
 
-
-
     public PivotNavigation()
     {
         InitializeComponent();
+        Unloaded += PivotNavigation_Unloaded;
+    }
+
+    private void PivotNavigation_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if(_navigationService is null)
+        {
+            return;
+        }
+
+        _navigationService.Frame = null;
     }
 }

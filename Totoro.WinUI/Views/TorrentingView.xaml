@@ -6,50 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Totoro.WinUI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
     x:Name="Page"
     mc:Ignorable="d">
 
-    <local:TorrentingViewBase.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </local:TorrentingViewBase.Resources>
-
-    <Grid Margin="10,25,0,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-
-        <ctk:Segmented
-            DisplayMemberPath="Header"
-            ItemsSource="{x:Bind ViewModel.Sections}"
-            SelectedIndex="0"
-            SelectedItem="{x:Bind ViewModel.SelectedSection, Mode=TwoWay}"
-            Style="{StaticResource PivotSegmentedStyle}">
-            <ctk:Segmented.ItemContainerStyle>
-                <Style BasedOn="{StaticResource PivotSegmentedItemStyle}" TargetType="ctk:SegmentedItem">
-                    <Setter Property="FontSize" Value="20" />
-                </Style>
-            </ctk:Segmented.ItemContainerStyle>
-        </ctk:Segmented>
-
-        <ctk:SwitchPresenter
-            Grid.Row="1"
-            TargetType="x:Boolean"
-            Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
-            <ctk:Case Value="True">
-                <Grid>
-                    <ProgressRing IsActive="True" />
-                </Grid>
-            </ctk:Case>
-            <ctk:Case Value="False">
-                <Frame x:Name="NavFrame" />
-            </ctk:Case>
-        </ctk:SwitchPresenter>
-
-    </Grid>
+    <uc:PivotNavigation
+        ItemSource="{x:Bind ViewModel.Sections, Mode=OneWay}"
+        SectionGroupName="TorrentingViewModel"
+        SelectedItem="{x:Bind ViewModel.SelectedSection, Mode=TwoWay}" />
 
 </local:TorrentingViewBase>

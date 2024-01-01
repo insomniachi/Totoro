@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reactive.Subjects;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Splat;
 using Totoro.WinUI.Contracts;
@@ -83,13 +84,27 @@ public class NavigationService(IVolatileStateStorage stateStorage) : IWinUINavig
         return false;
     }
 
-    public bool NavigateTo<TViewModel>(TViewModel viewModel = null, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false)
+    public bool NavigateTo(Type viewModelType,
+                           object viewModel = null,
+                           IReadOnlyDictionary<string, object> parameter = null,
+                           bool clearNavigation = false)
+    {
+        return NavigateTo(viewModelType, viewModel, parameter, clearNavigation, null);
+    }
+
+    public bool NavigateTo<TViewModel>(TViewModel viewModel = null,
+                                       IReadOnlyDictionary<string, object> parameter = null,
+                                       bool clearNavigation = false)
         where TViewModel : class, INotifyPropertyChanged
     {
         return NavigateTo(typeof(TViewModel), viewModel, parameter, clearNavigation);
     }
 
-    public bool NavigateTo(Type viewModelType, object viewModel, IReadOnlyDictionary<string, object> parameter = null, bool clearNavigation = false)
+    public bool NavigateTo(Type viewModelType, 
+                           object viewModel, 
+                           IReadOnlyDictionary<string, object> parameter = null, 
+                           bool clearNavigation = false,
+                           NavigationTransitionInfo transition = null)
     {
         var viewKey = typeof(ViewType<>).MakeGenericType(viewModelType);
         var pageType = ((ViewType)App.GetService(viewKey)).Type;
@@ -113,7 +128,10 @@ public class NavigationService(IVolatileStateStorage stateStorage) : IWinUINavig
 
         _frame.Tag = clearNavigation;
         var vmBeforeNavigation = _frame.GetPageViewModel();
-        var navigated = _frame.Navigate(pageType, parameter);
+        var navigated = transition is null
+            ? _frame.Navigate(pageType, parameter)
+            : _frame.Navigate(pageType, parameter, transition);
+
         if (navigated)
         {
             _lastParameterUsed = parameter;
@@ -162,17 +180,6 @@ public class NavigationService(IVolatileStateStorage stateStorage) : IWinUINavig
             ? App.GetService(view.GetType().GetProperty("ViewModel").PropertyType)
             : parameter["ViewModel"];
 
-        if (view.ViewModel is INavigationAware navigationAware)
-        {
-            try
-            {
-                await navigationAware.OnNavigatedTo(e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>());
-            }
-            catch (Exception ex)
-            {
-                this.Log().Fatal(ex);
-            }
-        }
 
         this.Log().Debug($"Navigated to {view.ViewModel.GetType().Name}");
 
@@ -187,6 +194,18 @@ public class NavigationService(IVolatileStateStorage stateStorage) : IWinUINavig
             else
             {
                 stateAware.RestoreState(state);
+            }
+        }
+
+        if (view.ViewModel is INavigationAware navigationAware)
+        {
+            try
+            {
+                await navigationAware.OnNavigatedTo(e.Parameter as IReadOnlyDictionary<string, object> ?? new Dictionary<string, object>());
+            }
+            catch (Exception ex)
+            {
+                this.Log().Fatal(ex);
             }
         }
 

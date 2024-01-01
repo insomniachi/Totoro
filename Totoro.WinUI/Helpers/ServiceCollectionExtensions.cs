@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
 using Totoro.Core.ViewModels.Discover;
+using Totoro.Core.ViewModels.Torrenting;
 using Totoro.Plugins;
 using Totoro.Plugins.MediaDetection;
 using Totoro.Plugins.MediaDetection.Contracts;
@@ -17,6 +18,7 @@ using Totoro.WinUI.UserControls;
 using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;
 using Totoro.WinUI.Views.DiscoverSections;
+using Totoro.WinUI.Views.TorrentingSections;
 
 namespace Totoro.WinUI.Helpers;
 
@@ -84,20 +86,24 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAnimeSoundsService, AnimeSoundsService>();
         services.AddSingleton<IActivationService, ActivationService>();
         services.AddSingleton<IWinUINavigationService, NavigationService>();
-        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(typeof(DiscoverViewModel).Name);
         services.AddSingleton<INavigationService>(x => x.GetRequiredService<IWinUINavigationService>());
         services.AddSingleton<IAiredEpisodeToastService, AiredEpisodeToastService>();
         services.AddSingleton<IConnectivityService, ConnectivityService>();
+        services.AddSingleton<IWindowService, WindowService>();
+
+        // child navigation
+        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(typeof(DiscoverViewModel).Name);
+        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(typeof(TorrentingViewModel).Name);
 
         services.AddTransient<INavigationViewService, NavigationViewService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
         services.AddTransient<IToastService, ToastService>();
         services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
         services.AddTransient<IViewService, ViewService>();
-        services.AddSingleton<IWindowService, WindowService>();
         services.AddTransient<PipWindow>();
-
         services.AddTransient<IMediaPlayerFactory, MediaPlayerFactory>();
+
+        // media players
         services.AddMediaPlayer<WinUIMediaPlayerWrapper>();
         //services.AddMediaPlayer<LibVLCMediaPlayerWrapper>();
         services.AddMediaPlayer<FlyleafMediaPlayerWrapper>();
@@ -130,6 +136,10 @@ public static class ServiceCollectionExtensions
         // Discover
         services.AddPageForNavigation<RecentEpisodesViewModel, RecentEpisodesSection>();
         services.AddPageForNavigation<SearchProviderViewModel, SearchProviderSection>();
+
+        // Torrenting
+        services.AddPageForNavigation<SearchTorrentViewModel, SearchSection>();
+        services.AddPageForNavigation<TorrentDownloadsViewModel, DownloadsSection>();
 
         return services;
     }
