@@ -90,7 +90,7 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
                 foreach (var season in new[] { current, prev, next })
                 {
                     var pagedAnime = await baseRequest(season).Find();
-                    observer.OnNext(pagedAnime.Data.Select(MalToModelConverter.ConvertModel));
+                    observer.OnNext(pagedAnime.Data.Select(ConvertModel));
                 }
 
                 observer.OnCompleted();
@@ -105,11 +105,34 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
     }
 
 
-    public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
+    public IObservable<IEnumerable<AnimeModel>> GetAiringAnime() => GetTopAnime(AnimeRankingType.Airing);
+    public IObservable<IEnumerable<AnimeModel>> GetUpcomingAnime() => GetTopAnime(AnimeRankingType.Upcoming);
+    public IObservable<IEnumerable<AnimeModel>> GetPopularAnime() => GetTopAnime(AnimeRankingType.ByPopularity);
+    public IObservable<IEnumerable<AnimeModel>> GetRecommendedAnime()
     {
         var request = _client
             .Anime()
-            .Top(MalApi.AnimeRankingType.Airing)
+            .SuggestedForMe()
+            .WithLimit(15)
+            .IncludeNsfw()
+            .WithFields(_commonFields);
+
+        if (_settings.IncludeNsfw)
+        {
+            request.IncludeNsfw();
+        }
+
+        return request.Find()
+              .ToObservable()
+              .Select(x => x.Data.Select(x => ConvertModel(x)));
+    }
+
+    private IObservable<IEnumerable<AnimeModel>> GetTopAnime(AnimeRankingType type)
+    {
+        var request = _client
+            .Anime()
+            .Top(type)
+            .WithLimit(15)
             .IncludeNsfw()
             .WithFields(_commonFields);
 

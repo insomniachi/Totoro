@@ -15,7 +15,7 @@
 						  WorkingDirectory="INSTALLFOLDER"/>
 				<RemoveFolder Id="DesktopFolder" On="uninstall"/>
 				<RegistryValue Root="HKCU"
-							   Key="Software\$(loc.ProductFolder)"
+							   Key="Software\!(loc.ProductFolder)"
 							   Name="Shortcut"
 							   Type="integer"
 							   Value="1"

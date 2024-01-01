@@ -92,8 +92,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IWindowService, WindowService>();
 
         // child navigation
-        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(typeof(DiscoverViewModel).Name);
-        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(typeof(TorrentingViewModel).Name);
+        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(nameof(DiscoverViewModel));
+        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(nameof(TorrentingViewModel));
 
         services.AddTransient<INavigationViewService, NavigationViewService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
@@ -136,6 +136,7 @@ public static class ServiceCollectionExtensions
         // Discover
         services.AddPageForNavigation<RecentEpisodesViewModel, RecentEpisodesSection>();
         services.AddPageForNavigation<SearchProviderViewModel, SearchProviderSection>();
+        services.AddPageForNavigation<MyAnimeListDiscoverViewModel, MyAnimeListDiscoverSection>();
 
         // Torrenting
         services.AddPageForNavigation<SearchTorrentViewModel, SearchSection>();
