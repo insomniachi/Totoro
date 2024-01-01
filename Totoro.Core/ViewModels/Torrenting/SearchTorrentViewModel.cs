@@ -1,4 +1,6 @@
-﻿using System.Reactive.Concurrency;
+﻿using System;
+using System.Reactive.Concurrency;
+using Totoro.Plugins;
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Torrents.Contracts;
 using Totoro.Plugins.Torrents.Models;
@@ -12,7 +14,6 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
     private readonly IDebridServiceContext _debridServiceContext;
     private readonly SourceCache<TorrentModel, string> _torrentsCache = new(x => x.Link);
     private readonly ReadOnlyObservableCollection<TorrentModel> _torrents;
-    private ITorrentTracker _catalog;
 
     public SearchTorrentViewModel(IPluginFactory<ITorrentTracker> indexerFactory,
                                   ISettings settings,
@@ -22,6 +23,7 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
         _settings = settings;
         _debridServiceContext = debridServiceContext;
 
+        Plugins = indexerFactory.Plugins.ToList();
         IsDebridAuthenticated = debridServiceContext.IsAuthenticated;
         Search = ReactiveCommand.Create(OnSearch);
 
@@ -43,14 +45,37 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
 
         this.WhenAnyValue(x => x.PastedTorrent.Magnet)
             .Where(x => !string.IsNullOrEmpty(x))
-            .Subscribe(_ => PastedTorrent.State = TorrentState.Unknown);
+            .Subscribe(_ => PastedTorrent.State = TorrentState.Cached);
+
+        this.WhenAnyValue(x => x.SelectedPlugin)
+            .WhereNotNull()
+            .Select(plugin => indexerFactory.CreatePlugin(plugin.Name))
+            .ToPropertyEx(this, x => x.Catalog);
+
+        this.WhenAnyValue(x => x.Catalog)
+            .WhereNotNull()
+            .Do(_ => _torrentsCache.Clear())
+            .Subscribe(_ =>
+            {
+                if (!string.IsNullOrEmpty(Query))
+                {
+                    OnSearch();
+                }
+                else
+                {
+                    OnRecent();
+                }
+            });
     }
 
     [Reactive] public string Query { get; set; }
     [Reactive] public SortMode SortMode { get; set; } = SortMode.Seeders;
     [Reactive] public bool IsLoading { get; set; }
-    [Reactive] public string ProviderType { get; private set; }
+    [Reactive] public PluginInfo SelectedPlugin { get; set; }
+    [ObservableAsProperty] public ITorrentTracker Catalog { get; }
 
+
+    public List<PluginInfo> Plugins { get; }
     public ReadOnlyObservableCollection<TorrentModel> Torrents => _torrents;
     public TorrentModel PastedTorrent { get; } = new();
     public bool IsDebridAuthenticated { get; }
@@ -68,14 +93,14 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
         state.AddOrUpdate(_torrentsCache.Items, nameof(Torrents));
         state.AddOrUpdate(SortMode);
         state.AddOrUpdate(Query);
-        state.AddOrUpdate(ProviderType);
+        state.AddOrUpdate(SelectedPlugin);
     }
 
     public void RestoreState(IState state)
     {
         var torrents = state.GetValue<IEnumerable<TorrentModel>>(nameof(Torrents));
         _torrentsCache.AddOrUpdate(torrents);
-        ProviderType = state.GetValue<string>(nameof(ProviderType));
+        SelectedPlugin = state.GetValue<PluginInfo>(nameof(SelectedPlugin));
         SortMode = state.GetValue<SortMode>(nameof(SortMode));
         Query = state.GetValue<string>(nameof(Query));
     }
@@ -83,8 +108,7 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         var indexer = (string)parameters.GetValueOrDefault("Indexer", _settings.DefaultTorrentTrackerType);
-        _catalog = _indexerFactory.CreatePlugin(indexer);
-        ProviderType = indexer;
+        SelectedPlugin = Plugins.FirstOrDefault(x => x.Name == indexer);
 
         if (parameters.ContainsKey("Anime"))
         {
@@ -93,31 +117,36 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
             Query = GetQueryText(anime);
             OnSearch();
         }
-        else if(Torrents.Count == 0)
+        else if(Torrents?.Count == 0)
         {
-            IsLoading = true;
-
-            _catalog.Recents()
-                    .ToListAsync()
-                    .AsTask()
-                    .ToObservable()
-                    .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
-                    .ObserveOn(RxApp.MainThreadScheduler)
-                    .Subscribe(async list =>
-                    {
-                        await UpdateCachedState(list);
-                        _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
-                    }, RxApp.DefaultExceptionHandler.OnError);
+            OnRecent();
         }
 
         return Task.CompletedTask;
+    }
+
+    private void OnRecent()
+    {
+        IsLoading = true;
+
+        Catalog.Recents()
+                .ToListAsync()
+                .AsTask()
+                .ToObservable()
+                .Finally(() => RxApp.MainThreadScheduler.Schedule(() => IsLoading = false))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(async list =>
+                {
+                    await UpdateCachedState(list);
+                    _torrentsCache.EditDiff(list, (first, second) => first.Link == second.Link);
+                }, RxApp.DefaultExceptionHandler.OnError);
     }
 
     private void OnSearch()
     {
         IsLoading = true;
 
-        _catalog.Search(Query)
+        Catalog.Search(Query)
                 .ToListAsync()
                 .AsTask()
                 .ToObservable()

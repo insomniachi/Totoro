@@ -17,6 +17,8 @@ public class SearchSectionBase : ReactivePage<SearchTorrentViewModel> { }
 
 public sealed partial class SearchSection : SearchSectionBase
 {
+    private readonly string[] _animeToshoHiddenColumns = ["Category", "Time", "Completed"];
+
     public SearchSection()
     {
         InitializeComponent();
@@ -30,8 +32,9 @@ public sealed partial class SearchSection : SearchSectionBase
             .InvokeCommand(ViewModel.Search)
             .DisposeWith(d);
 
-            this.WhenAnyValue(x => x.ViewModel.ProviderType)
+            this.WhenAnyValue(x => x.ViewModel.SelectedPlugin)
                 .WhereNotNull()
+                .Select(x => x.Name)
                 .Subscribe(type =>
                 {
                     switch (type)
@@ -42,6 +45,13 @@ public sealed partial class SearchSection : SearchSectionBase
                                 item.Visibility = Visibility.Visible;
                             }
                             break;
+                        case "anime-tosho":
+                            foreach (var item in DataGrid.Columns.Where(x => _animeToshoHiddenColumns.Contains( x.Header.ToString())))
+                            {
+                                item.Visibility = Visibility.Collapsed;
+                            }
+                            break;
+
                     }
                 });
         });
