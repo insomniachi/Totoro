@@ -67,7 +67,7 @@
                 </DataTemplate>
             </ItemsView.ItemTemplate>
             <ItemsView.Layout>
-                <UniformGridLayout />
+                <UniformGridLayout ItemsStretch="Fill" />
             </ItemsView.Layout>
         </ItemsView>
 

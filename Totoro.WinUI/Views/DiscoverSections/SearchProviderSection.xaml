@@ -123,6 +123,7 @@
                     </ItemsView.ItemTemplate>
                     <ItemsView.Layout>
                         <UniformGridLayout
+                            ItemsStretch="Fill"
                             MinColumnSpacing="5"
                             MinItemHeight="320"
                             MinItemWidth="190"

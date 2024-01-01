@@ -59,11 +59,11 @@ public static class ModelHelpers
     public static string GetAdditionalInformation(this ICatalogItem searchResult)
     {
         StringBuilder sb = new();
-        if (searchResult is IHaveSeason ihs)
+        if (searchResult is IHaveSeason ihs && !string.IsNullOrEmpty(ihs.Season))
         {
             sb.Append($"{ihs.Season} {ihs.Year}");
         }
-        else if (searchResult is IHaveYear ihy)
+        else if (searchResult is IHaveYear ihy && int.TryParse(ihy.Year, out var year) && year > 0)
         {
             sb.Append(ihy.Year);
         }

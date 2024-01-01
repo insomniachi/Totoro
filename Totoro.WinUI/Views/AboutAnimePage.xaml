@@ -237,7 +237,7 @@
                                 </DataTemplate>
                             </ItemsView.ItemTemplate>
                             <ItemsView.Layout>
-                                <UniformGridLayout MinItemWidth="{StaticResource MinCardWidth}" />
+                                <UniformGridLayout ItemsStretch="Fill" MinItemWidth="{StaticResource MinCardWidth}" />
                             </ItemsView.Layout>
                         </ItemsView>
                     </ctk:Case>
