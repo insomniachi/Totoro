@@ -2,6 +2,26 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Fragment>
 		<ComponentGroup Id="ProductComponents">
+			<ComponentRef Id="MainAppShortCut"/>
 		</ComponentGroup>
+
+		<DirectoryRef Id="INSTALLFOLDER">
+			<Component Id="MainAppShortCut" Guid="{e665438b-2f38-4a7f-8e1d-6f96843c45ed}">
+				<Shortcut Id="MainAppShortCut"
+						  Name="!(loc.ProductName)"
+						  Target="[INSTALLFOLDER]Totoro.WinUI.exe"
+						  Icon="Icon.ico"
+						  Directory="DesktopFolder"
+						  WorkingDirectory="INSTALLFOLDER"/>
+				<RemoveFolder Id="DesktopFolder" On="uninstall"/>
+				<RegistryValue Root="HKCU"
+							   Key="Software\$(loc.ProductFolder)"
+							   Name="Shortcut"
+							   Type="integer"
+							   Value="1"
+							   KeyPath="yes"/>
+			</Component>
+		</DirectoryRef>
+		
 	</Fragment>
 </Wix>

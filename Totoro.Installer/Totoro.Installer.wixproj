@@ -50,6 +50,16 @@
       <Name>WixUIExtension</Name>
     </WixExtension>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Totoro.WinUI\Totoro.WinUI.csproj">
+      <Name>Totoro.WinUI</Name>
+      <Project>{346fd672-f5d5-4226-a467-efebdbab4bda}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
@@ -61,8 +71,8 @@
       <DefineConstants>BuildVersion=$(Version);BasePath=..\Totoro.WinUI\bin\publish\</DefineConstants>
     </PropertyGroup>
     <Exec Command="dotnet publish ..\Totoro.WinUI\Totoro.WinUI.csproj --self-contained -c $(Configuration) -r win10-x64 -o ..\Totoro.WinUI\bin\publish\ /property:BuildVersion=$(BuildVersion)" />
-	  <Exec Command="xcopy FFmpeg ..\Totoro.WinUI\bin\publish\FFmpeg\ /s /e /h"/>
-	<Exec Command="rd /q /s ..\Totoro.WinUI\bin\publish\gd-gb ..\Totoro.WinUI\bin\publish\mi-NZ ..\Totoro.WinUI\bin\publish\ug-CN"/>
+    <Exec Command="xcopy FFmpeg ..\Totoro.WinUI\bin\publish\FFmpeg\ /s /e /h" />
+    <Exec Command="rd /q /s ..\Totoro.WinUI\bin\publish\gd-gb ..\Totoro.WinUI\bin\publish\mi-NZ ..\Totoro.WinUI\bin\publish\ug-CN" />
     <HeatDirectory OutputFile="ComponentsGenerated.wxs" DirectoryRefId="INSTALLFOLDER" ComponentGroupName="PublishedComponents" SuppressCom="true" Directory="..\Totoro.WinUI\bin\publish\" SuppressFragments="true" SuppressRegistry="true" SuppressRootDirectory="true" AutoGenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" RunAsSeparateProcess="$(RunWixToolsOutOfProc)" PreprocessorVariable="var.BasePath" />
   </Target>
   <Target Name="AfterBuild">
