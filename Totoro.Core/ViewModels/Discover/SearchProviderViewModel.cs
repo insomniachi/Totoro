@@ -82,7 +82,8 @@ public class SearchProviderViewModel : NavigatableViewModel
     {
         var navigationParameters = new Dictionary<string, object>
         {
-            ["SearchResult"] = searchResult
+            [WatchViewModelParamters.SearchResult] = searchResult,
+            [WatchViewModelParamters.Provider] = SelectedProvider.Name
         };
 
         _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);

@@ -37,22 +37,22 @@ public class TotoroCommands : IEnableLogger
                 case AnimeModel anime:
                     navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
-                        ["Anime"] = anime,
-                        ["Provider"] = settings.DefaultProviderType
+                        [WatchViewModelParamters.Anime] = anime,
+                        [WatchViewModelParamters.Provider] = settings.DefaultProviderType
                     });
                     break;
                 case long id:
                     navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
-                        ["Id"] = id,
-                        ["Provider"] = settings.DefaultProviderType
+                        [WatchViewModelParamters.AnimeId] = id,
+                        [WatchViewModelParamters.Provider] = settings.DefaultProviderType
                     });
                     break;
                 case (AnimeModel anime, string providerType):
                     navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
-                        ["Anime"] = anime,
-                        ["Provider"] = providerType
+                        [WatchViewModelParamters.Anime] = anime,
+                        [WatchViewModelParamters.Provider] = providerType
                     });
                     break;
             }
@@ -95,16 +95,16 @@ public class TotoroCommands : IEnableLogger
                     {
                         navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                         {
-                            ["TorrentModel"] = model,
-                            ["UseDebrid"] = true,
+                            [WatchViewModelParamters.TorrentModel] = model,
+                            [WatchViewModelParamters.UseDebrid] = true,
                         });
                     }
                     break;
                 case TorrentState.Cached:
                     navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
-                        ["TorrentModel"] = model,
-                        ["UseDebrid"] = true,
+                        [WatchViewModelParamters.TorrentModel] = model,
+                        [WatchViewModelParamters.UseDebrid] = true,
                     });
                     break;
                 case TorrentState.NotCached:
@@ -118,8 +118,8 @@ public class TotoroCommands : IEnableLogger
         {
             navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
             {
-                ["TorrentModel"] = model,
-                ["UseDebrid"] = false,
+                [WatchViewModelParamters.TorrentModel] = model,
+                [WatchViewModelParamters.UseDebrid] = false,
             });
         });
 
@@ -158,7 +158,7 @@ public class TotoroCommands : IEnableLogger
         {
             navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>
             {
-                ["TorrentManager"] = torrentManager,
+                [WatchViewModelParamters.TorrentManager] = torrentManager,
             });
         });
         DownloadTorrentCommand = ReactiveCommand.Create<TorrentModel>(torrent =>

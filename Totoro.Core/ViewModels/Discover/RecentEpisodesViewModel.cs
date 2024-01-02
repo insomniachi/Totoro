@@ -96,7 +96,8 @@ namespace Totoro.Core.ViewModels.Discover
         {
             var navigationParameters = new Dictionary<string, object>
             {
-                ["EpisodeInfo"] = episode
+                [WatchViewModelParamters.EpisodeInfo] = episode,
+                [WatchViewModelParamters.Provider] = SelectedProvider.Name
             };
 
             _navigationService.NavigateTo<WatchViewModel>(parameter: navigationParameters);

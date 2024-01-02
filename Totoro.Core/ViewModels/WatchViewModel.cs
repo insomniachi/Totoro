@@ -15,6 +15,19 @@ using Totoro.Plugins.Torrents.Models;
 
 namespace Totoro.Core.ViewModels;
 
+public class WatchViewModelParamters
+{
+    public const string Provider = "Provider";
+    public const string TorrentModel = "TorrentModel";
+    public const string TorrentManager = "TorrentManager";
+    public const string Anime = "Anime";
+    public const string EpisodeInfo = "EpisodeInfo";
+    public const string AnimeId = "Id";
+    public const string SearchResult = "SearchResult";
+    public const string UseDebrid = "UseDebrid";
+    public const string LocalFolder = "LocalFolder";
+}
+
 public partial class WatchViewModel : NavigatableViewModel
 {
     private readonly IPluginFactory<AnimeProvider> _providerFactory;
@@ -156,10 +169,10 @@ public partial class WatchViewModel : NavigatableViewModel
             .Log(this, "Selected Episode :", ep => ep.IsSpecial ? ep.SpecialEpisodeNumber : ep.EpisodeNumber.ToString())
             .Do(epModel =>
             {
-                if (EpisodeModels.Count > 1)
+                if (EpisodeModels.Count > 1 && MediaPlayer.TransportControls is { } tranportControls)
                 {
-                    MediaPlayer.TransportControls.IsNextTrackButtonVisible = epModel != EpisodeModels.Last();
-                    MediaPlayer.TransportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
+                    tranportControls.IsNextTrackButtonVisible = epModel != EpisodeModels.Last();
+                    tranportControls.IsPreviousTrackButtonVisible = epModel != EpisodeModels.First();
                 }
 
                 SetEpisode(epModel.EpisodeNumber);
@@ -330,32 +343,33 @@ public partial class WatchViewModel : NavigatableViewModel
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
-        UseTorrents = parameters.ContainsKey("TorrentModel") || parameters.ContainsKey("TorrentManager");
+        UseTorrents = parameters.ContainsKey(WatchViewModelParamters.TorrentModel) || 
+                      parameters.ContainsKey(WatchViewModelParamters.TorrentManager);
         MediaPlayerType = UseTorrents ? Models.MediaPlayerType.FFMpeg : _settings.MediaPlayerType;
-        ProviderType = parameters.GetValueOrDefault("Provider", _settings.DefaultProviderType) as string;
+        ProviderType = parameters.GetValueOrDefault(WatchViewModelParamters.Provider, _settings.DefaultProviderType) as string;
         _providerOptions = _providerFactory.GetCurrentConfig(ProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
         SelectedAudioStream = GetDefaultAudioStream();
 
-        if (parameters.ContainsKey("Anime"))
+        if (parameters.ContainsKey(WatchViewModelParamters.Anime))
         {
-            Anime = parameters["Anime"] as AnimeModel;
+            Anime = parameters[WatchViewModelParamters.Anime] as AnimeModel;
         }
-        else if (parameters.ContainsKey("EpisodeInfo"))
+        else if (parameters.ContainsKey(WatchViewModelParamters.EpisodeInfo))
         {
-            var epInfo = parameters["EpisodeInfo"] as IAiredAnimeEpisode;
+            var epInfo = parameters[WatchViewModelParamters.EpisodeInfo] as IAiredAnimeEpisode;
             _episodeRequest = epInfo.Episode;
             await TrySetAnime(epInfo.Url, epInfo.Title);
             await CreateAnimDLResolver(epInfo.Url);
         }
-        else if (parameters.ContainsKey("Id"))
+        else if (parameters.ContainsKey(WatchViewModelParamters.AnimeId))
         {
-            var id = (long)parameters["Id"];
+            var id = (long)parameters[WatchViewModelParamters.AnimeId];
             Anime = await _animeService.GetInformation(id);
         }
-        else if (parameters.ContainsKey("SearchResult"))
+        else if (parameters.ContainsKey(WatchViewModelParamters.SearchResult))
         {
-            var searchResult = (ICatalogItem)parameters["SearchResult"];
+            var searchResult = (ICatalogItem)parameters[WatchViewModelParamters.SearchResult];
             if (searchResult is IHaveMalId { MalId: > 0 } ihmid && _settings.DefaultListService == ListServiceType.MyAnimeList)
             {
                 SetAnime(ihmid.MalId);
@@ -371,21 +385,21 @@ public partial class WatchViewModel : NavigatableViewModel
 
             await CreateAnimDLResolver(searchResult.Url);
         }
-        else if (parameters.ContainsKey("TorrentModel"))
+        else if (parameters.ContainsKey(WatchViewModelParamters.TorrentModel))
         {
-            Torrent = (TorrentModel)parameters["TorrentModel"];
-            var useDebrid = (bool)parameters["UseDebrid"];
+            Torrent = (TorrentModel)parameters[WatchViewModelParamters.TorrentModel];
+            var useDebrid = (bool)parameters[WatchViewModelParamters.UseDebrid];
             await InitializeFromTorrentModel(Torrent, useDebrid);
         }
-        else if (parameters.ContainsKey("LocalFolder"))
+        else if (parameters.ContainsKey(WatchViewModelParamters.LocalFolder))
         {
-            var folder = (string)parameters["LocalFolder"];
+            var folder = (string)parameters[WatchViewModelParamters.LocalFolder];
             await TrySetAnime(Path.GetFileName(folder));
             await CreateLocalStreamResolver(folder);
         }
-        else if (parameters.ContainsKey("TorrentManager"))
+        else if (parameters.ContainsKey(WatchViewModelParamters.TorrentManager))
         {
-            var torrentManager = (TorrentManager)parameters["TorrentManager"];
+            var torrentManager = (TorrentManager)parameters[WatchViewModelParamters.TorrentManager];
             await TrySetAnime(torrentManager.Torrent.Name);
             await CreateMonoTorrentStreamResolver(torrentManager.Torrent);
         }
