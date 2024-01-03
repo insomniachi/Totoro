@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Totoro.Plugins;
 
@@ -19,3 +20,17 @@ public class PluginInfo
 }
 
 public record PluginInfoSlim(string FileName, string Version, bool Exists = true, string DisplayName = "");
+
+public class PluginInfoEqualityComparer : IEqualityComparer<PluginInfoSlim>
+{
+    public bool Equals(PluginInfoSlim x, PluginInfoSlim y)
+    {
+        return x.FileName == y.FileName &&
+               x.Version == y.Version;
+    }
+
+    public int GetHashCode([DisallowNull] PluginInfoSlim obj)
+    {
+        return HashCode.Combine(obj.FileName, obj.Version);
+    }
+}

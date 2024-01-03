@@ -101,9 +101,11 @@ public class PluginManager : IPluginManager, IEnableLogger
             return;
         }
 
+        var comparer = new PluginInfoEqualityComparer();
+
         Directory.CreateDirectory(folder);
 
-        var newReleases = listedPlugins.Except(localPlugins).ToList();
+        var newReleases = listedPlugins.Except(localPlugins, comparer).ToList();
         foreach (var item in newReleases)
         {
             var path = Path.Combine(folder, item.FileName);
@@ -131,7 +133,7 @@ public class PluginManager : IPluginManager, IEnableLogger
         if (!AllowSideLoadingPlugins)
         {
             localPlugins = Directory.GetFiles(folder).Select(x => new PluginInfoSlim(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion!));
-            foreach (var item in localPlugins.Except(listedPlugins))
+            foreach (var item in localPlugins.Except(listedPlugins, comparer))
             {
                 this.Log().Info($"Removing plugin : {item.FileName}");
                 File.Delete(Path.Combine(folder, item.FileName));
