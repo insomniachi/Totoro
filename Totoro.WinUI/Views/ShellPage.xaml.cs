@@ -1,12 +1,10 @@
 ﻿using System.Diagnostics;
-using DynamicData;
+using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
-using Totoro.WinUI.Helpers;
-using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
 using Windows.System;
 using WinUIEx;
@@ -17,6 +15,8 @@ namespace Totoro.WinUI.Views;
 public sealed partial class ShellPage : Page
 {
     public ShellViewModel ViewModel { get; }
+
+    public Version Version { get; } = Assembly.GetExecutingAssembly().GetName().Version;
 
     public ShellPage()
     {
@@ -33,6 +33,7 @@ public sealed partial class ShellPage : Page
             {
                 App.MainWindow.PresenterKind = isFullWindow ? Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen : Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped;
                 NavigationViewControl.IsPaneVisible = !isFullWindow;
+                TitleBar.Visibility = isFullWindow ? Visibility.Collapsed : Visibility.Visible;
             });
 
         ShowHideWindowCommand = ReactiveCommand.Create(ShowHideWindow);
@@ -67,13 +68,13 @@ public sealed partial class ShellPage : Page
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
     {
-        AppTitleBar.Margin = new Thickness()
-        {
-            Left = sender.CompactPaneLength * (sender.DisplayMode == NavigationViewDisplayMode.Minimal ? 2 : 1),
-            Top = AppTitleBar.Margin.Top,
-            Right = AppTitleBar.Margin.Right,
-            Bottom = AppTitleBar.Margin.Bottom
-        };
+        //AppTitleBar.Margin = new Thickness()
+        //{
+        //    Left = sender.CompactPaneLength * (sender.DisplayMode == NavigationViewDisplayMode.Minimal ? 2 : 1),
+        //    Top = AppTitleBar.Margin.Top,
+        //    Right = AppTitleBar.Margin.Right,
+        //    Bottom = AppTitleBar.Margin.Bottom
+        //};
     }
 
     private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)
@@ -133,5 +134,15 @@ public sealed partial class ShellPage : Page
         App.HandleClosedEvents = false;
         TrayIcon.Dispose();
         App.MainWindow?.Close();
+    }
+
+    private void AppTitleBar_BackButtonClick(object sender, RoutedEventArgs e)
+    {
+        NavigationFrame.GoBack();
+    }
+
+    private void AppTitleBar_PaneButtonClick(object sender, RoutedEventArgs e)
+    {
+        NavigationViewControl.IsPaneOpen = !NavigationViewControl.IsPaneOpen;
     }
 }

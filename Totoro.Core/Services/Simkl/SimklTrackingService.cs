@@ -1,11 +1,12 @@
 ﻿
+
 namespace Totoro.Core.Services.Simkl;
 
 internal class SimklTrackingService : ITrackingService
 {
     private readonly ISimklClient _simklClient;
     private readonly IAnilistService _anilistService;
-    private readonly SimklWatchStatus[] _status = new[] { SimklWatchStatus.Watching, SimklWatchStatus.PlanToWatch, SimklWatchStatus.Completed, SimklWatchStatus.Hold, SimklWatchStatus.Dropped };
+    private readonly SimklWatchStatus[] _status = [SimklWatchStatus.Watching, SimklWatchStatus.PlanToWatch, SimklWatchStatus.Completed, SimklWatchStatus.Hold, SimklWatchStatus.Dropped];
 
     public SimklTrackingService(ISimklClient simklClient,
                                 IAnilistService anilistService,
@@ -73,6 +74,16 @@ internal class SimklTrackingService : ITrackingService
     public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
     {
         return Observable.Empty<IEnumerable<AnimeModel>>();
+    }
+
+    public async Task<User> GetUser()
+    {
+        var settings = await _simklClient.GetUserSettings();
+        return new User
+        {
+            Name = settings.User.Name,
+            Image = settings.User.Avatar
+        };
     }
 
     public void SetAccessToken(string accessToken)

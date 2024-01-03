@@ -91,6 +91,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Styles\TitleBar.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</None>
 		<Page Update="Views\DiscoverSections\MyAnimeListDiscoverSection.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

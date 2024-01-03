@@ -182,14 +182,16 @@ public partial class App : Application, IEnableLogger
 
     protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        //RegisterUriScheme();
         MainWindow = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
         Commands = GetService<TotoroCommands>();
         ConfigureLogging();
-        var activationService = GetService<IActivationService>();
-        await activationService.ActivateAsync(args);
+
+#if RELEASE
+        await GetService<IPluginManager>().Initialize(GetService<IKnownFolders>().Plugins);
+#endif
+        await GetService<IActivationService>().ActivateAsync(args);
 
         var actArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         App_Activated(actArgs);

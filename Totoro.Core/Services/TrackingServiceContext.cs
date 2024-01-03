@@ -74,4 +74,14 @@ public class TrackingServiceContext : ITrackingServiceContext
 
         return _trackers[_settings.DefaultListService].Value.Delete(id);
     }
+
+    public async Task<Models.User> GetUser()
+    {
+        if (!_connectivityService.IsConnected)
+        {
+            return new User();
+        }
+
+        return await _trackers[_settings.DefaultListService].Value.GetUser();
+    }
 }

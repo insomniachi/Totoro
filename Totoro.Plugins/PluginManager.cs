@@ -114,9 +114,18 @@ public class PluginManager : IPluginManager, IEnableLogger
 
             this.Log().Info($"Downloading plugin : {item.FileName} {item.Version}");
             var url = Url.Combine(_baseUrl, "Plugins Store", item.FileName);
-            using var s = await url.GetStreamAsync();
-            using var fs = new FileStream(path, FileMode.OpenOrCreate);
-            await s.CopyToAsync(fs);
+            var resonse = await url.GetAsync();
+
+            if(resonse.StatusCode < 300)
+            {
+                using var s = await resonse.GetStreamAsync();
+                using var fs = new FileStream(path, FileMode.OpenOrCreate);
+                await s.CopyToAsync(fs);
+            }
+            else
+            {
+                this.Log().Info($" Unable to download : {item.FileName} {item.Version}");
+            }
         }
 
         if (AllowSideLoadingPlugins)

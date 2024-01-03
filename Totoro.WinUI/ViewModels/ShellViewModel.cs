@@ -13,6 +13,7 @@ public partial class ShellViewModel : ReactiveObject
     [Reactive] public object Selected { get; set; }
     [Reactive] public bool IsBackEnabled { get; set; }
     [Reactive] public bool IsAuthenticated { get; set; }
+    [ObservableAsProperty] public User User { get; }
     [ObservableAsProperty] public bool IsWatchView { get; }
     [ObservableAsProperty] public bool IsAboutView { get; }
     [ObservableAsProperty] public bool IsWatchingExternal { get; }
@@ -25,6 +26,7 @@ public partial class ShellViewModel : ReactiveObject
                           ITrackingServiceContext trackingService,
                           IUpdateService updateService,
                           IViewService viewService,
+                          ISettings settings,
                           NowPlayingViewModel nowPlayingViewModel)
     {
         NavigationService = navigationService;
@@ -32,6 +34,18 @@ public partial class ShellViewModel : ReactiveObject
         NavigationViewService = navigationViewService;
         _nowPlayingViewModel = nowPlayingViewModel;
         IsAuthenticated = trackingService.IsAuthenticated;
+
+        var trackerChanged = settings
+            .ObservableForProperty(x => x.DefaultListService, x => x)
+            .SelectMany(x => trackingService.GetUser());
+
+        var authenticated = this.WhenAnyValue(x => x.IsAuthenticated)
+            .Where(x => x)
+            .SelectMany(_ => trackingService.GetUser());
+
+        Observable.Merge(trackerChanged, authenticated)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .ToPropertyEx(this, x => x.User);
 
         trackingService
             .Authenticated

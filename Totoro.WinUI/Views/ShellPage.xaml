@@ -2,50 +2,62 @@
     x:Class="Totoro.WinUI.Views.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:helpers="using:Totoro.WinUI.Helpers"
+    xmlns:root="using:Totoro.WinUI"
     xmlns:tb="using:H.NotifyIcon"
     xmlns:ui="using:CommunityToolkit.WinUI"
     Loaded="OnLoaded">
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ctk:TitleBar
+            x:Name="TitleBar"
+            Title="Totoro"
+            AutoConfigureCustomTitleBar="True"
+            BackButtonClick="AppTitleBar_BackButtonClick"
+            DisplayMode="Tall"
+            Icon="{ui:BitmapIcon Source=/Assets/StoreLogo.scale-400.png}"
+            IsBackButtonVisible="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsPaneButtonVisible="True"
+            PaneButtonClick="AppTitleBar_PaneButtonClick"
+            Subtitle="{x:Bind Version}"
+            Window="{x:Bind root:App.MainWindow}">
+            <ctk:TitleBar.Footer>
+                <Button
+                    Width="32"
+                    Height="32"
+                    Padding="0"
+                    BorderBrush="{ThemeResource CircleElevationBorderBrush}"
+                    CornerRadius="16"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.User.Name, Mode=OneWay}"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}">
+                    <PersonPicture
+                        Width="32"
+                        Height="32"
+                        DisplayName="{x:Bind ViewModel.User.Name, Mode=OneWay}"
+                        ProfilePicture="{x:Bind ViewModel.User.Image, Mode=OneWay}" />
+                </Button>
+            </ctk:TitleBar.Footer>
+        </ctk:TitleBar>
+
         <NavigationView
             x:Name="NavigationViewControl"
+            Grid.Row="1"
             AlwaysShowHeader="False"
             Canvas.ZIndex="0"
             DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
             ExpandedModeThresholdWidth="1600"
             Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
-            IsBackButtonVisible="Visible"
-            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
             IsSettingsVisible="True"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
-            <NavigationView.PaneHeader>
-                <Grid
-                    x:Name="AppTitleBar"
-                    Height="34"
-                    Margin="0"
-                    Canvas.ZIndex="1"
-                    IsHitTestVisible="True">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Image
-                        Width="24"
-                        Height="24"
-                        Margin="0,0,10,0"
-                        HorizontalAlignment="Left"
-                        Source="/Assets/WindowIcon.png"
-                        Stretch="Uniform" />
-                    <TextBlock
-                        x:Name="AppTitleBarText"
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                        TextWrapping="NoWrap" />
-                </Grid>
-            </NavigationView.PaneHeader>
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Name="DiscoverAnimeItem"

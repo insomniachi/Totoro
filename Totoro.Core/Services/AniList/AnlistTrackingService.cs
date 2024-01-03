@@ -244,4 +244,21 @@ public class AniListTrackingService : ITrackingService
                                 .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
                                 .WithProgress()))));
     }
+
+    public async Task<Models.User> GetUser()
+    {
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+        {
+            Query = new QueryQueryBuilder().WithViewer(new UserQueryBuilder()
+                    .WithName()
+                    .WithAvatar(new UserAvatarQueryBuilder().WithAllFields()))
+                    .Build(),
+        });
+
+        return new Models.User
+        {
+            Name = response.Data.Viewer.Name,
+            Image = response.Data.Viewer.Avatar?.Large
+        };
+    }
 }

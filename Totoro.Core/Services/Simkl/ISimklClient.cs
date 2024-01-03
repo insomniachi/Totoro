@@ -30,4 +30,7 @@ internal interface ISimklClient
 
     [Get("/anime/airing?client_id={clientId}")]
     Task<List<SimklMetaData>> GetAiringAnime(string clientId = "0a814ce1ee4819adcbcee198151e256f0700cc8c3976ad3084c8a329720124fc");
+
+    [Post("/users/settings")]
+    Task<UserSettings> GetUserSettings();
 }

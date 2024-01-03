@@ -192,6 +192,12 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         return _client.Anime().WithId(id).RemoveFromList().ToObservable();
     }
 
+    public async Task<User> GetUser()
+    {
+        var user = await _client.User();
+        return new User { Name = user.Name, Image = user.PictureUri };
+    }
+
     private static bool CurrentlyAiringOrFinishedToday(MalApi.Anime anime)
     {
         if (anime.Status == MalApi.AiringStatus.CurrentlyAiring)

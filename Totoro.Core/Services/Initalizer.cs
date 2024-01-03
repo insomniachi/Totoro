@@ -42,9 +42,6 @@ public class Initalizer : IInitializer
 
     public async Task Initialize()
     {
-#if RELEASE
-        await _pluginManager.Initialize(_knownFolders.Plugins); 
-#endif
         if (_connectivityService.IsConnected)
         {
             await _torrentEngine.TryRestoreState();

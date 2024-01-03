@@ -245,3 +245,57 @@ internal class SimklIds
     [JsonPropertyName("livechart")]
     public string LiveChart { get; set; }
 }
+
+internal class UserSettings
+{
+    [JsonPropertyName("user")]
+    public UserInfo User { get; set; }
+
+    [JsonPropertyName("account")]
+    public AccountInfo Account { get; set; }
+
+    [JsonPropertyName("connections")]
+    public ConnectionsInfo Connections { get; set; }
+}
+
+internal class UserInfo
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+
+    [JsonPropertyName("joined_at")]
+    public string JoinedAt { get; set; }
+
+    [JsonPropertyName("gender")]
+    public string Gender { get; set; }
+
+    [JsonPropertyName("avatar")]
+    public string Avatar { get; set; }
+
+    [JsonPropertyName("bio")]
+    public string Bio { get; set; }
+
+    [JsonPropertyName("loc")]
+    public string Location { get; set; }
+
+    [JsonPropertyName("age")]
+    public string Age { get; set; }
+}
+
+internal class AccountInfo
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("timezone")]
+    public string TimeZone { get; set; }
+
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+}
+
+internal class ConnectionsInfo
+{
+    [JsonPropertyName("facebook")]
+    public bool Facebook { get; set; }
+}

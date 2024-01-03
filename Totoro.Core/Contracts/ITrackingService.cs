@@ -7,6 +7,7 @@ public interface ITrackingService
     IObservable<bool> Delete(long id);
     IObservable<IEnumerable<AnimeModel>> GetAnime();
     IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime();
+    Task<User> GetUser();
     void SetAccessToken(string accessToken);
     bool IsAuthenticated { get; }
 }
@@ -21,4 +22,5 @@ public interface ITrackingServiceContext
     void SetAccessToken(string token, ListServiceType type);
     bool IsAuthenticated { get; }
     bool IsTrackerAuthenticated(ListServiceType type);
+    Task<User> GetUser();
 }
