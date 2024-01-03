@@ -128,7 +128,7 @@ public class PluginManager : IPluginManager, IEnableLogger
             }
         }
 
-        if (AllowSideLoadingPlugins)
+        if (!AllowSideLoadingPlugins)
         {
             localPlugins = Directory.GetFiles(folder).Select(x => new PluginInfoSlim(Path.GetFileName(x), FileVersionInfo.GetVersionInfo(x).FileVersion!));
             foreach (var item in localPlugins.Except(listedPlugins))
