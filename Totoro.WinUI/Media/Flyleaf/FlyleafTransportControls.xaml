@@ -248,20 +248,20 @@
                         Label="Playback Rate">
                         <AppBarButton.Flyout>
                             <MenuFlyout>
-                                <ToggleMenuFlyoutItem
+                                <RadioMenuFlyoutItem
                                     Click="ToggleMenuFlyoutItem_Click"
                                     IsChecked="True"
                                     Tag="{x:Bind c:PlaybackRate.One}"
                                     Text="1x" />
-                                <ToggleMenuFlyoutItem
+                                <RadioMenuFlyoutItem
                                     Click="ToggleMenuFlyoutItem_Click"
                                     Tag="{x:Bind c:PlaybackRate.OnePointTwoFive}"
                                     Text="1.25x" />
-                                <ToggleMenuFlyoutItem
+                                <RadioMenuFlyoutItem
                                     Click="ToggleMenuFlyoutItem_Click"
                                     Tag="{x:Bind c:PlaybackRate.OnePointFive}"
                                     Text="1.5x" />
-                                <ToggleMenuFlyoutItem
+                                <RadioMenuFlyoutItem
                                     Click="ToggleMenuFlyoutItem_Click"
                                     Tag="{x:Bind c:PlaybackRate.Two}"
                                     Text="2x" />

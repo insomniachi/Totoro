@@ -103,7 +103,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
 
         var mtc = d as FlyleafTransportControls;
         var flyout = mtc.QualitiesButton.Flyout as MenuFlyout;
-        foreach (var item in flyout.Items.OfType<ToggleMenuFlyoutItem>())
+        foreach (var item in flyout.Items.OfType<RadioMenuFlyoutItem>())
         {
             item.IsChecked = item.Text == s;
         }
@@ -133,7 +133,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
                 mtc.QualitiesButton.IsEnabled = true;
                 foreach (var item in qualities)
                 {
-                    var flyoutItem = new ToggleMenuFlyoutItem { Text = item };
+                    var flyoutItem = new RadioMenuFlyoutItem { Text = item };
                     flyoutItem.Click += mtc.FlyoutItem_Click;
                     flyout.Items.Add(flyoutItem);
                 }
@@ -226,7 +226,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
 
     private void ToggleMenuFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        var rate = (PlaybackRate)((ToggleMenuFlyoutItem)sender).Tag;
+        var rate = (PlaybackRate)((RadioMenuFlyoutItem)sender).Tag;
         _onPlaybackRateChanged.OnNext(rate);
     }
 
@@ -236,7 +236,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         flyout.Items.Clear();
         for (int i = 0; i < streams.Count; i++)
         {
-            var item = new ToggleMenuFlyoutItem
+            var item = new RadioMenuFlyoutItem
             {
                 Text = streams[i].Title,
                 IsChecked = i == 0,
@@ -249,7 +249,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
 
     private void Item_Click(object sender, RoutedEventArgs e)
     {
-        var title = ((ToggleMenuFlyoutItem)sender).Text;
+        var title = ((RadioMenuFlyoutItem)sender).Text;
         var stream = Player.Subtitles.Streams.FirstOrDefault(x => x.Title == title);
 
         if(stream is null)
@@ -258,13 +258,13 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         }
 
         var flyout = CCSelectionButton.Flyout as MenuFlyout;
-        foreach (var item in flyout.Items.OfType<ToggleMenuFlyoutItem>())
-        {
-            if(item.Text != title)
-            {
-                item.IsChecked = false;
-            }
-        }
+        //foreach (var item in flyout.Items.OfType<RadioMenuFlyoutItem>())
+        //{
+        //    if(item.Text != title)
+        //    {
+        //        item.IsChecked = false;
+        //    }
+        //}
 
         Player.OpenAsync(stream);
     }
