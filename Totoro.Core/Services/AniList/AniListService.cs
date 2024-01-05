@@ -113,9 +113,9 @@ public class AnilistService : IAnimeService, IAnilistService
 
     public async Task<string> GetBannerImage(long id)
     {
-        var animeId = await _animeIdService.GetId(id);
+        var animeId = await _animeIdService.GetId(_settings.DefaultListService, ListServiceType.AniList, id);
 
-        if (animeId is null)
+        if (animeId is { AniList: null })
         {
             return string.Empty;
         }
@@ -131,9 +131,9 @@ public class AnilistService : IAnimeService, IAnilistService
 
     public async Task<(int? Episode, DateTime? Time)> GetNextAiringEpisode(long id)
     {
-        var animeId = await _animeIdService.GetId(id);
+        var animeId = await _animeIdService.GetId(_settings.DefaultListService, ListServiceType.AniList, id);
 
-        if (animeId is null)
+        if (animeId is { AniList: null } )
         {
             return (null, null);
         }

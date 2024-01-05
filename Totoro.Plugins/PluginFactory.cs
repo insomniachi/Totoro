@@ -125,6 +125,9 @@ public class PluginFactory<T> : IPluginFactory<T>, IEnableLogger
     public void LoadPlugins(string folder)
     {
         var files = Directory.GetFiles(folder, "*.dll");
-        Parallel.ForEach(files, LoadPlugin);
+        foreach (var file in files)
+        {
+            LoadPlugin(file);
+        }
     }
 }

@@ -68,4 +68,17 @@ public record AnimeIdExtended : AnimeId
 {
     public long? Simkl { get; set; }
     public long? LiveChart { get; set; }
+
+    public bool HasId(ListServiceType type)
+    {
+        return type switch
+        {
+            ListServiceType.AniDb => AniDb is not null,
+            ListServiceType.AniList => AniList is not null,
+            ListServiceType.MyAnimeList => MyAnimeList is not null,
+            ListServiceType.Kitsu => Kitsu is not null,
+            ListServiceType.Simkl => Simkl is not null,
+            _ => false
+        };
+    }
 }

@@ -7,6 +7,6 @@ public interface IOfflineAnimeIdService
     bool IsAvailable { get; }
     void Initialize();
     Task UpdateOfflineMappings();
-    AnimeIdExtended GetId(ListServiceType serviceType, long id);
+    AnimeIdExtended GetId(ListServiceType from, ListServiceType to, long id);
     AnimeIdExtended GetId(long id);
 }

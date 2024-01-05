@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.UI.Xaml;
 using Totoro.Core.ViewModels;
+using Totoro.Core.ViewModels.About;
 using Totoro.Core.ViewModels.Discover;
 using Totoro.Core.ViewModels.Torrenting;
 using Totoro.Plugins;
@@ -17,6 +18,7 @@ using Totoro.WinUI.Services;
 using Totoro.WinUI.UserControls;
 using Totoro.WinUI.ViewModels;
 using Totoro.WinUI.Views;
+using Totoro.WinUI.Views.AboutSections;
 using Totoro.WinUI.Views.DiscoverSections;
 using Totoro.WinUI.Views.TorrentingSections;
 
@@ -94,6 +96,7 @@ public static class ServiceCollectionExtensions
         // child navigation
         services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(nameof(DiscoverViewModel));
         services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(nameof(TorrentingViewModel));
+        services.AddKeyedSingleton<IWinUINavigationService, NavigationService>(nameof(AboutAnimeViewModel));
 
         services.AddTransient<INavigationViewService, NavigationViewService>();
         services.AddTransient<IContentDialogService, ContentDialogService>();
@@ -141,6 +144,12 @@ public static class ServiceCollectionExtensions
         // Torrenting
         services.AddPageForNavigation<SearchTorrentViewModel, SearchSection>();
         services.AddPageForNavigation<TorrentDownloadsViewModel, DownloadsSection>();
+
+        // About Anime
+        services.AddPageForNavigation<AnimeCardListViewModel, AnimeCardListSection>();
+        services.AddPageForNavigation<PreviewsViewModel, PreviewsSection>();
+        services.AddPageForNavigation<OriginalSoundTracksViewModel, OriginalSoundTracksSection>();
+        services.AddPageForNavigation<AnimeEpisodesTorrentViewModel, EpisodesTorrentsSection>();
 
         return services;
     }

@@ -6,20 +6,13 @@ using Totoro.Plugins.Contracts;
 
 namespace Totoro.Core.Services
 {
-    public partial class StreamPageMapper : IStreamPageMapper, IEnableLogger
+    public partial class StreamPageMapper(IPluginFactory<AnimeProvider> providerFactory,
+                                          IAnimeIdService animeIdService,
+                                          ISettings settings) : IStreamPageMapper, IEnableLogger
     {
-        private readonly IPluginFactory<AnimeProvider> _providerFactory;
-        private readonly IAnimeIdService _animeIdService;
-        private readonly ISettings _settings;
-
-        public StreamPageMapper(IPluginFactory<AnimeProvider> providerFactory,
-                                IAnimeIdService animeIdService,
-                                ISettings settings)
-        {
-            _providerFactory = providerFactory;
-            _animeIdService = animeIdService;
-            _settings = settings;
-        }
+        private readonly IPluginFactory<AnimeProvider> _providerFactory = providerFactory;
+        private readonly IAnimeIdService _animeIdService = animeIdService;
+        private readonly ISettings _settings = settings;
 
         public async Task<long?> GetIdFromUrl(string url, string provider)
         {
@@ -81,7 +74,7 @@ namespace Totoro.Core.Services
                 { AniDb: not null } => (ListServiceType.AniDb, id.AniDb.Value)
             };
 
-            return await _animeIdService.GetId(type, listId);
+            return await _animeIdService.GetId(type, _settings.DefaultListService, listId);
         }
     }
 }

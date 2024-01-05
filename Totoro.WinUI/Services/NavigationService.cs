@@ -121,7 +121,7 @@ public class NavigationService(IVolatileStateStorage stateStorage) : IWinUINavig
         }
 
 
-        if ((_frame.Content?.GetType()) == pageType && (parameter == null || parameter.Equals(_lastParameterUsed)))
+        if ((_frame?.Content?.GetType()) == pageType && (parameter == null || parameter.Equals(_lastParameterUsed)))
         {
             return false;
         }

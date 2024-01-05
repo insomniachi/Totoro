@@ -11,7 +11,7 @@ public sealed partial class PivotNavigation : UserControl
     private IWinUINavigationService _navigationService;
     private static readonly NavigationTransitionInfo _fromLeft = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromLeft };
     private static readonly NavigationTransitionInfo _fromRight = new SlideNavigationTransitionInfo() { Effect = SlideNavigationTransitionEffect.FromRight };
-    private int _prevIndex = -1;
+    private int _prevIndex = 0;
 
     public PivotItemModel SelectedItem
     {
@@ -48,11 +48,21 @@ public sealed partial class PivotNavigation : UserControl
             return;
         }
 
-        var index = control.ItemSource.IndexOf(selectedItem);
-        var transition = index > control._prevIndex ? _fromRight : _fromLeft;
-        control._prevIndex = index;
+        if(control._navigationService.Frame is null)
+        {
+            control._navigationService.Frame = control.NavFrame;
+        }
 
-        control._navigationService.NavigateTo(selectedItem.ViewModel, transitionInfo: transition);
+        var index = control.ItemSource.IndexOf(selectedItem);
+        
+        NavigationTransitionInfo transition = control._prevIndex == index
+            ? new SuppressNavigationTransitionInfo()
+            : index > control._prevIndex
+                ? _fromRight 
+                : _fromLeft;
+
+        control._prevIndex = index;
+        control._navigationService.NavigateTo(selectedItem.ViewModel, parameter: selectedItem.NavigationParameters, transitionInfo: transition);
     }
 
     private static void OnSectionGroupNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

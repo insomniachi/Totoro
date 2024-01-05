@@ -5,6 +5,7 @@
     xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Margin="0,25"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -15,7 +16,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="0,25">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />

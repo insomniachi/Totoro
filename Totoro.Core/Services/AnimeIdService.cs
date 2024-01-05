@@ -2,26 +2,19 @@
 
 namespace Totoro.Core.Services;
 
-public class AnimeIdService : IAnimeIdService
+public class AnimeIdService(ISettings settings,
+                            ISimklService simklService,
+                            IOfflineAnimeIdService offlineIdMap) : IAnimeIdService
 {
-    private readonly ISettings _settings;
-    private readonly ISimklService _simklService;
-    private readonly IOfflineAnimeIdService _offlineIdMap;
+    private readonly ISettings _settings = settings;
+    private readonly ISimklService _simklService = simklService;
+    private readonly IOfflineAnimeIdService _offlineIdMap = offlineIdMap;
 
-    public AnimeIdService(ISettings settings,
-                          ISimklService simklService,
-                          IOfflineAnimeIdService offlineIdMap)
+    public async ValueTask<AnimeIdExtended> GetId(ListServiceType from, ListServiceType to, long id)
     {
-        _settings = settings;
-        _simklService = simklService;
-        _offlineIdMap = offlineIdMap;
-    }
-
-    public async ValueTask<AnimeIdExtended> GetId(ListServiceType serviceType, long id)
-    {
-        if(_offlineIdMap.GetId(serviceType, id) is not { } idExtended)
+        if(_offlineIdMap.GetId(from, to, id) is not { } idExtended)
         {
-            return await _simklService.GetId(serviceType, id);
+            return await _simklService.GetId(from, id);
         }
 
         return idExtended;

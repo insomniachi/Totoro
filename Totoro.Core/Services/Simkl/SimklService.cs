@@ -66,11 +66,14 @@ internal class SimklService : ISimklService
 
         var episodes = await _simklClient.GetEpisodes(id);
 
-        return episodes.Select(x => new EpisodeModel
-        {
-            EpisodeNumber = x.EpisodeNumber,
-            EpisodeTitle = x.Title
-        });
+        return episodes
+            .DistinctBy(x => x.EpisodeNumber)
+            .Where(x => x.Aired)
+            .Select(x => new EpisodeModel
+            {
+                EpisodeNumber = x.EpisodeNumber,
+                EpisodeTitle = x.Title
+            });
     }
 
     private async ValueTask<long> GetSimklId(long id)

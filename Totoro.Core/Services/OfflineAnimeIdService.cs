@@ -1,41 +1,45 @@
 ﻿using System.Collections.Frozen;
-using System.Diagnostics;
 using System.Text.Json.Nodes;
 using Flurl.Http;
 using Totoro.Core.Services.Simkl;
 
 namespace Totoro.Core.Services;
 
-public class OfflineAnimeIdService : IOfflineAnimeIdService
+public class OfflineAnimeIdService(IFileService fileService,
+                                   IKnownFolders knownFolders,
+                                   ISettings settings) : IOfflineAnimeIdService
 {
-    private readonly IFileService _fileService;
-    private readonly IKnownFolders _knownFolders;
-    private readonly ISettings _settings;
     private readonly string _dbUrl = @"https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-offline-database-reduced.json";
     private readonly string _fileName = @"ids.json";
     private List<AnimeIdExtended> _ids;
     private FrozenDictionary<long, AnimeIdExtended> _idsMap;
 
-    public OfflineAnimeIdService(IFileService fileService,
-                        IKnownFolders knownFolders,
-                        ISettings settings)
-    {
-        _fileService = fileService;
-        _knownFolders = knownFolders;
-        _settings = settings;
-    }
-
     public bool IsAvailable { get; set; } = true;
 
     public void Initialize()
     {
-        _ids = _fileService.Read<List<AnimeIdExtended>>(_knownFolders.ApplicationData, _fileName) ?? [];
-        _idsMap = GetMapping(_settings.DefaultListService);
+        _ids = fileService.Read<List<AnimeIdExtended>>(knownFolders.ApplicationData, _fileName) ?? [];
+        _idsMap = GetMapping(settings.DefaultListService);
     }
 
     public AnimeIdExtended GetId(ListServiceType serviceType, long id)
     {
         if (!IsAvailable || _ids.FirstOrDefault(GetSelector(serviceType, id)) is not { } idExtended)
+        {
+            return null;
+        }
+
+        return idExtended;
+    }
+
+    public AnimeIdExtended GetId(ListServiceType from, ListServiceType to, long id)
+    {
+        if (!IsAvailable || _ids.FirstOrDefault(GetSelector(from, id)) is not { } idExtended)
+        {
+            return null;
+        }
+
+        if(!idExtended.HasId(to))
         {
             return null;
         }
@@ -102,9 +106,9 @@ public class OfflineAnimeIdService : IOfflineAnimeIdService
 
             _ids.Add(id);
         }
-        _idsMap = GetMapping(_settings.DefaultListService);
+        _idsMap = GetMapping(settings.DefaultListService);
         IsAvailable = true;
-        _fileService.Save(_knownFolders.ApplicationData, _fileName, _ids);
+        fileService.Save(knownFolders.ApplicationData, _fileName, _ids);
     }
 
     private static Func<AnimeIdExtended, bool> GetSelector(ListServiceType type, long serviceId)
