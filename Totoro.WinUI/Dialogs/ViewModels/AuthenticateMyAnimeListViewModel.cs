@@ -6,6 +6,8 @@ namespace Totoro.WinUI.Dialogs.ViewModels;
 
 public class AuthenticateMyAnimeListViewModel : DialogViewModel
 {
+    private readonly string _redirectUrl = "https://github.com/insomniachi";
+
     public AuthenticateMyAnimeListViewModel(IConfiguration configuration,
                                             ILocalSettingsService localSettingsService,
                                             INavigationService navigationService,
@@ -16,7 +18,7 @@ public class AuthenticateMyAnimeListViewModel : DialogViewModel
         AuthUrl = MalAuthHelper.GetAuthUrl(clientId);
 
         this.ObservableForProperty(x => x.AuthUrl, x => x)
-            .Where(url => url.Contains("code"))
+            .Where(url => url.StartsWith(_redirectUrl, StringComparison.OrdinalIgnoreCase))
             .Do(_ => IsLoading = true)
             .ObserveOn(RxApp.TaskpoolScheduler)
             .Select(query => HttpUtility.ParseQueryString(query)[0])
