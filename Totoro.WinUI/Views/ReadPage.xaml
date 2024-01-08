@@ -11,7 +11,7 @@
     xmlns:views="using:Totoro.WinUI.Views"
     mc:Ignorable="d">
 
-    <Grid Margin="0,45,0,0">
+    <Grid Margin="0,30,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition Width="Auto" />

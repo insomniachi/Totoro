@@ -174,6 +174,7 @@ public class CustomMediaTransportControls : MediaTransportControls, IMediaTransp
         windowService?
            .IsFullWindowChanged
            .Where(_ => _fullWindowSymbol is not null)
+           .ObserveOn(RxApp.MainThreadScheduler)
            .Subscribe(isFullWindwow =>
            {
                _fullWindowSymbol.Symbol = isFullWindwow ? Symbol.BackToWindow : Symbol.FullScreen;

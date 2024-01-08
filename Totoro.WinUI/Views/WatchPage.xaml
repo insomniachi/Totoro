@@ -38,6 +38,7 @@
         <uc:Expander
             x:Name="EpisodesExpander"
             Grid.Column="1"
+            Margin="0,30,0,0"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Top"

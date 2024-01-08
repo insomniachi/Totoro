@@ -1,18 +1,22 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using Microsoft.UI.Input;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Splat;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.ViewModels;
+using Windows.Foundation;
 using Windows.System;
 using WinUIEx;
 
 namespace Totoro.WinUI.Views;
 
 // TODO: Update NavigationViewItem titles and icons in ShellPage.xaml.
-public sealed partial class ShellPage : Page
+public sealed partial class ShellPage : Page, IEnableLogger
 {
     public ShellViewModel ViewModel { get; }
 
@@ -29,11 +33,11 @@ public sealed partial class ShellPage : Page
 
         App.GetService<IWindowService>()
             .IsFullWindowChanged
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(isFullWindow =>
             {
-                App.MainWindow.PresenterKind = isFullWindow ? Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen : Microsoft.UI.Windowing.AppWindowPresenterKind.Overlapped;
-                NavigationViewControl.IsPaneVisible = !isFullWindow;
-                TitleBar.Visibility = isFullWindow ? Visibility.Collapsed : Visibility.Visible;
+                var presenterKind = isFullWindow ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Overlapped;
+                App.MainWindow.AppWindow.SetPresenter(presenterKind);
             });
 
         ShowHideWindowCommand = ReactiveCommand.Create(ShowHideWindow);
@@ -56,7 +60,12 @@ public sealed partial class ShellPage : Page
             }
         };
 
-        App.MainWindow.ExtendsContentIntoTitleBar = true;
+        App.MainWindow.AppWindow.Changed += AppWindow_Changed;
+        double scaleAdjustment = NavigationViewControl.XamlRoot.RasterizationScale;
+        var transform = NavigationViewControl.TransformToVisual(null);
+        var bounds = transform.TransformBounds(new Rect(0, 0, 50, 50));
+        InputNonClientPointerSource nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(App.MainWindow.AppWindow.Id);
+        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [GetRect(bounds, scaleAdjustment)]);
 
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
@@ -66,15 +75,49 @@ public sealed partial class ShellPage : Page
         KeyboardAccelerators.Add(accelerator);
     }
 
-    private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+    private static Windows.Graphics.RectInt32 GetRect(Rect bounds, double scale)
     {
-        //AppTitleBar.Margin = new Thickness()
-        //{
-        //    Left = sender.CompactPaneLength * (sender.DisplayMode == NavigationViewDisplayMode.Minimal ? 2 : 1),
-        //    Top = AppTitleBar.Margin.Top,
-        //    Right = AppTitleBar.Margin.Right,
-        //    Bottom = AppTitleBar.Margin.Bottom
-        //};
+        return new Windows.Graphics.RectInt32(
+            _X: (int)Math.Round(bounds.X * scale),
+            _Y: (int)Math.Round(bounds.Y * scale),
+            _Width: (int)Math.Round(bounds.Width * scale),
+            _Height: (int)Math.Round(bounds.Height * scale)
+        );
+    }
+
+    private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+    {
+        if (!args.DidPresenterChange)
+        {
+            return;
+        }
+
+        try
+        {
+            switch (sender.Presenter.Kind)
+            {
+                case AppWindowPresenterKind.FullScreen:
+                    // Full screen - hide the custom title bar
+                    // and the default system title bar.
+                    //Grid.SetRow(NavigationViewControl, 0);
+                    //Grid.SetRowSpan(NavigationViewControl, 2);
+                    NavigationViewControl.IsPaneVisible = false;
+                    break;
+
+                case AppWindowPresenterKind.Overlapped:
+                    
+                    // Normal - hide the system title bar
+                    // and use the custom title bar instead.
+                    //Grid.SetRow(NavigationViewControl, 1);
+                    //Grid.SetRowSpan(NavigationViewControl, 1);
+                    NavigationViewControl.IsPaneVisible = true;
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            this.Log().Fatal(ex);
+        }
     }
 
     private static KeyboardAccelerator BuildKeyboardAccelerator(VirtualKey key, VirtualKeyModifiers? modifiers = null)

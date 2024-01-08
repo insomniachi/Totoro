@@ -109,6 +109,7 @@ public sealed partial class WatchPage : WatchPageBase
 
             windowService
             .IsFullWindowChanged
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(isFullWindow => EpisodesExpander.Visibility = isFullWindow ? Visibility.Collapsed : Visibility.Visible);
 
         });

@@ -13,10 +13,10 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition />
         </Grid.RowDefinitions>
 
-        <ctk:TitleBar
+        <!--<ctk:TitleBar
             x:Name="TitleBar"
             Title="Totoro"
             AutoConfigureCustomTitleBar="True"
@@ -27,7 +27,7 @@
             IsPaneButtonVisible="True"
             PaneButtonClick="AppTitleBar_PaneButtonClick"
             Subtitle="{x:Bind Version}"
-            Window="{x:Bind root:App.MainWindow}">
+            Window="{x:Bind root:App.MainWindow, Mode=OneWay}">
             <ctk:TitleBar.Footer>
                 <Button
                     Width="32"
@@ -44,20 +44,46 @@
                         ProfilePicture="{x:Bind ViewModel.User.Image, Mode=OneWay}" />
                 </Button>
             </ctk:TitleBar.Footer>
-        </ctk:TitleBar>
+        </ctk:TitleBar>-->
 
         <NavigationView
             x:Name="NavigationViewControl"
             Grid.Row="1"
             AlwaysShowHeader="False"
             Canvas.ZIndex="0"
-            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
             ExpandedModeThresholdWidth="1600"
             Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
-            IsBackButtonVisible="Collapsed"
-            IsPaneToggleButtonVisible="False"
+            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsPaneToggleButtonVisible="True"
             IsSettingsVisible="True"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
+            <NavigationView.PaneHeader>
+                <Grid
+                    x:Name="AppTitleBar"
+                    Height="34"
+                    Margin="0"
+                    Canvas.ZIndex="1"
+                    IsHitTestVisible="True">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Image
+                        Width="24"
+                        Height="24"
+                        Margin="20,0"
+                        HorizontalAlignment="Left"
+                        Source="/Assets/WindowIcon.png"
+                        Stretch="Uniform" />
+                    <TextBlock
+                        x:Name="AppTitleBarText"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="Totoro"
+                        TextWrapping="NoWrap" />
+                </Grid>
+            </NavigationView.PaneHeader>
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Name="DiscoverAnimeItem"
@@ -68,26 +94,6 @@
                         <KeyboardAccelerator Key="D" Modifiers="Menu" />
                     </NavigationViewItem.KeyboardAccelerators>
                 </NavigationViewItem>
-                <!--<NavigationViewItem
-                    Content="Discover"
-                    Icon="World"
-                    IsExpanded="true">
-                    <NavigationViewItem.MenuItems>
-                        <NavigationViewItem
-                            x:Name="DiscoverAnimeItem"
-                            helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverViewModel"
-                            Content="Anime"
-                            Icon="{ui:FontIcon Glyph=&#xE714;}">
-                            <NavigationViewItem.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="D" Modifiers="Menu" />
-                            </NavigationViewItem.KeyboardAccelerators>
-                        </NavigationViewItem>
-                        <NavigationViewItem
-                            helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.DiscoverMangaViewModel"
-                            Content="Manga"
-                            Icon="{ui:FontIcon Glyph=&#xE736;}" />
-                    </NavigationViewItem.MenuItems>
-                </NavigationViewItem>-->
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.UserListViewModel"
                     Content="My List"
@@ -134,7 +140,7 @@
                     Tapped="Feedback_Tapped" />
             </NavigationView.PaneFooter>
             <Grid>
-                <Frame x:Name="NavigationFrame" Margin="0" />
+                <Frame x:Name="NavigationFrame" />
             </Grid>
         </NavigationView>
 

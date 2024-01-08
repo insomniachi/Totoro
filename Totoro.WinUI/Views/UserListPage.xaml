@@ -36,7 +36,7 @@
             <ctk:Case.Value>
                 <x:Boolean>True</x:Boolean>
             </ctk:Case.Value>
-            <Grid x:Name="ContentArea" Margin="0,25,0,0">
+            <Grid x:Name="ContentArea" Margin="0,30,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />

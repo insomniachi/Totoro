@@ -13,7 +13,7 @@
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<Version Condition=" '$(BuildVersion)' == '' ">2.0.0.0</Version>
 		<Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>
-		<PackageIcon>WindowIcon.png</PackageIcon>
+		<PackageIcon>Assets\WindowIcon.png</PackageIcon>
 		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
 		<EnablePreviewMsixTooling>false</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>

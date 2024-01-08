@@ -200,6 +200,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         windowService
            .IsFullWindowChanged
            .Where(_ => FullWindowSymbol is not null)
+           .ObserveOn(RxApp.MainThreadScheduler)
            .Subscribe(isFullWindwow =>
            {
                FullWindowSymbol.Symbol = isFullWindwow ? Symbol.BackToWindow : Symbol.FullScreen;
