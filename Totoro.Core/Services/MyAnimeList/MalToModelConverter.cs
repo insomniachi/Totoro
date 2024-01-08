@@ -24,7 +24,7 @@ public class MalToModelConverter
                 model.Tracking = new Tracking
                 {
                     WatchedEpisodes = progress.WatchedEpisodes,
-                    Status = (AnimeStatus)(int)progress.Status,
+                    Status = progress.IsRewatching ? AnimeStatus.Rewatching : (AnimeStatus)(int)progress.Status,
                     Score = (int)progress.Score,
                     UpdatedAt = progress.UpdatedAt,
                     StartDate = progress.StartDate,

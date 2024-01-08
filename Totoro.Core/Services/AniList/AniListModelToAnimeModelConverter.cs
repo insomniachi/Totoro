@@ -107,6 +107,7 @@ namespace Totoro.Core.Services.AniList
                 MediaListStatus.Paused => AnimeStatus.OnHold,
                 MediaListStatus.Dropped => AnimeStatus.Dropped,
                 MediaListStatus.Completed => AnimeStatus.Completed,
+                MediaListStatus.Repeating => AnimeStatus.Rewatching,
                 _ => null
             };
         }
@@ -120,6 +121,7 @@ namespace Totoro.Core.Services.AniList
                 AnimeStatus.OnHold => MediaListStatus.Paused,
                 AnimeStatus.Completed => MediaListStatus.Completed,
                 AnimeStatus.Dropped => MediaListStatus.Dropped,
+                AnimeStatus.Rewatching => MediaListStatus.Repeating,
                 _ => null
             };
         }

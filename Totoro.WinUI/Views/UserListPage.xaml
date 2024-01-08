@@ -51,7 +51,7 @@
 
                     <ctk:Segmented
                         Margin="{StaticResource SmallTopBottomMargin}"
-                        ItemsSource="{x:Bind Statuses}"
+                        ItemsSource="{x:Bind ViewModel.Statuses, Mode=OneWay}"
                         SelectedItem="{x:Bind ViewModel.Filter.ListStatus, Mode=TwoWay}">
                         <ctk:Segmented.ItemTemplate>
                             <DataTemplate x:DataType="cm:AnimeStatus">

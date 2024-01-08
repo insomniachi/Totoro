@@ -16,15 +16,6 @@ public sealed partial class UserListPage : UserListPageBase
 {
     public const string DataGridSettingsKey = "UserListDataGridSettings";
 
-    public List<AnimeStatus> Statuses { get; set; } =
-    [
-        AnimeStatus.Watching,
-        AnimeStatus.PlanToWatch,
-        AnimeStatus.OnHold,
-        AnimeStatus.Completed,
-        AnimeStatus.Dropped
-    ];
-
     public static List<int?> Scores { get; } = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     public static string ToStatusString(AnimeStatus status)
@@ -36,6 +27,7 @@ public sealed partial class UserListPage : UserListPageBase
             AnimeStatus.OnHold => "On Hold",
             AnimeStatus.Completed => "Completed",
             AnimeStatus.Dropped => "Dropped",
+            AnimeStatus.Rewatching => "Rewatching",
             _ => throw new ArgumentException(null, nameof(status))
         };
     }

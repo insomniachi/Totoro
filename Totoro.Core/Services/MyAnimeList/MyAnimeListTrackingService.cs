@@ -156,7 +156,14 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
         if (tracking.Status is { } status)
         {
-            request.WithStatus((MalApi.AnimeStatus)(int)status);
+            if(status == AnimeStatus.Rewatching)
+            {
+                request.WithIsRewatching(true);
+            }
+            else
+            {
+                request.WithStatus((MalApi.AnimeStatus)(int)status);
+            }
         }
 
         if (tracking.Score is { } score)

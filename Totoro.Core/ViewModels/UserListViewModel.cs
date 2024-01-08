@@ -1,4 +1,5 @@
-﻿using System.Reactive.Concurrency;
+﻿using System.Data;
+using System.Reactive.Concurrency;
 using System.Text.RegularExpressions;
 
 namespace Totoro.Core.ViewModels;
@@ -6,7 +7,7 @@ namespace Totoro.Core.ViewModels;
 
 public partial class AnimeCollectionFilter : ReactiveObject
 {
-    [Reactive] public AnimeStatus ListStatus { get; set; } = AnimeStatus.Watching;
+    [Reactive] public AnimeStatus? ListStatus { get; set; } = AnimeStatus.Watching;
     [Reactive] public string SearchText { get; set; }
     [Reactive] public string Year { get; set; }
     [Reactive] public AiringStatus? AiringStatus { get; set; }
@@ -41,6 +42,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
     private readonly HashSet<string> _genres = [];
+    private readonly List<AnimeStatus> _allStatuses = [AnimeStatus.Watching, AnimeStatus.PlanToWatch, AnimeStatus.Completed, AnimeStatus.OnHold, AnimeStatus.Rewatching, AnimeStatus.Dropped];
 
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IViewService viewService,
@@ -141,6 +143,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     [Reactive] public GridViewSettings GridViewSettings { get; set; }
     [Reactive] public string SelectedSortProperty { get; set; }
     [Reactive] public bool IsSortByAscending { get; set; }
+    [Reactive] public List<AnimeStatus> Statuses { get; set; } 
     [ObservableAsProperty] public bool IsListView { get; }
 
     public ListServiceType ListType { get; }
@@ -178,7 +181,12 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Finally(() =>
                         {
-                            RxApp.MainThreadScheduler.Schedule(() => Genres = new(_genres));
+                            RxApp.MainThreadScheduler.Schedule(() =>
+                            {
+                                UpdateStatuses();
+                                Genres = new(_genres);
+                                IsLoading = false;
+                            });
                         })
                         .Subscribe(list =>
                         {
@@ -190,7 +198,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                                     _genres.Add(genre);
                                 }
                             }
-                            IsLoading = false;
                             Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
                         }, RxApp.DefaultExceptionHandler.OnError)
                         .DisposeWith(Garbage);
@@ -214,6 +221,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
         Filter = state.GetValue<AnimeCollectionFilter>(nameof(Filter));
+        UpdateStatuses();
         Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
     }
 
@@ -240,6 +248,13 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             { ColumnName: "Last Updated" } => CreateComparer(x => x.Tracking.UpdatedAt, sort.IsAscending),
             _ => null
         };
+    }
+
+    private void UpdateStatuses()
+    {
+        var prevStatus = Filter.ListStatus ?? AnimeStatus.Watching;
+        Statuses = _allStatuses.Where(x => _animeCache.Items.Any(y => y.Tracking.Status == x)).ToList();
+        Filter.ListStatus = prevStatus;
     }
 
     private static SortExpressionComparer<AnimeModel> CreateComparer(Func<AnimeModel, IComparable> expression, bool isAscending) => new() { new(expression, isAscending ? SortDirection.Ascending : SortDirection.Descending) };
