@@ -25,21 +25,6 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
     {
         this.InitializeComponent();
 
-        _pointerMoved
-            .Throttle(TimeSpan.FromSeconds(3))
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ => TransportControls.Bar.Visibility = Visibility.Collapsed, RxApp.DefaultExceptionHandler.OnError);
-
-        this.WhenAnyValue(x => x.Player.Status)
-            .Where(status => status is Status.Playing)
-            .Subscribe(_ => ShowTransportControls());
-
-        TransportControls.DoubleTapped += (sender, args) => args.Handled = true;
-        Loaded += FlyleafMediaPlayerElement_Loaded;
-    }
-
-    private void FlyleafMediaPlayerElement_Loaded(object sender, RoutedEventArgs e)
-    {
         Engine.Start(new EngineConfig()
         {
             FFmpegDevices = false,    // Prevents loading avdevice/avfilter dll files. Enable it only if you plan to use dshow/gdigrab etc.
@@ -64,6 +49,17 @@ public sealed partial class FlyleafMediaPlayerElement : UserControl
             UIRefreshInterval = 250,      // How often (in ms) to notify the UI
             UICurTimePerSecond = true,     // Whether to notify UI for CurTime only when it's second changed or by UIRefreshInterval
         });
+
+        _pointerMoved
+            .Throttle(TimeSpan.FromSeconds(3))
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(_ => TransportControls.Bar.Visibility = Visibility.Collapsed, RxApp.DefaultExceptionHandler.OnError);
+
+        this.WhenAnyValue(x => x.Player.Status)
+            .Where(status => status is Status.Playing)
+            .Subscribe(_ => ShowTransportControls());
+
+        TransportControls.DoubleTapped += (sender, args) => args.Handled = true;
     }
 
     private void FSC_PointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
