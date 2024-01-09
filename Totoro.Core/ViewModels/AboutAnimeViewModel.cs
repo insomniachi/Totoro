@@ -45,12 +45,12 @@ public class AboutAnimeViewModel : NavigatableViewModel
         });
         _sectionsList.Add(new PivotItemModel
         {
-            Header = "Related",
+            Header = "Recommended",
             ViewModel = typeof(AnimeCardListViewModel),
         });
         _sectionsList.Add(new PivotItemModel
         {
-            Header = "Previews",
+            Header = "OST",
             ViewModel = typeof(OriginalSoundTracksViewModel),
         });
         _sectionsList.Add(new PivotItemModel
