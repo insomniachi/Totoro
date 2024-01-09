@@ -40,30 +40,6 @@ public sealed partial class UserListPage : UserListPageBase
 
         this.WhenActivated(d =>
         {
-            this.WhenAnyValue(x => x.ViewModel.Filter.ListStatus)
-                .Subscribe(x =>
-                {
-                    switch (x)
-                    {
-                        case AnimeStatus.Watching:
-                            WatchingFlyoutToggle.IsChecked = true;
-                            break;
-                        case AnimeStatus.PlanToWatch:
-                            PtwFlyoutToggle.IsChecked = true;
-                            break;
-                        case AnimeStatus.Completed:
-                            CompletedFlyoutToggle.IsChecked = true;
-                            break;
-                        case AnimeStatus.OnHold:
-                            OnHoldFlyoutToggle.IsChecked = true;
-                            break;
-                        case AnimeStatus.Dropped:
-                            DroppedFlyoutToggle.IsChecked = true;
-                            break;
-                    }
-                })
-                .DisposeWith(d);
-
             QuickAdd
             .Events()
             .Click
@@ -76,27 +52,17 @@ public sealed partial class UserListPage : UserListPageBase
             .Subscribe(_ => GenresTeachingTip.IsOpen ^= true);
         });
 
-        ViewInBrowser = ReactiveCommand.Create<AnimeModel>(async anime =>
-        {
-            var url = ViewModel.ListType switch
-            {
-                ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{anime.Id}/",
-                ListServiceType.AniList => $@"https://anilist.co/anime/{anime.Id}/",
-                _ => string.Empty
-            };
-
-            if (string.IsNullOrEmpty(url))
-            {
-                return;
-            }
-
-            await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
-        });
+        ViewInBrowser = ReactiveCommand.CreateFromTask<AnimeModel>(LaunchUrl);
     }
 
-    private void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    private async void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
-        var anime = ((ImageEx)sender).DataContext as AnimeModel;
+        var anime = ((Image)sender).DataContext as AnimeModel;
+        await LaunchUrl(anime);
+    }
+
+    private async Task LaunchUrl(AnimeModel anime)
+    {
         var url = ViewModel.ListType switch
         {
             ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{anime.Id}/",
@@ -109,7 +75,7 @@ public sealed partial class UserListPage : UserListPageBase
             return;
         }
 
-        _ = Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+        await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
     }
 
     private void GenresButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

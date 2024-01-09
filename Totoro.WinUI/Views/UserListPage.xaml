@@ -363,37 +363,6 @@
                             x:Name="GenresButton"
                             Icon="Tag"
                             Label="Genres" />
-                        <AppBarButton Icon="Filter" Label="Watching Status">
-                            <AppBarButton.Flyout>
-                                <MenuFlyout AreOpenCloseAnimationsEnabled="True">
-                                    <RadioMenuFlyoutItem
-                                        x:Name="WatchingFlyoutToggle"
-                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                        CommandParameter="{x:Bind cm:AnimeStatus.Watching}"
-                                        Text="Watching" />
-                                    <RadioMenuFlyoutItem
-                                        x:Name="PtwFlyoutToggle"
-                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                        CommandParameter="{x:Bind cm:AnimeStatus.PlanToWatch}"
-                                        Text="Plan to watch" />
-                                    <RadioMenuFlyoutItem
-                                        x:Name="OnHoldFlyoutToggle"
-                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                        CommandParameter="{x:Bind cm:AnimeStatus.OnHold}"
-                                        Text="On Hold" />
-                                    <RadioMenuFlyoutItem
-                                        x:Name="CompletedFlyoutToggle"
-                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                        CommandParameter="{x:Bind cm:AnimeStatus.Completed}"
-                                        Text="Completed" />
-                                    <RadioMenuFlyoutItem
-                                        x:Name="DroppedFlyoutToggle"
-                                        Command="{x:Bind ViewModel.ChangeCurrentViewCommand}"
-                                        CommandParameter="{x:Bind cm:AnimeStatus.Dropped}"
-                                        Text="Dropped" />
-                                </MenuFlyout>
-                            </AppBarButton.Flyout>
-                        </AppBarButton>
                         <AppBarButton Icon="Calendar" Label="Airing Status">
                             <AppBarButton.Flyout>
                                 <MenuFlyout>

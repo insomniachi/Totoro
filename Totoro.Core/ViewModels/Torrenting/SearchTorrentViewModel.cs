@@ -146,7 +146,7 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
     {
         IsLoading = true;
 
-        Catalog.Search(Query)
+        Catalog?.Search(Query)
                 .ToListAsync()
                 .AsTask()
                 .ToObservable()
