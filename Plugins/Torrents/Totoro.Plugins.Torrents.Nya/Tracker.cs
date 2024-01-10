@@ -1,5 +1,6 @@
 ﻿using Flurl;
 using Flurl.Http;
+using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Helpers;
 using Totoro.Plugins.Options;
@@ -15,14 +16,27 @@ internal class Tracker : ITorrentTracker
 
     public async IAsyncEnumerable<TorrentModel> Search(string query)
     {
-        var doc = await ConfigManager<Config>.Current.Url.SetQueryParams(new
+        HtmlDocument doc;
+        if (ConfigManager<Config>.Current.SortBy is SortBy.Date)
         {
-            f = (int)ConfigManager<Config>.Current.Filter,
-            c = ConfigManager<Config>.Current.Category.ToQueryParam(),
-            q = query,
-            s = ConfigManager<Config>.Current.SortBy.ToString().ToLower(),
-            o = ConfigManager<Config>.Current.SortDirection.ToQueryString()
-        }).GetHtmlDocumentAsync();
+            doc = await ConfigManager<Config>.Current.Url.SetQueryParams(new
+            {
+                f = (int)ConfigManager<Config>.Current.Filter,
+                c = ConfigManager<Config>.Current.Category.ToQueryParam(),
+                q = query,
+            }).GetHtmlDocumentAsync();
+        }
+        else
+        {
+            doc = await ConfigManager<Config>.Current.Url.SetQueryParams(new
+            {
+                f = (int)ConfigManager<Config>.Current.Filter,
+                c = ConfigManager<Config>.Current.Category.ToQueryParam(),
+                q = query,
+                s = ConfigManager<Config>.Current.SortBy.ToString().ToLower(),
+                o = ConfigManager<Config>.Current.SortDirection.ToQueryString()
+            }).GetHtmlDocumentAsync();
+        }
 
         foreach (var item in doc.QuerySelectorAll("table tr .success"))
         {

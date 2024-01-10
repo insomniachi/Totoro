@@ -1,8 +1,10 @@
-﻿using ReactiveUI;
+﻿using System.Diagnostics;
+using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Totoro.Plugins.Torrents.Models;
 
+[DebuggerDisplay("{Name}")]
 public class TorrentModel : ReactiveObject
 {
     public string? Name { get; init; }

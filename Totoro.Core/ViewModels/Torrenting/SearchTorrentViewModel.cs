@@ -1,5 +1,5 @@
-﻿using System;
-using System.Reactive.Concurrency;
+﻿using System.Reactive.Concurrency;
+using Flurl.Util;
 using Totoro.Plugins;
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Torrents.Contracts;
@@ -28,11 +28,12 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
         Search = ReactiveCommand.Create(OnSearch);
 
         var sort = this.WhenAnyValue(x => x.SortMode)
+            .WhereNotNull()
             .Select(sort => sort switch
             {
                 SortMode.Date => SortExpressionComparer<TorrentModel>.Descending(x => x.Date),
                 SortMode.Seeders => SortExpressionComparer<TorrentModel>.Descending(x => x.Seeders),
-                _ => throw new NotSupportedException(),
+                _ => SortExpressionComparer<TorrentModel>.Ascending(x => _torrentsCache.Items.IndexOf(x))
             });
         
         _torrentsCache
@@ -69,7 +70,7 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
     }
 
     [Reactive] public string Query { get; set; }
-    [Reactive] public SortMode SortMode { get; set; } = SortMode.Seeders;
+    [Reactive] public SortMode SortMode { get; set; } = SortMode.None;
     [Reactive] public bool IsLoading { get; set; }
     [Reactive] public PluginInfo SelectedPlugin { get; set; }
     [ObservableAsProperty] public ITorrentTracker Catalog { get; }
@@ -100,28 +101,23 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
     {
         var torrents = state.GetValue<IEnumerable<TorrentModel>>(nameof(Torrents));
         _torrentsCache.AddOrUpdate(torrents);
-        SelectedPlugin = state.GetValue<PluginInfo>(nameof(SelectedPlugin));
         SortMode = state.GetValue<SortMode>(nameof(SortMode));
         Query = state.GetValue<string>(nameof(Query));
+        SelectedPlugin = state.GetValue<PluginInfo>(nameof(SelectedPlugin));
     }
 
     public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         var indexer = (string)parameters.GetValueOrDefault("Indexer", _settings.DefaultTorrentTrackerType);
-        SelectedPlugin = Plugins.FirstOrDefault(x => x.Name == indexer);
 
         if (parameters.ContainsKey("Anime"))
         {
-            SortMode = SortMode.Seeders;
             var anime = (AnimeModel)parameters["Anime"];
             Query = GetQueryText(anime);
-            OnSearch();
-        }
-        else if(Torrents?.Count == 0)
-        {
-            OnRecent();
         }
 
+        SelectedPlugin = Plugins.FirstOrDefault(x => x.Name == indexer);
+        
         return Task.CompletedTask;
     }
 

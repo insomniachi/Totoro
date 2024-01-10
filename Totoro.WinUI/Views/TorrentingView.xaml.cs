@@ -31,7 +31,9 @@ public sealed partial class TorrentingView : TorrentingViewBase
             return;
         }
 
-        App.GetService<IWinUINavigationService>(nameof(TorrentingViewModel)).NavigateTo<SearchTorrentViewModel>(parameter: parameters);
+        var item = ViewModel.Sections.FirstOrDefault(x => x.ViewModel == typeof(SearchTorrentViewModel));
+        item.NavigationParameters = parameters.ToDictionary();
+        ViewModel.SelectedSection = item;
     }
 }
 

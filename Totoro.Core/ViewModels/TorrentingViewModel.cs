@@ -4,6 +4,7 @@ namespace Totoro.Core.ViewModels;
 
 public enum SortMode
 {
+    None,
     Date,
     Seeders
 }

@@ -10,7 +10,8 @@ public enum Filter
 public enum SortBy
 {
     Seeders,
-    Leechers
+    Leechers,
+    Date
 }
 
 public enum SortDirection

@@ -16,7 +16,7 @@ public class Config : ConfigObject
 
     [Glyph(Glyphs.Sort)]
     [DisplayName("Sort By")]
-    public SortBy SortBy { get; set; } = SortBy.Seeders;
+    public SortBy SortBy { get; set; } = SortBy.Date;
     
     [Glyph(Glyphs.SortDirection)]
     [DisplayName("Sort Direction")]
