@@ -8,6 +8,7 @@ namespace Totoro.Core.Services.Aniskip;
 internal class PostVoteRequestBodyV2
 {
     [JsonPropertyName("voteType")]
+    [JsonConverter(typeof(JsonStringEnumConverterEx<VoteType>))]
     public VoteType VoteType { get; set; }
 }
 
@@ -32,6 +33,7 @@ internal enum VoteType
 internal class PostCreateSkipTimeRequestBodyV2
 {
     [JsonPropertyName("skipType")]
+    [JsonConverter(typeof(JsonStringEnumConverterEx<SkipType>))]
     public SkipType SkipType { get; set; }
 
     [JsonPropertyName("providerName")]
@@ -143,7 +145,7 @@ internal class GuidJsonConverter : JsonConverter<Guid>
 
     public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
     {
-        writer.WriteStringValue(value);
+        writer.WriteStringValue(value.ToString("D"));
     }
 }
 
