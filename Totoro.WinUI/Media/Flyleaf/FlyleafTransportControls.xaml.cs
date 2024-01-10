@@ -180,7 +180,7 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         TimeSlider
             .Events()
             .ValueChanged
-            .Where(x => x.NewValue > Converters.TiksToSeconds(Player.CurTime))
+            .Where(x => Math.Abs(x.NewValue - Converters.TiksToSeconds(Player.CurTime)) > 1)
             .Subscribe(x => Player.SeekAccurate((int)TimeSpan.FromSeconds(x.NewValue).TotalMilliseconds));
 
         this.WhenAnyValue(x => x.Player.Status)
