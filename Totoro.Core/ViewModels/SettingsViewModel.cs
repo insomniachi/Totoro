@@ -13,6 +13,9 @@ namespace Totoro.Core.ViewModels;
 public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
 {
     private readonly ITrackingServiceContext _trackingServiceContext;
+    public const string DefaultAnimeProvider = "gogo-anime";
+    public const string DefaultTorrentTracker = "nya";
+    public const string DefaultMangaProvider = "manga-dex";
 
     [Reactive] public bool IsMalConnected { get; set; }
     [Reactive] public bool IsAniListConnected { get; set; }
@@ -55,11 +58,11 @@ public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
         Settings = settings;
         Version = Assembly.GetEntryAssembly().GetName().Version;
         SelectedProvider = PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType)
-            ?? PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "anime-pahe");
+            ?? PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == DefaultAnimeProvider);
         SelectedTracker = PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultTorrentTrackerType)
-            ?? PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == "nya");
+            ?? PluginFactory<ITorrentTracker>.Instance.Plugins.FirstOrDefault(x => x.Name == DefaultAnimeProvider);
         SelectedMangaProvider = PluginFactory<MangaProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultMangaProviderType)
-            ?? PluginFactory<MangaProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == "manga-dex");
+            ?? PluginFactory<MangaProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == DefaultMangaProvider);
         AuthenticateCommand = ReactiveCommand.CreateFromTask<ListServiceType>(viewService.Authenticate);
         ShowAbout = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -82,7 +85,7 @@ public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
             RxApp.MainThreadScheduler.Schedule(() => Settings.UserTorrentsDownloadDirectory = folder);
         });
 
-        InactiveTorrents = new(torrentEngine.TorrentManagers.Where(x => x.State == MonoTorrent.Client.TorrentState.Stopped));
+        InactiveTorrents = new(torrentEngine.TorrentManagers.Where(x => x.State == TorrentState.Stopped));
         Theme = themeSelectorService.Theme;
 
         this.ObservableForProperty(x => x.SelectedProvider, x => x)
@@ -124,7 +127,6 @@ public class SettingsViewModel : NavigatableViewModel, IHandleNavigation
         IsAniListConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.AniList);
         IsSimklConnected = _trackingServiceContext.IsTrackerAuthenticated(ListServiceType.Simkl);
     }
-
 
     public static string ElementThemeToString(ElementTheme theme) => theme.ToString();
     public string GetDescripton() => $"Client - {Version}";
