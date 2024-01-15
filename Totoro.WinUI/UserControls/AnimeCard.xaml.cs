@@ -94,21 +94,33 @@ public sealed partial class AnimeCard : UserControl
             : $"EP{Anime?.AiredEpisodes + 1}: {(airingAt.Value - DateTime.Now).HumanizeTimeSpan()}";
     }
 
-    public Dictionary<string, string> GetAdditionalInformation(AnimeModel anime)
+    public Visibility IsRewatchingVisibile(AnimeModel anime)
     {
-        if (anime is not AnimeModel fa)
+        if(anime is null)
         {
-            return [];
+            return Visibility.Collapsed;
         }
 
-        return new Dictionary<string, string>
-        {
-            ["Episodes"] = $"{(fa.TotalEpisodes is > 0 ? fa.TotalEpisodes.ToString() : "Unknown")}",
-            ["Genres"] = $"{string.Join(", ", fa.Genres ?? Enumerable.Empty<string>())}",
-            ["Score"] = $"{fa.MeanScore}",
-            ["Popularity"] = $"#{fa.Popularity}"
-        };
+        return anime.Tracking?.Status == AnimeStatus.Rewatching
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
+
+    //public Dictionary<string, string> GetAdditionalInformation(AnimeModel anime)
+    //{
+    //    if (anime is not AnimeModel fa)
+    //    {
+    //        return [];
+    //    }
+
+    //    return new Dictionary<string, string>
+    //    {
+    //        ["Episodes"] = $"{(fa.TotalEpisodes is > 0 ? fa.TotalEpisodes.ToString() : "Unknown")}",
+    //        ["Genres"] = $"{string.Join(", ", fa.Genres ?? Enumerable.Empty<string>())}",
+    //        ["Score"] = $"{fa.MeanScore}",
+    //        ["Popularity"] = $"#{fa.Popularity}"
+    //    };
+    //}
 
     private void ImageEx_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {

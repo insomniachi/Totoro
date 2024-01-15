@@ -113,6 +113,12 @@
                         Grid.Row="1"
                         Padding="5"
                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                        <FontIcon
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            FontSize="12"
+                            Glyph="&#xE7A6;"
+                            Visibility="{x:Bind IsRewatchingVisibile(Anime), Mode=OneWay}" />
                         <StackPanel
                             HorizontalAlignment="Right"
                             Orientation="Horizontal"

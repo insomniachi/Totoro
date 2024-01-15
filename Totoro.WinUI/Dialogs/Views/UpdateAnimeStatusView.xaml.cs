@@ -8,7 +8,7 @@ public class UpdateAnimeStatusViewBase : ReactiveContentDialog<UpdateAnimeStatus
 
 public sealed partial class UpdateAnimeStatusView : UpdateAnimeStatusViewBase
 {
-    public List<AnimeStatus> Statuses { get; } = Enum.GetValues<AnimeStatus>().Cast<AnimeStatus>().Take(5).ToList();
+    public List<AnimeStatus> Statuses { get; } = Enum.GetValues<AnimeStatus>().Cast<AnimeStatus>().SkipLast(1).ToList();
     public UpdateAnimeStatusView()
     {
         InitializeComponent();

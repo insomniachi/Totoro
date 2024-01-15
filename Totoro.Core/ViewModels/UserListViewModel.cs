@@ -23,7 +23,10 @@ public partial class AnimeCollectionFilter : ReactiveObject
             return false;
         }
 
-        var listStatusCheck = model.Tracking.Status == ListStatus;
+        var listStatusCheck = ListStatus == AnimeStatus.Watching
+            ? model.Tracking.Status is AnimeStatus.Watching or AnimeStatus.Rewatching
+            : model.Tracking.Status == ListStatus;
+
         var searchTextStatus = string.IsNullOrEmpty(SearchText) ||
                                model.Title.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase) ||
                                model.AlternativeTitles.Any(x => x.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase));
@@ -42,7 +45,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     private readonly SourceCache<AnimeModel, long> _animeCache = new(x => x.Id);
     private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
     private readonly HashSet<string> _genres = [];
-    private readonly List<AnimeStatus> _allStatuses = [AnimeStatus.Watching, AnimeStatus.PlanToWatch, AnimeStatus.Completed, AnimeStatus.OnHold, AnimeStatus.Rewatching, AnimeStatus.Dropped];
+    private readonly List<AnimeStatus> _allStatuses = [AnimeStatus.Watching, AnimeStatus.PlanToWatch, AnimeStatus.Completed, AnimeStatus.OnHold, AnimeStatus.Dropped];
 
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IViewService viewService,
