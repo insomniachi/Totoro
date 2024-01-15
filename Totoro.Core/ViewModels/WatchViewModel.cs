@@ -126,6 +126,7 @@ public partial class WatchViewModel : NavigatableViewModel
                 if (hasSubDub)
                 {
                     await CreateAnimDLResolver(x.Sub.Url, x.Dub.Url);
+                    SelectedAudioStream = null;
                     SubStreams = ProviderType is "gogo-anime"
                         ? [StreamType.Subbed(Languages.English), StreamType.Dubbed(Languages.English)]
                         : [StreamType.Subbed(Languages.Italian), StreamType.Dubbed(Languages.Italian)];
