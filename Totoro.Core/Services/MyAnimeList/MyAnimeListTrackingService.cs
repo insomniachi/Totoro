@@ -10,8 +10,8 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
     private readonly IAnilistService _anilistService;
-    private static readonly string[] _fieldNames = new[]
-    {
+    private static readonly string[] _fieldNames =
+    [
         MalApi.AnimeFieldNames.Synopsis,
         MalApi.AnimeFieldNames.TotalEpisodes,
         MalApi.AnimeFieldNames.Broadcast,
@@ -28,7 +28,7 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         MalApi.AnimeFieldNames.EndDate,
         MalApi.AnimeFieldNames.StartDate,
         MalApi.AnimeFieldNames.MediaType
-    };
+    ];
 
     public bool IsAuthenticated => _client.IsAuthenticated;
     public ListServiceType Type => ListServiceType.MyAnimeList;

@@ -30,7 +30,7 @@ namespace Totoro.Core.ViewModels.Discover
             SelectedProvider = providerFacotory.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType);
 
             SelectEpisode = ReactiveCommand.CreateFromTask<IAiredAnimeEpisode>(OnEpisodeSelected);
-            LoadMore = ReactiveCommand.Create(LoadMoreEpisodes, this.WhenAnyValue(x => x.IsEpisodesLoading).Select(x => !x));
+            LoadMore = ReactiveCommand.CreateFromTask(LoadMoreEpisodes, this.WhenAnyValue(x => x.IsEpisodesLoading).Select(x => !x));
 
             this.WhenAnyValue(x => x.SelectedProvider)
                 .WhereNotNull()
@@ -46,7 +46,7 @@ namespace Totoro.Core.ViewModels.Discover
                 .WhereNotNull()
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Do(_ => _episodesCache.Clear())
-                .SelectMany(_ => LoadPage(1))
+                .SelectMany(_ => LoadPage(1).ToObservable())
                 .Subscribe();
         }
 
@@ -66,30 +66,35 @@ namespace Totoro.Core.ViewModels.Discover
         public ICommand SelectEpisode { get; }
 
 
-        private void LoadMoreEpisodes() =>
-            LoadPage(TotalPages + 1)
-            .Finally(() => TotalPages++)
-            .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnError);
-
-        private IObservable<IAiredAnimeEpisode> LoadPage(int page)
+        private async Task LoadMoreEpisodes()
         {
-            if (Provider?.AiredAnimeEpisodeProvider is null)
+            await LoadPage(TotalPages + 1);
+            TotalPages++;
+        }
+
+
+        private async Task LoadPage(int page)
+        {
+            if (Provider is not { AiredAnimeEpisodeProvider : not null})
             {
-                return Observable.Empty<IAiredAnimeEpisode>();
+                return;
             }
 
             IsEpisodesLoading = true;
-
-            return Provider?
-                 .AiredAnimeEpisodeProvider
-                 .GetRecentlyAiredEpisodes(page)
-                 .ToObservable()
-                 .ObserveOn(RxApp.MainThreadScheduler)
-                 .Do(eps =>
-                 {
-                     _episodesCache.AddOrUpdate(eps);
-                     IsEpisodesLoading = false;
-                 });
+            List<IAiredAnimeEpisode> results = [];
+            try
+            {
+                results = await Provider.AiredAnimeEpisodeProvider.GetRecentlyAiredEpisodes().ToListAsync();
+                _episodesCache.AddOrUpdate(results);
+            }
+            catch(Exception ex) 
+            {
+                RxApp.DefaultExceptionHandler.OnError(ex);
+            }
+            finally
+            {
+                IsEpisodesLoading = false;
+            }
         }
 
         private Task OnEpisodeSelected(IAiredAnimeEpisode episode)

@@ -253,7 +253,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     private void UpdateStatuses()
     {
         var prevStatus = Filter.ListStatus ?? AnimeStatus.Watching;
-        Statuses = _allStatuses.Where(x => _animeCache.Items.Any(y => y.Tracking.Status == x)).ToList();
+        Statuses = _allStatuses.Where(x => _animeCache.Items.Any(y => y.Tracking?.Status == x)).ToList();
         Filter.ListStatus = prevStatus;
     }
 
