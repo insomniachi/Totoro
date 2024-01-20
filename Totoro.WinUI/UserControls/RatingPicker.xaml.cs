@@ -6,8 +6,8 @@ namespace Totoro.WinUI.UserControls;
 
 public sealed partial class RatingPicker : UserControl
 {
-    private readonly string[] _ratingNames = new string[]
-    {
+    private readonly string[] _ratingNames =
+    [
         "(0) - No Score",
         "(1) - Appalling",
         "(2) - Horring",
@@ -19,7 +19,7 @@ public sealed partial class RatingPicker : UserControl
         "(8) - Very Good",
         "(9) - Great",
         "(10) - Masterpiece"
-    };
+    ];
 
     public AnimeModel Anime
     {
@@ -77,6 +77,12 @@ public sealed partial class RatingPicker : UserControl
         }
 
         var score = anime?.Tracking?.Score ?? 0;
+        if (score > 10)
+        {
+            Visibility = Visibility.Collapsed;
+            return null;
+        }
+
         var flyout = new MenuFlyout();
         for (int i = 0; i < _ratingNames.Length; i++)
         {
@@ -99,8 +105,17 @@ public sealed partial class RatingPicker : UserControl
 
     private void StackPanel_Loaded(object sender, RoutedEventArgs e)
     {
-        var flyout = (MenuFlyout)FlyoutBase.GetAttachedFlyout(sender as StackPanel);
+        if(FlyoutBase.GetAttachedFlyout(sender as StackPanel) is not MenuFlyout flyout)
+        {
+            return;
+        }
+
         var score = Anime?.Tracking?.Score ?? 0;
+        if(score > 10)
+        {
+            return;
+        }
+
         ((RadioMenuFlyoutItem)flyout.Items[score]).IsChecked = true;
     }
 }
