@@ -55,6 +55,7 @@ public sealed partial class AnimeCard : UserControl
     public AnimeCard()
     {
         InitializeComponent();
+        
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -105,22 +106,6 @@ public sealed partial class AnimeCard : UserControl
             ? Visibility.Visible
             : Visibility.Collapsed;
     }
-
-    //public Dictionary<string, string> GetAdditionalInformation(AnimeModel anime)
-    //{
-    //    if (anime is not AnimeModel fa)
-    //    {
-    //        return [];
-    //    }
-
-    //    return new Dictionary<string, string>
-    //    {
-    //        ["Episodes"] = $"{(fa.TotalEpisodes is > 0 ? fa.TotalEpisodes.ToString() : "Unknown")}",
-    //        ["Genres"] = $"{string.Join(", ", fa.Genres ?? Enumerable.Empty<string>())}",
-    //        ["Score"] = $"{fa.MeanScore}",
-    //        ["Popularity"] = $"#{fa.Popularity}"
-    //    };
-    //}
 
     private void ImageEx_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
     {
