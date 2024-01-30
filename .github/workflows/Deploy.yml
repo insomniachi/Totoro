@@ -35,12 +35,12 @@ jobs:
             run: dotnet publish ${{ env.MAIN_PROJECT_PATH }} --self-contained -c Release -r win10-x64 -o ${{ env.PUBLISH_FOLDER }} /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
 
         -   name: 'Copy FFMPEG'
-            run: xcopy ${{ env.FFMPEG_PATH }} ${{ env.PUBLISH_FOLDER }}\FFmpeg\ /s /e /h"
+            run: xcopy ${{ env.FFMPEG_PATH }} ${{ env.PUBLISH_FOLDER }}\FFmpeg\ /s /e /h
 
         -   name: 'Remove Trash'
             run: rd /q /s ${{ env.PUBLISH_FOLDER }}\gd-gb ${{ env.PUBLISH_FOLDER }}\mi-NZ ${{ env.PUBLISH_FOLDER }}\ug-CN
           
-        -   name: App Settings Variable Substitution
+        -   name: Update App Settings
             uses: microsoft/variable-substitution@v1
             with:
                 files: '${{ env.PUBLISH_FOLDER }}\appsettings.json'
@@ -49,10 +49,10 @@ jobs:
                 ClientIdAniList: ${{ secrets.ANILIST_CLIENT_ID }}
                 ClientIdSimkl: ${{ secrets.SIMKL_CLIENT_ID }}
 
-        -   name: 'Build MSI'
+        -   name: 'Build Installer'
             run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
   
-        -   name: 'Create release'
+        -   name: 'Create Release'
             id: create_release
             uses: actions/create-release@v1
             env:
