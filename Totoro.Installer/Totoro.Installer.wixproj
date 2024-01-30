@@ -66,7 +66,6 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <Target Name="BeforeBuild">
-    <Exec Command="rd /s /q ..\Totoro.WinUI\bin\publish\" />
     <PropertyGroup>
       <DefineConstants>BuildVersion=$(Version);BasePath=..\Totoro.WinUI\bin\publish\</DefineConstants>
     </PropertyGroup>

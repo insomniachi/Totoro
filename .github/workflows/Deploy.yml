@@ -32,7 +32,7 @@ jobs:
             uses: battila7/get-version-action@v2
 
         -   name: 'Build Project'
-            run: dotnet publish ${{ env.MAIN_PROJECT_PATH }} --self-contained -c Release -r win10-x64 -o ${{ env.PUBLISH_FOLDER }} /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
+            run: dotnet publish ${{ env.MAIN_PROJECT_PATH }} --self-contained -c Release -r win10-x64 -o ${{ env.PUBLISH_FOLDER }}\ /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
 
         -   name: 'Copy FFMPEG'
             run: xcopy ${{ env.FFMPEG_PATH }} ${{ env.PUBLISH_FOLDER }}\FFmpeg\ /s /e /h
@@ -50,7 +50,7 @@ jobs:
                 ClientIdSimkl: ${{ secrets.SIMKL_CLIENT_ID }}
 
         -   name: 'Build Installer'
-            run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
+            run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }} /property:BasePath=${{ env.PUBLISH_FOLDER }}
   
         -   name: 'Create Release'
             id: create_release
