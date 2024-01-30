@@ -38,7 +38,7 @@ jobs:
             run: xcopy ${{ env.FFMPEG_PATH }} ${{ env.PUBLISH_FOLDER }}\FFmpeg\ /s /e /h
 
         -   name: 'Remove Trash'
-            run: rd /q /s ${{ env.PUBLISH_FOLDER }}\gd-gb ${{ env.PUBLISH_FOLDER }}\mi-NZ ${{ env.PUBLISH_FOLDER }}\ug-CN
+            run: rd /q /s ${{ env.PUBLISH_FOLDER }}\gd-gb\*, ${{ env.PUBLISH_FOLDER }}\mi-NZ\*, ${{ env.PUBLISH_FOLDER }}\ug-CN\*
           
         -   name: Update App Settings
             uses: microsoft/variable-substitution@v1
