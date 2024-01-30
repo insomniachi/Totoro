@@ -6,10 +6,10 @@ on:
     - 'v*'
 
 env:
-  INSTALLER_PATH: 'Totoro.Installer/Totoro.Installer.wixproj'
-  MAIN_PROJECT_PATH: 'Totoro.WinUI/Totoro.WinUI.csproj'
-  FFMPEG_PATH: 'Totoro.Installer/FFmpeg'
-  PUBLISH_FOLDER: 'Totoro.WinUI/bin/publish'
+  INSTALLER_PATH: 'Totoro.Installer\Totoro.Installer.wixproj'
+  MAIN_PROJECT_PATH: 'Totoro.WinUI\Totoro.WinUI.csproj'
+  FFMPEG_PATH: 'Totoro.Installer\FFmpeg'
+  PUBLISH_FOLDER: 'Totoro.WinUI\bin\publish'
 
 jobs:
     deploy:
@@ -35,15 +35,15 @@ jobs:
             run: dotnet publish ${{ env.MAIN_PROJECT_PATH }} --self-contained -c Release -r win10-x64 -o ${{ env.PUBLISH_FOLDER }} /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
 
         -   name: 'Copy FFMPEG'
-            run: xcopy ${{ env.FFMPEG_PATH }} ${{ env.PUBLISH_FOLDER }}/FFmpeg/ /s /e /h"
+            run: xcopy ${{ env.FFMPEG_PATH }} ${{ env.PUBLISH_FOLDER }}\FFmpeg\ /s /e /h"
 
         -   name: 'Remove Trash'
-            run: rd /q /s ${{ env.PUBLISH_FOLDER }}/gd-gb ${{ env.PUBLISH_FOLDER }}/mi-NZ ${{ env.PUBLISH_FOLDER }}/ug-CN
+            run: rd /q /s ${{ env.PUBLISH_FOLDER }}\gd-gb ${{ env.PUBLISH_FOLDER }}\mi-NZ ${{ env.PUBLISH_FOLDER }}\ug-CN
           
         -   name: App Settings Variable Substitution
             uses: microsoft/variable-substitution@v1
             with:
-                files: '${{ env.PUBLISH_FOLDER }}/appsettings.json'
+                files: '${{ env.PUBLISH_FOLDER }}\appsettings.json'
             env:
                 ClientId: ${{ secrets.MAL_CLIENT_ID }}
                 ClientIdAniList: ${{ secrets.ANILIST_CLIENT_ID }}
