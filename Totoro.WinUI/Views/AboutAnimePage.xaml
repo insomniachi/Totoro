@@ -45,13 +45,18 @@
                             Source="{x:Bind ViewModel.Anime.Image, Mode=OneWay}" />
                     </Border>
 
-                    <StackPanel Grid.Column="1" Background="{ThemeResource ControlOnImageFillColorDefaultBrush}">
+                    <Grid Grid.Column="1" Background="{ThemeResource ControlOnImageFillColorDefaultBrush}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
                         <TextBlock
                             Margin="0,50,0,0"
                             FontSize="30"
                             FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
-                        <ItemsControl ItemsSource="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}">
+                        <ItemsControl Grid.Row="1" ItemsSource="{x:Bind ViewModel.Anime.Genres, Mode=OneWay}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border
@@ -69,13 +74,13 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
-                        <ScrollView>
+                        <ScrollViewer Grid.Row="2">
                             <TextBlock
                                 FontSize="20"
                                 Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}"
                                 TextWrapping="Wrap" />
-                        </ScrollView>
-                    </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
                 </Grid>
                 <Grid Grid.Row="1" Margin="0,20,0,0">
                     <Grid.ColumnDefinitions>
