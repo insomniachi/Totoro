@@ -10,7 +10,12 @@
     xmlns:m="using:Totoro.Core.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="using:Totoro.WinUI.UserControls"
+    KeyboardAcceleratorPlacementMode="Hidden"
     mc:Ignorable="d">
+
+    <local:WatchPageBase.KeyboardAccelerators>
+        <KeyboardAccelerator Key="H" Invoked="KeyboardAccelerator_Invoked" />
+    </local:WatchPageBase.KeyboardAccelerators>
 
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>

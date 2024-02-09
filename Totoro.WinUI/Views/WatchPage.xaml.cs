@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using ReactiveMarbles.ObservableEvents;
@@ -107,6 +108,10 @@ public sealed partial class WatchPage : WatchPageBase
                 })
                 .DisposeWith(d);
 
+            this.Events()
+                .PointerMoved
+                .Subscribe(_ => ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow));
+
             windowService
             .IsFullWindowChanged
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -146,5 +151,10 @@ public sealed partial class WatchPage : WatchPageBase
         }
 
         return $"{ViewModel.Anime.Title} - {ViewModel.EpisodeModels?.Current?.EpisodeNumber} - {ViewModel.EpisodeModels?.Current?.EpisodeTitle}";
+    }
+
+    private void KeyboardAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+    {
+        ProtectedCursor?.Dispose();
     }
 }

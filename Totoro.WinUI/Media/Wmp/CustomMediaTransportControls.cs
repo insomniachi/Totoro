@@ -1,10 +1,8 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.WinUI.Contracts;
 using Windows.Media.Playback;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Totoro.WinUI.Media.Wmp;
 
