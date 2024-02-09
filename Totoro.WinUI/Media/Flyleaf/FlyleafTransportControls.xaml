@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:c="using:Totoro.Core.Models"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -98,14 +99,27 @@
                     VerticalAlignment="Center"
                     Text="{x:Bind help:Converters.TicksToTime(Player.CurTime), Mode=OneWay}" />
 
-                <Slider
-                    x:Name="TimeSlider"
+                <ctk:SwitchPresenter
                     Grid.Column="1"
-                    Margin="10,0,10,0"
-                    VerticalAlignment="Center"
-                    IsTabStop="False"
-                    Maximum="{x:Bind help:Converters.TiksToSeconds(Player.Duration), Mode=OneWay}"
-                    Value="{x:Bind help:Converters.TiksToSeconds(Player.CurTime), Mode=OneWay}" />
+                    TargetType="x:Boolean"
+                    Value="{x:Bind Buffering}">
+                    <ctk:Case Value="True">
+                        <ProgressBar
+                            Margin="10,0,10,0"
+                            VerticalAlignment="Center"
+                            IsIndeterminate="True" />
+                    </ctk:Case>
+                    <ctk:Case Value="False">
+                        <Slider
+                            x:Name="TimeSlider"
+                            Grid.Column="1"
+                            Margin="10,0,10,0"
+                            VerticalAlignment="Center"
+                            IsTabStop="False"
+                            Maximum="{x:Bind help:Converters.TiksToSeconds(Player.Duration), Mode=OneWay}"
+                            Value="{x:Bind help:Converters.TiksToSeconds(Player.CurTime), Mode=OneWay}" />
+                    </ctk:Case>
+                </ctk:SwitchPresenter>
 
                 <TextBlock
                     Grid.Column="2"

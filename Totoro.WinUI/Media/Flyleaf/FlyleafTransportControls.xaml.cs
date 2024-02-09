@@ -1,3 +1,4 @@
+using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using FlyleafLib.MediaFramework.MediaStream;
 using FlyleafLib.MediaPlayer;
@@ -65,6 +66,15 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         set { SetValue(ResolutionsProperty, value); }
     }
 
+    public bool Buffering
+    {
+        get { return (bool)GetValue(BufferingProperty); }
+        set { SetValue(BufferingProperty, value); }
+    }
+
+    public static readonly DependencyProperty BufferingProperty =
+        DependencyProperty.Register("Buffering", typeof(bool), typeof(FlyleafTransportControls), new PropertyMetadata(false));
+
     public static readonly DependencyProperty ResolutionsProperty =
         DependencyProperty.Register("Resolutions", typeof(IEnumerable<string>), typeof(FlyleafTransportControls), new PropertyMetadata(null, OnResolutionsChanged));
 
@@ -87,7 +97,23 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         DependencyProperty.Register("IsNextTrackButtonVisible", typeof(bool), typeof(FlyleafTransportControls), new PropertyMetadata(false));
 
     public static readonly DependencyProperty PlayerProperty =
-    DependencyProperty.Register("Player", typeof(Player), typeof(FlyleafTransportControls), new PropertyMetadata(null));
+    DependencyProperty.Register("Player", typeof(Player), typeof(FlyleafTransportControls), new PropertyMetadata(null, OnPlayerChanged));
+
+    private static void OnPlayerChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var tc = (FlyleafTransportControls)d;
+        if(e.OldValue is Player oldPlayer)
+        {
+            oldPlayer.BufferingStarted -= tc.Player_BufferingStarted;
+            oldPlayer.BufferingCompleted -= tc.Player_BufferingCompleted;
+        }
+
+        if(e.NewValue is Player newPlayer)
+        {
+            newPlayer.BufferingStarted += tc.Player_BufferingStarted;
+            newPlayer.BufferingCompleted += tc.Player_BufferingCompleted;
+        }
+    }
 
     private static void OnSelectedResolutionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -205,6 +231,16 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
            {
                FullWindowSymbol.Symbol = isFullWindwow ? Symbol.BackToWindow : Symbol.FullScreen;
            });
+    }
+
+    private void Player_BufferingCompleted(object sender, BufferingCompletedArgs e)
+    {
+        RxApp.MainThreadScheduler.Schedule(() => Buffering = false);
+    }
+
+    private void Player_BufferingStarted(object sender, EventArgs e)
+    {
+        RxApp.MainThreadScheduler.Schedule(() => Buffering = true);
     }
 
     public string TimeRemaning(long currentTime, long duration)

@@ -35,11 +35,12 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
     private static partial Regex StreamsRegex();
 
     public const string CHARACTER_MAP = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+/";
+
     private readonly IFlurlClient _client = new FlurlClient(new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }));
 
     public async Task<int> GetNumberOfStreams(string url)
     {
-        var html = await url.WithClient(_client).GetStringAsync();
+        var html = await url.WithClient(_client).WithHeaders(ConfigManager<Config>.Current.GetHeaders()).GetStringAsync();
         var releaseId = IdRegex().Match(html).Groups[1].Value;
         var page = await GetSessionPage(releaseId, 1);
         return (int)page.total;
@@ -47,7 +48,9 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range)
     {
-        var doc = await url.GetHtmlDocumentAsync();
+        var doc = await url
+            .WithHeaders(ConfigManager<Config>.Current.GetHeaders())
+            .GetHtmlDocumentAsync();
 
         var releaseId = IdRegex().Match(doc.Text).Groups[1].Value;
         var firstPage = await GetSessionPage(releaseId, 1);
@@ -115,6 +118,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
     private async Task<AnimePaheEpisodePage> GetSessionPage(string releaseId, int page)
     {
         return await ConfigManager<Config>.Current.Url.AppendPathSegment("api")
+            .WithHeaders(ConfigManager<Config>.Current.GetHeaders())
             .SetQueryParams(new
             {
                 m = "release",
@@ -127,7 +131,10 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     private async Task<Dictionary<string, string>> GetStreamUrl(string releaseId, string streamSession)
     {
-        var streamData = await ConfigManager<Config>.Current.Url.AppendPathSegments("play", releaseId, streamSession).GetStringAsync();
+        var streamData = await ConfigManager<Config>.Current.Url.AppendPathSegments("play", releaseId, streamSession)
+            .WithHeaders(ConfigManager<Config>.Current.GetHeaders())
+            .GetStringAsync();
+
         var result = new Dictionary<string, string>();
 
         foreach (var match in StreamsRegex().Matches(streamData).Cast<Match>())

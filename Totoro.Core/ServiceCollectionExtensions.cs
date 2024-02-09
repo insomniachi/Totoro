@@ -128,7 +128,7 @@ namespace Totoro.Core
 
 #if DEBUG
             // anime
-            //PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AnimePahe.Plugin());
+            PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AnimePahe.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.AllAnime.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.YugenAnime.Plugin());
             PluginFactory<AnimeProvider>.Instance.LoadPlugin(new Plugins.Anime.GogoAnime.Plugin());

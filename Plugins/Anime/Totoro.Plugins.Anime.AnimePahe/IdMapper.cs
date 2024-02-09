@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Flurl.Http;
 using Totoro.Plugins.Anime.Models;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.AnimePahe;
 
@@ -11,7 +12,7 @@ internal partial class IdMapper : IIdMapper
 
     public async Task<AnimeId> MapId(string url)
     {
-        var html = await url.GetStringAsync();
+        var html = await url.WithHeaders(ConfigManager<Config>.Current.GetHeaders()).GetStringAsync();
 
         var animeId = new AnimeId();
 

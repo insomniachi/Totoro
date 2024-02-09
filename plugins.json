@@ -19,6 +19,11 @@
       "DisplayName": "Wit Anime",
       "Version": "1.3.0.0",
       "FileName": "Totoro.Plugins.Anime.WitAnime.dll"
+    },
+    {
+      "DisplayName": "Anime Pahe",
+      "Version": "1.11.0.0",
+      "FileName": "Totoro.Plugins.Anime.AnimePahe.dll"
     }
   ],
   "Manga": [

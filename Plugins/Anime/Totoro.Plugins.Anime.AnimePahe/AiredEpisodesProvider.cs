@@ -23,6 +23,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)
     {
         var json = await ConfigManager<Config>.Current.Url.AppendPathSegment("api")
+            .WithHeaders(ConfigManager<Config>.Current.GetHeaders())
             .SetQueryParams(new
             {
                 m = "airing",

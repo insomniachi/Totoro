@@ -24,6 +24,7 @@ internal class Catalog : IAnimeCatalog, IEnableLogger
     {
         var json = await ConfigManager<Config>.Current.Url
             .AppendPathSegment("api")
+            .WithHeaders(ConfigManager<Config>.Current.GetHeaders())
             .SetQueryParams(new
             {
                 m = "search",
