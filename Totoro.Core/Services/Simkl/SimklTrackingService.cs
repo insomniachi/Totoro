@@ -1,25 +1,22 @@
 ﻿
 
+using Microsoft.Extensions.Configuration;
+
 namespace Totoro.Core.Services.Simkl;
 
-internal class SimklTrackingService : ITrackingService
+internal class SimklTrackingService(ISimklClient simklClient,
+                                    IAnilistService anilistService,
+                                    ILocalSettingsService localSettingsService,
+                                    IConfiguration configuration) : ITrackingService
 {
-    private readonly ISimklClient _simklClient;
-    private readonly IAnilistService _anilistService;
+    private readonly ISimklClient _simklClient = simklClient;
+    private readonly IAnilistService _anilistService = anilistService;
     private readonly SimklWatchStatus[] _status = [SimklWatchStatus.Watching, SimklWatchStatus.PlanToWatch, SimklWatchStatus.Completed, SimklWatchStatus.Hold, SimklWatchStatus.Dropped];
-
-    public SimklTrackingService(ISimklClient simklClient,
-                                IAnilistService anilistService,
-                                ILocalSettingsService localSettingsService)
-    {
-        _simklClient = simklClient;
-        _anilistService = anilistService;
-        IsAuthenticated = !string.IsNullOrEmpty(localSettingsService.ReadSetting<string>("SimklToken"));
-    }
+    private readonly string _clientId = configuration["ClientIdSimkl"];
 
     public ListServiceType Type => ListServiceType.Simkl;
 
-    public bool IsAuthenticated { get; private set; }
+    public bool IsAuthenticated { get; private set; } = !string.IsNullOrEmpty(localSettingsService.ReadSetting<string>("SimklToken"));
 
     public IObservable<bool> Delete(long id)
     {
@@ -99,7 +96,7 @@ internal class SimklTrackingService : ITrackingService
 
             if (tracking.WatchedEpisodes is > 0)
             {
-                var eps = await _simklClient.GetEpisodes(id);
+                var eps = await _simklClient.GetEpisodes(id, _clientId);
                 if (eps.FirstOrDefault(x => x.EpisodeNumber == tracking.WatchedEpisodes) is { } epInfo)
                 {
                     episodes.Add(new EpisodeSlim

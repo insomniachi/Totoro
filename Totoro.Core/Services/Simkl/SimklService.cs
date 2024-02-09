@@ -1,30 +1,33 @@
 ﻿using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 namespace Totoro.Core.Services.Simkl;
 
-internal class SimklService : ISimklService
+internal class SimklService(ISimklClient simklClient,
+                            ISettings settings,
+                            IConfiguration configuration) : ISimklService
 {
-    private readonly ISimklClient _simklClient;
-    private readonly ISettings _settings;
-
-    public SimklService(ISimklClient simklClient,
-                        ISettings settings)
-    {
-        _simklClient = simklClient;
-        _settings = settings;
-    }
+    private readonly ISimklClient _simklClient = simklClient;
+    private readonly ISettings _settings = settings;
+    private readonly string _clientId = configuration["ClientIdSimkl"];
 
     public async Task<AnimeIdExtended> GetId(ListServiceType type, long id)
     {
-        var response = await _simklClient.Search(GetServiceType(type), id);
-        if (response.FirstOrDefault() is not { Id.Simkl: not null } metaData)
+        try
+        {
+            var response = await _simklClient.Search(GetServiceType(type), id, _clientId);
+            if (response.FirstOrDefault() is not { Id.Simkl: not null } metaData)
+            {
+                return null;
+            }
+
+            var summary = await _simklClient.GetSummary(metaData.Id.Simkl.Value, _clientId);
+            return ToExtendedId(summary.Id);
+        }
+        catch (Exception)
         {
             return null;
         }
-
-        var summary = await _simklClient.GetSummary(metaData.Id.Simkl.Value);
-        return ToExtendedId(summary.Id);
-
     }
 
     private static AnimeIdExtended ToExtendedId(SimklIds ids)
@@ -64,16 +67,23 @@ internal class SimklService : ISimklService
             return Enumerable.Empty<EpisodeModel>();
         }
 
-        var episodes = await _simklClient.GetEpisodes(id);
+        try
+        {
+            var episodes = await _simklClient.GetEpisodes(id, _clientId);
 
-        return episodes
-            .DistinctBy(x => x.EpisodeNumber)
-            .Where(x => x.Aired)
-            .Select(x => new EpisodeModel
-            {
-                EpisodeNumber = x.EpisodeNumber,
-                EpisodeTitle = x.Title
-            });
+            return episodes
+                .DistinctBy(x => x.EpisodeNumber)
+                .Where(x => x.Aired)
+                .Select(x => new EpisodeModel
+                {
+                    EpisodeNumber = x.EpisodeNumber,
+                    EpisodeTitle = x.Title
+                });
+        }
+        catch (Exception)
+        {
+            return Enumerable.Empty<EpisodeModel>();
+        }
     }
 
     private async ValueTask<long> GetSimklId(long id)
@@ -85,7 +95,7 @@ internal class SimklService : ISimklService
 
         try
         {
-            var response = await _simklClient.Search(GetServiceType(_settings.DefaultListService), id);
+            var response = await _simklClient.Search(GetServiceType(_settings.DefaultListService), id, _clientId);
             if (response.FirstOrDefault() is not { Id.Simkl: not null } metaData)
             {
                 return 0;

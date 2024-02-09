@@ -1,18 +1,15 @@
-﻿using Totoro.Plugins.Anime.Models;
+﻿using Microsoft.Extensions.Configuration;
+using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services.Simkl;
 
-internal class SimklAnimeService : IAnimeService
+internal class SimklAnimeService(ISimklClient simklClient,
+                                 IAnilistService anilistService,
+                                 IConfiguration configuration) : IAnimeService
 {
-    private readonly ISimklClient _simklClient;
-    private readonly IAnilistService _anilistService;
-
-    public SimklAnimeService(ISimklClient simklClient,
-                             IAnilistService anilistService)
-    {
-        _simklClient = simklClient;
-        _anilistService = anilistService;
-    }
+    private readonly ISimklClient _simklClient = simklClient;
+    private readonly IAnilistService _anilistService = anilistService;
+    private readonly string _clientId = configuration["ClientIdSimkl"];
 
     public ListServiceType Type => ListServiceType.Simkl;
 
@@ -20,7 +17,7 @@ internal class SimklAnimeService : IAnimeService
     {
         return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
         {
-            var result = await _simklClient.GetAiringAnime();
+            var result = await _simklClient.GetAiringAnime(_clientId);
             observer.OnNext(result.Select(SimklToAnimeModelConverter.Convert));
             observer.OnCompleted();
             return Disposable.Empty;
@@ -31,7 +28,7 @@ internal class SimklAnimeService : IAnimeService
     {
         return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
         {
-            var result = await _simklClient.Search(name, ItemType.Anime);
+            var result = await _simklClient.Search(name, ItemType.Anime, _clientId);
             observer.OnNext(result.Select(SimklToAnimeModelConverter.Convert));
             observer.OnCompleted();
             return Disposable.Empty;
@@ -42,7 +39,7 @@ internal class SimklAnimeService : IAnimeService
     {
         return Observable.Create<AnimeModel>(async observer =>
         {
-            var info = await _simklClient.GetSummary(id);
+            var info = await _simklClient.GetSummary(id, _clientId);
             var model = SimklToAnimeModelConverter.Convert(info);
             observer.OnNext(model);
             
