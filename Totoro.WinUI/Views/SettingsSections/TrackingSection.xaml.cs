@@ -19,10 +19,12 @@ public sealed partial class TrackingSection : Page
     public static readonly DependencyProperty ViewModelProperty =
         DependencyProperty.Register("ViewModel", typeof(SettingsViewModel), typeof(TrackingSection), new PropertyMetadata(null));
 
+    public ICommand UpdateOfflineDb { get; }
 
     public TrackingSection()
     {
         InitializeComponent();
+        UpdateOfflineDb = ReactiveCommand.CreateFromTask(() => App.GetService<IOfflineAnimeIdService>().UpdateOfflineMappings());
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

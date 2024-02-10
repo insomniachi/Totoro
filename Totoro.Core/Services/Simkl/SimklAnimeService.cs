@@ -78,4 +78,6 @@ public record AnimeIdExtended : AnimeId
             _ => false
         };
     }
+
+    public bool IsEmpty() => this is { AniDb: null, AniList: null, MyAnimeList: null, Kitsu: null, LiveChart: null, Simkl: null };  
 }

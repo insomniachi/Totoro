@@ -116,5 +116,15 @@
                 Value="{x:Bind ViewModel.Settings.TimeRemainingWhenEpisodeCompletesInSeconds, Mode=TwoWay}" />
         </labs:SettingsCard>
 
+        <labs:SettingsCard
+            Description="This repository is to store and provide the mapping between various anime sources, (https://github.com/Fribb/anime-lists)"
+            Header="Offline Anime DB"
+            HeaderIcon="{ui:FontIcon Glyph=&#xE78C;}">
+            <Button
+                Command="{x:Bind UpdateOfflineDb}"
+                Content="Update"
+                Style="{ThemeResource AccentButtonStyle}" />
+        </labs:SettingsCard>
+
     </StackPanel>
 </Page>

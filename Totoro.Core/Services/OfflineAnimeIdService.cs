@@ -78,30 +78,32 @@ public class OfflineAnimeIdService(IFileService fileService,
             var id = new AnimeIdExtended();
             var obj = item.AsObject();
 
-            foreach (var key in keys)
+            foreach (var key in keys.Where(obj.ContainsKey))
             {
-                if (obj.ContainsKey(key))
+                var value = obj[key].GetValue<long>();
+                switch (key)
                 {
-                    var value = obj[key].GetValue<long>();
-                    switch (key)
-                    {
-                        case "livechart_id":
-                            id.LiveChart = value;
-                            break;
-                        case "anidb_id":
-                            id.AniDb = value;
-                            break;
-                        case "kitsu_id":
-                            id.Kitsu = value;
-                            break;
-                        case "mal_id":
-                            id.MyAnimeList = value;
-                            break;
-                        case "anilist_id":
-                            id.AniList = value;
-                            break;
-                    }
+                    case "livechart_id":
+                        id.LiveChart = value;
+                        break;
+                    case "anidb_id":
+                        id.AniDb = value;
+                        break;
+                    case "kitsu_id":
+                        id.Kitsu = value;
+                        break;
+                    case "mal_id":
+                        id.MyAnimeList = value;
+                        break;
+                    case "anilist_id":
+                        id.AniList = value;
+                        break;
                 }
+            }
+
+            if (id.IsEmpty())
+            {
+                continue;
             }
 
             _ids.Add(id);

@@ -22,14 +22,12 @@ public sealed partial class AnimePluginsSection : Page
         DependencyProperty.Register("ViewModel", typeof(SettingsViewModel), typeof(AnimePluginsSection), new PropertyMetadata(null));
 
 
-    public ICommand UpdateOfflineDb { get; }
     public ICommand ResetProvider { get; }
 
     public AnimePluginsSection()
     {
         InitializeComponent();
 
-        UpdateOfflineDb = ReactiveCommand.CreateFromTask(() => App.GetService<IOfflineAnimeIdService>().UpdateOfflineMappings());
         ResetProvider = ReactiveCommand.Create<string>(provider => App.GetService<IPluginOptionsStorage<AnimeProvider>>().ResetConfig(provider));
     }
 

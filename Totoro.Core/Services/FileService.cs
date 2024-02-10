@@ -7,7 +7,8 @@ public class FileService : IFileService
 {
     private readonly JsonSerializerSettings _settings = new()
     {
-        DefaultValueHandling = DefaultValueHandling.Ignore
+        DefaultValueHandling = DefaultValueHandling.Ignore,
+        NullValueHandling = NullValueHandling.Ignore,
     };
 
     public T Read<T>(string folderPath, string fileName)

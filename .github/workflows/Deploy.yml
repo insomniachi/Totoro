@@ -48,6 +48,8 @@ jobs:
                 ClientId: ${{ secrets.MAL_CLIENT_ID }}
                 ClientIdAniList: ${{ secrets.ANILIST_CLIENT_ID }}
                 ClientIdSimkl: ${{ secrets.SIMKL_CLIENT_ID }}
+                SimklSecret: ${{ secrets.SIMKL_SECRET }}
+                ClientIdDiscord: ${{ secrets.DISCORD_CLIENT_ID }}
 
         -   name: 'Build Installer'
             run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }} /property:BasePath=${{ env.PUBLISH_FOLDER }}

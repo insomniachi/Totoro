@@ -1,11 +1,12 @@
 ﻿
 using DiscordRPC;
+using Microsoft.Extensions.Configuration;
 
 namespace Totoro.Core.Services;
 
-public class DiscordRichPresense : IDiscordRichPresense
+public class DiscordRichPresense(IConfiguration configuration) : IDiscordRichPresense
 {
-    private readonly DiscordRpcClient _client = new("997177919052984622");
+    private readonly DiscordRpcClient _client = new(configuration["ClientIdDiscord"]);
 
     public void Initialize() => _client.Initialize();
     public bool IsInitialized => _client.IsInitialized;
