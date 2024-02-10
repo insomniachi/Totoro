@@ -70,6 +70,7 @@ public sealed partial class RatingPicker : UserControl
         });
 
         ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
+
     }
 
     public MenuFlyout CreateFlyout(AnimeModel anime)
