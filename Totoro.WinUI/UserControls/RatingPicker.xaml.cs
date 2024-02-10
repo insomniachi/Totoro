@@ -1,3 +1,4 @@
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -67,6 +68,8 @@ public sealed partial class RatingPicker : UserControl
         {
             Anime.Tracking = await App.GetService<ITrackingServiceContext>().Update(Anime.Id, new Tracking { Score = score });
         });
+
+        ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);
     }
 
     public MenuFlyout CreateFlyout(AnimeModel anime)
