@@ -5,16 +5,16 @@ using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.Aniwave;
 
-public class Plugin : IPlugin<AnimeProvider>
+public class Plugin : Plugin<AnimeProvider, Config>
 {
-    public AnimeProvider Create() => new()
+    public override AnimeProvider Create() => new()
     {
         Catalog = new Catalog(),
         StreamProvider = new StreamProvider(),
         AiredAnimeEpisodeProvider = new AiredEpisodesProvider()
     };
 
-    public PluginInfo GetInfo() => new()
+    public override PluginInfo GetInfo() => new()
     {
         DisplayName = "Aniwave",
         Name = "aniwave",
@@ -22,24 +22,4 @@ public class Plugin : IPlugin<AnimeProvider>
         Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.Aniwave.aniwave-logo.png"),
         Description = "previously 9anime"
     };
-
-    public PluginOptions GetOptions()
-    {
-        return new PluginOptions()
-            .AddOption(x =>
-            {
-                return x.WithNameAndValue(Config.Url)
-                        .WithDisplayName("Url")
-                        .WithDescription("Url to home page")
-                        .WithGlyph(Glyphs.Url)
-                        .ToPluginOption();
-            });
-    }
-
-    public void SetOptions(PluginOptions options)
-    {
-        Config.Url = options.GetString(nameof(Config.Url), Config.Url);
-    }
-
-    object IPlugin.Create() => Create();
 }

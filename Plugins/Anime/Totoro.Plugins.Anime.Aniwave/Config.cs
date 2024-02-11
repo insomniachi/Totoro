@@ -1,6 +1,11 @@
-﻿namespace Totoro.Plugins.Anime.Aniwave;
+﻿using System.ComponentModel;
+using Totoro.Plugins.Options;
 
-internal static class Config
+namespace Totoro.Plugins.Anime.Aniwave;
+
+public class Config : AnimeProviderConfigObject
 {
-    internal static string Url { get; set; } = "https://aniwave.to";
+    [Description("Url to home page")]
+    [Glyph(Glyphs.Url)]
+    public string Url { get; set; } = "https://aniwave.to";
 }

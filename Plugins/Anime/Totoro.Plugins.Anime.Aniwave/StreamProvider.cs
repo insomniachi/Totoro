@@ -7,6 +7,7 @@ using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.Aniwave;
 
@@ -19,8 +20,8 @@ internal partial class StreamProvider : IAnimeStreamProvider
     {
         var doc = await url.GetHtmlDocumentAsync();
         var animeId = doc.QuerySelector("#watch-main").Attributes["data-id"].Value;
-        var vrf = await Vrf.Encode(animeId);
-        var body = await Config.Url
+        var vrf = Vrf.Encode(animeId);
+        var body = await ConfigManager<Config>.Current.Url
             .AppendPathSegment($"/ajax/episode/list/{animeId}")
             .SetQueryParam("vrf", vrf)
             .GetStringAsync();
@@ -45,8 +46,8 @@ internal partial class StreamProvider : IAnimeStreamProvider
     {
         var doc = await url.GetHtmlDocumentAsync();
         var animeId = doc.QuerySelector("#watch-main").Attributes["data-id"].Value;
-        var vrf = await Vrf.Encode(animeId);
-        var body = await Config.Url
+        var vrf = Vrf.Encode(animeId);
+        var body = await ConfigManager<Config>.Current.Url
             .AppendPathSegment($"/ajax/episode/list/{animeId}")
             .SetQueryParam("vrf", vrf)
             .GetStringAsync();
@@ -84,10 +85,11 @@ internal partial class StreamProvider : IAnimeStreamProvider
                 continue;
             }
 
-            body = await Config.Url
+            body = await ConfigManager<Config>.Current.Url
                 .AppendPathSegment($"/ajax/server/list/{id}")
-                .SetQueryParam("vrf", await Vrf.Encode(id))
+                .SetQueryParam("vrf", Vrf.Encode(id))
                 .GetStringAsync();
+
             jObject = JsonNode.Parse(body);
             html = jObject!["result"]!.ToString();
             var doc2 = new HtmlDocument();
@@ -97,10 +99,11 @@ internal partial class StreamProvider : IAnimeStreamProvider
             {
                 var name = serverItem.InnerText;
                 var serverId = serverItem.Attributes["data-link-id"].Value;
-                var result = await Config.Url
+                var result = await ConfigManager<Config>.Current.Url
                     .AppendPathSegment($"/ajax/server/{serverId}")
-                    .SetQueryParam("vrf", await Vrf.Encode(serverId))
+                    .SetQueryParam("vrf", Vrf.Encode(serverId))
                     .GetStringAsync();
+
                 jObject = JsonNode.Parse(result);
                 var encodedUrl = jObject!["result"]!["url"]!.ToString();
                 var decoded = await Vrf.Decode(encodedUrl);

@@ -3,6 +3,7 @@ using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.Aniwave;
 
@@ -20,7 +21,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 
     public async IAsyncEnumerable<IAiredAnimeEpisode> GetRecentlyAiredEpisodes(int page = 1)
     {
-        var response = await Config.Url.AppendPathSegment("/ajax/home/widget/updated-all")
+        var response = await ConfigManager<Config>.Current.Url.AppendPathSegment("/ajax/home/widget/updated-all")
             .SetQueryParam("page", page)
             .GetJsonAsync();
 
@@ -41,7 +42,7 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
             {
                 Title = title,
                 Image = img,
-                Url = Url.Combine(Config.Url, animeUrl),
+                Url = Url.Combine(ConfigManager<Config>.Current.Url, animeUrl),
                 Episode = epInt,
                 EpisodeString = eps
             };
