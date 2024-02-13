@@ -13,7 +13,6 @@ internal class UserListViewModelBuilder
     internal UserListViewModel Build()
     {
         return new UserListViewModel(_trackingServiceMock.Object,
-                                     _animeServiceMock.Object,
                                      _viewServiceMock.Object,
                                      Mock.Of<ISettings>(),
                                      _connectivityServiceMock.Object,

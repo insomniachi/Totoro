@@ -1,29 +1,32 @@
 ﻿using System.Diagnostics;
 using System.Reactive.Subjects;
+using System.Windows.Forms;
 using FlaUI.Core.AutomationElements;
+using ReactiveUI;
 using Totoro.Plugins.MediaDetection.Contracts;
 
 namespace Totoro.Plugins.MediaDetection.Win11MediaPlayer;
 
-internal partial class MediaPlayer : INativeMediaPlayer
+internal partial class MediaPlayer : ReactiveObject, INativeMediaPlayer
 {
-    private readonly Subject<TimeSpan> _positionChanged = new();
-    private readonly Subject<TimeSpan> _durationChanged = new();
     private Window? _mainWindow;
 
-
-    public IObservable<TimeSpan> PositionChanged => _positionChanged;
-    public IObservable<TimeSpan> DurationChanged => _durationChanged;
+    public IObservable<string> TitleChanged { get; }
     public Process? Process { get; private set; }
-    public TimeSpan Duration { get; set; }
+    public string Title { get; set; } = string.Empty;
+
+    public MediaPlayer()
+    {
+        TitleChanged = this.WhenAnyValue(x => x.Title);
+    }
 
     public void Dispose() { }
 
-    public string GetTitle()
+    public Task<string> GetTitle()
     {
         if (_mainWindow is null)
         {
-            return string.Empty;
+            return Task.FromResult(string.Empty);
         }
 
         var element = _mainWindow.FindFirstDescendant(cb => cb.ByAutomationId("mediaItemTitle"));
@@ -32,13 +35,14 @@ internal partial class MediaPlayer : INativeMediaPlayer
             element = _mainWindow.FindFirstDescendant(cb => cb.ByAutomationId("mediaItemTitle"));
         }
 
-        return element.Name;
+        return Task.FromResult(element.Name);
     }
 
 
-    public void Initialize(Window window)
+    public async Task Initialize(Window window)
     {
         _mainWindow = window;
         Process = Process.GetProcessesByName("Microsoft.Media.Player").First();
+        Title = await GetTitle();
     }
 }

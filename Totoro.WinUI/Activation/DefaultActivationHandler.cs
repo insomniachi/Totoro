@@ -4,6 +4,7 @@ using Totoro.Core.ViewModels;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.MediaDetection;
+using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.ViewModels;
 
@@ -16,6 +17,7 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
     private readonly ISettings _settings;
     private readonly IViewService _viewService;
     private readonly ProcessWatcher _processWatcher;
+    private INativeMediaPlayer _detectedPlayer;
     private bool _mediaDetected;
 
     public DefaultActivationHandler(IWinUINavigationService navigationService,
@@ -47,14 +49,15 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
         processWatcher
             .MediaPlayerDetected
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(player =>
+            .Do(player => _detectedPlayer = player)
+            .SelectMany(player => player.TitleChanged)
+            .Subscribe(title =>
             {
-                var title = player.GetTitle();
                 _mediaDetected = !settings.OnlyDetectMediaInLibraryFolders ||
-                                    settings
-                                    .LibraryFolders
-                                    .Any(x => Directory.GetFiles(x, "*", SearchOption.AllDirectories)
-                                    .FirstOrDefault(x => x.Contains(player.GetTitle())) is not null);
+                    settings
+                    .LibraryFolders
+                    .Any(x => Directory.GetFiles(x, "*", SearchOption.AllDirectories)
+                    .FirstOrDefault(x => x.Contains(title)) is not null);
 
                 foreach (var item in settings.LibraryFolders)
                 {
@@ -63,13 +66,13 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
 
                 if (!_mediaDetected)
                 {
-                    processWatcher.RemoveProcess(player.Process);
+                    processWatcher.RemoveProcess(_detectedPlayer.Process);
                     return;
                 }
 
                 navigationService.NavigateTo<NowPlayingViewModel>(parameter: new Dictionary<string, object>
                 {
-                    ["Player"] = player
+                    ["Player"] = _detectedPlayer
                 });
             });
 
@@ -79,8 +82,8 @@ public class DefaultActivationHandler : ActivationHandler<LaunchActivatedEventAr
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ =>
             {
-                drpc.Clear();
                 navigationService.GoBack();
+                drpc.Clear(); 
             });
     }
 

@@ -25,7 +25,7 @@ public class ProcessWatcher : IEnableLogger
     {
         _desktop = _automation.GetDesktop();
         _automationEventHandler = new(_desktop.FrameworkAutomationElement, _automation.EventLibrary.Window.WindowOpenedEvent, OnWindowOpened);
-        DetectMediaProcess();
+        //DetectMediaProcess();
     }
 
     public void Enable()

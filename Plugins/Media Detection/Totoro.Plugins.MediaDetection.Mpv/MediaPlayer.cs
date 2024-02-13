@@ -1,36 +1,45 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Linq;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
+using ReactiveUI;
 using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.MediaDetection.Generic;
 
-public class Mpv : GenericMediaPlayer, ICanLaunch
+public sealed class Mpv : GenericMediaPlayer, ICanLaunch
 {
     private bool _hasCustomTitle;
     private string? _customTitle;
+    private Application? _application;
 
-    protected override string ParseFromWindowTitle(string windowTitle)
+    protected override Task<string> ParseFromWindowTitle(string windowTitle)
     {
-        return windowTitle.Replace("- mpv", string.Empty);
+        return Task.FromResult(windowTitle.Replace("- mpv", string.Empty));
     }
 
-    public override string GetTitle()
+    public override Task<string> GetTitle()
     {
         if (_hasCustomTitle)
         {
-            return _customTitle!;
+            return Task.FromResult(_customTitle!);
         }
 
         return base.GetTitle();
     }
 
-    public void Launch(string title, string url)
+    public Task Launch(string title, string url)
     {
         _hasCustomTitle = true;
         _customTitle = title;
-        Application.Launch(ConfigManager<MpvConfig>.Current.FileName, $"{url} --title=\"{title}\" --fs");
+        _application = Application.Launch(ConfigManager<MpvConfig>.Current.FileName, $"{url} --title=\"{title}\" --fs");
+        return Task.CompletedTask;
+    }
+
+    public override void Dispose()
+    {
+        _application?.Dispose();
     }
 }
 
@@ -41,10 +50,16 @@ public sealed class MpcHc : INativeMediaPlayer, ICanLaunch
     private string? _customTitle;
 
     public Process? Process { get; private set; }
+    public string Title { get; set; } = string.Empty;
+    public IObservable<string> TitleChanged { get; }
+    public MpcHc()
+    {
+        TitleChanged = this.WhenAnyValue(x => x.Title).DistinctUntilChanged();
+    }
 
     public void Dispose() { }
 
-    public string GetTitle()
+    public async Task<string> GetTitle()
     {
         if (_hasCustomTitle)
         {
@@ -55,22 +70,24 @@ public sealed class MpcHc : INativeMediaPlayer, ICanLaunch
         while (title == "Media Player Classic Home Cinema")
         {
             title = _window!.Title;
-            Thread.Sleep(100);
+            await Task.Delay(100);
         }
 
         return title;
     }
 
-    public void Initialize(Window window)
+    public async Task Initialize(Window window)
     {
         _window = window;
         Process = Process.GetProcessById(window.Properties.ProcessId);
+        Title = await GetTitle();
     }
 
-    public void Launch(string title, string url)
+    public async Task Launch(string title, string url)
     {
         _hasCustomTitle = true;
         _customTitle = title;
         Application.Launch(ConfigManager<MpcConfig>.Current.FileName, $"{url} /fullscreen");
+        Title = await GetTitle();
     }
 }
