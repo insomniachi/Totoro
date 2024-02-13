@@ -25,17 +25,3 @@ public class MpvPlugin : GenericPlugin<Mpv, MpvConfig>
         };
     }
 }
-
-public class MpcHcPlugin : GenericPlugin<MpcHc, MpcConfig>
-{
-    public override PluginInfo GetInfo()
-    {
-        return new PluginInfo
-        {
-            Name = "mpc-hc64",
-            DisplayName = "MPC-HC",
-            Description = "",
-            Version = Assembly.GetExecutingAssembly().GetName().Version!
-        };
-    }
-}

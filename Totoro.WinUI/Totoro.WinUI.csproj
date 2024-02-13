@@ -63,6 +63,7 @@
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
 		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Vlc\Totoro.Plugins.MediaDetection.Vlc.csproj" />
+		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.MpcHc\Totoro.Plugins.MediaDetection.MpcHc.csproj" />
 		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj" />
 		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj" />
 	</ItemGroup>
