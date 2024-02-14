@@ -60,6 +60,11 @@
       "DisplayName": "General Purpose",
       "Version": "1.4.0.0",
       "FileName": "Totoro.Plugins.MediaDetection.Generic.dll"
+    },
+    {
+      "DisplayName": "MPC-HC",
+      "Version": "1.0.0.0",
+      "FileName": "Totoro.Plugins.MediaDetection.MpcHc.dll"
     }
   ]
 }
