@@ -167,6 +167,7 @@ public static class ServiceCollectionExtensions
         services.AddPage<RequestRatingViewModel, RequestRatingView>();
         services.AddPage<PluginStoreViewModel, PluginStoreView>();
         services.AddPage<SearchListServiceViewModel, SearchListServicePage>();
+        services.AddPage<EditAnimePreferencesViewModel, EditAnimePreferencesView>();
 
         return services;
     }

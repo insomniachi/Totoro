@@ -98,6 +98,9 @@
 		<None Update="Styles\TitleBar.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</None>
+		<Page Update="Dialogs\Views\EditAnimePreferencesView.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
 		<Page Update="Views\AboutSections\EpisodesTorrentsSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
@@ -256,6 +259,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Dialogs\Views\EditAnimePreferencesView.xaml" />
 	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
 	  <None Remove="UserControls\PivotNavigation.xaml" />
 	  <None Remove="Views\AboutSections\EpisodesTorrentsSection.xaml" />

@@ -20,12 +20,12 @@ namespace Totoro.WinUI.Services;
 public class ViewService(IContentDialogService contentDialogService,
                          IAnimeServiceContext animeService,
                          IToastService toastService,
-                         INameService nameService) : IViewService, IEnableLogger
+                         IAnimePreferencesService nameService) : IViewService, IEnableLogger
 {
     private readonly IContentDialogService _contentDialogService = contentDialogService;
     private readonly IAnimeServiceContext _animeService = animeService;
     private readonly IToastService _toastService = toastService;
-    private readonly INameService _nameService = nameService;
+    private readonly IAnimePreferencesService _nameService = nameService;
     private readonly ICommand _copyToClipboard = ReactiveCommand.Create<Exception>(ex =>
     {
         var package = new DataPackage();
@@ -33,7 +33,7 @@ public class ViewService(IContentDialogService contentDialogService,
         Clipboard.SetContent(package);
     });
 
-    private static async Task<TViewModel> ShowContentDialog<TViewModel>(Action<TViewModel> configure = null, bool allowMoving = true)
+    private static async Task<(TViewModel, ContentDialogResult)> ShowContentDialog<TViewModel>(Action<TViewModel> configure = null, bool allowMoving = true)
         where TViewModel: class, INotifyPropertyChanged
     {
         var view = App.GetService<IViewFor<TViewModel>>();
@@ -59,8 +59,8 @@ public class ViewService(IContentDialogService contentDialogService,
             }; 
         }
 
-        await contentDialog.ShowAsync();
-        return vm;
+        var result = await contentDialog.ShowAsync();
+        return (vm, result);
     }
 
     public async Task<Unit> UpdateTracking(IAnimeModel anime)
@@ -95,7 +95,7 @@ public class ViewService(IContentDialogService contentDialogService,
 
     public async Task<ICatalogItem> ChoooseSearchResult(ICatalogItem closestMatch, List<ICatalogItem> searchResults, string providerType)
     {
-        var viewModel = await ShowContentDialog<ChooseSearchResultViewModel>(vm =>
+        var (viewModel, _) = await ShowContentDialog<ChooseSearchResultViewModel>(vm =>
         {
             vm.SetValues(searchResults);
             vm.SelectedSearchResult = closestMatch;
@@ -410,38 +410,8 @@ public class ViewService(IContentDialogService contentDialogService,
         await ShowContentDialog<SearchListServiceViewModel>();
     }
 
-    public async Task PromptAnimeName(long id)
+    public async Task PromptPreferences(long id)
     {
-        var grid = new Grid();
-        var textBox = new TextBox()
-        {
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        grid.Children.Add(textBox);
-
-        if (_nameService.HasName(id))
-        {
-            textBox.Text = _nameService.GetName(id);
-        }
-
-        var dialog = new ContentDialog()
-        {
-            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-            XamlRoot = App.MainWindow.Content.XamlRoot,
-            DefaultButton = ContentDialogButton.Primary,
-            Content = grid,
-            ManipulationMode = Microsoft.UI.Xaml.Input.ManipulationModes.All,
-            Title = "Set Name",
-            PrimaryButtonText = "Save",
-            SecondaryButtonText = "Cancel"
-        };
-
-        var result = await dialog.ShowAsync();
-        var text = textBox.Text;
-        if (result == ContentDialogResult.Primary && !string.IsNullOrEmpty(text))
-        {
-            _nameService.AddOrUpdate(id, text);
-        }
+        await ShowContentDialog<EditAnimePreferencesViewModel>(vm => vm.Initialize(id));
     }
 }

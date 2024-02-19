@@ -168,10 +168,10 @@ public static partial class Converters
 
         flyout.Items.Add(new MenuFlyoutItem
         {
-            Text = @"Set Alternate Name",
-            Command = App.Commands.SetName,
+            Text = @"Set Preferences",
+            Command = App.Commands.SetPreferences,
             CommandParameter = anime.Id,
-            Icon = new FontIcon() { Glyph = "\uE8AC" }
+            Icon = new FontIcon() { Glyph = "\uEF58" }
         });
         flyout.Items.Add(new MenuFlyoutItem
         {
