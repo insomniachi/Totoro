@@ -15,7 +15,8 @@ public class Plugin : IPlugin<INativeMediaPlayer>
             Name = "Microsoft.Media.Player",
             DisplayName = "Windows Media Player",
             Description = "Default Windows 11 Media Player",
-            Version = Assembly.GetExecutingAssembly().GetName().Version!
+            Version = Assembly.GetExecutingAssembly().GetName().Version!,
+            Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.MediaDetection.Win11MediaPlayer.wmp-icon.png"),
         };
     }
 

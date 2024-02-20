@@ -15,7 +15,8 @@ public class Plugin : Plugin<INativeMediaPlayer, Config>
             Name = "mpc-hc64",
             DisplayName = "MPC-HC",
             Description = "",
-            Version = Assembly.GetExecutingAssembly().GetName().Version!
+            Version = Assembly.GetExecutingAssembly().GetName().Version!,
+            Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.MediaDetection.MpcHc.mpc-hc-logo.png"),
         };
     }
 }

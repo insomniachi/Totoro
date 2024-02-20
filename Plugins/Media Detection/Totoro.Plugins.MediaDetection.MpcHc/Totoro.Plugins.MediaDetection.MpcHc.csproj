@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="mpc-hc-logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
 	  <ProjectReference Include="..\..\..\Totoro.Plugins.MediaDetection\Totoro.Plugins.MediaDetection.csproj" />
   </ItemGroup>
 
