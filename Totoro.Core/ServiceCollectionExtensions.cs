@@ -40,7 +40,7 @@ namespace Totoro.Core
             services.AddSingleton<IInitializer, Initalizer>();
             services.AddSingleton<ITorrentEngine, TorrentEngine>();
             services.AddSingleton<IRssDownloader, RssDownloader>();
-            services.AddSingleton<INameService, NameService>();
+            services.AddSingleton<IAnimePreferencesService, AnimePreferencesService>();
             services.AddSingleton<IOfflineAnimeIdService, OfflineAnimeIdService>();
 
             services.AddTransient<IFileService, FileService>();

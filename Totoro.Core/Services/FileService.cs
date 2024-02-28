@@ -1,14 +1,13 @@
 ﻿using System.Text;
-using Newtonsoft.Json;
 
 namespace Totoro.Core.Services;
 
 public class FileService : IFileService
 {
-    private readonly JsonSerializerSettings _settings = new()
+    private readonly JsonSerializerOptions _settings = new()
     {
-        DefaultValueHandling = DefaultValueHandling.Ignore,
-        NullValueHandling = NullValueHandling.Ignore,
+        WriteIndented = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
 
     public T Read<T>(string folderPath, string fileName)
@@ -17,7 +16,7 @@ public class FileService : IFileService
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<T>(json);
+            return JsonSerializer.Deserialize<T>(json);
         }
 
         return default;
@@ -30,7 +29,7 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        var fileContent = JsonConvert.SerializeObject(content, Formatting.Indented, _settings);
+        var fileContent = JsonSerializer.Serialize(content, _settings);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }
 

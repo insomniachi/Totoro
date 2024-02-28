@@ -1,76 +1,40 @@
-﻿using System.Diagnostics;
-using FlaUI.Core;
-using FlaUI.Core.AutomationElements;
+﻿using FlaUI.Core;
 using Totoro.Plugins.MediaDetection.Contracts;
 using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.MediaDetection.Generic;
 
-public class Mpv : GenericMediaPlayer, ICanLaunch
+public sealed class Mpv : GenericMediaPlayer, ICanLaunch
 {
     private bool _hasCustomTitle;
     private string? _customTitle;
+    private Application? _application;
 
-    protected override string ParseFromWindowTitle(string windowTitle)
+    protected override Task<string> ParseFromWindowTitle(string windowTitle)
     {
-        return windowTitle.Replace("- mpv", string.Empty);
+        return Task.FromResult(windowTitle.Replace("- mpv", string.Empty));
     }
 
-    public override string GetTitle()
+    public override Task<string> GetTitle()
     {
         if (_hasCustomTitle)
         {
-            return _customTitle!;
+            return Task.FromResult(_customTitle!);
         }
 
         return base.GetTitle();
     }
 
-    public void Launch(string title, string url)
+    public Task Launch(string title, string url)
     {
         _hasCustomTitle = true;
         _customTitle = title;
-        Application.Launch(ConfigManager<MpvConfig>.Current.FileName, $"{url} --title=\"{title}\" --fs");
-    }
-}
-
-public sealed class MpcHc : INativeMediaPlayer, ICanLaunch
-{
-    private Window? _window;
-    private bool _hasCustomTitle;
-    private string? _customTitle;
-
-    public Process? Process { get; private set; }
-
-    public void Dispose() { }
-
-    public string GetTitle()
-    {
-        if (_hasCustomTitle)
-        {
-            return _customTitle!;
-        }
-
-        var title = _window!.Title;
-        while (title == "Media Player Classic Home Cinema")
-        {
-            title = _window!.Title;
-            Thread.Sleep(100);
-        }
-
-        return title;
+        _application = Application.Launch(ConfigManager<MpvConfig>.Current.FileName, $"{url} --title=\"{title}\" --fs");
+        return Task.CompletedTask;
     }
 
-    public void Initialize(Window window)
+    public override void Dispose()
     {
-        _window = window;
-        Process = Process.GetProcessById(window.Properties.ProcessId);
-    }
-
-    public void Launch(string title, string url)
-    {
-        _hasCustomTitle = true;
-        _customTitle = title;
-        Application.Launch(ConfigManager<MpcConfig>.Current.FileName, $"{url} /fullscreen");
+        _application?.Dispose();
     }
 }

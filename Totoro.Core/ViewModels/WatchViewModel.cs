@@ -40,7 +40,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly IVideoStreamResolverFactory _videoStreamResolverFactory;
     private readonly ISimklService _simklService;
     private readonly IAnimeDetectionService _animeDetectionService;
-    private readonly INameService _nameService;
+    private readonly IAnimePreferencesService _preferencesService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
     private readonly string[] _subDubProviders = ["gogo-anime", "anime-saturn"];
 
@@ -50,6 +50,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private int? _episodeRequest;
     private IVideoStreamModelResolver _videoStreamResolver;
     private AnimeModel _anime;
+    private bool _canOverrideDefaultProvider;
 
     public WatchViewModel(IPluginFactory<AnimeProvider> providerFactory,
                           IViewService viewService,
@@ -63,7 +64,7 @@ public partial class WatchViewModel : NavigatableViewModel
                           ISimklService simklService,
                           IEnumerable<IMediaEventListener> mediaEventListeners,
                           IAnimeDetectionService animeDetectionService,
-                          INameService nameService)
+                          IAnimePreferencesService preferencesService)
     {
         _providerFactory = providerFactory;
         _viewService = viewService;
@@ -75,7 +76,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _videoStreamResolverFactory = videoStreamResolverFactory;
         _simklService = simklService;
         _animeDetectionService = animeDetectionService;
-        _nameService = nameService;
+        _preferencesService = preferencesService;
         _mediaEventListeners = mediaEventListeners.ToList();
 
         NextEpisode = ReactiveCommand.Create(() =>
@@ -102,6 +103,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.WhenAnyValue(x => x.ProviderType)
             .WhereNotNull()
+            .Log(this, "Provider Changed")
             .Subscribe(type =>
             {
                 Provider = _providerFactory.CreatePlugin(type);
@@ -121,7 +123,10 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(async x =>
             {
                 var hasSubDub = x is { Dub: { }, Sub: { } };
-                var searResult = _settings.PreferSubs ? x.Dub ?? x.Sub : x.Sub;
+                var preferDubs = _preferencesService.HasPreferences(Anime.Id)
+                    ? _preferencesService.GetPreferences(Anime.Id).PreferDubs
+                    : !_settings.PreferSubs;
+                var searResult = preferDubs ? x.Dub ?? x.Sub : x.Sub;
 
                 if (hasSubDub)
                 {
@@ -130,7 +135,7 @@ public partial class WatchViewModel : NavigatableViewModel
                     SubStreams = ProviderType is "gogo-anime"
                         ? [StreamType.Subbed(Languages.English), StreamType.Dubbed(Languages.English)]
                         : [StreamType.Subbed(Languages.Italian), StreamType.Dubbed(Languages.Italian)];
-                    SelectedAudioStream = _settings.PreferSubs ? SubStreams.First() : SubStreams.Last();
+                    SelectedAudioStream = !preferDubs ? SubStreams.First() : SubStreams.Last();
                 }
                 else
                 {
@@ -348,13 +353,16 @@ public partial class WatchViewModel : NavigatableViewModel
                       parameters.ContainsKey(WatchViewModelParamters.TorrentManager);
         MediaPlayerType = UseTorrents ? Models.MediaPlayerType.FFMpeg : _settings.MediaPlayerType;
         ProviderType = parameters.GetValueOrDefault(WatchViewModelParamters.Provider, _settings.DefaultProviderType) as string;
+        _canOverrideDefaultProvider = !parameters.ContainsKey(WatchViewModelParamters.Provider);
         _providerOptions = _providerFactory.GetCurrentConfig(ProviderType);
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
         SelectedAudioStream = GetDefaultAudioStream();
 
         if (parameters.ContainsKey(WatchViewModelParamters.Anime))
         {
-            Anime = parameters[WatchViewModelParamters.Anime] as AnimeModel;
+            var anime = parameters[WatchViewModelParamters.Anime] as AnimeModel;
+            UpdatePreferences(anime.Id);
+            Anime = anime;
         }
         else if (parameters.ContainsKey(WatchViewModelParamters.EpisodeInfo))
         {
@@ -366,6 +374,7 @@ public partial class WatchViewModel : NavigatableViewModel
         else if (parameters.ContainsKey(WatchViewModelParamters.AnimeId))
         {
             var id = (long)parameters[WatchViewModelParamters.AnimeId];
+            UpdatePreferences(id);
             Anime = await _animeService.GetInformation(id);
         }
         else if (parameters.ContainsKey(WatchViewModelParamters.SearchResult))
@@ -424,6 +433,50 @@ public partial class WatchViewModel : NavigatableViewModel
         }
     }
 
+    private void UpdatePreferences(long id)
+    {
+        UpdatePreferedProvider(id);
+        UpdatePreferedAudioStream(id);
+    }
+
+    private void UpdatePreferedProvider(long id)
+    {
+        if(!_canOverrideDefaultProvider)
+        {
+            return;
+        }
+
+        if (!_preferencesService.HasPreferences(id))
+        {
+            return;
+        }
+
+        var preferences = _preferencesService.GetPreferences(id);
+
+        if (string.IsNullOrEmpty(preferences.Provider))
+        {
+            return;
+        }
+
+        ProviderType = preferences.Provider;
+    }
+
+    private void UpdatePreferedAudioStream(long id)
+    {
+        if (!_preferencesService.HasPreferences(id))
+        {
+            return;
+        }
+
+        if (_preferencesService.GetPreferences(id).PreferDubs)
+        {
+            if (ProviderType == "allanime")
+            {
+                SelectedAudioStream = StreamType.Dubbed(Languages.English);
+            }
+        }
+    }
+
     private async Task<(ICatalogItem Sub, ICatalogItem Dub)> Find(long id, string title)
     {
         if (Provider is null)
@@ -467,9 +520,9 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task<(ICatalogItem Sub, ICatalogItem Dub)> SearchProvider(long id, string title)
     {
-        if (_nameService.HasName(id))
+        if (_preferencesService.HasAlias(id))
         {
-            title = _nameService.GetName(id);
+            title = _preferencesService.GetPreferences(id).Alias;
         }
 
         var results = await Provider.Catalog.Search(title).ToListAsync();
@@ -572,6 +625,8 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private void SetAnime(long id)
     {
+        UpdatePreferences(id);
+
         _animeService.GetInformation(id)
             .Subscribe(async anime =>
             {

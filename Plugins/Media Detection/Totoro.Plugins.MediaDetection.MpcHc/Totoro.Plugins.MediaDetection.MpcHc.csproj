@@ -4,15 +4,15 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Platforms>x64</Platforms>
-	<Version>1.4</Version>
+	<Platforms>x64</Platforms>
+	<Version>1.0</Version>
 	<OutputPath Condition="$(Configuration) == Release">..\..\..\Plugins Store\</OutputPath>
 	<AppendTargetFrameworkToOutputPath Condition="$(Configuration) == Release">false</AppendTargetFrameworkToOutputPath>
 	<AppendRuntimeIdentifierToOutputPath Condition="$(Configuration) == Release">false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
-	
+
   <ItemGroup>
-    <EmbeddedResource Include="wmp-icon.png" />
+    <EmbeddedResource Include="mpc-hc-logo.png" />
   </ItemGroup>
 
   <ItemGroup>

@@ -38,14 +38,12 @@ public class TotoroCommands : IEnableLogger
                     navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
                         [WatchViewModelParamters.Anime] = anime,
-                        [WatchViewModelParamters.Provider] = settings.DefaultProviderType
                     });
                     break;
                 case long id:
                     navigationService.NavigateTo<WatchViewModel>(parameter: new Dictionary<string, object>()
                     {
                         [WatchViewModelParamters.AnimeId] = id,
-                        [WatchViewModelParamters.Provider] = settings.DefaultProviderType
                     });
                     break;
                 case (AnimeModel anime, string providerType):
@@ -193,7 +191,7 @@ public class TotoroCommands : IEnableLogger
             anime.Tracking = await trackingServiceContext.Update(anime.Id, Tracking.Previous(anime));
         });
         ShowPluginsStore = ReactiveCommand.CreateFromTask<string>(viewService.ShowPluginStore);
-        SetName = ReactiveCommand.CreateFromTask<long>(viewService.PromptAnimeName);
+        SetPreferences = ReactiveCommand.CreateFromTask<long>(viewService.PromptPreferences);
     }
 
     public ICommand UpdateTracking { get; }
@@ -213,7 +211,7 @@ public class TotoroCommands : IEnableLogger
     public ICommand IncrementTracking { get; }
     public ICommand DecrementTracking { get; }
     public ICommand ShowPluginsStore { get; }
-    public ICommand SetName { get; }
+    public ICommand SetPreferences { get; }
     public ICommand AddToPlanToWatch { get; }
 
     private async Task PlayYoutubeVideo(Video video, Func<string, string, Task> playVideo)

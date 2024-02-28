@@ -4,15 +4,14 @@ using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using ReactiveUI;
 using Totoro.Plugins.MediaDetection.Contracts;
-using Totoro.Plugins.MediaDetection.Vlc.HttpInterface;
 using Totoro.Plugins.Options;
 
-namespace Totoro.Plugins.MediaDetection.Vlc
+namespace Totoro.Plugins.MediaDetection.MpcHc
 {
     internal sealed partial class MediaPlayer : ReactiveObject, INativeMediaPlayer, IHavePosition, ICanLaunch
     {
         private string? _customTitle;
-        private VlcInterface _interface = null!;
+        private MpvHcInterface _interface = null!;
 
         public IObservable<TimeSpan> PositionChanged { get; private set; } = null!;
         public IObservable<TimeSpan> DurationChanged { get; private set; } = null!;
@@ -23,7 +22,7 @@ namespace Totoro.Plugins.MediaDetection.Vlc
         public Task Launch(string title, string url)
         {
             _customTitle = title;
-            var app = Application.Launch(ConfigManager<Config>.Current.FileName, $"{url} --meta-title=\"{title}\" -f");
+            var app = Application.Launch(ConfigManager<Config>.Current.FileName, $"{url} /fullscreen");
             InitializeInternal(Process.GetProcessById(app.ProcessId), true);
             return Task.CompletedTask;
         }
@@ -37,12 +36,12 @@ namespace Totoro.Plugins.MediaDetection.Vlc
 
         private void InitializeInternal(Process process, bool hasCustomTitle = false)
         {
-            _interface = new(process);
-            
-            TitleChanged = hasCustomTitle 
-                ? Observable.Return(_customTitle!) 
+            _interface = new MpvHcInterface(process);
+
+            TitleChanged = hasCustomTitle
+                ? Observable.Return(_customTitle!)
                 : _interface.TitleChanged;
-            
+
             DurationChanged = _interface.DurationChanged;
             PositionChanged = _interface.PositionChanged;
         }

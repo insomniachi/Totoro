@@ -63,6 +63,7 @@
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
 		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Vlc\Totoro.Plugins.MediaDetection.Vlc.csproj" />
+		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.MpcHc\Totoro.Plugins.MediaDetection.MpcHc.csproj" />
 		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Win11MediaPlayer\Totoro.Plugins.MediaDetection.Win11MediaPlayer.csproj" />
 		<ProjectReference Include="..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.Mpv\Totoro.Plugins.MediaDetection.Generic.csproj" />
 	</ItemGroup>
@@ -97,6 +98,9 @@
 		<None Update="Styles\TitleBar.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</None>
+		<Page Update="Dialogs\Views\EditAnimePreferencesView.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		</Page>
 		<Page Update="Views\AboutSections\EpisodesTorrentsSection.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
@@ -255,6 +259,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Dialogs\Views\EditAnimePreferencesView.xaml" />
 	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
 	  <None Remove="UserControls\PivotNavigation.xaml" />
 	  <None Remove="Views\AboutSections\EpisodesTorrentsSection.xaml" />

@@ -5,8 +5,8 @@ namespace Totoro.Plugins.MediaDetection.Contracts
 {
     public interface INativeMediaPlayer : IDisposable
     {
-        string GetTitle();
-        void Initialize(Window window);
+        IObservable<string> TitleChanged { get; }
+        Task Initialize(Window window);
         Process? Process { get; }
     }
 
@@ -18,6 +18,6 @@ namespace Totoro.Plugins.MediaDetection.Contracts
 
     public interface ICanLaunch
     {
-        void Launch(string title, string url);
+        Task Launch(string title, string url);
     }
 }

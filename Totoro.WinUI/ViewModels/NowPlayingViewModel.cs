@@ -83,23 +83,21 @@ public class NowPlayingViewModel : NavigatableViewModel
     [Reactive] public bool IsVisible { get; set; }
     [Reactive] public ObservableCollection<KeyValuePair<string, string>> Info { get; set; }
     [Reactive] public bool IsPositionVisible { get; set; }
-    [Reactive] public EpisodeModelCollection EpisodeModels { get; set; }
     public int EpisodeInt { get; set; }
     public INativeMediaPlayer MediaPlayer { get; set; }
     public string ProviderType { get; set; }
     public AnimeProvider Provider { get; set; }
 
 
-    public override Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
+    public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
         if (parameters.ContainsKey("Player"))
         {
             IsVisible = true;
             MediaPlayer = (INativeMediaPlayer)parameters["Player"];
-            InitializeFromPlayer(MediaPlayer);
+            await InitializeFromPlayer(MediaPlayer);
         }
 
-        return Task.CompletedTask;
     }
 
     public async Task SetAnime(long animeId)
@@ -117,7 +115,7 @@ public class NowPlayingViewModel : NavigatableViewModel
         ];
     }
 
-    public async void InitializeFromPlayer(INativeMediaPlayer player)
+    public async Task InitializeFromPlayer(INativeMediaPlayer player)
     {
         IsPositionVisible = player is IHavePosition;
 
@@ -135,7 +133,7 @@ public class NowPlayingViewModel : NavigatableViewModel
                .ToPropertyEx(this, x => x.Position, initialValue: TimeSpan.Zero);
         }
 
-        var fileName = player.GetTitle();
+        var fileName = await player.TitleChanged.FirstOrDefaultAsync(x => !string.IsNullOrEmpty(x));
         var parsedResults = AnitomySharp.AnitomySharp.Parse(fileName);
         var title = parsedResults.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
 
@@ -165,7 +163,7 @@ public class NowPlayingViewModel : NavigatableViewModel
     private Task<TimestampResult> GetTimeStamps(AnimeModel anime, TimeSpan duration)
     {
         return anime.MalId is { } malId
-            ? _timestampsService.GetTimeStampsWithMalId(malId, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds)
-            : _timestampsService.GetTimeStampsWithMalId(anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds);
+            ? _timestampsService.GetTimeStampsWithMalId(malId, EpisodeInt, duration.TotalSeconds)
+            : _timestampsService.GetTimeStampsWithMalId(anime.Id, EpisodeInt, duration.TotalSeconds);
     }
 }

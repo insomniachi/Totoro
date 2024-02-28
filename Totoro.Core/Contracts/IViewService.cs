@@ -17,6 +17,6 @@ public interface IViewService
     Task<string> BrowseSubtitle();
     Task UnhandledException(Exception ex);
     Task ShowPluginStore(string pluginType);
-    Task PromptAnimeName(long id);
+    Task PromptPreferences(long id);
     Task ShowSearchListServiceDialog();
 }

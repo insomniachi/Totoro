@@ -2,7 +2,7 @@
 using Totoro.Plugins.Contracts;
 using Totoro.Plugins.MediaDetection.Contracts;
 
-namespace Totoro.Plugins.MediaDetection.Vlc;
+namespace Totoro.Plugins.MediaDetection.MpcHc;
 
 public class Plugin : Plugin<INativeMediaPlayer, Config>
 {
@@ -12,11 +12,11 @@ public class Plugin : Plugin<INativeMediaPlayer, Config>
     {
         return new PluginInfo
         {
-            Name = "vlc",
-            DisplayName = "VLC Media Player",
+            Name = "mpc-hc64",
+            DisplayName = "MPC-HC",
             Description = "",
             Version = Assembly.GetExecutingAssembly().GetName().Version!,
-            Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.MediaDetection.Vlc.vlc_logo.png"),
+            Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.MediaDetection.MpcHc.mpc-hc-logo.png"),
         };
     }
 }

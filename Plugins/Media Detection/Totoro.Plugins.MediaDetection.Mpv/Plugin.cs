@@ -21,21 +21,8 @@ public class MpvPlugin : GenericPlugin<Mpv, MpvConfig>
             Name = "mpv",
             DisplayName = "MPV",
             Description = "",
-            Version = Assembly.GetExecutingAssembly().GetName().Version!
-        };
-    }
-}
-
-public class MpcHcPlugin : GenericPlugin<MpcHc, MpcConfig>
-{
-    public override PluginInfo GetInfo()
-    {
-        return new PluginInfo
-        {
-            Name = "mpc-hc64",
-            DisplayName = "MPC-HC",
-            Description = "",
-            Version = Assembly.GetExecutingAssembly().GetName().Version!
+            Version = Assembly.GetExecutingAssembly().GetName().Version!,
+            Icon = typeof(MpvPlugin).Assembly.GetManifestResourceStream("Totoro.Plugins.MediaDetection.Generic.mpv-icon.png"),
         };
     }
 }
