@@ -27,6 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Labs.WinUI.Shimmer" Version="0.1.230830" />
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.230830" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.240109" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.240109" />
@@ -95,6 +96,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="LoadingViews\AboutAnimeLoadingView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<None Update="Styles\TitleBar.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</None>
@@ -261,6 +265,7 @@
 	<ItemGroup>
 	  <None Remove="Dialogs\Views\EditAnimePreferencesView.xaml" />
 	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
+	  <None Remove="LoadingViews\AboutAnimeLoadingView.xaml" />
 	  <None Remove="UserControls\PivotNavigation.xaml" />
 	  <None Remove="Views\AboutSections\EpisodesTorrentsSection.xaml" />
 	  <None Remove="Views\DiscoverSections\MyAnimeListDiscoverSection.xaml" />

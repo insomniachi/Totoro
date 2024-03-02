@@ -51,6 +51,7 @@ public class SelectorBarBehavior : Behavior<SelectorBar>
             });
 
         this.WhenAnyValue(x => x.SelectedItem)
+            .WhereNotNull()
             .Where(_ => AssociatedObject is not null)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(item =>

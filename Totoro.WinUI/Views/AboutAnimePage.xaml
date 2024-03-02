@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Totoro.WinUI.Helpers"
     xmlns:local="using:Totoro.WinUI.Views"
+    xmlns:lv="using:Totoro.WinUI.LoadingViews"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:root="using:Totoro.WinUI"
     xmlns:uc="using:Totoro.WinUI.UserControls"
@@ -18,7 +19,7 @@
         Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
         <ctk:Case Value="True">
             <Grid>
-                <ProgressRing IsActive="True" />
+                <lv:AboutAnimeLoadingView />
             </Grid>
         </ctk:Case>
         <ctk:Case Value="False">
