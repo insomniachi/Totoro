@@ -64,7 +64,7 @@ internal class SimklService(ISimklClient simklClient,
 
         if(id == 0)
         {
-            return Enumerable.Empty<EpisodeModel>();
+            return [];
         }
 
         try
@@ -82,7 +82,7 @@ internal class SimklService(ISimklClient simklClient,
         }
         catch (Exception)
         {
-            return Enumerable.Empty<EpisodeModel>();
+            return [];
         }
     }
 
