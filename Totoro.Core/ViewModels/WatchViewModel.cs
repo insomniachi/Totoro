@@ -41,6 +41,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private readonly ISimklService _simklService;
     private readonly IAnimeDetectionService _animeDetectionService;
     private readonly IAnimePreferencesService _preferencesService;
+    private readonly IMyAnimeListService _myAnimeListService;
     private readonly List<IMediaEventListener> _mediaEventListeners;
     private readonly string[] _subDubProviders = ["gogo-anime", "anime-saturn"];
 
@@ -64,7 +65,8 @@ public partial class WatchViewModel : NavigatableViewModel
                           ISimklService simklService,
                           IEnumerable<IMediaEventListener> mediaEventListeners,
                           IAnimeDetectionService animeDetectionService,
-                          IAnimePreferencesService preferencesService)
+                          IAnimePreferencesService preferencesService,
+                          IMyAnimeListService myAnimeListService)
     {
         _providerFactory = providerFactory;
         _viewService = viewService;
@@ -77,6 +79,7 @@ public partial class WatchViewModel : NavigatableViewModel
         _simklService = simklService;
         _animeDetectionService = animeDetectionService;
         _preferencesService = preferencesService;
+        _myAnimeListService = myAnimeListService;
         _mediaEventListeners = mediaEventListeners.ToList();
 
         NextEpisode = ReactiveCommand.Create(() =>
@@ -115,7 +118,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
-            .Do(async model => _episodeMetadata ??= await simklService.GetEpisodes(model.Id))
+            .Do(async model => await UpdateMetaData(model.Id))
             .SelectMany(model => Find(model.Id, model.Title))
             .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
@@ -154,18 +157,7 @@ public partial class WatchViewModel : NavigatableViewModel
         this.WhenAnyValue(x => x.EpisodeModels)
             .Where(x => x is not null && Anime is not null && _episodeMetadata is not null)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ =>
-            {
-                foreach (var item in _episodeMetadata)
-                {
-                    if (EpisodeModels.FirstOrDefault(x => x.EpisodeNumber == item.EpisodeNumber) is not { } ep)
-                    {
-                        continue;
-                    }
-
-                    ep.EpisodeTitle = item.EpisodeTitle;
-                }
-            });
+            .Subscribe(_ => UpdateMetaData());
 
         this.WhenAnyValue(x => x.EpisodeModels)
             .WhereNotNull()
@@ -631,7 +623,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .Subscribe(async anime =>
             {
                 _anime = anime;
-                _episodeMetadata = await _simklService.GetEpisodes(id);
+                await UpdateMetaData(id);
                 SetAnime(_anime);
             }, RxApp.DefaultExceptionHandler.OnError);
     }
@@ -759,5 +751,40 @@ public partial class WatchViewModel : NavigatableViewModel
         return Anime.MalId is { } malId
             ? _timestampsService.GetTimeStampsWithMalId(malId, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds)
             : _timestampsService.GetTimeStampsWithMalId(Anime.Id, EpisodeModels.Current.EpisodeNumber, duration.TotalSeconds);
+    }
+
+    private void UpdateMetaData()
+    {
+        foreach (var item in _episodeMetadata)
+        {
+            if (EpisodeModels.FirstOrDefault(x => x.EpisodeNumber == item.EpisodeNumber) is not { } ep)
+            {
+                continue;
+            }
+
+            ep.EpisodeTitle = item.EpisodeTitle;
+            ep.IsFillter = item.IsFillter;
+        }
+    }
+
+    private async Task UpdateMetaData(long id)
+    {
+        var meta = (await _simklService.GetEpisodes(id)).ToList();
+        var fillers = await _myAnimeListService.GetFillers(Anime.Id).ToListAsync();
+
+        foreach (var item in meta)
+        {
+            if(fillers.Contains(item.EpisodeNumber))
+            {
+                item.IsFillter = true;
+            }
+        }
+
+        _episodeMetadata = meta;
+
+        if(EpisodeModels is not null)
+        {
+            UpdateMetaData();
+        }
     }
 }

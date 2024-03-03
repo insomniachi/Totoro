@@ -117,6 +117,7 @@
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="m:EpisodeModel">
                             <TextBlock
+                                Foreground="{x:Bind local:WatchPage.Foreground(IsFillter), Mode=OneWay}"
                                 Text="{x:Bind DisplayName, Mode=OneWay}"
                                 TextTrimming="CharacterEllipsis"
                                 ToolTipService.ToolTip="{x:Bind DisplayName, Mode=OneWay}" />

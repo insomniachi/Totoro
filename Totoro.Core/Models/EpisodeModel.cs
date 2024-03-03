@@ -10,6 +10,7 @@ namespace Totoro.Core.Models
         [Reactive] public string SpecialEpisodeNumber { get; set; }
         [Reactive] public bool IsSpecial { get; set; }
         [Reactive] public string EpisodeTitle { get; set; }
+        [Reactive] public bool IsFillter { get; set; }
         [ObservableAsProperty] public string DisplayName { get; }
 
         public EpisodeModel()

@@ -1,26 +1,23 @@
-﻿using JikanDotNet;
+﻿using System.Collections.Generic;
+using AngleSharp.Io;
+using JikanDotNet;
 using MalApi;
 using MalApi.Interfaces;
 using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
 namespace Totoro.Core.Services.MyAnimeList;
 
-public class MyAnimeListService : IAnimeService, IMyAnimeListService
+public class MyAnimeListService(IMalClient client,
+                                IAnilistService anilistService,
+                                IAnimeIdService animeIdService,
+                                ISettings settings) : IAnimeService, IMyAnimeListService
 {
-    private readonly IMalClient _client;
-    private readonly IAnilistService _anilistService;
-    private readonly ISettings _settings;
+    private readonly IMalClient _client = client;
+    private readonly IAnilistService _anilistService = anilistService;
+    private readonly IAnimeIdService _animeIdService = animeIdService;
+    private readonly ISettings _settings = settings;
     private readonly IJikan _jikan = new Jikan();
     private readonly string _recursiveAnimeProperties = $"my_list_status,status,{AnimeFieldNames.TotalEpisodes},{AnimeFieldNames.Mean}";
-
-    public MyAnimeListService(IMalClient client,
-                              IAnilistService anilistService,
-                              ISettings settings)
-    {
-        _client = client;
-        _anilistService = anilistService;
-        _settings = settings;
-    }
 
     public ListServiceType Type => ListServiceType.MyAnimeList;
 
@@ -159,8 +156,33 @@ public class MyAnimeListService : IAnimeService, IMyAnimeListService
         }
         catch
         {
-            return Enumerable.Empty<EpisodeModel>();
+            return [];
         }
+    }
+
+    public async IAsyncEnumerable<int> GetFillers(long id)
+    {
+        var animeId = await _animeIdService.GetId(id);
+
+        if (animeId is null || animeId.MyAnimeList is null)
+        {
+            yield break;
+        }
+
+        PaginatedJikanResponse<ICollection<AnimeEpisode>> response = null;
+        var currentPage = 1;
+        var offset = 0;
+        do
+        {
+            response = await _jikan.GetAnimeEpisodesAsync(animeId.MyAnimeList.Value, currentPage++);
+            foreach (var item in response.Data.Select((x, index) => (x, index)).Where(x => x.x.Filler == true).Select(x => x.index + 1 + offset))
+            {
+                yield return item;
+            }
+
+            offset += response.Data.Count;
+
+        } while (response.Pagination.HasNextPage);
     }
 
     private static MalApi.Season PrevSeason()

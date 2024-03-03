@@ -1,14 +1,15 @@
 ﻿using System.Data;
+using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Contracts;
 using Totoro.WinUI.Media.Flyleaf;
 using Totoro.WinUI.Media.Wmp;
 using Totoro.WinUI.UserControls;
-using WinUIEx;
 
 namespace Totoro.WinUI.Views;
 
@@ -141,6 +142,13 @@ public sealed partial class WatchPage : WatchPageBase
             MainGrid.Children.Add(MediaPlayer);
             ViewModel.MediaPlayer.TransportControls.TogglePiPMode();
         };
+    }
+
+    public static SolidColorBrush Foreground(bool isFiller)
+    {
+        return isFiller
+            ? new SolidColorBrush(Colors.Yellow)
+            : new SolidColorBrush(Colors.White);
     }
 
     private string GetWindowTitle()
