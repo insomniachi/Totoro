@@ -41,6 +41,7 @@ public interface ISettings : INotifyPropertyChanged
     DisplayMode ListDisplayMode { get; set; }
     GridViewSettings UserListGridViewSettings { get; set; }
     public string DefaultMangaProviderType { get; set; }
+    public bool SkipFillers { get; set; }
 }
 
 public class StartupOptions : ReactiveObject

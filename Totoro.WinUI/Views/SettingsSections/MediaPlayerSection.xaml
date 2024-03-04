@@ -1,6 +1,3 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
-<!--  Licensed under the MIT License.  -->
-
 <Page
     x:Class="Totoro.WinUI.Views.SettingsSections.MediaPlayerSection"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -51,6 +48,16 @@
                 SmallChange="1"
                 SpinButtonPlacementMode="Inline"
                 Value="{x:Bind ViewModel.Settings.OpeningSkipDurationInSeconds, Mode=TwoWay}" />
+        </labs:SettingsCard>
+
+        <labs:SettingsCard
+            Description="Auto skip filler episodes"
+            Header="Skip Fillers"
+            HeaderIcon="{ui:FontIcon Glyph=&#xEB9D;}">
+            <ToggleSwitch
+                IsOn="{x:Bind ViewModel.Settings.SkipFillers, Mode=TwoWay}"
+                OffContent="Off"
+                OnContent="On" />
         </labs:SettingsCard>
 
         <labs:SettingsCard

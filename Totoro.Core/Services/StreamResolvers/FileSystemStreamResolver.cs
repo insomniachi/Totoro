@@ -2,17 +2,13 @@
 
 namespace Totoro.Core.Services.StreamResolvers;
 
-internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
+internal class FileSystemStreamResolver(string directory, ISettings settings) : IVideoStreamModelResolver, IDisposable
 {
-    private readonly DirectoryInfo _directory;
-    private readonly string[] _videoFileExtensions = new[] { ".mkv", ".mp4" };
+    private readonly DirectoryInfo _directory = new(directory);
+    private readonly string[] _videoFileExtensions = [".mkv", ".mp4"];
     private readonly Dictionary<int, string> _episodes = [];
+    private readonly ISettings _settings = settings;
     private static Stream _prevStream;
-
-    public FileSystemStreamResolver(string directory)
-    {
-        _directory = new(directory);
-    }
 
     public Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
@@ -34,7 +30,7 @@ internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
             _episodes.Add(episode, fileInfo.FullName);
         }
 
-        return Task.FromResult(EpisodeModelCollection.FromEpisodes(_episodes.Keys.Order()));
+        return Task.FromResult(EpisodeModelCollection.FromEpisodes(_episodes.Keys.Order(), _settings.SkipFillers));
     }
 
     public Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, StreamType streamType)
@@ -42,12 +38,12 @@ internal class FileSystemStreamResolver : IVideoStreamModelResolver, IDisposable
         _prevStream?.Dispose();
         _prevStream = null;
 
-        if (!_episodes.ContainsKey(episode))
+        if (!_episodes.TryGetValue(episode, out string value))
         {
             return Task.FromResult<VideoStreamsForEpisodeModel>(default);
         }
 
-        _prevStream = File.OpenRead(_episodes[episode]);
+        _prevStream = File.OpenRead(value);
         return Task.FromResult(new VideoStreamsForEpisodeModel(_prevStream));
     }
 

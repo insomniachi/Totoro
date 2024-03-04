@@ -5,18 +5,14 @@ using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services.StreamResolvers;
 
-public class DebridStreamModelResolver : IVideoStreamModelResolver, IEnableLogger
+public class DebridStreamModelResolver(IDebridServiceContext debridService,
+                                       ISettings settings,
+                                       string magnet) : IVideoStreamModelResolver, IEnableLogger
 {
-    private readonly IDebridServiceContext _debridService;
-    private readonly string _magnet;
+    private readonly IDebridServiceContext _debridService = debridService;
+    private readonly ISettings _settings = settings;
+    private readonly string _magnet = magnet;
     private List<DirectDownloadLink> _links;
-
-    public DebridStreamModelResolver(IDebridServiceContext debridService,
-                                     string magnet)
-    {
-        _debridService = debridService;
-        _magnet = magnet;
-    }
 
     public async Task Populate()
     {
@@ -35,7 +31,7 @@ public class DebridStreamModelResolver : IVideoStreamModelResolver, IEnableLogge
 
     public Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
-        return Task.FromResult(EpisodeModelCollection.FromDirectDownloadLinks(_links));
+        return Task.FromResult(EpisodeModelCollection.FromDirectDownloadLinks(_links, _settings.SkipFillers));
     }
 
     public Task<VideoStreamsForEpisodeModel> ResolveEpisode(int episode, StreamType streamType)

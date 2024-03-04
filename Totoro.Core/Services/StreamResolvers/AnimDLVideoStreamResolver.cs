@@ -39,7 +39,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
 
         var results = await GetStreams(episode, streamType);
 
-        if (!results.Any())
+        if (results.Count == 0)
         {
             this.Log().Debug("No streams found");
             return null;
@@ -71,7 +71,7 @@ public class AnimDLVideoStreamResolver : IVideoStreamModelResolver, IEnableLogge
 
     public async Task<EpisodeModelCollection> ResolveAllEpisodes(StreamType streamType)
     {
-        return EpisodeModelCollection.FromEpisodeCount(await GetNumberOfEpisodes(streamType));
+        return EpisodeModelCollection.FromEpisodeCount(await GetNumberOfEpisodes(streamType), _settings.SkipFillers);
     }
 
     private async Task<List<VideoStreamsForEpisode>> GetStreams(int episode, StreamType streamType)

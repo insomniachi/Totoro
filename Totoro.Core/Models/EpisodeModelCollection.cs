@@ -5,9 +5,8 @@ using Totoro.Core.Services.Debrid;
 
 namespace Totoro.Core.Models
 {
-    public class EpisodeModelCollection : Collection<EpisodeModel>, INotifyPropertyChanged
+    public class EpisodeModelCollection(bool skipFillers) : Collection<EpisodeModel>, INotifyPropertyChanged
     {
-        public EpisodeModelCollection() { }
         public event PropertyChangedEventHandler PropertyChanged;
         private void RaisePropertyChanged([CallerMemberName] string property = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
 
@@ -34,18 +33,33 @@ namespace Totoro.Core.Models
 
         public void SelectNext()
         {
-            Current = this.FirstOrDefault(x => x.EpisodeNumber == Current.EpisodeNumber + 1);
+            if(skipFillers)
+            {
+                Current = this.Where(x => !x.IsFillter).FirstOrDefault(x => x.EpisodeNumber > Current.EpisodeNumber);
+            }
+            else
+            {
+                Current = this.FirstOrDefault(x => x.EpisodeNumber == Current.EpisodeNumber + 1);
+            }
         }
 
         public void SelectPrevious()
         {
-            Current = this.FirstOrDefault(x => x.EpisodeNumber == Current.EpisodeNumber - 1);
+            if(skipFillers)
+            {
+                Current = this.Where(x => !x.IsFillter).FirstOrDefault(x => x.EpisodeNumber < Current.EpisodeNumber);
+            }
+            else
+            {
+                Current = this.FirstOrDefault(x => x.EpisodeNumber == Current.EpisodeNumber - 1);
+            }    
+
         }
 
 
-        public static EpisodeModelCollection FromEpisodeCount(int count)
+        public static EpisodeModelCollection FromEpisodeCount(int count, bool skipFillers)
         {
-            var collection = new EpisodeModelCollection();
+            var collection = new EpisodeModelCollection(skipFillers);
             collection.AddRange(Enumerable.Range(1, count).Select(ep => new EpisodeModel
             {
                 EpisodeNumber = ep,
@@ -59,8 +73,8 @@ namespace Totoro.Core.Models
 
         public static EpisodeModelCollection FromEpisode(int episode)
         {
-            return
-            [
+            return new(false)
+            {
                 new EpisodeModel
                 {
                     EpisodeNumber = episode,
@@ -68,12 +82,12 @@ namespace Totoro.Core.Models
                     SpecialEpisodeNumber = string.Empty,
                     EpisodeTitle = string.Empty,
                 }
-            ];
+            };
         }
 
-        public static EpisodeModelCollection FromEpisodes(IEnumerable<int> episodes)
+        public static EpisodeModelCollection FromEpisodes(IEnumerable<int> episodes, bool skipFillers)
         {
-            var collecton = new EpisodeModelCollection();
+            var collecton = new EpisodeModelCollection(skipFillers);
             collecton.AddRange(episodes.Select(ep => new EpisodeModel
             {
                 EpisodeNumber = ep,
@@ -85,9 +99,9 @@ namespace Totoro.Core.Models
             return collecton;
         }
 
-        public static EpisodeModelCollection FromEpisode(int start, int end)
+        public static EpisodeModelCollection FromEpisode(int start, int end, bool skipFillers)
         {
-            var collecton = new EpisodeModelCollection();
+            var collecton = new EpisodeModelCollection(skipFillers);
             collecton.AddRange(Enumerable.Range(start, end - start + 1).Select(ep => new EpisodeModel
             {
                 EpisodeNumber = ep,
@@ -99,9 +113,9 @@ namespace Totoro.Core.Models
             return collecton;
         }
 
-        public static EpisodeModelCollection FromDirectDownloadLinks(IEnumerable<DirectDownloadLink> links)
+        public static EpisodeModelCollection FromDirectDownloadLinks(IEnumerable<DirectDownloadLink> links, bool skipFillers)
         {
-            var collecton = new EpisodeModelCollection();
+            var collecton = new EpisodeModelCollection(skipFillers);
             var options = new Options(title: true, extension: false, group: false);
             collecton.AddRange(links.Select(ddl =>
             {
@@ -137,6 +151,6 @@ namespace Totoro.Core.Models
             return collecton;
         }
 
-        public static EpisodeModelCollection Empty { get; } = [];
+        public static EpisodeModelCollection Empty { get; } = new(false);
     }
 }

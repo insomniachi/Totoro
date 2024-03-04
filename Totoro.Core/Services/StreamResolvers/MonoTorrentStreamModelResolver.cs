@@ -12,6 +12,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
                                                      ISpecialVideoStreamModelResolver
 {
     private readonly ITorrentEngine _torrentEngine;
+    private readonly ISettings _settings;
     private readonly Torrent _torrent;
     private readonly string _torrentUrl;
     private readonly string _saveDirectory;
@@ -24,24 +25,26 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
 
     public MonoTorrentStreamModelResolver(ITorrentEngine torrentEngine,
                                           IEnumerable<Element> parsedResults,
-                                          string torrentUrl,
-                                          string saveDirectory)
+                                          ISettings settings,
+                                          string torrentUrl)
     {
         _torrentEngine = torrentEngine;
+        _settings = settings;
         _torrentUrl = torrentUrl;
         var folder = parsedResults.First(x => x.Category == Element.ElementCategory.ElementAnimeTitle).Value;
-        _saveDirectory = Path.Combine(saveDirectory, folder);
+        _saveDirectory = Path.Combine(settings.UserTorrentsDownloadDirectory, folder);
     }
 
     public MonoTorrentStreamModelResolver(ITorrentEngine torrentEngine,
-                                          Torrent torrent,
-                                          string saveDirectory)
+                                          ISettings settings,
+                                          Torrent torrent)
     {
         _torrentEngine = torrentEngine;
         _torrent = torrent;
+        _settings = settings;
         var parsedResults = AnitomySharp.AnitomySharp.Parse(torrent.Name);
         var folder = parsedResults.First(x => x.Category == Element.ElementCategory.ElementAnimeTitle).Value;
-        _saveDirectory = Path.Combine(saveDirectory, folder);
+        _saveDirectory = Path.Combine(settings.UserTorrentsDownloadDirectory, folder);
     }
 
     public async ValueTask DisposeAsync()
@@ -73,7 +76,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
             .DisposeWith(_disposable);
 
         var index = 0;
-        var eps = new EpisodeModelCollection();
+        var eps = new EpisodeModelCollection(_settings.SkipFillers);
         foreach (var file in _torrentManager.Torrent.Files.Select(x => x.Path))
         {
             var result = AnitomySharp.AnitomySharp.Parse(file);
