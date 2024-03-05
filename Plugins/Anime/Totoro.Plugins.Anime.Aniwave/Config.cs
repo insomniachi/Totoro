@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.Serialization;
 using Totoro.Plugins.Options;
 
 namespace Totoro.Plugins.Anime.Aniwave;

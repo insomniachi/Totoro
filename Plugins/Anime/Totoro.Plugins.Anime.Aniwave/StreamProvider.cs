@@ -1,5 +1,8 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Data;
+using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Web;
 using Flurl;
 using Flurl.Http;
 using HtmlAgilityPack;
@@ -16,14 +19,22 @@ internal partial class StreamProvider : IAnimeStreamProvider
     [GeneratedRegex(@"(?<Start>\d+)-(?<End>\d+)")]
     private static partial Regex EpisodeRangeRegex();
 
+    [GeneratedRegex(@"var k='(?<k>[^']+)'")]
+    private static partial Regex FuTokenRegex();
+
+    private readonly string _vidSrcKeys = "https://raw.githubusercontent.com/KillerDogeEmpire/vidplay-keys/keys/keys.json";
+
     public async Task<int> GetNumberOfStreams(string url)
     {
         var doc = await url.GetHtmlDocumentAsync();
         var animeId = doc.QuerySelector("#watch-main").Attributes["data-id"].Value;
-        var vrf = Vrf.Encode(animeId);
+        var vrf = await Vrf.Encode(animeId);
         var body = await ConfigManager<Config>.Current.Url
+            .WithDefaultUserAgent()
+            .WithReferer(url)
+            .WithHeader(HeaderNames.XRequestedWith, "XMLHttpRequest")
             .AppendPathSegment($"/ajax/episode/list/{animeId}")
-            .SetQueryParam("vrf", vrf)
+            .SetQueryParam("vrf", $"{vrf}#{url}")
             .GetStringAsync();
 
         var jObject = JsonNode.Parse(body);
@@ -44,9 +55,12 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range episodeRange)
     {
-        var doc = await url.GetHtmlDocumentAsync();
+        var doc = await url.WithDefaultUserAgent()
+                           .WithReferer(ConfigManager<Config>.Current.Url)
+                           .GetHtmlDocumentAsync();
+
         var animeId = doc.QuerySelector("#watch-main").Attributes["data-id"].Value;
-        var vrf = Vrf.Encode(animeId);
+        var vrf = await Vrf.Encode(animeId);
         var body = await ConfigManager<Config>.Current.Url
             .AppendPathSegment($"/ajax/episode/list/{animeId}")
             .SetQueryParam("vrf", vrf)
@@ -87,7 +101,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
             body = await ConfigManager<Config>.Current.Url
                 .AppendPathSegment($"/ajax/server/list/{id}")
-                .SetQueryParam("vrf", Vrf.Encode(id))
+                .SetQueryParam("vrf", await Vrf.Encode(id))
                 .GetStringAsync();
 
             jObject = JsonNode.Parse(body);
@@ -101,7 +115,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
                 var serverId = serverItem.Attributes["data-link-id"].Value;
                 var result = await ConfigManager<Config>.Current.Url
                     .AppendPathSegment($"/ajax/server/{serverId}")
-                    .SetQueryParam("vrf", Vrf.Encode(serverId))
+                    .SetQueryParam("vrf", await Vrf.Encode(serverId))
                     .GetStringAsync();
 
                 jObject = JsonNode.Parse(result);
@@ -119,34 +133,90 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
     }
 
-    private Task<VideoStreamsForEpisode?> ExtractStreams(string serverName, string url)
+    private async Task<VideoStreamsForEpisode?> ExtractStreams(string serverName, string url)
     {
         return serverName switch
         {
-            "Vidstream" or "MyCloud" => DefaultExtract(serverName, url),
-            _ => Task.FromResult((VideoStreamsForEpisode?)null)
+            "Vidplay" or "mycloud" => await DefaultExtract(serverName, url),
+            _ => null
         };
     }
 
+    private static async Task<string> GetApiUrl(string url, List<string> keys)
+    {
+        Url urlObj = url;
+        var host = urlObj.Host;
+        var vidId = urlObj.QueryParams[0].Value.ToString()!;
+        var @params = urlObj.QueryParams.Select(x => (x.Name, x.Value.ToString()!));
+        var encodedId = GetEncodedId(vidId, keys);
+        var apiSlug = await CallFuToken(host, encodedId);
+        return BuildUrl(host, apiSlug, @params);
+    }
+
+    private static string GetEncodedId(string vidId, List<string> keys)
+    {
+        var encoded = RC42.Decrypt(Encoding.UTF8.GetBytes(keys[0]), Encoding.UTF8.GetBytes(vidId));
+        encoded = RC42.Decrypt(Encoding.UTF8.GetBytes(keys[1]), encoded);
+        var bytes = Encoding.UTF8.GetBytes(Convert.ToBase64String(encoded));
+        var str =  Encoding.UTF8.GetString(bytes);
+        return str.Replace("/", "_").Trim();
+    }
+
+    static string BuildUrl(string host, string apiSlug, IEnumerable<(string, string)> parameters)
+    {
+        StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.Append("https://");
+        urlBuilder.Append(host);
+        urlBuilder.Append('/');
+        urlBuilder.Append(apiSlug);
+
+        if (parameters.Any())
+        {
+            urlBuilder.Append('?');
+            urlBuilder.Append(string.Join("&", parameters.Select(p => $"{p.Item1}={p.Item2}")));
+        }
+
+        return urlBuilder.ToString();
+    }
+
+    private static async Task<string> CallFuToken(string host, string data)
+    {
+        var fuTokenScript = await $"https://{host}/futoken".WithDefaultUserAgent().GetStringAsync();
+        var match = FuTokenRegex().Match(fuTokenScript);
+        if(!match.Success)
+        {
+            return "";
+        }    
+
+        string v = data;
+        string k = match.Groups["k"].Value;
+        var result = new StringBuilder();
+        result.Append("mediainfo/");
+        result.Append(k);
+        result.Append(',');
+        for (int i = 0; i < v.Length; i++)
+        {
+            int charCode = k[i % k.Length] + v[i];
+            result.Append(charCode);
+            if (i < v.Length - 1)
+                result.Append(',');
+        }
+
+        return result.ToString();
+    }
+
+
+
     private async Task<VideoStreamsForEpisode?> DefaultExtract(string serverName, string url)
     {
-        var urlObj = new Url(url);
-        var slug = urlObj.PathSegments.Last();
-        var futoken = await urlObj.Root.AppendPathSegment("/futoken").GetStringAsync();
-        var isMyCloud = serverName == "MyCloud";
-        var server = isMyCloud ? "Mcloud" : "Vizcloud";
-        var apiResponse = await $"https://9anime.eltik.net/raw{server}?query={slug}&apikey=chayce".PostUrlEncodedAsync(new
-        {
-            query = slug,
-            futoken
-        }).ReceiveJson();
+        var host = new Url(url).Host;
+        var keys = await _vidSrcKeys.GetJsonAsync<List<string>>();
+        var apiUrl = await GetApiUrl(url, keys);
 
-        string data = apiResponse.rawURL;
-        var vidstreamInfo = await data.SetQueryParam("t", urlObj.QueryParams.First(x => x.Name == "t").Value)
-            .WithHeader(HeaderNames.Referer, url)
-            .GetJsonAsync();
-
-        string streamUrl = vidstreamInfo.result.sources[0].file;
+        var result = await apiUrl.WithReferer(HttpUtility.UrlDecode(url))
+                                 .WithHeader(HeaderNames.XRequestedWith, "XMLHttpRequest")
+                                 .WithHeader(HeaderNames.Host, host)
+                                 .GetStringAsync();
 
         return new VideoStreamsForEpisode
         {
@@ -154,7 +224,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
             {
                 new VideoStream
                 {
-                    Url = streamUrl,
+                    Url = "",
                     Headers = { { HeaderNames.Referer, url } }
                 }
             }

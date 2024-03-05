@@ -1,4 +1,5 @@
 ﻿using Flurl;
+using Flurl.Http;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
@@ -18,11 +19,13 @@ internal class Catalog : IAnimeCatalog
 
     public async IAsyncEnumerable<ICatalogItem> Search(string query)
     {
-        var vrf = Vrf.Encode(query);
+        var vrf = await Vrf.Encode(query);
         var doc = await ConfigManager<Config>.Current.Url
+            .WithReferer(ConfigManager<Config>.Current.Url)
+            .WithDefaultUserAgent()
             .AppendPathSegment("/filter")
-            .SetQueryParam("language[]", "subbed")
             .SetQueryParam("keyword", query)
+            .SetQueryParam("language", "sub")
             .SetQueryParam("vrf", vrf)
             .SetQueryParam("page", 1)
             .GetHtmlDocumentAsync();
