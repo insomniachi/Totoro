@@ -30,149 +30,135 @@ public class AniListTrackingService : ITrackingService
         IsAuthenticated = true;
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetAnime()
+    public async IAsyncEnumerable<AnimeModel> GetAnime()
     {
-        if (IsAuthenticated)
+        if (!IsAuthenticated)
         {
-            return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
-            {
-                var userName = await GetUserName();
-
-                var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-                {
-                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime, status: MediaListStatus.Current).Build(),
-                });
-
-                observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
-
-                response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-                {
-                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime, statusNot: MediaListStatus.Current).Build(),
-                });
-
-                observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)));
-                observer.OnCompleted();
-            });
+            yield break;
         }
-        else
+
+        var userName = await GetUserName();
+
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
-            return Observable.Empty<IEnumerable<AnimeModel>>();
-        }
-    }
-
-    public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
-    {
-        if (IsAuthenticated)
-        {
-            return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
-            {
-                var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-                {
-                    Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(),
-                        userName: await GetUserName(),
-                        type: MediaType.Anime,
-                        status: MediaListStatus.Current)
-                    .Build(),
-                });
-
-                observer.OnNext(response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => x.Media).Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel));
-                observer.OnCompleted();
-            });
-        }
-        else
-        {
-            return Observable.Empty<IEnumerable<AnimeModel>>();
-        }
-    }
-
-    public IObservable<Tracking> Update(long id, Tracking tracking)
-    {
-        if (IsAuthenticated)
-        {
-            return Observable.Create<Tracking>(async observer =>
-            {
-                var mediaListEntryBuilder = new MediaListQueryBuilder();
-
-                if (tracking.Status is AnimeStatus status)
-                {
-                    mediaListEntryBuilder.WithStatus();
-                }
-                if (tracking.StartDate is DateTime)
-                {
-                    mediaListEntryBuilder.WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields());
-                }
-                if (tracking.FinishDate is DateTime)
-                {
-                    mediaListEntryBuilder.WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields());
-                }
-                if (tracking.Score is int)
-                {
-                    mediaListEntryBuilder.WithScore();
-                }
-                if (tracking.WatchedEpisodes is int)
-                {
-                    mediaListEntryBuilder.WithProgress();
-                }
-
-                var query = new MutationQueryBuilder()
-                    .WithSaveMediaListEntry(mediaListEntryBuilder,
-                        status: ConvertListStatus(tracking.Status),
-                        startedAt: ConvertDate(tracking.StartDate),
-                        completedAt: ConvertDate(tracking.FinishDate),
-                        scoreRaw: tracking.Score * 100,
-                        progress: tracking.WatchedEpisodes,
-                        mediaId: (int)id)
-                    .Build();
-
-                var response = await _anilistClient.SendMutationAsync<Mutation>(new GraphQL.GraphQLRequest
-                {
-                    Query = query
-                });
-
-                observer.OnNext(ConvertTracking(response.Data.SaveMediaListEntry));
-                observer.OnCompleted();
-            });
-        }
-        else
-        {
-            return Observable.Return(tracking);
-        }
-    }
-
-    public IObservable<bool> Delete(long id)
-    {
-        return Observable.Create<bool>(async observer =>
-        {
-            var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
-                .WithMediaListEntry(new MediaListQueryBuilder().WithId()),
-                id: (int)id,
-                type: MediaType.Anime).Build();
-
-            var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-            {
-                Query = query
-            });
-
-            var trackingId = response.Data?.Media?.MediaListEntry?.Id;
-
-            if (trackingId is null)
-            {
-                observer.OnNext(false);
-                observer.OnCompleted();
-            }
-
-            query = new MutationQueryBuilder()
-                .WithDeleteMediaListEntry(new DeletedQueryBuilder().WithAllFields(), id: response.Data.Media.MediaListEntry.Id)
-                .Build();
-
-            var mutationResponse = await _anilistClient.SendMutationAsync<Mutation>(new GraphQL.GraphQLRequest
-            {
-                Query = query
-            });
-
-            observer.OnNext(mutationResponse.Data?.DeleteMediaListEntry?.Deleted ?? false);
-            observer.OnCompleted();
+            Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime, status: MediaListStatus.Current).Build(),
         });
+
+        foreach (var item in response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)))
+        {
+            yield return item;
+        }
+
+        response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+        {
+            Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime, statusNot: MediaListStatus.Current).Build(),
+        });
+
+        foreach (var item in response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => ConvertModel(x.Media)))
+        {
+            yield return item;
+        }
+    }
+
+    public async IAsyncEnumerable<AnimeModel> GetCurrentlyAiringTrackedAnime()
+    {
+        if (!IsAuthenticated)
+        {
+            yield break;
+        }
+
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+        {
+            Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(),
+                userName: await GetUserName(),
+                type: MediaType.Anime,
+                status: MediaListStatus.Current)
+            .Build(),
+        });
+
+        foreach (var item in response.Data.MediaListCollection.Lists.SelectMany(x => x.Entries).Select(x => x.Media).Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel))
+        {
+            yield return item;
+        }
+    }
+
+    public async Task<Tracking> Update(long id, Tracking tracking)
+    {
+        if (!IsAuthenticated)
+        {
+            return tracking;
+        }
+
+        var mediaListEntryBuilder = new MediaListQueryBuilder();
+
+        if (tracking.Status is AnimeStatus)
+        {
+            mediaListEntryBuilder.WithStatus();
+        }
+        if (tracking.StartDate is DateTime)
+        {
+            mediaListEntryBuilder.WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields());
+        }
+        if (tracking.FinishDate is DateTime)
+        {
+            mediaListEntryBuilder.WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields());
+        }
+        if (tracking.Score is int)
+        {
+            mediaListEntryBuilder.WithScore();
+        }
+        if (tracking.WatchedEpisodes is int)
+        {
+            mediaListEntryBuilder.WithProgress();
+        }
+
+        var query = new MutationQueryBuilder()
+            .WithSaveMediaListEntry(mediaListEntryBuilder,
+                status: ConvertListStatus(tracking.Status),
+                startedAt: ConvertDate(tracking.StartDate),
+                completedAt: ConvertDate(tracking.FinishDate),
+                scoreRaw: tracking.Score * 100,
+                progress: tracking.WatchedEpisodes,
+                mediaId: (int)id)
+            .Build();
+
+        var response = await _anilistClient.SendMutationAsync<Mutation>(new GraphQL.GraphQLRequest
+        {
+            Query = query
+        });
+
+        return ConvertTracking(response.Data.SaveMediaListEntry);
+    }
+
+    public async Task<bool> Delete(long id)
+    {
+        var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
+            .WithMediaListEntry(new MediaListQueryBuilder().WithId()),
+            id: (int)id,
+            type: MediaType.Anime).Build();
+
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
+        {
+            Query = query
+        });
+
+        var trackingId = response.Data?.Media?.MediaListEntry?.Id;
+
+        if (trackingId is null)
+        {
+            return false;
+        }
+
+        query = new MutationQueryBuilder()
+            .WithDeleteMediaListEntry(new DeletedQueryBuilder().WithAllFields(), id: response.Data.Media.MediaListEntry.Id)
+            .Build();
+
+        var mutationResponse = await _anilistClient.SendMutationAsync<Mutation>(new GraphQL.GraphQLRequest
+        {
+            Query = query
+        });
+
+        return mutationResponse.Data?.DeleteMediaListEntry?.Deleted ?? false;
     }
 
     private static bool CurrentlyAiringOrFinishedToday(Media media)

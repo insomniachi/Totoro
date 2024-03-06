@@ -18,10 +18,10 @@ public class MyAnimeListDiscoverViewModel : NavigatableViewModel
     {
         IsLoading = true;
 
-        Lists.Add(new("Top Airing", await _myAnimeListService.GetAiringAnime()));
-        Lists.Add(new("Upcomming", await _myAnimeListService.GetUpcomingAnime()));
-        Lists.Add(new("Popular", await _myAnimeListService.GetPopularAnime()));
-        Lists.Add(new("Recommended", await _myAnimeListService.GetRecommendedAnime()));
+        Lists.Add(new("Top Airing", await _myAnimeListService.GetAiringAnime().ToListAsync()));
+        Lists.Add(new("Upcomming", await _myAnimeListService.GetUpcomingAnime().ToListAsync()));
+        Lists.Add(new("Popular", await _myAnimeListService.GetPopularAnime().ToListAsync()));
+        Lists.Add(new("Recommended", await _myAnimeListService.GetRecommendedAnime().ToListAsync()));
 
         IsLoading = false;
     }

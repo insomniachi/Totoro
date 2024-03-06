@@ -10,6 +10,14 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
     private readonly IAnilistService _anilistService;
+    private readonly MalApi.AnimeStatus[] _statuses =
+    [
+        MalApi.AnimeStatus.Watching,
+        MalApi.AnimeStatus.PlanToWatch,
+        MalApi.AnimeStatus.Completed,
+        MalApi.AnimeStatus.OnHold,
+        MalApi.AnimeStatus.Dropped
+    ];
     private static readonly string[] _fieldNames =
     [
         MalApi.AnimeFieldNames.Synopsis,
@@ -57,94 +65,74 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 
     public void SetAccessToken(string accessToken) => _client.SetAccessToken(accessToken);
 
-    public IObservable<IEnumerable<AnimeModel>> GetAnime()
+    public async IAsyncEnumerable<AnimeModel> GetAnime()
     {
         if (!IsAuthenticated)
         {
-            return Observable.Empty<IEnumerable<AnimeModel>>();
+            yield break;
         }
 
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        foreach (var status in _statuses)
         {
-            var statuses = new[]
-            {
-                MalApi.AnimeStatus.Watching,
-                MalApi.AnimeStatus.PlanToWatch,
-                MalApi.AnimeStatus.Completed,
-                MalApi.AnimeStatus.OnHold,
-                MalApi.AnimeStatus.Dropped
-            };
+            var result = await _client.Anime()
+                                    .OfUser()
+                                    .WithStatus(status)
+                                    .IncludeNsfw()
+                                    .WithFields(_fieldNames)
+                                    .Find();
 
-            foreach (var status in statuses)
+
+            foreach (var item in result.Data)
             {
-                var result = await _client.Anime()
+                var model = ConvertModel(item);
+
+                if (status == MalApi.AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
+                {
+                    var epAndTime = await _anilistService.GetNextAiringEpisode(item.Id);
+                    model.AiredEpisodes = epAndTime.Episode - 1 ?? 0;
+                    model.NextEpisodeAt = epAndTime.Time;
+                }
+
+                yield return model;
+            }
+        }
+    }
+
+    public async IAsyncEnumerable<AnimeModel> GetCurrentlyAiringTrackedAnime()
+    {
+        if (!IsAuthenticated)
+        {
+            yield break;
+        }
+
+        var pagedAnime = await _client.Anime()
                                         .OfUser()
-                                        .WithStatus(status)
+                                        .WithStatus(MalApi.AnimeStatus.Watching)
                                         .IncludeNsfw()
                                         .WithFields(_fieldNames)
                                         .Find();
 
-                var models = new List<AnimeModel>();
-
-                foreach (var item in result.Data)
-                {
-                    var model = ConvertModel(item);
-
-                    if (status == MalApi.AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
-                    {
-                        var epAndTime = await _anilistService.GetNextAiringEpisode(item.Id);
-                        model.AiredEpisodes = epAndTime.Episode - 1 ?? 0;
-                        model.NextEpisodeAt = epAndTime.Time;
-                    }
-
-                    models.Add(model);
-                }
-
-                observer.OnNext(models);
-            }
-
-            observer.OnCompleted();
-            return Disposable.Empty;
-        });
-    }
-
-    public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
-    {
-        if (!IsAuthenticated)
+        foreach (var item in pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel))
         {
-            return Observable.Empty<IEnumerable<AnimeModel>>();
+            yield return item;
         }
+        var data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
 
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
         {
-            var pagedAnime = await _client.Anime()
-                                            .OfUser()
-                                            .WithStatus(MalApi.AnimeStatus.Watching)
-                                            .IncludeNsfw()
-                                            .WithFields(_fieldNames)
-                                            .Find();
-
-            var data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
-            observer.OnNext(data);
-
-            while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
+            pagedAnime = await _client.GetNextAnimePage(pagedAnime);
+            foreach (var item in pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel))
             {
-                pagedAnime = await _client.GetNextAnimePage(pagedAnime);
-                data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
-                observer.OnNext(data);
+                yield return item;
             }
-
-            observer.OnCompleted();
-
-            return Disposable.Empty;
-        });
+        }
     }
 
-    public IObservable<Tracking> Update(long id, Tracking tracking)
+    public async Task<Tracking> Update(long id, Tracking tracking)
     {
         if (!IsAuthenticated)
         {
-            return Observable.Return(tracking);
+            return tracking;
         }
 
         var request = _client.Anime().WithId(id).UpdateStatus().WithTags("Totoro");
@@ -181,22 +169,22 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             request.WithFinishDate(fd);
         }
 
-        return request
-            .Publish()
-            .ToObservable()
-            .Select(x => new Tracking
-            {
-                WatchedEpisodes = x.WatchedEpisodes,
-                Status = (AnimeStatus)(int)x.Status,
-                Score = (int)x.Score,
-                UpdatedAt = x.UpdatedAt
-            })
-            .Do(tracking => this.Log().Debug("Tracking Updated {0}.", tracking));
+        var response = await request.Publish();
+        var newTracking = new Tracking
+        {
+            WatchedEpisodes = response.WatchedEpisodes,
+            Status = (AnimeStatus)(int)response.Status,
+            Score = (int)response.Score,
+            UpdatedAt = response.UpdatedAt
+        };
+        
+        this.Log().Debug("Tracking Updated {0}.", newTracking);
+        return newTracking;
     }
 
-    public IObservable<bool> Delete(long id)
+    public async Task<bool> Delete(long id)
     {
-        return _client.Anime().WithId(id).RemoveFromList().ToObservable();
+        return await _client.Anime().WithId(id).RemoveFromList();
     }
 
     public async Task<User> GetUser()

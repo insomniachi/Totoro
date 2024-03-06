@@ -28,87 +28,71 @@ public class AnilistService : IAnimeService, IAnilistService
 
     public ListServiceType Type => ListServiceType.AniList;
 
-    public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
+    public async IAsyncEnumerable<AnimeModel> GetAiringAnime()
     {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
-            var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-            {
-                Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
-                    .WithMedia(MediaQueryBuilder(), type: MediaType.Anime, status: MediaStatus.Releasing), page: 1, perPage: 20).Build()
-            });
-
-            observer.OnNext(response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel));
-            observer.OnCompleted();
+            Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
+                .WithMedia(MediaQueryBuilder(), type: MediaType.Anime, status: MediaStatus.Releasing), page: 1, perPage: 20).Build()
         });
+
+        foreach (var item in response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel))
+        {
+            yield return item;
+        }
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
+    public async IAsyncEnumerable<AnimeModel> GetAnime(string name)
     {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
-            var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-            {
-                Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
-                    .WithMedia(MediaQueryBuilder(), search: name, type: MediaType.Anime), page: 1, perPage: 5).Build()
-            });
-
-            observer.OnNext(response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel));
-            observer.OnCompleted();
+            Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
+                .WithMedia(MediaQueryBuilder(), search: name, type: MediaType.Anime), page: 1, perPage: 5).Build()
         });
+
+        foreach (var item in response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel))
+        {
+            yield return item;
+        }
     }
 
-    public IObservable<AnimeModel> GetInformation(long id)
+    public async Task<AnimeModel> GetInformation(long id)
     {
-        return Observable.Create<AnimeModel>(async observer =>
+        var query = new QueryQueryBuilder().WithMedia(MediaQueryBuilderFull(), id: (int)id,
+                                                                               type: MediaType.Anime).Build();
+
+        var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
         {
-            var query = new QueryQueryBuilder().WithMedia(MediaQueryBuilderFull(), id: (int)id,
-                                                                                   type: MediaType.Anime).Build();
+            Query = query
+        });
+
+        return ConvertModel(response.Data.Media);
+    }
+
+    public async IAsyncEnumerable<AnimeModel> GetSeasonalAnime()
+    {
+        var current = AnimeHelpers.CurrentSeason();
+        var prev = AnimeHelpers.PrevSeason();
+        var next = AnimeHelpers.NextSeason();
+
+        foreach (var season in new[] { current, prev, next })
+        {
+            var query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
+                        .WithMedia(MediaQueryBuilder(), season: ConvertSeason(season.SeasonName),
+                                                        seasonYear: season.Year,
+                                                        type: MediaType.Anime), 1, 50).Build();
 
             var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
             {
                 Query = query
             });
 
-            observer.OnNext(ConvertModel(response.Data.Media));
-            observer.OnCompleted();
-        });
-    }
-
-    public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
-    {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
-        {
-            var current = AnimeHelpers.CurrentSeason();
-            var prev = AnimeHelpers.PrevSeason();
-            var next = AnimeHelpers.NextSeason();
-
-            try
+            foreach (var item in response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel))
             {
-                foreach (var season in new[] { current, prev, next })
-                {
-                    var query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
-                                .WithMedia(MediaQueryBuilder(), season: ConvertSeason(season.SeasonName),
-                                                                seasonYear: season.Year,
-                                                                type: MediaType.Anime), 1, 50).Build();
-
-                    var response = await _anilistClient.SendQueryAsync<Query>(new GraphQL.GraphQLRequest
-                    {
-                        Query = query
-                    });
-
-                    observer.OnNext(response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel));
-                }
-
-                observer.OnCompleted();
-            }
-            catch (Exception ex)
-            {
-                observer.OnError(ex);
+                yield return item;
             }
 
-            return Disposable.Empty;
-        });
+        }
     }
 
     public async Task<string> GetBannerImage(long id)

@@ -27,23 +27,26 @@ public class TrackingServiceContext : ITrackingServiceContext
     }
 
     public bool IsAuthenticated => _trackers[_settings.DefaultListService].Value.IsAuthenticated;
+    
     public bool IsTrackerAuthenticated(ListServiceType type) => _trackers[type].Value.IsAuthenticated;
+    
     public IObservable<ListServiceType> Authenticated => _authenticatedSubject;
-    public IObservable<IEnumerable<AnimeModel>> GetAnime()
+    
+    public IAsyncEnumerable<AnimeModel> GetAnime()
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
+            return AsyncEnumerable.Empty<AnimeModel>();
         }
 
         return _trackers[_settings.DefaultListService].Value.GetAnime();
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetCurrentlyAiringTrackedAnime()
+    public IAsyncEnumerable<AnimeModel> GetCurrentlyAiringTrackedAnime()
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
+            return AsyncEnumerable.Empty<AnimeModel>();
         }
 
         return _trackers[_settings.DefaultListService].Value.GetCurrentlyAiringTrackedAnime();
@@ -55,27 +58,27 @@ public class TrackingServiceContext : ITrackingServiceContext
         _authenticatedSubject.OnNext(type);
     }
 
-    public IObservable<Tracking> Update(long id, Tracking tracking)
+    public async Task<Tracking> Update(long id, Tracking tracking)
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(tracking);
+            return tracking;
         }
 
-        return _trackers[_settings.DefaultListService].Value.Update(id, tracking);
+        return await _trackers[_settings.DefaultListService].Value.Update(id, tracking);
     }
 
-    public IObservable<bool> Delete(long id)
+    public async Task<bool> Delete(long id)
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(false);
+            return false;
         }
 
-        return _trackers[_settings.DefaultListService].Value.Delete(id);
+        return await _trackers[_settings.DefaultListService].Value.Delete(id);
     }
 
-    public async Task<Models.User> GetUser()
+    public async Task<User> GetUser()
     {
         if (!_connectivityService.IsConnected)
         {

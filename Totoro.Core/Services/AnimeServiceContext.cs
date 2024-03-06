@@ -26,41 +26,41 @@ public class AnimeServiceContext : IAnimeServiceContext
 
     public ListServiceType Current => _settings.DefaultListService;
 
-    public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
+    public IAsyncEnumerable<AnimeModel> GetAiringAnime()
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
+            return AsyncEnumerable.Empty<AnimeModel>();
         }
 
         return _services[_settings.DefaultListService].Value.GetAiringAnime();
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
+    public IAsyncEnumerable<AnimeModel> GetAnime(string name)
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
+            return AsyncEnumerable.Empty<AnimeModel>();
         }
 
         return _services[_settings.DefaultListService].Value.GetAnime(name);
     }
 
-    public IObservable<AnimeModel> GetInformation(long id)
+    public async Task<AnimeModel> GetInformation(long id)
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(new AnimeModel());
+            return new();
         }
 
-        return _services[_settings.DefaultListService].Value.GetInformation(id);
+        return await _services[_settings.DefaultListService].Value.GetInformation(id);
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
+    public IAsyncEnumerable<AnimeModel> GetSeasonalAnime()
     {
         if (!_connectivityService.IsConnected)
         {
-            return Observable.Return(Enumerable.Empty<AnimeModel>());
+            return AsyncEnumerable.Empty<AnimeModel>();
         }
 
         return _services[_settings.DefaultListService].Value.GetSeasonalAnime();

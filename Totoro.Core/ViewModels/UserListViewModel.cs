@@ -181,6 +181,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         _genres.Clear();
         _animeCache.Clear();
         _trackingService.GetAnime()
+                        .ToObservable()
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Finally(() =>
                         {
@@ -191,20 +192,17 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                                 IsLoading = false;
                             });
                         })
-                        .Subscribe(list =>
+                        .Subscribe(anime =>
                         {
-                            _animeCache.AddOrUpdate(list);
-                            foreach (var anime in list)
+                            _animeCache.AddOrUpdate(anime);
+                            foreach (var genre in anime.Genres)
                             {
-                                foreach (var genre in anime.Genres)
-                                {
-                                    _genres.Add(genre);
-                                }
+                                _genres.Add(genre);
                             }
                             Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
                         }, RxApp.DefaultExceptionHandler.OnError)
                         .DisposeWith(Garbage);
-    }
+    } 
 
     public void StoreState(IState state)
     {

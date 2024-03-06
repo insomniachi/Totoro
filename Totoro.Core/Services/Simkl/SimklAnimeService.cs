@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using Totoro.Plugins.Anime.Models;
 
 namespace Totoro.Core.Services.Simkl;
@@ -13,50 +14,41 @@ internal class SimklAnimeService(ISimklClient simklClient,
 
     public ListServiceType Type => ListServiceType.Simkl;
 
-    public IObservable<IEnumerable<AnimeModel>> GetAiringAnime()
+    public async IAsyncEnumerable<AnimeModel> GetAiringAnime()
     {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        var result = await _simklClient.GetAiringAnime(_clientId);
+        foreach (var item in result.Select(SimklToAnimeModelConverter.Convert))
         {
-            var result = await _simklClient.GetAiringAnime(_clientId);
-            observer.OnNext(result.Select(SimklToAnimeModelConverter.Convert));
-            observer.OnCompleted();
-            return Disposable.Empty;
-        });
+            yield return item;
+        }
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
+    public async IAsyncEnumerable<AnimeModel> GetAnime(string name)
     {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        var result = await _simklClient.Search(name, ItemType.Anime, _clientId);
+        foreach (var item in result.Select(SimklToAnimeModelConverter.Convert))
         {
-            var result = await _simklClient.Search(name, ItemType.Anime, _clientId);
-            observer.OnNext(result.Select(SimklToAnimeModelConverter.Convert));
-            observer.OnCompleted();
-            return Disposable.Empty;
-        });
+            yield return item;
+        }
     }
 
-    public IObservable<AnimeModel> GetInformation(long id)
+    public async Task<AnimeModel> GetInformation(long id)
     {
-        return Observable.Create<AnimeModel>(async observer =>
-        {
-            var info = await _simklClient.GetSummary(id, _clientId);
-            var model = SimklToAnimeModelConverter.Convert(info);
-            observer.OnNext(model);
+        var info = await _simklClient.GetSummary(id, _clientId);
+        var model = SimklToAnimeModelConverter.Convert(info);
             
-            _anilistService
-                .GetBannerImage(id)
-                .ToObservable()
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(x => model.BannerImage = x);
-            
-            observer.OnCompleted();
-            return Disposable.Empty;
-        });
+        _anilistService
+            .GetBannerImage(id)
+            .ToObservable()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => model.BannerImage = x);
+
+        return model;
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
+    public IAsyncEnumerable<AnimeModel> GetSeasonalAnime()
     {
-        return Observable.Empty<IEnumerable<AnimeModel>>();
+        return AsyncEnumerable.Empty<AnimeModel>();
     }
 }
 

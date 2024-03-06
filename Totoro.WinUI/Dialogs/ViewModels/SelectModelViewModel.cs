@@ -7,7 +7,7 @@ public class SelectModelViewModel<TModel> : DialogViewModel, ISelectModelViewMod
         this.WhenAnyValue(x => x.SearchText)
             .Where(x => x is { Length: > 2 })
             .Throttle(TimeSpan.FromSeconds(1))
-            .SelectMany(text => Search?.Invoke(text))
+            .SelectMany(text => Search?.Invoke(text).ToListAsync().AsTask())
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => Models = x, RxApp.DefaultExceptionHandler.OnError);
     }
@@ -15,7 +15,7 @@ public class SelectModelViewModel<TModel> : DialogViewModel, ISelectModelViewMod
     [Reactive] public IEnumerable<TModel> Models { get; set; }
     [Reactive] public TModel SelectedModel { get; set; }
     [Reactive] public string SearchText { get; set; }
-    public Func<string, IObservable<IEnumerable<TModel>>> Search { get; set; }
+    public Func<string, IAsyncEnumerable<TModel>> Search { get; set; }
 
     IEnumerable<object> ISelectModelViewModel.Models => (IEnumerable<object>)Models;
     object ISelectModelViewModel.SelectedModel

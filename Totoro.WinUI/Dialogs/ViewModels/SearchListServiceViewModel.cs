@@ -1,6 +1,4 @@
-﻿using Totoro.Core.ViewModels;
-
-namespace Totoro.WinUI.Dialogs.ViewModels
+﻿namespace Totoro.WinUI.Dialogs.ViewModels
 {
     public class SearchListServiceViewModel : DialogViewModel
     {
@@ -11,16 +9,14 @@ namespace Totoro.WinUI.Dialogs.ViewModels
         [ObservableAsProperty] public bool HaveSelectedAnime { get; }
 
 
-        public SearchListServiceViewModel(IAnimeServiceContext animeServiceContext,
-                                          ITrackingServiceContext trackingServiceContext,
-                                          INavigationService navigationService)
+        public SearchListServiceViewModel(IAnimeServiceContext animeServiceContext)
         {
             this.WhenAnyValue(x => x.SearchText)
                 .Where(x => x is { Length: > 2 })
                 .Throttle(TimeSpan.FromSeconds(1))
-                .SelectMany(animeServiceContext.GetAnime)
+                .SelectMany(s => animeServiceContext.GetAnime(s).ToListAsync().AsTask())
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(list => SearchResults = list.ToList());
+                .Subscribe(list => SearchResults = list);
 
             this.WhenAnyValue(x => x.SelectedAnime)
                 .Select(x => x is not null && x.Tracking is null)

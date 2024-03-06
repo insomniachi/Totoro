@@ -32,14 +32,14 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
         _trackingServiceContext = trackingServiceContext;
         _infoHashes = localSettingsService.ReadSetting<List<string>>(HashKey, []).Select(InfoHash.FromHex).ToList();
 
-        Feeds = new List<RssFeed>()
-        {
+        Feeds =
+        [
             new RssFeed(new RssFeedOptions()
             {
                 Url = "https://subsplease.org/rss/?r=1080",
                 IsEnabled = settings.AutoDownloadTorrents
             })
-        };
+        ];
     }
 
     public async Task Initialize()
@@ -52,7 +52,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
 
         _trackingServiceContext
             .GetCurrentlyAiringTrackedAnime()
-            .SelectMany(x => x)
+            .ToObservable()
             .Finally(() =>
             {
                 foreach (var feed in Feeds)

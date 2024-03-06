@@ -39,7 +39,7 @@ internal class AnimeDetectionService(IViewService viewService,
         try
         {
             var trimmed = title[..Math.Min(title.Length, 50)].Trim();
-            candidates = await _animeServiceContext.GetAnime(trimmed);
+            candidates = await _animeServiceContext.GetAnime(trimmed).ToListAsync();
         }
         catch (Exception ex)
         {

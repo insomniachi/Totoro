@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using AngleSharp.Io;
-using JikanDotNet;
+﻿using JikanDotNet;
 using MalApi;
 using MalApi.Interfaces;
 using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
@@ -21,30 +19,27 @@ public class MyAnimeListService(IMalClient client,
 
     public ListServiceType Type => ListServiceType.MyAnimeList;
 
-    public IObservable<AnimeModel> GetInformation(long id)
+    public async Task<AnimeModel> GetInformation(long id)
     {
-        return Observable.Create<AnimeModel>(async observer =>
-        {
-            var malModel = await _client.Anime().WithId(id)
-                                        .WithFields(_commonFields)
-                                        .WithField(x => x.Genres)
-                                        .WithFields($"related_anime{{{_recursiveAnimeProperties}}}")
-                                        .WithFields($"recommendations{{{_recursiveAnimeProperties}}}")
-                                        .Find();
+        var malModel = await _client.Anime().WithId(id)
+                                    .WithFields(_commonFields)
+                                    .WithField(x => x.Genres)
+                                    .WithFields($"related_anime{{{_recursiveAnimeProperties}}}")
+                                    .WithFields($"recommendations{{{_recursiveAnimeProperties}}}")
+                                    .Find();
 
-            var model = ConvertModel(malModel);
+        var model = ConvertModel(malModel);
 
-            _anilistService
-                .GetBannerImage(id)
-                .ToObservable()
-                .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(x => model.BannerImage = x);
+        _anilistService
+            .GetBannerImage(id)
+            .ToObservable()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(x => model.BannerImage = x);
 
-            observer.OnNext(model);
-        });
+        return model;
     }
 
-    public IObservable<IEnumerable<AnimeModel>> GetAnime(string name)
+    public async IAsyncEnumerable<AnimeModel> GetAnime(string name)
     {
         var request = _client
             .Anime()
@@ -57,55 +52,52 @@ public class MyAnimeListService(IMalClient client,
             request.IncludeNsfw();
         }
 
-        return request.Find().ToObservable().Select(x => x.Data.Select(ConvertModel));
-    }
-
-    public IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime()
-    {
-        return Observable.Create<IEnumerable<AnimeModel>>(async observer =>
+        var result = await request.Find();
+        foreach (var item in result.Data.Select(ConvertModel))
         {
-            IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
+            yield return item;
+        }
+    }
+
+    public async IAsyncEnumerable<AnimeModel> GetSeasonalAnime()
+    {
+        IGetSeasonalAnimeListRequest baseRequest(MalApi.Season season)
+        {
+            var request = _client.Anime()
+                                 .OfSeason(season.SeasonName, season.Year)
+                                 .WithFields(_commonFields);
+
+            if (_settings.IncludeNsfw)
             {
-                var request = _client.Anime()
-                                     .OfSeason(season.SeasonName, season.Year)
-                                     .WithFields(_commonFields);
-
-                if (_settings.IncludeNsfw)
-                {
-                    request.IncludeNsfw();
-                }
-
-                return request;
+                request.IncludeNsfw();
             }
 
-            var current = CurrentSeason();
-            var prev = PrevSeason();
-            var next = NextSeason();
+            return request;
+        }
 
-            try
+        var current = CurrentSeason();
+        var prev = PrevSeason();
+        var next = NextSeason();
+
+        foreach (var season in new[] { current, prev, next })
+        {
+            var pagedAnime = await baseRequest(season).Find();
+
+            foreach (var item in pagedAnime.Data.Select(ConvertModel))
             {
-                foreach (var season in new[] { current, prev, next })
-                {
-                    var pagedAnime = await baseRequest(season).Find();
-                    observer.OnNext(pagedAnime.Data.Select(ConvertModel));
-                }
-
-                observer.OnCompleted();
+                yield return item;
             }
-            catch (Exception ex)
-            {
-                observer.OnError(ex);
-            }
-
-            return Disposable.Empty;
-        });
+        }
     }
 
 
-    public IObservable<IEnumerable<AnimeModel>> GetAiringAnime() => GetTopAnime(AnimeRankingType.Airing);
-    public IObservable<IEnumerable<AnimeModel>> GetUpcomingAnime() => GetTopAnime(AnimeRankingType.Upcoming);
-    public IObservable<IEnumerable<AnimeModel>> GetPopularAnime() => GetTopAnime(AnimeRankingType.ByPopularity);
-    public IObservable<IEnumerable<AnimeModel>> GetRecommendedAnime()
+    public IAsyncEnumerable<AnimeModel> GetAiringAnime() => GetTopAnime(AnimeRankingType.Airing);
+    
+    public IAsyncEnumerable<AnimeModel> GetUpcomingAnime() => GetTopAnime(AnimeRankingType.Upcoming);
+    
+    public IAsyncEnumerable<AnimeModel> GetPopularAnime() => GetTopAnime(AnimeRankingType.ByPopularity);
+    
+    public async IAsyncEnumerable<AnimeModel> GetRecommendedAnime()
     {
         var request = _client
             .Anime()
@@ -119,12 +111,16 @@ public class MyAnimeListService(IMalClient client,
             request.IncludeNsfw();
         }
 
-        return request.Find()
-              .ToObservable()
-              .Select(x => x.Data.Select(x => ConvertModel(x)));
+
+        var result = await request.Find();
+
+        foreach (var item in result.Data.Select(ConvertModel))
+        {
+            yield return item;
+        }
     }
 
-    private IObservable<IEnumerable<AnimeModel>> GetTopAnime(AnimeRankingType type)
+    private async IAsyncEnumerable<AnimeModel> GetTopAnime(AnimeRankingType type)
     {
         var request = _client
             .Anime()
@@ -138,9 +134,12 @@ public class MyAnimeListService(IMalClient client,
             request.IncludeNsfw();
         }
 
-        return request.Find()
-                      .ToObservable()
-                      .Select(x => x.Data.Select(x => ConvertModel(x.Anime)));
+        var result = await request.Find();
+
+        foreach (var item in result.Data.Select(x => ConvertModel(x.Anime)))
+        {
+            yield return item;
+        }
     }
 
     public async Task<IEnumerable<EpisodeModel>> GetEpisodes(long id)

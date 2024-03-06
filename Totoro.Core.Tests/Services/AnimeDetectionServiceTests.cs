@@ -40,7 +40,7 @@ public class AnimeDetectionServiceTests
         // arrange
         var settings = new Mock<ISettings>();
         settings.Setup(x => x.DefaultListService).Returns(ListServiceType.MyAnimeList);
-        var malService = new MyAnimeListService(_client, Mock.Of<IAnilistService>(), settings.Object);
+        var malService = new MyAnimeListService(_client, Mock.Of<IAnilistService>(), Mock.Of<IAnimeIdService>(), settings.Object);
         var connectivityService = new Mock<IConnectivityService>();
         connectivityService.Setup(x => x.IsConnected).Returns(true);
         var animeServiceContext = new AnimeServiceContext(settings.Object, 

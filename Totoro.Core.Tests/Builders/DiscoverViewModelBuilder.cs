@@ -17,10 +17,7 @@ internal class DiscoverViewModelBuilder
 
     internal DiscoverViewModel Build()
     {
-        return new DiscoverViewModel(_providerFactoryMock.Object,
-                                     _settingsMock.Object,
-                                     _navigationServiceMock.Object,
-                                     _connectivityServiceMock.Object);
+        return new DiscoverViewModel(_settingsMock.Object);
     }
 
     internal DiscoverViewModelBuilder WithSettings(Action<Mock<ISettings>> configure)

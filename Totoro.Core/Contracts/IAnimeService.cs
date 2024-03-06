@@ -3,17 +3,17 @@
 public interface IAnimeService
 {
     ListServiceType Type { get; }
-    IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime();
-    IObservable<AnimeModel> GetInformation(long id);
-    IObservable<IEnumerable<AnimeModel>> GetAnime(string name);
-    IObservable<IEnumerable<AnimeModel>> GetAiringAnime();
+    IAsyncEnumerable<AnimeModel> GetSeasonalAnime();
+    Task<AnimeModel> GetInformation(long id);
+    IAsyncEnumerable<AnimeModel> GetAnime(string name);
+    IAsyncEnumerable<AnimeModel> GetAiringAnime();
 }
 
 public interface IAnimeServiceContext
 {
-    IObservable<IEnumerable<AnimeModel>> GetSeasonalAnime();
-    IObservable<AnimeModel> GetInformation(long id);
-    IObservable<IEnumerable<AnimeModel>> GetAnime(string name);
-    IObservable<IEnumerable<AnimeModel>> GetAiringAnime();
+    IAsyncEnumerable<AnimeModel> GetSeasonalAnime();
+    Task<AnimeModel> GetInformation(long id);
+    IAsyncEnumerable<AnimeModel> GetAnime(string name);
+    IAsyncEnumerable<AnimeModel> GetAiringAnime();
     ListServiceType Current { get; }
 }

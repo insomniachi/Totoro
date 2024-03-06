@@ -62,10 +62,11 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
         IsLoading = true;
 
         _animeService.GetSeasonalAnime()
+                     .ToObservable()
                      .ObserveOn(RxApp.MainThreadScheduler)
-                     .Subscribe(list =>
+                     .Subscribe(anime =>
                      {
-                         _animeCache.Edit(x => x.AddOrUpdate(list));
+                         _animeCache.Edit(x => x.AddOrUpdate(anime));
                          IsLoading = false;
                      }, RxApp.DefaultExceptionHandler.OnError);
 

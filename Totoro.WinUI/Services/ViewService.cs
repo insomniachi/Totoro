@@ -148,7 +148,7 @@ public class ViewService(IContentDialogService contentDialogService,
         }, vm => vm.Url = url);
     }
 
-    public async Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string, IObservable<IEnumerable<T>>> searcher = default)
+    public async Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string, IAsyncEnumerable<T>> searcher = default)
         where T : class
     {
         var vm = new SelectModelViewModel<T>()
@@ -175,7 +175,7 @@ public class ViewService(IContentDialogService contentDialogService,
         var candidates = Enumerable.Empty<AnimeModel>();
         try
         {
-            candidates = await _animeService.GetAnime(title[..Math.Min(title.Length, 50)]);
+            candidates = await _animeService.GetAnime(title[..Math.Min(title.Length, 50)]).ToListAsync();
         }
         catch (Exception ex)
         {
@@ -218,7 +218,7 @@ public class ViewService(IContentDialogService contentDialogService,
         var candidates = Enumerable.Empty<AnimeModel>();
         try
         {
-            candidates = await _animeService.GetAnime(title[..Math.Min(title.Length, 50)]);
+            candidates = await _animeService.GetAnime(title[..Math.Min(title.Length, 50)]).ToListAsync();
         }
         catch (Exception ex)
         {

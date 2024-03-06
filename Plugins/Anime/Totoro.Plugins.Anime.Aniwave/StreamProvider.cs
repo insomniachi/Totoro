@@ -55,9 +55,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range episodeRange)
     {
-        var doc = await url.WithDefaultUserAgent()
-                           .WithReferer(ConfigManager<Config>.Current.Url)
-                           .GetHtmlDocumentAsync();
+        var doc = await url.GetHtmlDocumentAsync();
 
         var animeId = doc.QuerySelector("#watch-main").Attributes["data-id"].Value;
         var vrf = await Vrf.Encode(animeId);
@@ -190,19 +188,14 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
         string v = data;
         string k = match.Groups["k"].Value;
-        var result = new StringBuilder();
-        result.Append("mediainfo/");
-        result.Append(k);
-        result.Append(',');
+        var codes = new List<int>();
         for (int i = 0; i < v.Length; i++)
         {
             int charCode = k[i % k.Length] + v[i];
-            result.Append(charCode);
-            if (i < v.Length - 1)
-                result.Append(',');
+            codes.Append(charCode);
         }
 
-        return result.ToString();
+        return $"mediainfo/{k},{string.Join(",", codes)}";
     }
 
 

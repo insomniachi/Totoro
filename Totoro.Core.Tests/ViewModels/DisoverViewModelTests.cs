@@ -32,16 +32,16 @@ public class DisoverViewModelTests
     //    Assert.Equal(3, vm.Episodes.Count);
     //}
 
-    [Fact]
-    public void DisoverViewModel_ClickingEpisodes_GoesToWatch()
-    {
-        var vmBuilder = new DiscoverViewModelBuilder();
-        var vm = vmBuilder.Build();
+    //[Fact]
+    //public void DisoverViewModel_ClickingEpisodes_GoesToWatch()
+    //{
+    //    var vmBuilder = new DiscoverViewModelBuilder();
+    //    var vm = vmBuilder.Build();
 
-        vm.SelectEpisode.Execute(new TestAiredEpisode { Title = "Hyouka" });
+    //    vm.SelectEpisode.Execute(new TestAiredEpisode { Title = "Hyouka" });
 
-        vmBuilder.GetNavigationService().Verify(x => x.NavigateTo(It.IsAny<WatchViewModel>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<bool>()), Times.Once);
-    }
+    //    vmBuilder.GetNavigationService().Verify(x => x.NavigateTo(It.IsAny<WatchViewModel>(), It.IsAny<Dictionary<string, object>>(), It.IsAny<bool>()), Times.Once);
+    //}
 
     //[Fact]
     //public async void DiscoverViewModel_SearchingForAnimeWorks()

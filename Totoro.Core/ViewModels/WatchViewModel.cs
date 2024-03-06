@@ -620,6 +620,7 @@ public partial class WatchViewModel : NavigatableViewModel
         UpdatePreferences(id);
 
         _animeService.GetInformation(id)
+            .ToObservable()
             .Subscribe(async anime =>
             {
                 _anime = anime;

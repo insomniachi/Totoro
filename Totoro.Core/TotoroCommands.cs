@@ -26,6 +26,7 @@ public class TotoroCommands : IEnableLogger
         AddToPlanToWatch = ReactiveCommand.Create<AnimeModel>(anime =>
         {
             trackingServiceContext.Update(anime.Id, new Tracking { Status = AnimeStatus.PlanToWatch })
+                                  .ToObservable()
                                   .ObserveOn(RxApp.MainThreadScheduler)
                                   .Subscribe(tracking => anime.Tracking = tracking);
         });

@@ -1,4 +1,6 @@
-﻿namespace Totoro.WinUI.Dialogs.ViewModels;
+﻿using System.Reactive.Threading.Tasks;
+
+namespace Totoro.WinUI.Dialogs.ViewModels;
 
 public class UpdateAnimeStatusViewModel : ReactiveObject
 {
@@ -51,6 +53,7 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
         }
 
         _trackingService.Delete(Anime.Id)
+                        .ToObservable()
                         .Where(x => x)
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(_ => Anime.Tracking = null);
@@ -87,6 +90,7 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
         }
 
         _trackingService.Update(Anime.Id, tracking)
+                        .ToObservable()
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(t => Anime.Tracking = t);
     }
