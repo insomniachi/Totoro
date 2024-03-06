@@ -96,6 +96,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="LoadingViews\CardGridLoadingView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="LoadingViews\AboutAnimeLoadingView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -266,6 +269,7 @@
 	  <None Remove="Dialogs\Views\EditAnimePreferencesView.xaml" />
 	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
 	  <None Remove="LoadingViews\AboutAnimeLoadingView.xaml" />
+	  <None Remove="LoadingViews\CardGridLoadingView.xaml" />
 	  <None Remove="UserControls\PivotNavigation.xaml" />
 	  <None Remove="Views\AboutSections\EpisodesTorrentsSection.xaml" />
 	  <None Remove="Views\DiscoverSections\MyAnimeListDiscoverSection.xaml" />
