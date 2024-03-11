@@ -24,7 +24,7 @@ public class AniListTrackingServiceTests
         localSettingsServiceMock.Setup(x => x.ReadSetting("AniListToken", It.IsAny<AniListAuthToken>())).Returns(_token);
 
         var service = new AniListTrackingService(localSettingsServiceMock.Object);
-        var result = await service.GetAnime();
+        var result = await service.GetAnime().ToListAsync();
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class AniListTrackingServiceTests
 
         await service.GetSeasonalAnime().ForEachAsync(x =>
         {
-            var items = x.ToList();
+            var items = x;
         });
     }
 

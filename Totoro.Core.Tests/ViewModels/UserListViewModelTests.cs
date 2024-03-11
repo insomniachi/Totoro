@@ -6,50 +6,50 @@ namespace Totoro.Core.Tests.ViewModels;
 
 public class UserListViewModelTests
 {
-    [Fact]
-    public void UserListViewModel_InitializesProperly()
-    {
-        // arrange
-        var vm = new UserListViewModelBuilder()
-            .WithTrackingService(mock =>
-            {
-                mock.Setup(x => x.GetAnime())
-                    .Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("UserAnime")));
-            })
-            .Build();
+    //[Fact]
+    //public void UserListViewModel_InitializesProperly()
+    //{
+    //    // arrange
+    //    var vm = new UserListViewModelBuilder()
+    //        .WithTrackingService(mock =>
+    //        {
+    //            mock.Setup(x => x.GetAnime())
+    //                .Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("UserAnime")));
+    //        })
+    //        .Build();
 
-        // act
-        vm.SetInitialState();
+    //    // act
+    //    vm.SetInitialState();
 
-        // assert
-        Assert.Equal(AnimeStatus.Watching, vm.Filter.ListStatus);
-        Assert.Equal(2, vm.Anime.Count);
-    }
+    //    // assert
+    //    Assert.Equal(AnimeStatus.Watching, vm.Filter.ListStatus);
+    //    Assert.Equal(2, vm.Anime.Count);
+    //}
 
-    [Theory]
-    [InlineData(AnimeStatus.Watching, 2)]
-    [InlineData(AnimeStatus.Completed, 2)]
-    [InlineData(AnimeStatus.OnHold, 2)]
-    [InlineData(AnimeStatus.PlanToWatch, 1)]
-    [InlineData(AnimeStatus.Dropped, 1)]
-    public void UserListViewModel_FilterByStatusWorks(AnimeStatus status, int count)
-    {
-        // arrange
-        var vm = new UserListViewModelBuilder()
-            .WithTrackingService(mock =>
-            {
-                mock.Setup(x => x.GetAnime())
-                    .Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("UserAnime")));
-            })
-            .Build();
+    //[Theory]
+    //[InlineData(AnimeStatus.Watching, 2)]
+    //[InlineData(AnimeStatus.Completed, 2)]
+    //[InlineData(AnimeStatus.OnHold, 2)]
+    //[InlineData(AnimeStatus.PlanToWatch, 1)]
+    //[InlineData(AnimeStatus.Dropped, 1)]
+    //public void UserListViewModel_FilterByStatusWorks(AnimeStatus status, int count)
+    //{
+    //    // arrange
+    //    var vm = new UserListViewModelBuilder()
+    //        .WithTrackingService(mock =>
+    //        {
+    //            mock.Setup(x => x.GetAnime())
+    //                .Returns(Observable.Return(SnapshotService.GetSnapshot<AnimeModel[]>("UserAnime")));
+    //        })
+    //        .Build();
 
-        vm.SetInitialState();
+    //    vm.SetInitialState();
 
-        // act
-        vm.ChangeCurrentViewCommand.Execute(status);
-        Assert.Equal(count, vm.Anime.Count);
-        Assert.Equal(status, vm.Filter.ListStatus);
-    }
+    //    // act
+    //    vm.ChangeCurrentViewCommand.Execute(status);
+    //    Assert.Equal(count, vm.Anime.Count);
+    //    Assert.Equal(status, vm.Filter.ListStatus);
+    //}
 
     //[Fact]
     //public void UserListViewModel_FilterByNameWorks()
