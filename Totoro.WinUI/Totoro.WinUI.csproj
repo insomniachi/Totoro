@@ -39,22 +39,22 @@
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Layout" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
-		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.26" />
+		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.21" />
 		
 		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.124" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.4.231219000" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
 		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="ReactiveUI" Version="19.5.41" />
-		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
-		<PackageReference Include="ReactiveUI.WinUI" Version="19.5.41" />
+		<PackageReference Include="ReactiveUI" Version="19.5.39" />
+		<PackageReference Include="ReactiveUI.Fody" Version="19.5.39" />
+		<PackageReference Include="ReactiveUI.WinUI" Version="19.5.39" />
 		<PackageReference Include="System.Reactive" Version="6.0.0" />
-		<PackageReference Include="WinUIEx" Version="2.3.4" />
+		<PackageReference Include="WinUIEx" Version="2.3.3" />
 	</ItemGroup>
 
 	<ItemGroup>
