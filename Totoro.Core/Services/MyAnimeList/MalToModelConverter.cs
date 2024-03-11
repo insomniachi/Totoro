@@ -12,6 +12,8 @@ public class MalToModelConverter
             Id = malModel.Id,
             MalId = malModel.Id,
             Title = malModel.Title,
+            EngTitle = malModel.AlternativeTitles?.English ?? malModel.Title,
+            RomajiTitle = malModel.Title,
             Image = malModel.MainPicture?.Large ?? string.Empty,
             Description = malModel.Synopsis,
             Type = malModel.MediaType.ToString()

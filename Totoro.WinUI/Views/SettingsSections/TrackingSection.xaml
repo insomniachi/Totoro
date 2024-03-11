@@ -106,6 +106,16 @@
         </labs:SettingsCard>
 
         <labs:SettingsCard
+            Description="Use english titles instead of romaji"
+            Header="Use English Titles"
+            HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+            <ToggleSwitch
+                IsOn="{x:Bind ViewModel.Settings.UseEnglishTitles, Mode=TwoWay}"
+                OffContent="Off"
+                OnContent="On" />
+        </labs:SettingsCard>
+
+        <labs:SettingsCard
             Description="Auto update tracking when configured number of seconds is remaining"
             Header="Auto update tracking"
             HeaderIcon="{ui:FontIcon Glyph=&#xe930;}">

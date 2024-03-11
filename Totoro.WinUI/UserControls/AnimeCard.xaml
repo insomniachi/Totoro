@@ -104,10 +104,10 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Style="{ThemeResource BodyStrongTextBlockStyle}"
-                        Text="{x:Bind Anime.Title, Mode=TwoWay}"
+                        Text="{x:Bind GetTitle(Anime), Mode=OneWay}"
                         TextAlignment="Left"
                         TextTrimming="WordEllipsis"
-                        ToolTipService.ToolTip="{x:Bind Anime.Title, Mode=OneWay}" />
+                        ToolTipService.ToolTip="{x:Bind GetTitle(Anime), Mode=OneWay}" />
 
                     <Grid
                         Grid.Row="1"
@@ -213,10 +213,10 @@
                         <TextBlock
                             Margin="{StaticResource XSmallLeftTopRightBottomMargin}"
                             Style="{ThemeResource SubtitleTextBlockStyle}"
-                            Text="{x:Bind Anime.Title, Mode=OneWay}"
+                            Text="{x:Bind GetTitle(Anime), Mode=OneWay}"
                             TextTrimming="WordEllipsis"
                             TextWrapping="NoWrap"
-                            ToolTipService.ToolTip="{x:Bind Anime.Title, Mode=OneWay}" />
+                            ToolTipService.ToolTip="{x:Bind GetTitle(Anime), Mode=OneWay}" />
 
                         <StackPanel
                             Grid.Column="1"

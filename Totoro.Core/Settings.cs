@@ -42,6 +42,7 @@ public static class Settings
     public static Key<GridViewSettings> UserListGridViewSettings { get; } = new("UserListGridViewSettings", new GridViewSettings());
     public static Key<string> DefaultMangaProviderType { get; } = new("DefaultMangaProviderType", "manga-dex");
     public static Key<bool> SkipFillers { get; } = new("SkipFillers", false);
+    public static Key<bool> UseEnglishTitles { get; } = new("UseEnglishTitles", false);
 
     public static IEnumerable<string> GetObsoleteKeys()
     {

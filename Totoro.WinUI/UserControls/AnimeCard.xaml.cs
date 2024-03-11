@@ -17,6 +17,7 @@ public sealed partial class AnimeCard : UserControl
     public static readonly DependencyProperty HasMeanScoreProperty =
         DependencyProperty.Register("HasMeanScore", typeof(bool), typeof(AnimeCard), new PropertyMetadata(false));
 
+    private static readonly ISettings _settings = App.GetService<ISettings>();
 
     public bool HasMeanScore
     {
@@ -105,6 +106,16 @@ public sealed partial class AnimeCard : UserControl
         return anime.Tracking?.Status == AnimeStatus.Rewatching
             ? Visibility.Visible
             : Visibility.Collapsed;
+    }
+
+    public string GetTitle(AnimeModel anime)
+    {
+        if(anime is null)
+        {
+            return string.Empty;
+        }
+
+        return _settings.UseEnglishTitles ? anime.EngTitle : anime.RomajiTitle;
     }
 
     private void ImageEx_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)

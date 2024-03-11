@@ -13,6 +13,8 @@ namespace Totoro.Core.Services.AniList
             return new AnimeModel
             {
                 Title = media.Title.Romaji ?? media.Title.English ?? string.Empty,
+                EngTitle = media.Title.English ?? media.Title.Romaji ?? string.Empty,
+                RomajiTitle = media.Title.Romaji ?? media.Title.English ?? string.Empty,
                 Id = media.Id ?? 0,
                 MalId = media.IdMal,
                 Image = media.CoverImage.Large,
@@ -47,6 +49,8 @@ namespace Totoro.Core.Services.AniList
                 .Select(x => new AnimeModel
                 {
                     Title = x.Title.Romaji ?? x.Title.English ?? string.Empty,
+                    EngTitle = x.Title.English ?? x.Title.Romaji ?? string.Empty,
+                    RomajiTitle = x.Title.Romaji ?? x.Title.English ?? string.Empty,
                     Id = x.Id ?? 0,
                     Image = x.CoverImage.Large,
                     Tracking = ConvertTracking(x.MediaListEntry),
