@@ -9,7 +9,7 @@ namespace Totoro.Plugins.Anime.GogoAnime;
 
 internal partial class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
 {
-    public const string AJAX_URL = "https://ajax.gogo-load.com/ajax/page-recent-release.html";
+    public const string AJAX_URL = "https://ajax.gogocdn.net/ajax/page-recent-release.html";
 
     class AiredEpisode : IAiredAnimeEpisode
     {

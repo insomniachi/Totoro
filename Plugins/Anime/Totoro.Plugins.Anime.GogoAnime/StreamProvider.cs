@@ -12,7 +12,7 @@ namespace Totoro.Plugins.Anime.GogoAnime;
 
 internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 {
-    public const string EPISODE_LOAD_AJAX = "https://ajax.gogo-load.com/ajax/load-list-episode";
+    public const string EPISODE_LOAD_AJAX = "https://ajax.gogocdn.net/ajax/load-list-episode";
 
     [GeneratedRegex("<input.*?value=\"([0-9]+)\".*?id=\"movie_id\"", RegexOptions.Compiled)]
     private static partial Regex AnimeIdRegex();
