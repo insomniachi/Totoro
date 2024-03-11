@@ -96,6 +96,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="LoadingViews\SeasonalCardGridLoadingView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="LoadingViews\CardGridLoadingView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -270,6 +273,7 @@
 	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
 	  <None Remove="LoadingViews\AboutAnimeLoadingView.xaml" />
 	  <None Remove="LoadingViews\CardGridLoadingView.xaml" />
+	  <None Remove="LoadingViews\SeasonalCardGridLoadingView.xaml" />
 	  <None Remove="UserControls\PivotNavigation.xaml" />
 	  <None Remove="Views\AboutSections\EpisodesTorrentsSection.xaml" />
 	  <None Remove="Views\DiscoverSections\MyAnimeListDiscoverSection.xaml" />
