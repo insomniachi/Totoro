@@ -32,7 +32,7 @@ jobs:
             uses: battila7/get-version-action@v2
 
         -   name: 'Build Project'
-            run: dotnet publish ${{ env.MAIN_PROJECT_PATH }} --self-contained -c Release -r win10-x64 -o ${{ env.PUBLISH_FOLDER }}\ /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
+            run: dotnet publish ${{ env.MAIN_PROJECT_PATH }} --self-contained -c Release -r win-x64 -o ${{ env.PUBLISH_FOLDER }}\ /property:BuildVersion=${{ steps.version.outputs.version-without-v }}
 
         -   name: 'Copy FFMPEG'
             run: xcopy ${{ env.FFMPEG_PATH }} ${{ env.PUBLISH_FOLDER }}\FFmpeg\ /s /e /h

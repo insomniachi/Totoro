@@ -36,6 +36,11 @@ public class AnilistService : IAnimeService, IAnilistService
                 .WithMedia(MediaQueryBuilder(), type: MediaType.Anime, status: MediaStatus.Releasing), page: 1, perPage: 20).Build()
         });
 
+        if (response.Errors?.Length > 0)
+        {
+            yield break;
+        }
+
         foreach (var item in response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel))
         {
             yield return item;
@@ -49,6 +54,11 @@ public class AnilistService : IAnimeService, IAnilistService
             Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
                 .WithMedia(MediaQueryBuilder(), search: name, type: MediaType.Anime), page: 1, perPage: 5).Build()
         });
+
+        if (response.Errors?.Length > 0)
+        {
+            yield break;
+        }
 
         foreach (var item in response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel))
         {
@@ -87,6 +97,11 @@ public class AnilistService : IAnimeService, IAnilistService
                 Query = query
             });
 
+            if (response.Errors?.Length > 0)
+            {
+                continue;
+            }
+
             foreach (var item in response.Data.Page.Media.Where(FilterNsfw).Select(ConvertModel))
             {
                 yield return item;
@@ -110,6 +125,11 @@ public class AnilistService : IAnimeService, IAnilistService
                 .WithBannerImage(), id: (int)animeId.AniList).Build()
         });
 
+        if (response.Errors?.Length > 0)
+        {
+            return string.Empty;
+        }
+
         return response.Data.Media.BannerImage;
     }
 
@@ -129,6 +149,11 @@ public class AnilistService : IAnimeService, IAnilistService
                     .WithEpisode()
                     .WithTimeUntilAiring()), id: (int)animeId.AniList).Build()
         });
+
+        if(response.Errors?.Length > 0)
+        {
+            return (null, null);
+        }
 
         var ep = response.Data.Media.NextAiringEpisode?.Episode;
         var nextEp = response.Data.Media.NextAiringEpisode?.TimeUntilAiring;
