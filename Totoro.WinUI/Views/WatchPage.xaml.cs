@@ -144,7 +144,7 @@ public sealed partial class WatchPage : WatchPageBase
         };
     }
 
-    public static SolidColorBrush Foreground(bool isFiller)
+    public static SolidColorBrush EpisodeForeground(bool isFiller)
     {
         return isFiller
             ? new SolidColorBrush(Colors.Yellow)
