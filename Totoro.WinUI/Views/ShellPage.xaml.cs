@@ -15,7 +15,6 @@ using WinUIEx;
 
 namespace Totoro.WinUI.Views;
 
-// TODO: Update NavigationViewItem titles and icons in ShellPage.xaml.
 public sealed partial class ShellPage : Page, IEnableLogger
 {
     public ShellViewModel ViewModel { get; }
@@ -61,11 +60,6 @@ public sealed partial class ShellPage : Page, IEnableLogger
         };
 
         App.MainWindow.AppWindow.Changed += AppWindow_Changed;
-        double scaleAdjustment = NavigationViewControl.XamlRoot.RasterizationScale;
-        var transform = NavigationViewControl.TransformToVisual(null);
-        var bounds = transform.TransformBounds(new Rect(0, 0, 50, 50));
-        InputNonClientPointerSource nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(App.MainWindow.AppWindow.Id);
-        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [GetRect(bounds, scaleAdjustment)]);
 
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.Left, VirtualKeyModifiers.Menu));
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
@@ -73,16 +67,6 @@ public sealed partial class ShellPage : Page, IEnableLogger
         var accelerator = new KeyboardAccelerator { Key = VirtualKey.S, Modifiers = VirtualKeyModifiers.Menu | VirtualKeyModifiers.Control };
         accelerator.Invoked += (_, _ ) => ViewModel.NavigationService.NavigateTo<SettingsViewModel>();
         KeyboardAccelerators.Add(accelerator);
-    }
-
-    private static Windows.Graphics.RectInt32 GetRect(Rect bounds, double scale)
-    {
-        return new Windows.Graphics.RectInt32(
-            _X: (int)Math.Round(bounds.X * scale),
-            _Y: (int)Math.Round(bounds.Y * scale),
-            _Width: (int)Math.Round(bounds.Width * scale),
-            _Height: (int)Math.Round(bounds.Height * scale)
-        );
     }
 
     private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
@@ -101,15 +85,17 @@ public sealed partial class ShellPage : Page, IEnableLogger
                     // and the default system title bar.
                     //Grid.SetRow(NavigationViewControl, 0);
                     //Grid.SetRowSpan(NavigationViewControl, 2);
+                    TitleBar.Visibility = Visibility.Collapsed;
                     NavigationViewControl.IsPaneVisible = false;
                     break;
 
                 case AppWindowPresenterKind.Overlapped:
-                    
+
                     // Normal - hide the system title bar
                     // and use the custom title bar instead.
                     //Grid.SetRow(NavigationViewControl, 1);
                     //Grid.SetRowSpan(NavigationViewControl, 1);
+                    TitleBar.Visibility = Visibility.Visible;
                     NavigationViewControl.IsPaneVisible = true;
                     break;
             }

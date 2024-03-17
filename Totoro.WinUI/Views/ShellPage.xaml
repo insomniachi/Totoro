@@ -16,7 +16,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <!--<ctk:TitleBar
+        <ctk:TitleBar
             x:Name="TitleBar"
             Title="Totoro"
             AutoConfigureCustomTitleBar="True"
@@ -44,7 +44,7 @@
                         ProfilePicture="{x:Bind ViewModel.User.Image, Mode=OneWay}" />
                 </Button>
             </ctk:TitleBar.Footer>
-        </ctk:TitleBar>-->
+        </ctk:TitleBar>
 
         <NavigationView
             x:Name="NavigationViewControl"
@@ -53,37 +53,10 @@
             Canvas.ZIndex="0"
             ExpandedModeThresholdWidth="1600"
             Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
-            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
-            IsPaneToggleButtonVisible="True"
+            IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
             IsSettingsVisible="True"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
-            <NavigationView.PaneHeader>
-                <Grid
-                    x:Name="AppTitleBar"
-                    Height="34"
-                    Margin="0"
-                    Canvas.ZIndex="1"
-                    IsHitTestVisible="True">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Image
-                        Width="24"
-                        Height="24"
-                        Margin="20,0"
-                        HorizontalAlignment="Left"
-                        Source="/Assets/WindowIcon.png"
-                        Stretch="Uniform" />
-                    <TextBlock
-                        x:Name="AppTitleBarText"
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                        Text="Totoro"
-                        TextWrapping="NoWrap" />
-                </Grid>
-            </NavigationView.PaneHeader>
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Name="DiscoverAnimeItem"
