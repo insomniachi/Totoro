@@ -1,41 +1,13 @@
 ﻿using System.Data;
 using System.Reactive.Concurrency;
-using System.Text.RegularExpressions;
 
 namespace Totoro.Core.ViewModels;
 
-
-public partial class AnimeCollectionFilter : ReactiveObject
+public enum ViewState
 {
-    [Reactive] public AnimeStatus? ListStatus { get; set; } = AnimeStatus.Watching;
-    [Reactive] public string SearchText { get; set; }
-    [Reactive] public string Year { get; set; }
-    [Reactive] public AiringStatus? AiringStatus { get; set; }
-    [Reactive] public ObservableCollection<string> Genres { get; set; } = [];
-
-    [GeneratedRegex(@"(19[5-9][0-9])|(20\d{2})")]
-    private partial Regex YearRegex();
-
-    public bool IsVisible(AnimeModel model)
-    {
-        if (model.Tracking is null)
-        {
-            return false;
-        }
-
-        var listStatusCheck = ListStatus == AnimeStatus.Watching
-            ? model.Tracking.Status is AnimeStatus.Watching or AnimeStatus.Rewatching
-            : model.Tracking.Status == ListStatus;
-
-        var searchTextStatus = string.IsNullOrEmpty(SearchText) ||
-                               model.Title.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase) ||
-                               model.AlternativeTitles.Any(x => x.Contains(SearchText, StringComparison.InvariantCultureIgnoreCase));
-        var yearCheck = string.IsNullOrEmpty(Year) || !YearRegex().IsMatch(Year) || model.Season.Year.ToString() == Year;
-        var genresCheck = !Genres.Any() || Genres.All(x => model.Genres.Any(y => string.Equals(y, x, StringComparison.InvariantCultureIgnoreCase)));
-        var airingStatusCheck = AiringStatus is null || AiringStatus == model.AiringStatus;
-
-        return listStatusCheck && searchTextStatus && yearCheck && genresCheck && airingStatusCheck;
-    }
+    Loading,
+    NotAuthenticated,
+    Authenticated
 }
 
 public class UserListViewModel : NavigatableViewModel, IHaveState
@@ -55,11 +27,12 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     {
         _trackingService = trackingService;
         _viewService = viewService;
+        ViewState = trackingService.IsAuthenticated ? ViewState.Authenticated : ViewState.NotAuthenticated;
         IsAuthenticated = trackingService.IsAuthenticated;
         ListType = settings.DefaultListService;
 
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
-        RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState, this.WhenAnyValue(x => x.IsLoading).Select(x => !x));
+        RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState, this.WhenAnyValue(x => x.ViewState).Select(x => x is not ViewState.Loading));
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
         ResetDataGridColumns = ReactiveCommand.Create(() => DataGridSettings = Settings.GetDefaultUserListDataGridSettings());
         SaveDataGridSettings = ReactiveCommand.Create(() => localSettingsService.SaveSetting(Settings.UserListDataGridSettings, DataGridSettings));
@@ -138,7 +111,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .DisposeWith(Garbage);
     }
 
-    [Reactive] public bool IsLoading { get; set; }
+    [Reactive] public ViewState ViewState { get; set; }
     [Reactive] public DisplayMode Mode { get; set; }
     [Reactive] public List<string> Genres { get; set; }
     [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
@@ -177,7 +150,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     private void FetchAnime()
     {
-        IsLoading = true;
+        ViewState = ViewState.Loading;
         _genres.Clear();
         _animeCache.Clear();
         _trackingService.GetAnime()
@@ -189,7 +162,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                             {
                                 UpdateStatuses();
                                 Genres = new(_genres);
-                                IsLoading = false;
+                                ViewState = ViewState.Authenticated;
                             });
                         })
                         .Subscribe(anime =>
