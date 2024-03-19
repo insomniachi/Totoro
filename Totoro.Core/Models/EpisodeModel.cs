@@ -18,11 +18,11 @@ namespace Totoro.Core.Models
             this.WhenAnyPropertyChanged()
                 .Select(_ =>
                 {
-
                     return string.IsNullOrEmpty(EpisodeTitle)
                             ? $"{(IsSpecial ? SpecialEpisodeNumber : EpisodeNumber)}"
                             : $"{(IsSpecial ? SpecialEpisodeNumber : EpisodeNumber)} - {EpisodeTitle}";
                 })
+                .ObserveOn(RxApp.MainThreadScheduler)
                 .ToPropertyEx(this, x => x.DisplayName);
         }
     }
