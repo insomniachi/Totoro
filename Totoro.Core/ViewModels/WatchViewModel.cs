@@ -118,11 +118,11 @@ public partial class WatchViewModel : NavigatableViewModel
 
         this.ObservableForProperty(x => x.Anime, x => x)
             .WhereNotNull()
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Do(async model => await UpdateMetaData(model.Id))
             .SelectMany(model => Find(model.Id, model.Title))
             .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
-            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(async x =>
             {
                 var hasSubDub = x is { Dub: { }, Sub: { } };
@@ -621,6 +621,7 @@ public partial class WatchViewModel : NavigatableViewModel
 
         _animeService.GetInformation(id)
             .ToObservable()
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(async anime =>
             {
                 _anime = anime;

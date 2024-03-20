@@ -173,7 +173,15 @@ public class MyAnimeListService(IMalClient client,
         var offset = 0;
         do
         {
-            response = await _jikan.GetAnimeEpisodesAsync(animeId.MyAnimeList.Value, currentPage++);
+            try
+            {
+                response = await _jikan.GetAnimeEpisodesAsync(animeId.MyAnimeList.Value, currentPage++);
+            }
+            catch
+            {
+                yield break;
+            }
+
             foreach (var item in response.Data.Select((x, index) => (x, index)).Where(x => x.x.Filler == true).Select(x => x.index + 1 + offset))
             {
                 yield return item;
