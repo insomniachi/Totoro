@@ -67,6 +67,17 @@ namespace Totoro.WinUI.Services
             EpisodeModels.SelectEpisode(currentEp);
         }
 
+        public void Initialize(IAiredAnimeEpisode episode, string providerType, string mediaPlayerType)
+        {
+            ProviderType = providerType;
+            Provider = PluginFactory<AnimeProvider>.Instance.CreatePlugin(providerType);
+            _mediaPlayer = PluginFactory<INativeMediaPlayer>.Instance.CreatePlugin(mediaPlayerType);
+            _videoStreamResolver = _videoStreamResolverFactory.CreateAnimDLResolver(ProviderType, episode.Url);
+            EpisodeModels = EpisodeModelCollection.FromEpisode(episode.Episode);
+            _title = $"{episode.Title} - {episode.EpisodeString.PadLeft(2, '0')}";
+            EpisodeModels.SelectEpisode(episode.Episode);
+        }
+
         private async Task<(ICatalogItem Sub, ICatalogItem Dub)> SearchProvider(string title)
         {
             var results = await Provider.Catalog.Search(title).ToListAsync();

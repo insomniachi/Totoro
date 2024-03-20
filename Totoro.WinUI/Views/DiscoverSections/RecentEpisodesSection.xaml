@@ -9,6 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pc="using:Totoro.Plugins.Anime.Contracts"
     xmlns:uc="using:Totoro.WinUI.UserControls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
     <Grid>
@@ -60,6 +61,15 @@
                         <ItemsView.ItemTemplate>
                             <DataTemplate x:DataType="pc:IAiredAnimeEpisode">
                                 <ItemContainer Height="320">
+                                    <ItemContainer.ContextFlyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem
+                                                Click="WatchExternalClicked"
+                                                Icon="{ui:FontIcon Glyph=&#xEC15;}"
+                                                Tag="{x:Bind}"
+                                                Text="WatchExternal" />
+                                        </MenuFlyout>
+                                    </ItemContainer.ContextFlyout>
                                     <Grid x:Name="MainGrid" CornerRadius="3">
                                         <Grid.RowDefinitions>
                                             <RowDefinition />

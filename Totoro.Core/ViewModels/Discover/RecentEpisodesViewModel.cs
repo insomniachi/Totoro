@@ -81,10 +81,9 @@ namespace Totoro.Core.ViewModels.Discover
             }
 
             IsEpisodesLoading = true;
-            List<IAiredAnimeEpisode> results = [];
             try
             {
-                results = await Provider.AiredAnimeEpisodeProvider.GetRecentlyAiredEpisodes().ToListAsync();
+                var results = await Provider.AiredAnimeEpisodeProvider.GetRecentlyAiredEpisodes(page).ToListAsync();
                 _episodesCache.AddOrUpdate(results);
             }
             catch(Exception ex) 

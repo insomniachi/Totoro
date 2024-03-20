@@ -306,13 +306,18 @@ public static partial class Converters
     [GeneratedRegex(@"(?'Type'.+)\sDub(?'Season'\d+)")]
     private static partial Regex DubRegex();
 
-    private static ICommand WatchExternal { get; set; } = ReactiveCommand.Create<object>(async param =>
+    public static ICommand WatchExternal { get; set; } = ReactiveCommand.Create<object>(async param =>
     {
         switch (param)
         {
             case (AnimeModel anime, string providerType):
                 {
                     await App.GetService<ExternalMediaPlayerLauncher>().Initialize(anime, providerType, App.GetService<ISettings>().DefaultMediaPlayer);
+                }
+                break;
+            case (IAiredAnimeEpisode episode, string providerType):
+                {
+                    App.GetService<ExternalMediaPlayerLauncher>().Initialize(episode, providerType, App.GetService<ISettings>().DefaultMediaPlayer);
                 }
                 break;
         }
