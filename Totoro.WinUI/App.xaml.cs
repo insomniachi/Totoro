@@ -38,10 +38,7 @@ public partial class App : Application, IEnableLogger
                 config.SetBasePath(Package.Current.InstalledLocation.Path)
                       .AddJsonFile("appsettings.json");
             }
-
-#if DEBUG
             config.AddJsonFile("appsettings.Development.json");
-#endif
         })
         .ConfigureServices((context, services) =>
         {
