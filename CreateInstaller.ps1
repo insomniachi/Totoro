@@ -2,9 +2,6 @@ param(
     [string]$Version = '2.0'
 )
 
-# build winui project
-dotnet publish Totoro.WinUI\Totoro.WinUI.csproj --self-contained -c Release -r win-x64 -o Totoro.WinUI\bin\publish\ /property:BuildVersion=$Version
-
 # copy ffmpeg binaries, needed for flyleaf media player
 xcopy Totoro.Installer\FFmpeg Totoro.WinUI\bin\publish\FFmpeg /s /e /h
 
