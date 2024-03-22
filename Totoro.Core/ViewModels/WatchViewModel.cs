@@ -123,6 +123,7 @@ public partial class WatchViewModel : NavigatableViewModel
             .SelectMany(model => Find(model.Id, model.Title))
             .Where(x => x is not (null, null))
             .Log(this, "Selected Anime", x => $"{x.Sub.Title}")
+            .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(async x =>
             {
                 var hasSubDub = x is { Dub: { }, Sub: { } };
