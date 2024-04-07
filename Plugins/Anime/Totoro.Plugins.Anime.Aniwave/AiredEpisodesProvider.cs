@@ -1,4 +1,5 @@
-﻿using Flurl;
+﻿using System.Text.Json.Nodes;
+using Flurl;
 using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
@@ -23,9 +24,10 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
     {
         var response = await ConfigManager<Config>.Current.Url.AppendPathSegment("/ajax/home/widget/updated-all")
             .SetQueryParam("page", page)
-            .GetJsonAsync();
+            .GetStreamAsync();
 
-        var html = response.result;
+        var jObject = JsonNode.Parse(response);
+        var html = jObject?[@"result"]?.ToString();
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 

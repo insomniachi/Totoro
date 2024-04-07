@@ -1,6 +1,5 @@
 ﻿using Flurl;
-using FlurlGraphQL.Querying;
-using Newtonsoft.Json.Linq;
+using FlurlGraphQL;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Options;
@@ -63,9 +62,9 @@ internal class AiredEpisodesProvider : IAiredAnimeEpisodeProvider
                 countryOrigin = ConfigManager<Config>.Current.CountryOfOrigin
             })
             .PostGraphQLQueryAsync()
-            .ReceiveGraphQLRawJsonResponse();
+            .ReceiveGraphQLRawSystemTextJsonResponse();
 
-        foreach (var item in jObject?["shows"]?["edges"] ?? new JArray())
+        foreach (var item in jObject?["shows"]?["edges"]?.AsArray() ?? [])
         {
             var title = $"{item?["name"]}";
             var image = $"{item?["thumbnail"]}";

@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Flurl;
 using Flurl.Http;
-using FlurlGraphQL.Querying;
+using FlurlGraphQL;
 using Splat;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Anime.Models;
@@ -64,9 +64,9 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             .WithGraphQLQuery(SHOW_QUERY)
             .SetGraphQLVariable("showId", url.Split('/').LastOrDefault()?.Trim())
             .PostGraphQLQueryAsync()
-            .ReceiveGraphQLRawJsonResponse();
+            .ReceiveGraphQLRawSystemTextJsonResponse();
 
-        var episodeDetails = jObject?["show"]?["availableEpisodesDetail"];
+        var episodeDetails = jObject?["show"]?["availableEpisodesDetail"] as JsonObject;
 
         if (episodeDetails is null)
         {
@@ -74,7 +74,11 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             return 0;
         }
 
-        var sorted = GetEpisodes(episodeDetails.ToObject<EpisodeDetails>() ?? new(), streamType).OrderBy(x => x.Length).ThenBy(x => x).ToList();
+        var sorted = GetEpisodes(episodeDetails.Deserialize<EpisodeDetails>() ?? new(), streamType)
+                .OrderBy(x => x.Length)
+                .ThenBy(x => x)
+                .ToList();
+
         var total = int.Parse(sorted.LastOrDefault(x => int.TryParse(x, out int e))!);
 
         return total;
@@ -92,7 +96,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             .WithGraphQLQuery(SHOW_QUERY)
             .SetGraphQLVariable("showId", id)
             .PostGraphQLQueryAsync()
-            .ReceiveGraphQLRawJsonResponse();
+            .ReceiveGraphQLRawSystemTextJsonResponse();
 
         var episodeDetails = jObject?["show"]?["availableEpisodesDetail"];
 
@@ -102,7 +106,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             yield break;
         }
 
-        if (episodeDetails.ToObject<EpisodeDetails>() is not { } episodesDetail)
+        if (episodeDetails.Deserialize<EpisodeDetails>() is not { } episodesDetail)
         {
             yield break;
         }
@@ -148,7 +152,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
                     episodeString = ep
                 })
                 .PostGraphQLQueryAsync()
-                .ReceiveGraphQLRawJsonResponse();
+                .ReceiveGraphQLRawSystemTextJsonResponse();
 
             if (jsonNode?["errors"] is { })
             {
@@ -156,7 +160,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             }
 
             var sourceArray = jsonNode?["episode"]?["sourceUrls"];
-            var sourceObjs = sourceArray?.ToObject<List<SourceUrlObj>>() ?? [];
+            var sourceObjs = sourceArray?.Deserialize<List<SourceUrlObj>>() ?? [];
             sourceObjs.Sort((x, y) => y.priority.CompareTo(x.priority));
 
             foreach (var item in sourceObjs)
@@ -269,6 +273,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         }
         return result;
     }
+    
     private static VideoStreamsForEpisode GetDefault(string url)
     {
         var result = new VideoStreamsForEpisode();
@@ -281,8 +286,7 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         return result;
     }
 
-
-    private async Task<VideoStreamsForEpisode> VrvUnpack(Uri uri)
+    private static async Task<VideoStreamsForEpisode> VrvUnpack(Uri uri)
     {
         var response = await uri.GetStringAsync();
 

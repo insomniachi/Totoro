@@ -1,4 +1,5 @@
-﻿using Flurl;
+﻿using System.Text.Json.Nodes;
+using Flurl;
 using Flurl.Http;
 using Totoro.Plugins.Helpers;
 using Totoro.Plugins.Manga.Contracts;
@@ -15,14 +16,16 @@ internal class ChapterProvider : IChapterProvider
             .AppendPathSegment($"/manga/{url}/feed")
             .SetQueryParam("translatedLanguage[]", "en")
             .SetQueryParam("order[chapter]", "asc")
-            .GetJsonAsync();
+            .GetStreamAsync();
 
-        foreach (var item in response.data)
+        var jObject = JsonNode.Parse(response);
+
+        foreach (var item in jObject?[@"data"]?.AsArray() ?? [])
         {
-            var volume = float.Parse(item.attributes.volume);
-            var chapter = float.Parse(item.attributes.chapter);
-            var title = item.attributes.title;
-            var id = item.id;
+            var volume = float.Parse(item?["attributes"]?["volume"]?.ToString()!);
+            var chapter = float.Parse(item?["attributes"]?["chapter"]?.ToString()!);
+            var title = item?["attributes"]?["title"]?.ToString();
+            var id = item?["id"]?.ToString();
 
             yield return new ChapterModel
             {
@@ -40,13 +43,15 @@ internal class ChapterProvider : IChapterProvider
             .WithDefaultUserAgent()
             .AppendPathSegment("/at-home/server")
             .AppendPathSegment(chapterModel.Id)
-            .GetJsonAsync();
+            .GetStreamAsync();
 
-        string hash = response.chapter.hash;
+        var jObject = JsonNode.Parse(response);
 
-        foreach (string name in response.chapter.data)
+        string? hash = jObject?["chapter"]?["hash"]?.ToString();
+
+        foreach (string? name in jObject?["chapter"]?["data"]?.AsArray() ?? [])
         {
-            yield return Url.Combine(response.baseUrl, "data", hash, name);
+            yield return Url.Combine(jObject?["baseUrl"]?.ToString(), "data", hash, name);
         }
     }
 }

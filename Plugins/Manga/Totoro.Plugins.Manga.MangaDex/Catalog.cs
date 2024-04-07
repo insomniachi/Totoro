@@ -1,4 +1,5 @@
-﻿using Flurl;
+﻿using System.Text.Json.Nodes;
+using Flurl;
 using Flurl.Http;
 using Totoro.Plugins.Helpers;
 using Totoro.Plugins.Manga.Contracts;
@@ -24,9 +25,11 @@ internal class Catalog : IMangaCatalog
             .SetQueryParam("title", query)
             .SetQueryParam("limit", 5)
             .SetQueryParam("includes[]", "cover_art")
-            .GetJsonAsync();
+            .GetStreamAsync();
 
-        foreach (var item in response.data)
+        var jObject = JsonNode.Parse(response);
+
+        foreach (var item in jObject?[@"data"]?.AsArray() ?? [])
         {
             string title = "";
             string cover = "";
@@ -34,18 +37,18 @@ internal class Catalog : IMangaCatalog
 
             try
             {
-                title = item.attributes.title.en;
+                title = item?["attributes"]?["title"]?["en"]?.ToString();
                 cover = string.Empty;
-                id = item.id;
+                id = item?["id"]?.ToString();
 
-                foreach (var relation in item.relationships)
+                foreach (var relation in item?["relationships"]?.AsArray() ?? [])
                 {
-                    if (relation.type != "cover_art")
+                    if (relation?["type"]?.ToString() != "cover_art")
                     {
                         continue;
                     }
 
-                    cover = $"https://uploads.mangadex.org/covers/{item.id}/{relation.attributes.fileName}.256.jpg";
+                    cover = $"https://uploads.mangadex.org/covers/{id}/{relation?["attributes"]?["fileName"]}.256.jpg";
                 }
             }
             catch

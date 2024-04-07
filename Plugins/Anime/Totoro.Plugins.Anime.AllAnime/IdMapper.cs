@@ -1,4 +1,4 @@
-﻿using FlurlGraphQL.Querying;
+﻿using FlurlGraphQL;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Options;
 
@@ -12,16 +12,16 @@ internal class IdMapper : IIdMapper
             .WithGraphQLQuery(StreamProvider.SHOW_QUERY)
             .SetGraphQLVariable("showId", url.Split('/').LastOrDefault()?.Trim())
             .PostGraphQLQueryAsync()
-            .ReceiveGraphQLRawJsonResponse();
+            .ReceiveGraphQLRawSystemTextJsonResponse();
 
         var id = new AnimeId();
 
-        if (long.TryParse(jObject?["show"]?["malId"].ToString(), out long malId))
+        if (long.TryParse(jObject?["show"]?["malId"]?.ToString(), out long malId))
         {
             id.MyAnimeList = malId;
         }
 
-        if (long.TryParse(jObject?["show"]?["aniListId"].ToString(), out long anilistId))
+        if (long.TryParse(jObject?["show"]?["aniListId"]?.ToString(), out long anilistId))
         {
             id.AniList = anilistId;
         }

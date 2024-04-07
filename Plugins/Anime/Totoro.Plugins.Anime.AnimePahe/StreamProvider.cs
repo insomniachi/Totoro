@@ -40,7 +40,7 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     public async Task<int> GetNumberOfStreams(string url)
     {
-        var html = await url.WithClient(_client).WithHeaders(ConfigManager<Config>.Current.GetHeaders()).GetStringAsync();
+        var html = await _client.Request(url).WithHeaders(ConfigManager<Config>.Current.GetHeaders()).GetStringAsync();
         var releaseId = IdRegex().Match(html).Groups[1].Value;
         var page = await GetSessionPage(releaseId, 1);
         return (int)page.total;
@@ -163,9 +163,9 @@ internal partial class StreamProvider : IAnimeStreamProvider, IEnableLogger
 
     private async Task<string> GetDirectLink(string kwikPahewin)
     {
-        var response = await kwikPahewin.WithClient(_client).GetStringAsync();
+        var response = await _client.Request(kwikPahewin).GetStringAsync();
         var url = KwikRedirectionRegex().Match(response).Groups[1].Value;
-        var downloadPage = await url.WithClient(_client).GetStringAsync();
+        var downloadPage = await _client.Request(url).GetStringAsync();
         var match = KwikParamsRegex().Match(downloadPage);
 
         if (!match.Success)

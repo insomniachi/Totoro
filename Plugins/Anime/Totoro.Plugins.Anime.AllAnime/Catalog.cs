@@ -1,6 +1,6 @@
-﻿using Flurl;
-using FlurlGraphQL.Querying;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json.Nodes;
+using Flurl;
+using FlurlGraphQL;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts.Optional;
 using Totoro.Plugins.Options;
@@ -69,9 +69,9 @@ internal class Catalog : IAnimeCatalog
                 limit = 40
             })
             .PostGraphQLQueryAsync()
-            .ReceiveGraphQLRawJsonResponse();
+            .ReceiveGraphQLRawSystemTextJsonResponse();
 
-        foreach (var item in jObject?["shows"]?["edges"] ?? new JArray())
+        foreach (var item in jObject?["shows"]?["edges"]?.AsArray().OfType<JsonObject>() ?? [])
         {
             _ = long.TryParse($"{item?["malId"]}", out long malId);
             _ = long.TryParse($"{item?["aniListId"]}", out long aniListId);
@@ -79,7 +79,7 @@ internal class Catalog : IAnimeCatalog
             var url = Url.Combine(ConfigManager<Config>.Current.Url, $"/anime/{item?["_id"]}");
             var season = "";
             var year = "";
-            if (item?["season"]?.HasValues == true)
+            if(item?.ContainsKey(@"season") == true)
             {
                 season = $"{item?["season"]?["quarter"]}";
                 year = $"{item?["season"]?["year"]}";

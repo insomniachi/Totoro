@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System.Text.Json.Nodes;
+using System.Web;
 using Flurl.Http;
 using Totoro.Core.ViewModels;
 
@@ -15,6 +16,7 @@ public class AuthenticateSimklViewModel : DialogViewModel
                                       ISettings settings)
     {
         var clientId = configuration["ClientIdSimkl"];
+        var secret = configuration["SimklSecret"];
         AuthUrl = $"https://simkl.com/oauth/authorize?response_type=code&client_id={clientId}&redirect_uri={_redirectUri}";
 
         this.ObservableForProperty(x => x.AuthUrl, x => x)
@@ -28,12 +30,14 @@ public class AuthenticateSimklViewModel : DialogViewModel
                 {
                     code = queries[0].ToString(),
                     client_id = clientId,
-                    client_secret = "a8e1ace06188a964a50b9b87e3fe659d45530953d848d65f69a80fdaf53def9e",
+                    client_secret = secret,
                     redirect_uri = "github.com/insomniachi/totoro/",
                     grant_type = "authorization_code"
-                }).ReceiveJson();
+                }).ReceiveStream();
 
-                return (string)json.access_token;
+                var jObject = JsonNode.Parse(json);
+
+                return (string)jObject?["access_token"]?.AsValue();
             })
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(token =>
