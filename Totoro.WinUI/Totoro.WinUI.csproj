@@ -49,9 +49,9 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="ReactiveUI" Version="19.5.72" />
+		<PackageReference Include="ReactiveUI" Version="19.6.1" />
 		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
-		<PackageReference Include="ReactiveUI.WinUI" Version="19.5.72" />
+		<PackageReference Include="ReactiveUI.WinUI" Version="19.6.1" />
 		<PackageReference Include="System.Reactive" Version="6.0.0" />
 		<PackageReference Include="WinUIEx" Version="2.3.4" />
 	</ItemGroup>
