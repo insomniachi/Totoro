@@ -295,14 +295,6 @@ public sealed partial class FlyleafTransportControls : UserControl, IMediaTransp
         }
 
         var flyout = CCSelectionButton.Flyout as MenuFlyout;
-        //foreach (var item in flyout.Items.OfType<RadioMenuFlyoutItem>())
-        //{
-        //    if(item.Text != title)
-        //    {
-        //        item.IsChecked = false;
-        //    }
-        //}
-
         Player.OpenAsync(stream);
     }
 

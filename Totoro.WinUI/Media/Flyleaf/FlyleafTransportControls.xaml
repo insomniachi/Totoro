@@ -277,8 +277,20 @@
                                     Text="1.5x" />
                                 <RadioMenuFlyoutItem
                                     Click="ToggleMenuFlyoutItem_Click"
+                                    Tag="{x:Bind c:PlaybackRate.OnePointSevenFive}"
+                                    Text="1.75x" />
+                                <RadioMenuFlyoutItem
+                                    Click="ToggleMenuFlyoutItem_Click"
                                     Tag="{x:Bind c:PlaybackRate.Two}"
                                     Text="2x" />
+                                <RadioMenuFlyoutItem
+                                    Click="ToggleMenuFlyoutItem_Click"
+                                    Tag="{x:Bind c:PlaybackRate.TwoPointFive}"
+                                    Text="2.5x" />
+                                <RadioMenuFlyoutItem
+                                    Click="ToggleMenuFlyoutItem_Click"
+                                    Tag="{x:Bind c:PlaybackRate.Four}"
+                                    Text="4x" />
                             </MenuFlyout>
                         </AppBarButton.Flyout>
                     </AppBarButton>

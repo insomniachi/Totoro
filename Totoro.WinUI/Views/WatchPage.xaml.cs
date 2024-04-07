@@ -91,10 +91,10 @@ public sealed partial class WatchPage : WatchPageBase
                         .Where(x => x)
                         .Subscribe(_ => EnterPiPMode());
 
-                    //wrapper
-                    //    .TransportControls
-                    //    .PlaybackRateChanged
-                    //    .Subscribe(rate => wrapper.SetPlaybackRate(rate));
+                    wrapper
+                        .TransportControls
+                        .PlaybackRateChanged
+                        .Subscribe(rate => wrapper.SetPlaybackRate(rate));
 
                     wrapper
                         .DurationChanged
