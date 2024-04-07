@@ -7,12 +7,14 @@ public class MalToModelConverter
 {
     public static AnimeModel ConvertModel(MalApi.Anime malModel)
     {
+        var engTitle = malModel.AlternativeTitles?.English;
+
         var model = new AnimeModel
         {
             Id = malModel.Id,
             MalId = malModel.Id,
             Title = malModel.Title,
-            EngTitle = malModel.AlternativeTitles?.English ?? malModel.Title,
+            EngTitle = string.IsNullOrEmpty(engTitle) ? malModel.Title : engTitle,
             RomajiTitle = malModel.Title,
             Image = malModel.MainPicture?.Large ?? string.Empty,
             Description = malModel.Synopsis,

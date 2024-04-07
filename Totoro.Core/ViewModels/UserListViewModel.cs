@@ -49,7 +49,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .SelectMany(settings => settings.WhenAnyValue(x => x.Sort))
             .DistinctUntilChanged()
             .Do(_ => SaveDataGridSettings.Execute(Unit.Default))
-            .Select(GetSortComparer);
+            .Select(x => GetSortComparer(x, settings.UseEnglishTitles));
 
         this.WhenAnyValue(x => x.SelectedSortProperty, x => x.IsSortByAscending)
             .Where(x => !string.IsNullOrEmpty(x.Item1))
@@ -68,11 +68,9 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Select(_ => Unit.Default)
             .InvokeCommand(SaveDataGridSettings);
 
-        this.WhenAnyValue(x => x.Filter).SelectMany(x => x.WhenAnyPropertyChanged())
-            .Subscribe(x =>
-            {
-                _animeCache.Refresh();
-            });
+        this.WhenAnyValue(x => x.Filter)
+            .SelectMany(x => x.WhenAnyPropertyChanged())
+            .Subscribe(_ => _animeCache.Refresh());
 
         _animeCache
             .Connect()
@@ -201,7 +199,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
     public async Task<Unit> UpdateAnime(IAnimeModel model) => await _viewService.UpdateTracking(model);
 
-    private static IComparer<AnimeModel> GetSortComparer(DataGridSort sort)
+    private static SortExpressionComparer<AnimeModel> GetSortComparer(DataGridSort sort, bool useEnglishTitles)
     {
         if (sort is null)
         {
@@ -212,7 +210,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
         return sort switch
         {
-            { ColumnName: "Title" } => CreateComparer(x => x.Title, sort.IsAscending),
+            { ColumnName: "Title" } => SortyByTitle(sort.IsAscending, useEnglishTitles),
             { ColumnName: "User Score" } => CreateComparer(x => x.Tracking.Score, sort.IsAscending),
             { ColumnName: "Mean Score" } => CreateComparer(x => x.MeanScore, sort.IsAscending),
             { ColumnName: "Date Started" } => CreateComparer(x => x.Tracking.StartDate, sort.IsAscending),
@@ -232,6 +230,13 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     }
 
     private static SortExpressionComparer<AnimeModel> CreateComparer(Func<AnimeModel, IComparable> expression, bool isAscending) => new() { new(expression, isAscending ? SortDirection.Ascending : SortDirection.Descending) };
+
+    private static SortExpressionComparer<AnimeModel> SortyByTitle(bool isAscending, bool useEnglishTitles)
+    {
+        return useEnglishTitles
+            ? CreateComparer(x => x.EngTitle, isAscending) 
+            : CreateComparer(x => x.Title, isAscending);
+    }
 
     private void CheckNewColumns()
     {
