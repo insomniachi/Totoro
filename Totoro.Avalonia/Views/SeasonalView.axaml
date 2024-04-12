@@ -1,0 +1,44 @@
+﻿<rx:ReactiveUserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:vm="clr-namespace:Totoro.Core.ViewModels;assembly=Totoro.Core"
+             xmlns:rx="http://reactiveui.net"
+             xmlns:uc="clr-namespace:Totoro.Avalonia.UserControls"
+             xmlns:models="clr-namespace:Totoro.Core.Models;assembly=Totoro.Core"
+             x:TypeArguments="vm:SeasonalViewModel"
+             x:DataType="vm:SeasonalViewModel"
+             x:Class="Totoro.Avalonia.Views.SeasonalView">
+    
+    <Grid RowDefinitions="Auto,*" Margin="15 20 15 0">
+        
+        <TabStrip HorizontalAlignment="Center"
+                  Name="SeasonFilterControl"
+                  SelectionChanged="SeasonFilterControl_OnSelectionChanged"
+                  Margin="0 0 0 20">
+            <TabStripItem Content="Previous"/>
+            <TabStripItem Content="Current"/>
+            <TabStripItem Content="Next"/>
+        </TabStrip>
+        
+        <ScrollViewer Grid.Row="1">
+            <ItemsRepeater ItemsSource="{Binding Anime, Mode=OneWay}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate DataType="models:AnimeModel">
+                        <uc:AnimeCardLarge Title="{Binding Title}"
+                                           Description="{Binding Description}"
+                                           Image="{Binding Image}"/>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout ItemsJustification="Start" ItemsStretch="Fill" 
+                                       MinItemHeight="300" MinItemWidth="650"
+                                       MinColumnSpacing="20" MinRowSpacing="20"/>
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
+        </ScrollViewer>
+    </Grid>
+
+    
+</rx:ReactiveUserControl>

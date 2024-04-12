@@ -541,7 +541,7 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             var suggested = results.MaxBy(x => Fuzz.PartialRatio(x.Title, title));
             this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {Fuzz.PartialRatio(suggested.Title, title)}");
-            return (await _viewService.ChoooseSearchResult(suggested, results, ProviderType), null);
+            return (await _viewService.ChooseSearchResult(suggested, results, ProviderType), null);
         }
     }
 

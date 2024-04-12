@@ -1,0 +1,17 @@
+﻿<rx:ReactiveUserControl x:TypeArguments="vm:DiscoverViewModel"
+                        xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                        xmlns:uc="clr-namespace:Totoro.Avalonia.UserControls"
+                        xmlns:vm="clr-namespace:Totoro.Core.ViewModels;assembly=Totoro.Core"
+                        xmlns:rx="http://reactiveui.net"
+                        x:DataType="vm:DiscoverViewModel"
+                        x:Class="Totoro.Avalonia.Views.DiscoverView">
+
+    <uc:PivotNavigation ItemSource="{Binding Sections, Mode=OneWay}"
+                        SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
+                        SectionGroupName="DiscoverViewModel"/>
+
+</rx:ReactiveUserControl>

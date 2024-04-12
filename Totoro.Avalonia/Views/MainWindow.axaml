@@ -1,0 +1,45 @@
+<Window
+    x:Class="Totoro.Avalonia.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:FluentAvalonia.UI.Controls"
+    xmlns:vm="using:Totoro.Core.ViewModels"
+    xmlns:h="using:Totoro.Avalonia.Helpers"
+    Title="AvaloniaApplication4"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    Icon="/Assets/avalonia-logo.ico"
+    ExtendClientAreaToDecorationsHint="True"
+    TransparencyLevelHint="AcrylicBlur"
+    ExtendClientAreaChromeHints="PreferSystemChrome"
+    mc:Ignorable="d">
+    
+    <!-- <Panel> -->
+    <!--     <ExperimentalAcrylicBorder IsHitTestVisible="False"> -->
+    <!--         <ExperimentalAcrylicBorder.Material> -->
+    <!--             <ExperimentalAcrylicMaterial -->
+    <!--                 BackgroundSource="Digger" -->
+    <!--                 TintColor="Black" -->
+    <!--                 TintOpacity="1" -->
+    <!--                 MaterialOpacity="0.65" /> -->
+    <!--         </ExperimentalAcrylicBorder.Material> -->
+    <!--     </ExperimentalAcrylicBorder> -->
+    <!-- </Panel> -->
+    
+    <ui:NavigationView AlwaysShowHeader="False"
+                       PaneDisplayMode="Left"
+                       Name="NavigationView"
+                       IsSettingsVisible="True"
+                       IsBackEnabled="{Binding #FrameView.CanGoBack}">
+        <ui:NavigationView.MenuItems>
+            <ui:NavigationViewItem IconSource="Calendar" Content="Seasonal"
+                                   h:NavigationBehavior.NavigateTo="{x:Type vm:SeasonalViewModel}"/>
+            <ui:NavigationViewItem IconSource="Globe" Content="Discover"
+                                   h:NavigationBehavior.NavigateTo="{x:Type vm:DiscoverViewModel}"/>
+        </ui:NavigationView.MenuItems>
+        <ui:Frame Name="FrameView"/>
+    </ui:NavigationView>
+
+</Window>

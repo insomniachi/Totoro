@@ -1,21 +1,45 @@
 ﻿using JikanDotNet;
 using MalApi;
 using MalApi.Interfaces;
+using Microsoft.Extensions.Configuration;
 using static Totoro.Core.Services.MyAnimeList.MalToModelConverter;
 
 namespace Totoro.Core.Services.MyAnimeList;
 
-public class MyAnimeListService(IMalClient client,
-                                IAnilistService anilistService,
-                                IAnimeIdService animeIdService,
-                                ISettings settings) : IAnimeService, IMyAnimeListService
+public class MyAnimeListService : IAnimeService, IMyAnimeListService
 {
-    private readonly IMalClient _client = client;
-    private readonly IAnilistService _anilistService = anilistService;
-    private readonly IAnimeIdService _animeIdService = animeIdService;
-    private readonly ISettings _settings = settings;
+    private readonly IMalClient _client;
+    private readonly IAnilistService _anilistService;
+    private readonly IAnimeIdService _animeIdService;
+    private readonly ISettings _settings;
     private readonly IJikan _jikan = new Jikan();
     private readonly string _recursiveAnimeProperties = $"my_list_status,status,{AnimeFieldNames.TotalEpisodes},{AnimeFieldNames.Mean}";
+
+    public MyAnimeListService(IMalClient client,
+                              IAnilistService anilistService,
+                              IAnimeIdService animeIdService,
+                              ISettings settings,
+                              IConfiguration configuration,
+                              ILocalSettingsService localSettingsService)
+    {
+        _client = client;
+        _anilistService = anilistService;
+        _animeIdService = animeIdService;
+        _settings = settings;
+        
+        var token = localSettingsService.ReadSetting<MalApi.OAuthToken>("MalToken");
+        var clientId = configuration["ClientId"];
+        if ((DateTime.UtcNow - (token?.CreateAt ?? DateTime.UtcNow)).Days >= 28)
+        {
+            token = MalApi.MalAuthHelper.RefreshToken(clientId, token!.RefreshToken).Result;
+            localSettingsService.SaveSetting("MalToken", token);
+        }
+        if (token is not null && !string.IsNullOrEmpty(token.AccessToken))
+        {
+            client.SetAccessToken(token.AccessToken);
+        }
+        client.SetClientId(clientId);
+    }
 
     public ListServiceType Type => ListServiceType.MyAnimeList;
 

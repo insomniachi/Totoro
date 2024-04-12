@@ -20,7 +20,7 @@ public class PluginManager : IPluginManager, IEnableLogger
     private readonly IPluginFactory _animePluginFactory;
     private readonly IPluginFactory _mangaPluginFactory;
     private readonly IPluginFactory _torrentPluginFactory;
-    private readonly IPluginFactory _mediaDetectionPluginFactory;
+    private readonly IPluginFactory? _mediaDetectionPluginFactory;
     private readonly string _baseUrl = "https://raw.githubusercontent.com/insomniachi/Totoro/main";
     private PluginIndex? _listedPlugins;
     private readonly bool _autoDownloadAllPlugins = true;
@@ -30,7 +30,7 @@ public class PluginManager : IPluginManager, IEnableLogger
     public PluginManager(IPluginFactory animePluginFactory,
                          IPluginFactory mangaPluginFactory,
                          IPluginFactory torrentPluginFactory,
-                         IPluginFactory mediaDetectionPluginFactory)
+                         IPluginFactory? mediaDetectionPluginFactory)
     {
         _animePluginFactory = animePluginFactory;
         _mangaPluginFactory = mangaPluginFactory;
@@ -73,7 +73,7 @@ public class PluginManager : IPluginManager, IEnableLogger
         _animePluginFactory.LoadPlugins(animeFolder);
         _torrentPluginFactory.LoadPlugins(torrentsFolder);
         _mangaPluginFactory.LoadPlugins(mangaFolder);
-        _mediaDetectionPluginFactory.LoadPlugins(mediaDetectionFolder);
+        _mediaDetectionPluginFactory?.LoadPlugins(mediaDetectionFolder);
     }
 
     private static List<PluginInfoSlim> GetLocalPlugins(string folder)
@@ -116,12 +116,12 @@ public class PluginManager : IPluginManager, IEnableLogger
 
             this.Log().Info($"Downloading plugin : {item.FileName} {item.Version}");
             var url = Url.Combine(_baseUrl, "Plugins Store", item.FileName);
-            var resonse = await url.GetAsync();
+            var response = await url.GetAsync();
 
-            if(resonse.StatusCode < 300)
+            if(response.StatusCode < 300)
             {
-                using var s = await resonse.GetStreamAsync();
-                using var fs = new FileStream(path, FileMode.OpenOrCreate);
+                await using var s = await response.GetStreamAsync();
+                await using var fs = new FileStream(path, FileMode.OpenOrCreate);
                 await s.CopyToAsync(fs);
             }
             else

@@ -6,7 +6,7 @@ public interface IViewService
 {
     Task<Unit> UpdateTracking(IAnimeModel anime);
     Task<int> RequestRating(IAnimeModel anime);
-    Task<ICatalogItem> ChoooseSearchResult(ICatalogItem closesMatch, List<ICatalogItem> searchResults, string providerType);
+    Task<ICatalogItem> ChooseSearchResult(ICatalogItem closesMatch, List<ICatalogItem> searchResults, string providerType);
     Task Authenticate(ListServiceType type);
     Task PlayVideo(string title, string url);
     Task<T> SelectModel<T>(IEnumerable<T> models, T defaultValue = default, Func<string, IAsyncEnumerable<T>> searcher = default) where T : class;

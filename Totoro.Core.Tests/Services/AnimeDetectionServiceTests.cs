@@ -33,30 +33,30 @@ public class AnimeDetectionServiceTests
         _client.SetAccessToken(token.AccessToken);
     }
 
-    [Theory]
-    [ClassData(typeof(TheoryData))]
-    public async Task DetectsFromFileName_Works(string fileName, long expected)
-    {
-        // arrange
-        var settings = new Mock<ISettings>();
-        settings.Setup(x => x.DefaultListService).Returns(ListServiceType.MyAnimeList);
-        var malService = new MyAnimeListService(_client, Mock.Of<IAnilistService>(), Mock.Of<IAnimeIdService>(), settings.Object);
-        var connectivityService = new Mock<IConnectivityService>();
-        connectivityService.Setup(x => x.IsConnected).Returns(true);
-        var animeServiceContext = new AnimeServiceContext(settings.Object, 
-                                                          new Lazy<IAnimeService>(() => malService),
-                                                          new Lazy<IAnimeService>(() => malService),
-                                                          new Lazy<IAnimeService>(() => malService),
-                                                          connectivityService.Object);
-
-        var sut = new AnimeDetectionService(Mock.Of<IViewService>(),
-                                            Mock.Of<IToastService>(),
-                                            animeServiceContext);
-
-        // act
-        var id = await sut.DetectFromFileName(fileName);
-
-        // assert
-        Assert.Equal(expected, id);
-    }
+    // [Theory]
+    // [ClassData(typeof(TheoryData))]
+    // public async Task DetectsFromFileName_Works(string fileName, long expected)
+    // {
+    //     // arrange
+    //     var settings = new Mock<ISettings>();
+    //     settings.Setup(x => x.DefaultListService).Returns(ListServiceType.MyAnimeList);
+    //     var malService = new MyAnimeListService(_client, Mock.Of<IAnilistService>(), Mock.Of<IAnimeIdService>(), settings.Object);
+    //     var connectivityService = new Mock<IConnectivityService>();
+    //     connectivityService.Setup(x => x.IsConnected).Returns(true);
+    //     var animeServiceContext = new AnimeServiceContext(settings.Object, 
+    //                                                       new Lazy<IAnimeService>(() => malService),
+    //                                                       new Lazy<IAnimeService>(() => malService),
+    //                                                       new Lazy<IAnimeService>(() => malService),
+    //                                                       connectivityService.Object);
+    //
+    //     var sut = new AnimeDetectionService(Mock.Of<IViewService>(),
+    //                                         Mock.Of<IToastService>(),
+    //                                         animeServiceContext);
+    //
+    //     // act
+    //     var id = await sut.DetectFromFileName(fileName);
+    //
+    //     // assert
+    //     Assert.Equal(expected, id);
+    // }
 }

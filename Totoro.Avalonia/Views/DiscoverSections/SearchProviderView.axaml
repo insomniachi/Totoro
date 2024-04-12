@@ -1,0 +1,94 @@
+﻿<rx:ReactiveUserControl x:TypeArguments="vm:SearchProviderViewModel"
+                        x:Class="Totoro.Avalonia.Views.DiscoverSections.SearchProviderView"
+                        x:DataType="vm:SearchProviderViewModel"
+                        xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                        xmlns:vm="clr-namespace:Totoro.Core.ViewModels.Discover;assembly=Totoro.Core"
+                        xmlns:rx="http://reactiveui.net"
+                        xmlns:ail="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+                        xmlns:contracts="clr-namespace:Totoro.Plugins.Anime.Contracts;assembly=Totoro.Plugins.Anime"
+                        xmlns:c="clr-namespace:Totoro.Avalonia.Converters"
+                        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450">
+
+    <Grid RowDefinitions="Auto,*">
+        <StackPanel Grid.Row="0"
+                    HorizontalAlignment="Center"
+                    Spacing="5"
+                    Margin="0 0 0 15">
+
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBox Text="{Binding SearchText, Mode=TwoWay}"
+                         Width="300"
+                         VerticalAlignment="Center"
+                         Height="35" />
+                <ComboBox
+                    VerticalAlignment="Center"
+                    DisplayMemberBinding="{Binding DisplayName}"
+                    ItemsSource="{Binding Plugins}"
+                    SelectedItem="{Binding SelectedProvider, Mode=TwoWay}" />
+            </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <ItemsRepeater ItemsSource="{Binding AnimeSearchResults, Mode=OneWay}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="contracts:ICatalogItem">
+                        <Grid RowDefinitions="*,Auto">
+                            <Image
+                                Grid.Row="0"
+                                ail:ImageLoader.Source="{Binding Path=., Converter={x:Static c:FuncValueConverters.CatalogItemToImage}}"
+                                Stretch="UniformToFill" />
+
+                            <Grid
+                                Grid.Row="0"
+                                Height="30"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top">
+                                <Grid.Background>
+                                    <SolidColorBrush Opacity="0.5" Color="Black" />
+                                </Grid.Background>
+                                <TextBlock
+                                    FontSize="20"
+                                    Foreground="White"
+                                    Text="{Binding Path=., Converter={x:Static c:FuncValueConverters.CatalogItemToRating}}" />
+                            </Grid>
+
+                            <Border
+                                Grid.Row="1"
+                                Height="60"
+                                Padding="3"
+                                Background="{StaticResource SystemAccentColorDark2}"
+                                BorderThickness="0,4,0,0">
+                                <StackPanel>
+                                    <TextBlock
+                                        Margin="0,3,0,0"
+                                        Padding="3"
+                                        VerticalAlignment="Center"
+                                        FontSize="15"
+                                        Text="{Binding Title}"
+                                        TextAlignment="Center"
+                                        TextTrimming="WordEllipsis"
+                                        TextWrapping="NoWrap"
+                                        ToolTip.Tip="{Binding Title}" />
+                                    <TextBlock HorizontalAlignment="Center"
+                                               Text="{Binding Path=., Converter={x:Static c:FuncValueConverters.CatalogItemToAdditionalInfo}}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsStretch="Fill"
+                        MinColumnSpacing="5"
+                        MinItemHeight="320"
+                        MinItemWidth="190"
+                        MinRowSpacing="5" />
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+    </Grid>
+</rx:ReactiveUserControl>

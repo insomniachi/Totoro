@@ -105,7 +105,7 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
     private static Func<AnimeModel, bool> FilterBySeason(Season s) => x => x.Season == s;
     private static Func<AnimeModel, bool> FilterByTitle(string title) => x => string.IsNullOrEmpty(title) ||
                                                                                       x.Title.Contains(title, StringComparison.CurrentCultureIgnoreCase) ||
-                                                                                      (x.AlternativeTitles?.Any(x => x.Contains(title, StringComparison.CurrentCultureIgnoreCase)) ?? true);
+                                                                                      (x.AlternativeTitles?.Any(y => y.Contains(title, StringComparison.CurrentCultureIgnoreCase)) ?? true);
     public static Season Current => AnimeHelpers.CurrentSeason();
     public static Season Next => AnimeHelpers.NextSeason();
     public static Season Prev => AnimeHelpers.PrevSeason();

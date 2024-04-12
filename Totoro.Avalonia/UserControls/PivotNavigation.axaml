@@ -1,0 +1,26 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:local="clr-namespace:Totoro.Avalonia.UserControls"
+             xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             xmlns:vm="clr-namespace:Totoro.Core.ViewModels;assembly=Totoro.Core"
+             x:Class="Totoro.Avalonia.UserControls.PivotNavigation">
+    <Grid RowDefinitions="Auto,*">
+        <TabStrip Grid.Row="0"
+                  ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=local:PivotNavigation}, Path=ItemSource, Mode=OneWay}"
+                  SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=local:PivotNavigation}, Path=SelectedItem, Mode=TwoWay}"
+                  SelectedIndex="0">
+            <TabStrip.ItemTemplate>
+                <DataTemplate x:DataType="vm:PivotItemModel">
+                    <TextBlock Text="{Binding  Header}"/>
+                </DataTemplate>
+            </TabStrip.ItemTemplate>
+        </TabStrip>
+
+        <fa:Frame Grid.Row="1"
+                  Margin="15 20 15 0"
+                  Name="NavigationFrame" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,29 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ail="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:local="clr-namespace:Totoro.Avalonia.UserControls"
+             x:Class="Totoro.Avalonia.UserControls.AnimeCardLarge">
+
+    <Border CornerRadius="5" Background="#202020">
+        <Grid ColumnDefinitions="*,2*">
+            <Image Grid.Column="0"
+                   ail:ImageLoader.Source="{Binding $parent[local:AnimeCardLarge].Image, Mode=OneWay}"
+                   Stretch="UniformToFill"/>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,*">
+                <Border Background="{StaticResource SystemAccentColorDark1}" Padding="5">
+                    <TextBlock Text="{Binding $parent[local:AnimeCardLarge].Title, Mode=OneWay}"
+                               TextTrimming="{x:Static TextTrimming.CharacterEllipsis}"
+                               ToolTip.Tip="{Binding $parent[local:AnimeCardLarge].Title, Mode=OneWay}"
+                               FontSize="20"/>
+                </Border>
+                <ScrollViewer Grid.Row="1" Padding="10">
+                    <TextBlock Text="{Binding $parent[local:AnimeCardLarge].Description}" TextWrapping="Wrap"/>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
