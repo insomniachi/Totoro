@@ -1,0 +1,163 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:local="clr-namespace:Totoro.Avalonia.UserControls"
+             xmlns:ail="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+             xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+             xmlns:c="clr-namespace:Totoro.Avalonia.Converters"
+             x:Class="Totoro.Avalonia.UserControls.AnimeCard">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="ControlOnImageFillColorDefaultBrush" Color="Black"
+                         Opacity="0.65" />
+        <SolidColorBrush x:Key="CardAccentColor1" Color="#1c2119"/>
+        <SolidColorBrush x:Key="CardAccentColor2" Color="#242721"/>
+        <x:Double x:Key="FontIconSize">18</x:Double>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Grid Grid.Row="0"
+              ZIndex="1"
+              IsVisible="{Binding #NextEpisodeInText.Text, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+              Background="{StaticResource ControlOnImageFillColorDefaultBrush}"
+              ColumnDefinitions="*,Auto">
+            <TextBlock
+                x:Name="NextEpisodeInText"
+                Padding="2"
+                HorizontalAlignment="Stretch"
+                FontSize="14"
+                FontWeight="SemiBold"
+                Foreground="White"
+                Text="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime, Converter={x:Static c:FuncValueConverters.HumanizeAiringTime}, Mode=OneWay}"
+                TextAlignment="Center"
+                TextTrimming="CharacterEllipsis" />
+            <!-- <uc:UnwatchedEpisodesBadge -->
+            <!--     Grid.Column="1" -->
+            <!--     Width="25" -->
+            <!--     Height="30" -->
+            <!--     Margin="0,0,8,0" -->
+            <!--     HorizontalAlignment="Right" -->
+            <!--     VerticalAlignment="Center" -->
+            <!--     Anime="{x:Bind Anime, Mode=OneWay}" -->
+            <!--     Background="OrangeRed" -->
+            <!--     Canvas.ZIndex="2" -->
+            <!--     FontWeight="Bold" -->
+            <!--     Style="{ThemeResource AttentionValueInfoBadgeStyle}" /> -->
+        </Grid>
+
+        <Grid
+            Grid.Row="0"
+            Grid.RowSpan="2">
+            <Image
+                ail:ImageLoader.Source="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime.Image, Mode=OneWay}"
+                Stretch="UniformToFill"
+                Tapped="InputElement_OnTapped" />
+            <Button
+                x:Name="MoreButton"
+                Width="45"
+                Height="45"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Background="{StaticResource ControlOnImageFillColorDefaultBrush}">
+                <fa:SymbolIcon Symbol="More" />
+            </Button>
+            <Border Background="{StaticResource ControlOnImageFillColorDefaultBrush}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    IsVisible="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime.MeanScore, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="10"
+                    Margin="10">
+                    <fa:FontIcon FontSize="{StaticResource FontIconSize}" Glyph="&#xE735;" FontFamily="{StaticResource SymbolThemeFontFamily}" />
+                    <TextBlock FontSize="12"
+                               Text="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime.MeanScore, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid
+            Grid.Row="2"
+            Background="{StaticResource CardAccentColor1}"
+            RowDefinitions="47,Auto">
+
+            <TextBlock
+                Grid.Row="0"
+                Padding="3"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Text="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime, Converter={x:Static c:FuncValueConverters.AnimeToTitle}, Mode=OneWay}"
+                TextAlignment="Left"
+                TextTrimming="WordEllipsis"
+                ToolTip.Tip="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime, Converter={x:Static c:FuncValueConverters.AnimeToTitle}, Mode=OneWay}" />
+
+            <Grid
+                Grid.Row="1"
+                Background="{StaticResource CardAccentColor2}">
+                <fa:FontIcon
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="{StaticResource FontIconSize}"
+                    Glyph="&#xE7A6;"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    IsVisible="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime, Converter={x:Static c:FuncValueConverters.IsRewatching}, Mode=OneWay}" />
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="15"
+                    Margin="0 5"
+                    Name="TrackingInfo"
+                    IsVisible="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime, Converter={x:Static c:FuncValueConverters.HasTracking}, Mode=OneWay}">
+                    <local:RatingPickerCompact Anime="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}, Path=Anime, Mode=OneWay}"/>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <fa:FontIcon FontSize="{StaticResource FontIconSize}" 
+                                     Glyph="&#xE7B3;" 
+                                     FontFamily="{StaticResource SymbolThemeFontFamily}"/>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="12">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{x:Static c:FuncValueConverters.WatchProgressDisplayString}">
+                                    <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}"
+                                             Path="Anime.Tracking"
+                                             Mode="OneWay"/>
+                                    <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=local:AnimeCard}"
+                                             Path="Anime.TotalEpisodes"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <Button
+                            Padding="0"
+                            CornerRadius="5"
+                            ToolTip.Tip="Decrement episode">
+                            <fa:FontIcon FontSize="{StaticResource FontIconSize}"
+                                         Glyph="&#xECC9;"
+                                         FontFamily="{StaticResource SymbolThemeFontFamily}" />
+                        </Button>
+                        <Button
+                            Padding="0"                            
+                            CornerRadius="5"
+                            ToolTip.Tip="Increment episode">
+                            <fa:FontIcon FontSize="{StaticResource FontIconSize}"
+                                         Glyph="&#xECC8;"
+                                         FontFamily="{StaticResource SymbolThemeFontFamily}" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+                <Button
+                    Padding="0"
+                    HorizontalAlignment="Right"
+                    Background="{x:Null}"
+                    ToolTip.Tip="Add to list"
+                    IsVisible="{Binding !#TrackingInfo.IsVisible}">
+                    <fa:FontIcon FontSize="{StaticResource FontIconSize}" 
+                                 Glyph="&#xE710;"
+                                 FontFamily="{StaticResource SymbolThemeFontFamily}" />
+                </Button>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -44,6 +44,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddPageForNavigation<SeasonalViewModel, SeasonalView>();
         services.AddPageForNavigation<DiscoverViewModel, DiscoverView>();
+        services.AddPageForNavigation<UserListViewModel, UserListView>();
         
         // Discover views
         services.AddPageForNavigation<RecentEpisodesViewModel, RecentEpisodesView>();

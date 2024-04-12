@@ -11,8 +11,8 @@ public class OfflineAnimeIdService(IFileService fileService,
 {
     private readonly string _dbUrl = @"https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-offline-database-reduced.json";
     private readonly string _fileName = @"ids.json";
-    private List<AnimeIdExtended> _ids;
-    private FrozenDictionary<long, AnimeIdExtended> _idsMap;
+    private List<AnimeIdExtended> _ids = [];
+    private FrozenDictionary<long, AnimeIdExtended> _idsMap = new Dictionary<long,AnimeIdExtended>().ToFrozenDictionary();
 
     public bool IsAvailable { get; set; } = true;
 

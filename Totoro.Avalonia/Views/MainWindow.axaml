@@ -7,7 +7,7 @@
     xmlns:ui="using:FluentAvalonia.UI.Controls"
     xmlns:vm="using:Totoro.Core.ViewModels"
     xmlns:h="using:Totoro.Avalonia.Helpers"
-    Title="AvaloniaApplication4"
+    Title="Totoro"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Icon="/Assets/avalonia-logo.ico"
@@ -16,17 +16,7 @@
     ExtendClientAreaChromeHints="PreferSystemChrome"
     mc:Ignorable="d">
     
-    <!-- <Panel> -->
-    <!--     <ExperimentalAcrylicBorder IsHitTestVisible="False"> -->
-    <!--         <ExperimentalAcrylicBorder.Material> -->
-    <!--             <ExperimentalAcrylicMaterial -->
-    <!--                 BackgroundSource="Digger" -->
-    <!--                 TintColor="Black" -->
-    <!--                 TintOpacity="1" -->
-    <!--                 MaterialOpacity="0.65" /> -->
-    <!--         </ExperimentalAcrylicBorder.Material> -->
-    <!--     </ExperimentalAcrylicBorder> -->
-    <!-- </Panel> -->
+
     
     <ui:NavigationView AlwaysShowHeader="False"
                        PaneDisplayMode="Left"
@@ -34,12 +24,26 @@
                        IsSettingsVisible="True"
                        IsBackEnabled="{Binding #FrameView.CanGoBack}">
         <ui:NavigationView.MenuItems>
-            <ui:NavigationViewItem IconSource="Calendar" Content="Seasonal"
-                                   h:NavigationBehavior.NavigateTo="{x:Type vm:SeasonalViewModel}"/>
             <ui:NavigationViewItem IconSource="Globe" Content="Discover"
                                    h:NavigationBehavior.NavigateTo="{x:Type vm:DiscoverViewModel}"/>
+            <ui:NavigationViewItem IconSource="Library" Content="My List"
+                                   h:NavigationBehavior.NavigateTo="{x:Type vm:UserListViewModel}"/>
+            <ui:NavigationViewItem IconSource="Calendar" Content="Seasonal"
+                                   h:NavigationBehavior.NavigateTo="{x:Type vm:SeasonalViewModel}"/>
         </ui:NavigationView.MenuItems>
-        <ui:Frame Name="FrameView"/>
+        <Panel>
+            <ExperimentalAcrylicBorder IsHitTestVisible="False">
+                <ExperimentalAcrylicBorder.Material>
+                    <ExperimentalAcrylicMaterial
+                        BackgroundSource="Digger"
+                        TintColor="Black"
+                        TintOpacity="1"
+                        MaterialOpacity="0.6" />
+                </ExperimentalAcrylicBorder.Material>
+            </ExperimentalAcrylicBorder>
+            <ui:Frame Name="FrameView"/>
+
+        </Panel>
     </ui:NavigationView>
 
 </Window>
