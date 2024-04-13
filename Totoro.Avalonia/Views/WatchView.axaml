@@ -1,0 +1,23 @@
+﻿<rx:ReactiveUserControl x:TypeArguments="views:WatchViewModelTest"
+                        x:Class="Totoro.Avalonia.Views.WatchView"
+                        x:DataType="views:WatchViewModelTest"
+                        xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                        xmlns:rx="http://reactiveui.net"
+                        xmlns:views="clr-namespace:Totoro.Avalonia.Views"
+                        xmlns:controls="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+                        xmlns:avalonia="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
+                        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450">
+    
+    <Grid RowDefinitions="*,Auto">
+        <avalonia:VideoView Name="ME"/>
+        <Grid Grid.Row="1">
+            <controls:CommandBar>
+                <controls:CommandBarButton IconSource="Play" Click="Button_OnClick"/>
+            </controls:CommandBar>
+        </Grid>
+    </Grid>
+    
+</rx:ReactiveUserControl>

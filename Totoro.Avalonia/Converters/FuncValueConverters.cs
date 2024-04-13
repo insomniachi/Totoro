@@ -3,11 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AngleSharp.Dom;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
-using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Humanizer;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +25,7 @@ public static class FuncValueConverters
     [
         "(0) - No Score",
         "(1) - Appalling",
-        "(2) - Horring",
+        "(2) - Horrible",
         "(3) - Very Bad",
         "(4) - Bad",
         "(5) - Average",
@@ -136,7 +134,7 @@ public static class FuncValueConverters
             return null;
         }
 
-        var score = anime?.Tracking?.Score ?? 0;
+        var score = anime.Tracking?.Score ?? 0;
         if (score > 10)
         {
             return null;
@@ -152,7 +150,7 @@ public static class FuncValueConverters
                 Header = _ratingNames[i],
                 Icon = new RadioButton
                 {
-                    GroupName = anime!.Id.ToString(),
+                    GroupName = anime.Id.ToString(),
                     IsChecked = score == i,
                 }
             });
