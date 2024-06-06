@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
 		<RootNamespace>Totoro.WinUI</RootNamespace>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x64</Platforms>
-		<Platform>x64</Platform>
 		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
 		<UseWinUI>true</UseWinUI>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
@@ -14,9 +13,10 @@
 		<Version Condition=" '$(BuildVersion)' != '' ">$(BuildVersion)</Version>
 		<PackageIcon>Assets\WindowIcon.png</PackageIcon>
 		<ApplicationIcon>Assets\WindowIcon.ico</ApplicationIcon>
-		<EnablePreviewMsixTooling>false</EnablePreviewMsixTooling>
+		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
+		<UseRidGraph>true</UseRidGraph>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Media\Vlc\**" />
@@ -28,31 +28,31 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.Shimmer" Version="0.1.230830" />
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.230830" />
-		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.240109" />
-		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.240109" />
-		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
-		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.0.240109" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240328-rc" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.1.240328-rc" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240328-rc" />
+		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240328-rc" />
 		
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Core" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Layout" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
-		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.27" />
+		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.0.29" />
 		
-		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.124" />
+		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.131" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240311000" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240428000" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
 		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="ReactiveUI" Version="19.6.1" />
+		<PackageReference Include="ReactiveUI" Version="20.1.1" />
 		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
-		<PackageReference Include="ReactiveUI.WinUI" Version="19.6.1" />
-		<PackageReference Include="System.Reactive" Version="6.0.0" />
+		<PackageReference Include="ReactiveUI.WinUI" Version="20.1.1" />
+		<PackageReference Include="System.Reactive" Version="6.0.1" />
 		<PackageReference Include="WinUIEx" Version="2.3.4" />
 	</ItemGroup>
 
