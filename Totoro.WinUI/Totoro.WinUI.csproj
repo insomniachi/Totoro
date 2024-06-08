@@ -32,10 +32,10 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.Shimmer" Version="0.1.230830" />
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.230830" />
-		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240328-rc" />
-		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.1.240328-rc" />
-		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240328-rc" />
-		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240328-rc" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.1.240606-rc" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.1.240606-rc" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240606-rc" />
+		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240606-rc" />
 		
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Core" Version="7.1.2" />
