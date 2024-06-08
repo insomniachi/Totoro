@@ -3,9 +3,10 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
 		<RootNamespace>Totoro.WinUI</RootNamespace>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x64</Platforms>
+		<Platform>x64</Platform>
 		<RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<UseWinUI>true</UseWinUI>
 		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
 		<EnableMsixTooling>true</EnableMsixTooling>
@@ -16,7 +17,10 @@
 		<EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
 		<WindowsPackageType>None</WindowsPackageType>
 		<WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
-		<UseRidGraph>true</UseRidGraph>
+		<SelfContained>true</SelfContained>
+		<PublishSingleFile>false</PublishSingleFile>
+		<PublishReadyToRun>false</PublishReadyToRun>
+		<PublishTrimmed>false</PublishTrimmed>
 	</PropertyGroup>
 	<ItemGroup>
 	  <Compile Remove="Media\Vlc\**" />
@@ -104,9 +108,6 @@
 		<Page Update="LoadingViews\AboutAnimeLoadingView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>
-		<None Update="Styles\TitleBar.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-		</None>
 		<Page Update="Dialogs\Views\EditAnimePreferencesView.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		</Page>

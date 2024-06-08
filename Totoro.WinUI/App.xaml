@@ -19,7 +19,6 @@
                         </ResourceDictionary>
                     </controls:XamlControlsResources.MergedDictionaries>
                 </XamlControlsResources>
-                <ResourceDictionary Source="/Styles/TitleBar.xaml" />
                 <ResourceDictionary Source="/Styles/MediaTransportControls.xaml" />
                 <ResourceDictionary Source="/Styles/FontSizes.xaml" />
                 <ResourceDictionary Source="/Styles/Thickness.xaml" />

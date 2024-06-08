@@ -11,41 +11,6 @@
     Loaded="OnLoaded">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition />
-        </Grid.RowDefinitions>
-
-        <!--<ctk:TitleBar
-            x:Name="TitleBar"
-            Title="Totoro"
-            AutoConfigureCustomTitleBar="True"
-            BackButtonClick="AppTitleBar_BackButtonClick"
-            DisplayMode="Tall"
-            Icon="{ui:BitmapIcon Source=/Assets/StoreLogo.scale-400.png}"
-            IsBackButtonVisible="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
-            IsPaneButtonVisible="True"
-            PaneButtonClick="AppTitleBar_PaneButtonClick"
-            Subtitle="{x:Bind Version}"
-            Window="{x:Bind root:App.MainWindow, Mode=OneWay}">
-            <ctk:TitleBar.Footer>
-                <Button
-                    Width="32"
-                    Height="32"
-                    Padding="0"
-                    BorderBrush="{ThemeResource CircleElevationBorderBrush}"
-                    CornerRadius="16"
-                    ToolTipService.ToolTip="{x:Bind ViewModel.User.Name, Mode=OneWay}"
-                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}">
-                    <PersonPicture
-                        Width="32"
-                        Height="32"
-                        DisplayName="{x:Bind ViewModel.User.Name, Mode=OneWay}"
-                        ProfilePicture="{x:Bind ViewModel.User.Image, Mode=OneWay}" />
-                </Button>
-            </ctk:TitleBar.Footer>
-        </ctk:TitleBar>-->
-
         <NavigationView
             x:Name="NavigationViewControl"
             Grid.Row="1"
