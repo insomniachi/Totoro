@@ -7,5 +7,5 @@ public class Config : AnimeProviderConfigObject
 {
     [Description("Url to home page")]
     [Glyph(Glyphs.Url)]
-    public string Url { get; set; } = "https://witanime.cam/";
+    public string Url { get; set; } = "https://witanime.cyou";
 }
