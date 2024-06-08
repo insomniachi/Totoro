@@ -186,6 +186,7 @@ public partial class App : Application, IEnableLogger
 
     protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
+        StartFlyleaf();
         MainWindow = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
@@ -199,6 +200,29 @@ public partial class App : Application, IEnableLogger
 
         var actArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         App_Activated(actArgs);
+    }
+
+    private static void StartFlyleaf()
+    {
+        FlyleafLib.Engine.Start(new FlyleafLib.EngineConfig()
+        {
+            FFmpegDevices = false,    // Prevents loading avdevice/avfilter dll files. Enable it only if you plan to use dshow/gdigrab etc.
+
+#if RELEASE
+            FFmpegPath = @"FFmpeg",
+            FFmpegLogLevel = FFmpegLogLevel.Quiet,
+            LogLevel = LogLevel.Quiet,
+
+#else
+            FFmpegLogLevel = FlyleafLib.FFmpegLogLevel.Warning,
+            LogLevel = FlyleafLib.LogLevel.Debug,
+            LogOutput = ":debug",
+            FFmpegPath = @"E:\FFmpeg",
+#endif
+            UIRefresh = false,    // Required for Activity, BufferedDuration, Stats in combination with Config.Player.Stats = true
+            UIRefreshInterval = 250,      // How often (in ms) to notify the UI
+            UICurTimePerSecond = true,     // Whether to notify UI for CurTime only when it's second changed or by UIRefreshInterval
+        });
     }
 
     private static void ConfigureLogging()
