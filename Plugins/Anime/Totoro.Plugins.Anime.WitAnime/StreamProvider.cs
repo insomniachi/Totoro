@@ -105,6 +105,7 @@ internal partial class StreamProvider : IAnimeStreamProvider
     {
         var html = await url
             .WithReferer(ConfigManager<Config>.Current.Url)
+            .SetQueryParam("apiKey", "7d942435-c790-405c-8381-f682a274b437")
             .WithDefaultUserAgent()
             .GetStringAsync();
 
