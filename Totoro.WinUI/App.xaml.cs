@@ -210,8 +210,8 @@ public partial class App : Application, IEnableLogger
 
 #if RELEASE
             FFmpegPath = @"FFmpeg",
-            FFmpegLogLevel = FFmpegLogLevel.Quiet,
-            LogLevel = LogLevel.Quiet,
+            FFmpegLogLevel = FlyleafLib.FFmpegLogLevel.Quiet,
+            LogLevel = FlyleafLib.LogLevel.Quiet,
 
 #else
             FFmpegLogLevel = FlyleafLib.FFmpegLogLevel.Warning,
