@@ -91,7 +91,7 @@
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.AboutAnimeViewModel"
                     Content="About"
-                    Icon="Document"
+                    Icon="{ui:FontIcon Glyph=&#xE946;}"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAboutView), Mode=OneWay}" />
                 <NavigationViewItem
                     helpers:NavigationHelper.NavigateTo="Totoro.WinUI.ViewModels.NowPlayingViewModel"

@@ -178,7 +178,7 @@ public static partial class Converters
             Text = @"Info",
             Command = App.Commands.More,
             CommandParameter = anime.Id,
-            Icon = new FontIcon() { Glyph = "\uEC15" }
+            Icon = new FontIcon() { Glyph = "\uE946" }
         });
 
         return flyout;

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using MalApi.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Splat;
@@ -10,14 +11,6 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
 {
     private readonly IMalClient _client;
     private readonly IAnilistService _anilistService;
-    private readonly MalApi.AnimeStatus[] _statuses =
-    [
-        MalApi.AnimeStatus.Watching,
-        MalApi.AnimeStatus.PlanToWatch,
-        MalApi.AnimeStatus.Completed,
-        MalApi.AnimeStatus.OnHold,
-        MalApi.AnimeStatus.Dropped
-    ];
     private static readonly string[] _fieldNames =
     [
         MalApi.AnimeFieldNames.Synopsis,
@@ -72,29 +65,29 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
             yield break;
         }
 
-        foreach (var status in _statuses)
+        var result = await _client.Anime()
+                        .OfUser()
+                        .IncludeNsfw()
+                        .WithFields(_fieldNames)
+                        .Find();
+
+        foreach (var item in result.Data)
         {
-            var result = await _client.Anime()
-                                    .OfUser()
-                                    .WithStatus(status)
-                                    .IncludeNsfw()
-                                    .WithFields(_fieldNames)
-                                    .Find();
+            var model = ConvertModel(item);
 
-
-            foreach (var item in result.Data)
+            if (model.Tracking.Status == AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
             {
-                var model = ConvertModel(item);
-
-                if (status == MalApi.AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
-                {
-                    var epAndTime = await _anilistService.GetNextAiringEpisode(item.Id);
-                    model.AiredEpisodes = epAndTime.Episode - 1 ?? 0;
-                    model.NextEpisodeAt = epAndTime.Time;
-                }
-
-                yield return model;
+                Observable
+                    .FromAsync(_ => _anilistService.GetNextAiringEpisode(item.Id), RxApp.TaskpoolScheduler)
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Subscribe(x =>
+                    {
+                        model.AiredEpisodes = x.Episode - 1 ?? 0;
+                        model.NextEpisodeAt = x.Time;
+                    });
             }
+
+            yield return model;
         }
     }
 
