@@ -57,6 +57,7 @@
                     <ItemsView
                         x:Name="EpisodeView"
                         IsItemInvokedEnabled="True"
+                        SelectionMode="None"
                         ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}">
                         <ItemsView.ItemTemplate>
                             <DataTemplate x:DataType="pc:IAiredAnimeEpisode">

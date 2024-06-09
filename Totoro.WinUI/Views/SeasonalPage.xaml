@@ -79,6 +79,7 @@
                 <ItemsView
                     x:Name="AnimeListView"
                     IsItemInvokedEnabled="True"
+                    SelectionMode="None"
                     ItemsSource="{x:Bind ViewModel.Anime}">
                     <ItemsView.ItemTemplate>
                         <DataTemplate x:DataType="cm:AnimeModel">

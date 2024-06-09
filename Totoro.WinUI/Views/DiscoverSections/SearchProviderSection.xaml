@@ -51,6 +51,7 @@
                 <ItemsView
                     x:Name="SearchResultView"
                     IsItemInvokedEnabled="True"
+                    SelectionMode="None"
                     ItemsSource="{x:Bind ViewModel.AnimeSearchResults, Mode=OneWay}">
                     <ItemsView.ItemTemplate>
                         <DataTemplate x:DataType="pc:ICatalogItem">
