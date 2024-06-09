@@ -16,7 +16,7 @@ public class AiredEpisodesProviderTests
     }
 
     [Fact]
-    public async void GetRecentlyAiredEpisodes()
+    public async Task GetRecentlyAiredEpisodes()
     {
         // arrange
         var sut = new AiredEpisodesProvider();

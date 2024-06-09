@@ -20,7 +20,6 @@ using Totoro.WinUI.Helpers;
 using Totoro.WinUI.Models;
 using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
-using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using WinUIEx;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -31,18 +30,12 @@ public partial class App : Application, IEnableLogger
 {
     private static readonly IHost _host = Host
         .CreateDefaultBuilder()
+#if DEBUG
         .ConfigureAppConfiguration(config =>
         {
-            if (RuntimeHelper.IsMSIX)
-            {
-                config.SetBasePath(Package.Current.InstalledLocation.Path)
-                      .AddJsonFile("appsettings.json");
-            }
-
-#if DEBUG
-            config.AddJsonFile("appsettings.Development.json");
-#endif
+            config.AddJsonFile("appsettings.Development.json", true);
         })
+#endif
         .ConfigureServices((context, services) =>
         {
             services.AddPlatformServices()
@@ -198,7 +191,7 @@ public partial class App : Application, IEnableLogger
 #endif
         await GetService<IActivationService>().ActivateAsync(args);
 
-        var actArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        var actArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
         App_Activated(actArgs);
     }
 
@@ -228,7 +221,7 @@ public partial class App : Application, IEnableLogger
     private static void ConfigureLogging()
     {
         var knownFolders = GetService<IKnownFolders>();
-        var log = System.IO.Path.Combine(knownFolders.Logs, "log.txt");
+        var log = Path.Combine(knownFolders.Logs, "log.txt");
         var mimimumLogLevel = GetService<ISettings>().MinimumLogLevel;
         var configuration = new LoggerConfiguration()
                     .Enrich.FromLogContext()

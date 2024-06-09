@@ -87,11 +87,13 @@ public partial class WatchViewModel : NavigatableViewModel
             MediaPlayer.Pause();
             EpisodeModels.SelectNext();
         }, HasNextEpisode(), RxApp.MainThreadScheduler);
+        
         PrevEpisode = ReactiveCommand.Create(() =>
         {
             MediaPlayer.Pause();
             EpisodeModels.SelectPrevious();
         }, HasPrevEpisode(), RxApp.MainThreadScheduler);
+        
         ChangeQuality = ReactiveCommand.Create<string>(quality =>
         {
             SelectedQuality = null;
@@ -102,7 +104,6 @@ public partial class WatchViewModel : NavigatableViewModel
             .WhereNotNull()
             .Select(x => mediaPlayerFactory.Create(x.Value))
             .ToPropertyEx(this, x => x.MediaPlayer, initialValue: null);
-
 
         this.WhenAnyValue(x => x.ProviderType)
             .WhereNotNull()

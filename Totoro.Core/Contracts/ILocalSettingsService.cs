@@ -7,11 +7,6 @@ public interface ILocalSettingsService
     void RemoveSetting(string key);
 }
 
-public interface ILegacyLocalSettingsService : ILocalSettingsService
-{
-
-}
-
 public static class LocalSettingsServiceExtensions
 {
     public static T ReadSetting<T>(this ILocalSettingsService service, Key<T> key)
