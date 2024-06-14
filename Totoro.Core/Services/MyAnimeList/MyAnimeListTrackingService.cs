@@ -66,28 +66,46 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         }
 
         var result = await _client.Anime()
-                        .OfUser()
-                        .IncludeNsfw()
-                        .WithFields(_fieldNames)
-                        .Find();
+            .OfUser()
+            .IncludeNsfw()
+            .WithFields(_fieldNames)
+            .Find();
 
-        foreach (var item in result.Data)
+        foreach (var item in ConvertAndFill(result.Data))
         {
-            var model = ConvertModel(item);
+            yield return item;
+        }
 
-            if (model.Tracking.Status == AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
+        while (!string.IsNullOrEmpty(result.Paging?.Next))
+        {
+            result = await _client.GetNextAnimePage(result);
+
+            foreach (var item in ConvertAndFill(result.Data))
             {
-                Observable
-                    .FromAsync(_ => _anilistService.GetNextAiringEpisode(item.Id), RxApp.TaskpoolScheduler)
-                    .ObserveOn(RxApp.MainThreadScheduler)
-                    .Subscribe(x =>
-                    {
-                        model.AiredEpisodes = x.Episode - 1 ?? 0;
-                        model.NextEpisodeAt = x.Time;
-                    });
+                yield return item;
             }
+        }
 
-            yield return model;
+        IEnumerable<AnimeModel> ConvertAndFill(IEnumerable<MalApi.Anime> anime)
+        {
+            foreach (var item in anime)
+            {
+                var model = ConvertModel(item);
+
+                if (model.Tracking.Status == AnimeStatus.Watching && model.AiringStatus == AiringStatus.CurrentlyAiring)
+                {
+                    Observable
+                        .FromAsync(_ => _anilistService.GetNextAiringEpisode(item.Id), RxApp.TaskpoolScheduler)
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(x =>
+                        {
+                            model.AiredEpisodes = x.Episode - 1 ?? 0;
+                            model.NextEpisodeAt = x.Time;
+                        });
+                }
+
+                yield return model;
+            }
         }
     }
 
