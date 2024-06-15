@@ -76,6 +76,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Connect()
             .RefCount()
             .AutoRefresh(x => x.Tracking)
+            .AutoRefresh(x => x.NextEpisodeAt, propertyChangeThrottle: TimeSpan.FromMilliseconds(500), scheduler: RxApp.MainThreadScheduler)
             .Filter(this.WhenAnyValue(x => x.Filter).SelectMany(x => x.WhenAnyPropertyChanged()).Select(x => (Func<AnimeModel, bool>)x.IsVisible))
             .Sort(sort)
             .Bind(out _anime)
