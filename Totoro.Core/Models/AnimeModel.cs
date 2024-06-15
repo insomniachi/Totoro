@@ -29,7 +29,7 @@ public class AnimeModel : ReactiveObject, IAnimeModel
     public string Description { get; set; }
     public List<Video> Videos { get; set; }
     public Season Season { get; set; }
-    public IEnumerable<string> Genres { get; set; }
+    public IEnumerable<string> Genres { get; set; } = [];
     public AnimeModel[] Related { get; set; } = [];
     public AnimeModel[] Recommended { get; set; } = [];
     public DayOfWeek? BroadcastDay { get; set; }

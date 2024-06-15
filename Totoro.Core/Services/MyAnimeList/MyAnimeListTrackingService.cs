@@ -127,7 +127,6 @@ public class MyAnimeListTrackingService : ITrackingService, IEnableLogger
         {
             yield return item;
         }
-        var data = pagedAnime.Data.Where(CurrentlyAiringOrFinishedToday).Select(ConvertModel).ToList();
 
         while (!string.IsNullOrEmpty(pagedAnime.Paging.Next))
         {
