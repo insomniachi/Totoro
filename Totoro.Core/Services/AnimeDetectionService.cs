@@ -1,4 +1,4 @@
-﻿using AnitomySharp;
+﻿using Anitomy;
 using FuzzySharp;
 using Humanizer;
 using Splat;
@@ -15,16 +15,16 @@ internal class AnimeDetectionService(IViewService viewService,
 
     public Task<long?> DetectFromFileName(string fileName, bool useNotification = false)
     {
-        var anitomyResult = AnitomySharp.AnitomySharp.Parse(fileName);
+        var anitomyResult = Anitomy.Anitomy.Parse(fileName);
 
-        if (anitomyResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle) is not { } titleResult)
+        if (anitomyResult.FirstOrDefault(x => x.Category == ElementCategory.AnimeTitle) is not { } titleResult)
         {
             return null;
         }
 
         var title = titleResult.Value;
 
-        if (anitomyResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeSeason) is { } seasonResult)
+        if (anitomyResult.FirstOrDefault(x => x.Category == ElementCategory.AnimeSeason) is { } seasonResult)
         {
             var season = int.Parse(seasonResult.Value);
             title += $" {season.Ordinalize()} Season";

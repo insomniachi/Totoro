@@ -124,7 +124,7 @@ public class ParserHelper(Parser parser)
     /// <summary>
     /// Returns whether or not the <code>category</code> is searchable.
     /// </summary>
-    public static bool IsElementCategorySearchable(ElementCategory category) => category switch
+    public bool IsElementCategorySearchable(ElementCategory category) => category switch
     {
         ElementCategory.AnimeSeasonPrefix or
         ElementCategory.AnimeType or

@@ -1,5 +1,5 @@
 ﻿using System.Reactive.Concurrency;
-using AnitomySharp;
+using Anitomy;
 using FuzzySharp;
 using Humanizer;
 using MonoTorrent.Client;
@@ -692,8 +692,8 @@ public partial class WatchViewModel : NavigatableViewModel
 
     private async Task InitializeFromTorrentModel(TorrentModel torrent, bool useDebrid)
     {
-        var parsedResult = AnitomySharp.AnitomySharp.Parse(torrent.Name);
-        var titleObj = parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementAnimeTitle);
+        var parsedResult = Anitomy.Anitomy.Parse(torrent.Name);
+        var titleObj = parsedResult.FirstOrDefault(x => x.Category == ElementCategory.AnimeTitle);
         if (titleObj is not null)
         {
             await TrySetAnime(titleObj.Value);

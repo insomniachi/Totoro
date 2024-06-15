@@ -1,4 +1,4 @@
-﻿using AnitomySharp;
+﻿using Anitomy;
 using MonoTorrent;
 using Totoro.Plugins.Anime.Contracts;
 using Totoro.Plugins.Contracts;

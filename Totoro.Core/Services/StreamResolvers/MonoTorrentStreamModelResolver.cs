@@ -1,4 +1,4 @@
-﻿using AnitomySharp;
+﻿using Anitomy;
 using MonoTorrent;
 using MonoTorrent.Client;
 using Totoro.Plugins.Anime.Models;
@@ -31,7 +31,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         _torrentEngine = torrentEngine;
         _settings = settings;
         _torrentUrl = torrentUrl;
-        var folder = parsedResults.First(x => x.Category == Element.ElementCategory.ElementAnimeTitle).Value;
+        var folder = parsedResults.First(x => x.Category == ElementCategory.AnimeTitle).Value;
         _saveDirectory = Path.Combine(settings.UserTorrentsDownloadDirectory, folder);
     }
 
@@ -42,8 +42,8 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         _torrentEngine = torrentEngine;
         _torrent = torrent;
         _settings = settings;
-        var parsedResults = AnitomySharp.AnitomySharp.Parse(torrent.Name);
-        var folder = parsedResults.First(x => x.Category == Element.ElementCategory.ElementAnimeTitle).Value;
+        var parsedResults = Anitomy.Anitomy.Parse(torrent.Name);
+        var folder = parsedResults.First(x => x.Category == ElementCategory.AnimeTitle).Value;
         _saveDirectory = Path.Combine(settings.UserTorrentsDownloadDirectory, folder);
     }
 
@@ -79,8 +79,8 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
         var eps = new EpisodeModelCollection(_settings.SkipFillers);
         foreach (var file in _torrentManager.Torrent.Files.Select(x => x.Path))
         {
-            var result = AnitomySharp.AnitomySharp.Parse(file);
-            if (result.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epResult)
+            var result = Anitomy.Anitomy.Parse(file);
+            if (result.FirstOrDefault(x => x.Category == ElementCategory.EpisodeNumber) is { } epResult)
             {
                 var epModel = new EpisodeModel();
                 _episodeToTorrentFileMap[epResult.Value] = index;

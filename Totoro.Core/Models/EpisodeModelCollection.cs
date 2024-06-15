@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using AnitomySharp;
+using Anitomy;
 using Totoro.Core.Services.Debrid;
 
 namespace Totoro.Core.Models
@@ -121,12 +121,12 @@ namespace Totoro.Core.Models
             {
                 var title = string.Empty;
                 var epString = string.Empty;
-                var parsedResult = AnitomySharp.AnitomySharp.Parse(ddl.FileName, options);
-                if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeTitle) is { } epTitleResult)
+                var parsedResult = Anitomy.Anitomy.Parse(ddl.FileName, options);
+                if (parsedResult.FirstOrDefault(x => x.Category == ElementCategory.EpisodeTitle) is { } epTitleResult)
                 {
                     title = epTitleResult.Value;
                 }
-                if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epNumberResult)
+                if (parsedResult.FirstOrDefault(x => x.Category == ElementCategory.EpisodeNumber) is { } epNumberResult)
                 {
                     epString = epNumberResult.Value;
                     if (int.TryParse(epNumberResult.Value, out int ep))

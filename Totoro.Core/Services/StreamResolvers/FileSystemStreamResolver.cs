@@ -19,8 +19,8 @@ internal class FileSystemStreamResolver(string directory, ISettings settings) : 
                 continue;
             }
 
-            var parseResult = AnitomySharp.AnitomySharp.Parse(fileInfo.Name);
-            var ep = parseResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+            var parseResult = Anitomy.Anitomy.Parse(fileInfo.Name);
+            var ep = parseResult.FirstOrDefault(x => x.Category == Anitomy.ElementCategory.EpisodeNumber)?.Value;
 
             if (!int.TryParse(ep, out int episode))
             {

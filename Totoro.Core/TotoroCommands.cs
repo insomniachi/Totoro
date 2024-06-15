@@ -162,7 +162,7 @@ public class TotoroCommands : IEnableLogger
         });
         DownloadTorrentCommand = ReactiveCommand.Create<TorrentModel>(torrent =>
         {
-            var title = AnitomySharp.AnitomySharp.Parse(torrent.Name).FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle).Value;
+            var title = Anitomy.Anitomy.Parse(torrent.Name).FirstOrDefault(x => x.Category == Anitomy.ElementCategory.AnimeTitle).Value;
 
             if (string.IsNullOrEmpty(title))
             {
