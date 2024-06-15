@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:Totoro.WinUI.Views"
-    xmlns:winex="using:WinUIEx"
+    xmlns:winex="using:WinUIEx" xmlns:help="using:Totoro.WinUI.Helpers"
     mc:Ignorable="d">
     <winex:WindowEx.SystemBackdrop>
         <MicaBackdrop Kind="BaseAlt" />
@@ -17,11 +17,12 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!--<TitleBar
+        <TitleBar
             x:Name="TitleBar"
             Title="Totoro"
-            IsBackButtonVisible="True"
-            Subtitle=""
+            IsBackButtonVisible="{x:Bind ContentSection.ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsPaneToggleButtonVisible="true"
+            Subtitle="Version"
             Grid.Row="0">
             <TitleBar.Footer>
                 <Button
@@ -30,18 +31,18 @@
                     Padding="0"
                     BorderBrush="{ThemeResource CircleElevationBorderBrush}"
                     CornerRadius="16"
-                    ToolTipService.ToolTip="{x:Bind ViewModel.User.Name, Mode=OneWay}"
-                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ViewModel.IsAuthenticated), Mode=OneWay}">
+                    ToolTipService.ToolTip="{x:Bind ContentSection.ViewModel.User.Name, Mode=OneWay}"
+                    Visibility="{x:Bind help:Converters.BooleanToVisibility(ContentSection.ViewModel.IsAuthenticated), Mode=OneWay}">
                     <PersonPicture
                         Width="32"
                         Height="32"
-                        DisplayName="{x:Bind ViewModel.User.Name, Mode=OneWay}"
-                        ProfilePicture="{x:Bind ViewModel.User.Image, Mode=OneWay}" />
+                        DisplayName="{x:Bind ContentSection.ViewModel.User.Name, Mode=OneWay}"
+                        ProfilePicture="{x:Bind ContentSection.ViewModel.User.Image, Mode=OneWay}" />
                 </Button>
             </TitleBar.Footer>
-        </TitleBar>-->
+        </TitleBar>
         
-        <views:ShellPage Grid.Row="1"/>
+        <views:ShellPage Grid.Row="1" x:Name="ContentSection"/>
         
     </Grid>
 </winex:WindowEx>

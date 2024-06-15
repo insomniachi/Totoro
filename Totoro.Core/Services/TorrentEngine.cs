@@ -223,7 +223,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
 
     public async Task SaveState()
     {
-        await _engine.SaveStateAsync(_torrentEngineState);
+        await _engine?.SaveStateAsync(_torrentEngineState);
     }
 
     private void SubscribeEvents(TorrentManager torrentManager)
