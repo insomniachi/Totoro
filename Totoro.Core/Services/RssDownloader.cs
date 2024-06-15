@@ -71,9 +71,9 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
 
     private async Task OnNewTorrentAvailable(RssFeedItem item)
     {
-        var parseResult = AnitomySharp.AnitomySharp.Parse(item.Title);
-        var title = parseResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
-        var episode = parseResult.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+        var parseResult = Anitomy.Anitomy.Parse(item.Title);
+        var title = parseResult.FirstOrDefault(x => x.Category == Anitomy.ElementCategory.AnimeTitle)?.Value;
+        var episode = parseResult.FirstOrDefault(x => x.Category == Anitomy.ElementCategory.EpisodeNumber)?.Value;
 
         if (string.IsNullOrEmpty(title))
         {

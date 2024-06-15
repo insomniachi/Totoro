@@ -1,4 +1,4 @@
-﻿using AnitomySharp;
+﻿using Anitomy;
 using Splat;
 using Totoro.Core.Services.Debrid;
 using Totoro.Plugins.Anime.Models;
@@ -21,8 +21,8 @@ public class DebridStreamModelResolver(IDebridServiceContext debridService,
         var options = new Options(title: false, extension: false, group: false);
         foreach (var item in _links)
         {
-            var parsedResult = AnitomySharp.AnitomySharp.Parse(item.FileName, options);
-            if (parsedResult.FirstOrDefault(x => x.Category == Element.ElementCategory.ElementEpisodeNumber) is { } epString && int.TryParse(epString.Value, out var ep))
+            var parsedResult = Anitomy.Anitomy.Parse(item.FileName, options);
+            if (parsedResult.FirstOrDefault(x => x.Category == ElementCategory.EpisodeNumber) is { } epString && int.TryParse(epString.Value, out var ep))
             {
                 item.Episode = ep;
             }

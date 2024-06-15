@@ -45,9 +45,9 @@
             var eps = new List<int>();
             foreach (var item in Directory.GetFileSystemEntries(dir))
             {
-                var result = AnitomySharp.AnitomySharp.Parse(Path.GetFileName(item));
+                var result = Anitomy.Anitomy.Parse(Path.GetFileName(item));
 
-                if (result.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } epResult)
+                if (result.FirstOrDefault(x => x.Category == Anitomy.ElementCategory.EpisodeNumber) is { } epResult)
                 {
                     eps.Add(int.Parse(epResult.Value));
                 }
@@ -69,9 +69,9 @@
 
             foreach (var item in Directory.GetFileSystemEntries(dir))
             {
-                var result = AnitomySharp.AnitomySharp.Parse(Path.GetFileName(item));
+                var result = Anitomy.Anitomy.Parse(Path.GetFileName(item));
 
-                if (result.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber) is { } epResult && int.Parse(epResult.Value) == ep)
+                if (result.FirstOrDefault(x => x.Category == Anitomy.ElementCategory.EpisodeNumber) is { } epResult && int.Parse(epResult.Value) == ep)
                 {
                     return item;
                 }

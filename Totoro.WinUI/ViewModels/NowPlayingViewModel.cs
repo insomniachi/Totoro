@@ -134,15 +134,15 @@ public class NowPlayingViewModel : NavigatableViewModel
         }
 
         var fileName = await player.TitleChanged.FirstOrDefaultAsync(x => !string.IsNullOrEmpty(x));
-        var parsedResults = AnitomySharp.AnitomySharp.Parse(fileName);
-        var title = parsedResults.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementAnimeTitle)?.Value;
+        var parsedResults = Anitomy.Anitomy.Parse(fileName);
+        var title = parsedResults.FirstOrDefault(x => x.Category == Anitomy.ElementCategory.AnimeTitle)?.Value;
 
         if (string.IsNullOrEmpty(title))
         {
             return;
         }
 
-        Episode = parsedResults.FirstOrDefault(x => x.Category == AnitomySharp.Element.ElementCategory.ElementEpisodeNumber)?.Value;
+        Episode = parsedResults.FirstOrDefault(x => x.Category == Anitomy.ElementCategory.EpisodeNumber)?.Value;
 
         Info =
         [
