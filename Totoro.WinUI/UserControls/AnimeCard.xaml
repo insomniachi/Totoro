@@ -58,12 +58,13 @@
                 <Grid
                     Grid.Row="0"
                     Grid.RowSpan="2"
-                    CornerRadius="5 5 0 0">
+                    CornerRadius="5 5 0 0"
+                    Tapped="ImageEx_Tapped"
+                    Background="{ThemeResource CardBackgroundFillColorDefault}">
                     <Image
                         CacheMode="BitmapCache"
                         Source="{x:Bind Anime.Image, Mode=OneWay}"
-                        Stretch="UniformToFill"
-                        Tapped="ImageEx_Tapped" />
+                        Stretch="UniformToFill" />
                     <Button
                         x:Name="MoreButton"
                         Width="45"
