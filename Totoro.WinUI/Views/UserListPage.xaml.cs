@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using ReactiveMarbles.ObservableEvents;
+using Totoro.Core;
 using Totoro.Core.ViewModels;
 using Totoro.WinUI.Helpers;
 
@@ -15,8 +16,14 @@ public class UserListPageBase : ReactivePage<UserListViewModel> { }
 public sealed partial class UserListPage : UserListPageBase
 {
     public const string DataGridSettingsKey = "UserListDataGridSettings";
+    public static DataGridSettings TableViewSettings { get; }
 
     public static List<int?> Scores { get; } = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    static UserListPage()
+    {
+        TableViewSettings = App.GetService<ILocalSettingsService>().ReadSetting(Settings.UserListDataGridSettings);
+    }
 
     public static string ToStatusString(AnimeStatus status)
     {
@@ -50,9 +57,32 @@ public sealed partial class UserListPage : UserListPageBase
             .Events()
             .Click
             .Subscribe(_ => GenresTeachingTip.IsOpen ^= true);
+
+            AppearanceButton
+            .Events()
+            .Click
+            .Subscribe(_ => GridViewSettingsTeachingTip.IsOpen ^= true);
+
+            this.WhenAnyValue(x => x.ViewModel.Mode)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(mode =>
+                {
+                    AnimeCollectionDataTemplateSelector.Mode = mode;
+                    AnimeCollectionView.Layout = CreateLayout(mode);
+                });
         });
 
         ViewInBrowser = ReactiveCommand.CreateFromTask<AnimeModel>(LaunchUrl);
+    }
+
+    private Layout CreateLayout(DisplayMode mode)
+    {
+        return mode switch
+        {
+            DisplayMode.Grid => CreateUniformGridLayout(ViewModel.GridViewSettings),
+            DisplayMode.List => new StackLayout() { Orientation = Orientation.Vertical, Spacing = 3 },
+            _ => throw new NotSupportedException()
+        };
     }
 
     private async void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -76,11 +106,6 @@ public sealed partial class UserListPage : UserListPageBase
         }
 
         await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
-    }
-
-    private void GenresButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        GenresTeachingTip.IsOpen = true;
     }
 
     private void TokenView_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -126,6 +151,28 @@ public sealed partial class UserListPage : UserListPageBase
         }
 
     }
+
+    private static UniformGridLayout CreateUniformGridLayout(GridViewSettings settings)
+    {
+        BindingBase CreateBinding(string path)
+        {
+            return new Binding()
+            {
+                Source = settings,
+                Path = new PropertyPath(path),
+                Mode = BindingMode.OneWay
+            };
+        }
+
+
+        var layout = new UniformGridLayout() { ItemsStretch = UniformGridLayoutItemsStretch.Fill };
+        BindingOperations.SetBinding(layout, UniformGridLayout.MaximumRowsOrColumnsProperty, CreateBinding(nameof(settings.MaxNumberOfColumns)));
+        BindingOperations.SetBinding(layout, UniformGridLayout.MinRowSpacingProperty, CreateBinding(nameof(settings.SpacingBetweenItems)));
+        BindingOperations.SetBinding(layout, UniformGridLayout.MinColumnSpacingProperty, CreateBinding(nameof(settings.SpacingBetweenItems)));
+        BindingOperations.SetBinding(layout, UniformGridLayout.MinItemHeightProperty, CreateBinding(nameof(settings.ItemHeight)));
+        BindingOperations.SetBinding(layout, UniformGridLayout.MinItemWidthProperty, CreateBinding(nameof(settings.DesiredWidth)));
+        return layout;
+    }
 }
 
 
@@ -150,6 +197,47 @@ public class AiringStatusToBrushConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
         throw new NotImplementedException();
+    }
+}
+
+public class GridLengthConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if(value is double d)
+        {
+            return new GridLength(d, GridUnitType.Pixel);
+        }
+
+        return GridLength.Auto;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        if(value is GridLength { GridUnitType : GridUnitType.Pixel } length)
+        {
+            return length.Value;
+        }
+
+        return null;
+    }
+}
+
+public class AnimeCollectionDataTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate GridTemplate { get; set; }
+    public DataTemplate TableTemplate { get; set; }
+
+    public static DisplayMode Mode { get; set; }
+
+    protected override DataTemplate SelectTemplateCore(object item)
+    {
+        return Mode switch
+        {
+            DisplayMode.Grid => GridTemplate,
+            DisplayMode.List => TableTemplate,
+            _ => base.SelectTemplateCore(item)
+        };
     }
 }
 

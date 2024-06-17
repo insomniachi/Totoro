@@ -18,6 +18,7 @@
     xmlns:uhelp="using:Totoro.WinUI.Helpers"
     xmlns:v="using:Totoro.WinUI.Views"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     Name="Page"
     Margin="{StaticResource MediumLeftRightMargin}"
     d:DataContext="{d:DesignInstance Type=viewmodels:UserListViewModel}"
@@ -29,6 +30,117 @@
             </ResourceDictionary.MergedDictionaries>
             <v:HumanizeConverter x:Key="HumanizeConverter" />
             <v:AiringStatusToBrushConverter x:Key="StatusConverter" />
+            <v:GridLengthConverter x:Key="GridLengthConverter"/>
+            <DataTemplate x:DataType="cm:AnimeModel" x:Key="GridTemplate">
+                <ItemContainer>
+                    <uc:AnimeCard
+                                Margin="3"
+                                Anime="{x:Bind}"
+                                Command="{x:Bind root:App.Commands.AnimeCard}"
+                                ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
+                </ItemContainer>
+            </DataTemplate>
+            <DataTemplate x:DataType="cm:AnimeModel" x:Key="TableTemplate">
+                <ItemContainer>
+                    <Expander ExpandDirection="Down" HorizontalAlignment="Stretch">
+                        <Expander.Header>
+                            <Grid HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[0].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[1].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[2].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[3].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[4].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[5].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Orientation="Horizontal"
+                                            Grid.Column="0">
+                                    <TextBlock VerticalAlignment="Center"
+                                               Text="{x:Bind Title}" TextTrimming="WordEllipsis"/>
+                                    <uc:UnwatchedEpisodesBadge 
+                                        VerticalAlignment="Center"
+                                        Anime="{x:Bind}"
+                                        Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
+                                </StackPanel>
+
+                                <TextBlock VerticalAlignment="Center" Grid.Column="1">
+                                    <Run Text="{x:Bind Season.SeasonName}" />
+                                    <Run Text="{x:Bind Season.Year}" />
+                                </TextBlock>
+
+                                <TextBlock HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Text="{x:Bind MeanScore}"
+                                           Grid.Column="2"/>
+
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}"
+                                    Grid.Column="3"/>
+
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="10"
+                                    Grid.Column="4">
+                                    <Button
+                                        Padding="0"
+                                        Command="{x:Bind root:App.Commands.DecrementTracking}"
+                                        CommandParameter="{x:Bind}">
+                                        <FontIcon FontSize="12" Glyph="&#xECC9;" />
+                                    </Button>
+                                    <TextBlock
+                                        MinWidth="30"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}"
+                                        TextAlignment="Center" />
+                                    <Button
+                                        Padding="0"
+                                        Command="{x:Bind root:App.Commands.IncrementTracking}"
+                                        CommandParameter="{x:Bind}">
+                                        <FontIcon FontSize="12" Glyph="&#xECC8;" />
+                                    </Button>
+                                </StackPanel>
+
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind Tracking.StartDate, Converter={StaticResource HumanizeConverter}}"
+                                    Grid.Column="5"/>
+                            </Grid>
+                        </Expander.Header>
+                        <Expander.Content>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Image
+                                            Width="160"
+                                            Margin="10"
+                                            Source="{x:Bind Image}"
+                                            Stretch="UniformToFill"
+                                            Tapped="ImageTapped" />
+
+                                <StackPanel
+                                            Grid.Column="1"
+                                            Padding="10"
+                                            Spacing="10">
+                                    <TextBlock Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
+                                </StackPanel>
+                            </Grid>
+                        </Expander.Content>
+                    </Expander>
+                </ItemContainer>
+            </DataTemplate>
+            <v:AnimeCollectionDataTemplateSelector GridTemplate="{StaticResource GridTemplate}"
+                                                   TableTemplate="{StaticResource TableTemplate}"
+                                                   x:Key="DataTemplateSelector"/>
         </ResourceDictionary>
     </v:UserListPageBase.Resources>
 
@@ -74,6 +186,7 @@
             <Grid x:Name="ContentArea" Margin="0,30,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="80" />
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -108,36 +221,104 @@
 
                 </Grid>
 
-                <ctk:SwitchPresenter Grid.Row="1" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
+                <Border Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(ViewModel.IsListView), Mode=OneWay}"
+                        Margin="16 0 60 0"
+                        Grid.Row="1">
+                    <Grid HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[0].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[1].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[2].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[3].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[4].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[5].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Title" Grid.Column="0"/>
+
+                        <TextBlock Text="Season" Grid.Column="1"/>
+
+                        <TextBlock Text ="Mean Score" Grid.Column="2" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="User Score" Grid.Column="3" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Progress" Grid.Column="4" HorizontalAlignment="Center"/>
+
+                        <TextBlock Text="Start Date" Grid.Column="5"/>
+
+
+                        <ctk:GridSplitter Grid.Column="1"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          ResizeBehavior="BasedOnAlignment"
+                                          ResizeDirection="Auto">
+                            <ctk:GridSplitter.RenderTransform>
+                                <TranslateTransform Y="-5"/>
+                            </ctk:GridSplitter.RenderTransform>
+                        </ctk:GridSplitter>
+
+                        <ctk:GridSplitter Grid.Column="2"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          ResizeBehavior="BasedOnAlignment"
+                                          ResizeDirection="Auto">
+                            <ctk:GridSplitter.RenderTransform>
+                                <TranslateTransform Y="-5"/>
+                            </ctk:GridSplitter.RenderTransform>
+                        </ctk:GridSplitter>
+
+                        <ctk:GridSplitter Grid.Column="3"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          ResizeBehavior="BasedOnAlignment"
+                                          ResizeDirection="Auto">
+                            <ctk:GridSplitter.RenderTransform>
+                                <TranslateTransform Y="-5"/>
+                            </ctk:GridSplitter.RenderTransform>
+                        </ctk:GridSplitter>
+
+                        <ctk:GridSplitter Grid.Column="4"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          ResizeBehavior="BasedOnAlignment"
+                                          ResizeDirection="Auto">
+                            <ctk:GridSplitter.RenderTransform>
+                                <TranslateTransform Y="-5"/>
+                            </ctk:GridSplitter.RenderTransform>
+                        </ctk:GridSplitter>
+
+                        <ctk:GridSplitter Grid.Column="5"
+                                          HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                          ResizeBehavior="BasedOnAlignment"
+                                          ResizeDirection="Auto">
+                            <ctk:GridSplitter.RenderTransform>
+                                <TranslateTransform Y="-5"/>
+                            </ctk:GridSplitter.RenderTransform>
+                        </ctk:GridSplitter>
+
+                    </Grid>
+                </Border>
+
+                <ctk:SwitchPresenter Grid.Row="2" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
 
                     <!--  Grid View  -->
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}">
-                        <ItemsView ItemsSource="{x:Bind ViewModel.Anime}" SelectionMode="None">
+                    <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}" IsDefault="True">
+                        <ItemsView ItemsSource="{x:Bind ViewModel.Anime}" SelectionMode="None"
+                                   x:Name="AnimeCollectionView"
+                                   ItemTemplate="{StaticResource DataTemplateSelector}" >
                             <ItemsView.ItemTransitionProvider>
                                 <LinedFlowLayoutItemCollectionTransitionProvider />
                             </ItemsView.ItemTransitionProvider>
-                            <ItemsView.ItemTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <ItemContainer>
-                                        <uc:AnimeCard
-                                            Margin="3"
-                                            Anime="{x:Bind}"
-                                            Command="{x:Bind root:App.Commands.AnimeCard}"
-                                            ContextFlyout="{x:Bind uhelp:Converters.AnimeToFlyout((cm:AnimeModel)), Mode=OneWay}" />
-                                    </ItemContainer>
-                                </DataTemplate>
-                            </ItemsView.ItemTemplate>
-                            <ItemsView.Layout>
-                                <UniformGridLayout ItemsStretch="Fill" />
-                            </ItemsView.Layout>
-                            <Interactivity:Interaction.Behaviors>
-                                <b:ItemsViewBehavior Settings="{x:Bind ViewModel.GridViewSettings}" />
-                            </Interactivity:Interaction.Behaviors>
                         </ItemsView>
                     </ctk:Case>
 
                     <!--  Table View  -->
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
+                    <ctk:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
                         <uc:DataGrid
                             x:Name="ListDataGrid"
                             AlternatingRowBackground="{ThemeResource SubtleFillColorTransparentBrush}"
@@ -352,22 +533,65 @@
 
                 </ctk:SwitchPresenter>
 
-                <Grid Grid.Row="1">
+                <Grid Grid.Row="2">
                     <TeachingTip
                         x:Name="GenresTeachingTip"
                         PreferredPlacement="Bottom"
                         Target="{x:Bind GenresButton}">
-                        <labs:TokenView
-                            x:Name="GenresView"
-                            IsWrapped="True"
-                            ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}"
-                            SelectionChanged="TokenView_SelectionChanged"
-                            SelectionMode="Multiple" />
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="Filter by Genres" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                            <labs:TokenView
+                                x:Name="GenresView"
+                                IsWrapped="True"
+                                ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}"
+                                SelectionChanged="TokenView_SelectionChanged"
+                                SelectionMode="Multiple" />
+                        </StackPanel>
+                    </TeachingTip>
+                    <TeachingTip x:Name="GridViewSettingsTeachingTip"
+                                 Target="{x:Bind AppearanceButton}">
+                        <TeachingTip.Content>
+                            <StackPanel Spacing="10" Width="550">
+                                <TextBlock Text="Appearance" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                                <ctk:SettingsCard Header="Rset to Defaults">
+                                    <Button Content="Reset"
+                                        Style="{ThemeResource AccentButtonStyle}" />
+                                </ctk:SettingsCard>
+                                <ctk:SettingsCard Description="Value -1 means auto calculate number of columns based on item height and width"
+                                              Header="Max Number of Columns"
+                                              HeaderIcon="{ui:FontIcon Glyph=&#xF0E2;}">
+                                    <NumberBox
+                                    Maximum="20"
+                                    Minimum="-1"
+                                    SpinButtonPlacementMode="Inline"
+                                    Value="{x:Bind ViewModel.GridViewSettings.MaxNumberOfColumns, Mode=TwoWay}" />
+                                </ctk:SettingsCard>
+                                <ctk:SettingsCard Header="Item Height" HeaderIcon="{ui:FontIcon Glyph=&#xE76F;}">
+                                    <NumberBox
+                                    Minimum="100"
+                                    SpinButtonPlacementMode="Inline"
+                                    Value="{x:Bind ViewModel.GridViewSettings.ItemHeight, Mode=TwoWay}" />
+                                </ctk:SettingsCard>
+                                <ctk:SettingsCard Header="Desired Item Width" HeaderIcon="{ui:FontIcon Glyph=&#xE784;}">
+                                    <NumberBox
+                                    Minimum="100"
+                                    SpinButtonPlacementMode="Inline"
+                                    Value="{x:Bind ViewModel.GridViewSettings.DesiredWidth, Mode=TwoWay}" />
+                                </ctk:SettingsCard>
+                                <ctk:SettingsCard Header="Spacing Between Items" HeaderIcon="{ui:FontIcon Glyph=&#xF573;}">
+                                    <NumberBox
+                                    Maximum="20"
+                                    Minimum="0"
+                                    SpinButtonPlacementMode="Inline"
+                                    Value="{x:Bind ViewModel.GridViewSettings.SpacingBetweenItems, Mode=TwoWay}" />
+                                </ctk:SettingsCard>
+                            </StackPanel>
+                        </TeachingTip.Content>
                     </TeachingTip>
                 </Grid>
 
                 <!--  Bottom Command Bar  -->
-                <Grid Grid.Row="2" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
+                <Grid Grid.Row="3" Background="{ThemeResource SystemControlBackgroundChromeMediumBrush}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
@@ -420,6 +644,7 @@
                         Grid.Column="1"
                         DefaultLabelPosition="Right"
                         IsDynamicOverflowEnabled="False">
+                        
                         <AppBarButton Label="Columns" Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(ViewModel.IsListView), Mode=OneWay}">
                             <AppBarButton.Icon>
                                 <FontIcon Glyph="&#xE8B3;" />
@@ -441,6 +666,14 @@
                                 </MenuFlyout>
                             </AppBarButton.Flyout>
                         </AppBarButton>
+
+                        <AppBarButton Label="Appearance" Visibility="{x:Bind uhelp:Converters.InvertedBooleanToVisibility(ViewModel.IsListView)}"
+                                      x:Name="AppearanceButton">
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xf0e2;" />
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+                        
                         <AppBarButton
                             x:Name="SortButton"
                             Icon="Sort"
@@ -504,14 +737,17 @@
                                 </MenuFlyout>
                             </AppBarButton.Flyout>
                         </AppBarButton>
+                        
                         <AppBarButton
                             x:Name="QuickAdd"
                             Icon="Add"
                             Label="Quick Add" />
+                        
                         <AppBarButton
                             Command="{x:Bind ViewModel.RefreshCommand}"
                             Icon="Refresh"
                             Label="Refresh" />
+                        
                         <AppBarButton Icon="View" Label="Display mode">
                             <AppBarButton.Flyout>
                                 <MenuFlyout>
