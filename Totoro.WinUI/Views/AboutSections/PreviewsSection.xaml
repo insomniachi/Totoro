@@ -12,6 +12,7 @@
 
     <ItemsView
         Margin="{StaticResource LargeTopMargin}"
+        SelectionMode="None"
         IsItemInvokedEnabled="True"
         ItemInvoked="PlayVideo"
         ItemsSource="{x:Bind ViewModel.Anime.Videos, Mode=OneWay}">

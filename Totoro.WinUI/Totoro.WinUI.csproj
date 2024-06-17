@@ -115,6 +115,10 @@
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <SubType>Designer</SubType>
 		</Page>
+		<Page Update="Views\AboutSections\EpisodesSection.xaml">
+		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Views\DiscoverSections\MyAnimeListDiscoverSection.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

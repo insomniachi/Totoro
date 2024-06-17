@@ -5,6 +5,7 @@ using Refit;
 using Totoro.Core.Services;
 using Totoro.Core.Services.AniList;
 using Totoro.Core.Services.Aniskip;
+using Totoro.Core.Services.Anizip;
 using Totoro.Core.Services.Debrid;
 using Totoro.Core.Services.MediaEvents;
 using Totoro.Core.Services.MyAnimeList;
@@ -57,6 +58,7 @@ namespace Totoro.Core
             services.AddTransient<ISimklService, SimklService>();
             services.AddTransient<IVideoStreamResolverFactory, VideoStreamResolverFactory>();
             services.AddTransient<IAnimeDetectionService, AnimeDetectionService>();
+            services.AddTransient<IEpisodesInfoProvider, AnizipEpisodeInfoProvider>();
 
             services.AddTransient<IMediaEventListener, MediaSessionStateStorage>();
             services.AddTransient<IMediaEventListener, TrackingUpdater>();

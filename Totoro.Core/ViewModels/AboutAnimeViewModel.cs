@@ -2,8 +2,6 @@
 using Totoro.Core.ViewModels.About;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
-using Totoro.Plugins.Contracts;
-using Totoro.Plugins.Torrents.Contracts;
 
 namespace Totoro.Core.ViewModels;
 
@@ -15,14 +13,11 @@ public class AboutAnimeViewModel : NavigatableViewModel
     public ObservableCollection<PivotItemModel> Pages { get; }
 
     public AboutAnimeViewModel(IAnimeServiceContext animeService,
-                               IViewService viewService,
                                IAnimeSoundsService animeSoundService,
-                               IPluginFactory<ITorrentTracker> torrentCatalogFactory,
                                ISettings settings,
-                               IMyAnimeListService myAnimeListService,
                                IAnimeIdService animeIdService,
-                               IDebridServiceContext debridServiceContext,
-                               ISimklService simklService)
+                               ISimklService simklService,
+                               IEpisodesInfoProvider episodesInfoProvider)
     {
         _sectionsList
             .Connect()
@@ -37,6 +32,11 @@ public class AboutAnimeViewModel : NavigatableViewModel
         {
             Header = "Previews",
             ViewModel = typeof(PreviewsViewModel)
+        });
+        _sectionsList.Add(new PivotItemModel
+        {
+            Header = "Episodes",
+            ViewModel = typeof(AnimeEpisodesViewModel)
         });
         _sectionsList.Add(new PivotItemModel
         {
@@ -68,41 +68,57 @@ public class AboutAnimeViewModel : NavigatableViewModel
         this.WhenAnyValue(x => x.Anime)
             .WhereNotNull()
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(anime =>
+            .Subscribe(async anime =>
             {
                 var previewsItem = _sectionsList.Items.ElementAt(0);
-                var relatedItem = _sectionsList.Items.ElementAt(1);
-                var recommendedItem = _sectionsList.Items.ElementAt(2);
-                var ostsItem = _sectionsList.Items.ElementAt(3);
-                var torrentsItem = _sectionsList.Items.ElementAt(4);
+                var episodesItem = _sectionsList.Items.ElementAt(1);
+                var relatedItem = _sectionsList.Items.ElementAt(2);
+                var recommendedItem = _sectionsList.Items.ElementAt(3);
+                var ostsItem = _sectionsList.Items.ElementAt(4);
+                var torrentsItem = _sectionsList.Items.ElementAt(5);
                 var sounds = animeSoundService.GetThemes(anime.Id);
+                var episodes = await episodesInfoProvider.GetEpisodeInfos(anime.Id, GetServiceName(settings.DefaultListService)).ToListAsync();
+
+                if (episodes.FirstOrDefault() is { EpisodeNumber: > 1 } first)
+                {
+                    var offset = first.EpisodeNumber - 1;
+                    foreach (var episode in episodes)
+                    {
+                        episode.EpisodeNumber -= offset;
+                    }
+                }
 
                 previewsItem.NavigationParameters = new()
                 {
                     [nameof(PreviewsViewModel.Anime)] = anime
                 };
-                relatedItem.NavigationParameters = new() 
+                episodesItem.NavigationParameters = new()
                 {
-                    [nameof(AnimeCardListViewModel.Anime)] = anime.Related.ToList() 
+                    [nameof(AnimeEpisodesViewModel.Anime)] = anime,
+                    [nameof(AnimeEpisodesViewModel.Episodes)] = episodes
                 };
-                recommendedItem.NavigationParameters = new() 
+                relatedItem.NavigationParameters = new()
+                {
+                    [nameof(AnimeCardListViewModel.Anime)] = anime.Related.ToList()
+                };
+                recommendedItem.NavigationParameters = new()
                 {
                     [nameof(AnimeCardListViewModel.Anime)] = anime.Recommended.ToList()
                 };
-                ostsItem.NavigationParameters = new() 
+                ostsItem.NavigationParameters = new()
                 {
-                    [nameof(OriginalSoundTracksViewModel.Sounds)] = sounds 
+                    [nameof(OriginalSoundTracksViewModel.Sounds)] = sounds
                 };
                 torrentsItem.NavigationParameters = new()
                 {
                     [nameof(AnimeEpisodesTorrentViewModel.Anime)] = anime
                 };
 
-                if (anime.Videos is not { Count: > 0})
+                if (anime.Videos is not { Count: > 0 })
                 {
                     previewsItem.Visible = false;
                 }
-                if(anime.Related is not { Length : > 0})
+                if (anime.Related is not { Length: > 0 })
                 {
                     relatedItem.Visible = false;
                 }
@@ -113,6 +129,10 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 if (sounds is not { Count: > 0 })
                 {
                     ostsItem.Visible = false;
+                }
+                if (episodes is not { Count: > 0 })
+                {
+                    episodesItem.Visible = false;
                 }
 
                 SelectedSection = null;
@@ -190,6 +210,18 @@ public class AboutAnimeViewModel : NavigatableViewModel
         }
 
         return Task.CompletedTask;
+    }
+
+    private static string GetServiceName(ListServiceType type)
+    {
+        return type switch
+        {
+            ListServiceType.MyAnimeList => @"mal_id",
+            ListServiceType.AniList => @"anilist_id",
+            ListServiceType.AniDb => @"anidb_id",
+            ListServiceType.Kitsu => @"kitsu_id",
+            _ => throw new NotSupportedException()
+        };
     }
 
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:EpisodesSectionBase
+    x:Class="Totoro.WinUI.Views.AboutSections.EpisodesSection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cm="using:Totoro.Core.Services.Anizip"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Totoro.WinUI.Views.AboutSections"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:root="using:Totoro.WinUI"
+    xmlns:uc="using:Totoro.WinUI.UserControls"
+    xmlns:ctk="using:CommunityToolkit.WinUI.Controls"
+    mc:Ignorable="d">
+
+    <ItemsView
+        x:Name="EpisodesView"
+        Margin="{StaticResource LargeTopMargin}"
+        IsItemInvokedEnabled="True"
+        ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+        ItemInvoked="EpisodesView_ItemInvoked"
+        SelectionMode="None">
+        <ItemsView.ItemTemplate>
+            <DataTemplate x:DataType="cm:EpisodeInfo">
+                <ItemContainer Background="{ThemeResource CardBackgroundFillColorDefault}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ctk:ConstrainedBox AspectRatio="16:9">
+                            <uc:ImageEx Source="{x:Bind Image}"
+                                        Stretch="UniformToFill" 
+                                        Width="360"
+                                        PlaceholderSource="/Assets/placeholder.jpg"
+                                        PlaceholderStretch="Fill"/>
+                        </ctk:ConstrainedBox>
+
+                        <StackPanel Grid.Column="1" Padding="10" Spacing="5">
+                            <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}"
+                                       Margin="0 0 0 8">
+                                <Run Text="Episode" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <Run Text="{x:Bind EpisodeNumber}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <Run Text=":" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <Run Text="{x:Bind Titles.English}"/>
+                            </TextBlock>
+                            <StackPanel Orientation="Horizontal" Spacing="5" Margin="0 0 0 8">
+                                <SymbolIcon Symbol="CalendarDay"/>
+                                <TextBlock Text="{x:Bind AirDate}" Margin="0 0 16 0"/>
+                                <SymbolIcon Symbol="Clock"/>
+                                <TextBlock>
+                                    <Run Text="{x:Bind Runtime}"/>
+                                    <Run Text="Min"/>
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Text="{x:Bind Overview}" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
+                        </StackPanel>
+                    </Grid>
+                </ItemContainer>
+            </DataTemplate>
+        </ItemsView.ItemTemplate>
+        <ItemsView.Layout>
+            <StackLayout Spacing="10"/>
+        </ItemsView.Layout>
+    </ItemsView>
+
+</local:EpisodesSectionBase>

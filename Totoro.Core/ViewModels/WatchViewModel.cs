@@ -22,6 +22,7 @@ public class WatchViewModelParamters
     public const string TorrentManager = "TorrentManager";
     public const string Anime = "Anime";
     public const string EpisodeInfo = "EpisodeInfo";
+    public const string EpisodeNumber = "EpisodeNumber";
     public const string AnimeId = "Id";
     public const string SearchResult = "SearchResult";
     public const string UseDebrid = "UseDebrid";
@@ -352,6 +353,10 @@ public partial class WatchViewModel : NavigatableViewModel
         _isCrunchyroll = _settings.DefaultProviderType == "consumet" && _providerOptions.GetString("Provider", "zoro") == "crunchyroll";
         SelectedAudioStream = GetDefaultAudioStream();
 
+        if (parameters.ContainsKey(WatchViewModelParamters.EpisodeNumber))
+        {
+            _episodeRequest = (int)parameters[WatchViewModelParamters.EpisodeNumber];
+        }
         if (parameters.ContainsKey(WatchViewModelParamters.Anime))
         {
             var anime = parameters[WatchViewModelParamters.Anime] as AnimeModel;

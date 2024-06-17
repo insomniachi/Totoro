@@ -148,6 +148,7 @@ public static class ServiceCollectionExtensions
         // About Anime
         services.AddPageForNavigation<AnimeCardListViewModel, AnimeCardListSection>();
         services.AddPageForNavigation<PreviewsViewModel, PreviewsSection>();
+        services.AddPageForNavigation<AnimeEpisodesViewModel, EpisodesSection>();
         services.AddPageForNavigation<OriginalSoundTracksViewModel, OriginalSoundTracksSection>();
         services.AddPageForNavigation<AnimeEpisodesTorrentViewModel, EpisodesTorrentsSection>();
 
