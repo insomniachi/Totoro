@@ -31,20 +31,27 @@
                         <ctk:ConstrainedBox AspectRatio="16:9">
                             <uc:ImageEx Source="{x:Bind Image}"
                                         Stretch="UniformToFill" 
-                                        Width="360"
+                                        Height="240"
+                                        Width="427"
                                         PlaceholderSource="/Assets/placeholder.jpg"
                                         PlaceholderStretch="Fill"/>
                         </ctk:ConstrainedBox>
 
-                        <StackPanel Grid.Column="1" Padding="10" Spacing="5">
+                        <Grid Grid.Column="1" Padding="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
                             <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}"
                                        Margin="0 0 0 8">
-                                <Run Text="Episode" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <Run Text="{x:Bind EpisodeNumber}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                                <Run Text=":" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <Run Text="Episode" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                                <Run Text="{x:Bind EpisodeNumber}" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                                <Run Text=":" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
                                 <Run Text="{x:Bind Titles.English}"/>
                             </TextBlock>
-                            <StackPanel Orientation="Horizontal" Spacing="5" Margin="0 0 0 8">
+                            <StackPanel Orientation="Horizontal" Spacing="5" Margin="0 0 0 8"
+                                        Grid.Row="1">
                                 <SymbolIcon Symbol="CalendarDay"/>
                                 <TextBlock Text="{x:Bind AirDate}" Margin="0 0 16 0"/>
                                 <SymbolIcon Symbol="Clock"/>
@@ -53,14 +60,19 @@
                                     <Run Text="Min"/>
                                 </TextBlock>
                             </StackPanel>
-                            <TextBlock Text="{x:Bind Overview}" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
-                        </StackPanel>
+                            <ScrollView Grid.Row="2">
+                                <TextBlock Text="{x:Bind Overview}" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords"/>
+                            </ScrollView>
+                        </Grid>
                     </Grid>
                 </ItemContainer>
             </DataTemplate>
         </ItemsView.ItemTemplate>
         <ItemsView.Layout>
-            <StackLayout Spacing="10"/>
+            <UniformGridLayout ItemsStretch="Fill" 
+                               MinColumnSpacing="10"
+                               MinRowSpacing="10"
+                               MinItemWidth="1000"/>
         </ItemsView.Layout>
     </ItemsView>
 

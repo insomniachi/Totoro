@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.Xaml.Interactivity;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core.ViewModels;
@@ -35,13 +36,22 @@ public class SelectorBarBehavior : Behavior<SelectorBar>
             .Subscribe(values =>
             {
                 AssociatedObject.Items.Clear();
-                foreach (var item in values.Where(x => x.Visible))
+                foreach (var item in values)
                 {
-                    AssociatedObject.Items.Add(new SelectorBarItem
+                    var barItem = new SelectorBarItem
                     {
                         Text = item.Header,
-                        FontSize = 20
+                        FontSize = 20,
+                    };
+
+                    barItem.SetBinding(UIElement.VisibilityProperty, new Binding
+                    {
+                        Source = item,
+                        Path = new PropertyPath(nameof(item.Visible)),
+                        Mode = BindingMode.OneWay
                     });
+
+                    AssociatedObject.Items.Add(barItem);
                 }
 
                 if (SelectedItem is null)

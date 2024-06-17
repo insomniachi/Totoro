@@ -7,8 +7,6 @@ namespace Totoro.Core.ViewModels;
 
 public class AboutAnimeViewModel : NavigatableViewModel
 {
-    private readonly SourceList<PivotItemModel> _sectionsList = new();
-    private readonly ReadOnlyObservableCollection<PivotItemModel> _sections;
 
     public ObservableCollection<PivotItemModel> Pages { get; }
 
@@ -19,45 +17,39 @@ public class AboutAnimeViewModel : NavigatableViewModel
                                ISimklService simklService,
                                IEpisodesInfoProvider episodesInfoProvider)
     {
-        _sectionsList
-            .Connect()
-            .RefCount()
-            .AutoRefresh(x => x.Visible)
-            .Filter(x => x.Visible)
-            .Bind(out _sections)
-            .Subscribe()
-            .DisposeWith(Garbage);
-
-        _sectionsList.Add(new PivotItemModel
-        {
-            Header = "Previews",
-            ViewModel = typeof(PreviewsViewModel)
-        });
-        _sectionsList.Add(new PivotItemModel
-        {
-            Header = "Episodes",
-            ViewModel = typeof(AnimeEpisodesViewModel)
-        });
-        _sectionsList.Add(new PivotItemModel
-        {
-            Header = "Related",
-            ViewModel = typeof(AnimeCardListViewModel),
-        });
-        _sectionsList.Add(new PivotItemModel
-        {
-            Header = "Recommended",
-            ViewModel = typeof(AnimeCardListViewModel),
-        });
-        _sectionsList.Add(new PivotItemModel
-        {
-            Header = "OST",
-            ViewModel = typeof(OriginalSoundTracksViewModel),
-        });
-        _sectionsList.Add(new PivotItemModel
-        {
-            Header = "Torrents",
-            ViewModel = typeof(AnimeEpisodesTorrentViewModel)
-        });
+        Sections = new(
+            [
+                new PivotItemModel
+                {
+                    Header = "Previews",
+                    ViewModel = typeof(PreviewsViewModel)
+                },
+                new PivotItemModel
+                {
+                    Header = "Episodes",
+                    ViewModel = typeof(AnimeEpisodesViewModel)
+                },
+                new PivotItemModel
+                {
+                    Header = "Related",
+                    ViewModel = typeof(AnimeCardListViewModel),
+                },
+                new PivotItemModel
+                {
+                    Header = "Recommended",
+                    ViewModel = typeof(AnimeCardListViewModel),
+                },
+                new PivotItemModel
+                {
+                    Header = "OST",
+                    ViewModel = typeof(OriginalSoundTracksViewModel),
+                },
+                new PivotItemModel
+                {
+                    Header = "Torrents",
+                    ViewModel = typeof(AnimeEpisodesTorrentViewModel)
+                }
+            ]);
 
         ListType = settings.DefaultListService;
         if (PluginFactory<AnimeProvider>.Instance.Plugins.FirstOrDefault(x => x.Name == settings.DefaultProviderType) is { } provider)
@@ -70,14 +62,15 @@ public class AboutAnimeViewModel : NavigatableViewModel
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(async anime =>
             {
-                var previewsItem = _sectionsList.Items.ElementAt(0);
-                var episodesItem = _sectionsList.Items.ElementAt(1);
-                var relatedItem = _sectionsList.Items.ElementAt(2);
-                var recommendedItem = _sectionsList.Items.ElementAt(3);
-                var ostsItem = _sectionsList.Items.ElementAt(4);
-                var torrentsItem = _sectionsList.Items.ElementAt(5);
                 var sounds = animeSoundService.GetThemes(anime.Id);
                 var episodes = await episodesInfoProvider.GetEpisodeInfos(anime.Id, GetServiceName(settings.DefaultListService)).ToListAsync();
+
+                var previewsItem = Sections[0];
+                var episodesItem = Sections[1];
+                var relatedItem = Sections[2];
+                var recommendedItem = Sections[3];
+                var ostsItem = Sections[4];
+                var torrentsItem = Sections[5];
 
                 if (episodes.FirstOrDefault() is { EpisodeNumber: > 1 } first)
                 {
@@ -133,10 +126,12 @@ public class AboutAnimeViewModel : NavigatableViewModel
                 if (episodes is not { Count: > 0 })
                 {
                     episodesItem.Visible = false;
+                    torrentsItem.Visible = false;
                 }
 
                 SelectedSection = null;
                 SelectedSection = Sections.FirstOrDefault();
+                IsLoading = false;
             });
 
         this.ObservableForProperty(x => x.Id, x => x)
@@ -147,7 +142,6 @@ public class AboutAnimeViewModel : NavigatableViewModel
             .Subscribe(x =>
             {
                 Anime = x;
-                IsLoading = false;
             }, RxApp.DefaultExceptionHandler.OnError);
 
         this.WhenAnyValue(x => x.Anime)
@@ -194,7 +188,7 @@ public class AboutAnimeViewModel : NavigatableViewModel
     [ObservableAsProperty] public bool CanWatch { get; }
     [ObservableAsProperty] public bool HasTracking { get; }
 
-    public ReadOnlyObservableCollection<PivotItemModel> Sections => _sections;
+    public ReadOnlyObservableCollection<PivotItemModel> Sections { get; }
     public string DefaultProviderType { get; }
     public ListServiceType ListType { get; }
 
