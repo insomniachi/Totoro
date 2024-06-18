@@ -336,6 +336,7 @@
 
                 </Grid>
 
+                <!--Table Header of Table View-->
                 <Border Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(ViewModel.IsListView), Mode=OneWay}"
                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                         Padding="26 0 60 0"
@@ -368,6 +369,7 @@
                     </ItemsControl>
                 </Border>
 
+                <!--Anime List-->
                 <ItemsView ItemsSource="{x:Bind ViewModel.Anime}"
                            SelectionMode="None"
                            Grid.Row="2"
@@ -378,6 +380,7 @@
                     </ItemsView.ItemTransitionProvider>
                 </ItemsView>
 
+                <!--Teaching Tips-->
                 <Grid Grid.Row="2">
                     <TeachingTip
                         x:Name="GenresTeachingTip"
@@ -484,17 +487,21 @@
                                     <RadioMenuFlyoutItem
                                         Click="AiringStatusClicked"
                                         IsChecked="True"
+                                        GroupName="AiringStatus"
                                         Text="All" />
                                     <RadioMenuFlyoutItem
                                         Click="AiringStatusClicked"
+                                        GroupName="AiringStatus"
                                         Tag="{x:Bind cm:AiringStatus.CurrentlyAiring}"
                                         Text="Currently airing" />
                                     <RadioMenuFlyoutItem
                                         Click="AiringStatusClicked"
+                                        GroupName="AiringStatus"
                                         Tag="{x:Bind cm:AiringStatus.NotYetAired}"
                                         Text="Not yet aired" />
                                     <RadioMenuFlyoutItem
                                         Click="AiringStatusClicked"
+                                        GroupName="AiringStatus"
                                         Tag="{x:Bind cm:AiringStatus.FinishedAiring}"
                                         Text="Finished airing" />
                                 </MenuFlyout>
@@ -540,7 +547,7 @@
                             Icon="Sort"
                             Label="Sort">
                             <AppBarButton.Flyout>
-                                <MenuFlyout>
+                                <MenuFlyout x:Name="SortingFlyout">
                                     <RadioMenuFlyoutItem
                                         Command="{x:Bind ViewModel.SetSortProperty}"
                                         CommandParameter="Title"
@@ -609,23 +616,20 @@
                         
                         <AppBarButton Icon="View" Label="Display mode">
                             <AppBarButton.Flyout>
-                                <MenuFlyout>
-                                    <MenuFlyoutItem
+                                <MenuFlyout x:Name="DisplayModeFlyout">
+                                    <RadioMenuFlyoutItem
                                         Command="{x:Bind ViewModel.SetDisplayMode}"
                                         CommandParameter="{x:Bind cm:DisplayMode.Grid}"
-                                        Text="Grid view">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xf0e2;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
-                                    <MenuFlyoutItem
+                                        GroupName="Display Mode"
+                                        Text="Grid view"
+                                        Icon="{ui:FontIcon Glyph=&#xf0e2;}"/>
+
+                                    <RadioMenuFlyoutItem
                                         Command="{x:Bind ViewModel.SetDisplayMode}"
                                         CommandParameter="{x:Bind cm:DisplayMode.List}"
-                                        Text="List view">
-                                        <MenuFlyoutItem.Icon>
-                                            <FontIcon Glyph="&#xf0e4;" />
-                                        </MenuFlyoutItem.Icon>
-                                    </MenuFlyoutItem>
+                                        GroupName="Display Mode"
+                                        Text="Table view"
+                                        Icon="{ui:FontIcon Glyph=&#xf0e4;}"/>
                                 </MenuFlyout>
                             </AppBarButton.Flyout>
                         </AppBarButton>

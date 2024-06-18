@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Labs.WinUI;
+using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -68,6 +69,42 @@ public sealed partial class UserListPage : UserListPageBase
                 {
                     AnimeCollectionDataTemplateSelector.Mode = mode;
                     AnimeCollectionView.Layout = CreateLayout(mode);
+                });
+
+            this.WhenAnyValue(x => x.ViewModel.SelectedSortProperty)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(property =>
+                {
+                    if (SortingFlyout.Items.OfType<RadioMenuFlyoutItem>().FirstOrDefault(x => x.CommandParameter?.Equals(property) == true) is not { } rm)
+                    {
+                        return;
+                    }
+
+                    rm.IsChecked = true;
+                });
+
+            this.WhenAnyValue(x => x.ViewModel.IsSortByAscending)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(isAscending =>
+                {
+                    if (SortingFlyout.Items.OfType<RadioMenuFlyoutItem>().FirstOrDefault(x => x.CommandParameter?.Equals(isAscending) == true && x.GroupName == @"2") is not { } rm)
+                    {
+                        return;
+                    }
+
+                    rm.IsChecked = true;
+                });
+
+            this.WhenAnyValue(x => x.ViewModel.Mode)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(mode =>
+                {
+                    if (DisplayModeFlyout.Items.OfType<RadioMenuFlyoutItem>().FirstOrDefault(x => x.CommandParameter?.Equals(mode) == true) is not { } rm)
+                    {
+                        return;
+                    }
+
+                    rm.IsChecked = true;
                 });
         });
     }

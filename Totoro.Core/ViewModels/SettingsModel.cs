@@ -91,6 +91,8 @@ public class SettingsModel : ReactiveObject, ISettings
         UserListTableViewSettings
             .OnColumnChanged()
             .Merge(UserListTableViewSettings.OnColumnVisibilityChanged())
+            .Select(_ => Unit.Default)
+            .Merge(UserListTableViewSettings.WhenAnyValue(x => x.Sort).Select(_ => Unit.Default))
             .Subscribe(_ => _localSettingsService.SaveSetting(Settings.UserListTableViewSettings, UserListTableViewSettings));
 
         ObserveObject(TorrentSearchOptions, Settings.TorrentSearchOptions);
