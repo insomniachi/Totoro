@@ -42,7 +42,7 @@
             </DataTemplate>
             <DataTemplate x:DataType="cm:AnimeModel" x:Key="TableTemplate">
                 <ItemContainer>
-                    <Expander ExpandDirection="Down" HorizontalAlignment="Stretch">
+                    <Expander ExpandDirection="Down" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                         <Expander.Header>
                             <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
 
@@ -53,9 +53,10 @@
                                     <TextBlock VerticalAlignment="Center"
                                             Text="{x:Bind Title}" TextTrimming="WordEllipsis"/>
                                     <uc:UnwatchedEpisodesBadge 
-                                    VerticalAlignment="Center"
-                                    Anime="{x:Bind}"
-                                    Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
+                                        VerticalAlignment="Center"
+                                        Anime="{x:Bind}"
+                                        Style="{ThemeResource AttentionValueInfoBadgeStyle}" 
+                                        Margin="{StaticResource SmallLeftMargin}"/>
                                 </StackPanel>
 
                                 <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[1].Width, Mode=OneWay}"
@@ -151,23 +152,101 @@
                             </StackPanel>
                         </Expander.Header>
                         <Expander.Content>
-                            <Grid HorizontalAlignment="Stretch">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Image
-                                            Width="160"
-                                            Margin="10"
-                                            Source="{x:Bind Image}"
-                                            Stretch="UniformToFill"
-                                            Tapped="ImageTapped" />
+                                    Margin="10"
+                                    Source="{x:Bind Image}"
+                                    Stretch="None" />
 
                                 <StackPanel
-                                            Grid.Column="1"
-                                            Padding="10"
-                                            Spacing="10">
+                                    Grid.Column="1"
+                                    Padding="10"
+                                    Spacing="10">
+
+                                    <StackPanel>
+                                        <TextBlock Text="{x:Bind EngTitle}" Style="{ThemeResource TitleTextBlockStyle}"/>
+                                        <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}">
+                                            <Run Text="("/>
+                                            <Run Text="{x:Bind RomajiTitle}"/>
+                                            <Run Text=")"/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <labs:TokenView ItemsSource="{x:Bind Genres}"
+                                                    SelectionMode="None"
+                                                    IsWrapped="True"/>
+
                                     <TextBlock Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
+
+                                    <TextBlock Margin="0 10">
+                                        <Hyperlink ui:HyperlinkExtensions.Command="{x:Bind v:UserListPage.ViewInBrowser}"
+                                                   ui:HyperlinkExtensions.CommandParameter="{x:Bind}">
+                                            View in browser
+                                        </Hyperlink>
+                                    </TextBlock>
+
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <Button
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind root:App.Commands.More}"
+                                            CommandParameter="{x:Bind}">
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <StackPanel
+                                                      HorizontalAlignment="Stretch"
+                                                      Orientation="Horizontal"
+                                                      Spacing="10">
+                                                    <SymbolIcon Symbol="More" />
+                                                    <TextBlock Text="More Details" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                        <Button
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind root:App.Commands.UpdateTracking}"
+                                            CommandParameter="{x:Bind}">
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <StackPanel
+                                                      HorizontalAlignment="Stretch"
+                                                      Orientation="Horizontal"
+                                                      Spacing="10">
+                                                    <SymbolIcon Symbol="Edit" />
+                                                    <TextBlock Text="Update Tracking" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                        <Button
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind root:App.Commands.SetPreferences}"
+                                            CommandParameter="{x:Bind Id}">
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <StackPanel
+                                                      HorizontalAlignment="Stretch"
+                                                      Orientation="Horizontal"
+                                                      Spacing="10">
+                                                    <SymbolIcon Symbol="Setting" />
+                                                    <TextBlock Text="Edit Preferences" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                        <SplitButton
+                                            Command="{x:Bind root:App.Commands.Watch}"
+                                            CommandParameter="{x:Bind}"
+                                            Flyout="{x:Bind uhelp:Converters.GetProvidersFlyout((cm:AnimeModel)), Mode=OneWay}">
+                                            <Grid>
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <SymbolIcon Symbol="Video" />
+                                                    <TextBlock>
+                                                        <Run Text="Watch" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </SplitButton>
+                                    </StackPanel>
                                 </StackPanel>
                             </Grid>
                         </Expander.Content>
@@ -449,7 +528,7 @@
                             </AppBarButton.Flyout>
                         </AppBarButton>
 
-                        <AppBarButton Label="Appearance" Visibility="{x:Bind uhelp:Converters.InvertedBooleanToVisibility(ViewModel.IsListView)}"
+                        <AppBarButton Label="Appearance" Visibility="{x:Bind uhelp:Converters.InvertedBooleanToVisibility(ViewModel.IsListView), Mode=OneWay}"
                                       x:Name="AppearanceButton">
                             <AppBarButton.Icon>
                                 <FontIcon Glyph="&#xf0e2;" />

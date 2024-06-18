@@ -31,7 +31,12 @@ public sealed partial class UserListPage : UserListPageBase
         };
     }
 
-    public ICommand ViewInBrowser { get; }
+    public static ICommand ViewInBrowser { get; }
+
+    static UserListPage()
+    {
+        ViewInBrowser = ReactiveCommand.CreateFromTask<AnimeModel>(LaunchUrl);
+    }
 
     public UserListPage()
     {
@@ -65,8 +70,6 @@ public sealed partial class UserListPage : UserListPageBase
                     AnimeCollectionView.Layout = CreateLayout(mode);
                 });
         });
-
-        ViewInBrowser = ReactiveCommand.CreateFromTask<AnimeModel>(LaunchUrl);
     }
 
     private Layout CreateLayout(DisplayMode mode)
@@ -79,15 +82,9 @@ public sealed partial class UserListPage : UserListPageBase
         };
     }
 
-    private async void ImageTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    private static async Task LaunchUrl(AnimeModel anime)
     {
-        var anime = ((Image)sender).DataContext as AnimeModel;
-        await LaunchUrl(anime);
-    }
-
-    private async Task LaunchUrl(AnimeModel anime)
-    {
-        var url = ViewModel.ListType switch
+        var url = App.GetService<ISettings>().DefaultListService switch
         {
             ListServiceType.MyAnimeList => $@"https://myanimelist.net/anime/{anime.Id}/",
             ListServiceType.AniList => $@"https://anilist.co/anime/{anime.Id}/",
@@ -174,6 +171,12 @@ public sealed partial class UserListPage : UserListPageBase
         ViewModel.GridViewSettings.SpacingBetweenItems = defaultSettings.SpacingBetweenItems;
         ViewModel.GridViewSettings.DesiredWidth = defaultSettings.DesiredWidth;
         ViewModel.GridViewSettings.ImageStretch = defaultSettings.ImageStretch;
+    }
+
+    private async void HyperlinkButton_Click(object sender, RoutedEventArgs e)
+    {
+        var anime = ((HyperlinkButton)sender).DataContext as AnimeModel;
+        await LaunchUrl(anime);
     }
 }
 
