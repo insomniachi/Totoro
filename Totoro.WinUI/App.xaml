@@ -24,7 +24,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <x:Double x:Key="TeachingTipMinHeight">40</x:Double>
-            <x:Double x:Key="TeachingTipMaxHeight">520</x:Double>
+            <x:Double x:Key="TeachingTipMaxHeight">1000</x:Double>
             <x:Double x:Key="TeachingTipMinWidth">20</x:Double>
             <x:Double x:Key="TeachingTipMaxWidth">600</x:Double>
 

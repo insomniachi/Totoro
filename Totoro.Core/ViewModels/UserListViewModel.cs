@@ -85,9 +85,14 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Subscribe(_ => FetchAnime())
             .DisposeWith(Garbage);
 
-        this.WhenAnyValue(x => x.Mode)
+        settings
+            .WhenAnyValue(x => x.ListDisplayMode)
             .Select(x => x == DisplayMode.List)
-            .ToPropertyEx(this, x => x.IsListView);
+            .ToPropertyEx(this, x => x.IsListView)
+            .DisposeWith(Garbage);
+
+        this.WhenAnyValue(x => x.Mode)
+            .Subscribe(m => settings.ListDisplayMode = m);
 
         Observable.Timer(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1))
             .Where(_ => Mode == DisplayMode.Grid)
@@ -181,12 +186,10 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
         state.AddOrUpdate(_animeCache.Items, nameof(Anime));
         state.AddOrUpdate(Filter);
-        state.AddOrUpdate(Mode);
     }
 
     public void RestoreState(IState state)
     {
-        Mode = state.GetValue<DisplayMode>(nameof(Mode));
         var anime = state.GetValue<IEnumerable<AnimeModel>>(nameof(Anime));
         _animeCache.Edit(x => x.AddOrUpdate(anime));
         Filter = state.GetValue<AnimeCollectionFilter>(nameof(Filter));

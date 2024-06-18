@@ -1,6 +1,9 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using Totoro.WinUI.Helpers;
+using Totoro.WinUI.Views;
 
 namespace Totoro.WinUI.UserControls;
 
@@ -18,6 +21,7 @@ public sealed partial class AnimeCard : UserControl
         DependencyProperty.Register("HasMeanScore", typeof(bool), typeof(AnimeCard), new PropertyMetadata(false));
 
     private static readonly ISettings _settings = App.GetService<ISettings>();
+    private static readonly IValueConverter _converter = new FuncValueConverter<ImageStretch, Stretch>(x => (Stretch)(int)x);
 
     public bool HasMeanScore
     {
@@ -64,6 +68,13 @@ public sealed partial class AnimeCard : UserControl
             .Do(anime => ShowNextEpisodeTime = anime.NextEpisodeAt is not null)
             .SelectMany(x => x.WhenAnyValue(y => y.NextEpisodeAt).DistinctUntilChanged())
             .Subscribe(date => ShowNextEpisodeTime = date is not null);
+
+        BindingOperations.SetBinding(GridViewImage, Image.StretchProperty, new Binding
+        {
+            Source = _settings.UserListGridViewSettings,
+            Path = new PropertyPath(nameof(_settings.UserListGridViewSettings.ImageStretch)),
+            Converter = _converter
+        });
 
         Loaded += (_, _) =>
         {

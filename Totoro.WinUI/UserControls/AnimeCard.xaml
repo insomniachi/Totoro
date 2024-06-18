@@ -63,8 +63,8 @@
                     Background="{ThemeResource CardBackgroundFillColorDefault}">
                     <Image
                         CacheMode="BitmapCache"
-                        Source="{x:Bind Anime.Image, Mode=OneWay}"
-                        Stretch="UniformToFill" />
+                        x:Name="GridViewImage"
+                        Source="{x:Bind Anime.Image, Mode=OneWay}" />
                     <Button
                         x:Name="MoreButton"
                         Width="45"

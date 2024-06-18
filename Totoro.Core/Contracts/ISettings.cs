@@ -58,4 +58,7 @@ public class GridViewSettings : ReactiveObject
     [Reactive] public double SpacingBetweenItems { get; set; } = 6;
     [Reactive] public double ItemHeight { get; set; } = 380;
     [Reactive] public double DesiredWidth { get; set; } = 240;
+    [Reactive] public LayoutItemsStretch LayoutItemsStrech { get; set; } = LayoutItemsStretch.Fill;
+    [Reactive] public LayoutItemJustification LayoutItemJustification { get; set;}
+    [Reactive] public ImageStretch ImageStretch { get; set; } = ImageStretch.UniformToFill;
 }

@@ -115,18 +115,26 @@ public sealed partial class UserListPage : UserListPageBase
 
     private static UniformGridLayout CreateUniformGridLayout(GridViewSettings settings)
     {
-        BindingBase CreateBinding(string path)
+        Binding CreateBinding(string path)
         {
             return new Binding()
             {
                 Source = settings,
                 Path = new PropertyPath(path),
-                Mode = BindingMode.OneWay
+                Mode = BindingMode.OneWay,
             };
         }
 
+        Binding CreateBindingWithConverter<TSource,TTarget>(string path, Func<TSource,TTarget> converter)
+        {
+            var binding = CreateBinding(path);
+            binding.Converter = new FuncValueConverter<TSource,TTarget>(converter);
+            return binding;
+        }
 
-        var layout = new UniformGridLayout() { ItemsStretch = UniformGridLayoutItemsStretch.Fill };
+        var layout = new UniformGridLayout();
+        BindingOperations.SetBinding(layout, UniformGridLayout.ItemsStretchProperty, CreateBindingWithConverter(nameof(settings.LayoutItemsStrech), (LayoutItemsStretch x) => (UniformGridLayoutItemsStretch)(int)x));
+        BindingOperations.SetBinding(layout, UniformGridLayout.ItemsJustificationProperty, CreateBindingWithConverter(nameof(settings.LayoutItemJustification), (LayoutItemJustification x) => (UniformGridLayoutItemsJustification)(int)x));
         BindingOperations.SetBinding(layout, UniformGridLayout.MaximumRowsOrColumnsProperty, CreateBinding(nameof(settings.MaxNumberOfColumns)));
         BindingOperations.SetBinding(layout, UniformGridLayout.MinRowSpacingProperty, CreateBinding(nameof(settings.SpacingBetweenItems)));
         BindingOperations.SetBinding(layout, UniformGridLayout.MinColumnSpacingProperty, CreateBinding(nameof(settings.SpacingBetweenItems)));
@@ -151,6 +159,21 @@ public sealed partial class UserListPage : UserListPageBase
             item.Width = col.Width;
             item.IsVisible = col.IsVisible;
         }
+    }
+
+    private void ResetGridView(TeachingTip sender, object args)
+    {
+        var defaultSettings = new GridViewSettings();
+
+        using var delay = ViewModel.GridViewSettings.DelayChangeNotifications();
+
+        ViewModel.GridViewSettings.ItemHeight = defaultSettings.ItemHeight;
+        ViewModel.GridViewSettings.LayoutItemJustification = defaultSettings.LayoutItemJustification;
+        ViewModel.GridViewSettings.LayoutItemsStrech = defaultSettings.LayoutItemsStrech;
+        ViewModel.GridViewSettings.MaxNumberOfColumns = defaultSettings.MaxNumberOfColumns;
+        ViewModel.GridViewSettings.SpacingBetweenItems = defaultSettings.SpacingBetweenItems;
+        ViewModel.GridViewSettings.DesiredWidth = defaultSettings.DesiredWidth;
+        ViewModel.GridViewSettings.ImageStretch = defaultSettings.ImageStretch;
     }
 }
 
@@ -194,6 +217,21 @@ public class AnimeCollectionDataTemplateSelector : DataTemplateSelector
             DisplayMode.List => TableTemplate,
             _ => base.SelectTemplateCore(item)
         };
+    }
+}
+
+public class FuncValueConverter<TSource, TTarget>(Func<TSource, TTarget> converter) : IValueConverter
+{
+    private readonly Func<TSource, TTarget> _converter = converter;
+
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        return _converter((TSource)value);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotImplementedException();
     }
 }
 

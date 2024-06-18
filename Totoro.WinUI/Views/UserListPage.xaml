@@ -303,6 +303,7 @@
                     <TeachingTip
                         x:Name="GenresTeachingTip"
                         PreferredPlacement="Bottom"
+                        IsLightDismissEnabled="True"
                         Target="{x:Bind GenresButton}">
                         <StackPanel Spacing="10">
                             <TextBlock Text="Filter by Genres" Style="{ThemeResource SubtitleTextBlockStyle}"/>
@@ -315,13 +316,29 @@
                         </StackPanel>
                     </TeachingTip>
                     <TeachingTip x:Name="GridViewSettingsTeachingTip"
-                                 Target="{x:Bind AppearanceButton}">
+                                 Target="{x:Bind AppearanceButton}"
+                                 IsLightDismissEnabled="True"
+                                 ActionButtonContent="Reset To Defaults"
+                                 ActionButtonClick="ResetGridView"
+                                 CloseButtonContent="Close">
                         <TeachingTip.Content>
                             <StackPanel Spacing="10" Width="550">
                                 <TextBlock Text="Appearance" Style="{ThemeResource SubtitleTextBlockStyle}"/>
-                                <ctk:SettingsCard Header="Rset to Defaults">
-                                    <Button Content="Reset"
-                                        Style="{ThemeResource AccentButtonStyle}" />
+                                <ctk:SettingsCard Description="indicates how items are sized to fill the available space."
+                                                  Header="Items Stretch">
+                                    <ComboBox ItemsSource="{ui:EnumValues Type=cm:LayoutItemsStretch}"
+                                              SelectedItem="{x:Bind ViewModel.GridViewSettings.LayoutItemsStrech, Mode=TwoWay}"/>
+                                </ctk:SettingsCard>
+                                <ctk:SettingsCard Description="indicates how items are aligned on the non-scrolling or non-virtualizing axis."
+                                                  Header="Items Justification">
+                                    <ComboBox ItemsSource="{ui:EnumValues Type=cm:LayoutItemJustification}"
+                                              SelectedItem="{x:Bind ViewModel.GridViewSettings.LayoutItemJustification, Mode=TwoWay}"/>
+                                </ctk:SettingsCard>
+                                <ctk:SettingsCard Description="describes how an Image should be stretched to fill the destination rectangle"
+                                                  Header="Image Stretch"
+                                                  HeaderIcon="{ui:FontIcon Glyph=&#xE8B9;}">
+                                    <ComboBox ItemsSource="{ui:EnumValues Type=cm:ImageStretch}"
+                                              SelectedItem="{x:Bind ViewModel.GridViewSettings.ImageStretch, Mode=TwoWay}"/>
                                 </ctk:SettingsCard>
                                 <ctk:SettingsCard Description="Value -1 means auto calculate number of columns based on item height and width"
                                               Header="Max Number of Columns"
