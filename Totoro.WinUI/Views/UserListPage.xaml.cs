@@ -17,7 +17,20 @@ public sealed partial class UserListPage : UserListPageBase
     public static DataGridSettings TableViewSettings { get; private set; }
 
     public static List<int?> Scores { get; } = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    private static readonly ISettings _settings = App.GetService<ISettings>();
 
+
+
+    public DisplayMode Mode
+    {
+        get { return (DisplayMode)GetValue(ModeProperty); }
+        set { SetValue(ModeProperty, value); }
+    }
+
+    public static readonly DependencyProperty ModeProperty =
+        DependencyProperty.Register("Mode", typeof(DisplayMode), typeof(UserListPage), new PropertyMetadata(DisplayMode.Grid));
+
+    
     public static string ToStatusString(AnimeStatus status)
     {
         return status switch
@@ -33,20 +46,25 @@ public sealed partial class UserListPage : UserListPageBase
     }
 
     public static ICommand ViewInBrowser { get; }
+    public ICommand SetDisplayMode { get; }
 
     static UserListPage()
     {
+
         ViewInBrowser = ReactiveCommand.CreateFromTask<AnimeModel>(LaunchUrl);
     }
 
     public UserListPage()
     {
         TableViewSettings = SettingsModel.UserListTableViewSettings;
+        SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
 
         InitializeComponent();
 
         this.WhenActivated(d =>
         {
+            Mode = _settings.ListDisplayMode;
+
             QuickAdd
             .Events()
             .Click
@@ -63,12 +81,13 @@ public sealed partial class UserListPage : UserListPageBase
             .Click
             .Subscribe(_ => GridViewSettingsTeachingTip.IsOpen ^= true);
 
-            this.WhenAnyValue(x => x.ViewModel.Mode)
+            this.WhenAnyValue(x => x.Mode)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(mode =>
                 {
                     AnimeCollectionDataTemplateSelector.Mode = mode;
                     AnimeCollectionView.Layout = CreateLayout(mode);
+                    _settings.ListDisplayMode = mode;
                 });
 
             this.WhenAnyValue(x => x.ViewModel.SelectedSortProperty)
@@ -95,7 +114,7 @@ public sealed partial class UserListPage : UserListPageBase
                     rm.IsChecked = true;
                 });
 
-            this.WhenAnyValue(x => x.ViewModel.Mode)
+            this.WhenAnyValue(x => x.Mode)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(mode =>
                 {
@@ -106,6 +125,22 @@ public sealed partial class UserListPage : UserListPageBase
 
                     rm.IsChecked = true;
                 });
+
+            Observable.Timer(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1))
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Where(_ => Mode == DisplayMode.Grid)
+                .Subscribe(_ =>
+                {
+                    try
+                    {
+                        foreach (var item in ViewModel.Anime.Where(x => x.NextEpisodeAt is not null))
+                        {
+                            item.RaisePropertyChanged(nameof(item.NextEpisodeAt));
+                        }
+                    }
+                    catch { }
+                }, RxApp.DefaultExceptionHandler.OnError)
+                .DisposeWith(ViewModel.Garbage);
         });
     }
 

@@ -50,14 +50,6 @@
                 SelectedItem="{x:Bind ViewModel.Settings.ListDisplayMode, Mode=TwoWay}" />
         </labs:SettingsCard>
 
-        <labs:SettingsCard
-            Command="{x:Bind ViewModel.Navigate}"
-            CommandParameter="Grid View Settings"
-            Description="Customize how anime is displayed in a grid"
-            Header="Grid View Settings"
-            HeaderIcon="{ui:FontIcon Glyph=&#xf0e2;}"
-            IsClickEnabled="True" />
-
         <TextBlock
             FontSize="16"
             FontWeight="SemiBold"

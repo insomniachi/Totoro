@@ -276,7 +276,14 @@
                     HorizontalAlignment="Center"
                     CornerRadius="5" />
 
-                <loadingviews:CardGridLoadingView Grid.Row="1" />
+                <ctk:SwitchPresenter Value="{x:Bind Mode, Mode=OneWay}" Grid.Row="1">
+                    <ctk:Case IsDefault="True" Value="{x:Bind cm:DisplayMode.Grid}">
+                        <loadingviews:CardGridLoadingView/>
+                    </ctk:Case>
+                    <ctk:Case Value="{x:Bind cm:DisplayMode.List}">
+                        <loadingviews:TableLoadingView/>
+                    </ctk:Case>
+                </ctk:SwitchPresenter>
             </Grid>
         </ctk:Case>
 
@@ -618,14 +625,14 @@
                             <AppBarButton.Flyout>
                                 <MenuFlyout x:Name="DisplayModeFlyout">
                                     <RadioMenuFlyoutItem
-                                        Command="{x:Bind ViewModel.SetDisplayMode}"
+                                        Command="{x:Bind SetDisplayMode}"
                                         CommandParameter="{x:Bind cm:DisplayMode.Grid}"
                                         GroupName="Display Mode"
                                         Text="Grid view"
                                         Icon="{ui:FontIcon Glyph=&#xf0e2;}"/>
 
                                     <RadioMenuFlyoutItem
-                                        Command="{x:Bind ViewModel.SetDisplayMode}"
+                                        Command="{x:Bind SetDisplayMode}"
                                         CommandParameter="{x:Bind cm:DisplayMode.List}"
                                         GroupName="Display Mode"
                                         Text="Table view"

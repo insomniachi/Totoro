@@ -32,10 +32,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
 
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState, this.WhenAnyValue(x => x.ViewState).Select(x => x is not ViewState.Loading));
-        SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
         SetSortProperty = ReactiveCommand.Create<string>(columnName => SelectedSortProperty = columnName);
         SetSortOrder = ReactiveCommand.Create<bool>(isAscending => IsSortByAscending = isAscending);
-        Mode = settings.ListDisplayMode;
         GridViewSettings = settings.UserListGridViewSettings;
         DataGridSettings = SettingsModel.UserListTableViewSettings;
         (SelectedSortProperty, IsSortByAscending) = DataGridSettings.Sort;
@@ -90,29 +88,9 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Select(x => x == DisplayMode.List)
             .ToPropertyEx(this, x => x.IsListView)
             .DisposeWith(Garbage);
-
-        this.WhenAnyValue(x => x.Mode)
-            .Subscribe(m => settings.ListDisplayMode = m);
-
-        Observable.Timer(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1))
-            .Where(_ => Mode == DisplayMode.Grid)
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(_ =>
-            {
-                try
-                {
-                    foreach (var item in Anime.Where(x => x.NextEpisodeAt is not null))
-                    {
-                        item.RaisePropertyChanged(nameof(item.NextEpisodeAt));
-                    }
-                }
-                catch { }
-            }, RxApp.DefaultExceptionHandler.OnError)
-            .DisposeWith(Garbage);
     }
 
     [Reactive] public ViewState ViewState { get; set; }
-    [Reactive] public DisplayMode Mode { get; set; }
     [Reactive] public List<string> Genres { get; set; }
     [Reactive] public AnimeCollectionFilter Filter { get; set; } = new();
     [Reactive] public DataGridSettings DataGridSettings { get; set; }
