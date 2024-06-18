@@ -153,9 +153,9 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
 
             column.DisplayIndex = model.DisplayIndex;
             column.Visibility = Converters.BooleanToVisibility(model.IsVisible);
-            column.Width = model.Width is null
-                ? DataGridLength.Auto
-                : new DataGridLength(model.Width.Value, DataGridLengthUnitType.Pixel);
+            //column.Width = model.Width is null
+            //    ? DataGridLength.Auto
+            //    : new DataGridLength(model.Width.Value, DataGridLengthUnitType.Pixel);
         }
     }
 }

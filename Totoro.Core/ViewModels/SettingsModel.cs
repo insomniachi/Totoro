@@ -5,7 +5,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.Core.ViewModels;
 
-internal class SettingsModel : ReactiveObject, ISettings
+public class SettingsModel : ReactiveObject, ISettings
 {
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IDiscordRichPresense _dRpc;
@@ -51,6 +51,7 @@ internal class SettingsModel : ReactiveObject, ISettings
         StartupOptions = localSettingsService.ReadSetting(Settings.StartupOptions);
         ListDisplayMode = localSettingsService.ReadSetting(Settings.ListDisplayMode);
         UserListGridViewSettings = localSettingsService.ReadSetting(Settings.UserListGridViewSettings);
+        UserListTableViewSettings = localSettingsService.ReadSetting(Settings.UserListTableViewSettings);
         DefaultMangaProviderType = localSettingsService.ReadSetting(Settings.DefaultMangaProviderType);
         SkipFillers = localSettingsService.ReadSetting(Settings.SkipFillers);
         UseEnglishTitles = localSettingsService.ReadSetting(Settings.UseEnglishTitles);
@@ -86,6 +87,11 @@ internal class SettingsModel : ReactiveObject, ISettings
         LibraryFolders
             .ToObservableChangeSet()
             .Subscribe(_ => _localSettingsService.SaveSetting(Settings.LibraryFolders, LibraryFolders));
+
+        UserListTableViewSettings
+            .OnColumnChanged()
+            .Merge(UserListTableViewSettings.OnColumnVisibilityChanged())
+            .Subscribe(_ => _localSettingsService.SaveSetting(Settings.UserListTableViewSettings, UserListTableViewSettings));
 
         ObserveObject(TorrentSearchOptions, Settings.TorrentSearchOptions);
         ObserveObject(StartupOptions, Settings.StartupOptions);
@@ -142,6 +148,7 @@ internal class SettingsModel : ReactiveObject, ISettings
     [Reactive] public StartupOptions StartupOptions { get; set; }
     [Reactive] public DisplayMode ListDisplayMode { get; set; }
     [Reactive] public GridViewSettings UserListGridViewSettings { get; set; }
+    public static DataGridSettings UserListTableViewSettings { get; set; }
     [Reactive] public string DefaultMangaProviderType { get; set; }
     [Reactive] public bool SkipFillers { get; set; }
     [Reactive] public bool UseEnglishTitles { get; set; }

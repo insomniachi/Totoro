@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Labs.WinUI;
-using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -8,22 +7,15 @@ using Microsoft.UI.Xaml.Media;
 using ReactiveMarbles.ObservableEvents;
 using Totoro.Core;
 using Totoro.Core.ViewModels;
-using Totoro.WinUI.Helpers;
 
 namespace Totoro.WinUI.Views;
 
 public class UserListPageBase : ReactivePage<UserListViewModel> { }
 public sealed partial class UserListPage : UserListPageBase
 {
-    public const string DataGridSettingsKey = "UserListDataGridSettings";
-    public static DataGridSettings TableViewSettings { get; }
+    public static DataGridSettings TableViewSettings { get; private set; }
 
     public static List<int?> Scores { get; } = [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-    static UserListPage()
-    {
-        TableViewSettings = App.GetService<ILocalSettingsService>().ReadSetting(Settings.UserListDataGridSettings);
-    }
 
     public static string ToStatusString(AnimeStatus status)
     {
@@ -43,6 +35,8 @@ public sealed partial class UserListPage : UserListPageBase
 
     public UserListPage()
     {
+        TableViewSettings = SettingsModel.UserListTableViewSettings;
+
         InitializeComponent();
 
         this.WhenActivated(d =>
@@ -113,43 +107,10 @@ public sealed partial class UserListPage : UserListPageBase
         ViewModel.Filter.Genres = new ObservableCollection<string>(((TokenView)sender).SelectedItems.Cast<string>());
     }
 
-    private void AiringStatusClicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void AiringStatusClicked(object sender, RoutedEventArgs e)
     {
         var btn = (RadioMenuFlyoutItem)sender;
         ViewModel.Filter.AiringStatus = btn.Tag is AiringStatus status ? status : (AiringStatus?)null;
-    }
-
-    private void OnSaveColumnWidths(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        foreach (var column in ListDataGrid.Columns)
-        {
-            if (ViewModel.DataGridSettings.Columns.FirstOrDefault(x => x.Name == (string)column.Tag) is not { } model)
-            {
-                continue;
-            }
-
-            model.Width = column.ActualWidth;
-        }
-    }
-
-    private void OnLoadingRow(object sender, DataGridRowEventArgs e)
-    {
-        e.Row.ContextFlyout = Converters.AnimeToFlyout(e.Row.DataContext as AnimeModel);
-    }
-
-    private void SortButton_Loaded(object sender, RoutedEventArgs e)
-    {
-        var flyout = ((MenuFlyout)((AppBarButton)sender).Flyout);
-        if (flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "1").FirstOrDefault(x => (string)x.CommandParameter == ViewModel.DataGridSettings.Sort.ColumnName) is RadioMenuFlyoutItem column)
-        {
-            column.IsChecked = true;
-        }
-
-        if (flyout.Items.OfType<RadioMenuFlyoutItem>().Where(x => x.GroupName == "2").FirstOrDefault(x => ViewModel.DataGridSettings.Sort.IsAscending == (bool)x.CommandParameter) is RadioMenuFlyoutItem order)
-        {
-            order.IsChecked = true;
-        }
-
     }
 
     private static UniformGridLayout CreateUniformGridLayout(GridViewSettings settings)
@@ -172,6 +133,24 @@ public sealed partial class UserListPage : UserListPageBase
         BindingOperations.SetBinding(layout, UniformGridLayout.MinItemHeightProperty, CreateBinding(nameof(settings.ItemHeight)));
         BindingOperations.SetBinding(layout, UniformGridLayout.MinItemWidthProperty, CreateBinding(nameof(settings.DesiredWidth)));
         return layout;
+    }
+
+    private void ResetColumns(object sender, RoutedEventArgs e)
+    {
+        var defaultSettings = Settings.GetDefaultUserListDataGridSettings();
+
+        using var delay = TableViewSettings.DelayChangeNotifications();
+
+        foreach (var item in TableViewSettings.Columns)
+        {
+            if(defaultSettings.Columns.FirstOrDefault(x => x.Name == item.Name) is not { } col)
+            {
+                continue;
+            }
+
+            item.Width = col.Width;
+            item.IsVisible = col.IsVisible;
+        }
     }
 }
 
@@ -197,29 +176,6 @@ public class AiringStatusToBrushConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
         throw new NotImplementedException();
-    }
-}
-
-public class GridLengthConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        if(value is double d)
-        {
-            return new GridLength(d, GridUnitType.Pixel);
-        }
-
-        return GridLength.Auto;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-    {
-        if(value is GridLength { GridUnitType : GridUnitType.Pixel } length)
-        {
-            return length.Value;
-        }
-
-        return null;
     }
 }
 

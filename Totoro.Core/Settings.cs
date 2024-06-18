@@ -38,7 +38,8 @@ public static class Settings
     public static Key<ObservableCollection<string>> LibraryFolders { get; } = new("LibraryFolders", []);
     public static Key<StartupOptions> StartupOptions { get; } = new("StartupOptions", () => new StartupOptions());
     public static Key<DisplayMode> ListDisplayMode { get; } = new("ListDisplayMode", DisplayMode.Grid);
-    public static Key<DataGridSettings> UserListDataGridSettings { get; } = new("UserListDataGridSettings", GetDefaultUserListDataGridSettings);
+    [Obsolete] public static Key<DataGridSettings> UserListDataGridSettings { get; } = new("UserListDataGridSettings", GetDefaultUserListDataGridSettings);
+    public static Key<DataGridSettings> UserListTableViewSettings { get; } = new("UserListTableViewSettings", GetDefaultUserListDataGridSettings);
     public static Key<GridViewSettings> UserListGridViewSettings { get; } = new("UserListGridViewSettings", new GridViewSettings());
     public static Key<string> DefaultMangaProviderType { get; } = new("DefaultMangaProviderType", "manga-dex");
     public static Key<bool> SkipFillers { get; } = new("SkipFillers", false);
@@ -69,52 +70,61 @@ public static class Settings
                 new()
                 {
                     Name = "Season",
+                    Width = 129,
                     DisplayIndex = 1,
                 },
                 new()
                 {
-                    Name = "Mean Score",
+                    Name = "Average Score",
+                    Width = 124,
                     DisplayIndex = 2,
                 },
                 new()
                 {
                     Name = "User Score",
+                    Width = 109,
                     DisplayIndex = 3,
                 },
                 new()
                 {
                     Name = "Tracking",
+                    Width = 165,
                     DisplayIndex = 4,
                 },
                 new()
                 {
                     Name = "Date Started",
                     DisplayIndex = 5,
-                    IsVisible = false
+                    Width = 143,
+                    IsVisible = false,
                 },
                 new()
                 {
                     Name = "Date Completed",
                     DisplayIndex = 6,
-                    IsVisible = false
+                    Width = 151,
+                    IsVisible = false,
                 },
                 new()
                 {
                     Name = "Last Updated",
                     DisplayIndex = 7,
-                    IsVisible = false
+                    Width = 163,
+                    IsVisible = false,
                 },
                 new()
                 {
                     Name = "Type",
                     DisplayIndex = 8,
-                    IsVisible = false
+                    Width = 109,
+                    IsVisible = false,
                 },
                 new()
                 {
                     Name = "Next Episode",
                     DisplayIndex = 9,
-                    IsVisible = false
+                    Width = 162,
+                    IsVisible = false,
                 }
             ]
         };

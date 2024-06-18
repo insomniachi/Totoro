@@ -74,7 +74,7 @@ public class HumanizeConverter : IValueConverter
             {
                 DateTime d when d == new DateTime() => "-",
                 DateTime d => (d - DateTime.Now).Humanize(2),
-                _ => DependencyProperty.UnsetValue
+                _ => "-"
             };
         }
 

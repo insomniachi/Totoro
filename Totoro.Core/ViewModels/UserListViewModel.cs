@@ -22,8 +22,7 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IViewService viewService,
                              ISettings settings,
-                             IConnectivityService connectivityService,
-                             ILocalSettingsService localSettingsService)
+                             IConnectivityService connectivityService)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -34,13 +33,11 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         ChangeCurrentViewCommand = ReactiveCommand.Create<AnimeStatus>(x => Filter.ListStatus = x);
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState, this.WhenAnyValue(x => x.ViewState).Select(x => x is not ViewState.Loading));
         SetDisplayMode = ReactiveCommand.Create<DisplayMode>(x => Mode = x);
-        ResetDataGridColumns = ReactiveCommand.Create(() => DataGridSettings = Settings.GetDefaultUserListDataGridSettings());
-        SaveDataGridSettings = ReactiveCommand.Create(() => localSettingsService.SaveSetting(Settings.UserListDataGridSettings, DataGridSettings));
         SetSortProperty = ReactiveCommand.Create<string>(columnName => SelectedSortProperty = columnName);
         SetSortOrder = ReactiveCommand.Create<bool>(isAscending => IsSortByAscending = isAscending);
         Mode = settings.ListDisplayMode;
-        DataGridSettings = localSettingsService.ReadSetting(Settings.UserListDataGridSettings);
         GridViewSettings = settings.UserListGridViewSettings;
+        DataGridSettings = SettingsModel.UserListTableViewSettings;
         (SelectedSortProperty, IsSortByAscending) = DataGridSettings.Sort;
         CheckNewColumns();
 
@@ -48,7 +45,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .WhereNotNull()
             .SelectMany(settings => settings.WhenAnyValue(x => x.Sort))
             .DistinctUntilChanged()
-            .Do(_ => SaveDataGridSettings.Execute(Unit.Default))
             .Select(x => GetSortComparer(x, settings.UseEnglishTitles));
 
         this.WhenAnyValue(x => x.SelectedSortProperty, x => x.IsSortByAscending)

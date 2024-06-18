@@ -18,7 +18,7 @@
     xmlns:uhelp="using:Totoro.WinUI.Helpers"
     xmlns:v="using:Totoro.WinUI.Views"
     xmlns:viewmodels="using:Totoro.Core.ViewModels"
-    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:ui="using:CommunityToolkit.WinUI" xmlns:torrentingsections="using:Totoro.WinUI.Views.TorrentingSections"
     Name="Page"
     Margin="{StaticResource MediumLeftRightMargin}"
     d:DataContext="{d:DesignInstance Type=viewmodels:UserListViewModel}"
@@ -30,7 +30,7 @@
             </ResourceDictionary.MergedDictionaries>
             <v:HumanizeConverter x:Key="HumanizeConverter" />
             <v:AiringStatusToBrushConverter x:Key="StatusConverter" />
-            <v:GridLengthConverter x:Key="GridLengthConverter"/>
+            <torrentingsections:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <DataTemplate x:DataType="cm:AnimeModel" x:Key="GridTemplate">
                 <ItemContainer>
                     <uc:AnimeCard
@@ -44,78 +44,114 @@
                 <ItemContainer>
                     <Expander ExpandDirection="Down" HorizontalAlignment="Stretch">
                         <Expander.Header>
-                            <Grid HorizontalAlignment="Stretch">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[0].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[1].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[2].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[3].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[4].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                                    <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[5].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
+                            <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
 
-                                <StackPanel Orientation="Horizontal"
-                                            Grid.Column="0">
+                                <Rectangle Width="2" Fill="{x:Bind AiringStatus, Converter={StaticResource StatusConverter}}" Margin="0 0 10 0"/>
+
+                                <StackPanel Orientation="Horizontal" Width="{x:Bind v:UserListPage.TableViewSettings.Columns[0].Width, Mode=OneWay}"
+                                            Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[0].IsVisible), Mode=OneWay}">
                                     <TextBlock VerticalAlignment="Center"
-                                               Text="{x:Bind Title}" TextTrimming="WordEllipsis"/>
+                                            Text="{x:Bind Title}" TextTrimming="WordEllipsis"/>
                                     <uc:UnwatchedEpisodesBadge 
-                                        VerticalAlignment="Center"
-                                        Anime="{x:Bind}"
-                                        Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
+                                    VerticalAlignment="Center"
+                                    Anime="{x:Bind}"
+                                    Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
                                 </StackPanel>
 
-                                <TextBlock VerticalAlignment="Center" Grid.Column="1">
-                                    <Run Text="{x:Bind Season.SeasonName}" />
-                                    <Run Text="{x:Bind Season.Year}" />
-                                </TextBlock>
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[1].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[1].IsVisible), Mode=OneWay}">
+                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <Run Text="{x:Bind Season.SeasonName}" />
+                                        <Run Text="{x:Bind Season.Year}" />
+                                    </TextBlock>
+                                </Grid>
 
-                                <TextBlock HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Text="{x:Bind MeanScore}"
-                                           Grid.Column="2"/>
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[2].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[2].IsVisible), Mode=OneWay}">
+                                    <TextBlock HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Text="{x:Bind MeanScore}"/>
+                                </Grid>
 
-                                <TextBlock
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}"
-                                    Grid.Column="3"/>
-
-                                <StackPanel
-                                    HorizontalAlignment="Center"
-                                    Orientation="Horizontal"
-                                    Spacing="10"
-                                    Grid.Column="4">
-                                    <Button
-                                        Padding="0"
-                                        Command="{x:Bind root:App.Commands.DecrementTracking}"
-                                        CommandParameter="{x:Bind}">
-                                        <FontIcon FontSize="12" Glyph="&#xECC9;" />
-                                    </Button>
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[3].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[3].IsVisible), Mode=OneWay}">
                                     <TextBlock
-                                        MinWidth="30"
+                                        HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}"
-                                        TextAlignment="Center" />
-                                    <Button
-                                        Padding="0"
-                                        Command="{x:Bind root:App.Commands.IncrementTracking}"
-                                        CommandParameter="{x:Bind}">
-                                        <FontIcon FontSize="12" Glyph="&#xECC8;" />
-                                    </Button>
-                                </StackPanel>
+                                        Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}"/>
+                                </Grid>
 
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Text="{x:Bind Tracking.StartDate, Converter={StaticResource HumanizeConverter}}"
-                                    Grid.Column="5"/>
-                            </Grid>
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[4].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[4].IsVisible), Mode=OneWay}">
+                                    <StackPanel
+                                            HorizontalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="10">
+                                        <Button
+                                            Padding="0"
+                                            Command="{x:Bind root:App.Commands.DecrementTracking}"
+                                            CommandParameter="{x:Bind}">
+                                            <FontIcon FontSize="12" Glyph="&#xECC9;" />
+                                        </Button>
+                                        <TextBlock
+                                            MinWidth="30"
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}"
+                                            TextAlignment="Center" />
+                                        <Button
+                                            Padding="0"
+                                            Command="{x:Bind root:App.Commands.IncrementTracking}"
+                                            CommandParameter="{x:Bind}">
+                                            <FontIcon FontSize="12" Glyph="&#xECC8;" />
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[5].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[5].IsVisible), Mode=OneWay}">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Text="{x:Bind Tracking.StartDate, Converter={StaticResource HumanizeConverter}}"
+                                        Grid.Column="5"/>
+                                </Grid>
+
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[6].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[6].IsVisible), Mode=OneWay}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind Tracking.FinishDate, Converter={StaticResource HumanizeConverter}}"/>
+                                </Grid>
+
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[7].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[7].IsVisible), Mode=OneWay}">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Text="{x:Bind Tracking.UpdatedAt, Converter={StaticResource HumanizeConverter}}"/>
+                                </Grid>
+
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[8].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[8].IsVisible), Mode=OneWay}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind Type}"/>
+                                </Grid>
+
+                                <Grid Width="{x:Bind v:UserListPage.TableViewSettings.Columns[9].Width, Mode=OneWay}"
+                                      Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(v:UserListPage.TableViewSettings.Columns[9].IsVisible), Mode=OneWay}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind NextEpisodeAt, Converter={StaticResource HumanizeConverter}, Mode=OneWay, ConverterParameter=1}" />
+                                </Grid>
+
+                            </StackPanel>
                         </Expander.Header>
                         <Expander.Content>
-                            <Grid>
+                            <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />
@@ -222,316 +258,46 @@
                 </Grid>
 
                 <Border Visibility="{x:Bind uhelp:Converters.BooleanToVisibility(ViewModel.IsListView), Mode=OneWay}"
-                        Margin="16 0 60 0"
+                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                        Padding="26 0 60 0"
+                        Height="46"
+                        CornerRadius="5"
+                        Margin="0 4"
                         Grid.Row="1">
-                    <Grid HorizontalAlignment="Stretch">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[0].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[1].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[2].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[3].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[4].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                            <ColumnDefinition Width="{x:Bind v:UserListPage.TableViewSettings.Columns[5].Width, Converter={StaticResource GridLengthConverter}, Mode=TwoWay}"/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Text="Title" Grid.Column="0"/>
-
-                        <TextBlock Text="Season" Grid.Column="1"/>
-
-                        <TextBlock Text ="Mean Score" Grid.Column="2" HorizontalAlignment="Center"/>
-
-                        <TextBlock Text="User Score" Grid.Column="3" HorizontalAlignment="Center"/>
-
-                        <TextBlock Text="Progress" Grid.Column="4" HorizontalAlignment="Center"/>
-
-                        <TextBlock Text="Start Date" Grid.Column="5"/>
-
-
-                        <ctk:GridSplitter Grid.Column="1"
-                                          HorizontalAlignment="Left"
-                                          VerticalAlignment="Center"
-                                          ResizeBehavior="BasedOnAlignment"
-                                          ResizeDirection="Auto">
-                            <ctk:GridSplitter.RenderTransform>
-                                <TranslateTransform Y="-5"/>
-                            </ctk:GridSplitter.RenderTransform>
-                        </ctk:GridSplitter>
-
-                        <ctk:GridSplitter Grid.Column="2"
-                                          HorizontalAlignment="Left"
-                                          VerticalAlignment="Center"
-                                          ResizeBehavior="BasedOnAlignment"
-                                          ResizeDirection="Auto">
-                            <ctk:GridSplitter.RenderTransform>
-                                <TranslateTransform Y="-5"/>
-                            </ctk:GridSplitter.RenderTransform>
-                        </ctk:GridSplitter>
-
-                        <ctk:GridSplitter Grid.Column="3"
-                                          HorizontalAlignment="Left"
-                                          VerticalAlignment="Center"
-                                          ResizeBehavior="BasedOnAlignment"
-                                          ResizeDirection="Auto">
-                            <ctk:GridSplitter.RenderTransform>
-                                <TranslateTransform Y="-5"/>
-                            </ctk:GridSplitter.RenderTransform>
-                        </ctk:GridSplitter>
-
-                        <ctk:GridSplitter Grid.Column="4"
-                                          HorizontalAlignment="Left"
-                                          VerticalAlignment="Center"
-                                          ResizeBehavior="BasedOnAlignment"
-                                          ResizeDirection="Auto">
-                            <ctk:GridSplitter.RenderTransform>
-                                <TranslateTransform Y="-5"/>
-                            </ctk:GridSplitter.RenderTransform>
-                        </ctk:GridSplitter>
-
-                        <ctk:GridSplitter Grid.Column="5"
-                                          HorizontalAlignment="Left"
-                                           VerticalAlignment="Center"
-                                          ResizeBehavior="BasedOnAlignment"
-                                          ResizeDirection="Auto">
-                            <ctk:GridSplitter.RenderTransform>
-                                <TranslateTransform Y="-5"/>
-                            </ctk:GridSplitter.RenderTransform>
-                        </ctk:GridSplitter>
-
-                    </Grid>
+                    <ItemsControl ItemsSource="{x:Bind v:UserListPage.TableViewSettings.Columns, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid x:Name="Container"
+                                      Width="{Binding Width, Mode=TwoWay}"
+                                      Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                                    <ctk:ContentSizer HorizontalAlignment="Right"
+                                              TargetControl="{Binding ElementName=Container}">
+                                        <ctk:ContentSizer.RenderTransform>
+                                            <TranslateTransform X="7"/>
+                                        </ctk:ContentSizer.RenderTransform>
+                                    </ctk:ContentSizer>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
                 </Border>
 
-                <ctk:SwitchPresenter Grid.Row="2" Value="{x:Bind ViewModel.Mode, Mode=OneWay}">
-
-                    <!--  Grid View  -->
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.Grid}" IsDefault="True">
-                        <ItemsView ItemsSource="{x:Bind ViewModel.Anime}" SelectionMode="None"
-                                   x:Name="AnimeCollectionView"
-                                   ItemTemplate="{StaticResource DataTemplateSelector}" >
-                            <ItemsView.ItemTransitionProvider>
-                                <LinedFlowLayoutItemCollectionTransitionProvider />
-                            </ItemsView.ItemTransitionProvider>
-                        </ItemsView>
-                    </ctk:Case>
-
-                    <!--  Table View  -->
-                    <ctk:Case Value="{x:Bind cm:DisplayMode.DetailedGrid}">
-                        <uc:DataGrid
-                            x:Name="ListDataGrid"
-                            AlternatingRowBackground="{ThemeResource SubtleFillColorTransparentBrush}"
-                            AreRowDetailsFrozen="True"
-                            AutoGenerateColumns="False"
-                            CanUserReorderColumns="True"
-                            CanUserResizeColumns="True"
-                            CanUserSortColumns="True"
-                            GridLinesVisibility="Vertical"
-                            HeadersVisibility="All"
-                            ItemsSource="{x:Bind ViewModel.Anime}"
-                            LoadingRow="OnLoadingRow"
-                            RowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
-                            RowDetailsVisibilityMode="Collapsed"
-                            RowHeaderWidth="5"
-                            SelectionMode="Single">
-                            <Interactivity:Interaction.Behaviors>
-                                <b:DataGridPersistenceBehavior Settings="{x:Bind ViewModel.DataGridSettings, Mode=OneWay}" />
-                            </Interactivity:Interaction.Behaviors>
-                            <uc:DataGrid.RowHeaderStyle>
-                                <Style TargetType="primitives:DataGridRowHeader">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="primitives:DataGridRowHeader">
-                                                <Grid Background="{Binding AiringStatus, Converter={StaticResource StatusConverter}}" />
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </uc:DataGrid.RowHeaderStyle>
-                            <uc:DataGrid.RowDetailsTemplate>
-                                <DataTemplate x:DataType="cm:AnimeModel">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <Image
-                                            Width="160"
-                                            Margin="10"
-                                            Source="{x:Bind Image}"
-                                            Stretch="UniformToFill"
-                                            Tapped="ImageTapped" />
-
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            Padding="10"
-                                            Spacing="10">
-                                            <TextBlock Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
-                            </uc:DataGrid.RowDetailsTemplate>
-                            <uc:DataGrid.Columns>
-                                <uc:DataGridTemplateColumn
-                                    Header="Title"
-                                    IsReadOnly="True"
-                                    Tag="Title">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock
-                                                    Margin="10,0"
-                                                    VerticalAlignment="Center"
-                                                    Text="{Binding Title}" />
-                                                <uc:UnwatchedEpisodesBadge
-                                                    VerticalAlignment="Center"
-                                                    Anime="{x:Bind}"
-                                                    Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    CanUserSort="False"
-                                    Header="Season"
-                                    IsReadOnly="True"
-                                    Tag="Season">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock Margin="10,0" VerticalAlignment="Center">
-                                                <Run Text="{x:Bind Season.SeasonName}" />
-                                                <Run Text="{x:Bind Season.Year}" />
-                                            </TextBlock>
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Average"
-                                    IsReadOnly="True"
-                                    Tag="Mean Score">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind MeanScore}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn Header="Score" Tag="User Score">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind help:AnimeHelpers.UserScore(Tracking), Mode=OneWay}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                    <uc:DataGridTemplateColumn.CellEditingTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <uc:RatingPicker
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Anime="{x:Bind}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellEditingTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    MinWidth="109"
-                                    CanUserSort="False"
-                                    Header="Progress"
-                                    IsReadOnly="True"
-                                    Tag="Tracking">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <StackPanel
-                                                HorizontalAlignment="Center"
-                                                Orientation="Horizontal"
-                                                Spacing="10">
-                                                <Button
-                                                    Padding="0"
-                                                    Command="{x:Bind root:App.Commands.DecrementTracking}"
-                                                    CommandParameter="{x:Bind}">
-                                                    <FontIcon FontSize="12" Glyph="&#xECC9;" />
-                                                </Button>
-                                                <TextBlock
-                                                    MinWidth="30"
-                                                    VerticalAlignment="Center"
-                                                    Text="{x:Bind help:AnimeHelpers.Progress(Tracking, TotalEpisodes), Mode=OneWay}"
-                                                    TextAlignment="Center" />
-                                                <Button
-                                                    Padding="0"
-                                                    Command="{x:Bind root:App.Commands.IncrementTracking}"
-                                                    CommandParameter="{x:Bind}">
-                                                    <FontIcon FontSize="12" Glyph="&#xECC8;" />
-                                                </Button>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Started"
-                                    IsReadOnly="True"
-                                    Tag="Date Started">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind Tracking.StartDate, Converter={StaticResource HumanizeConverter}}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Completed"
-                                    IsReadOnly="True"
-                                    Tag="Date Completed">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind Tracking.FinishDate, Converter={StaticResource HumanizeConverter}}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTemplateColumn
-                                    Header="Last updated"
-                                    IsReadOnly="True"
-                                    Tag="Last Updated">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind Tracking.UpdatedAt, Converter={StaticResource HumanizeConverter}}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                                <uc:DataGridTextColumn
-                                    Binding="{Binding Type}"
-                                    Header="Type"
-                                    IsReadOnly="True"
-                                    Tag="Type" />
-                                <uc:DataGridTemplateColumn
-                                    Header="Next Episode"
-                                    IsReadOnly="True"
-                                    Tag="Next Episode">
-                                    <uc:DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="cm:AnimeModel">
-                                            <TextBlock
-                                                Margin="10,0"
-                                                VerticalAlignment="Center"
-                                                Text="{x:Bind NextEpisodeAt, Converter={StaticResource HumanizeConverter}, Mode=OneWay, ConverterParameter=1}" />
-                                        </DataTemplate>
-                                    </uc:DataGridTemplateColumn.CellTemplate>
-                                </uc:DataGridTemplateColumn>
-                            </uc:DataGrid.Columns>
-                        </uc:DataGrid>
-                    </ctk:Case>
-
-                </ctk:SwitchPresenter>
+                <ItemsView ItemsSource="{x:Bind ViewModel.Anime}"
+                           SelectionMode="None"
+                           Grid.Row="2"
+                           x:Name="AnimeCollectionView"
+                           ItemTemplate="{StaticResource DataTemplateSelector}" >
+                    <ItemsView.ItemTransitionProvider>
+                        <LinedFlowLayoutItemCollectionTransitionProvider />
+                    </ItemsView.ItemTransitionProvider>
+                </ItemsView>
 
                 <Grid Grid.Row="2">
                     <TeachingTip
@@ -651,18 +417,17 @@
                             </AppBarButton.Icon>
                             <AppBarButton.Flyout>
                                 <MenuFlyout>
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[1].IsVisible, Mode=TwoWay}" Text="Season" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[2].IsVisible, Mode=TwoWay}" Text="Average Score" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[3].IsVisible, Mode=TwoWay}" Text="User Score" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[4].IsVisible, Mode=TwoWay}" Text="Tracking" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[5].IsVisible, Mode=TwoWay}" Text="Date Stared" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[6].IsVisible, Mode=TwoWay}" Text="Date Completed" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[7].IsVisible, Mode=TwoWay}" Text="Last Updated" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[8].IsVisible, Mode=TwoWay}" Text="Type" />
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.DataGridSettings.Columns[9].IsVisible, Mode=TwoWay}" Text="Next Episode" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[1].IsVisible, Mode=TwoWay}" Text="Season" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[2].IsVisible, Mode=TwoWay}" Text="Average Score" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[3].IsVisible, Mode=TwoWay}" Text="User Score" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[4].IsVisible, Mode=TwoWay}" Text="Tracking" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[5].IsVisible, Mode=TwoWay}" Text="Date Stared" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[6].IsVisible, Mode=TwoWay}" Text="Date Completed" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[7].IsVisible, Mode=TwoWay}" Text="Last Updated" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[8].IsVisible, Mode=TwoWay}" Text="Type" />
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind v:UserListPage.TableViewSettings.Columns[9].IsVisible, Mode=TwoWay}" Text="Next Episode" />
                                     <MenuFlyoutSeparator />
-                                    <MenuFlyoutItem Click="OnSaveColumnWidths" Text="Save column widths" />
-                                    <MenuFlyoutItem Command="{x:Bind ViewModel.ResetDataGridColumns}" Text="Reset columns" />
+                                    <MenuFlyoutItem Text="Reset columns" Click="ResetColumns"/>
                                 </MenuFlyout>
                             </AppBarButton.Flyout>
                         </AppBarButton>
@@ -677,9 +442,7 @@
                         <AppBarButton
                             x:Name="SortButton"
                             Icon="Sort"
-                            Label="Sort"
-                            Loaded="SortButton_Loaded"
-                            Visibility="{x:Bind uhelp:Converters.InvertedBooleanToVisibility(ViewModel.IsListView), Mode=OneWay}">
+                            Label="Sort">
                             <AppBarButton.Flyout>
                                 <MenuFlyout>
                                     <RadioMenuFlyoutItem
