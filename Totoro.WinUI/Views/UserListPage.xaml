@@ -182,14 +182,7 @@
                                                     IsWrapped="True"/>
 
                                     <TextBlock Text="{x:Bind Description}" TextWrapping="WrapWholeWords" />
-
-                                    <TextBlock Margin="0 10">
-                                        <Hyperlink ui:HyperlinkExtensions.Command="{x:Bind v:UserListPage.ViewInBrowser}"
-                                                   ui:HyperlinkExtensions.CommandParameter="{x:Bind}">
-                                            View in browser
-                                        </Hyperlink>
-                                    </TextBlock>
-
+                                    
                                     <StackPanel Orientation="Horizontal" Spacing="10">
                                         <Button
                                             HorizontalAlignment="Stretch"
@@ -202,6 +195,20 @@
                                                       Spacing="10">
                                                     <SymbolIcon Symbol="More" />
                                                     <TextBlock Text="More Details" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Button>
+                                        <Button
+                                             HorizontalAlignment="Stretch"
+                                             Command="{x:Bind v:UserListPage.ViewInBrowser}"
+                                             CommandParameter="{x:Bind}">
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <StackPanel
+                                                   HorizontalAlignment="Stretch"
+                                                   Orientation="Horizontal"
+                                                   Spacing="10">
+                                                    <SymbolIcon Symbol="Globe" />
+                                                    <TextBlock Text="View In Browser" />
                                                 </StackPanel>
                                             </Grid>
                                         </Button>
