@@ -176,7 +176,7 @@ public class AnilistService : IAnimeService, IAnilistService
         return new MediaQueryBuilder()
             .WithId()
             .WithIdMal()
-            .WithSource()
+            .WithFormat()
             .WithTitle(new MediaTitleQueryBuilder()
                 .WithEnglish()
                 .WithNative()

@@ -199,7 +199,7 @@ public class AniListTrackingService : ITrackingService
                         .WithMedia(new MediaQueryBuilder()
                             .WithId()
                             .WithIdMal()
-                            .WithSource()
+                            .WithFormat()
                             .WithTitle(new MediaTitleQueryBuilder()
                                 .WithEnglish()
                                 .WithNative()

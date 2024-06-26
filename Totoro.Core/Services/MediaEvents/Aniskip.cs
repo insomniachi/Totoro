@@ -49,10 +49,10 @@ internal class Aniskip : MediaEventListener, IAniskip
     private bool CanSubmitTimeStamp() => _settings.ContributeTimeStamps &&
                                          _op is null &&
                                          _position > _endTime &&
+                                         _staticSkipPosition > 0 &&
                                          _isDialogShown == false &&
                                          _duration is not null &&
-                                         _animeModel is not null &&
-                                         _animeModel.MalId is not null;
+                                         _animeModel is { MalId: not null, Type: not "Movie" };
 
     protected override void OnDurationChanged(TimeSpan duration)
     {
