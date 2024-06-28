@@ -16,10 +16,10 @@ public class Plugin : Plugin<AnimeProvider, Config>
 
     public override PluginInfo GetInfo() => new()
     {
-        DisplayName = "Wit Anime",
-        Name = "wit-anime",
+        DisplayName = "Anime 4up",
+        Name = "anime-4up",
         Version = Assembly.GetExecutingAssembly().GetName().Version!,
-        Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.WitAnime.wit-anime-logo.png"),
+        //Icon = typeof(Plugin).Assembly.GetManifestResourceStream("Totoro.Plugins.Anime.WitAnime.wit-anime-logo.png"),
         Description = "Arabic provider"
     };
 }

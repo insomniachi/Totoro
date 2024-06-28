@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Flurl.Http;
 using HtmlAgilityPack;
@@ -57,23 +58,71 @@ internal partial class StreamProvider : IAnimeStreamProvider
 
             var epUrl = titleNode.Attributes["href"].Value;
             var doc2 = await epUrl.GetHtmlDocumentAsync();
+            var b64json = doc2.QuerySelector("input[name=wl]").Attributes["Value"].Value;
+            var json = Encoding.UTF8.GetString(Convert.FromBase64String(b64json));
+            var obj = JsonNode.Parse(json)!.AsObject();
 
-            foreach (var server in doc2.QuerySelectorAll("#episode-servers li a"))
+            if(obj.ContainsKey("fhd"))
             {
-                var serverUrlEncoded = server.Attributes["data-url"].Value;
-                var serverUrl = Encoding.UTF8.GetString(Convert.FromBase64String(serverUrlEncoded));
-
-                var stream = await GetStreams(serverUrl);
-                if (stream is null)
+                foreach (var link in obj["fhd"]!.AsObject())
                 {
-                    continue;
+                    var stream = await GetStreams(link.Value!.GetValue<string>());
+                    if (stream is null)
+                    {
+                        continue;
+                    }
+                    stream.Episode = ep;
+                    yield return stream;
+                    break;
                 }
-
-                stream.Episode = ep;
-                yield return stream;
-                break;
             }
+            if (obj.ContainsKey("hd"))
+            {
+                foreach (var link in obj["hd"]!.AsObject())
+                {
+                    var stream = await GetStreams(link.Value!.GetValue<string>());
+                    if (stream is null)
+                    {
+                        continue;
+                    }
+                    stream.Episode = ep;
+                    yield return stream;
+                    break;
+                }
+            }
+            if (obj.ContainsKey("sd"))
+            {
+                foreach (var link in obj["sd"]!.AsObject())
+                {
+                    var stream = await GetStreams(link.Value!.GetValue<string>());
+                    if (stream is null)
+                    {
+                        continue;
+                    }
+                    stream.Episode = ep;
+                    yield return stream;
+                    break;
+                }
+            }
+
+            //foreach (var server in doc2.QuerySelectorAll("#episode-servers li a"))
+            //{
+            //    var serverUrlEncoded = server.Attributes["data-url"].Value;
+            //    var serverUrl = Encoding.UTF8.GetString(Convert.FromBase64String(serverUrlEncoded));
+
+            //    var stream = await GetStreams(serverUrl);
+            //    if (stream is null)
+            //    {
+            //        continue;
+            //    }
+
+            //    stream.Episode = ep;
+            //    yield return stream;
+            //    break;
+            //}
         }
+
+        yield break;
     }
 
     private async Task<VideoStreamsForEpisode?> GetStreams(string serverUrl)
@@ -90,6 +139,8 @@ internal partial class StreamProvider : IAnimeStreamProvider
                 string x when x.Contains("ok.ru") => await OkRuExtractor.Extract(serverUrl),
                 string x when x.Contains("dood") => await DoodExtractor.Extract(serverUrl, "Dood mirror"),
                 string x when x.Contains("mp4upload.com") => await Mp4UploadExtractor.Extract(serverUrl, ConfigManager<Config>.Current.Url),
+                string x when x.Contains("sega") => await VidBomExtractor.Extract(serverUrl),
+                string x when x.Contains("uqload") => await UqLoadExtractor.Extract(serverUrl),
                 _ => null
             };
         }

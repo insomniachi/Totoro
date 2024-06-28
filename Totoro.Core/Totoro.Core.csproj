@@ -51,6 +51,7 @@
 		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.GogoAnime\Totoro.Plugins.Anime.GogoAnime.csproj" />
 		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.AnimeSaturn\Totoro.Plugins.Anime.AnimeSaturn.csproj" />
 		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj" />
+		<ProjectReference Include="..\Plugins\Anime\Totoro.Plugins.Anime.Anime4Up\Totoro.Plugins.Anime.Anime4Up.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
