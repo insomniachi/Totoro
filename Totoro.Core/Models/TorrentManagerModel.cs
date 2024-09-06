@@ -78,7 +78,7 @@ public sealed class TorrentManagerModel : ReactiveObject, IDisposable
             .Subscribe(_ =>
             {
                 Progress = Manager.Progress.ToString("N2");
-                Speed = $"({Manager.Monitor.DownloadSpeed.Bytes().Humanize()}/s)";
+                Speed = $"({Manager.Monitor.DownloadRate.Bytes().Humanize()}/s)";
                 Complete = Manager.Complete;
             });
     }

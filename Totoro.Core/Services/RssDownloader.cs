@@ -44,7 +44,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
 
     public async Task Initialize()
     {
-        foreach (var item in _torrentEngine.TorrentManagers.Where(x => !x.Complete && _infoHashes.Contains(x.InfoHash)))
+        foreach (var item in _torrentEngine.TorrentManagers.Where(x => !x.Complete && _infoHashes.Contains(x.InfoHashes.V1OrV2)))
         {
             item.TorrentStateChanged += TorrentManager_TorrentStateChanged;
             await item.StartAsync();
@@ -80,7 +80,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
             return;
         }
 
-        if (_watchingAnime.FirstOrDefault(x => x.Title.ToLower().Contains(title) || (x.AlternativeTitles?.Any(x => x.ToLower().Contains(title)) ?? true)) is not { } anime)
+        if (_watchingAnime.FirstOrDefault(x => x.Title.Contains(title, StringComparison.CurrentCultureIgnoreCase) || (x.AlternativeTitles?.Any(x => x.Contains(title, StringComparison.CurrentCultureIgnoreCase)) ?? true)) is not { } anime)
         {
             return;
         }
@@ -107,7 +107,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
         };
 
         torrentManager.TorrentStateChanged += TorrentManager_TorrentStateChanged;
-        _infoHashes.Add(torrentManager.InfoHash);
+        _infoHashes.Add(torrentManager.InfoHashes.V1OrV2);
     }
 
     private void TorrentManager_TorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
@@ -119,7 +119,7 @@ internal class RssDownloader : IRssDownloader, IEnableLogger
 
         var torrentManager = (TorrentManager)sender;
 
-        _infoHashes.Remove(torrentManager.InfoHash);
+        _infoHashes.Remove(torrentManager.InfoHashes.V1OrV2);
         _toastService.DownloadCompleted(torrentManager.SavePath, torrentManager.Torrent.Name);
     }
 }

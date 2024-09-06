@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Totoro.Plugins.Anime.WitAnime\Totoro.Plugins.Anime.WitAnime.csproj" />
+    <ProjectReference Include="..\Totoro.Plugins.Anime.Anime4Up\Totoro.Plugins.Anime.Anime4Up.csproj" />
   </ItemGroup>
 
 </Project>

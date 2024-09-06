@@ -6,6 +6,6 @@ public static class OkRuExtractor
 {
     public static Task<VideoStreamsForEpisode?> Extract(string url)
     {
-        throw new NotImplementedException();
+        return null;
     }
 }

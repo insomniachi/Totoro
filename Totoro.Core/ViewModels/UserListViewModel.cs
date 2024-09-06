@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Reactive.Concurrency;
+using Totoro.Core.Services;
 
 namespace Totoro.Core.ViewModels;
 
@@ -22,7 +23,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
     public UserListViewModel(ITrackingServiceContext trackingService,
                              IViewService viewService,
                              ISettings settings,
-                             IConnectivityService connectivityService)
+                             IConnectivityService connectivityService,
+                             ILocalSettingsService localSettingsService)
     {
         _trackingService = trackingService;
         _viewService = viewService;
@@ -34,7 +36,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
         RefreshCommand = ReactiveCommand.CreateFromTask(SetInitialState, this.WhenAnyValue(x => x.ViewState).Select(x => x is not ViewState.Loading));
         SetSortProperty = ReactiveCommand.Create<string>(columnName => SelectedSortProperty = columnName);
         SetSortOrder = ReactiveCommand.Create<bool>(isAscending => IsSortByAscending = isAscending);
-        GridViewSettings = settings.UserListGridViewSettings;
+		SaveDataGridSettings = ReactiveCommand.Create(() => localSettingsService.SaveSetting(Settings.UserListTableViewSettings, DataGridSettings));
+		GridViewSettings = settings.UserListGridViewSettings;
         DataGridSettings = SettingsModel.UserListTableViewSettings;
         (SelectedSortProperty, IsSortByAscending) = DataGridSettings.Sort;
         CheckNewColumns();

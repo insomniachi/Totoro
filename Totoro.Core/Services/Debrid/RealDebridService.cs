@@ -27,7 +27,7 @@ internal class RealDebridService : IDebridService
         var magnet = MagnetLink.Parse(magnetLink);
         try
         {
-            _ = await _client.Torrents.GetAvailableFiles(magnet.InfoHash.ToHex());
+            _ = await _client.Torrents.GetAvailableFiles(magnet.InfoHashes.V1OrV2.ToHex());
         }
         catch (Exception)
         {
@@ -73,7 +73,7 @@ internal class RealDebridService : IDebridService
         else
         {
             var magnet = MagnetLink.Parse(magnetLink);
-            var hash = magnet.InfoHash.ToHex().ToLower();
+            var hash = magnet.InfoHashes.V1OrV2.ToHex().ToLower();
 
             var result = await _client.Torrents.GetAvailableFiles(hash);
 
@@ -103,8 +103,8 @@ internal class RealDebridService : IDebridService
     {
         foreach (var link in torrent.Links)
         {
-            var unrestrictResult = await _client.Unrestrict.LinkAsync(link);
-            yield return unrestrictResult;
+            var unRestrictResult = await _client.Unrestrict.LinkAsync(link);
+            yield return unRestrictResult;
         }
     }
 

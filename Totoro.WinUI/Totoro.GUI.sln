@@ -94,6 +94,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Aniwav
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.MediaDetection.MpcHc", "..\Plugins\Media Detection\Totoro.Plugins.MediaDetection.MpcHc\Totoro.Plugins.MediaDetection.MpcHc.csproj", "{77FA0E72-8690-4433-BE41-179F506E2E51}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Anime4Up", "..\Plugins\Anime\Totoro.Plugins.Anime.Anime4Up\Totoro.Plugins.Anime.Anime4Up.csproj", "{8EA2B34E-06A4-43BB-BA0A-B83BEEAF263E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Totoro.Plugins.Anime.Anime4Up.Tests", "..\Plugins\Anime\Totoro.Plugins.Anime.Anime4Up.Tests\Totoro.Plugins.Anime.Anime4Up.Tests.csproj", "{1A64768D-F865-4889-8BDA-705F70000793}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -234,6 +238,14 @@ Global
 		{77FA0E72-8690-4433-BE41-179F506E2E51}.Debug|x64.Build.0 = Debug|x64
 		{77FA0E72-8690-4433-BE41-179F506E2E51}.Release|x64.ActiveCfg = Release|x64
 		{77FA0E72-8690-4433-BE41-179F506E2E51}.Release|x64.Build.0 = Release|x64
+		{8EA2B34E-06A4-43BB-BA0A-B83BEEAF263E}.Debug|x64.ActiveCfg = Debug|x64
+		{8EA2B34E-06A4-43BB-BA0A-B83BEEAF263E}.Debug|x64.Build.0 = Debug|x64
+		{8EA2B34E-06A4-43BB-BA0A-B83BEEAF263E}.Release|x64.ActiveCfg = Release|x64
+		{8EA2B34E-06A4-43BB-BA0A-B83BEEAF263E}.Release|x64.Build.0 = Release|x64
+		{1A64768D-F865-4889-8BDA-705F70000793}.Debug|x64.ActiveCfg = Debug|x64
+		{1A64768D-F865-4889-8BDA-705F70000793}.Debug|x64.Build.0 = Debug|x64
+		{1A64768D-F865-4889-8BDA-705F70000793}.Release|x64.ActiveCfg = Release|x64
+		{1A64768D-F865-4889-8BDA-705F70000793}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -274,6 +286,8 @@ Global
 		{994C74C7-3CC0-4A35-9A20-BDAB738FE24B} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 		{1955598A-A37F-4B3F-953F-7AC8D8770858} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 		{77FA0E72-8690-4433-BE41-179F506E2E51} = {046D778E-C7B5-4086-A056-F0526C7C3A96}
+		{8EA2B34E-06A4-43BB-BA0A-B83BEEAF263E} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
+		{1A64768D-F865-4889-8BDA-705F70000793} = {9F7BCE27-2A3F-4D82-8F52-903C9B356F25}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {98BB8C58-726D-4AB8-A113-D44B55413B79}
