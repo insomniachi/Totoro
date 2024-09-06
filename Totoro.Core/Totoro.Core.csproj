@@ -24,17 +24,17 @@
     <PackageReference Include="MalApi.V2" Version="2.0.8" />
 	<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
 	<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
-	<PackageReference Include="MonoTorrent" Version="2.0.7" />
-	<PackageReference Include="RD.NET" Version="2.1.4" />
+	<PackageReference Include="MonoTorrent" Version="3.0.2" />
+	<PackageReference Include="RD.NET" Version="2.1.6" />
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
-	<PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
-	<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-	<PackageReference Include="SharpCompress" Version="0.37.2" />
+	<PackageReference Include="Refit.HttpClientFactory" Version="7.1.2" />
+	<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+	<PackageReference Include="SharpCompress" Version="0.38.0" />
 	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="15.1.1" />
 	<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
 	<PackageReference Include="Splat.Serilog" Version="15.1.1" />
 	<PackageReference Include="System.ServiceModel.Syndication" Version="8.0.0" />
-	<PackageReference Include="YoutubeExplode" Version="6.3.16" />
+	<PackageReference Include="YoutubeExplode" Version="6.4.0" />
 	<PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />
   </ItemGroup>
 

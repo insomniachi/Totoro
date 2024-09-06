@@ -144,7 +144,7 @@ public sealed class MonoTorrentStreamModelResolver : IVideoStreamModelResolver,
             return;
         }
 
-        _torrentEngine.MarkForDeletion(_torrentManager.InfoHash);
+        _torrentEngine.MarkForDeletion(_torrentManager.InfoHashes.V1OrV2);
     }
 }
 

@@ -749,8 +749,8 @@ public partial class WatchViewModel : NavigatableViewModel
         inds.Status
             .Subscribe(x =>
             {
-                DownloadSpeed = $"{x.Item2.DownloadSpeed.Bytes().Humanize()}/s";
-                TotalDownloaded = x.Item2.DataBytesDownloaded.Bytes().Humanize();
+                DownloadSpeed = $"{x.Item2.DownloadRate.Bytes().Humanize()}/s";
+                TotalDownloaded = x.Item2.DataBytesReceived.Bytes().Humanize();
                 DownloadProgress = x.Item1.ToString("N2");
             });
     }

@@ -62,67 +62,45 @@ internal partial class StreamProvider : IAnimeStreamProvider
             var json = Encoding.UTF8.GetString(Convert.FromBase64String(b64json));
             var obj = JsonNode.Parse(json)!.AsObject();
 
-            if(obj.ContainsKey("fhd"))
+            IReadOnlyList<string> qualities = ["fhd", "hd", "sd"];
+            foreach (var quality in qualities)
             {
-                foreach (var link in obj["fhd"]!.AsObject())
+                if (await GetStreams(quality, obj, ep) is not { } stream)
                 {
-                    var stream = await GetStreams(link.Value!.GetValue<string>());
-                    if (stream is null)
-                    {
-                        continue;
-                    }
-                    stream.Episode = ep;
-                    yield return stream;
-                    break;
+                    continue;
                 }
-            }
-            if (obj.ContainsKey("hd"))
-            {
-                foreach (var link in obj["hd"]!.AsObject())
+
+                foreach (var s in stream.Streams)
                 {
-                    var stream = await GetStreams(link.Value!.GetValue<string>());
-                    if (stream is null)
-                    {
-                        continue;
-                    }
-                    stream.Episode = ep;
-                    yield return stream;
-                    break;
+                    s.Headers.Add(HeaderNames.Referer, ConfigManager<Config>.Current.Url);
                 }
+
+                yield return stream;
             }
-            if (obj.ContainsKey("sd"))
-            {
-                foreach (var link in obj["sd"]!.AsObject())
-                {
-                    var stream = await GetStreams(link.Value!.GetValue<string>());
-                    if (stream is null)
-                    {
-                        continue;
-                    }
-                    stream.Episode = ep;
-                    yield return stream;
-                    break;
-                }
-            }
-
-            //foreach (var server in doc2.QuerySelectorAll("#episode-servers li a"))
-            //{
-            //    var serverUrlEncoded = server.Attributes["data-url"].Value;
-            //    var serverUrl = Encoding.UTF8.GetString(Convert.FromBase64String(serverUrlEncoded));
-
-            //    var stream = await GetStreams(serverUrl);
-            //    if (stream is null)
-            //    {
-            //        continue;
-            //    }
-
-            //    stream.Episode = ep;
-            //    yield return stream;
-            //    break;
-            //}
         }
 
         yield break;
+    }
+
+    public async Task<VideoStreamsForEpisode?> GetStreams(string quality, JsonObject qualities, int episode)
+    {
+        if (!qualities.ContainsKey(quality))
+        {
+            return null;
+        }
+
+        foreach (var link in qualities[quality]!.AsObject())
+        {
+            var stream = await GetStreams(link.Value!.GetValue<string>());
+            if (stream is null)
+            {
+                continue;
+            }
+            stream.Episode = episode;
+            return stream;
+        }
+
+        return null;
     }
 
     private async Task<VideoStreamsForEpisode?> GetStreams(string serverUrl)
@@ -131,7 +109,6 @@ internal partial class StreamProvider : IAnimeStreamProvider
         {
             return serverUrl switch
             {
-                string x when x.Contains("yonaplay") => await ExtractFromMultiUrl(serverUrl),
                 string x when x.Contains("4shared") => await FourSharedExtractor.Extract(serverUrl),
                 string x when x.Contains("soraplay") => await SoraPlayExtractor.Extract(serverUrl, ConfigManager<Config>.Current.Url),
                 string x when x.Contains("drive.google.com") => await GoogleDriveExtractor.Extract(serverUrl),
@@ -148,29 +125,5 @@ internal partial class StreamProvider : IAnimeStreamProvider
         {
             return null;
         }
-    }
-
-    private async Task<VideoStreamsForEpisode?> ExtractFromMultiUrl(string url)
-    {
-        var html = await url
-            .WithReferer(ConfigManager<Config>.Current.Url)
-            .SetQueryParam("apiKey", "7d942435-c790-405c-8381-f682a274b437")
-            .WithDefaultUserAgent()
-            .GetStringAsync();
-
-        foreach (var match in PlayerListRegex().Matches(html).OfType<Match>())
-        {
-            var playerUrl = match.Groups["Url"].Value;
-            var stream = await GetStreams(playerUrl);
-
-            if (stream is null)
-            {
-                continue;
-            }
-
-            return stream;
-        }
-
-        return null;
     }
 }

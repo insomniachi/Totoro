@@ -67,7 +67,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
 
             foreach (var item in _engine.Torrents)
             {
-                if (_settings.AutoRemoveWatchedTorrents && _torrentDeleteRequests.Contains(item.InfoHash))
+                if (_settings.AutoRemoveWatchedTorrents && _torrentDeleteRequests.Contains(item.InfoHashes.V1OrV2))
                 {
                     await RemoveTorrent(item.Torrent.Name, true);
                     torrentsRemoved = true;
@@ -75,7 +75,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
                 else
                 {
                     SubscribeEvents(item);
-                    _torrentManagers.Add(item.InfoHash, item);
+                    _torrentManagers.Add(item.InfoHashes.V1OrV2, item);
                 }
             }
 
@@ -100,7 +100,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
             var isNew = false;
             var magnetLink = MagnetLink.Parse(magnet);
             TorrentManager torrentManager = null;
-            if (_torrentManagers.TryGetValue(magnetLink.InfoHash, out TorrentManager value))
+            if (_torrentManagers.TryGetValue(magnetLink.InfoHashes.V1OrV2, out TorrentManager value))
             {
                 torrentManager = value;
             }
@@ -108,7 +108,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
             {
                 isNew = true;
                 torrentManager = await _engine.AddStreamingAsync(magnetLink, saveDirectory);
-                _torrentManagers.Add(magnetLink.InfoHash, torrentManager);
+                _torrentManagers.Add(magnetLink.InfoHashes.V1OrV2, torrentManager);
                 SubscribeEvents(torrentManager);
             }
 
@@ -147,7 +147,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
             var torrent = await Torrent.LoadAsync(ms);
 
             TorrentManager torrentManager = null;
-            if (_torrentManagers.TryGetValue(torrent.InfoHash, out TorrentManager value))
+            if (_torrentManagers.TryGetValue(torrent.InfoHashes.V1OrV2, out TorrentManager value))
             {
                 torrentManager = value;
                 _torrentManagerToMagnetMap.TryAdd(torrentUrl, torrentManager);
@@ -155,7 +155,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
             else
             {
                 torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
-                _torrentManagers.Add(torrent.InfoHash, torrentManager);
+                _torrentManagers.Add(torrent.InfoHashes.V1OrV2, torrentManager);
                 _torrentManagerToMagnetMap.Add(torrentUrl, torrentManager);
                 _torrentAdded.OnNext(torrentManager);
                 SubscribeEvents(torrentManager);
@@ -180,14 +180,14 @@ public class TorrentEngine(IKnownFolders knownFolders,
         try
         {
             TorrentManager torrentManager = null;
-            if (_torrentManagers.TryGetValue(torrent.InfoHash, out TorrentManager value))
+            if (_torrentManagers.TryGetValue(torrent.InfoHashes.V1OrV2, out TorrentManager value))
             {
                 torrentManager = value;
             }
             else
             {
                 torrentManager = await _engine.AddStreamingAsync(torrent, saveDirectory);
-                _torrentManagers.Add(torrent.InfoHash, torrentManager);
+                _torrentManagers.Add(torrent.InfoHashes.V1OrV2, torrentManager);
                 _torrentAdded.OnNext(torrentManager);
             }
 
@@ -215,7 +215,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
 
     public async Task<Stream> GetStream(Torrent torrent, int fileIndex)
     {
-        var torrentManager = _torrentManagers[torrent.InfoHash];
+        var torrentManager = _torrentManagers[torrent.InfoHashes.V1OrV2];
         return torrentManager.Complete
             ? File.OpenRead(Path.Combine(torrentManager.Files[fileIndex].FullPath))
             : await torrentManager.StreamProvider.CreateStreamAsync(torrentManager.Files[fileIndex], _settings.PreBufferTorrents);
@@ -261,7 +261,7 @@ public class TorrentEngine(IKnownFolders knownFolders,
         try
         {
             await _engine.RemoveAsync(torrentManager, removeFiles ? RemoveMode.CacheDataAndDownloadedData : RemoveMode.CacheDataOnly);
-            _torrentManagers.Remove(torrentManager.InfoHash);
+            _torrentManagers.Remove(torrentManager.InfoHashes.V1OrV2);
         }
         catch (Exception ex)
         {

@@ -7,7 +7,6 @@ namespace Totoro.Core.Services.Anizip;
 public class AnizipEpisodeInfoProvider(TimeProvider timeProvider) : IEpisodesInfoProvider
 {
     private readonly string _baseUrl = @"https://api.ani.zip/mappings";
-    private readonly TimeProvider _timeProvider;
     private readonly DateTimeOffset _today = timeProvider.GetUtcNow();
 
     public async IAsyncEnumerable<EpisodeInfo> GetEpisodeInfos(long id, string serviceType)

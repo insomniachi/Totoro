@@ -1,7 +1,4 @@
-﻿using Flurl.Http;
-using HtmlAgilityPack.CssSelectors.NetCore;
-using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Totoro.Plugins.Anime.Models;
 using Totoro.Plugins.Helpers;
 
@@ -57,10 +54,6 @@ public static partial class UqLoadExtractor
                 new VideoStream
                 {
                     Url = stream,
-                    Headers =
-                    {
-                        { HeaderNames.Referer, @"https://uqload.co/" }
-                    }
                 }
             },
         };
