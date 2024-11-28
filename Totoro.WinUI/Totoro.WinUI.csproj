@@ -22,12 +22,6 @@
 		<PublishReadyToRun>false</PublishReadyToRun>
 		<PublishTrimmed>false</PublishTrimmed>
 	</PropertyGroup>
-	<ItemGroup>
-	  <Compile Remove="Media\Vlc\**" />
-	  <EmbeddedResource Remove="Media\Vlc\**" />
-	  <None Remove="Media\Vlc\**" />
-	  <Page Remove="Media\Vlc\**" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.Shimmer" Version="0.1.230830" />
@@ -37,28 +31,31 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240916" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.1.240916" />
 		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240916" />
-		
 		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
+		
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Core" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Layout" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
-		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.1.2" />
 		
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.241114004-experimental1" />
+		
+		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.1.2" />
 		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.1.4" />
+		<PackageReference Include="WinUIEx" Version="2.5.0" />
+		
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
-		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
 		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		
 		<PackageReference Include="ReactiveUI" Version="20.1.63" />
 		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 		<PackageReference Include="ReactiveUI.WinUI" Version="20.1.63" />
 		<PackageReference Include="System.Reactive" Version="6.0.1" />
-		<PackageReference Include="WinUIEx" Version="2.5.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -272,21 +269,5 @@
 			<FrameworkSdkReference Remove="@(FrameworkSdkReference)" Condition="$([System.String]::Copy('%(FrameworkSdkReference.SDKName)').StartsWith('Microsoft.WindowsAppRuntime.'))" />
 		</ItemGroup>
 	</Target>
-
-	<ItemGroup>
-	  <PRIResource Remove="Media\Vlc\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="Dialogs\Views\EditAnimePreferencesView.xaml" />
-	  <None Remove="Dialogs\Views\SearchListServicePage.xaml" />
-	  <None Remove="LoadingViews\AboutAnimeLoadingView.xaml" />
-	  <None Remove="LoadingViews\CardGridLoadingView.xaml" />
-	  <None Remove="LoadingViews\SeasonalCardGridLoadingView.xaml" />
-	  <None Remove="UserControls\PivotNavigation.xaml" />
-	  <None Remove="Views\AboutSections\EpisodesTorrentsSection.xaml" />
-	  <None Remove="Views\DiscoverSections\MyAnimeListDiscoverSection.xaml" />
-	  <None Remove="Views\DiscoverSections\RecentEpisodesSection.xaml" />
-	  <None Remove="Views\DiscoverSections\SearchProviderSection.xaml" />
-	</ItemGroup>
+	
 </Project>
