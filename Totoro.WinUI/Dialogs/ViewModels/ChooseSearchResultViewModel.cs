@@ -25,8 +25,8 @@ public sealed class ChooseSearchResultViewModel : ReactiveObject
         _searchResultCache
             .Connect()
             .RefCount()
-            .Sort(SortExpressionComparer<ICatalogItem>.Ascending(x => x.Title))
             .ObserveOn(RxApp.MainThreadScheduler)
+            .SortAndBind(out _searchResults, SortExpressionComparer<ICatalogItem>.Ascending(x => x.Title))
             .Bind(out _searchResults)
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);
