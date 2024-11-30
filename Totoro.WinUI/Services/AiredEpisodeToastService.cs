@@ -1,5 +1,6 @@
-﻿using System.Net.Http;
-using CommunityToolkit.WinUI.Notifications;
+﻿using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
+using System.Net.Http;
 using Totoro.Core;
 using Totoro.Plugins.Anime.Contracts;
 
@@ -69,12 +70,14 @@ public class AiredEpisodeToastService : IAiredEpisodeToastService
             return;
         }
 
-        new ToastContentBuilder()
-            .SetToastScenario(ToastScenario.Default)
+        var notification = new AppNotificationBuilder()
+            .SetScenario(AppNotificationScenario.Default)
             .AddText("New Episode")
             .AddText(anime.Title)
             .AddText(epInfo.Episode.ToString())
-            .Show();
+            .BuildNotification();
+
+        AppNotificationManager.Default.Show(notification);
 
         return;
     }

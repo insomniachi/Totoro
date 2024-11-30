@@ -32,7 +32,6 @@
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240916" />
 		<PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.1.240916" />
 		<PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240916" />
-		<PackageReference Include="CommunityToolkit.WinUI.Notifications" Version="7.1.2" />
 		
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Core" Version="7.1.2" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
