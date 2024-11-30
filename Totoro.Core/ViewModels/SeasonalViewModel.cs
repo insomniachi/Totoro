@@ -36,9 +36,8 @@ public class SeasonalViewModel : NavigatableViewModel, IHaveState
             .RefCount()
             .Filter(this.WhenAnyValue(x => x.Season).WhereNotNull().Select(FilterBySeason))
             .Filter(this.WhenAnyValue(x => x.SearchText).Select(x => x?.ToLower()).Select(FilterByTitle))
-            .Sort(sort)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Bind(out _anime)
+            .SortAndBind(out _anime, sort)
             .DisposeMany()
             .Subscribe(_ => { }, RxApp.DefaultExceptionHandler.OnNext)
             .DisposeWith(Garbage);

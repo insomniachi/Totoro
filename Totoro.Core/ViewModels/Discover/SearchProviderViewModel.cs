@@ -35,8 +35,7 @@ public class SearchProviderViewModel : NavigatableViewModel
         _animeSearchResultCache
             .Connect()
             .RefCount()
-            .Sort(SortExpressionComparer<ICatalogItem>.Ascending(x => x.Title))
-            .Bind(out _animeSearchResults)
+            .SortAndBind(out _animeSearchResults, SortExpressionComparer<ICatalogItem>.Ascending(x => x.Title))
             .DisposeMany()
             .Subscribe()
             .DisposeWith(Garbage);

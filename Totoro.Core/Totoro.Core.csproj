@@ -26,6 +26,7 @@
 	<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
 	<PackageReference Include="MonoTorrent" Version="3.0.2" />
 	<PackageReference Include="RD.NET" Version="2.1.6" />
+	<PackageReference Include="ReactiveUI" Version="20.1.63" />
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 	<PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
 	<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />

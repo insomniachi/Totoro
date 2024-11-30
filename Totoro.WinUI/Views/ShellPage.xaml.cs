@@ -31,15 +31,6 @@ public sealed partial class ShellPage : Page, IEnableLogger
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
         ViewModel.Initialize();
 
-        App.GetService<IWindowService>()
-            .IsFullWindowChanged
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(isFullWindow =>
-            {
-                var presenterKind = isFullWindow ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Overlapped;
-                App.MainWindow.AppWindow.SetPresenter(presenterKind);
-            });
-
         ShowHideWindowCommand = ReactiveCommand.Create(ShowHideWindow);
         ExitApplicationCommand = ReactiveCommand.Create(ExitApplication);
     }

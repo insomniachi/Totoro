@@ -13,6 +13,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
     <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
+	<PackageReference Include="ReactiveUI" Version="20.1.63" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
 

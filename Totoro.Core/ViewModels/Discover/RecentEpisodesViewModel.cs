@@ -20,7 +20,6 @@ namespace Totoro.Core.ViewModels.Discover
                 .Connect()
                 .RefCount()
                 .Filter(this.WhenAnyValue(x => x.FilterText).Select(FilterByTitle))
-                .Sort(SortExpressionComparer<IAiredAnimeEpisode>.Ascending(x => _episodesCache.Items.IndexOf(x)))
                 .Bind(out _episodes)
                 .DisposeMany()
                 .Subscribe()
@@ -109,6 +108,6 @@ namespace Totoro.Core.ViewModels.Discover
             return Task.CompletedTask;
         }
 
-        private static Func<IAiredAnimeEpisode, bool> FilterByTitle(string title) => (IAiredAnimeEpisode ae) => string.IsNullOrEmpty(title) || ae.Title.Contains(title, StringComparison.CurrentCultureIgnoreCase);
+        private static Func<IAiredAnimeEpisode, bool> FilterByTitle(string title) => ae => string.IsNullOrEmpty(title) || ae.Title.Contains(title, StringComparison.CurrentCultureIgnoreCase);
     }
 }

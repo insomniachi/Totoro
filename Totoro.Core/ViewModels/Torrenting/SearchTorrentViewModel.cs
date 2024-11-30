@@ -39,8 +39,7 @@ public class SearchTorrentViewModel : NavigatableViewModel, IHaveState
         _torrentsCache
             .Connect()
             .RefCount()
-            .Sort(sort)
-            .Bind(out _torrents)
+            .SortAndBind(out _torrents, sort)
             .Subscribe()
             .DisposeWith(Garbage);
 
