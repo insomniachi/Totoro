@@ -34,7 +34,9 @@
 	<PackageReference Include="Splat.Microsoft.Extensions.Logging" Version="15.2.22" />
 	<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
 	<PackageReference Include="Splat.Serilog" Version="15.2.22" />
+	<PackageReference Include="System.Drawing.Common" Version="9.0.0" />
 	<PackageReference Include="System.ServiceModel.Syndication" Version="9.0.0" />
+	<PackageReference Include="System.Text.Encodings.Web" Version="9.0.0" />
 	<PackageReference Include="YoutubeExplode" Version="6.4.4" />
 	<PackageReference Include="DiscordRichPresence" Version="1.2.1.24" />
   </ItemGroup>
