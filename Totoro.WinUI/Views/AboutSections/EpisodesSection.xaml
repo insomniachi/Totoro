@@ -14,7 +14,7 @@
 
     <ItemsView
         x:Name="EpisodesView"
-        Margin="{StaticResource LargeTopMargin}"
+        Margin="12 30 12 0"
         IsItemInvokedEnabled="True"
         ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
         ItemInvoked="EpisodesView_ItemInvoked"

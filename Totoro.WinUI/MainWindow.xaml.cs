@@ -1,4 +1,5 @@
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
 using Totoro.WinUI.Contracts;
 using WinUIEx;
 
@@ -20,5 +21,25 @@ public sealed partial class MainWindow : WindowEx
 			   TitleBar.Visibility = isFullWindow ? Microsoft.UI.Xaml.Visibility.Collapsed : Microsoft.UI.Xaml.Visibility.Visible;
 			   App.MainWindow.AppWindow.SetPresenter(presenterKind);
 		   });
+	}
+
+	private void TitleBar_PaneToggleRequested(Microsoft.UI.Xaml.Controls.TitleBar sender, object args)
+	{
+		if(sender is null)
+		{
+			return;
+		}
+
+		Shell.AppTitleBar_PaneButtonClick(sender, new RoutedEventArgs());
+    }
+
+	private void TitleBar_BackRequested(Microsoft.UI.Xaml.Controls.TitleBar sender, object args)
+	{
+		if (sender is null)
+		{
+			return;
+		}
+
+		Shell.AppTitleBar_BackButtonClick(sender, new RoutedEventArgs());
 	}
 }

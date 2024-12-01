@@ -103,10 +103,10 @@ public partial class App : Application, IEnableLogger
     public App()
     {
         InitializeComponent();
-        AppNotificationManager.Default.Register();
 		AppNotificationManager.Default.NotificationInvoked += Default_NotificationInvoked;
         AppDomain.CurrentDomain.ProcessExit += OnExit;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        AppNotificationManager.Default.Register();
         UnhandledException += App_UnhandledException;
         DebugSettings.XamlResourceReferenceFailed += (_, e) => this.Log().Fatal(e.Message);
         DebugSettings.BindingFailed += (_, e) => this.Log().Warn(e.Message);

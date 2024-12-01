@@ -312,7 +312,7 @@
 
         <!--  List  -->
         <ctk:Case Value="{x:Bind viewmodels:ViewState.Authenticated}">
-            <Grid x:Name="ContentArea" Margin="0,30,0,0">
+            <Grid x:Name="ContentArea">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="80" />
                     <RowDefinition Height="Auto"/>

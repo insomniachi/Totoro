@@ -170,12 +170,12 @@ public sealed partial class ShellPage : Page, IEnableLogger
         App.MainWindow?.Close();
     }
 
-    private void AppTitleBar_BackButtonClick(object sender, RoutedEventArgs e)
+    public void AppTitleBar_BackButtonClick(object sender, RoutedEventArgs e)
     {
         NavigationFrame.GoBack();
     }
 
-    private void AppTitleBar_PaneButtonClick(object sender, RoutedEventArgs e)
+    public void AppTitleBar_PaneButtonClick(object sender, RoutedEventArgs e)
     {
         NavigationViewControl.IsPaneOpen = !NavigationViewControl.IsPaneOpen;
     }

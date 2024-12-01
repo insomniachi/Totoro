@@ -15,7 +15,6 @@
     mc:Ignorable="d">
 
     <ctk:SwitchPresenter
-        Margin="30"
         TargetType="x:Boolean"
         Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
         <ctk:Case Value="True">

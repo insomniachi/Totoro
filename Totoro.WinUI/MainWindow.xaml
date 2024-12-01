@@ -21,8 +21,15 @@
             x:Name="TitleBar"
             Title="Totoro"
             IsBackButtonVisible="True"
-            Subtitle=""
+            IsBackEnabled="{x:Bind Shell.ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsPaneToggleButtonVisible="True"
+            PaneToggleRequested="TitleBar_PaneToggleRequested"
+            BackRequested="TitleBar_BackRequested"
+            Subtitle="{x:Bind Shell.Version}"
             Grid.Row="0">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/WindowIcon.png"/>
+            </TitleBar.IconSource>
             <TitleBar.Footer>
                 <Button
                     Width="32"
