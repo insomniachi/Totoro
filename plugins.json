@@ -11,16 +11,6 @@
       "FileName": "Totoro.Plugins.Anime.AllAnime.dll"
     },
     {
-      "DisplayName": "Gogo Anime",
-      "Version": "1.5.0.0",
-      "FileName": "Totoro.Plugins.Anime.GogoAnime.dll"
-    },
-    {
-      "DisplayName": "Wit Anime",
-      "Version": "1.4.0.0",
-      "FileName": "Totoro.Plugins.Anime.WitAnime.dll"
-    },
-    {
       "DisplayName": "Anime Pahe",
       "Version": "1.12.0.0",
       "FileName": "Totoro.Plugins.Anime.AnimePahe.dll"
