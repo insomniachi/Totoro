@@ -65,10 +65,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Select(_ => Unit.Default)
             .InvokeCommand(SaveDataGridSettings);
 
-        this.WhenAnyValue(x => x.Filter)
-            .SelectMany(x => x.WhenAnyPropertyChanged())
-            .Subscribe(_ => _animeCache.Refresh());
-
         _animeCache
             .Connect()
             .RefCount()

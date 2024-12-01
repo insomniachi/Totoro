@@ -65,4 +65,17 @@ public record Tracking
 
         return tracking;
     }
+
+	public Tracking Update(Tracking tracking)
+	{
+        return this with
+        {
+            UpdatedAt = tracking.UpdatedAt ?? UpdatedAt,
+            StartDate = tracking.StartDate ?? StartDate,
+            FinishDate = tracking.FinishDate ?? FinishDate,
+            Score = tracking.Score ?? Score,
+            WatchedEpisodes = tracking.WatchedEpisodes ?? WatchedEpisodes,
+            Status = tracking.Status ?? Status
+        };
+	}
 }

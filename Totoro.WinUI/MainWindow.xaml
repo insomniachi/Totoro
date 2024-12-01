@@ -36,6 +36,7 @@
                     Height="32"
                     Padding="0"
                     BorderBrush="{ThemeResource CircleElevationBorderBrush}"
+                    HorizontalAlignment="Right"
                     CornerRadius="16"
                     ToolTipService.ToolTip="{x:Bind Shell.ViewModel.User.Name, Mode=OneWay}"
                     Visibility="{x:Bind help:Converters.BooleanToVisibility(Shell.ViewModel.IsAuthenticated), Mode=OneWay}">

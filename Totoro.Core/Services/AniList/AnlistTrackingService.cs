@@ -117,7 +117,7 @@ public class AniListTrackingService : ITrackingService
                 status: ConvertListStatus(tracking.Status),
                 startedAt: ConvertDate(tracking.StartDate),
                 completedAt: ConvertDate(tracking.FinishDate),
-                scoreRaw: tracking.Score * 100,
+                scoreRaw: tracking.Score * 10,
                 progress: tracking.WatchedEpisodes,
                 mediaId: (int)id)
             .Build();
