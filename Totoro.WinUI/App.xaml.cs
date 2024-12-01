@@ -30,12 +30,10 @@ public partial class App : Application, IEnableLogger
 {
     private static readonly IHost _host = Host
         .CreateDefaultBuilder()
-#if DEBUG
         .ConfigureAppConfiguration(config =>
         {
             config.AddJsonFile("appsettings.Development.json", true);
         })
-#endif
         .ConfigureServices((context, services) =>
         {
             services.AddPlatformServices()
