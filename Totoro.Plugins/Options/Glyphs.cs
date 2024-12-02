@@ -12,4 +12,7 @@ public class Glyphs
     public const string Password = "\uE9A8";
     public const string Website = "\uEB41";
     public const string Port = "\uF594";
+    public const string People = "\uE716";
+    public const string Library = "\uE8F1";
+    public const string Unlock = "\uE785";
 }
