@@ -20,8 +20,7 @@ public class DiscoverMangaViewModel : NavigatableViewModel
         _mangaSearchResultCache
            .Connect()
            .RefCount()
-           .Sort(SortExpressionComparer<ICatalogItem>.Ascending(x => x.Title))
-           .Bind(out _mangaSearchResults)
+           .SortAndBind(out _mangaSearchResults, SortExpressionComparer<ICatalogItem>.Ascending(x => x.Title))
            .DisposeMany()
            .Subscribe()
            .DisposeWith(Garbage);

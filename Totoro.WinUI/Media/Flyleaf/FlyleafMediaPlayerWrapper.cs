@@ -53,6 +53,11 @@ namespace Totoro.WinUI.Media.Flyleaf
             {
                 RxApp.MainThreadScheduler.Schedule(() =>
                 {
+                    if(TransportControls is null)
+                    {
+                        return;
+                    }
+
                     TransportControls.IsCCSelectionVisible = true;
                     ((FlyleafTransportControls)TransportControls).UpdateSubtitleFlyout(MediaPlayer.Subtitles.Streams);
                 });

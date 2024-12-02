@@ -102,7 +102,7 @@ namespace Totoro.Core.Services.AniList
             };
         }
 
-        public static AnimeStatus? ConvertListStatus(MediaListStatus? status)
+		public static AnimeStatus? ConvertListStatus(MediaListStatus? status)
         {
             return status switch
             {

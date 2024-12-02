@@ -2,6 +2,7 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using System.Reactive.Concurrency;
 
 namespace Totoro.WinUI.UserControls;
 
@@ -64,9 +65,13 @@ public sealed partial class RatingPicker : UserControl
                 }
             });
 
-        UpdateRating = ReactiveCommand.Create<int>(async score =>
+        UpdateRating = ReactiveCommand.Create<int>(score =>
         {
-            Anime.Tracking = await App.GetService<ITrackingServiceContext>().Update(Anime.Id, new Tracking { Score = score });
+            RxApp.MainThreadScheduler.Schedule(async () =>
+            {
+                var tracking = await App.GetService<ITrackingServiceContext>().Update(Anime.Id, new Tracking { Score = score });
+                Anime.Tracking = Anime.Tracking.Update(tracking);
+            });
         });
 
         ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.Hand);

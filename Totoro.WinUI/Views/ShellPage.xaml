@@ -18,11 +18,11 @@
             Canvas.ZIndex="0"
             ExpandedModeThresholdWidth="1600"
             Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
-            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
-            IsPaneToggleButtonVisible="True"
+            IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
             IsSettingsVisible="True"
             SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
-            <NavigationView.PaneHeader>
+            <!--<NavigationView.PaneHeader>
                 <Grid
                     x:Name="AppTitleBar"
                     Height="34"
@@ -48,7 +48,7 @@
                         Text="Totoro"
                         TextWrapping="NoWrap" />
                 </Grid>
-            </NavigationView.PaneHeader>
+            </NavigationView.PaneHeader>-->
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Name="DiscoverAnimeItem"

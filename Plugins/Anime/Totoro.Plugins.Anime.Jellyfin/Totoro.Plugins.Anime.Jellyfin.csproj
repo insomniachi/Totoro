@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<Platforms>x64</Platforms>
+		<Version>1.0</Version>
+		<OutputPath Condition="$(Configuration) == Release">..\..\..\Plugins Store\</OutputPath>
+		<AppendTargetFrameworkToOutputPath Condition="$(Configuration) == Release">false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath Condition="$(Configuration) == Release">false</AppendRuntimeIdentifierToOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="jellyfin-icon.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Totoro.Plugins.Anime\Totoro.Plugins.Anime.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Reactive.Concurrency;
 using System.Text.Json;
-using CommunityToolkit.WinUI.Notifications;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
@@ -22,6 +21,7 @@ using Totoro.WinUI.Services;
 using Totoro.WinUI.ViewModels;
 using Windows.ApplicationModel.Activation;
 using WinUIEx;
+using Microsoft.Windows.AppNotifications;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Totoro.WinUI;
@@ -30,12 +30,10 @@ public partial class App : Application, IEnableLogger
 {
     private static readonly IHost _host = Host
         .CreateDefaultBuilder()
-#if DEBUG
         .ConfigureAppConfiguration(config =>
         {
             config.AddJsonFile("appsettings.Development.json", true);
         })
-#endif
         .ConfigureServices((context, services) =>
         {
             services.AddPlatformServices()
@@ -67,7 +65,7 @@ public partial class App : Application, IEnableLogger
     public static bool HandleClosedEvents { get; set; }
 #endif
 
-    public static T GetService<T>()
+	public static T GetService<T>()
         where T : class
     {
         try
@@ -103,9 +101,10 @@ public partial class App : Application, IEnableLogger
     public App()
     {
         InitializeComponent();
-        ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
+		AppNotificationManager.Default.NotificationInvoked += Default_NotificationInvoked;
         AppDomain.CurrentDomain.ProcessExit += OnExit;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        AppNotificationManager.Default.Register();
         UnhandledException += App_UnhandledException;
         DebugSettings.XamlResourceReferenceFailed += (_, e) => this.Log().Fatal(e.Message);
         DebugSettings.BindingFailed += (_, e) => this.Log().Warn(e.Message);
@@ -113,7 +112,41 @@ public partial class App : Application, IEnableLogger
         ActivationRegistrationManager.RegisterForProtocolActivation("totoro", "", "Totoro", exe);
     }
 
-    private void App_Activated(AppActivationArguments e)
+	private async void Default_NotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
+	{
+		try
+		{
+
+			if (!args.Arguments.ContainsKey("Type"))
+			{
+				return;
+			}
+
+			switch (Enum.Parse<ToastType>(args.Arguments["Type"]))
+			{
+				case ToastType.DownloadComplete:
+					Process.Start(new ProcessStartInfo { FileName = args.Arguments["File"], UseShellExecute = true });
+					break;
+				case ToastType.FinishedEpisode:
+					var anime = JsonSerializer.Deserialize<AnimeModel>(args.Arguments["Payload"]);
+					var ep = int.Parse(args.Arguments["Episode"]);
+					var trackingService = GetService<ITrackingServiceContext>();
+					await trackingService.Update(anime.Id, Tracking.WithEpisode(anime, ep));
+					break;
+				case ToastType.SelectAnime:
+					var id = long.Parse(args.UserInput["animeId"]);
+					var nowPlayingViewModel = GetService<NowPlayingViewModel>();
+					RxApp.MainThreadScheduler.Schedule(async () => await nowPlayingViewModel.SetAnime(id));
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			this.Log().Error(ex);
+		}
+	}
+
+	private void App_Activated(AppActivationArguments e)
     {
         this.Log().Info($"Activation Kind : {e.Kind}");
         if (e.Kind == ExtendedActivationKind.Protocol)
@@ -132,43 +165,8 @@ public partial class App : Application, IEnableLogger
 
     private void OnExit(object sender, EventArgs e)
     {
-        ToastNotificationManagerCompat.Uninstall();
-    }
-
-    private async void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
-    {
-        try
-        {
-            var args = ToastArguments.Parse(e.Argument);
-
-            if (!args.Contains("Type"))
-            {
-                return;
-            }
-
-            switch (args.GetEnum<ToastType>("Type"))
-            {
-                case ToastType.DownloadComplete:
-                    Process.Start(new ProcessStartInfo { FileName = args.Get("File"), UseShellExecute = true });
-                    break;
-                case ToastType.FinishedEpisode:
-                    var anime = JsonSerializer.Deserialize<AnimeModel>(args.Get("Payload"));
-                    var ep = args.GetInt("Episode");
-                    var trackingService = GetService<ITrackingServiceContext>();
-                    await trackingService.Update(anime.Id, Tracking.WithEpisode(anime, ep));
-                    break;
-                case ToastType.SelectAnime:
-                    var id = long.Parse((string)e.UserInput["animeId"]);
-                    var nowPlayingViewModel = GetService<NowPlayingViewModel>();
-                    RxApp.MainThreadScheduler.Schedule(async () => await nowPlayingViewModel.SetAnime(id));
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-            this.Log().Error(ex);
-        }
-    }
+		AppNotificationManager.Default.Unregister();
+	}
 
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -203,11 +201,11 @@ public partial class App : Application, IEnableLogger
 
 #if RELEASE
             FFmpegPath = @"FFmpeg",
-            FFmpegLogLevel = FlyleafLib.FFmpegLogLevel.Quiet,
+            FFmpegLogLevel = Flyleaf.FFmpeg.LogLevel.Quiet,
             LogLevel = FlyleafLib.LogLevel.Quiet,
 
 #else
-            FFmpegLogLevel = FlyleafLib.FFmpegLogLevel.Warning,
+			FFmpegLogLevel = Flyleaf.FFmpeg.LogLevel.Warn,
             LogLevel = FlyleafLib.LogLevel.Debug,
             LogOutput = ":debug",
             FFmpegPath = @"E:\FFmpeg",

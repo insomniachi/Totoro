@@ -6,7 +6,6 @@
     xmlns:b="using:Totoro.WinUI.Behaviors"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Margin="0,30"
     mc:Ignorable="d">
 
     <Grid>

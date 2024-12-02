@@ -1,70 +1,70 @@
 ﻿{
-  "Anime": [
-    {
-      "DisplayName": "Yugen Anime",
-      "Version": "1.5.0.0",
-      "FileName": "Totoro.Plugins.Anime.YugenAnime.dll"
-    },
-    {
-      "DisplayName": "Allanime",
-      "Version": "2.8.0.0",
-      "FileName": "Totoro.Plugins.Anime.AllAnime.dll"
-    },
-    {
-      "DisplayName": "Gogo Anime",
-      "Version": "1.5.0.0",
-      "FileName": "Totoro.Plugins.Anime.GogoAnime.dll"
-    },
-    {
-      "DisplayName": "Wit Anime",
-      "Version": "1.4.0.0",
-      "FileName": "Totoro.Plugins.Anime.WitAnime.dll"
-    },
-    {
-      "DisplayName": "Anime Pahe",
-      "Version": "1.12.0.0",
-      "FileName": "Totoro.Plugins.Anime.AnimePahe.dll"
-    }
-  ],
-  "Manga": [
-    {
-      "DisplayName": "Manga Dex",
-      "Version": "1.3.0.0",
-      "FileName": "Totoro.Plugins.Manga.MangaDex.dll"
-    }
-  ],
-  "Torrent": [
-    {
-      "DisplayName": "Nyaa si",
-      "Version": "1.3.0.0",
-      "FileName": "Totoro.Plugins.Torrents.Nya.dll"
-    },
-    {
-      "DisplayName": "Anime Toshokan",
-      "Version": "1.2.0.0",
-      "FileName": "Totoro.Plugins.Torrents.AnimeTosho.dll"
-    }
-  ],
-  "MediaDetection": [
-    {
-      "DisplayName": "Vlc",
-      "Version": "1.5.0.0",
-      "FileName": "Totoro.Plugins.MediaDetection.Vlc.dll"
-    },
-    {
-      "DisplayName": "Window 11 Media Player",
-      "Version": "1.4.0.0",
-      "FileName": "Totoro.Plugins.MediaDetection.Win11MediaPlayer.dll"
-    },
-    {
-      "DisplayName": "General Purpose",
-      "Version": "1.5.0.0",
-      "FileName": "Totoro.Plugins.MediaDetection.Generic.dll"
-    },
-    {
-      "DisplayName": "MPC-HC",
-      "Version": "1.0.0.0",
-      "FileName": "Totoro.Plugins.MediaDetection.MpcHc.dll"
-    }
-  ]
+    "Anime": [
+        {
+            "DisplayName": "Yugen Anime",
+            "Version": "1.5.0.0",
+            "FileName": "Totoro.Plugins.Anime.YugenAnime.dll"
+        },
+        {
+            "DisplayName": "Gogo Anime",
+            "Version": "1.5.0.0",
+            "FileName": "Totoro.Plugins.Anime.GogoAnime.dll"
+        },
+        {
+            "DisplayName": "Allanime",
+            "Version": "2.8.0.0",
+            "FileName": "Totoro.Plugins.Anime.AllAnime.dll"
+        },
+        {
+            "DisplayName": "Anime Pahe",
+            "Version": "1.12.0.0",
+            "FileName": "Totoro.Plugins.Anime.AnimePahe.dll"
+        },
+        {
+            "DisplayName": "Jellyfin",
+            "Version": "1.0.0.0",
+            "FileName": "Totoro.Plugins.Anime.Jellyfin.dll"
+        }
+    ],
+    "Manga": [
+        {
+            "DisplayName": "Manga Dex",
+            "Version": "1.3.0.0",
+            "FileName": "Totoro.Plugins.Manga.MangaDex.dll"
+        }
+    ],
+    "Torrent": [
+        {
+            "DisplayName": "Nyaa si",
+            "Version": "1.3.0.0",
+            "FileName": "Totoro.Plugins.Torrents.Nya.dll"
+        },
+        {
+            "DisplayName": "Anime Toshokan",
+            "Version": "1.2.0.0",
+            "FileName": "Totoro.Plugins.Torrents.AnimeTosho.dll"
+        }
+    ],
+    "MediaDetection": [
+        {
+            "DisplayName": "Vlc",
+            "Version": "1.5.0.0",
+            "FileName": "Totoro.Plugins.MediaDetection.Vlc.dll"
+        },
+        {
+            "DisplayName": "Window 11 Media Player",
+            "Version": "1.4.0.0",
+            "FileName": "Totoro.Plugins.MediaDetection.Win11MediaPlayer.dll"
+        },
+        {
+            "DisplayName": "General Purpose",
+            "Version": "1.5.0.0",
+            "FileName": "Totoro.Plugins.MediaDetection.Generic.dll"
+        },
+        {
+            "DisplayName": "MPC-HC",
+            "Version": "1.0.0.0",
+            "FileName": "Totoro.Plugins.MediaDetection.MpcHc.dll"
+        }
+    ]
 }

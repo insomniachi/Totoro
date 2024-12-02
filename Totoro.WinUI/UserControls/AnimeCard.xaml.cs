@@ -130,7 +130,12 @@ public sealed partial class AnimeCard : UserControl
     }
 
     private void ImageEx_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
-    {
-        Command?.Execute(Anime);
-    }
+	{
+		if (e.OriginalSource is not (Image or Grid))
+		{
+			return;
+		}
+
+		Command?.Execute(Anime);
+	}
 }

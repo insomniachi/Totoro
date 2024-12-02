@@ -31,15 +31,6 @@ public sealed partial class ShellPage : Page, IEnableLogger
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
         ViewModel.Initialize();
 
-        App.GetService<IWindowService>()
-            .IsFullWindowChanged
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(isFullWindow =>
-            {
-                var presenterKind = isFullWindow ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Overlapped;
-                App.MainWindow.AppWindow.SetPresenter(presenterKind);
-            });
-
         ShowHideWindowCommand = ReactiveCommand.Create(ShowHideWindow);
         ExitApplicationCommand = ReactiveCommand.Create(ExitApplication);
     }
@@ -179,12 +170,12 @@ public sealed partial class ShellPage : Page, IEnableLogger
         App.MainWindow?.Close();
     }
 
-    private void AppTitleBar_BackButtonClick(object sender, RoutedEventArgs e)
+    public void AppTitleBar_BackButtonClick(object sender, RoutedEventArgs e)
     {
         NavigationFrame.GoBack();
     }
 
-    private void AppTitleBar_PaneButtonClick(object sender, RoutedEventArgs e)
+    public void AppTitleBar_PaneButtonClick(object sender, RoutedEventArgs e)
     {
         NavigationViewControl.IsPaneOpen = !NavigationViewControl.IsPaneOpen;
     }

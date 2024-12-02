@@ -65,18 +65,13 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
             .Select(_ => Unit.Default)
             .InvokeCommand(SaveDataGridSettings);
 
-        this.WhenAnyValue(x => x.Filter)
-            .SelectMany(x => x.WhenAnyPropertyChanged())
-            .Subscribe(_ => _animeCache.Refresh());
-
         _animeCache
             .Connect()
             .RefCount()
             .AutoRefresh(x => x.Tracking)
             .AutoRefresh(x => x.NextEpisodeAt, propertyChangeThrottle: TimeSpan.FromMilliseconds(500), scheduler: RxApp.MainThreadScheduler)
             .Filter(this.WhenAnyValue(x => x.Filter).SelectMany(x => x.WhenAnyPropertyChanged()).Select(x => (Func<AnimeModel, bool>)x.IsVisible))
-            .Sort(sort)
-            .Bind(out _anime)
+            .SortAndBind(out _anime, sort)
             .DisposeMany()
             .Subscribe()
             .DisposeWith(Garbage);
@@ -144,7 +139,8 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                                 UpdateStatuses();
                                 Genres = new(_genres);
                                 ViewState = ViewState.Authenticated;
-                            });
+								Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
+							});
                         })
                         .Subscribe(anime =>
                         {
@@ -153,7 +149,6 @@ public class UserListViewModel : NavigatableViewModel, IHaveState
                             {
                                 _genres.Add(genre);
                             }
-                            Filter.RaisePropertyChanged(nameof(Filter.ListStatus));
                         }, RxApp.DefaultExceptionHandler.OnError)
                         .DisposeWith(Garbage);
     } 

@@ -17,8 +17,9 @@ public partial class AnimeCollectionFilter : ReactiveObject
     {
         if (model.Tracking is null)
         {
-            return false;
+            return true;
         }
+
 
         var listStatusCheck = ListStatus == AnimeStatus.Watching
             ? model.Tracking.Status is AnimeStatus.Watching or AnimeStatus.Rewatching
@@ -31,6 +32,13 @@ public partial class AnimeCollectionFilter : ReactiveObject
         var genresCheck = !Genres.Any() || Genres.All(x => model.Genres.Any(y => string.Equals(y, x, StringComparison.InvariantCultureIgnoreCase)));
         var airingStatusCheck = AiringStatus is null || AiringStatus == model.AiringStatus;
 
-        return listStatusCheck && searchTextStatus && yearCheck && genresCheck && airingStatusCheck;
+        var isVisible = listStatusCheck && searchTextStatus && yearCheck && genresCheck && airingStatusCheck;
+
+		if (model.Id == 171018 && isVisible == false)
+		{
+			;
+		}
+
+		return isVisible;
     }
 }

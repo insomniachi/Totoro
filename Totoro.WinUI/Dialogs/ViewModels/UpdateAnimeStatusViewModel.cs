@@ -92,7 +92,7 @@ public class UpdateAnimeStatusViewModel : ReactiveObject
         _trackingService.Update(Anime.Id, tracking)
                         .ToObservable()
                         .ObserveOn(RxApp.MainThreadScheduler)
-                        .Subscribe(t => Anime.Tracking = t);
+                        .Subscribe(t => Anime.Tracking = Anime.Tracking.Update(t));
     }
 
     public ICommand Delete { get; }
