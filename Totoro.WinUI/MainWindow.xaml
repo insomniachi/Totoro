@@ -43,8 +43,8 @@
                     <PersonPicture
                         Width="32"
                         Height="32"
-                        DisplayName="{x:Bind Shell.ViewModel.User.Name, Mode=OneWay}"
-                        ProfilePicture="{x:Bind Shell.ViewModel.User.Image, Mode=OneWay}" />
+                        DisplayName="{x:Bind Shell.ViewModel.User.Name, Mode=OneWay}" 
+                        ProfilePicture="{x:Bind help:Converters.StringToImage(Shell.ViewModel.User.Name)}"/>
                 </Button>
             </TitleBar.Footer>
         </TitleBar>

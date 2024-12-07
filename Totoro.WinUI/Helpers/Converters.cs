@@ -247,6 +247,17 @@ public static partial class Converters
         return bmp;
     }
 
+    public static ImageSource StringToImage(string uri)
+    {
+        if(string.IsNullOrEmpty(uri))
+        {
+            return null;
+        }
+
+        return new BitmapImage(new Uri(uri));
+    }
+
+
     public static string ToOneBasedIndex(int number) => (number + 1).ToString();
     public static string ToTitle(ChapterModel chapter) => string.IsNullOrEmpty(chapter.Title)
         ? chapter.Chapter.ToString()
