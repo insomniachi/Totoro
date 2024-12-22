@@ -1,13 +1,13 @@
-﻿using System.ComponentModel;
-using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using MonoTorrent.Client;
+using System.ComponentModel;
+using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 using Totoro.Core.Services;
 using Totoro.Plugins;
 using Totoro.Plugins.Anime.Contracts;
@@ -249,13 +249,21 @@ public static partial class Converters
 
     public static ImageSource StringToImage(string uri)
     {
-        if(string.IsNullOrEmpty(uri))
+		if (string.IsNullOrEmpty(uri))
         {
             return null;
         }
 
-        return new BitmapImage(new Uri(uri));
-    }
+        try
+        {
+            return new BitmapImage(new Uri(uri));
+        }
+        catch
+        {
+
+            return null;
+        }
+	}
 
 
     public static string ToOneBasedIndex(int number) => (number + 1).ToString();

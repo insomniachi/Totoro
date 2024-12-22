@@ -24,7 +24,8 @@ namespace Totoro.Core
 
         public void OnNext(Exception value)
         {
-
-        }
+			this.Log().Error(value, "Unhandled Exception");
+			_viewService.UnhandledException(value);
+		}
     }
 }

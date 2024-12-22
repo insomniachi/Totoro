@@ -171,8 +171,8 @@ public partial class App : Application, IEnableLogger
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
-        NativeMethods.AllowSleep();
-        this.Log().Fatal(e.Exception, e.Message);
+        RxApp.DefaultExceptionHandler.OnError(e.Exception);
+        e.Handled = true;
     }
 
     protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
