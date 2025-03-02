@@ -13,42 +13,13 @@
     <Grid>
         <NavigationView
             x:Name="NavigationViewControl"
-            Grid.Row="1"
-            AlwaysShowHeader="False"
-            Canvas.ZIndex="0"
-            ExpandedModeThresholdWidth="1600"
-            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
+            HighContrastAdjustment="None"
             IsBackButtonVisible="Collapsed"
+            IsPaneOpen="False"
             IsPaneToggleButtonVisible="False"
-            IsSettingsVisible="True"
-            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
-            <!--<NavigationView.PaneHeader>
-                <Grid
-                    x:Name="AppTitleBar"
-                    Height="34"
-                    Margin="0"
-                    Canvas.ZIndex="1"
-                    IsHitTestVisible="True">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Image
-                        Width="24"
-                        Height="24"
-                        Margin="20,0"
-                        HorizontalAlignment="Left"
-                        Source="/Assets/WindowIcon.png"
-                        Stretch="Uniform" />
-                    <TextBlock
-                        x:Name="AppTitleBarText"
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource BodyStrongTextBlockStyle}"
-                        Text="Totoro"
-                        TextWrapping="NoWrap" />
-                </Grid>
-            </NavigationView.PaneHeader>-->
+            IsSettingsVisible="False"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+            Style="{StaticResource MainNavigationViewStyle}">
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Name="DiscoverAnimeItem"
@@ -98,12 +69,16 @@
                     Content="Now Playing"
                     Icon="{ui:FontIcon Glyph=&#xEC15;}" />
             </NavigationView.MenuItems>
-            <NavigationView.PaneFooter>
+            <NavigationView.FooterMenuItems>
                 <NavigationViewItem
                     Content="Give Feedback"
                     Icon="{ui:FontIcon Glyph=&#xed15;}"
                     Tapped="Feedback_Tapped" />
-            </NavigationView.PaneFooter>
+                <NavigationViewItem
+                    helpers:NavigationHelper.NavigateTo="Totoro.Core.ViewModels.SettingsViewModel"
+                    Content="Settings"
+                    Icon="{ui:SymbolIcon Symbol=Setting}" />
+            </NavigationView.FooterMenuItems>
             <Grid>
                 <Frame x:Name="NavigationFrame" />
             </Grid>

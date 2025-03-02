@@ -134,7 +134,10 @@ public class DataGridPersistenceBehavior : Behavior<DataGrid>
 
     private void ApplyDataGridSettings()
     {
-        AssociatedObject.Columns.ForEach(x => x.Visibility = Visibility.Collapsed);
+        foreach (var column in AssociatedObject.Columns)
+        {
+            column.Visibility = Visibility.Collapsed;
+        }
 
         foreach (var column in AssociatedObject.Columns.OrderBy(x => x.DisplayIndex))
         {

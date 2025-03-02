@@ -53,6 +53,7 @@ public partial class WatchViewModel : NavigatableViewModel
     private IVideoStreamModelResolver _videoStreamResolver;
     private AnimeModel _anime;
     private bool _canOverrideDefaultProvider;
+    private bool _isDisposed;
 
     public WatchViewModel(IPluginFactory<AnimeProvider> providerFactory,
                           IViewService viewService,
@@ -340,10 +341,22 @@ public partial class WatchViewModel : NavigatableViewModel
             .OnSubmitTimeStamp
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(_ => OnSubmitTimeStamps());
+
+        MediaPlayer
+            .Playing
+            .Subscribe(_ =>
+            {
+                if (_isDisposed)
+                {
+                    MediaPlayer.Pause();
+                }
+            });
     }
 
     public override async Task OnNavigatedTo(IReadOnlyDictionary<string, object> parameters)
     {
+        _isDisposed = false;
+
         UseTorrents = parameters.ContainsKey(WatchViewModelParamters.TorrentModel) || 
                       parameters.ContainsKey(WatchViewModelParamters.TorrentManager);
         MediaPlayerType = UseTorrents ? Models.MediaPlayerType.FFMpeg : _settings.MediaPlayerType;
@@ -430,6 +443,8 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             d.Dispose();
         }
+
+        _isDisposed = true;
     }
 
     private void UpdatePreferences(long id)

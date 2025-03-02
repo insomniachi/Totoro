@@ -25,7 +25,7 @@
             BackRequested="TitleBar_BackRequested"
             IsBackButtonVisible="True"
             IsBackEnabled="{x:Bind Shell.ViewModel.IsBackEnabled, Mode=OneWay}"
-            IsPaneToggleButtonVisible="True"
+            IsPaneToggleButtonVisible="False"
             PaneToggleRequested="TitleBar_PaneToggleRequested"
             Subtitle="{x:Bind Shell.Version}">
             <TitleBar.IconSource>

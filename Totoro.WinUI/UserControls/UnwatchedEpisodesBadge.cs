@@ -20,6 +20,7 @@ public class UnwatchedEpisodesBadge : InfoBadge
             .WhereNotNull()
             .SelectMany(x => x.WhenAnyValue(x => x.AiredEpisodes))
             .Select(airedEpisodes => GetUnwatchedEpsiodes(Anime, airedEpisodes))
+            .Where(x => x is > 0)
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(unwatchedEpisodes =>
             {

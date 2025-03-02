@@ -21,6 +21,7 @@
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/Styles/RadioButton.xaml" />
                 <ResourceDictionary Source="/Styles/CopyButton.xaml" />
+                <ResourceDictionary Source="/Styles/NavigationView.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <x:Double x:Key="TeachingTipMinHeight">40</x:Double>

@@ -23,6 +23,9 @@
 		<PublishTrimmed>false</PublishTrimmed>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Styles\NavigationView.xaml" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Labs.WinUI.Shimmer" Version="0.1.230830" />
@@ -40,13 +43,13 @@
 		
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.241114004-experimental1" />
 		
-		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.1.2" />
-		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.1.4" />
-		<PackageReference Include="WinUIEx" Version="2.5.0" />
+		<PackageReference Include="FlyleafLib.Controls.WinUI" Version="1.1.3" />
+		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.3.0" />
+		<PackageReference Include="WinUIEx" Version="2.5.1" />
 		
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
 		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -97,6 +100,9 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Styles\NavigationView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="LoadingViews\TableLoadingView.xaml">
 		  <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
 		  <Generator>MSBuild:Compile</Generator>

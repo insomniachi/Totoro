@@ -2,7 +2,6 @@
     x:Class="Totoro.WinUI.Views.SettingsSections.TrackingSection"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:labs="using:CommunityToolkit.WinUI.Controls"
@@ -35,16 +34,16 @@
                         Content="Connect"
                         Style="{StaticResource AccentButtonStyle}">
                         <Interactivity:Interaction.Behaviors>
-                            <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsMalConnected, Mode=OneWay}" Value="True">
-                                <Interactions:ChangePropertyAction
+                            <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.IsMalConnected, Mode=OneWay}" Value="True">
+                                <Interactivity:ChangePropertyAction
                                     PropertyName="Background"
                                     TargetObject="{x:Bind MalButton}"
                                     Value="Green" />
-                                <Interactions:ChangePropertyAction
+                                <Interactivity:ChangePropertyAction
                                     PropertyName="Content"
                                     TargetObject="{x:Bind MalButton}"
                                     Value="Connected" />
-                            </Interactions:DataTriggerBehavior>
+                            </Interactivity:DataTriggerBehavior>
                         </Interactivity:Interaction.Behaviors>
                     </Button>
                 </labs:SettingsCard>
@@ -57,16 +56,16 @@
                         Content="Connect"
                         Style="{StaticResource AccentButtonStyle}">
                         <Interactivity:Interaction.Behaviors>
-                            <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsAniListConnected, Mode=OneWay}" Value="True">
-                                <Interactions:ChangePropertyAction
+                            <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.IsAniListConnected, Mode=OneWay}" Value="True">
+                                <Interactivity:ChangePropertyAction
                                     PropertyName="Background"
                                     TargetObject="{x:Bind AniListButton}"
                                     Value="Green" />
-                                <Interactions:ChangePropertyAction
+                                <Interactivity:ChangePropertyAction
                                     PropertyName="Content"
                                     TargetObject="{x:Bind AniListButton}"
                                     Value="Connected" />
-                            </Interactions:DataTriggerBehavior>
+                            </Interactivity:DataTriggerBehavior>
                         </Interactivity:Interaction.Behaviors>
                     </Button>
                 </labs:SettingsCard>
@@ -79,16 +78,16 @@
                         Content="Connect"
                         Style="{StaticResource AccentButtonStyle}">
                         <Interactivity:Interaction.Behaviors>
-                            <Interactions:DataTriggerBehavior Binding="{x:Bind ViewModel.IsSimklConnected, Mode=OneWay}" Value="True">
-                                <Interactions:ChangePropertyAction
+                            <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.IsSimklConnected, Mode=OneWay}" Value="True">
+                                <Interactivity:ChangePropertyAction
                                     PropertyName="Background"
                                     TargetObject="{x:Bind SimklButton}"
                                     Value="Green" />
-                                <Interactions:ChangePropertyAction
+                                <Interactivity:ChangePropertyAction
                                     PropertyName="Content"
                                     TargetObject="{x:Bind SimklButton}"
                                     Value="Connected" />
-                            </Interactions:DataTriggerBehavior>
+                            </Interactivity:DataTriggerBehavior>
                         </Interactivity:Interaction.Behaviors>
                     </Button>
                 </labs:SettingsCard>

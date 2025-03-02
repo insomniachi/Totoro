@@ -52,18 +52,19 @@
                         Background="OrangeRed"
                         Canvas.ZIndex="2"
                         FontWeight="Bold"
-                        Style="{ThemeResource AttentionValueInfoBadgeStyle}" />
+                        Style="{ThemeResource AttentionValueInfoBadgeStyle}"
+                        Visibility="Collapsed" />
                 </Grid>
 
                 <Grid
                     Grid.Row="0"
                     Grid.RowSpan="2"
+                    Background="{ThemeResource CardBackgroundFillColorDefault}"
                     CornerRadius="5 5 0 0"
-                    Tapped="ImageEx_Tapped"
-                    Background="{ThemeResource CardBackgroundFillColorDefault}">
+                    Tapped="ImageEx_Tapped">
                     <Image
-                        CacheMode="BitmapCache"
                         x:Name="GridViewImage"
+                        CacheMode="BitmapCache"
                         Source="{x:Bind Anime.Image, Mode=OneWay}" />
                     <Button
                         x:Name="MoreButton"
