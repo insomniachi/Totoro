@@ -13,6 +13,7 @@ public record Tracking
     {
         var tracking = new Tracking
         {
+            Status = anime.Tracking?.Status,
             WatchedEpisodes = (anime.Tracking?.WatchedEpisodes ?? 0) + 1
         };
 

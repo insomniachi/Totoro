@@ -33,12 +33,6 @@ public partial class AnimeCollectionFilter : ReactiveObject
         var airingStatusCheck = AiringStatus is null || AiringStatus == model.AiringStatus;
 
         var isVisible = listStatusCheck && searchTextStatus && yearCheck && genresCheck && airingStatusCheck;
-
-		if (model.Id == 171018 && isVisible == false)
-		{
-			;
-		}
-
 		return isVisible;
     }
 }
