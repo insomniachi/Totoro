@@ -172,7 +172,7 @@ public sealed partial class ShellPage : Page, IEnableLogger
 
     public void AppTitleBar_BackButtonClick(object sender, RoutedEventArgs e)
     {
-        NavigationFrame.GoBack();
+        ViewModel.NavigationService.GoBack();
     }
 
     public void AppTitleBar_PaneButtonClick(object sender, RoutedEventArgs e)
