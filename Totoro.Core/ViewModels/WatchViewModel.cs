@@ -562,7 +562,28 @@ public partial class WatchViewModel : NavigatableViewModel
         {
             var suggested = results.MaxBy(x => Fuzz.PartialRatio(x.Title, title));
             this.Log().Debug($"{results.Count} entries found, suggested entry : {suggested.Title}({suggested.Url}) Confidence : {Fuzz.PartialRatio(suggested.Title, title)}");
-            return (await _viewService.ChoooseSearchResult(suggested, results, ProviderType), null);
+            var result = await _viewService.ChoooseSearchResult(suggested, results, ProviderType);
+
+            if(result is not null)
+            {
+                if(_preferencesService.HasPreferences(id))
+                {
+                    var preferences = _preferencesService.GetPreferences(id);
+                    preferences.Alias = result.Title;
+                    preferences.Provider = ProviderType;
+                    _preferencesService.Save();
+                }
+                else
+                {
+                    _preferencesService.AddPreferences(id, new AnimePreferences
+                    {
+                        Alias = result.Title,
+                        Provider = ProviderType
+                    });
+                }
+            }
+
+            return (result, null);
         }
     }
 
