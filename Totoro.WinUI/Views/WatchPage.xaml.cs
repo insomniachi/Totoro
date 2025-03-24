@@ -42,11 +42,6 @@ public sealed partial class WatchPage : WatchPageBase
                         MediaPlayerElement.SetMediaPlayer(wmpWrapper.GetMediaPlayer());
                         MediaPlayerElement.TransportControls = wmpWrapper.TransportControls as CustomMediaTransportControls;
                     }
-                    //else if (wrapper is LibVLCMediaPlayerWrapper vlcWrapper)
-                    //{
-                    //    SubscribeDoubleTap(VlcMediaPlayerElement, windowService);
-                    //    VlcMediaPlayerElement.MediaPlayer = vlcWrapper;
-                    //}
                     else if(wrapper is FlyleafMediaPlayerWrapper flyleafWrapper)
                     {
                         SubscribeDoubleTap(FlyleafMediaPlayerElement, windowService);
@@ -146,9 +141,14 @@ public sealed partial class WatchPage : WatchPageBase
 
     public static SolidColorBrush EpisodeForeground(bool isFiller)
     {
-        return isFiller
-            ? new SolidColorBrush(Colors.Yellow)
-            : new SolidColorBrush(Colors.White);
+        if(isFiller)
+        {
+            return new SolidColorBrush(Colors.Yellow);
+        }
+
+        return App.GetService<IThemeSelectorService>().Theme is Core.Models.ElementTheme.Dark
+            ? new SolidColorBrush(Colors.White)
+            : new SolidColorBrush(Colors.Black);
     }
 
     private string GetWindowTitle()

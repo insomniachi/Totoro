@@ -37,7 +37,7 @@
                         HorizontalAlignment="Stretch"
                         FontSize="14"
                         FontWeight="SemiBold"
-                        Foreground="White"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                         Text="{x:Bind GetTime(Anime.NextEpisodeAt), Mode=OneWay}"
                         TextAlignment="Center"
                         TextTrimming="CharacterEllipsis" />
