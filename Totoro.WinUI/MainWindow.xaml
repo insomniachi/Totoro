@@ -23,15 +23,15 @@
             Title="Totoro"
             Grid.Row="0"
             BackRequested="TitleBar_BackRequested"
+            IsBackButtonEnabled="{x:Bind Shell.ViewModel.IsBackEnabled, Mode=OneWay}"
             IsBackButtonVisible="True"
-            IsBackEnabled="{x:Bind Shell.ViewModel.IsBackEnabled, Mode=OneWay}"
             IsPaneToggleButtonVisible="False"
             PaneToggleRequested="TitleBar_PaneToggleRequested"
             Subtitle="{x:Bind Shell.Version}">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="/Assets/WindowIcon.png" />
             </TitleBar.IconSource>
-            <TitleBar.Footer>
+            <TitleBar.RightHeader>
                 <Button
                     Width="32"
                     Height="32"
@@ -47,7 +47,7 @@
                         DisplayName="{x:Bind Shell.ViewModel.User.Name, Mode=OneWay}"
                         ProfilePicture="{x:Bind help:Converters.StringToImage(Shell.ViewModel.User.Image), Mode=OneWay}" />
                 </Button>
-            </TitleBar.Footer>
+            </TitleBar.RightHeader>
         </TitleBar>
 
         <views:ShellPage x:Name="Shell" Grid.Row="1" />

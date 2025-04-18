@@ -1,16 +1,6 @@
 ﻿{
     "Anime": [
         {
-            "DisplayName": "Yugen Anime",
-            "Version": "1.5.0.0",
-            "FileName": "Totoro.Plugins.Anime.YugenAnime.dll"
-        },
-        {
-            "DisplayName": "Gogo Anime",
-            "Version": "1.5.0.0",
-            "FileName": "Totoro.Plugins.Anime.GogoAnime.dll"
-        },
-        {
             "DisplayName": "Allanime",
             "Version": "2.8.0.0",
             "FileName": "Totoro.Plugins.Anime.AllAnime.dll"
