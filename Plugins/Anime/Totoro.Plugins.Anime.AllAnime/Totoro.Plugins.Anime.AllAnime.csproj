@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Platforms>x64</Platforms>
+	  <LangVersion>preview</LangVersion>
 	<Version>2.8</Version>
 	<OutputPath Condition="$(Configuration) == Release">..\..\..\Plugins Store\</OutputPath>
 	<AppendTargetFrameworkToOutputPath Condition="$(Configuration) == Release">false</AppendTargetFrameworkToOutputPath>

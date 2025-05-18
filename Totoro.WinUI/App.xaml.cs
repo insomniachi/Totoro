@@ -28,6 +28,11 @@ namespace Totoro.WinUI;
 
 public partial class App : Application, IEnableLogger
 {
+    private static IList<IModule> _modules = 
+        [
+            new Plugins.Anime.AnimePahe.Module(),
+		];
+
     private static readonly IHost _host = Host
         .CreateDefaultBuilder()
         .ConfigureAppConfiguration(config =>
@@ -38,6 +43,7 @@ public partial class App : Application, IEnableLogger
         {
             services.AddPlatformServices()
                     .AddTotoro()
+                    .AddPluginRegistrar()
                     .AddPlugins()
                     .AddTracking()
                     .AddTorrenting()
@@ -51,6 +57,13 @@ public partial class App : Application, IEnableLogger
                                                                          PluginFactory<MangaProvider>.Instance,
                                                                          PluginFactory<ITorrentTracker>.Instance,
                                                                          PluginFactory<INativeMediaPlayer>.Instance));
+
+#if DEBUG
+            foreach (var module in _modules)
+            {
+				module.RegisterServices(services);
+			}
+#endif
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
@@ -177,7 +190,17 @@ public partial class App : Application, IEnableLogger
 
     protected async override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        StartFlyleaf();
+
+#if DEBUG
+        var registrar = GetService<IPluginRegistrar>();
+		foreach (var module in _modules)
+		{
+			module.OnServiceProviderCreated(_host.Services);
+            module.RegisterPlugins(registrar);
+		}
+#endif
+
+		StartFlyleaf();
         MainWindow = new MainWindow() { Title = "AppDisplayName".GetLocalized() };
         base.OnLaunched(args);
         RxApp.DefaultExceptionHandler = GetService<DefaultExceptionHandler>();
@@ -197,8 +220,6 @@ public partial class App : Application, IEnableLogger
     {
         FlyleafLib.Engine.Start(new FlyleafLib.EngineConfig()
         {
-            FFmpegDevices = false,    // Prevents loading avdevice/avfilter dll files. Enable it only if you plan to use dshow/gdigrab etc.
-
 #if RELEASE
             FFmpegPath = @"FFmpeg",
             FFmpegLogLevel = Flyleaf.FFmpeg.LogLevel.Quiet,

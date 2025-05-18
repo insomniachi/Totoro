@@ -1,5 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.DependencyInjection;
+using Totoro.Plugins.Anime.Contracts;
+using Totoro.Plugins.Contracts;
 using Xunit.Abstractions;
 
 namespace Totoro.Plugins.Anime.AnimePahe.Tests;
@@ -34,4 +38,32 @@ public class CatalogTests
             _output.WriteLine(JsonSerializer.Serialize(item, item.GetType(), _searializerOption));
         }
     }
+
+    [Fact]
+	public async Task SearchNew()
+    {
+		var services = new ServiceCollection();
+        var module = new Module();
+        module.RegisterServices(services);
+        services.AddTransient<IPluginConfiguration, FakePluginConfig>();
+		var provider = services.BuildServiceProvider();
+
+        var catalog = provider.GetRequiredKeyedService<IAnimeProvider>(Module.AnimeHeaven.Id);
+
+        var results = await catalog.SearchAsync("hyouka").ToListAsync();
+
+	}
+}
+
+public class FakePluginConfig : IPluginConfiguration
+{
+	public JsonObject GetConfiguration(Guid id)
+	{
+		throw new NotImplementedException();
+	}
+
+	public void Update()
+	{
+		throw new NotImplementedException();
+	}
 }

@@ -52,3 +52,6 @@ public class VideoStreamsForEpisode
     public AdditionalVideoStreamInformation AdditionalInformation { get; set; } = new();
     public List<StreamType> StreamTypes { get; } = [];
 }
+
+
+

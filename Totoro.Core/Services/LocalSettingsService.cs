@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Totoro.Plugins.Contracts;
 using Totoro.Plugins.Options;
 
 namespace Totoro.Core.Services;
@@ -51,6 +52,19 @@ public class LocalSettingsService : ILocalSettingsService
         _settings[key] = JsonNode.Parse(JsonSerializer.Serialize(value, _options));
         File.WriteAllText(_file, _settings.ToJsonString(_options));
     }
+}
+
+public class PluginConfiguration(ILocalSettingsService localSettingsService) : IPluginConfiguration
+{
+	public JsonObject GetConfiguration(Guid id)
+	{
+		throw new NotImplementedException();
+	}
+
+	public void Update()
+	{
+		throw new NotImplementedException();
+	}
 }
 
 public class TotoroTypeResolver : DefaultJsonTypeInfoResolver

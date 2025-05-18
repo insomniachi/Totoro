@@ -42,7 +42,7 @@ internal class Catalog : IAnimeCatalog
         }
         """;
 
-    class SearchResult : ICatalogItem, IHaveImage, IHaveSeason, IHaveRating, IHaveMalId, IHaveAnilistId
+    public class SearchResult : ICatalogItem, IHaveImage, IHaveSeason, IHaveRating, IHaveMalId, IHaveAnilistId
     {
         required public string Season { get; init; }
         required public string Year { get; init; }

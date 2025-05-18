@@ -9,9 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="4.0.2" />
-    <PackageReference Include="FlurlGraphQL" Version="2.0.3" />
+    <PackageReference Include="FlurlGraphQL" Version="2.0.5" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.5" />
+	<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5" />
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 	<PackageReference Include="ReactiveUI" Version="20.2.45" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />

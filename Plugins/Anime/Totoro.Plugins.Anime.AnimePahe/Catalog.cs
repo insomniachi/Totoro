@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Net.Http.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Flurl;
 using Flurl.Http;
 using Splat;
@@ -10,7 +12,7 @@ namespace Totoro.Plugins.Anime.AnimePahe;
 
 internal class Catalog : IAnimeCatalog, IEnableLogger
 {
-    class SearchResult : ICatalogItem, IHaveSeason, IHaveImage, IHaveStatus
+    public class SearchResult : ICatalogItem, IHaveSeason, IHaveImage, IHaveStatus
     {
         required public string Season { get; init; }
         required public string Status { get; init; }
