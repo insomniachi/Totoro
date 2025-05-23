@@ -197,8 +197,6 @@ public partial class App : Application, IEnableLogger
     {
         FlyleafLib.Engine.Start(new FlyleafLib.EngineConfig()
         {
-            FFmpegDevices = false,    // Prevents loading avdevice/avfilter dll files. Enable it only if you plan to use dshow/gdigrab etc.
-
 #if RELEASE
             FFmpegPath = @"FFmpeg",
             FFmpegLogLevel = Flyleaf.FFmpeg.LogLevel.Quiet,
