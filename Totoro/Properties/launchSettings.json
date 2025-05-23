@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Totoro (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Totoro (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

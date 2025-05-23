@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-	<String Id="ProductName">Totoro</String>
-	<String Id="ProductFolder">Totoro</String>
-	<String Id="Language">1033</String>
-	<String Id="Description">Scraps anime from internet and update progress on MyAnime list automatically.</String>
-	<String Id="Keywords">Anime,MyAnimeList,Stream</String>
-</WixLocalization>
