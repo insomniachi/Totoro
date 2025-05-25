@@ -30,6 +30,7 @@ class StreamLink
 [DebuggerDisplay("{priority} - {sourceUrl} - {type}")]
 class SourceUrlObj
 {
+    public string sourceName { get; set; }
     public string sourceUrl { get; set; }
     public double priority { get; set; }
     public string type { get; set; }

@@ -88,8 +88,6 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
 
     public async IAsyncEnumerable<VideoStreamsForEpisode> GetStreams(string url, Range range, StreamType streamType)
     {
-        var versionResponse = await ConfigManager<Config>.Current.Url.AppendPathSegment("getVersion").GetJsonAsync<GetVersionResponse>();
-        var apiEndPoint = new Url(versionResponse?.episodeIframeHead ?? "");
         var id = url.Split('/').LastOrDefault()?.Trim();
 
         var jObject = await ConfigManager<Config>.Current.Api
@@ -167,10 +165,30 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
             {
                 item.sourceUrl = DecryptSourceUrl(item.sourceUrl);
 
-                if (item.type == "iframe")
+				switch (item.sourceName)
+				{
+					case "Mp4":
+						yield return await FromMp4Upload(item.sourceUrl, e);
+                        yield break;
+					case "Yt-mp4":
+						yield return WithReferer(item.sourceUrl, "https://allanime.day/", e);
+						yield break;
+					case "Vg":
+						continue;
+					case "Fm-Hls":
+						continue;
+					case "Sw":
+						continue;
+					case "Ok":
+						continue;
+					default:
+						break;
+				}
+
+				if (item.type == "iframe" && item.sourceUrl.Contains("clock", StringComparison.OrdinalIgnoreCase))
                 {
-                    var clockUrl = ClockRegex().Replace(apiEndPoint + item.sourceUrl, ".json");
-                    var stream = await Extract(clockUrl);
+                    var clockUrl = ClockRegex().Replace("https://allanime.day" + item.sourceUrl, ".json");
+					var stream = await Extract(clockUrl);
                     if (stream is not null)
                     {
                         stream.Episode = e;
@@ -179,15 +197,6 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
                         yield break;
                     }
                 }
-                //else
-                //{
-                //    if (await Unpack(item.sourceUrl) is { } stream)
-                //    {
-                //        stream.Episode = e;
-                //        yield return stream;
-                //        yield break;
-                //    }
-                //}
             }
         }
     }
@@ -346,4 +355,45 @@ internal partial class StreamProvider : IMultiLanguageAnimeStreamProvider, IAnim
         var encrypted = sourceUrl[index..];
         return Decrypt(encrypted);
     }
+
+	[GeneratedRegex("video/mp4\\\",src:\\\"(https?://.*/video\\.mp4)\\\"")]
+	private static partial Regex Mp4JuicyServerRegex();
+
+	internal static async Task<VideoStreamsForEpisode> FromMp4Upload(string url, int episode)
+	{
+		var response = await url.GetStringAsync();
+		var match = Mp4JuicyServerRegex().Match(response.Replace(" ", "").Replace("\n", ""));
+        return new VideoStreamsForEpisode()
+        {
+            Episode = episode,
+			Streams =
+            {
+                new VideoStream()
+                {
+                    Url = match.Groups[1].Value,
+                    Resolution = "default",
+                    Headers=
+                    {
+                        [HeaderNames.Referer.ToLower()] = "https://www.mp4upload.com/",
+                    }
+                }
+            }
+        };
+	}
+
+	internal static VideoStreamsForEpisode WithReferer(string url, string referer, int episode)
+	{
+		return new VideoStreamsForEpisode
+		{
+            Episode = episode,
+			Streams = 
+            {
+                new VideoStream
+                {
+                    Url = url,
+					Headers = {[HeaderNames.Referer.ToLower()] = referer },
+                }
+            }
+		};
+	}
 }

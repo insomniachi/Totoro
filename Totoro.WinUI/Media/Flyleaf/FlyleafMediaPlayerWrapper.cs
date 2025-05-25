@@ -114,10 +114,10 @@ namespace Totoro.WinUI.Media.Flyleaf
             MediaPlayer = new();
             MediaPlayer.OpenCompleted += MediaPlayer_OpenCompleted;
 
-            if (stream.HasHeaders)
+            foreach (var item in stream.Headers)
             {
-                MediaPlayer.Config.Demuxer.FormatOpt["header"] = string.Join("\r\n", stream.Headers.Select(x => $"{x.Key}:{x.Value}"));
-            }
+                MediaPlayer.Config.Demuxer.FormatOpt[item.Key] = item.Value;
+			}
 
             if(stream.Stream is not null)
             {
