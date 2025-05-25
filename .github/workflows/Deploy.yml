@@ -22,7 +22,7 @@ jobs:
         -   name: 'Install dotnet'
             uses: actions/setup-dotnet@v1
             with:
-                dotnet-version: '9.0.300'
+                dotnet-version: '9.0'
         
         -   name: 'Add msbuild to PATH'
             uses: microsoft/setup-msbuild@v1.1
@@ -52,7 +52,7 @@ jobs:
                 ClientIdDiscord: ${{ secrets.DISCORD_CLIENT_ID }}
 
         -   name: 'Build Installer'
-            run: msbuild ${{ env.INSTALLER_PATH }} /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }} /property:BasePath=${{ env.PUBLISH_FOLDER }}
+            run: msbuild ${{ env.INSTALLER_PATH }} /restore /t:Build /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }} /property:BasePath=${{ env.PUBLISH_FOLDER }}
   
         -   name: 'Create Release'
             id: create_release
