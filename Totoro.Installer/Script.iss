@@ -28,7 +28,7 @@ LicenseFile=..\License.txt
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=FluentFin
+OutputBaseFilename=Totoro
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

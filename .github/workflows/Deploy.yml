@@ -6,7 +6,7 @@ on:
     - 'v*'
 
 env:
-  INSTALLER_PATH: 'Totoro.Installer\Totoro.Installer.wixproj'
+  INSTALLER_PATH: 'Totoro.Installer\Script.iss'
   MAIN_PROJECT_PATH: 'Totoro.WinUI\Totoro.WinUI.csproj'
   FFMPEG_PATH: 'Totoro.Installer\FFmpeg'
   PUBLISH_FOLDER: 'Totoro.WinUI\bin\publish'
@@ -51,8 +51,11 @@ jobs:
                 SimklSecret: ${{ secrets.SIMKL_SECRET }}
                 ClientIdDiscord: ${{ secrets.DISCORD_CLIENT_ID }}
 
-        -   name: 'Build Installer'
-            run: msbuild ${{ env.INSTALLER_PATH }} /restore /t:Build /property:Configuration=Release /property:BuildVersion=${{ steps.version.outputs.version-without-v }} /property:BasePath=${{ env.PUBLISH_FOLDER }}
+        -   name: Create Windows Installer
+            uses: Minionguyjpro/Inno-Setup-Action@v1.2.5
+            with:
+                path: ${{env.INSTALLER_PATH}}
+                options: /O+
   
         -   name: 'Create Release'
             id: create_release
@@ -63,9 +66,9 @@ jobs:
                 tag_name: ${{ steps.version.outputs.version-without-v }}
                 release_name: ${{ steps.version.outputs.version-without-v }}
 
-        -   name: 'Add MSI to release'
+        -   name: 'Add Exe to release'
             uses: csexton/release-asset-action@v2
             with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
-                pattern: Totoro.Installer/bin/Release/en-us/Totoro-Release.msi
+                pattern: Installer\Output\Totoro.exe
                 release-url: ${{ steps.create_release.outputs.upload_url }}
