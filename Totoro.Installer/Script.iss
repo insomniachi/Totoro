@@ -32,7 +32,6 @@ OutputBaseFilename=Totoro
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-WizardSmallImageFile=..\Totoro.WinUI\Assets\WindowIcon.png
 SetupIconFile=..\Totoro.WinUI\Assets\WindowIcon.ico
 
 [Languages]
