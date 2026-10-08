@@ -16,7 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Styles\NavigationView.xaml" />
-    <None Remove="Views\Home.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,7 +57,7 @@
     <ProjectReference Include="..\Totoro.UI\Totoro.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\Home.xaml">
+    <Page Update="Views\UserListPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

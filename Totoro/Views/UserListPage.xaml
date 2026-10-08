@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="Totoro.Views.Home"
+    x:Class="Totoro.Views.UserListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:anime="using:Totoro.Core.Module.Anime"
     xmlns:controls="using:Totoro.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Totoro.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:widgets="using:Totoro.UI.Controls.AnimeCardWidgets"
     mc:Ignorable="d">
 
     <Grid>
@@ -15,7 +17,11 @@
             <ItemsRepeater ItemsSource="{x:Bind ViewModel.Anime, Mode=OneWay}">
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="anime:AnimeModel">
-                        <controls:AnimeCard Anime="{x:Bind}" />
+                        <controls:AnimeCard Anime="{x:Bind}">
+                            <Interactivity:Interaction.Behaviors>
+                                <widgets:FloatingActionButtonWidget />
+                            </Interactivity:Interaction.Behaviors>
+                        </controls:AnimeCard>
                     </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
                 <ItemsRepeater.Layout>

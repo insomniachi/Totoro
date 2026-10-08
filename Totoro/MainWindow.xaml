@@ -16,7 +16,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid RequestedTheme="Light">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

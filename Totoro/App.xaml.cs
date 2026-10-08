@@ -33,7 +33,7 @@ public partial class App : Application
 
 				services.AddCoreServices();
 				services.AddSingleton<MainWindowViewModel>();
-				services.AddMainNavigationItem<Home,HomeViewModel>("Home", x =>
+				services.AddMainNavigationItem<UserListPage,UserListViewModel>("Home", x =>
 				{
 					x.UnselectedIcon = Icons.Home;
 					x.SelectedIcon = Icons.HomeFilled;

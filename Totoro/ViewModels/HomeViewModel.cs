@@ -1,22 +1,24 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
-using Totoro.Core.Navigation;
+using Totoro.UI.Navigation;
 
 namespace Totoro.ViewModels;
 
-public partial class HomeViewModel(IFactory<IAnimeTracker, Guid> factory) : ObservableObject, INavigationAware
+public partial class UserListViewModel(IFactory<IAnimeTracker, Guid> factory) : NavigatableViewModel
 {
-	public Task OnNavigatedFrom()
+	protected override async Task OnNavigatedToInternal()
 	{
-		return Task.CompletedTask;
-	}
+		var tracker = factory.CreateDefault();
 
-	public async Task OnNavigatedTo()
-	{
-		var tracker = factory.CreateDefault()!;
+		if(tracker is null)
+		{
+			return;
+		}
+
 		Anime = await tracker.GetUserList(CancellationToken.None);
 	}
+
 
 	[ObservableProperty]
 	public partial List<AnimeModel> Anime { get; set; }

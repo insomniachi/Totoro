@@ -9,30 +9,32 @@
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     mc:Ignorable="d">
 
-    <Grid CornerRadius="{StaticResource ControlCornerRadius}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Border CornerRadius="{ThemeResource ControlCornerRadius}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <Grid x:Name="WidgetCanvas" />
+            <Image
+                Grid.RowSpan="2"
+                Source="{x:Bind Anime.Image, Mode=OneWay}"
+                Stretch="UniformToFill" />
 
-        <Image
-            Grid.RowSpan="2"
-            Source="{x:Bind Anime.Image, Mode=OneWay}"
-            Stretch="UniformToFill" />
+            <Border
+                Grid.Row="1"
+                Height="60"
+                Padding="16"
+                Background="{StaticResource AcrylicBackgroundFillColorBaseBrush}">
+                <TextBlock
+                    Style="{StaticResource BodyLargeTextBlockStyle}"
+                    Text="{x:Bind Anime.Title, Mode=OneWay}"
+                    TextAlignment="Center"
+                    TextWrapping="WrapWholeWords" />
+            </Border>
 
-        <Border
-            Grid.Row="1"
-            Height="60"
-            Padding="16"
-            Background="{StaticResource CardBackgroundFillColorSecondaryBrush}">
-            <TextBlock
-                Style="{StaticResource BodyLargeTextBlockStyle}"
-                Text="{x:Bind Anime.Title, Mode=OneWay}"
-                TextAlignment="Center"
-                TextWrapping="WrapWholeWords" />
-        </Border>
+            <Grid x:Name="WidgetCanvas" Background="Transparent" />
 
-    </Grid>
+        </Grid>
+    </Border>
 </UserControl>
