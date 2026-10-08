@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="Totoro.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:uiNavigation="using:Totoro.UI.Navigation"
+    Title="Totoro"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid RequestedTheme="Light">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TitleBar
+            Title="Totoro"
+            IsBackButtonVisible="True"
+            IsPaneToggleButtonVisible="True"
+            Subtitle="1.0">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/StoreLogo.png" />
+            </TitleBar.IconSource>
+            <TitleBar.Content>
+                <AutoSuggestBox
+                    Width="360"
+                    VerticalAlignment="Center"
+                    PlaceholderText="Search.."
+                    QueryIcon="Find" />
+            </TitleBar.Content>
+            <TitleBar.RightHeader>
+                <PersonPicture
+                    Width="30"
+                    Height="30"
+                    Initials="JD" />
+            </TitleBar.RightHeader>
+        </TitleBar>
+
+        <NavigationView
+            Grid.Row="1"
+            FooterMenuItemsSource="{x:Bind ViewModel.FooterNavigationItems}"
+            IsBackButtonVisible="Collapsed"
+            IsPaneToggleButtonVisible="False"
+            MenuItemsSource="{x:Bind ViewModel.NavigationItems}"
+            Style="{StaticResource MainNavigationViewStyle}">
+            <Interactivity:Interaction.Behaviors>
+                <uiNavigation:RegisterForNavigationBehavior NavigatorKey="main" />
+            </Interactivity:Interaction.Behaviors>
+            <SplitView
+                DisplayMode="Overlay"
+                LightDismissOverlayMode="On"
+                OpenPaneLength="700"
+                PanePlacement="Right">
+                <Interactivity:Interaction.Behaviors>
+                    <uiNavigation:RegisterForNavigationBehavior NavigatorKey="pane" />
+                </Interactivity:Interaction.Behaviors>
+                <SplitView.Pane>
+                    <Grid>
+                        <Frame x:Name="Pane" />
+                    </Grid>
+                </SplitView.Pane>
+                <Grid Padding="36">
+                    <Frame x:Name="Main" Background="Transparent" />
+                </Grid>
+            </SplitView>
+        </NavigationView>
+
+    </Grid>
+</Window>

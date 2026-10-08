@@ -1,0 +1,16 @@
+{
+  "activeProfile": "Totoro (Unpackaged)",
+  "profiles": {
+    "Totoro (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Totoro (Unpackaged)": {
+      "commandName": "Project",
+      "commandLineArgs": "",
+      "workingDirectory": "",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
