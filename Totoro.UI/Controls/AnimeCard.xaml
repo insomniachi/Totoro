@@ -22,10 +22,15 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <Image
-                Grid.RowSpan="2"
-                Source="{x:Bind Anime.Image, Mode=OneWay}"
-                Stretch="UniformToFill" />
+            <!--
+                EdgeLighting clips the card to an 8px radius. At the bottom corners both the image and the title bar sit on
+                that curve, and the clip's antialiased edge pixels let the image show through the title bar as a 1px fringe.
+                Rounding the image's bottom corners a little more keeps it just inside the curve there; the title bar
+                covers the difference.
+            -->
+            <Border Grid.RowSpan="2" CornerRadius="8,8,12,12">
+                <Image Source="{x:Bind Anime.Image, Mode=OneWay}" Stretch="UniformToFill" />
+            </Border>
 
             <Border
                 Grid.Row="1"
