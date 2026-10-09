@@ -54,6 +54,11 @@ public abstract class AnimeCardWidget<TControl> : BehaviorBase<AnimeCard>
 			return;
 		}
 
+		if (Control is not null)
+		{
+			OnHiding(Control);
+		}
+
 		Control?.Visibility = Visibility.Collapsed;
 		grid.Children.Remove(Control);
 		Control = null;
@@ -63,6 +68,9 @@ public abstract class AnimeCardWidget<TControl> : BehaviorBase<AnimeCard>
 
 
 	protected abstract TControl CreateWidget();
+
+	/// <summary>Called right before the widget is collapsed and removed, i.e. before its hide animation runs.</summary>
+	protected virtual void OnHiding(TControl widget) { }
 
 	protected virtual void OnPointerEntered() { }
 
