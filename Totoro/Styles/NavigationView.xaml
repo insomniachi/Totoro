@@ -747,7 +747,8 @@
                                 RowSpacing="6">
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
-                                    <RowDefinition />
+                                    <!--  Auto, not *: the footer measures items at a fixed height, where a star row is squeezed below the 20px icon and clips it  -->
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition />
                                 </Grid.RowDefinitions>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    mc:Ignorable="d">
+
+    <ScrollView>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16"
+            Spacing="4">
+            <TextBlock
+                Margin="0,0,0,24"
+                Style="{ThemeResource TitleTextBlockStyle}"
+                Text="Settings" />
+
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="General" />
+
+            <toolkit:SettingsCard Description="The page Totoro opens on when it starts." Header="Startup page">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE80F;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.StartupPages, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.StartupPage, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="navigation:NavigationItemViewModel">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+        </StackPanel>
+    </ScrollView>
+</Page>

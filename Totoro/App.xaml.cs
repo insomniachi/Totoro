@@ -42,6 +42,12 @@ public partial class App : Application
 					x.UnselectedIcon = Icons.Home;
 					x.SelectedIcon = Icons.HomeFilled;
 				});
+				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
+				{
+					x.UnselectedIcon = Icons.Settings;
+					x.SelectedIcon = Icons.Settings;
+					x.IsFooter = true;
+				});
 			})
 			.Build();
 	}

@@ -1,17 +1,18 @@
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Totoro.UI;
 
 public static class Icons
 {
 	public static SymbolIcon Home => new(Symbol.Home);
-	public static FontIcon HomeFilled => new() { Glyph = "" };
+	public static FontIcon HomeFilled => new() { Glyph = "\uEA8A" };
+	public static SymbolIcon Settings => new(Symbol.Setting);
 
-	public static FontIcon Play => new() { Glyph = "" };
-	public static FontIcon Clock => new() { Glyph = "" };
-	public static FontIcon Completed => new() { Glyph = "" };
-	public static FontIcon Pause => new() { Glyph = "" };
-	public static FontIcon Cancel => new() { Glyph = "" };
+	public static FontIcon Play => new() { Glyph = "\uE768" };
+	public static FontIcon Clock => new() { Glyph = "\uE823" };
+	public static FontIcon Completed => new() { Glyph = "\uE930" };
+	public static FontIcon Pause => new() { Glyph = "\uE769" };
+	public static FontIcon Cancel => new() { Glyph = "\uE711" };
 
 	/// <summary>
 	/// Resolves an icon key (the name of one of the properties above) coming from UI-agnostic code, such as a filter option.
@@ -21,6 +22,7 @@ public static class Icons
 	{
 		nameof(Home) => Home,
 		nameof(HomeFilled) => HomeFilled,
+		nameof(Settings) => Settings,
 		nameof(Play) => Play,
 		nameof(Clock) => Clock,
 		nameof(Completed) => Completed,

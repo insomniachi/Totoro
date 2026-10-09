@@ -45,6 +45,9 @@ namespace Totoro
 			Navigators.NavigatorAdded -= OnNavigatorAdded;
 			var navigator = e.Navigator;
 			navigator.Navigated += (_, _) => AppTitleBar.IsBackButtonVisible = navigator.CanGoBack;
+
+			// Selecting the item makes the navigator navigate to it, and keeps the menu highlight in sync.
+			NavView.SelectedItem = ViewModel?.StartupItem;
 		}
 
 		public MainWindowViewModel? ViewModel { get; set; }

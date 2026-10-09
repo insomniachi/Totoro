@@ -57,6 +57,15 @@
             <Interactivity:Interaction.Behaviors>
                 <uiNavigation:RegisterForNavigationBehavior NavigatorKey="main" />
             </Interactivity:Interaction.Behaviors>
+            <NavigationView.MenuItemTemplate>
+                <!--  Explicit container so screen readers announce the label instead of the view model's type name  -->
+                <DataTemplate x:DataType="navigation:NavigationItemViewModel">
+                    <NavigationViewItem
+                        AutomationProperties.Name="{x:Bind Label}"
+                        Content="{x:Bind}"
+                        Style="{StaticResource MainNavigationViewItemStyle}" />
+                </DataTemplate>
+            </NavigationView.MenuItemTemplate>
             <SplitView
                 DisplayMode="Overlay"
                 LightDismissOverlayMode="On"
