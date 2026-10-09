@@ -4,12 +4,17 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:devwinui="using:DevWinUI"
     xmlns:local="using:Totoro.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     mc:Ignorable="d">
 
-    <Border CornerRadius="{ThemeResource ControlCornerRadius}">
+    <devwinui:EdgeLighting
+        FadeOffset="1"
+        IsLighting="false"
+        MidOffset="0.5"
+        StrokeThickness="0">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -36,5 +41,5 @@
             <Grid x:Name="WidgetCanvas" Background="Transparent" />
 
         </Grid>
-    </Border>
+    </devwinui:EdgeLighting>
 </UserControl>

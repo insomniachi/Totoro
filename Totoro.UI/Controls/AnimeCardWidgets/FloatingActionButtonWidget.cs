@@ -1,5 +1,5 @@
-﻿using CommunityToolkit.WinUI.Animations;
-using CommunityToolkit.WinUI.Behaviors;
+﻿using System.Xml.Linq;
+using CommunityToolkit.WinUI.Animations;
 using DevWinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -23,8 +23,8 @@ public class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		var vb = new Viewbox()
 		{
 			Child = control,
-			Height = 50,
-			Width = 50,
+			Height = 45,
+			Width = 45,
 			HorizontalAlignment = HorizontalAlignment.Right,
 			VerticalAlignment = VerticalAlignment.Bottom,
 			Margin = new Thickness(8),
@@ -75,69 +75,4 @@ public class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 			Content = new SymbolIcon(symbol)
 		};
 	}
-}
-
-public abstract class AnimeCardWidget<TControl> : BehaviorBase<AnimeCard>
-	where TControl : UIElement
-{
-
-	TControl? Control { get; set; }
-
-	protected override void OnAttached()
-	{
-		var grid = AssociatedObject.FindName("WidgetCanvas") as Microsoft.UI.Xaml.Controls.Grid;
-		if (grid is null)
-		{
-			return;
-		}
-
-		grid.PointerEntered += OnPointerEntered;
-		grid.PointerExited += OnPointerExited;
-	}
-
-	protected override void OnDetaching()
-	{
-		var grid = AssociatedObject.FindName("WidgetCanvas") as Microsoft.UI.Xaml.Controls.Grid;
-		if (grid is null)
-		{
-			return;
-		}
-
-		grid.PointerEntered -= OnPointerEntered;
-		grid.PointerExited -= OnPointerExited;
-	}
-
-	private void OnPointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-	{
-		if(sender is not Grid grid)
-		{
-			return;
-		}
-
-		Control = CreateWidget();
-		grid.Children.Add(Control);
-
-		OnPointerEntered();
-	}
-
-	private void OnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
-	{
-		if (sender is not Grid grid)
-		{
-			return;
-		}
-
-		Control?.Visibility = Visibility.Collapsed;
-		grid.Children.Remove(Control);
-		Control = null;
-
-		OnPointerExited();
-	}
-
-
-	protected abstract TControl CreateWidget();
-
-	protected virtual void OnPointerEntered() { }
-
-	protected virtual void OnPointerExited() { }
 }

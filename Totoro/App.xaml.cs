@@ -8,7 +8,6 @@ using Totoro.Core.Module.Anime;
 using Totoro.UI;
 using Totoro.ViewModels;
 using Totoro.Views;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace Totoro;
@@ -34,6 +33,11 @@ public partial class App : Application
 				services.AddCoreServices();
 				services.AddSingleton<MainWindowViewModel>();
 				services.AddMainNavigationItem<UserListPage,UserListViewModel>("Home", x =>
+				{
+					x.UnselectedIcon = Icons.Home;
+					x.SelectedIcon = Icons.HomeFilled;
+				});
+				services.AddMainNavigationItem<TestPage, TestViewModel>("Test", x =>
 				{
 					x.UnselectedIcon = Icons.Home;
 					x.SelectedIcon = Icons.HomeFilled;
