@@ -11,6 +11,7 @@
     mc:Ignorable="d">
 
     <devwinui:EdgeLighting
+        x:Name="Lighting"
         FadeOffset="1"
         IsLighting="false"
         MidOffset="0.5"

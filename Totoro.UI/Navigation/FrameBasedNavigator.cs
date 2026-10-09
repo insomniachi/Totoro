@@ -8,7 +8,35 @@ namespace Totoro.UI.Navigation;
 
 internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IServiceScopeFactory serviceScopeFactory, ILogger logger) : INavigator
 {
+	// Scope that owns the current page's view model and its dependencies.
+	// Disposed when we navigate away, after OnNavigatedFrom has run.
+	private IServiceScope? _currentScope;
+
 	public event EventHandler? Navigated;
+
+	public bool CanGoBack => GetFrame().CanGoBack;
+
+	public Task GoBack()
+	{
+		try
+		{
+			var frame = GetFrame();
+			if (!frame.CanGoBack)
+			{
+				return Task.CompletedTask;
+			}
+
+			frame.GoBack();
+			OnWentBack();
+			OnNavigated();
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Back navigation failed");
+		}
+
+		return Task.CompletedTask;
+	}
 
 	public Task NavigateToData(object data)
 	{
@@ -78,14 +106,17 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 
 	protected async void OnFrameNavigating(object sender, NavigatingCancelEventArgs e)
 	{
+		if (e.Cancel)
+		{
+			return;
+		}
+
+		var outgoingScope = _currentScope;
+		_currentScope = null;
+
 		try
 		{
-			if (GetFrame().Content is not Page page)
-			{
-				return;
-			}
-
-			if (page.DataContext is INavigationAware navigationAware)
+			if (GetFrame().Content is Page { DataContext: INavigationAware navigationAware })
 			{
 				await navigationAware.OnNavigatedFrom();
 			}
@@ -93,6 +124,10 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 		catch (Exception ex)
 		{
 			logger.LogError(ex, "ViewModel Uninitialization Failed");
+		}
+		finally
+		{
+			outgoingScope?.Dispose();
 		}
 	}
 
@@ -112,7 +147,10 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 				return;
 			}
 
-			using var scope = serviceScopeFactory.CreateScope();
+			// Not disposed here: the view model keeps using services from this scope
+			// for as long as the page is shown. OnFrameNavigating disposes it.
+			var scope = serviceScopeFactory.CreateScope();
+			_currentScope = scope;
 			var vmObj = e.Parameter is null
 				? ActivatorUtilities.CreateInstance(scope.ServiceProvider, map.ViewModel)
 				: ActivatorUtilities.CreateInstance(scope.ServiceProvider, map.ViewModel, e.Parameter);
@@ -143,4 +181,45 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 	protected void OnNavigated() => Navigated?.Invoke(this, EventArgs.Empty);
 
 	protected virtual void OnNavigating() { }
+
+	/// <summary>
+	/// Leaves the current page without showing a new one: the view model gets OnNavigatedFrom,
+	/// its scope is disposed, and the frame's content and history are cleared.
+	/// </summary>
+	protected async Task ClearAsync()
+	{
+		var outgoingScope = _currentScope;
+		_currentScope = null;
+
+		try
+		{
+			var frame = GetFrame();
+			if (frame.Content is Page { DataContext: INavigationAware navigationAware })
+			{
+				await navigationAware.OnNavigatedFrom();
+			}
+
+			frame.Content = null;
+			frame.BackStack.Clear();
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Clearing navigation failed");
+		}
+		finally
+		{
+			outgoingScope?.Dispose();
+		}
+
+		OnNavigated();
+	}
+
+	/// <summary>Called after a successful GoBack, once the previous page is showing again.</summary>
+	protected virtual void OnWentBack() { }
+
+	/// <summary>The view model type of the page currently shown in the frame, if it's registered.</summary>
+	protected Type? GetCurrentViewModelType()
+	{
+		return GetFrame().Content is { } content ? viewRegistry.FindByView(content.GetType())?.ViewModel : null;
+	}
 }

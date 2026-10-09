@@ -23,9 +23,10 @@
         </Grid.RowDefinitions>
 
         <TitleBar
+            x:Name="AppTitleBar"
             Title="Totoro"
-            IsBackButtonVisible="True"
-            IsPaneToggleButtonVisible="True"
+            IsBackButtonVisible="False"
+            IsPaneToggleButtonVisible="False"
             Subtitle="1.0">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="/Assets/StoreLogo.png" />
@@ -46,6 +47,7 @@
         </TitleBar>
 
         <NavigationView
+            x:Name="NavView"
             Grid.Row="1"
             FooterMenuItemsSource="{x:Bind ViewModel.FooterNavigationItems}"
             IsBackButtonVisible="Collapsed"

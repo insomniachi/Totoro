@@ -81,9 +81,9 @@ public static class ServiceCollectionExtensions
 		{
 			services.AddTransient<IFactory<TService, Guid>, Factory<TService, Guid>>(sp =>
 			{
-				var factory = sp.GetRequiredService<IServiceScopeFactory>();
+				// sp is the provider doing the resolving (the navigation scope for view models)
 				var settings = sp.GetRequiredService<IPreferences>();
-				return new Factory<TService, Guid>(factory, settings, key);
+				return new Factory<TService, Guid>(sp, settings, key);
 			});
 
 			return services;

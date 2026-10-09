@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.UI.Navigation;
 using Totoro.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -16,7 +17,34 @@ namespace Totoro
 		{
 			InitializeComponent();
 			ExtendsContentIntoTitleBar = true;
+			SetTitleBar(AppTitleBar);
 			AppWindow.TitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
+
+			// The back button is hidden (not just disabled) until there is somewhere to go back to.
+			AppTitleBar.BackRequested += async (_, _) =>
+			{
+				if (Navigators.TryGetNavigator(MainNavigatorKey, out var navigator))
+				{
+					await navigator.GoBack();
+				}
+			};
+
+			// The "main" navigator is created when the NavigationView loads, after this constructor runs.
+			Navigators.NavigatorAdded += OnNavigatorAdded;
+		}
+
+		private const string MainNavigatorKey = "main";
+
+		private void OnNavigatorAdded(object? sender, NavigatorAddedEventArgs e)
+		{
+			if (e.Key != MainNavigatorKey)
+			{
+				return;
+			}
+
+			Navigators.NavigatorAdded -= OnNavigatorAdded;
+			var navigator = e.Navigator;
+			navigator.Navigated += (_, _) => AppTitleBar.IsBackButtonVisible = navigator.CanGoBack;
 		}
 
 		public MainWindowViewModel? ViewModel { get; set; }

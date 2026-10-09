@@ -16,8 +16,13 @@ public interface IFactory<out TService, TId>
 }
 
 
+/// <summary>
+/// Resolves services from the provider the factory itself was resolved from.
+/// When a view model gets the factory inside a navigation scope, everything the factory
+/// creates lives (and is disposed) with that page instead of with a throwaway scope.
+/// </summary>
 public class Factory<TService, TId>(
-	IServiceScopeFactory serviceScopeFactory,
+	IServiceProvider serviceProvider,
 	IPreferences preferences,
 	string defaultKey) : IFactory<TService, TId>
 	where TService : notnull
@@ -29,33 +34,28 @@ public class Factory<TService, TId>(
 			return default;
 		}
 
-		using var scope = serviceScopeFactory.CreateScope();
-
-		var service = scope.ServiceProvider.GetKeyedService<TService>(id);
+		var service = serviceProvider.GetKeyedService<TService>(id);
 		if (service is not null)
 		{
 			return service;
 		}
 
-		var defaultService = scope.ServiceProvider.GetKeyedService<TService>(default(TId)!);
-		return defaultService;
+		return serviceProvider.GetKeyedService<TService>(default(TId)!);
 	}
 
 
 	public TService? CreateDefault()
 	{
-		using var scope = serviceScopeFactory.CreateScope();
 		var key = preferences.ReadKey<TId>(defaultKey);
-		return scope.ServiceProvider.GetKeyedService<TService>(key) ??
-			   scope.ServiceProvider.GetKeyedServices<TService>(KeyedService.AnyKey).FirstOrDefault();
+		return serviceProvider.GetKeyedService<TService>(key) ??
+			   serviceProvider.GetKeyedServices<TService>(KeyedService.AnyKey).FirstOrDefault();
 	}
 
 	public TId? GetDefaultId() => preferences.ReadKey<TId>(defaultKey);
 
 	public IEnumerable<TService> CreateAll()
 	{
-		using var scope = serviceScopeFactory.CreateScope();
-		return scope.ServiceProvider.GetKeyedServices<TService>(KeyedService.AnyKey);
+		return serviceProvider.GetKeyedServices<TService>(KeyedService.AnyKey);
 	}
 
 	public bool CanCreate()

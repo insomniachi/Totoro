@@ -11,7 +11,8 @@ namespace Totoro.UI.Controls.AnimeCardWidgets;
 
 public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 {
-	private EdgeLighting _lighting = null!;
+	private Grid? _canvas;
+	private EdgeLighting? _lighting;
 
 	private static readonly AnimationSet _enterAnimation =
 		[
@@ -36,8 +37,17 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 
 	protected override void OnAttached()
 	{
-		var grid = (Grid)AssociatedObject.FindName("WidgetCanvas");
-		_lighting = AssociatedObject.FindDescendant<EdgeLighting>()!;
+		base.OnAttached();
+
+		// FindName works as soon as InitializeComponent has run. FindDescendant needs the
+		// visual tree, which may not exist yet when the card comes from a DataTemplate.
+		_canvas = AssociatedObject.FindName("WidgetCanvas") as Grid;
+		_lighting = AssociatedObject.FindName("Lighting") as EdgeLighting;
+
+		if (_canvas is null || _lighting is null)
+		{
+			return;
+		}
 
 		if (Application.Current.Resources.TryGetValue("SystemControlBackgroundAccentBrush", out var brushObj) && brushObj is SolidColorBrush brush)
 		{
@@ -45,21 +55,41 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 		}
 
 		CommunityToolkit.WinUI.VisualExtensions.SetNormalizedCenterPoint(AssociatedObject, "0.5, 0.5");
-		grid.PointerEntered += OnPointerEntered;
-		grid.PointerExited += OnPointerExited;
+		_canvas.PointerEntered += OnPointerEntered;
+		_canvas.PointerExited += OnPointerExited;
+	}
+
+	protected override void OnDetaching()
+	{
+		base.OnDetaching();
+
+		if (_canvas is not null)
+		{
+			_canvas.PointerEntered -= OnPointerEntered;
+			_canvas.PointerExited -= OnPointerExited;
+		}
+
+		_canvas = null;
+		_lighting = null;
 	}
 
 	private void OnPointerExited(object sender, PointerRoutedEventArgs e)
 	{
 		_exitAnimation.StartAsync(AssociatedObject);
-		_lighting.StrokeThickness = 0;
-		_lighting.IsLighting = false;
+		if (_lighting is not null)
+		{
+			_lighting.StrokeThickness = 0;
+			_lighting.IsLighting = false;
+		}
 	}
 
 	private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
 	{
 		_enterAnimation.StartAsync(AssociatedObject);
-		_lighting.StrokeThickness = 5;
-		_lighting.IsLighting = true;
+		if (_lighting is not null)
+		{
+			_lighting.StrokeThickness = 5;
+			_lighting.IsLighting = true;
+		}
 	}
 }

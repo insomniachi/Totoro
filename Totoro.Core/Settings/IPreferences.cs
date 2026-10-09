@@ -32,6 +32,7 @@ internal class Preferences : IPreferences
 		};
 
 		_file = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "settings.json");
+		Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
 		if (File.Exists(_file))
 		{
 			_settings = JsonNode.Parse(File.ReadAllText(_file))!.AsObject();
