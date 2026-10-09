@@ -9,6 +9,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Totoro.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:widgets="using:Totoro.UI.Controls.AnimeCardWidgets"
     mc:Ignorable="d">
 
@@ -17,28 +18,43 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ScrollView Grid.Row="1">
-            <ItemsRepeater Margin="16,16,0,0" ItemsSource="{x:Bind ViewModel.Anime, Mode=OneWay}">
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="anime:AnimeModel">
-                        <controls:AnimeCard Anime="{x:Bind}">
-                            <Interactivity:Interaction.Behaviors>
-                                <widgets:FloatingActionButtonWidget />
-                                <widgets:HoverEffectsBehavior />
-                            </Interactivity:Interaction.Behaviors>
-                        </controls:AnimeCard>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-                <ItemsRepeater.Layout>
-                    <UniformGridLayout
-                        ItemsJustification="Start"
-                        ItemsStretch="Fill"
-                        MinColumnSpacing="32"
-                        MinItemHeight="400"
-                        MinItemWidth="250"
-                        MinRowSpacing="32" />
-                </ItemsRepeater.Layout>
-            </ItemsRepeater>
-        </ScrollView>
+        <toolkit:SwitchPresenter
+            Grid.Row="1"
+            TargetType="x:Boolean"
+            Value="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
+            <toolkit:Case Value="True">
+                <ProgressRing
+                    Width="56"
+                    Height="56"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsActive="True" />
+            </toolkit:Case>
+            <toolkit:Case IsDefault="True" Value="False">
+                <ScrollView>
+                    <ItemsRepeater Margin="16,16,0,0" ItemsSource="{x:Bind ViewModel.Anime, Mode=OneWay}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="anime:AnimeModel">
+                                <controls:AnimeCard Anime="{x:Bind}">
+                                    <Interactivity:Interaction.Behaviors>
+                                        <widgets:FloatingActionButtonWidget />
+                                        <widgets:HoverEffectsBehavior />
+                                    </Interactivity:Interaction.Behaviors>
+                                </controls:AnimeCard>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                        <ItemsRepeater.Layout>
+                            <UniformGridLayout
+                                ItemsJustification="Start"
+                                ItemsStretch="Fill"
+                                MinColumnSpacing="32"
+                                MinItemHeight="400"
+                                MinItemWidth="250"
+                                MinRowSpacing="32" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </ScrollView>
+            </toolkit:Case>
+        </toolkit:SwitchPresenter>
     </Grid>
 </Page>
