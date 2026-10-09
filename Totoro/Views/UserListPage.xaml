@@ -7,9 +7,11 @@
     xmlns:anime="using:Totoro.Core.Module.Anime"
     xmlns:controls="using:Totoro.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:filtering="using:Totoro.Core.Filtering"
     xmlns:local="using:Totoro.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI"
     xmlns:widgets="using:Totoro.UI.Controls.AnimeCardWidgets"
     mc:Ignorable="d">
 
@@ -18,6 +20,38 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <toolkit:Segmented
+            Grid.Row="0"
+            Margin="16,0,16,0"
+            HorizontalAlignment="Center"
+            ItemsSource="{x:Bind ViewModel.StatusFilter.Options, Mode=OneWay}"
+            SelectedIndex="{x:Bind ViewModel.StatusFilter.SelectedIndex, Mode=TwoWay}">
+            <toolkit:Segmented.ItemTemplate>
+                <!--  The item's default style sets its own FontSize, so size the text here rather than on the Segmented  -->
+                <DataTemplate x:DataType="filtering:FilterOption">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Viewbox
+                            Width="18"
+                            Height="18"
+                            VerticalAlignment="Center">
+                            <ContentPresenter Content="{x:Bind ui:Icons.FromKey(IconKey)}" />
+                        </Viewbox>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource BodyLargeStrongTextBlockStyle}"
+                            Text="{x:Bind Label}" />
+                    </StackPanel>
+                </DataTemplate>
+            </toolkit:Segmented.ItemTemplate>
+            <toolkit:Segmented.ItemContainerStyle>
+                <!--  No BasedOn needed: the control's theme style (and its template) still applies underneath  -->
+                <Style TargetType="toolkit:SegmentedItem">
+                    <Setter Property="MinWidth" Value="160" />
+                    <Setter Property="Padding" Value="24,12" />
+                </Style>
+            </toolkit:Segmented.ItemContainerStyle>
+
+        </toolkit:Segmented>
         <toolkit:SwitchPresenter
             Grid.Row="1"
             TargetType="x:Boolean"
@@ -32,7 +66,10 @@
             </toolkit:Case>
             <toolkit:Case IsDefault="True" Value="False">
                 <ScrollView>
-                    <ItemsRepeater Margin="16,16,0,0" ItemsSource="{x:Bind ViewModel.Anime, Mode=OneWay}">
+                    <ItemsRepeater Margin="16" ItemsSource="{x:Bind ViewModel.Anime, Mode=OneWay}">
+                        <ItemsRepeater.ItemTransitionProvider>
+                            <controls:CardCollectionTransitionProvider />
+                        </ItemsRepeater.ItemTransitionProvider>
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="anime:AnimeModel">
                                 <controls:AnimeCard Anime="{x:Bind}">
