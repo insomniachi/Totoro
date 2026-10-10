@@ -25,6 +25,7 @@ public partial class AnimeModel : ObservableObject
 	public Season? Season { get; set; }
 	public Guid? ServiceId { get; init; }
 	public string? ServiceName { get; init; }
+	/// <summary>HTML (AniList renders all of its markup to HTML), which views render, e.g. with Totoro.UI.Text.HtmlText.</summary>
 	public string Description { get; set; } = "";
 	public IEnumerable<AnimeModel> Related { get; set; } = [];
 	public IEnumerable<AnimeModel> Recommended { get; set; } = [];

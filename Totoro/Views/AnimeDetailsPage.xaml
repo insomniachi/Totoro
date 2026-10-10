@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Totoro.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:text="using:Totoro.UI.Text"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
     mc:Ignorable="d">
@@ -147,10 +148,7 @@
                     <!--  Synopsis  -->
                     <StackPanel Spacing="8" Visibility="{x:Bind local:AnimeDetailsPage.VisibleIfAny(ViewModel.Description), Mode=OneWay}">
                         <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Synopsis" />
-                        <TextBlock
-                            IsTextSelectionEnabled="True"
-                            Text="{x:Bind ViewModel.Description, Mode=OneWay}"
-                            TextWrapping="Wrap" />
+                        <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Description, Mode=OneWay}" />
                     </StackPanel>
 
                     <!--  Studios  -->

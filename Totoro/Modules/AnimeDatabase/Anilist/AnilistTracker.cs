@@ -156,7 +156,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 														   .WithStatus()
 														   .WithMeanScore()
 														   .WithPopularity()
-														   .WithDescription()
+														   .WithDescription(true)
 														   .WithTrailer(new MediaTrailerQueryBuilder()
 																		.WithSite()
 																		.WithThumbnail()

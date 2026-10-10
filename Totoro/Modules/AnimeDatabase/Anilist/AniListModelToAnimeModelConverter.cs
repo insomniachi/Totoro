@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Flurl;
 using Totoro.Core;
 using Totoro.Core.Module.Anime;
@@ -11,9 +10,6 @@ namespace Totoro.Modules.AnimeDatabase.Anilist;
 public static partial class AniListModelToAnimeModelConverter
 {
     private static readonly Settings Settings = Locator.GetRequiredService<IModuleSettings<Settings>>().Value;
-
-    [GeneratedRegex(@"(</?i>)|(<br>)")]
-    private static partial Regex DescriptionCleanRegex();
 
     private static string GetTitle(Media media)
     {
@@ -50,7 +46,8 @@ public static partial class AniListModelToAnimeModelConverter
             Season = GetSeason(media.Season, media.SeasonYear),
             ServiceId = AnilistModule.Id,
             ServiceName = nameof(AnimeId.Anilist),
-            Description = DescriptionCleanRegex().Replace(media.Description ?? string.Empty, string.Empty),
+            // Requested as HTML (asHtml: true), so all of AniList's markup arrives as HTML; views render it with Totoro.UI.Text.HtmlText.
+            Description = media.Description ?? string.Empty,
             Related = ConvertSimple(media.Relations?.Nodes ?? []),
             Recommended = ConvertSimple(media.Recommendations?.Nodes.Select(x => x.MediaRecommendation).Where(x => x is not null)
                                              .Where(x => x.Type == MediaType.Anime) ?? []),

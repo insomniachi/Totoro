@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using GraphQL;
 using GraphQL.Client.Http;
 using Microsoft.Extensions.Logging;
@@ -131,7 +130,7 @@ internal partial class AnilistMetadataProvider(
 																									   .WithFull())
 																						 .WithImage(new CharacterImageQueryBuilder()
 																										.WithLarge())
-																						 .WithDescription()
+																						 .WithDescription(true)
 																						 .WithGender())),
 													  id: (int)animeId,
 													  type: MediaType.Anime).Build();
@@ -157,7 +156,7 @@ internal partial class AnilistMetadataProvider(
 			{
 				Name = x.Name?.Full ?? "",
 				Image = Uri.TryCreate(x.Image?.Large, UriKind.Absolute, out var uri) ? uri : null,
-				Description = RemoveMarkdownLinks(x.Description ?? ""),
+				Description = x.Description ?? "",
 				Gender = x.Gender ?? "",
 			})
 		];
@@ -300,15 +299,6 @@ internal partial class AnilistMetadataProvider(
 		return settings.Value.IncludeNsfw || m.IsAdult is false or null;
 	}
 
-	private static string RemoveMarkdownLinks(string text)
-	{
-		// [text](url) -> text
-		return string.IsNullOrEmpty(text) ? text : MarkdownLinkRegex().Replace(text, "$1");
-	}
-
-	[GeneratedRegex(@"\[([^\]]+)\]\([^\)]+\)")]
-	private static partial Regex MarkdownLinkRegex();
-
 	private static MediaListQueryBuilder MediaListEntryQueryBuilder()
 	{
 		// POINT_10 so scores match what AnilistTracker.Update writes (scoreRaw = Score * 10).
@@ -336,7 +326,7 @@ internal partial class AnilistMetadataProvider(
 			   .WithStatus()
 			   .WithMeanScore()
 			   .WithPopularity()
-			   .WithDescription(false)
+			   .WithDescription(true)
 			   .WithTrailer(new MediaTrailerQueryBuilder()
 							.WithSite()
 							.WithThumbnail()
@@ -372,7 +362,7 @@ internal partial class AnilistMetadataProvider(
 			   .WithStatus()
 			   .WithMeanScore()
 			   .WithPopularity()
-			   .WithDescription(false)
+			   .WithDescription(true)
 			   .WithTrailer(new MediaTrailerQueryBuilder()
 							.WithSite()
 							.WithThumbnail()
@@ -411,7 +401,7 @@ internal partial class AnilistMetadataProvider(
 						  .WithEnglish()
 						  .WithNative()
 						  .WithRomaji())
-			   .WithDescription()
+			   .WithDescription(true)
 			   .WithCoverImage(new MediaCoverImageQueryBuilder()
 								   .WithLarge())
 			   .WithType()
