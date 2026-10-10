@@ -29,13 +29,15 @@ public sealed record PlaybackProgressChangedMessage(string AnimeKey);
 
 /// <summary>
 /// Plays an anime's episodes: finds the show on the selected anime provider and plays the episode in the selected
-/// media player, resuming where it was left off, skipping (or offering to skip) the opening and ending, and marking it
-/// watched when it's played to the end, then offering the next one. Reports what it's doing through its properties,
-/// for the main window's status bar. One episode at a time.
+/// media player (streaming it with the selected torrent streamer if it's a torrent), resuming where it was left off,
+/// skipping (or offering to skip) the opening and ending, and marking it watched when it's played to the end, then
+/// offering the next one. Reports what it's doing through its properties, for the main window's status bar. One episode
+/// at a time.
 /// </summary>
 public sealed partial class WatchService(
 	IFactory<IAnimeProvider, Guid> providers,
 	IFactory<IMediaPlayer, Guid> players,
+	IFactory<ITorrentStreamer, Guid> torrentStreamers,
 	IFactory<IAnimeTracker, Guid> trackers,
 	IEnumerable<IMediaSegmentsProvider> segmentProviders,
 	IPlaybackProgressStore progressStore,
@@ -115,9 +117,15 @@ public sealed partial class WatchService(
 				return;
 			}
 
-			// Torrents go to the player as they are: mpv streams them itself, with a webtorrent script.
-			var media = new MediaItem(server.Url, $"{anime.Title} - Episode {number}", server.Headers);
+			// A torrent is streamed to the player over HTTP, until playback ends.
+			await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(server, ct) : null;
+			var media = new MediaItem(stream?.Url ?? server.Url, $"{anime.Title} - Episode {number}", stream?.Headers ?? server.Headers);
 			await PlayAsync(player, anime, number, media, settings, ct);
+		}
+		catch (TorrentStreamException ex)
+		{
+			logger.LogWarning(ex, "Couldn't stream episode {Episode} of {Anime}", number, anime.Title);
+			Show(PlaybackStatusKind.Error, ex.Message);
 		}
 		catch (OperationCanceledException) when (ct.IsCancellationRequested)
 		{
@@ -375,6 +383,35 @@ public sealed partial class WatchService(
 
 		var offset = regular.Count > 0 ? (int)regular.Min(x => x.Number) - 1 : 0;
 		return offset > 0 ? regular.FirstOrDefault(x => (int)x.Number == number + offset) : null;
+	}
+
+	/// <summary>
+	/// Streams the torrent's episode with the selected torrent streamer, showing what it's doing until it's ready. Null
+	/// if there's no streamer, so the player gets the torrent as it is (mpv can stream it with a webtorrent script).
+	/// </summary>
+	private async Task<TorrentStream?> StreamTorrentAsync(VideoServer server, CancellationToken ct)
+	{
+		if (torrentStreamers.CreateDefault() is not { } streamer || !streamer.IsAvailable())
+		{
+			logger.LogWarning("No torrent streamer is available; the player gets the torrent itself");
+			return null;
+		}
+
+		// Progress<T> reports on the UI thread after the fact; ignore reports that arrive once the stream is ready, so they
+		// don't replace the "Playing" status.
+		var ready = false;
+		var progress = new Progress<string>(message =>
+		{
+			if (!ready)
+			{
+				Show(PlaybackStatusKind.Progress, message, "Cancel", Cancel);
+			}
+		});
+
+		Show(PlaybackStatusKind.Progress, $"Starting {streamer.Name}…", "Cancel", Cancel);
+		var stream = await streamer.StreamAsync(server.Url, TorrentFile.LargestVideo, progress, ct);
+		ready = true;
+		return stream;
 	}
 
 	/// <summary>The selected media player, if it's set up; otherwise asks for its settings.</summary>

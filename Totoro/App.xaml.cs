@@ -44,6 +44,7 @@ public partial class App : Application
 				services.RegisterFactory<IAnimeMetadataProvider>(AnimeDatabasePreferences.Key);
 				services.RegisterFactory<IAnimeProvider>("SelectedAnimeProvider");
 				services.RegisterFactory<IMediaPlayer>("SelectedMediaPlayer");
+				services.RegisterFactory<ITorrentStreamer>("SelectedTorrentStreamer");
 
 				// Watching: the watch service drives a playback from a card's Play.
 				services.AddSingleton<WatchService>();
@@ -118,6 +119,7 @@ public partial class App : Application
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
 			new Modules.AnimeProviders.SubsPlease.SubsPleaseModule(),
 			new Modules.MediaPlayers.Mpv.MpvModule(),
+			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
 			new Modules.MediaSegments.Aniskip.AniskipModule()
 		];
 	}

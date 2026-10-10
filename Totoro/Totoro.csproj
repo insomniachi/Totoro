@@ -100,4 +100,26 @@
     <PublishTrimmed>False</PublishTrimmed>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <!--
+    rqbit, which streams torrents (Modules\TorrentStreamers\Rqbit): its release exe, downloaded once at build time (into
+    obj, not the repo) and checked against its SHA-256, then copied to Tools\rqbit with its license. To update, change
+    the version and the hash (of the new rqbit.exe).
+  -->
+  <PropertyGroup>
+    <RqbitVersion>9.0.1</RqbitVersion>
+    <RqbitSha256>2ED683203BECA628E0C45F62F99FEEEF4242CECC3444C8422DFE5B1B6AA38CEA</RqbitSha256>
+    <RqbitDownloadFolder>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)tools\rqbit-$(RqbitVersion)\</RqbitDownloadFolder>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="$(RqbitDownloadFolder)rqbit.exe" Link="Tools\rqbit\rqbit.exe" CopyToOutputDirectory="PreserveNewest" />
+    <None Remove="Modules\TorrentStreamers\Rqbit\LICENSE.txt" />
+    <Content Include="Modules\TorrentStreamers\Rqbit\LICENSE.txt" Link="Tools\rqbit\LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="DownloadRqbit" BeforeTargets="BeforeBuild" Condition="!Exists('$(RqbitDownloadFolder)rqbit.exe')">
+    <DownloadFile SourceUrl="https://github.com/ikatson/rqbit/releases/download/v$(RqbitVersion)/rqbit.exe" DestinationFolder="$(RqbitDownloadFolder)" />
+  </Target>
+  <Target Name="VerifyRqbit" AfterTargets="DownloadRqbit" BeforeTargets="BeforeBuild">
+    <VerifyFileHash File="$(RqbitDownloadFolder)rqbit.exe" Hash="$(RqbitSha256)" />
+  </Target>
 </Project>

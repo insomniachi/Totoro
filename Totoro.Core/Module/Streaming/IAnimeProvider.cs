@@ -41,7 +41,7 @@ public enum VideoServerKind
 	/// <summary>A URL a media player can open directly.</summary>
 	Direct,
 
-	/// <summary>A .torrent file; players stream it themselves (mpv with a webtorrent script).</summary>
+	/// <summary>A .torrent file or magnet link, streamed to the player by an <see cref="ITorrentStreamer"/>.</summary>
 	Torrent,
 }
 
