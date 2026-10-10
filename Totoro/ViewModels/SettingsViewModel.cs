@@ -6,15 +6,39 @@ using Totoro.Core.Settings;
 
 namespace Totoro.ViewModels;
 
-public sealed record AnimeDatabaseOption(Guid Id, string Name);
+// ToString is what screen readers announce for each ComboBox item, so it returns the label rather than the record dump.
+
+public sealed record AnimeDatabaseOption(Guid Id, string Name)
+{
+	public override string ToString() => Name;
+}
+
+public sealed record ThemeOption(string Label, AppTheme Value)
+{
+	public override string ToString() => Label;
+}
+
+public sealed record BackdropOption(string Label, AppBackdrop Value)
+{
+	public override string ToString() => Label;
+}
 
 public partial class SettingsViewModel : ObservableObject
 {
 	private readonly IPreferences _preferences;
+	private readonly IAppearanceService _appearance;
 
-	public SettingsViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IPreferences preferences, IFactory<IAnimeTracker, Guid> trackers)
+	public SettingsViewModel(
+		IEnumerable<NavigationItemViewModel> navigationItems,
+		IPreferences preferences,
+		IFactory<IAnimeTracker, Guid> trackers,
+		IAppearanceService appearance)
 	{
 		_preferences = preferences;
+		_appearance = appearance;
+
+		Theme = Themes.First(x => x.Value == appearance.Theme);
+		Backdrop = Backdrops.First(x => x.Value == appearance.Backdrop);
 
 		// Footer items (like Settings itself) aren't offered as a startup page.
 		StartupPages = [.. navigationItems.Where(x => !x.IsFooter)];
@@ -36,6 +60,45 @@ public partial class SettingsViewModel : ObservableObject
 		if (value is not null && value.Id != _preferences.SelectedAnimeDatabase)
 		{
 			_preferences.SelectedAnimeDatabase = value.Id;
+		}
+	}
+
+	public IReadOnlyList<ThemeOption> Themes { get; } =
+	[
+		new("Use system setting", AppTheme.System),
+		new("Light", AppTheme.Light),
+		new("Dark", AppTheme.Dark),
+	];
+
+	/// <summary>Applied to the window as soon as it changes.</summary>
+	[ObservableProperty]
+	public partial ThemeOption Theme { get; set; }
+
+	partial void OnThemeChanged(ThemeOption value)
+	{
+		if (value.Value != _appearance.Theme)
+		{
+			_appearance.Theme = value.Value;
+		}
+	}
+
+	public IReadOnlyList<BackdropOption> Backdrops { get; } =
+	[
+		new("Mica", AppBackdrop.Mica),
+		new("Mica Alt", AppBackdrop.MicaAlt),
+		new("Acrylic", AppBackdrop.Acrylic),
+		new("None", AppBackdrop.None),
+	];
+
+	/// <summary>Applied to the window as soon as it changes.</summary>
+	[ObservableProperty]
+	public partial BackdropOption Backdrop { get; set; }
+
+	partial void OnBackdropChanged(BackdropOption value)
+	{
+		if (value.Value != _appearance.Backdrop)
+		{
+			_appearance.Backdrop = value.Value;
 		}
 	}
 

@@ -12,10 +12,7 @@
     Title="Totoro"
     mc:Ignorable="d">
 
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
-
+    <!--  Theme and backdrop come from the user's settings; see IAppearanceService  -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

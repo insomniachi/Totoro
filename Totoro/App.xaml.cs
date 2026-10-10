@@ -8,8 +8,10 @@ using Totoro.Core.Extensions;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
 using Totoro.Core.Navigation;
+using Totoro.Core.Settings;
 using Totoro.UI;
 using Totoro.UI.Dialogs;
+using Totoro.UI.Theming;
 using Totoro.ViewModels;
 using Totoro.Views;
 
@@ -38,6 +40,7 @@ public partial class App : Application
 
 				services.AddCoreServices();
 				services.AddSingleton<MainWindowViewModel>();
+				services.AddSingleton<IAppearanceService>(sp => new AppearanceService(sp.GetRequiredService<IPreferences>(), () => _window));
 				services.AddSingleton<IDialogService>(sp => new DialogService(
 					sp.GetRequiredService<IViewRegistry>(),
 					sp.GetRequiredService<IServiceScopeFactory>(),
@@ -72,6 +75,7 @@ public partial class App : Application
 		{
 			ViewModel = _host.Services.GetRequiredService<MainWindowViewModel>(),
 		};
+		_host.Services.GetRequiredService<IAppearanceService>().Apply();
 		_window.Activate();
 	}
 

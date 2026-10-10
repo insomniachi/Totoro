@@ -32,17 +32,14 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 
 	protected override Viewbox CreateWidget()
 	{
-		// The default colours (BaseHigh fill, AltHigh icon) are a white blob in dark theme that disappears on
-		// light cover art; the accent fill with on-accent icons stands out on any image.
-		var background = GetBrush("AccentFillColorDefaultBrush");
-		var foreground = GetBrush("TextOnAccentFillColorPrimaryBrush");
-
 		var control = new GooeyButton()
 		{
 			Content = CreateIcon(Symbol.More, 32),
-			Background = background,
-			Foreground = foreground,
 		};
+
+		// Colours come from theme resources (see FloatingActionButtonWidgetResources) rather than being set here,
+		// so they follow the card's own theme and update when it changes.
+		control.Resources.MergedDictionaries.Add(new FloatingActionButtonWidgetResources());
 
 		control.ItemInvoked += OnInvoked;
 		control.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((_, _) => ClampGooeyEffect(control)), handledEventsToo: true);
@@ -51,7 +48,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		control.RegisterPropertyChangedCallback(GooeyButton.ExpandedProperty, (_, _) => FadeItemOverlays(control));
 		foreach (var action in Actions ?? [])
 		{
-			control.Items.Add(CreateItem(action, background, foreground));
+			control.Items.Add(CreateItem(action));
 		}
 
 		var vb = new Viewbox()
@@ -136,7 +133,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		}
 	}
 
-	private static GooeyButtonItem CreateItem(CardAction action, Brush? background, Brush? foreground)
+	private static GooeyButtonItem CreateItem(CardAction action)
 	{
 		// Scale every kind of icon (symbol, glyph, path, bitmap...) into the same box: the whole button is shrunk by its
 		// Viewbox (80px -> 45px), so icons need to be drawn this big to stay legible.
@@ -151,8 +148,6 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		var item = new GooeyButtonItem()
 		{
 			Content = icon,
-			Background = background,
-			Foreground = foreground,
 			BorderBrush = BorderBrush,
 			BorderThickness = new Thickness(BorderWidth),
 		};
@@ -248,10 +243,5 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 			Glyph = ((char)symbol).ToString(),
 			FontSize = fontSize,
 		};
-	}
-
-	private static Brush? GetBrush(string key)
-	{
-		return Application.Current.Resources.TryGetValue(key, out var brush) ? brush as Brush : null;
 	}
 }

@@ -56,6 +56,43 @@
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </toolkit:SettingsCard>
+
+            <TextBlock
+                Margin="0,24,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="Appearance" />
+
+            <toolkit:SettingsCard Description="Light, dark, or follow your Windows setting." Header="App theme">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE790;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.Themes}"
+                    SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ThemeOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="The material behind the window: Mica and Mica Alt tint it with your desktop wallpaper, Acrylic blurs what's behind it." Header="Backdrop">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE771;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.Backdrops}"
+                    SelectedItem="{x:Bind ViewModel.Backdrop, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:BackdropOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
         </StackPanel>
     </ScrollView>
 </Page>
