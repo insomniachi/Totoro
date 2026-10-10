@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.ShowPickerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:streaming="using:Totoro.Core.Module.Streaming">
+
+    <!--  Spacing per the Windows guidelines: 12 between content areas  -->
+    <StackPanel MinWidth="440" Spacing="12">
+        <TextBlock Text="{x:Bind ViewModel.Prompt}" TextWrapping="Wrap" />
+        <AutoSuggestBox
+            AutomationProperties.Name="Search for the show"
+            PlaceholderText="Search by title"
+            QueryIcon="Find"
+            QuerySubmitted="OnQuerySubmitted"
+            Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
+        <ListView
+            MaxHeight="320"
+            AutomationProperties.Name="Shows"
+            ItemsSource="{x:Bind ViewModel.Results, Mode=OneWay}"
+            SelectedItem="{x:Bind ViewModel.SelectedShow, Mode=TwoWay}"
+            SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="streaming:ProviderShow">
+                    <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{x:Bind ViewModel.Message, Mode=OneWay}"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
+    </StackPanel>
+</UserControl>

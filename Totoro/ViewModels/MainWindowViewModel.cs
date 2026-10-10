@@ -4,6 +4,7 @@ using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
+using Totoro.Playback;
 
 namespace Totoro.ViewModels;
 
@@ -11,8 +12,9 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback)
 	{
+		Playback = playback;
 		NavigationItems = [.. navigationItems.Where(x => !x.IsFooter)];
 		FooterNavigationItems = [.. navigationItems.Where(x => x.IsFooter)];
 
@@ -31,6 +33,9 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	/// <summary>The menu item to select when the app starts; see <see cref="StartupPagePreferences"/>.</summary>
 	public NavigationItemViewModel? StartupItem { get; }
+
+	/// <summary>What playing an episode is up to, for the status bar.</summary>
+	public WatchService Playback { get; }
 
 	/// <summary>The account of the selected anime database, shown in the title bar.</summary>
 	[ObservableProperty]

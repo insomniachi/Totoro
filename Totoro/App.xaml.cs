@@ -8,8 +8,11 @@ using Totoro.Core.Dialogs;
 using Totoro.Core.Extensions;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
+using Totoro.Core.Module.Media;
+using Totoro.Core.Module.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
+using Totoro.Playback;
 using Totoro.UI;
 using Totoro.UI.Authentication;
 using Totoro.UI.Dialogs;
@@ -39,6 +42,12 @@ public partial class App : Application
 				// A module provides its tracker and metadata provider as a pair, so one setting picks both.
 				services.RegisterFactory<IAnimeTracker>(AnimeDatabasePreferences.Key);
 				services.RegisterFactory<IAnimeMetadataProvider>(AnimeDatabasePreferences.Key);
+				services.RegisterFactory<IAnimeProvider>("SelectedAnimeProvider");
+				services.RegisterFactory<IMediaPlayer>("SelectedMediaPlayer");
+
+				// Watching: the watch service drives a playback from a card's Play.
+				services.AddSingleton<WatchService>();
+				services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();
 
 				services.AddCoreServices();
 				services.AddSingleton<MainWindowViewModel>();
@@ -105,7 +114,9 @@ public partial class App : Application
 		return
 		[
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
-			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule()
+			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
+			new Modules.AnimeProviders.SubsPlease.SubsPleaseModule(),
+			new Modules.MediaPlayers.Mpv.MpvModule()
 		];
 	}
 }

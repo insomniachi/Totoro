@@ -19,6 +19,8 @@
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Flurl.Http" Version="4.0.2" />
     <PackageVersion Include="GraphQL.Client" Version="6.1.0" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.13.0" />
+    <PackageVersion Include="HtmlAgilityPack.CssSelectors.NetCore" Version="1.2.1" />
     <PackageVersion Include="JikanDotNet" Version="2.10.4" />
     <PackageVersion Include="MalApi.V2" Version="2.0.8" />
     <PackageVersion Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.1.0" />

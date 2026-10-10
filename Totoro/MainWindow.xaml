@@ -8,6 +8,7 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:local="using:Totoro"
     xmlns:uiNavigation="using:Totoro.UI.Navigation"
     Title="Totoro"
     mc:Ignorable="d">
@@ -118,6 +119,29 @@
                 </Grid>
             </SplitView>
         </NavigationView>
+
+        <!--  What playing an episode is up to (see WatchService), over the bottom-right corner of the content  -->
+        <InfoBar
+            Grid.Row="1"
+            MaxWidth="440"
+            Margin="0,0,24,24"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
+            Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
+            Severity="{x:Bind local:MainWindow.ToSeverity(ViewModel.Playback.Kind), Mode=OneWay}"
+            Title="{x:Bind ViewModel.Playback.Title, Mode=OneWay}">
+            <InfoBar.ActionButton>
+                <Button
+                    Command="{x:Bind ViewModel.Playback.CancelCommand}"
+                    Content="Cancel"
+                    Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+            </InfoBar.ActionButton>
+            <ProgressBar
+                Margin="0,0,0,12"
+                IsIndeterminate="True"
+                Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+        </InfoBar>
 
     </Grid>
 </Window>

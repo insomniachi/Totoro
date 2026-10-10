@@ -4,6 +4,7 @@ using Totoro.Core;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
+using Totoro.Playback;
 using Totoro.UI.Navigation;
 using Totoro.ViewModels;
 
@@ -14,7 +15,7 @@ namespace Totoro.Commands;
 /// <see cref="AnimeModel"/> as its parameter. Bind them straight from XAML, no view model needed:
 /// <c>Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"</c>.
 /// </summary>
-public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracker, Guid> trackers, ILogger<AnimeCommands> logger)
+public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracker, Guid> trackers, WatchService watch, ILogger<AnimeCommands> logger)
 {
 	/// <summary>The app-wide instance (registered as a singleton), for x:Bind from XAML.</summary>
 	public static AnimeCommands Shared => Locator.GetRequiredService<AnimeCommands>();
@@ -31,6 +32,10 @@ public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracke
 			await pane.NavigateToData(anime);
 		}
 	}
+
+	/// <summary>Plays the next episode to watch (after the last one watched); see <see cref="WatchService"/>.</summary>
+	[RelayCommand]
+	private Task Watch(AnimeModel anime) => watch.WatchNextAsync(anime);
 
 	/// <summary>Edits the anime's tracking in a dialog and saves it to the selected tracker.</summary>
 	[RelayCommand]

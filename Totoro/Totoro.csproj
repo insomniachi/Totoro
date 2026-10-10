@@ -52,6 +52,8 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" />
     <PackageReference Include="CommunityToolkit.WinUI.Media" />
     <PackageReference Include="DevWinUI" />
+    <PackageReference Include="HtmlAgilityPack" />
+    <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" />
     <PackageReference Include="JikanDotNet" />
     <PackageReference Include="MalApi.V2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />

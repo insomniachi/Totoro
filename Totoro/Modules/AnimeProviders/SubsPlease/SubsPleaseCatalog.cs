@@ -1,0 +1,123 @@
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Flurl.Http;
+using HtmlAgilityPack;
+using HtmlAgilityPack.CssSelectors.NetCore;
+using Totoro.Core.Helpers;
+using Totoro.Core.Module.Streaming;
+
+namespace Totoro.Modules.AnimeProviders.SubsPlease;
+
+/// <summary>
+/// Every show on SubsPlease (from its "all shows" page), cached on disk and refreshed daily, since new shows start
+/// each season. Searching matches titles loosely: SubsPlease uses romaji titles, punctuated its own way.
+/// </summary>
+internal static partial class SubsPleaseCatalog
+{
+	private static readonly TimeSpan MaxAge = TimeSpan.FromDays(1);
+	private static readonly SemaphoreSlim Lock = new(1, 1);
+	private static List<CatalogShow>? _shows;
+
+	internal sealed record CatalogShow(string Id, string Title);
+
+	public static async Task<List<ProviderShow>> SearchAsync(string query, CancellationToken ct)
+	{
+		var shows = await GetShowsAsync(ct);
+		var normalizedQuery = Normalize(query);
+		if (normalizedQuery.Length == 0)
+		{
+			return [];
+		}
+
+		return
+		[
+			.. shows.Select(x => new ProviderShow(x.Id, x.Title, Score(normalizedQuery, Normalize(x.Title))))
+					.Where(x => x.Score >= 0.4)
+					.OrderByDescending(x => x.Score)
+					.Take(10)
+		];
+	}
+
+	private static async Task<List<CatalogShow>> GetShowsAsync(CancellationToken ct)
+	{
+		await Lock.WaitAsync(ct);
+		try
+		{
+			var file = FileHelper.GetModulePath(SubsPleaseModule.Descriptor, "catalog.json");
+			if (_shows is { } shows && File.Exists(file) && DateTime.Now - File.GetLastWriteTime(file) < MaxAge)
+			{
+				return shows;
+			}
+
+			if (File.Exists(file) && DateTime.Now - File.GetLastWriteTime(file) < MaxAge)
+			{
+				return _shows = JsonSerializer.Deserialize<List<CatalogShow>>(await File.ReadAllTextAsync(file, ct)) ?? [];
+			}
+
+			try
+			{
+				_shows = await DownloadAsync(ct);
+				Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+				await File.WriteAllTextAsync(file, JsonSerializer.Serialize(_shows), ct);
+				return _shows;
+			}
+			catch when (File.Exists(file))
+			{
+				// Offline, or the site changed: an old list is better than none.
+				return _shows = JsonSerializer.Deserialize<List<CatalogShow>>(await File.ReadAllTextAsync(file, ct)) ?? [];
+			}
+		}
+		finally
+		{
+			Lock.Release();
+		}
+	}
+
+	private static async Task<List<CatalogShow>> DownloadAsync(CancellationToken ct)
+	{
+		var html = await "https://subsplease.org/shows/".GetStringAsync(cancellationToken: ct);
+		var document = new HtmlDocument();
+		document.LoadHtml(html);
+
+		return
+		[
+			.. document.QuerySelectorAll(".all-shows-link a")
+					   .Select(x => new CatalogShow(x.GetAttributeValue("href", "").Replace("/shows/", "").Trim('/'),
+													HtmlEntity.DeEntitize(x.GetAttributeValue("title", x.InnerText)).Trim()))
+					   .Where(x => x.Id.Length > 0 && x.Title.Length > 0)
+		];
+	}
+
+	/// <summary>1 for the same title; otherwise how many words they share, with a boost when one contains the other.</summary>
+	private static double Score(string query, string title)
+	{
+		if (query == title)
+		{
+			return 1;
+		}
+
+		var queryWords = query.Split(' ');
+		var titleWords = title.Split(' ');
+		var shared = queryWords.Intersect(titleWords).Count();
+		var score = (double)shared / queryWords.Union(titleWords).Count();
+
+		if (title.Contains(query) || query.Contains(title))
+		{
+			score = Math.Max(score, 0.6 + 0.3 * Math.Min(query.Length, title.Length) / Math.Max(query.Length, title.Length));
+		}
+
+		return score;
+	}
+
+	/// <summary>Lowercase words only: "Sousou no Frieren: Season 2" and "sousou no frieren season 2" match.</summary>
+	private static string Normalize(string title)
+	{
+		return Spaces().Replace(NotLetterOrDigit().Replace(title.ToLowerInvariant(), " "), " ").Trim();
+	}
+
+	[GeneratedRegex(@"[^\p{L}\p{N}]")]
+	private static partial Regex NotLetterOrDigit();
+
+	[GeneratedRegex(@"\s+")]
+	private static partial Regex Spaces();
+}

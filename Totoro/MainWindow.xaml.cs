@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Playback;
 using Totoro.UI.Navigation;
 using Totoro.ViewModels;
 
@@ -51,5 +52,17 @@ namespace Totoro
 		}
 
 		public MainWindowViewModel? ViewModel { get; set; }
+
+		// For the status bar's x:Bind function bindings.
+
+		public static InfoBarSeverity ToSeverity(PlaybackStatusKind kind) => kind switch
+		{
+			PlaybackStatusKind.Success => InfoBarSeverity.Success,
+			PlaybackStatusKind.Error => InfoBarSeverity.Error,
+			_ => InfoBarSeverity.Informational,
+		};
+
+		/// <summary>The progress bar and Cancel, while getting an episode ready.</summary>
+		public static Visibility VisibleWhileWorking(PlaybackStatusKind kind) => kind == PlaybackStatusKind.Progress ? Visibility.Visible : Visibility.Collapsed;
 	}
 }
