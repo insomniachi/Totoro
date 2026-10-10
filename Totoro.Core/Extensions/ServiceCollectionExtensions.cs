@@ -39,6 +39,21 @@ public static class ServiceCollectionExtensions
 			return services.AddViewMap(new KeyedViewMap<TView, TViewModel>(key));
 		}
 
+		/// <summary>
+		/// Registers a dialog: <typeparamref name="TView"/> is the dialog's content (it gets the view model through a
+		/// <c>ViewModel</c> property, like pages do) and <typeparamref name="TViewModel"/> drives it.
+		/// Show it with <see cref="Dialogs.IDialogService.ShowAsync{TViewModel, TResult}"/>.
+		/// </summary>
+		public IServiceCollection AddDialog<TView, TViewModel>()
+			where TView : class, new()
+			where TViewModel : class, Dialogs.IDialogViewModel
+		{
+			// Only the map, unlike AddViewMap: the dialog service creates the view model itself and passes it the
+			// ShowAsync parameter. Registering it as a service would fail DI validation (on in the Development
+			// environment) for view models whose constructor takes that parameter, e.g. an AnimeModel.
+			return services.AddTransient<ViewMap>(_ => new ViewMap<TView, TViewModel>());
+		}
+
 		public IServiceCollection AddMainNavigationItem<TView, TViewModel>(string label, Action<NavigationItemViewModel>? configure = default)
 			 where TView : class, new()
 			 where TViewModel : class

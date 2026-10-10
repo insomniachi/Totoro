@@ -1,11 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Totoro.Commands;
 using Totoro.Core;
+using Totoro.Core.Dialogs;
 using Totoro.Core.Extensions;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
+using Totoro.Core.Navigation;
 using Totoro.UI;
+using Totoro.UI.Dialogs;
 using Totoro.ViewModels;
 using Totoro.Views;
 
@@ -32,6 +36,12 @@ public partial class App : Application
 
 				services.AddCoreServices();
 				services.AddSingleton<MainWindowViewModel>();
+				services.AddSingleton<IDialogService>(sp => new DialogService(
+					sp.GetRequiredService<IViewRegistry>(),
+					sp.GetRequiredService<IServiceScopeFactory>(),
+					() => _window?.Content?.XamlRoot));
+				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
+				services.AddSingleton<AnimeCommands>();
 				services.AddMainNavigationItem<UserListPage,UserListViewModel>("Home", x =>
 				{
 					x.UnselectedIcon = Icons.Home;

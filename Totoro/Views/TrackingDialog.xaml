@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.TrackingDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Totoro.ViewModels"
+    mc:Ignorable="d">
+
+    <StackPanel MinWidth="400" Spacing="16">
+        <ComboBox
+            HorizontalAlignment="Stretch"
+            Header="Status"
+            ItemsSource="{x:Bind ViewModel.Statuses}"
+            SelectedItem="{x:Bind ViewModel.Status, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:StatusOption">
+                    <TextBlock Text="{x:Bind Label}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <NumberBox
+                Header="Episodes watched"
+                Maximum="{x:Bind ViewModel.MaxEpisodes}"
+                Minimum="0"
+                SmallChange="1"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.WatchedEpisodes, Mode=TwoWay}" />
+            <NumberBox
+                Grid.Column="1"
+                Header="Score (0-10)"
+                Maximum="10"
+                Minimum="0"
+                SmallChange="1"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.Score, Mode=TwoWay}" />
+        </Grid>
+
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <CalendarDatePicker
+                HorizontalAlignment="Stretch"
+                Date="{x:Bind ViewModel.StartDate, Mode=TwoWay}"
+                Header="Start date"
+                PlaceholderText="Not started" />
+            <CalendarDatePicker
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                Date="{x:Bind ViewModel.FinishDate, Mode=TwoWay}"
+                Header="Finish date"
+                PlaceholderText="Not finished" />
+        </Grid>
+
+        <TextBlock
+            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+            Text="{x:Bind ViewModel.ValidationError, Mode=OneWay}"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.CanConfirm), Mode=OneWay}" />
+    </StackPanel>
+</UserControl>

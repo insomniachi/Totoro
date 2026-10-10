@@ -6,6 +6,7 @@
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:anime="using:Totoro.Core.Module.Anime"
+    xmlns:commands="using:Totoro.Commands"
     xmlns:controls="using:Totoro.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:filtering="using:Totoro.Core.Filtering"
@@ -21,7 +22,10 @@
         <!--  Sub-buttons of each card's floating action button; each Command receives the card's AnimeModel  -->
         <widgets:CardActionCollection x:Key="CardActions">
             <widgets:CardAction Icon="{toolkitui:SymbolIconSource Symbol=Play}" Label="Play" />
-            <widgets:CardAction Icon="{toolkitui:SymbolIconSource Symbol=Edit}" Label="Edit" />
+            <widgets:CardAction
+                Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
+                Icon="{toolkitui:SymbolIconSource Symbol=Edit}"
+                Label="Edit" />
             <widgets:CardAction Icon="{toolkitui:SymbolIconSource Symbol=Download}" Label="Download" />
         </widgets:CardActionCollection>
     </Page.Resources>

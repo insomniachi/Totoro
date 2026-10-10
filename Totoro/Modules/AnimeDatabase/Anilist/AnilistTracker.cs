@@ -99,7 +99,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 
 			if (tracking.Score is not null)
 			{
-				mediaListEntryBuilder.WithScore();
+				mediaListEntryBuilder.WithScore(ScoreFormat.Point10);
 			}
 
 			if (tracking.WatchedEpisodes is not null)
@@ -176,7 +176,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 																				  .WithEpisode()
 																				  .WithTimeUntilAiring())
 														   .WithMediaListEntry(new MediaListQueryBuilder()
-																			   .WithScore()
+																			   .WithScore(ScoreFormat.Point10)
 																			   .WithStatus()
 																			   .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
 																			   .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
