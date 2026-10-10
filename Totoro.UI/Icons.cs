@@ -7,6 +7,7 @@ public static class Icons
 	public static SymbolIcon Home => new(Symbol.Home);
 	public static FontIcon HomeFilled => new() { Glyph = "\uEA8A" };
 	public static SymbolIcon Settings => new(Symbol.Setting);
+	public static SymbolIcon Search => new(Symbol.Find);
 
 	public static FontIcon Play => new() { Glyph = "\uE768" };
 	public static FontIcon Clock => new() { Glyph = "\uE823" };
@@ -23,6 +24,7 @@ public static class Icons
 		nameof(Home) => Home,
 		nameof(HomeFilled) => HomeFilled,
 		nameof(Settings) => Settings,
+		nameof(Search) => Search,
 		nameof(Play) => Play,
 		nameof(Clock) => Clock,
 		nameof(Completed) => Completed,

@@ -82,6 +82,9 @@ public sealed record Season(AnimeSeason SeasonName, int Year)
 	{
 
 	}
+
+	/// <summary>The anime season <paramref name="date"/> falls in, as AniList counts them (Winter is January to March).</summary>
+	public static Season Of(DateTime date) => new((AnimeSeason)((date.Month - 1) / 3), date.Year);
 }
 
 public enum AnimeSeason

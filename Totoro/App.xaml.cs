@@ -57,6 +57,11 @@ public partial class App : Application
 					x.UnselectedIcon = Icons.Home;
 					x.SelectedIcon = Icons.HomeFilled;
 				});
+				services.AddMainNavigationItem<AdvancedSearchPage, AdvancedSearchViewModel>("Search", x =>
+				{
+					x.UnselectedIcon = Icons.Search;
+					x.SelectedIcon = Icons.Search;
+				});
 				services.AddMainNavigationItem<TestPage, TestViewModel>("Test", x =>
 				{
 					x.UnselectedIcon = Icons.Home;
