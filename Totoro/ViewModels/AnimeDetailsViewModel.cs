@@ -156,7 +156,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	/// <summary>Playing an episode saved (or cleared) its progress: show it in the button and the episode list.</summary>
 	public void Receive(PlaybackProgressChangedMessage message)
 	{
-		if (message.AnimeKey == Anime.ProgressKey)
+		if (message.AnimeKey == Anime.StoreKey)
 		{
 			UpdatePlayText();
 			if (Episodes.IsLoaded)
@@ -182,7 +182,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	{
 		var next = WatchService.NextEpisode(Anime);
 		PlayText = Anime.TotalEpisodes is > 0 and var total && next > total ? ""
-			: _progress.Get(Anime.ProgressKey, next) is not null ? $"Resume episode {next}"
+			: _progress.Get(Anime, next) is not null ? $"Resume episode {next}"
 			: $"Play episode {next}";
 	}
 

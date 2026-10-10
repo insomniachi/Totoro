@@ -56,7 +56,7 @@ public sealed partial class EpisodesTab(
 	public void Refresh()
 	{
 		var watched = anime.Tracking?.WatchedEpisodes ?? 0;
-		var saved = progress.GetAll(anime.ProgressKey);
+		var saved = progress.GetAll(anime);
 		Episodes = [.. _episodes.Select(x => ToItem(x, watched, saved))];
 	}
 

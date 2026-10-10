@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Totoro.Core.Helpers;
+using Totoro.Core.Module.Anime;
 
 namespace Totoro.Core.Module.Media;
 
@@ -12,29 +13,21 @@ public sealed record EpisodeProgress(TimeSpan Position, TimeSpan Duration)
 	public double Fraction => Duration > TimeSpan.Zero ? Math.Clamp(Position / Duration, 0, 1) : 0;
 }
 
-public static class PlaybackProgressExtensions
-{
-	extension(Anime.AnimeModel anime)
-	{
-		/// <summary>The anime's key in <see cref="IPlaybackProgressStore"/>: its database and its id there.</summary>
-		public string ProgressKey => $"{anime.ServiceId}/{anime.Id}";
-	}
-}
-
 /// <summary>
-/// Where the user stopped in each episode they didn't finish, to resume from there. Kept in a file, by anime (the
-/// database's id) and episode number; an episode's entry is removed once it's watched.
+/// Where the user stopped in each episode they didn't finish, to resume from there. Kept in a file, by anime (its
+/// StoreKey, so it's the same whichever database the anime came from) and
+/// episode number; an episode's entry is removed once it's watched.
 /// </summary>
 public interface IPlaybackProgressStore
 {
-	EpisodeProgress? Get(string animeKey, int episode);
+	EpisodeProgress? Get(AnimeModel anime, int episode);
 
 	/// <summary>Every episode of the anime with saved progress, by number.</summary>
-	IReadOnlyDictionary<int, EpisodeProgress> GetAll(string animeKey);
+	IReadOnlyDictionary<int, EpisodeProgress> GetAll(AnimeModel anime);
 
-	void Save(string animeKey, int episode, EpisodeProgress progress);
+	void Save(AnimeModel anime, int episode, EpisodeProgress progress);
 
-	void Remove(string animeKey, int episode);
+	void Remove(AnimeModel anime, int episode);
 }
 
 internal sealed class PlaybackProgressStore : IPlaybackProgressStore
@@ -58,29 +51,30 @@ internal sealed class PlaybackProgressStore : IPlaybackProgressStore
 		}
 	}
 
-	public EpisodeProgress? Get(string animeKey, int episode)
+	public EpisodeProgress? Get(AnimeModel anime, int episode)
 	{
 		lock (_lock)
 		{
-			return _progress.GetValueOrDefault(animeKey)?.GetValueOrDefault(episode);
+			return _progress.GetValueOrDefault(GetKey(anime))?.GetValueOrDefault(episode);
 		}
 	}
 
-	public IReadOnlyDictionary<int, EpisodeProgress> GetAll(string animeKey)
+	public IReadOnlyDictionary<int, EpisodeProgress> GetAll(AnimeModel anime)
 	{
 		lock (_lock)
 		{
-			return _progress.TryGetValue(animeKey, out var episodes) ? new Dictionary<int, EpisodeProgress>(episodes) : [];
+			return _progress.TryGetValue(GetKey(anime), out var episodes) ? new Dictionary<int, EpisodeProgress>(episodes) : [];
 		}
 	}
 
-	public void Save(string animeKey, int episode, EpisodeProgress progress)
+	public void Save(AnimeModel anime, int episode, EpisodeProgress progress)
 	{
 		lock (_lock)
 		{
-			if (!_progress.TryGetValue(animeKey, out var episodes))
+			var key = GetKey(anime);
+			if (!_progress.TryGetValue(key, out var episodes))
 			{
-				_progress[animeKey] = episodes = [];
+				_progress[key] = episodes = [];
 			}
 
 			episodes[episode] = progress;
@@ -88,20 +82,32 @@ internal sealed class PlaybackProgressStore : IPlaybackProgressStore
 		}
 	}
 
-	public void Remove(string animeKey, int episode)
+	public void Remove(AnimeModel anime, int episode)
 	{
 		lock (_lock)
 		{
-			if (_progress.TryGetValue(animeKey, out var episodes) && episodes.Remove(episode))
+			var key = GetKey(anime);
+			if (_progress.TryGetValue(key, out var episodes) && episodes.Remove(episode))
 			{
 				if (episodes.Count == 0)
 				{
-					_progress.Remove(animeKey);
+					_progress.Remove(key);
 				}
 
 				Write();
 			}
 		}
+	}
+
+	/// <summary>The anime's key, moving what was saved under its old key first. Call with the lock held.</summary>
+	private string GetKey(AnimeModel anime)
+	{
+		if (_progress.MoveToStoreKey(anime, out var key))
+		{
+			Write();
+		}
+
+		return key;
 	}
 
 	private void Write()

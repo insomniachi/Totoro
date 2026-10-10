@@ -3,7 +3,6 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Totoro.Core.Helpers;
 using Totoro.Core.Module.Anime;
-using Totoro.Core.Module.Media;
 using Totoro.Core.Module.Streaming;
 
 namespace Totoro.Core.Settings;
@@ -38,7 +37,10 @@ public sealed class AnimeSettings
 	public bool IsEmpty => ProviderId is null && ProviderSettings.Count == 0 && Shows.Count == 0 && OpeningSkipMode is null && EndingSkipMode is null;
 }
 
-/// <summary>Each anime's <see cref="AnimeSettings"/>, kept in a file, by anime (its database and its id there).</summary>
+/// <summary>
+/// Each anime's <see cref="AnimeSettings"/>, kept in a file, by anime (its StoreKey, so they're the same whichever
+/// database the anime came from).
+/// </summary>
 public interface IAnimeSettingsStore
 {
 	/// <summary>The anime's settings: a copy to change and <see cref="Save"/>; empty if it has none.</summary>
@@ -75,7 +77,10 @@ internal sealed class AnimeSettingsStore : IAnimeSettingsStore
 		MoveLegacyShows(preferences);
 	}
 
-	/// <summary>Moves the shows from the old preference, keyed "provider id/anime key", into the anime's settings.</summary>
+	/// <summary>
+	/// Moves the shows from the old preference, keyed "provider id/database key", into the anime's settings, under its
+	/// database key; they move to its store key the first time the anime's settings are used.
+	/// </summary>
 	private void MoveLegacyShows(IPreferences preferences)
 	{
 		if (preferences.ReadKey<Dictionary<string, ProviderShow>>(LegacyShowsKey) is not { Count: > 0 } shows)
@@ -107,7 +112,7 @@ internal sealed class AnimeSettingsStore : IAnimeSettingsStore
 	{
 		lock (_lock)
 		{
-			return _settings.TryGetValue(anime.ProgressKey, out var settings) ? Copy(settings) : new AnimeSettings();
+			return _settings.TryGetValue(GetKey(anime), out var settings) ? Copy(settings) : new AnimeSettings();
 		}
 	}
 
@@ -117,15 +122,26 @@ internal sealed class AnimeSettingsStore : IAnimeSettingsStore
 		{
 			if (settings.IsEmpty)
 			{
-				_settings.Remove(anime.ProgressKey);
+				_settings.Remove(GetKey(anime));
 			}
 			else
 			{
-				_settings[anime.ProgressKey] = Copy(settings);
+				_settings[GetKey(anime)] = Copy(settings);
 			}
 
 			Write();
 		}
+	}
+
+	/// <summary>The anime's key, moving its settings from their old key first. Call with the lock held.</summary>
+	private string GetKey(AnimeModel anime)
+	{
+		if (_settings.MoveToStoreKey(anime, out var key))
+		{
+			Write();
+		}
+
+		return key;
 	}
 
 	private void Write()

@@ -24,6 +24,7 @@ public enum PlaybackStatusKind
 public sealed record EpisodeToWatch(AnimeModel Anime, int Number);
 
 /// <summary>Sent (with WeakReferenceMessenger.Default) when an anime's saved playback progress changes.</summary>
+/// <param name="AnimeKey">The anime's StoreKey.</param>
 public sealed record PlaybackProgressChangedMessage(string AnimeKey);
 
 /// <summary>
@@ -159,11 +160,11 @@ public sealed partial class WatchService(
 	/// </summary>
 	private async Task PlayAsync(IMediaPlayer player, AnimeModel anime, int number, MediaItem media, AnimeSettings settings, CancellationToken ct)
 	{
-		var key = anime.ProgressKey;
+		var key = anime.StoreKey;
 		var credits = TimeSpan.FromMinutes(anime.MediaFormat == AnimeMediaFormat.Movie ? 6 : 2);
 
 		// Resume a little before where it was left, unless that was in the credits.
-		var start = progressStore.Get(key, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
+		var start = progressStore.Get(anime, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
 			? saved.Position - TimeSpan.FromSeconds(3)
 			: TimeSpan.Zero;
 
@@ -177,7 +178,7 @@ public sealed partial class WatchService(
 		{
 			if (position > s_minimumProgress && duration > TimeSpan.Zero)
 			{
-				progressStore.Save(key, number, new EpisodeProgress(position, duration));
+				progressStore.Save(anime, number, new EpisodeProgress(position, duration));
 			}
 		}
 
@@ -234,7 +235,7 @@ public sealed partial class WatchService(
 
 		Show(PlaybackStatusKind.Progress, $"Marking episode {number} as watched…");
 		await MarkWatchedAsync(anime, number);
-		progressStore.Remove(key, number);
+		progressStore.Remove(anime, number);
 		WeakReferenceMessenger.Default.Send(new PlaybackProgressChangedMessage(key));
 
 		var next = number + 1;
