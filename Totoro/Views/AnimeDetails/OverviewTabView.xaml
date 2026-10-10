@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.AnimeDetails.OverviewTabView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commands="using:Totoro.Commands"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:text="using:Totoro.UI.Text"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+
+    <UserControl.Resources>
+        <!--  A small rounded label, used for the facts and genres  -->
+        <DataTemplate x:Key="ChipTemplate" x:DataType="x:String">
+            <Border
+                Padding="12,4"
+                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12">
+                <TextBlock Style="{ThemeResource CaptionTextBlockStyle}" Text="{x:Bind}" />
+            </Border>
+        </DataTemplate>
+        <!--
+            ItemsControl + WrapPanel rather than ItemsRepeater + WrapLayout: replacing the repeater's ItemsSource (when the
+            full details arrive) left the last chip unrendered. These lists are tiny, so there's nothing to virtualize.
+        -->
+        <ItemsPanelTemplate x:Key="ChipPanel">
+            <toolkit:WrapPanel HorizontalSpacing="8" VerticalSpacing="8" />
+        </ItemsPanelTemplate>
+    </UserControl.Resources>
+
+    <StackPanel Padding="24,0" Spacing="24">
+        <!--  Facts and genres  -->
+        <StackPanel Spacing="8">
+            <ItemsControl
+                IsTabStop="False"
+                ItemTemplate="{StaticResource ChipTemplate}"
+                ItemsPanel="{StaticResource ChipPanel}"
+                ItemsSource="{x:Bind ViewModel.Facts, Mode=OneWay}" />
+            <ItemsControl
+                IsTabStop="False"
+                ItemTemplate="{StaticResource ChipTemplate}"
+                ItemsPanel="{StaticResource ChipPanel}"
+                ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}" />
+        </StackPanel>
+
+        <!--  The user's list entry  -->
+        <Grid
+            Padding="16"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            ColumnSpacing="16"
+            CornerRadius="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Spacing="2">
+                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.TrackingStatus, Mode=OneWay}" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ViewModel.TrackingSummary, Mode=OneWay}"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+            <Button
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
+                CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}"
+                Content="{x:Bind ViewModel.EditTrackingText, Mode=OneWay}"
+                Style="{ThemeResource AccentButtonStyle}" />
+        </Grid>
+
+        <!--  Synopsis  -->
+        <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Description), Mode=OneWay}">
+            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Synopsis" />
+            <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Description, Mode=OneWay}" />
+        </StackPanel>
+
+        <!--  Studios  -->
+        <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Studios), Mode=OneWay}">
+            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Studios" />
+            <TextBlock Text="{x:Bind ViewModel.Studios, Mode=OneWay}" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <HyperlinkButton
+            Padding="0"
+            Content="{x:Bind ViewModel.LinkText, Mode=OneWay}"
+            NavigateUri="{x:Bind ViewModel.Link, Mode=OneWay}"
+            Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(ViewModel.Link), Mode=OneWay}" />
+    </StackPanel>
+</UserControl>

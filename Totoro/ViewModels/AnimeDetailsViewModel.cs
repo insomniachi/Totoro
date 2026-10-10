@@ -16,14 +16,56 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
 	private readonly ILogger<AnimeDetailsViewModel> _logger;
 
+	// The provider the anime came from, and its full details; set once loaded, used by the tabs.
+	private IAnimeMetadataProvider? _provider;
+	private AnimeModel _details;
+
 	public AnimeDetailsViewModel(AnimeModel anime, IFactory<IAnimeMetadataProvider, Guid> providers, ILogger<AnimeDetailsViewModel> logger)
 	{
 		_providers = providers;
 		_logger = logger;
 		Anime = anime;
+		_details = anime;
+
+		Episodes = new EpisodesTab(
+			() => _provider?.GetEpisodesAsync(_details) ?? Task.FromResult(new List<EpisodeInfo>()),
+			() => Anime.Tracking?.WatchedEpisodes ?? 0,
+			logger);
+		Characters = new CharactersTab(
+			() => _provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>()),
+			logger);
+		Related = new RelatedTab();
 
 		UpdateTracking();
 		Anime.PropertyChanged += OnAnimePropertyChanged;
+	}
+
+	// Tab keys; the page's SelectorBarItems carry these as their Tag.
+	public const string OverviewTab = "Overview";
+	public const string EpisodesTabKey = "Episodes";
+	public const string CharactersTabKey = "Characters";
+	public const string RelatedTabKey = "Related";
+
+	public EpisodesTab Episodes { get; }
+	public CharactersTab Characters { get; }
+	public RelatedTab Related { get; }
+
+	/// <summary>The key of the tab being shown; a tab loads its content the first time it's selected.</summary>
+	[ObservableProperty]
+	public partial string SelectedTab { get; set; } = OverviewTab;
+
+	partial void OnSelectedTabChanged(string value)
+	{
+		DetailsTab? tab = value switch
+		{
+			EpisodesTabKey => Episodes,
+			CharactersTabKey => Characters,
+			RelatedTabKey => Related,
+			_ => null,
+		};
+
+		// Only lazy tabs have anything to load; errors are handled (and shown) by the tab itself.
+		_ = tab?.EnsureLoadedAsync();
 	}
 
 	/// <summary>
@@ -41,7 +83,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 
 	[ObservableProperty] public partial string Title { get; set; } = "";
 	[ObservableProperty] public partial string Subtitle { get; set; } = "";
-	// Image URLs, or null when missing; the view turns them into image sources (see AnimeDetailsPage.ToImageSource).
+	// Image URLs, or null when missing; the view turns them into image sources (see CommonConverters.ToImageSource).
 	[ObservableProperty] public partial string? BannerImage { get; set; }
 	[ObservableProperty] public partial string? CoverImage { get; set; }
 	[ObservableProperty] public partial IReadOnlyList<string> Facts { get; set; } = [];
@@ -62,12 +104,12 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 		var details = Anime;
 
 		// Ask the provider the anime came from; ids aren't shared between databases.
-		var provider = Anime.ServiceId is { } serviceId ? _providers.Create(serviceId) : _providers.CreateDefault();
-		if (provider is not null)
+		_provider = Anime.ServiceId is { } serviceId ? _providers.Create(serviceId) : _providers.CreateDefault();
+		if (_provider is not null)
 		{
 			try
 			{
-				details = await provider.GetAnimeAsync(Anime.Id);
+				details = await _provider.GetAnimeAsync(Anime.Id);
 			}
 			catch (Exception ex)
 			{
@@ -75,6 +117,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 			}
 		}
 
+		_details = details;
 		ShowDetails(details);
 		IsLoaded = true;
 	}
@@ -91,6 +134,10 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 		if (e.PropertyName == nameof(AnimeModel.Tracking))
 		{
 			UpdateTracking();
+			if (Episodes.IsLoaded)
+			{
+				Episodes.UpdateWatched();
+			}
 		}
 	}
 
@@ -107,6 +154,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 		Studios = string.Join(", ", details.Studios);
 		Link = Uri.TryCreate(details.Url, UriKind.Absolute, out var uri) ? uri : null;
 		LinkText = string.IsNullOrEmpty(details.ServiceName) ? "Open in browser" : $"Open on {details.ServiceName}";
+		Related.Show(details);
 	}
 
 	private static string? NullIfEmpty(string? value) => string.IsNullOrEmpty(value) ? null : value;

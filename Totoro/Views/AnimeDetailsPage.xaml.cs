@@ -3,8 +3,6 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Totoro.ViewModels;
 
 namespace Totoro.Views;
@@ -104,24 +102,11 @@ public sealed partial class AnimeDetailsPage : Page
 		LoadingSkeleton.Visibility = Visibility.Collapsed;
 	}
 
-	// For x:Bind function bindings. Keep them single-level: the XAML compiler can't nest function calls.
-
-	/// <summary>
-	/// A URL as an image source. Binding a string straight to Image.Source goes through XamlBindingHelper.ConvertValue,
-	/// which throws for a null or empty string; this returns no image instead.
-	/// </summary>
-	public static ImageSource? ToImageSource(string? url)
+	private void OnTabSelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
 	{
-		return Uri.TryCreate(url, UriKind.Absolute, out var uri) ? new BitmapImage(uri) : null;
-	}
-
-	public static Visibility VisibleIfAny(string? text)
-	{
-		return string.IsNullOrWhiteSpace(text) ? Visibility.Collapsed : Visibility.Visible;
-	}
-
-	public static Visibility VisibleIfNotNull(object? value)
-	{
-		return value is null ? Visibility.Collapsed : Visibility.Visible;
+		if (ViewModel is not null && sender.SelectedItem?.Tag is string tab)
+		{
+			ViewModel.SelectedTab = tab;
+		}
 	}
 }

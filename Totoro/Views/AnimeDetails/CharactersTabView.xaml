@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.AnimeDetails.CharactersTabView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <Grid Padding="24,0">
+        <toolkit:WrapPanel
+            HorizontalSpacing="16"
+            VerticalSpacing="16"
+            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+        </toolkit:WrapPanel>
+        <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind ViewModel.Message, Mode=OneWay}"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
+            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsJustification="Start"
+                        MinColumnSpacing="16"
+                        MinItemWidth="110"
+                        MinRowSpacing="16" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CharacterItem">
+                        <StackPanel Width="110" Spacing="6">
+                            <Border
+                                Height="150"
+                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                CornerRadius="8">
+                                <Grid>
+                                    <!--  Shimmers until the image loads over it; only when there is an image to load  -->
+                                    <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image)}" />
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                </Grid>
+                            </Border>
+                            <TextBlock
+                                MaxLines="2"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind Name}"
+                                TextAlignment="Center"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </StackPanel>
+    </Grid>
+</UserControl>
