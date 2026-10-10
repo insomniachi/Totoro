@@ -121,8 +121,18 @@ internal partial class AnilistMetadataProvider(
 		return anime.GetEpisodes();
 	}
 
-	public async Task<List<CharacterModel>> GetCharactersAsync(long animeId)
+	public Task<List<CharacterModel>> GetCharactersAsync(long animeId)
 	{
+		return FetchCharactersAsync(client, anilistId: (int)animeId);
+	}
+
+	/// <summary>
+	/// An anime's characters, looked up by its AniList or MyAnimeList id. Also used by other databases that have no
+	/// character data of their own.
+	/// </summary>
+	internal static async Task<List<CharacterModel>> FetchCharactersAsync(GraphQLHttpClient client, int? anilistId = null, int? malId = null)
+	{
+		var animeId = anilistId ?? malId;
 		var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
 														  .WithCharacters(new CharacterConnectionQueryBuilder()
 																			  .WithNodes(new CharacterQueryBuilder()
@@ -132,7 +142,8 @@ internal partial class AnilistMetadataProvider(
 																										.WithLarge())
 																						 .WithDescription(true)
 																						 .WithGender())),
-													  id: (int)animeId,
+													  id: anilistId,
+													  idMal: malId,
 													  type: MediaType.Anime).Build();
 
 		var response = await client.SendQueryAsync<Query>(new GraphQLRequest

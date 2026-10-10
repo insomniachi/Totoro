@@ -17,6 +17,8 @@
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Flurl.Http" Version="4.0.2" />
     <PackageVersion Include="GraphQL.Client" Version="6.1.0" />
+    <PackageVersion Include="JikanDotNet" Version="2.10.4" />
+    <PackageVersion Include="MalApi.V2" Version="2.0.8" />
     <PackageVersion Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />

@@ -95,7 +95,8 @@ public partial class App : Application
 	{
 		return
 		[
-			new Modules.AnimeDatabase.Anilist.AnilistModule()
+			new Modules.AnimeDatabase.Anilist.AnilistModule(),
+			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule()
 		];
 	}
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<OutputType>WinExe</OutputType>
 	<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
@@ -50,6 +50,8 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
     <PackageReference Include="CommunityToolkit.WinUI.Media" />
     <PackageReference Include="DevWinUI" />
+    <PackageReference Include="JikanDotNet" />
+    <PackageReference Include="MalApi.V2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
