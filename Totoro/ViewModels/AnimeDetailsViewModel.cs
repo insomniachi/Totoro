@@ -107,7 +107,12 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 
 	[ObservableProperty] public partial string TrackingStatus { get; set; } = "";
 	[ObservableProperty] public partial string TrackingSummary { get; set; } = "";
+
+	/// <summary>The tracking button's tooltip and accessible name: "Add to list" or "Edit tracking".</summary>
 	[ObservableProperty] public partial string EditTrackingText { get; set; } = "";
+
+	/// <summary>The tracking button's icon: Add when it isn't on the list, Edit when it is.</summary>
+	[ObservableProperty] public partial string EditTrackingGlyph { get; set; } = "";
 
 	/// <summary>
 	/// The play button's text, e.g. "Play episode 5" or "Resume episode 5"; empty (never null, it's passed to x:Bind
@@ -220,6 +225,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		{
 			TrackingSummary = "Add it to keep track of your progress.";
 			EditTrackingText = "Add to list";
+			EditTrackingGlyph = "";
 			return;
 		}
 
@@ -227,7 +233,8 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		var progress = Anime.TotalEpisodes is > 0 and var total ? $"{watched} of {total} episodes" : $"{watched} episodes watched";
 		var score = tracking.Score is > 0 ? $"scored {tracking.Score}/10" : "not scored";
 		TrackingSummary = $"{progress} · {score}";
-		EditTrackingText = "Edit";
+		EditTrackingText = "Edit tracking";
+		EditTrackingGlyph = "";
 	}
 
 	private static List<string> GetFacts(AnimeModel anime)

@@ -79,10 +79,23 @@
                         <TextBlock Text="{x:Bind ViewModel.PlayText, Mode=OneWay}" />
                     </StackPanel>
                 </Button>
+                <!--  Icon buttons are stretched to the play button's height; an icon alone is shorter  -->
                 <Button
+                    VerticalAlignment="Stretch"
+                    AutomationProperties.Name="{x:Bind ViewModel.EditTrackingText, Mode=OneWay}"
                     Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
                     CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}"
-                    Content="{x:Bind ViewModel.EditTrackingText, Mode=OneWay}" />
+                    ToolTipService.ToolTip="{x:Bind ViewModel.EditTrackingText, Mode=OneWay}">
+                    <FontIcon FontSize="16" Glyph="{x:Bind ViewModel.EditTrackingGlyph, Mode=OneWay}" />
+                </Button>
+                <Button
+                    VerticalAlignment="Stretch"
+                    AutomationProperties.Name="Settings for this anime"
+                    Command="{x:Bind commands:AnimeCommands.Shared.EditSettingsCommand}"
+                    CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}"
+                    ToolTipService.ToolTip="Settings for this anime">
+                    <FontIcon FontSize="16" Glyph="&#xE713;" />
+                </Button>
             </StackPanel>
         </Grid>
 
