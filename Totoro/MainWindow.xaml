@@ -9,6 +9,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="using:Totoro.Core.Navigation"
     xmlns:local="using:Totoro"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:uiNavigation="using:Totoro.UI.Navigation"
     Title="Totoro"
     mc:Ignorable="d">
@@ -121,27 +123,54 @@
         </NavigationView>
 
         <!--  What playing an episode is up to (see WatchService), over the bottom-right corner of the content  -->
-        <InfoBar
+        <!--
+            A drop shadow, so it looks raised above the content: on this wrapper rather than the Border, whose rounded
+            corners clip what it draws, shadow included. Not a ThemeShadow: outside a popup that only falls on listed
+            receivers, and the details pane it floats over is raised itself.
+        -->
+        <Grid
             Grid.Row="1"
             MaxWidth="440"
             Margin="0,0,24,24"
             HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
-            Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
-            Severity="{x:Bind local:MainWindow.ToSeverity(ViewModel.Playback.Kind), Mode=OneWay}"
-            Title="{x:Bind ViewModel.Playback.Title, Mode=OneWay}">
-            <InfoBar.ActionButton>
-                <Button
-                    Command="{x:Bind ViewModel.Playback.CancelCommand}"
-                    Content="Cancel"
-                    Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
-            </InfoBar.ActionButton>
-            <ProgressBar
-                Margin="0,0,0,12"
-                IsIndeterminate="True"
-                Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
-        </InfoBar>
-
+            VerticalAlignment="Bottom">
+            <ui:Effects.Shadow>
+                <media:AttachedCardShadow
+                    BlurRadius="24"
+                    CornerRadius="4"
+                    Offset="0,8"
+                    Opacity="0.6"
+                    Color="Black" />
+            </ui:Effects.Shadow>
+            <!--
+                On a solid surface the InfoBar's shape: its severity backgrounds are see-through tints, made for a plain
+                page, so over the content the text behind showed through. The tint still shows on top. Both size to the
+                InfoBar, so they're gone when it closes.
+            -->
+            <!--  The flyout border, as Windows draws its own floating surfaces (flyouts, menus) on top of their shadow  -->
+            <Border
+                Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+                BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource ControlCornerRadius}">
+                <InfoBar
+                    IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
+                    Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
+                    Severity="{x:Bind local:MainWindow.ToSeverity(ViewModel.Playback.Kind), Mode=OneWay}"
+                    Title="{x:Bind ViewModel.Playback.Title, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <!--  Cancel while getting ready, "Play episode 6" once one's watched...  -->
+                        <Button
+                            Command="{x:Bind ViewModel.Playback.ActionCommand}"
+                            Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />
+                    </InfoBar.ActionButton>
+                    <ProgressBar
+                        Margin="0,0,0,12"
+                        IsIndeterminate="True"
+                        Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+                </InfoBar>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

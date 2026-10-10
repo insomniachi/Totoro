@@ -1,14 +1,38 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Module.Anime;
+using Totoro.Core.Module.Media;
+using Totoro.Playback;
 
 namespace Totoro.ViewModels.AnimeDetails;
 
 // A display record rather than the model: the XAML compiler can't generate binding code for init-only properties.
-public sealed record EpisodeItem(string Number, string Title, string Details, string? Image, string Overview, bool IsWatched);
+/// <param name="Play">What the play button plays; null for specials, which can't be played from here.</param>
+/// <param name="Progress">How far through it the user stopped, from 0 to 1; 0 when there's nothing to resume.</param>
+public sealed record EpisodeItem(
+	string Number,
+	string Title,
+	string Details,
+	string? Image,
+	string Overview,
+	bool IsWatched,
+	EpisodeToWatch? Play,
+	double Progress)
+{
+	// For x:Bind, which doesn't call a function whose argument is null.
+	public bool CanPlay => Play is not null;
+	public bool HasProgress => Progress > 0;
 
-/// <summary>The anime's episodes, with the ones already watched marked.</summary>
-public sealed partial class EpisodesTab(Func<Task<List<EpisodeInfo>>> fetch, Func<int> watchedEpisodes, ILogger logger)
+	/// <summary>The play button's accessible name.</summary>
+	public string PlayName => HasProgress ? $"Resume episode {Number}" : $"Play episode {Number}";
+}
+
+/// <summary>The anime's episodes, with the ones already watched marked and unfinished ones' progress.</summary>
+public sealed partial class EpisodesTab(
+	Func<Task<List<EpisodeInfo>>> fetch,
+	AnimeModel anime,
+	IPlaybackProgressStore progress,
+	ILogger logger)
 	: LazyDetailsTab("No episode information yet.", logger)
 {
 	private List<EpisodeInfo> _episodes = [];
@@ -19,18 +43,19 @@ public sealed partial class EpisodesTab(Func<Task<List<EpisodeInfo>>> fetch, Fun
 	protected override async Task<int> LoadAsync()
 	{
 		_episodes = await fetch();
-		UpdateWatched();
+		Refresh();
 		return _episodes.Count;
 	}
 
-	/// <summary>Re-marks watched episodes, e.g. after the tracking was edited.</summary>
-	public void UpdateWatched()
+	/// <summary>Re-marks watched episodes and progress, e.g. after watching one or editing the tracking.</summary>
+	public void Refresh()
 	{
-		var watched = watchedEpisodes();
-		Episodes = [.. _episodes.Select(x => ToItem(x, watched))];
+		var watched = anime.Tracking?.WatchedEpisodes ?? 0;
+		var saved = progress.GetAll(anime.ProgressKey);
+		Episodes = [.. _episodes.Select(x => ToItem(x, watched, saved))];
 	}
 
-	private static EpisodeItem ToItem(EpisodeInfo episode, int watched)
+	private EpisodeItem ToItem(EpisodeInfo episode, int watched, IReadOnlyDictionary<int, EpisodeProgress> saved)
 	{
 		var number = episode.IsSpecial ? $"S{episode.EpisodeNumber}" : episode.EpisodeNumber.ToString();
 		var title = NullIfEmpty(episode.Titles.English) ?? NullIfEmpty(episode.Titles.Romaji) ?? NullIfEmpty(episode.Titles.Japanese)
@@ -47,7 +72,16 @@ public sealed partial class EpisodesTab(Func<Task<List<EpisodeInfo>>> fetch, Fun
 			details.Add($"{episode.Runtime} min");
 		}
 
+		var resume = episode.IsSpecial ? null : saved.GetValueOrDefault(episode.EpisodeNumber);
+		if (resume is not null)
+		{
+			// In the details line rather than a line of its own, so every episode is the same height.
+			details.Add($"Resume from {resume.Position:m\\:ss}");
+		}
+
 		return new EpisodeItem(number, title, string.Join(" · ", details), NullIfEmpty(episode.Image), episode.Overview,
-							   IsWatched: !episode.IsSpecial && episode.EpisodeNumber <= watched);
+							   IsWatched: !episode.IsSpecial && episode.EpisodeNumber <= watched,
+							   Play: episode.IsSpecial ? null : new EpisodeToWatch(anime, episode.EpisodeNumber),
+							   Progress: resume?.Fraction ?? 0);
 	}
 }

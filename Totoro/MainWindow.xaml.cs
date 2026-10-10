@@ -20,7 +20,6 @@ namespace Totoro
 			ExtendsContentIntoTitleBar = true;
 			SetTitleBar(AppTitleBar);
 			AppWindow.TitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
-
 			// The back button is hidden (not just disabled) until there is somewhere to go back to.
 			AppTitleBar.BackRequested += async (_, _) =>
 			{

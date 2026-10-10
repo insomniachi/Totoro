@@ -34,8 +34,14 @@ public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracke
 	}
 
 	/// <summary>Plays the next episode to watch (after the last one watched); see <see cref="WatchService"/>.</summary>
-	[RelayCommand]
+	[RelayCommand(AllowConcurrentExecutions = true)]
+	// Concurrent: playback lasts until the player closes, and a command that can't run concurrently is disabled until
+	// then, which would disable every play button. Starting another episode replaces the one playing.
 	private Task Watch(AnimeModel anime) => watch.WatchNextAsync(anime);
+
+	/// <summary>Plays a particular episode, from where it was left off if it wasn't finished.</summary>
+	[RelayCommand(AllowConcurrentExecutions = true)]
+	private Task WatchEpisode(EpisodeToWatch episode) => watch.WatchAsync(episode.Anime, episode.Number);
 
 	/// <summary>Edits the anime's tracking in a dialog and saves it to the selected tracker.</summary>
 	[RelayCommand]

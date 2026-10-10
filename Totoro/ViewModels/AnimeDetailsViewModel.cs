@@ -1,8 +1,11 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
+using Totoro.Core.Module.Media;
+using Totoro.Playback;
 using Totoro.UI.Navigation;
 using Totoro.ViewModels.AnimeDetails;
 
@@ -12,25 +15,32 @@ namespace Totoro.ViewModels;
 /// Details of an anime, shown in the main window's side pane (see AnimeCommands.ShowDetails).
 /// Exposes display-ready values rather than the model, so the view binds to flat properties only.
 /// </summary>
-public partial class AnimeDetailsViewModel : NavigatableViewModel
+public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<PlaybackProgressChangedMessage>
 {
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
 	private readonly ILogger<AnimeDetailsViewModel> _logger;
+	private readonly IPlaybackProgressStore _progress;
 
 	// The provider the anime came from, and its full details; set once loaded, used by the tabs.
 	private IAnimeMetadataProvider? _provider;
 	private AnimeModel _details;
 
-	public AnimeDetailsViewModel(AnimeModel anime, IFactory<IAnimeMetadataProvider, Guid> providers, ILogger<AnimeDetailsViewModel> logger)
+	public AnimeDetailsViewModel(
+		AnimeModel anime,
+		IFactory<IAnimeMetadataProvider, Guid> providers,
+		IPlaybackProgressStore progress,
+		ILogger<AnimeDetailsViewModel> logger)
 	{
 		_providers = providers;
 		_logger = logger;
+		_progress = progress;
 		Anime = anime;
 		_details = anime;
 
 		Episodes = new EpisodesTab(
 			() => _provider?.GetEpisodesAsync(_details) ?? Task.FromResult(new List<EpisodeInfo>()),
-			() => Anime.Tracking?.WatchedEpisodes ?? 0,
+			anime,
+			progress,
 			logger);
 		Characters = new CharactersTab(
 			() => _provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>()),
@@ -39,6 +49,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 
 		UpdateTracking();
 		Anime.PropertyChanged += OnAnimePropertyChanged;
+		WeakReferenceMessenger.Default.Register(this);
 	}
 
 	// Tab keys; the page's SelectorBarItems carry these as their Tag.
@@ -98,6 +109,12 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 	[ObservableProperty] public partial string TrackingSummary { get; set; } = "";
 	[ObservableProperty] public partial string EditTrackingText { get; set; } = "";
 
+	/// <summary>
+	/// The play button's text, e.g. "Play episode 5" or "Resume episode 5"; empty (never null, it's passed to x:Bind
+	/// functions) once every episode is watched.
+	/// </summary>
+	[ObservableProperty] public partial string PlayText { get; set; } = "";
+
 	protected override async Task OnNavigatedToInternal()
 	{
 		// The full details have studios, related anime etc. that the list's model may lack; fall back to the
@@ -127,7 +144,21 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 	{
 		// Anime outlives this view model (it's still in the list); don't let it keep us alive.
 		Anime.PropertyChanged -= OnAnimePropertyChanged;
+		WeakReferenceMessenger.Default.Unregister<PlaybackProgressChangedMessage>(this);
 		return Task.CompletedTask;
+	}
+
+	/// <summary>Playing an episode saved (or cleared) its progress: show it in the button and the episode list.</summary>
+	public void Receive(PlaybackProgressChangedMessage message)
+	{
+		if (message.AnimeKey == Anime.ProgressKey)
+		{
+			UpdatePlayText();
+			if (Episodes.IsLoaded)
+			{
+				Episodes.Refresh();
+			}
+		}
 	}
 
 	private void OnAnimePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -137,9 +168,17 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 			UpdateTracking();
 			if (Episodes.IsLoaded)
 			{
-				Episodes.UpdateWatched();
+				Episodes.Refresh();
 			}
 		}
+	}
+
+	private void UpdatePlayText()
+	{
+		var next = WatchService.NextEpisode(Anime);
+		PlayText = Anime.TotalEpisodes is > 0 and var total && next > total ? ""
+			: _progress.Get(Anime.ProgressKey, next) is not null ? $"Resume episode {next}"
+			: $"Play episode {next}";
 	}
 
 	private void ShowDetails(AnimeModel details)
@@ -163,6 +202,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel
 	private void UpdateTracking()
 	{
 		var tracking = Anime.Tracking;
+		UpdatePlayText();
 
 		TrackingStatus = tracking?.Status switch
 		{

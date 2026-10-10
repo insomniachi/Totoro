@@ -15,7 +15,11 @@ namespace Totoro.Modules.MediaPlayers.Mpv;
 /// </summary>
 internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger<MpvMediaPlayer> logger) : IMediaPlayer
 {
+	private readonly SemaphoreSlim _writeLock = new(1, 1);
 	private Process? _process;
+
+	// The IPC pipe to the current mpv, once connected; commands sent before then are dropped.
+	private NamedPipeClientStream? _pipe;
 
 	public Guid Id => MpvModule.Id;
 
@@ -78,6 +82,46 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		_ = Task.Run(() => FollowAsync(process, pipeName));
 	}
 
+	public Task SeekAsync(TimeSpan position)
+	{
+		return SendAsync("seek", position.TotalSeconds, "absolute+exact");
+	}
+
+	public Task ShowMessageAsync(string text, TimeSpan duration)
+	{
+		return SendAsync("show-text", text, (int)duration.TotalMilliseconds);
+	}
+
+	public Task SetChaptersAsync(IReadOnlyList<MediaChapter> chapters)
+	{
+		// The chapter-list property can be replaced while playing; it shows on the seek bar, and the next/previous
+		// chapter keys (Page Up/Down) move between them.
+		object[] list = [.. chapters.Select(x => new { title = x.Title, time = x.Start.TotalSeconds })];
+		return SendAsync("set_property", "chapter-list", list);
+	}
+
+	private async Task SendAsync(params object[] command)
+	{
+		if (_pipe is not { IsConnected: true } pipe)
+		{
+			return;
+		}
+
+		await _writeLock.WaitAsync();
+		try
+		{
+			await WriteAsync(pipe, command);
+		}
+		catch (Exception ex) when (ex is IOException or ObjectDisposedException)
+		{
+			// mpv was closed meanwhile.
+		}
+		finally
+		{
+			_writeLock.Release();
+		}
+	}
+
 	private void Stop()
 	{
 		if (_process is not { } process)
@@ -86,6 +130,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		}
 
 		_process = null;
+		_pipe = null;
 		try
 		{
 			if (!process.HasExited)
@@ -127,8 +172,12 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 				}
 			}
 
-			await SendAsync(pipe, "observe_property", 1, "duration");
-			await SendAsync(pipe, "observe_property", 2, "time-pos");
+			await WriteAsync(pipe, "observe_property", 1, "duration");
+			await WriteAsync(pipe, "observe_property", 2, "time-pos");
+			if (ReferenceEquals(process, _process))
+			{
+				_pipe = pipe;
+			}
 
 			using var reader = new StreamReader(pipe, Encoding.UTF8);
 			while (await reader.ReadLineAsync() is { } line)
@@ -168,7 +217,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		}
 	}
 
-	private static async Task SendAsync(Stream pipe, params object[] command)
+	private static async Task WriteAsync(Stream pipe, params object[] command)
 	{
 		var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { command }) + "\n");
 		await pipe.WriteAsync(bytes);

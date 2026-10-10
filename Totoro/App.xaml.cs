@@ -116,7 +116,8 @@ public partial class App : Application
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
 			new Modules.AnimeProviders.SubsPlease.SubsPleaseModule(),
-			new Modules.MediaPlayers.Mpv.MpvModule()
+			new Modules.MediaPlayers.Mpv.MpvModule(),
+			new Modules.MediaSegments.Aniskip.AniskipModule()
 		];
 	}
 }

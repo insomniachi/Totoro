@@ -25,6 +25,11 @@ public sealed record BackdropOption(string Label, AppBackdrop Value)
 	public override string ToString() => Label;
 }
 
+public sealed record SkipModeOption(string Label, SkipMode Value)
+{
+	public override string ToString() => Label;
+}
+
 /// <summary>A module in Settings, with a command to edit its settings in a dialog.</summary>
 public sealed partial class ModuleSettingsItem(IModuleSettings settings, IDialogService dialogs)
 {
@@ -67,6 +72,10 @@ public partial class SettingsViewModel : ObservableObject
 
 		Accounts = [.. accounts.Select(x => new AccountViewModel(x))];
 
+		OpeningSkip = SkipModes.First(x => x.Value == preferences.OpeningSkipMode);
+		EndingSkip = SkipModes.First(x => x.Value == preferences.EndingSkipMode);
+		PlayNextAutomatically = preferences.PlayNextAutomatically;
+
 		// Only modules with something to edit.
 		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
 	}
@@ -91,6 +100,29 @@ public partial class SettingsViewModel : ObservableObject
 		}
 	}
 
+	public IReadOnlyList<SkipModeOption> SkipModes { get; } =
+	[
+		new("Don't skip", SkipMode.Off),
+		new("Offer to skip", SkipMode.Ask),
+		new("Skip automatically", SkipMode.Automatic),
+	];
+
+	/// <summary>What happens when an opening (or recap) starts.</summary>
+	[ObservableProperty]
+	public partial SkipModeOption OpeningSkip { get; set; }
+
+	partial void OnOpeningSkipChanged(SkipModeOption value) => _preferences.OpeningSkipMode = value.Value;
+
+	/// <summary>What happens when an ending starts.</summary>
+	[ObservableProperty]
+	public partial SkipModeOption EndingSkip { get; set; }
+
+	partial void OnEndingSkipChanged(SkipModeOption value) => _preferences.EndingSkipMode = value.Value;
+
+	[ObservableProperty]
+	public partial bool PlayNextAutomatically { get; set; }
+
+	partial void OnPlayNextAutomaticallyChanged(bool value) => _preferences.PlayNextAutomatically = value;
 	public IReadOnlyList<ThemeOption> Themes { get; } =
 	[
 		new("Use system setting", AppTheme.System),

@@ -87,6 +87,50 @@
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="Playback" />
+
+            <toolkit:SettingsCard Description="When an opening or recap starts. Offering to skip shows a hint in the player; press Page Up (next chapter) to skip." Header="Openings">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE893;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.SkipModes}"
+                    SelectedItem="{x:Bind ViewModel.OpeningSkip, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SkipModeOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="When the ending starts." Header="Endings">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE893;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.SkipModes}"
+                    SelectedItem="{x:Bind ViewModel.EndingSkip, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:SkipModeOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="When you finish an episode, start the next one after a short countdown. Otherwise it's offered." Header="Play the next episode automatically">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE768;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.PlayNextAutomatically, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
+            <TextBlock
+                Margin="0,24,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="Modules" />
 
             <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Modules}">
