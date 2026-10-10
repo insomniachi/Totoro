@@ -2,6 +2,6 @@
 
 public interface INavigationAware
 {
-	Task OnNavigatedTo();
-	Task OnNavigatedFrom();
+	Task OnNavigatedToAsync();
+	Task OnNavigatedFromAsync();
 }

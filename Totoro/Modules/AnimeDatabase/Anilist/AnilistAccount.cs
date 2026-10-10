@@ -16,7 +16,7 @@ internal sealed class AnilistAccount(
 	ILogger<AnilistAccount> logger) : IAccount
 {
 	// The redirect registered for the app's client id: AniList's page that would show the token to copy.
-	private static readonly Uri Callback = new("https://anilist.co/api/v2/oauth/pin");
+	private static readonly Uri s_callback = new("https://anilist.co/api/v2/oauth/pin");
 
 	public Guid Id => AnilistModule.Id;
 
@@ -53,7 +53,7 @@ internal sealed class AnilistAccount(
 	public async Task<bool> SignInAsync()
 	{
 		var start = new Uri($"https://anilist.co/api/v2/oauth/authorize?client_id={Settings.ClientId}&response_type=token");
-		if (await authenticator.AuthenticateAsync(start, Callback) is not { } result)
+		if (await authenticator.AuthenticateAsync(start, s_callback) is not { } result)
 		{
 			return false;
 		}

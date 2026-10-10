@@ -25,11 +25,11 @@ public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracke
 
 	/// <summary>Shows the anime's details in the main window's side pane.</summary>
 	[RelayCommand]
-	private async Task ShowDetails(AnimeModel anime)
+	private async Task ShowDetailsAsync(AnimeModel anime)
 	{
 		if (Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
 		{
-			await pane.NavigateToData(anime);
+			await pane.NavigateToDataAsync(anime);
 		}
 	}
 
@@ -37,15 +37,15 @@ public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracke
 	[RelayCommand(AllowConcurrentExecutions = true)]
 	// Concurrent: playback lasts until the player closes, and a command that can't run concurrently is disabled until
 	// then, which would disable every play button. Starting another episode replaces the one playing.
-	private Task Watch(AnimeModel anime) => watch.WatchNextAsync(anime);
+	private Task WatchAsync(AnimeModel anime) => watch.WatchNextAsync(anime);
 
 	/// <summary>Plays a particular episode, from where it was left off if it wasn't finished.</summary>
 	[RelayCommand(AllowConcurrentExecutions = true)]
-	private Task WatchEpisode(EpisodeToWatch episode) => watch.WatchAsync(episode.Anime, episode.Number);
+	private Task WatchEpisodeAsync(EpisodeToWatch episode) => watch.WatchAsync(episode.Anime, episode.Number);
 
 	/// <summary>Edits the anime's tracking in a dialog and saves it to the selected tracker.</summary>
 	[RelayCommand]
-	private async Task EditTracking(AnimeModel anime)
+	private async Task EditTrackingAsync(AnimeModel anime)
 	{
 		if (await dialogs.ShowAsync<TrackingDialogViewModel, Tracking>(anime) is not { } tracking)
 		{
@@ -60,7 +60,7 @@ public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracke
 		try
 		{
 			// Views react to Tracking changing, e.g. the user list re-filters and moves the card to its new tab.
-			anime.Tracking = await tracker.Update(anime.Id, tracking);
+			anime.Tracking = await tracker.UpdateAsync(anime.Id, tracking);
 		}
 		catch (Exception ex)
 		{

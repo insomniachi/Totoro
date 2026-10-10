@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
 		}
 
 		/// <summary>
-		/// Registers a page shown for a piece of data, e.g. <c>INavigator.NavigateToData(anime)</c>. The navigator creates
+		/// Registers a page shown for a piece of data, e.g. <c>INavigator.NavigateToDataAsync(anime)</c>. The navigator creates
 		/// the view model itself and passes it the data; it isn't registered as a service, since DI validation (on in the
 		/// Development environment) would fail on a constructor parameter that only the navigator can supply.
 		/// </summary>

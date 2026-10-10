@@ -152,7 +152,7 @@ internal sealed partial class HtmlRenderer
 				}
 				else
 				{
-					_lists.Push(new ListContext(Ordered: name == "ol"));
+					_lists.Push(new ListContext(ordered: name == "ol"));
 				}
 
 				break;
@@ -534,9 +534,9 @@ internal sealed partial class HtmlRenderer
 		return null;
 	}
 
-	private sealed class ListContext(bool Ordered)
+	private sealed class ListContext(bool ordered)
 	{
-		public bool Ordered { get; } = Ordered;
+		public bool Ordered { get; } = ordered;
 		public int Counter { get; set; }
 	}
 

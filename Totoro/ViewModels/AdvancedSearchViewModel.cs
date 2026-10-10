@@ -50,8 +50,8 @@ public enum YearFilterMode
 public partial class AdvancedSearchViewModel : NavigatableViewModel
 {
 	// How long to wait after the last change before searching: longer for typing, which changes more often.
-	private static readonly TimeSpan FilterDelay = TimeSpan.FromMilliseconds(500);
-	private static readonly TimeSpan TitleDelay = TimeSpan.FromSeconds(1);
+	private static readonly TimeSpan s_filterDelay = TimeSpan.FromMilliseconds(500);
+	private static readonly TimeSpan s_titleDelay = TimeSpan.FromSeconds(1);
 
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
 	private readonly ILogger<AdvancedSearchViewModel> _logger;
@@ -237,7 +237,7 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 
 	public int CurrentYear { get; } = DateTime.Now.Year;
 
-	protected override Task OnNavigatedFromInternal()
+	protected override Task OnNavigatedFromInternalAsync()
 	{
 		_subscriptions.Dispose();
 		return Task.CompletedTask;
@@ -300,13 +300,13 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 	private IDisposable SearchWhenFiltersChange(IScheduler ui)
 	{
 		var filtersChanged = this.WhenAnyPropertyChanged(nameof(Season), nameof(MinimumYear), nameof(MaximumYear), nameof(MinimumScore), nameof(MaximumScore))
-								 .Throttle(FilterDelay)
+								 .Throttle(s_filterDelay)
 								 .Select(_ => Unit.Default);
 		var titleChanged = this.WhenValueChanged(x => x.Title, notifyOnInitialValue: false)
-							   .Throttle(TitleDelay)
+							   .Throttle(s_titleDelay)
 							   .Select(_ => Unit.Default);
 		var genresChanged = Observable.Merge(CollectionChanged(IncludedGenres), CollectionChanged(ExcludedGenres))
-									  .Throttle(FilterDelay);
+									  .Throttle(s_filterDelay);
 
 		return Observable.Merge(filtersChanged, titleChanged, genresChanged)
 						 // Read the filters and update IsLoading on the UI thread, where they're bound.

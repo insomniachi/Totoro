@@ -4,7 +4,7 @@ public interface IAnimeTracker
 {
 	Guid Id { get; }
 	public string Name { get; }
-	Task<Tracking> Update(long id, Tracking tracking);
-	Task<bool> Remove(long id);
-	Task<List<AnimeModel>> GetUserList(CancellationToken ct);
+	Task<Tracking> UpdateAsync(long id, Tracking tracking);
+	Task<bool> RemoveAsync(long id);
+	Task<List<AnimeModel>> GetUserListAsync(CancellationToken ct);
 }

@@ -14,7 +14,7 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 	private Grid? _canvas;
 	private EdgeLighting? _lighting;
 
-	private static readonly AnimationSet _enterAnimation =
+	private static readonly AnimationSet s_enterAnimation =
 		[
 			new ScaleAnimation()
 			{
@@ -24,7 +24,7 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 				Duration = TimeSpan.FromMilliseconds(100)
 			},
 		];
-	private static readonly AnimationSet _exitAnimation =
+	private static readonly AnimationSet s_exitAnimation =
 		[
 			new ScaleAnimation()
 			{
@@ -75,7 +75,7 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 
 	private void OnPointerExited(object sender, PointerRoutedEventArgs e)
 	{
-		_exitAnimation.StartAsync(AssociatedObject);
+		s_exitAnimation.StartAsync(AssociatedObject);
 		if (_lighting is not null)
 		{
 			_lighting.StrokeThickness = 0;
@@ -85,7 +85,7 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 
 	private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
 	{
-		_enterAnimation.StartAsync(AssociatedObject);
+		s_enterAnimation.StartAsync(AssociatedObject);
 		if (_lighting is not null)
 		{
 			_lighting.StrokeThickness = 5;

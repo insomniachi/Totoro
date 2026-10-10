@@ -31,7 +31,7 @@ internal static class MalToModelConverter
 		AnimeFieldNames.MediaType
 	];
 
-	private static readonly TimeZoneInfo Japan = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
+	private static readonly TimeZoneInfo s_japan = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tokyo");
 
 	public static AnimeModel ConvertModel(MalApi.Anime malModel)
 	{
@@ -74,7 +74,7 @@ internal static class MalToModelConverter
 			model.NextEpisodeAt = NextBroadcast(day, time);
 			if (DateTime.TryParseExact(malModel.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var start))
 			{
-				model.AiredEpisodes = CountAiredEpisodes(start + time, TimeZoneInfo.ConvertTime(DateTime.Now, Japan));
+				model.AiredEpisodes = CountAiredEpisodes(start + time, TimeZoneInfo.ConvertTime(DateTime.Now, s_japan));
 			}
 		}
 
@@ -233,14 +233,14 @@ internal static class MalToModelConverter
 	/// <summary>The next broadcast, in local time, of a show that airs weekly at the given Japanese day and time.</summary>
 	private static DateTime NextBroadcast(DayOfWeek day, TimeSpan time)
 	{
-		var japanNow = TimeZoneInfo.ConvertTime(DateTime.Now, Japan);
+		var japanNow = TimeZoneInfo.ConvertTime(DateTime.Now, s_japan);
 		var days = ((int)day - (int)japanNow.DayOfWeek + 7) % 7;
 		if (days == 0 && japanNow.TimeOfDay > time)
 		{
 			days = 7;
 		}
 
-		return TimeZoneInfo.ConvertTime(japanNow.Date.AddDays(days) + time, Japan, TimeZoneInfo.Local);
+		return TimeZoneInfo.ConvertTime(japanNow.Date.AddDays(days) + time, s_japan, TimeZoneInfo.Local);
 	}
 
 	/// <summary>How many weekly episodes have aired since the first one (both times in Japanese time).</summary>

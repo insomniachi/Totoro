@@ -14,9 +14,9 @@ namespace Totoro.Modules.AnimeProviders.SubsPlease;
 /// </summary>
 internal static partial class SubsPleaseCatalog
 {
-	private static readonly TimeSpan MaxAge = TimeSpan.FromDays(1);
-	private static readonly SemaphoreSlim Lock = new(1, 1);
-	private static List<CatalogShow>? _shows;
+	private static readonly TimeSpan s_maxAge = TimeSpan.FromDays(1);
+	private static readonly SemaphoreSlim s_lock = new(1, 1);
+	private static List<CatalogShow>? s_shows;
 
 	internal sealed record CatalogShow(string Id, string Title);
 
@@ -40,36 +40,36 @@ internal static partial class SubsPleaseCatalog
 
 	private static async Task<List<CatalogShow>> GetShowsAsync(CancellationToken ct)
 	{
-		await Lock.WaitAsync(ct);
+		await s_lock.WaitAsync(ct);
 		try
 		{
 			var file = FileHelper.GetModulePath(SubsPleaseModule.Descriptor, "catalog.json");
-			if (_shows is { } shows && File.Exists(file) && DateTime.Now - File.GetLastWriteTime(file) < MaxAge)
+			if (s_shows is { } shows && File.Exists(file) && DateTime.Now - File.GetLastWriteTime(file) < s_maxAge)
 			{
 				return shows;
 			}
 
-			if (File.Exists(file) && DateTime.Now - File.GetLastWriteTime(file) < MaxAge)
+			if (File.Exists(file) && DateTime.Now - File.GetLastWriteTime(file) < s_maxAge)
 			{
-				return _shows = JsonSerializer.Deserialize<List<CatalogShow>>(await File.ReadAllTextAsync(file, ct)) ?? [];
+				return s_shows = JsonSerializer.Deserialize<List<CatalogShow>>(await File.ReadAllTextAsync(file, ct)) ?? [];
 			}
 
 			try
 			{
-				_shows = await DownloadAsync(ct);
+				s_shows = await DownloadAsync(ct);
 				Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-				await File.WriteAllTextAsync(file, JsonSerializer.Serialize(_shows), ct);
-				return _shows;
+				await File.WriteAllTextAsync(file, JsonSerializer.Serialize(s_shows), ct);
+				return s_shows;
 			}
 			catch when (File.Exists(file))
 			{
 				// Offline, or the site changed: an old list is better than none.
-				return _shows = JsonSerializer.Deserialize<List<CatalogShow>>(await File.ReadAllTextAsync(file, ct)) ?? [];
+				return s_shows = JsonSerializer.Deserialize<List<CatalogShow>>(await File.ReadAllTextAsync(file, ct)) ?? [];
 			}
 		}
 		finally
 		{
-			Lock.Release();
+			s_lock.Release();
 		}
 	}
 

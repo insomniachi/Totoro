@@ -16,5 +16,5 @@ public interface IAnimeMetadataProvider
 	Task<List<string>> GetGenresAsync();
 	Task<List<AnimeModel>> GetPopularAnimeAsync(CancellationToken ct);
 	Task<List<AnimeModel>> GetUpcomingAnimeAsync(CancellationToken ct);
-	Task<List<AnimeModel>> GetAiringToday(CancellationToken ct);
+	Task<List<AnimeModel>> GetAiringTodayAsync(CancellationToken ct);
 }

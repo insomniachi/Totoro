@@ -6,5 +6,7 @@
 	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	  <TargetFramework>net10.0</TargetFramework>
 	  <Platforms>x64</Platforms>
+	  <!-- Report .editorconfig code-style rules (the naming conventions, IDE1006) when building, not only in the editor -->
+	  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 </Project>

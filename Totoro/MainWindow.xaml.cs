@@ -25,7 +25,7 @@ namespace Totoro
 			{
 				if (Navigators.TryGetNavigator(MainNavigatorKey, out var navigator))
 				{
-					await navigator.GoBack();
+					await navigator.GoBackAsync();
 				}
 			};
 

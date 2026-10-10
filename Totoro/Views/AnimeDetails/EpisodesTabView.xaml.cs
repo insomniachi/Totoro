@@ -13,7 +13,7 @@ namespace Totoro.Views.AnimeDetails;
 /// <summary>The Episodes tab.</summary>
 public sealed partial class EpisodesTabView : UserControl
 {
-	private static readonly TimeSpan HoverDuration = TimeSpan.FromMilliseconds(150);
+	private static readonly TimeSpan s_hoverDuration = TimeSpan.FromMilliseconds(150);
 
 	public EpisodesTabView()
 	{
@@ -46,10 +46,10 @@ public sealed partial class EpisodesTabView : UserControl
 		ElementCompositionPreview.GetElementVisual(badge).CenterPoint = new Vector3((float)badge.ActualWidth / 2, (float)badge.ActualHeight / 2, 0);
 
 		AnimationBuilder.Create()
-						.Scale(to: hovered ? 1.25 : 1, duration: HoverDuration, easingMode: EasingMode.EaseOut)
+						.Scale(to: hovered ? 1.25 : 1, duration: s_hoverDuration, easingMode: EasingMode.EaseOut)
 						.Start(badge);
 		AnimationBuilder.Create()
-						.Opacity(to: hovered ? 1 : 0, duration: HoverDuration, layer: FrameworkLayer.Xaml)
+						.Opacity(to: hovered ? 1 : 0, duration: s_hoverDuration, layer: FrameworkLayer.Xaml)
 						.Start(highlight);
 	}
 }

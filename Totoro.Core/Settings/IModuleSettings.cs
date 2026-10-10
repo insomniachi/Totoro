@@ -24,7 +24,7 @@ public interface IModuleSettings<out TData> : IModuleSettings
 public class ModuleSettings<TData> : IModuleSettings<TData>
 	where TData : DataContainerConfig, new()
 {
-	private static readonly JsonSerializerOptions _options = new() { WriteIndented = true };
+	private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
 	private readonly string _filePath;
 
 	public ModuleSettings(Descriptor descriptor)
@@ -56,6 +56,6 @@ public class ModuleSettings<TData> : IModuleSettings<TData>
 
 	public void Save()
 	{
-		File.WriteAllText(_filePath, JsonSerializer.Serialize(Value, _options));
+		File.WriteAllText(_filePath, JsonSerializer.Serialize(Value, s_options));
 	}
 }

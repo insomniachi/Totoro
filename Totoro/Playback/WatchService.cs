@@ -47,9 +47,9 @@ public sealed partial class WatchService(
 	private const string ShowsKey = "ProviderShows";
 
 	// Progress is only worth keeping (and resuming) past the first moments.
-	private static readonly TimeSpan MinimumProgress = TimeSpan.FromSeconds(30);
-	private static readonly TimeSpan SaveInterval = TimeSpan.FromSeconds(10);
-	private static readonly TimeSpan NextEpisodeCountdown = TimeSpan.FromSeconds(5);
+	private static readonly TimeSpan s_minimumProgress = TimeSpan.FromSeconds(30);
+	private static readonly TimeSpan s_saveInterval = TimeSpan.FromSeconds(10);
+	private static readonly TimeSpan s_nextEpisodeCountdown = TimeSpan.FromSeconds(5);
 
 	private CancellationTokenSource? _cancellation;
 	private Action? _action;
@@ -164,7 +164,7 @@ public sealed partial class WatchService(
 		var credits = TimeSpan.FromMinutes(anime.MediaFormat == AnimeMediaFormat.Movie ? 6 : 2);
 
 		// Resume a little before where it was left, unless that was in the credits.
-		var start = progressStore.Get(key, number) is { } saved && saved.Position > MinimumProgress && saved.Duration - saved.Position > credits
+		var start = progressStore.Get(key, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
 			? saved.Position - TimeSpan.FromSeconds(3)
 			: TimeSpan.Zero;
 
@@ -176,7 +176,7 @@ public sealed partial class WatchService(
 
 		void Save()
 		{
-			if (position > MinimumProgress && duration > TimeSpan.Zero)
+			if (position > s_minimumProgress && duration > TimeSpan.Zero)
 			{
 				progressStore.Save(key, number, new EpisodeProgress(position, duration));
 			}
@@ -197,7 +197,7 @@ public sealed partial class WatchService(
 		{
 			position = value;
 			segments.OnPosition(value);
-			if (DateTime.Now - lastSave > SaveInterval)
+			if (DateTime.Now - lastSave > s_saveInterval)
 			{
 				lastSave = DateTime.Now;
 				Save();
@@ -264,7 +264,7 @@ public sealed partial class WatchService(
 		var countdown = _cancellation = new CancellationTokenSource();
 		try
 		{
-			for (var left = NextEpisodeCountdown; left > TimeSpan.Zero; left -= TimeSpan.FromSeconds(1))
+			for (var left = s_nextEpisodeCountdown; left > TimeSpan.Zero; left -= TimeSpan.FromSeconds(1))
 			{
 				Show(PlaybackStatusKind.Progress, $"Marked episode {watched} as watched. Playing episode {next} in {left.TotalSeconds:0}…",
 					 "Cancel", Cancel);
@@ -296,7 +296,7 @@ public sealed partial class WatchService(
 
 		var current = anime.Tracking;
 		var completed = anime.TotalEpisodes == number;
-		anime.Tracking = await tracker.Update(anime.Id, new Tracking
+		anime.Tracking = await tracker.UpdateAsync(anime.Id, new Tracking
 		{
 			WatchedEpisodes = number,
 			Status = completed ? ListItemStatus.Completed

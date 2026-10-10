@@ -118,7 +118,7 @@ internal partial class AnilistMetadataProvider(
 
 	public Task<List<EpisodeInfo>> GetEpisodesAsync(AnimeModel anime)
 	{
-		return anime.GetEpisodes();
+		return anime.GetEpisodesAsync();
 	}
 
 	public Task<List<CharacterModel>> GetCharactersAsync(long animeId)
@@ -230,7 +230,7 @@ internal partial class AnilistMetadataProvider(
 		}
 	}
 
-	public async Task<List<AnimeModel>> GetAiringToday(CancellationToken ct)
+	public async Task<List<AnimeModel>> GetAiringTodayAsync(CancellationToken ct)
 	{
 		try
 		{

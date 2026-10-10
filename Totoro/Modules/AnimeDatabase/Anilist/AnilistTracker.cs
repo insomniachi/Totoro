@@ -11,12 +11,12 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 
 		public string Name => nameof(AnimeId.Anilist);
 
-		public async Task<List<AnimeModel>> GetUserList(CancellationToken ct)
+		public async Task<List<AnimeModel>> GetUserListAsync(CancellationToken ct)
 		{
 			string? userName;
 			try
 			{
-				userName = await FetchUserName(ct);
+				userName = await FetchUserNameAsync(ct);
 			}
 			catch
 			{
@@ -40,7 +40,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 			];
 		}
 
-		public async Task<bool> Remove(long id)
+		public async Task<bool> RemoveAsync(long id)
 		{
 			var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
 															  .WithMediaListEntry(new MediaListQueryBuilder().WithId()),
@@ -76,7 +76,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 			return mutationResponse.Data.DeleteMediaListEntry?.Deleted ?? false;
 		}
 
-		public async Task<Tracking> Update(long id, Tracking tracking)
+		public async Task<Tracking> UpdateAsync(long id, Tracking tracking)
 		{
 			var mediaListEntryBuilder = new MediaListQueryBuilder();
 
@@ -126,7 +126,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 			return AniListModelToAnimeModelConverter.ConvertTracking(response.Data.SaveMediaListEntry) ?? tracking;
 		}
 
-		private async Task<string?> FetchUserName(CancellationToken ct)
+		private async Task<string?> FetchUserNameAsync(CancellationToken ct)
 		{
 			var response = await client.SendQueryAsync<Query>(new GraphQLRequest
 			{

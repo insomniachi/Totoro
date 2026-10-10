@@ -21,7 +21,7 @@ public partial class UserListViewModel : NavigatableViewModel
 	{
 		_factory = factory;
 
-		// Changes are pushed on the UI thread (the list is loaded from OnNavigatedTo and the
+		// Changes are pushed on the UI thread (the list is loaded from OnNavigatedToAsync and the
 		// filters change from bindings), so no ObserveOn is needed before binding.
 		// ResetThreshold is maxed so the view always gets individual adds/removes, never a Reset:
 		// the ItemsRepeater can only animate cards moving into place for individual changes.
@@ -42,7 +42,7 @@ public partial class UserListViewModel : NavigatableViewModel
 	/// <summary>Every filter applied to the list; an item has to pass all of them. Add new filters here.</summary>
 	private IEnumerable<IFilter<AnimeModel>> Filters => [StatusFilter];
 
-	protected override async Task OnNavigatedToInternal()
+	protected override async Task OnNavigatedToInternalAsync()
 	{
 		var tracker = _factory.CreateDefault();
 
@@ -51,7 +51,7 @@ public partial class UserListViewModel : NavigatableViewModel
 			return;
 		}
 
-		var anime = await tracker.GetUserList(CancellationToken.None);
+		var anime = await tracker.GetUserListAsync(CancellationToken.None);
 
 		_order.Clear();
 		foreach (var item in anime)

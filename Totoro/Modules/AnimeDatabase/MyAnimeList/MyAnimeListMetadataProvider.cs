@@ -23,10 +23,10 @@ internal class MyAnimeListMetadataProvider(
 	// Fields of the related and recommended anime in the full details.
 	private const string NestedFields = $"my_list_status,status,{AnimeFieldNames.TotalEpisodes},{AnimeFieldNames.Mean},{AnimeFieldNames.MediaType}";
 
-	private static readonly Jikan Jikan = new();
+	private static readonly Jikan s_jikan = new();
 
 	// Jikan filters genres by id; loaded on first use.
-	private static List<Genre>? _genres;
+	private static List<Genre>? s_genres;
 
 	public Guid Id => MyAnimeListModule.Id;
 
@@ -131,7 +131,7 @@ internal class MyAnimeListMetadataProvider(
 
 	public Task<List<EpisodeInfo>> GetEpisodesAsync(AnimeModel anime)
 	{
-		return anime.GetEpisodes();
+		return anime.GetEpisodesAsync();
 	}
 
 	public Task<List<CharacterModel>> GetCharactersAsync(long animeId)
@@ -154,12 +154,12 @@ internal class MyAnimeListMetadataProvider(
 		return await GetRankingAsync(AnimeRankingType.Upcoming, ct);
 	}
 
-	public async Task<List<AnimeModel>> GetAiringToday(CancellationToken ct)
+	public async Task<List<AnimeModel>> GetAiringTodayAsync(CancellationToken ct)
 	{
 		try
 		{
 			// Jikan's schedule is by Japanese broadcast day; the user's local day is the closest match we can ask for.
-			var response = await Jikan.GetScheduleAsync(ConvertDay(DateTime.Now.DayOfWeek), ct);
+			var response = await s_jikan.GetScheduleAsync(ConvertDay(DateTime.Now.DayOfWeek), ct);
 			return
 			[
 				.. response.Data
@@ -202,13 +202,13 @@ internal class MyAnimeListMetadataProvider(
 
 	private static async Task<List<Genre>> LoadGenresAsync()
 	{
-		if (_genres is { } genres)
+		if (s_genres is { } genres)
 		{
 			return genres;
 		}
 
-		var response = await Jikan.GetAnimeGenresAsync();
-		return _genres = response.Data?.ToList() ?? [];
+		var response = await s_jikan.GetAnimeGenresAsync();
+		return s_genres = response.Data?.ToList() ?? [];
 	}
 
 	private static async Task<IEnumerable<long>> GetGenreIdsAsync(IEnumerable<string> names)

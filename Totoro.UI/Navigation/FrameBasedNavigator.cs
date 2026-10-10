@@ -9,14 +9,14 @@ namespace Totoro.UI.Navigation;
 internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IServiceScopeFactory serviceScopeFactory, ILogger logger) : INavigator
 {
 	// Scope that owns the current page's view model and its dependencies.
-	// Disposed when we navigate away, after OnNavigatedFrom has run.
+	// Disposed when we navigate away, after OnNavigatedFromAsync has run.
 	private IServiceScope? _currentScope;
 
 	public event EventHandler? Navigated;
 
 	public bool CanGoBack => GetFrame().CanGoBack;
 
-	public Task GoBack()
+	public Task GoBackAsync()
 	{
 		try
 		{
@@ -38,7 +38,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 		return Task.CompletedTask;
 	}
 
-	public Task NavigateToData(object data)
+	public Task NavigateToDataAsync(object data)
 	{
 		try
 		{
@@ -60,7 +60,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 		return Task.CompletedTask;
 	}
 
-	public Task NavigateToKey(string key, object? data = null)
+	public Task NavigateToKeyAsync(string key, object? data = null)
 	{
 		try
 		{
@@ -82,7 +82,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 		return Task.CompletedTask;
 	}
 
-	public Task NavigateToViewModel(Type viewModelType, object? data = null)
+	public Task NavigateToViewModelAsync(Type viewModelType, object? data = null)
 	{
 		try
 		{
@@ -118,7 +118,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 		{
 			if (GetFrame().Content is Page { DataContext: INavigationAware navigationAware })
 			{
-				await navigationAware.OnNavigatedFrom();
+				await navigationAware.OnNavigatedFromAsync();
 			}
 		}
 		catch (Exception ex)
@@ -159,7 +159,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 
 			if (vmObj is INavigationAware navigationAware)
 			{
-				await navigationAware.OnNavigatedTo();
+				await navigationAware.OnNavigatedToAsync();
 			}
 
 		}
@@ -183,7 +183,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 	protected virtual void OnNavigating() { }
 
 	/// <summary>
-	/// Leaves the current page without showing a new one: the view model gets OnNavigatedFrom,
+	/// Leaves the current page without showing a new one: the view model gets OnNavigatedFromAsync,
 	/// its scope is disposed, and the frame's content and history are cleared.
 	/// </summary>
 	protected async Task ClearAsync()
@@ -196,7 +196,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 			var frame = GetFrame();
 			if (frame.Content is Page { DataContext: INavigationAware navigationAware })
 			{
-				await navigationAware.OnNavigatedFrom();
+				await navigationAware.OnNavigatedFromAsync();
 			}
 
 			frame.Content = null;

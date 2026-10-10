@@ -9,11 +9,11 @@ namespace Totoro.Modules.AnimeDatabase.Anilist;
 
 public static partial class AniListModelToAnimeModelConverter
 {
-    private static readonly Settings Settings = Locator.GetRequiredService<IModuleSettings<Settings>>().Value;
+    private static readonly Settings s_settings = Locator.GetRequiredService<IModuleSettings<Settings>>().Value;
 
     private static string GetTitle(Media media)
     {
-        if (Settings.TitleLanguage == TitleLanguage.English)
+        if (s_settings.TitleLanguage == TitleLanguage.English)
         {
             return media.Title.English ?? media.Title.Romaji;
         }

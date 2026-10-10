@@ -12,7 +12,7 @@ internal class MyAnimeListTracker(MyAnimeListSession session) : IAnimeTracker
 
 	public string Name => nameof(AnimeId.MyAnimeList);
 
-	public async Task<List<AnimeModel>> GetUserList(CancellationToken ct)
+	public async Task<List<AnimeModel>> GetUserListAsync(CancellationToken ct)
 	{
 		if (!session.IsSignedIn)
 		{
@@ -43,14 +43,14 @@ internal class MyAnimeListTracker(MyAnimeListSession session) : IAnimeTracker
 		return response;
 	}
 
-	public async Task<bool> Remove(long id)
+	public async Task<bool> RemoveAsync(long id)
 	{
 		var client = await session.GetClientAsync();
 		return await client.Anime().WithId(id).RemoveFromList();
 	}
 
 	/// <summary>Saves the tracking. Throws if MAL rejects it, so callers don't show a change that didn't happen.</summary>
-	public async Task<Tracking> Update(long id, Tracking tracking)
+	public async Task<Tracking> UpdateAsync(long id, Tracking tracking)
 	{
 		var client = await session.GetClientAsync();
 		var request = client.Anime().WithId(id).UpdateStatus().WithTags("Totoro");

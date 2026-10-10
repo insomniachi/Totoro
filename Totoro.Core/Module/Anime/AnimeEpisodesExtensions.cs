@@ -14,7 +14,7 @@ public static class AnimeEpisodesExtensions
 		/// The anime's aired episodes (titles, air dates, thumbnails...) from ani.zip, which maps AniList and MyAnimeList ids.
 		/// Episode numbers are rebased to start at 1; specials are flagged. Returns an empty list on failure.
 		/// </summary>
-		public async Task<List<EpisodeInfo>> GetEpisodes(CancellationToken ct = default)
+		public async Task<List<EpisodeInfo>> GetEpisodesAsync(CancellationToken ct = default)
 		{
 			try
 			{

@@ -14,7 +14,7 @@ namespace Totoro.Views;
 public sealed partial class AnimeDetailsPage : Page
 {
 	// Don't wait on a slow or stuck image forever; show what we have.
-	private static readonly TimeSpan ImageTimeout = TimeSpan.FromSeconds(3);
+	private static readonly TimeSpan s_imageTimeout = TimeSpan.FromSeconds(3);
 
 	private bool _bannerDone;
 	private bool _coverDone;
@@ -58,7 +58,7 @@ public sealed partial class AnimeDetailsPage : Page
 		_coverDone |= string.IsNullOrEmpty(viewModel.CoverImage);
 
 		_imageTimeout = DispatcherQueue.CreateTimer();
-		_imageTimeout.Interval = ImageTimeout;
+		_imageTimeout.Interval = s_imageTimeout;
 		_imageTimeout.IsRepeating = false;
 		_imageTimeout.Tick += (_, _) => Reveal();
 		_imageTimeout.Start();

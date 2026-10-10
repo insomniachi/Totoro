@@ -13,7 +13,7 @@ namespace Totoro.Playback;
 internal sealed class SegmentSkipper(IMediaPlayer player, IPreferences preferences, ILogger logger)
 {
 	// How long the "press Page Up to skip" hint stays up, at most.
-	private static readonly TimeSpan HintDuration = TimeSpan.FromSeconds(8);
+	private static readonly TimeSpan s_hintDuration = TimeSpan.FromSeconds(8);
 
 	private readonly Lock _lock = new();
 	private readonly HashSet<MediaSegment> _handled = [];
@@ -89,7 +89,7 @@ internal sealed class SegmentSkipper(IMediaPlayer player, IPreferences preferenc
 				break;
 			case SkipMode.Ask:
 				var left = segment.End - position;
-				await player.ShowMessageAsync($"{char.ToUpper(name[0])}{name[1..]}: press Page Up to skip", left < HintDuration ? left : HintDuration);
+				await player.ShowMessageAsync($"{char.ToUpper(name[0])}{name[1..]}: press Page Up to skip", left < s_hintDuration ? left : s_hintDuration);
 				break;
 		}
 	}

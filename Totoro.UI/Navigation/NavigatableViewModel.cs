@@ -9,27 +9,27 @@ public abstract class NavigatableViewModel : ObservableObject, INavigationAware
 
 	/// <summary>
 	/// True while the view model is doing work the user should wait for.
-	/// Set automatically while <see cref="OnNavigatedToInternal"/> runs; use <see cref="BeginBusy"/>
+	/// Set automatically while <see cref="OnNavigatedToInternalAsync"/> runs; use <see cref="BeginBusy"/>
 	/// or <see cref="RunBusyAsync"/> for other work (refresh, search, ...).
 	/// Bind it to a toolkit <c>SwitchPresenter</c> (TargetType="x:Boolean") to swap in a spinner.
 	/// </summary>
 	public bool IsBusy => _busyCount > 0;
 
-	public async Task OnNavigatedFrom()
+	public async Task OnNavigatedFromAsync()
 	{
-		await OnNavigatedFromInternal();
+		await OnNavigatedFromInternalAsync();
 	}
 
-	public async Task OnNavigatedTo()
+	public async Task OnNavigatedToAsync()
 	{
 		using (BeginBusy())
 		{
-			await OnNavigatedToInternal();
+			await OnNavigatedToInternalAsync();
 		}
 	}
 
-	protected virtual Task OnNavigatedToInternal() => Task.CompletedTask;
-	protected virtual Task OnNavigatedFromInternal() => Task.CompletedTask;
+	protected virtual Task OnNavigatedToInternalAsync() => Task.CompletedTask;
+	protected virtual Task OnNavigatedFromInternalAsync() => Task.CompletedTask;
 
 	/// <summary>
 	/// Marks the view model busy until the returned handle is disposed.

@@ -13,7 +13,7 @@ internal sealed class MyAnimeListAccount(
 	ILogger<MyAnimeListAccount> logger) : IAccount
 {
 	// The redirect registered for the app's client id. Nothing listens there; the sign-in window catches it.
-	private static readonly Uri Callback = new("http://localhost:2222/callback");
+	private static readonly Uri s_callback = new("http://localhost:2222/callback");
 
 	public Guid Id => MyAnimeListModule.Id;
 
@@ -45,7 +45,7 @@ internal sealed class MyAnimeListAccount(
 	{
 		// Also creates the PKCE verifier that DoAuth sends with the code, so it must come before signing in.
 		var start = new Uri(MalAuthHelper.GetAuthUrl(Settings.ClientId));
-		if (await authenticator.AuthenticateAsync(start, Callback) is not { } result)
+		if (await authenticator.AuthenticateAsync(start, s_callback) is not { } result)
 		{
 			return false;
 		}

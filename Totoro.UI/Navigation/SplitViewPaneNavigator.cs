@@ -33,7 +33,7 @@ internal class SplitViewPaneNavigator : FrameBasedNavigator
 	protected override Frame GetFrame() => _frame;
 
 	// Closing the pane (light dismiss or IsPaneOpen = false) ends the pane's session:
-	// the page's view model gets OnNavigatedFrom, its scope is disposed and the pane history is cleared,
+	// the page's view model gets OnNavigatedFromAsync, its scope is disposed and the pane history is cleared,
 	// so the next open starts fresh instead of keeping a hidden page alive.
 	private async void OnPaneClosed(SplitView sender, object args)
 	{

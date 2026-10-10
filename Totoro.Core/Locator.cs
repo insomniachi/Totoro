@@ -4,21 +4,21 @@ namespace Totoro.Core;
 
 public static class Locator
 {
-	private static IServiceProvider? _serviceProvider;
+	private static IServiceProvider? s_serviceProvider;
 
 	public static void SetServiceProvider(IServiceProvider serviceProvider)
 	{
-		_serviceProvider = serviceProvider;
+		s_serviceProvider = serviceProvider;
 	}
 
 	public static T GetRequiredService<T>()
 		where T : notnull
 	{
-		if (_serviceProvider == null)
+		if (s_serviceProvider == null)
 		{
 			throw new InvalidOperationException("Service provider is not set.");
 		}
 
-		return _serviceProvider.GetRequiredService<T>();
+		return s_serviceProvider.GetRequiredService<T>();
 	}
 }

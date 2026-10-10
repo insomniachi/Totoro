@@ -115,7 +115,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	/// </summary>
 	[ObservableProperty] public partial string PlayText { get; set; } = "";
 
-	protected override async Task OnNavigatedToInternal()
+	protected override async Task OnNavigatedToInternalAsync()
 	{
 		// The full details have studios, related anime etc. that the list's model may lack; fall back to the
 		// anime as given if they can't be loaded.
@@ -140,7 +140,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		IsLoaded = true;
 	}
 
-	protected override Task OnNavigatedFromInternal()
+	protected override Task OnNavigatedFromInternalAsync()
 	{
 		// Anime outlives this view model (it's still in the list); don't let it keep us alive.
 		Anime.PropertyChanged -= OnAnimePropertyChanged;

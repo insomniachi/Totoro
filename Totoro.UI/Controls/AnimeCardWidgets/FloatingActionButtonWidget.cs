@@ -148,7 +148,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		var item = new GooeyButtonItem()
 		{
 			Content = icon,
-			BorderBrush = BorderBrush,
+			BorderBrush = s_borderBrush,
 			BorderThickness = new Thickness(BorderWidth),
 		};
 
@@ -175,9 +175,9 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 
 	// The widget is scaled down by its Viewbox (80px -> 45px), so this ends up roughly 1px on screen.
 	private const double BorderWidth = 1.8;
-	private static readonly SolidColorBrush BorderBrush = new(Colors.Black);
+	private static readonly SolidColorBrush s_borderBrush = new(Colors.Black);
 
-	private static readonly TimeSpan OverlayFadeDuration = TimeSpan.FromMilliseconds(150);
+	private static readonly TimeSpan s_overlayFadeDuration = TimeSpan.FromMilliseconds(150);
 
 	// The main circle's Ellipse no longer has a fill (see StyleTemplate), so items sliding back under it on collapse
 	// would show their ring and icon through it. Fade those out as the collapse starts, and back in on expand.
@@ -192,7 +192,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 			if (VisualTree.FindDescendant<Grid>(item, x => x.Name == "LayoutRoot") is { } root)
 			{
 				AnimationBuilder.Create()
-					.Opacity(to: opacity, duration: OverlayFadeDuration)
+					.Opacity(to: opacity, duration: s_overlayFadeDuration)
 					.Start(root);
 			}
 		}
@@ -210,7 +210,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		if (VisualTree.FindDescendant<Ellipse>(button, x => x.Name == "BackgroundShape") is { } shape)
 		{
 			shape.Fill = new SolidColorBrush(Colors.Transparent); // transparent rather than null, so it stays hit-testable
-			shape.Stroke = BorderBrush;
+			shape.Stroke = s_borderBrush;
 			shape.StrokeThickness = BorderWidth;
 		}
 
@@ -220,7 +220,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		}
 	}
 
-	private static readonly FieldInfo? GooeyEffectField = typeof(GooeyButton).GetField("image", BindingFlags.Instance | BindingFlags.NonPublic);
+	private static readonly FieldInfo? s_gooeyEffectField = typeof(GooeyButton).GetField("image", BindingFlags.Instance | BindingFlags.NonPublic);
 
 	// Workaround for a DevWinUI bug: while the items fan out, GooeyButton draws them through a Win2D "goo" threshold
 	// (ColorMatrixEffect, alpha * 18 - 7) without ClampOutput, so alpha above 1 is multiplied back into the colour and
@@ -228,7 +228,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 	// starts (its Win2D resources are created when the button loads). Does nothing if DevWinUI's internals change.
 	private static void ClampGooeyEffect(GooeyButton button)
 	{
-		if (GooeyEffectField?.GetValue(button) is ColorMatrixEffect { ClampOutput: false } effect)
+		if (s_gooeyEffectField?.GetValue(button) is ColorMatrixEffect { ClampOutput: false } effect)
 		{
 			effect.ClampOutput = true;
 		}

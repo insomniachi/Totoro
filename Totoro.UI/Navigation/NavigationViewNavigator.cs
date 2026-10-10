@@ -27,7 +27,7 @@ internal class NavigationViewNavigator : FrameBasedNavigator
 			// Already showing this page (e.g. selection synced after GoBack), nothing to do.
 			if (e.SelectedItem is NavigationItemViewModel vm && vm.ViewModelType != GetCurrentViewModelType())
 			{
-				await NavigateToViewModel(vm.ViewModelType);
+				await NavigateToViewModelAsync(vm.ViewModelType);
 			}
 		};
 		var frame = GetFrame();
