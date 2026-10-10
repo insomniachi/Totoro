@@ -120,10 +120,9 @@
                                         Glyph="&#xE930;"
                                         Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsWatched)}" />
                                 </Grid>
-                                <TextBlock
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                    Text="{x:Bind Details}" />
+                                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource CaptionTextBlockStyle}">
+                                    <Run Text="{x:Bind Details}" /><Run Text="{x:Bind ResumeSeparator}" /><Run Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Text="{x:Bind ResumeText}" />
+                                </TextBlock>
                                 <TextBlock
                                     Margin="0,4,0,0"
                                     MaxLines="3"
