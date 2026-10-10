@@ -44,13 +44,24 @@ public sealed partial class DataContainerEditor : UserControl
 		var editor = CreateEditor(property);
 		Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(editor, header);
 
-		return new SettingsCard
+		var card = new SettingsCard
 		{
 			Header = header,
-			Description = string.IsNullOrEmpty(property.Description) ? null : property.Description,
-			HeaderIcon = Icons.FromKey(property.IconKey),
 			Content = editor,
 		};
+
+		// Only when there is one: the card declares these as non-null, and leaving them unset is what shows none.
+		if (!string.IsNullOrEmpty(property.Description))
+		{
+			card.Description = property.Description;
+		}
+
+		if (Icons.FromKey(property.IconKey) is { } icon)
+		{
+			card.HeaderIcon = icon;
+		}
+
+		return card;
 	}
 
 	private static FrameworkElement CreateEditor(DataContainerProperty property)
