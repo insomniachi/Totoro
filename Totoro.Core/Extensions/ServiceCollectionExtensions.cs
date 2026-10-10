@@ -24,12 +24,17 @@ public static class ServiceCollectionExtensions
 			return services;
 		}
 
+		/// <summary>
+		/// Registers a page shown for a piece of data, e.g. <c>INavigator.NavigateToData(anime)</c>. The navigator creates
+		/// the view model itself and passes it the data; it isn't registered as a service, since DI validation (on in the
+		/// Development environment) would fail on a constructor parameter that only the navigator can supply.
+		/// </summary>
 		public IServiceCollection AddDataViewMap<TView, TViewModel, TData>()
 			where TView : class, new()
 			where TViewModel : class
 			where TData : class
 		{
-			return services.AddViewMap(new DataViewMap<TView, TViewModel, TData>());
+			return services.AddTransient<ViewMap>(_ => new DataViewMap<TView, TViewModel, TData>());
 		}
 
 		public IServiceCollection AddKeyedViewMap<TView, TViewModel>(string key)

@@ -321,6 +321,12 @@ public static partial class AniListModelToAnimeModelConverter
         };
     }
 
+    // AnimeSource mirrors MediaSource member for member.
+    public static MediaSource? ConvertSource(AnimeSource? source)
+    {
+        return (MediaSource?)(int?)source;
+    }
+
     public static AnimeSeason ConvertSeason(MediaSeason season)
     {
         return season switch

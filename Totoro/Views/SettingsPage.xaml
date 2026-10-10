@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="using:Totoro.Core.Navigation"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels"
     mc:Ignorable="d">
 
     <ScrollView>
@@ -35,6 +36,22 @@
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="navigation:NavigationItemViewModel">
                             <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="Where your anime list and anime details come from. Pages pick up a change the next time they're opened." Header="Anime database">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8F1;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.AnimeDatabases, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.AnimeDatabase, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AnimeDatabaseOption">
+                            <TextBlock Text="{x:Bind Name}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

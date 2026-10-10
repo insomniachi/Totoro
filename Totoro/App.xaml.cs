@@ -32,7 +32,9 @@ public partial class App : Application
 			{
 				AddModules(services);
 
-				services.RegisterFactory<IAnimeTracker>("SelectedTracker");
+				// A module provides its tracker and metadata provider as a pair, so one setting picks both.
+				services.RegisterFactory<IAnimeTracker>(AnimeDatabasePreferences.Key);
+				services.RegisterFactory<IAnimeMetadataProvider>(AnimeDatabasePreferences.Key);
 
 				services.AddCoreServices();
 				services.AddSingleton<MainWindowViewModel>();
@@ -42,6 +44,7 @@ public partial class App : Application
 					() => _window?.Content?.XamlRoot));
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();
+				services.AddDataViewMap<AnimeDetailsPage, AnimeDetailsViewModel, AnimeModel>();
 				services.AddMainNavigationItem<UserListPage,UserListViewModel>("Home", x =>
 				{
 					x.UnselectedIcon = Icons.Home;

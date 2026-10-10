@@ -110,7 +110,7 @@
                             </ItemsRepeater.ItemTransitionProvider>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="anime:AnimeModel">
-                                    <controls:AnimeCard Anime="{x:Bind}">
+                                    <controls:AnimeCard Anime="{x:Bind}" Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}">
                                         <Interactivity:Interaction.Behaviors>
                                             <widgets:FloatingActionButtonWidget Actions="{StaticResource CardActions}" />
                                             <widgets:HoverEffectsBehavior />

@@ -4,6 +4,7 @@ using Totoro.Core;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
+using Totoro.UI.Navigation;
 using Totoro.ViewModels;
 
 namespace Totoro.Commands;
@@ -17,6 +18,19 @@ public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracke
 {
 	/// <summary>The app-wide instance (registered as a singleton), for x:Bind from XAML.</summary>
 	public static AnimeCommands Shared => Locator.GetRequiredService<AnimeCommands>();
+
+	/// <summary>Navigator key of the main window's side pane (see MainWindow.xaml).</summary>
+	private const string PaneNavigatorKey = "pane";
+
+	/// <summary>Shows the anime's details in the main window's side pane.</summary>
+	[RelayCommand]
+	private async Task ShowDetails(AnimeModel anime)
+	{
+		if (Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
+		{
+			await pane.NavigateToData(anime);
+		}
+	}
 
 	/// <summary>Edits the anime's tracking in a dialog and saves it to the selected tracker.</summary>
 	[RelayCommand]

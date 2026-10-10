@@ -7,7 +7,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 {
 	internal class AnilistTracker(GraphQLHttpClient client) : IAnimeTracker
 	{
-		public Guid Id { get; }
+		public Guid Id => AnilistModule.Id;
 
 		public string Name => nameof(AnimeId.Anilist);
 
@@ -151,6 +151,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist
 																	  .WithRomaji())
 														   .WithCoverImage(new MediaCoverImageQueryBuilder()
 																			   .WithLarge())
+														   .WithBannerImage()
 														   .WithEpisodes()
 														   .WithStatus()
 														   .WithMeanScore()

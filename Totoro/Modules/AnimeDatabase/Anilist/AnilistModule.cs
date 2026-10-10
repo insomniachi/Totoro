@@ -31,6 +31,7 @@ internal class AnilistModule : IModule<Settings>
 
 
 		services.AddKeyedTransient<IAnimeTracker, AnilistTracker>(Descriptor.Id);
+		services.AddKeyedTransient<IAnimeMetadataProvider, AnilistMetadataProvider>(Descriptor.Id);
 
 		services.AddHttpClient("anilist-client", (sp, client) =>
 		{
