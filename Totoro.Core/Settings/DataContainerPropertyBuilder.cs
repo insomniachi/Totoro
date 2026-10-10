@@ -8,7 +8,7 @@ public class DataContainerPropertyBuilder
 	private IEnumerable<object> _allowedValues = [];
 	private string? _description;
 	private string? _displayName;
-	private string _editorType = "TextBox";
+	private string _editorType = DataContainerEditors.TextBox;
 	private string _name = "";
 	private object? _value = "";
 	private string? _iconKey = "";
@@ -50,7 +50,7 @@ public class DataContainerPropertyBuilder
 	public DataContainerPropertyBuilder WithAllowedValues(IEnumerable<object> allowedValues)
 	{
 		_allowedValues = allowedValues;
-		_editorType = "ComboBox";
+		_editorType = DataContainerEditors.ComboBox;
 		return this;
 	}
 
@@ -70,7 +70,7 @@ public class DataContainerPropertyBuilder
 		where T : struct, Enum
 	{
 		_allowedValues = Enum.GetValues<T>().Cast<object>();
-		_editorType = "ComboBox";
+		_editorType = DataContainerEditors.ComboBox;
 		return this;
 	}
 
@@ -103,7 +103,7 @@ public class DataContainerPropertyBuilder
 		_displayName = "";
 		_displayName = "";
 		_value = "";
-		_editorType = "TextBox";
+		_editorType = DataContainerEditors.TextBox;
 		_allowedValues = [];
 	}
 
@@ -118,11 +118,11 @@ public class DataContainerPropertyBuilder
 		if (type.GetInterfaces()
 				.Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(INumber<>)))
 		{
-			_editorType = "NumberBox";
+			_editorType = DataContainerEditors.NumberBox;
 		}
 		else if (type.IsEnum)
 		{
-			_editorType = "ComboBox";
+			_editorType = DataContainerEditors.ComboBox;
 			_allowedValues = Enum.GetValues(type).Cast<object>();
 		}
 	}

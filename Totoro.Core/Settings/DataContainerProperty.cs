@@ -7,7 +7,7 @@ public partial class DataContainerProperty : ObservableObject
 	public string Name { get; init; } = "";
 	public string? DisplayName { get; init; }
 	public string? Description { get; init; }
-	public string EditorType { get; init; } = "TextBox";
+	public string EditorType { get; init; } = DataContainerEditors.TextBox;
 	[ObservableProperty] public partial object? Value { get; set; }
 	public IEnumerable<object>? AllowedValues { get; init; }
 	public string? IconKey { get; init; }
@@ -25,6 +25,21 @@ public partial class DataContainerProperty : ObservableObject
 	public object? GetAsType(Type type, object? defaultValue)
 	{
 		return Value is null ? defaultValue : Convert.ChangeType(Value, type);
+	}
+
+	/// <summary>A copy to edit without touching this one, e.g. until a dialog is confirmed.</summary>
+	public DataContainerProperty Clone()
+	{
+		return new DataContainerProperty
+		{
+			Name = Name,
+			DisplayName = DisplayName,
+			Description = Description,
+			EditorType = EditorType,
+			Value = Value,
+			AllowedValues = AllowedValues,
+			IconKey = IconKey,
+		};
 	}
 }
 

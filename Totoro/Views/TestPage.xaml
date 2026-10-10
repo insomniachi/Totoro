@@ -3,66 +3,149 @@
     x:Class="Totoro.Views.TestPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Totoro.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:text="using:Totoro.UI.Text"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <!--  HtmlText playground: edit the HTML on the left, see it rendered on the right  -->
-    <Grid ColumnSpacing="24" RowSpacing="12">
+    <!--  Playgrounds for reusable pieces of UI, one per tab  -->
+    <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
 
-        <Grid Grid.ColumnSpan="2" ColumnSpacing="12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock
-                VerticalAlignment="Center"
-                Style="{ThemeResource SubtitleTextBlockStyle}"
+        <SelectorBar x:Name="Demos" Margin="-8,0,0,0">
+            <SelectorBarItem
+                IsSelected="True"
+                Tag="Html"
                 Text="HTML renderer" />
-            <Button
-                Grid.Column="1"
-                Click="OnResetClick"
-                Content="Reset sample" />
-        </Grid>
+            <SelectorBarItem Tag="Settings" Text="Settings editor" />
+        </SelectorBar>
 
-        <TextBox
-            Grid.Row="1"
-            AcceptsReturn="True"
-            FontFamily="Consolas"
-            Header="HTML"
-            IsSpellCheckEnabled="False"
-            ScrollViewer.VerticalScrollBarVisibility="Auto"
-            Text="{x:Bind ViewModel.Html, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            TextWrapping="Wrap" />
+        <toolkit:SwitchPresenter Grid.Row="1" Value="{x:Bind Demos.SelectedItem.Tag, Mode=OneWay}">
 
-        <Grid
-            Grid.Row="1"
-            Grid.Column="1"
-            RowSpacing="8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <TextBlock Text="Rendered" />
-            <Border
-                Grid.Row="1"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="8">
-                <ScrollView Padding="20">
-                    <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Html, Mode=OneWay}" />
-                </ScrollView>
-            </Border>
-        </Grid>
+            <!--  HtmlText: edit the HTML on the left, see it rendered on the right  -->
+            <toolkit:Case Value="Html">
+                <Grid ColumnSpacing="24" RowSpacing="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.ColumnSpan="2" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="HTML renderer" />
+                        <Button
+                            Grid.Column="1"
+                            Click="OnResetClick"
+                            Content="Reset sample" />
+                    </Grid>
+
+                    <TextBox
+                        Grid.Row="1"
+                        AcceptsReturn="True"
+                        FontFamily="Consolas"
+                        Header="HTML"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto"
+                        Text="{x:Bind ViewModel.Html, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap" />
+
+                    <Grid
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Rendered" />
+                        <Border
+                            Grid.Row="1"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <ScrollView Padding="20">
+                                <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Html, Mode=OneWay}" />
+                            </ScrollView>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </toolkit:Case>
+
+            <!--
+                DataContainerEditor: the editor inline on the left (edits apply straight away), the values it produces on the
+                right, and the dialog version, which edits a copy and applies it only when saved.
+            -->
+            <toolkit:Case Value="Settings">
+                <Grid ColumnSpacing="24" RowSpacing="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.ColumnSpan="2" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="Settings editor" />
+                        <Button
+                            Grid.Column="1"
+                            Command="{x:Bind ViewModel.EditInDialogCommand}"
+                            Content="Edit in dialog"
+                            Style="{ThemeResource AccentButtonStyle}" />
+                    </Grid>
+
+                    <ScrollView Grid.Row="1">
+                        <controls:DataContainerEditor Properties="{x:Bind ViewModel.Settings}" />
+                    </ScrollView>
+
+                    <StackPanel
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Spacing="8">
+                        <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Values" />
+                        <Border
+                            Padding="16"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                            <TextBlock
+                                FontFamily="Consolas"
+                                IsTextSelectionEnabled="True"
+                                Text="{x:Bind ViewModel.Values, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                        </Border>
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.DialogResult, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </toolkit:Case>
+        </toolkit:SwitchPresenter>
     </Grid>
 </Page>

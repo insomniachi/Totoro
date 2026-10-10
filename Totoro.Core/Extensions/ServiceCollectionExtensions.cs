@@ -95,6 +95,8 @@ public static class ServiceCollectionExtensions
 						var settings = sp.GetRequiredService<IModuleSettings<T>>();
 						return settings.Value.ToDataContainer();
 					});
+			// Untyped, for listing and editing every module's settings; the same instance as above.
+			services.AddSingleton<IModuleSettings>(sp => sp.GetRequiredService<IModuleSettings<T>>());
 			return services;
 		}
 

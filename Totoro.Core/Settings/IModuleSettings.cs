@@ -4,12 +4,21 @@ using Totoro.Core.Module;
 
 namespace Totoro.Core.Settings;
 
-public interface IModuleSettings<out TData>
+/// <summary>A module's settings without their type, e.g. to list and edit every module's settings.</summary>
+public interface IModuleSettings
+{
+	Descriptor Descriptor { get; }
+
+	/// <summary>The settings object (the same one as <see cref="IModuleSettings{TData}.Value"/>).</summary>
+	DataContainerConfig Config { get; }
+
+	void Save();
+}
+
+public interface IModuleSettings<out TData> : IModuleSettings
 	where TData : DataContainerConfig
 {
 	TData Value { get; }
-	Descriptor Descriptor { get; }
-	void Save();
 }
 
 public class ModuleSettings<TData> : IModuleSettings<TData>
@@ -40,6 +49,8 @@ public class ModuleSettings<TData> : IModuleSettings<TData>
 	}
 
 	public TData Value { get; }
+
+	public DataContainerConfig Config => Value;
 
 	public Descriptor Descriptor { get; }
 

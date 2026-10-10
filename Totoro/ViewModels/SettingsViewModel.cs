@@ -1,4 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Totoro.Core.Dialogs;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
 using Totoro.Core.Navigation;
@@ -23,6 +25,18 @@ public sealed record BackdropOption(string Label, AppBackdrop Value)
 	public override string ToString() => Label;
 }
 
+/// <summary>A module in Settings, with a command to edit its settings in a dialog.</summary>
+public sealed partial class ModuleSettingsItem(IModuleSettings settings, IDialogService dialogs)
+{
+	public string Name => settings.Descriptor.Name;
+
+	/// <summary>What there is to edit, e.g. "Include NSFW, Search Limit".</summary>
+	public string Summary { get; } = string.Join(", ", settings.Config.ToDataContainer().Select(x => x.DisplayName ?? x.Name));
+
+	[RelayCommand]
+	private Task EditAsync() => dialogs.EditSettingsAsync(settings);
+}
+
 public partial class SettingsViewModel : ObservableObject
 {
 	private readonly IPreferences _preferences;
@@ -33,6 +47,8 @@ public partial class SettingsViewModel : ObservableObject
 		IPreferences preferences,
 		IFactory<IAnimeTracker, Guid> trackers,
 		IEnumerable<IAccount> accounts,
+		IEnumerable<IModuleSettings> moduleSettings,
+		IDialogService dialogs,
 		IAppearanceService appearance)
 	{
 		_preferences = preferences;
@@ -50,7 +66,13 @@ public partial class SettingsViewModel : ObservableObject
 		AnimeDatabase = AnimeDatabases.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? AnimeDatabases.FirstOrDefault();
 
 		Accounts = [.. accounts.Select(x => new AccountViewModel(x))];
+
+		// Only modules with something to edit.
+		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
 	}
+
+	/// <summary>Modules whose settings can be edited (in a dialog).</summary>
+	public IReadOnlyList<ModuleSettingsItem> Modules { get; }
 
 	/// <summary>The online services the user can sign in to.</summary>
 	public IReadOnlyList<AccountViewModel> Accounts { get; }

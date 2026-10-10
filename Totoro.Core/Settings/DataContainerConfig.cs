@@ -61,10 +61,8 @@ public class DataContainerConfig
 						  .WithDisplayName(propertyInfo.Name)
 						  .WithValue(propertyInfo.GetValue(this));
 
-			if (propertyInfo.PropertyType.IsEnum)
-			{
-				builder.WithAllowedValues(Enum.GetNames(propertyInfo.PropertyType));
-			}
+			// Enums need nothing here: WithValue already offers the enum's values (as values, not names, so the editor's
+			// choice converts back to the property's type).
 
 			if (propertyInfo.GetCustomAttribute<DescriptionAttribute>() is { } descriptionAttribute)
 			{
@@ -88,11 +86,11 @@ public class DataContainerConfig
 
 			if (propertyInfo.PropertyType == typeof(bool))
 			{
-				builder.WithEditorType("ToggleSwitch");
+				builder.WithEditorType(DataContainerEditors.ToggleSwitch);
 			}
 			else if (builder.HasAllowedValues())
 			{
-				builder.WithEditorType("ComboBox");
+				builder.WithEditorType(DataContainerEditors.ComboBox);
 			}
 
 			if (propertyInfo.GetCustomAttribute<EditorAttribute>() is { } editorTypeAttribute)

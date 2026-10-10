@@ -87,6 +87,36 @@
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="Modules" />
+
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Modules}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ModuleSettingsItem">
+                        <toolkit:SettingsCard
+                            AutomationProperties.Name="{x:Bind Name}"
+                            Command="{x:Bind EditCommand}"
+                            Description="{x:Bind Summary}"
+                            Header="{x:Bind Name}"
+                            IsClickEnabled="True">
+                            <toolkit:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE74C;" />
+                            </toolkit:SettingsCard.HeaderIcon>
+                            <toolkit:SettingsCard.ActionIcon>
+                                <FontIcon Glyph="&#xE8A7;" />
+                            </toolkit:SettingsCard.ActionIcon>
+                        </toolkit:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock
+                Margin="0,24,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="Appearance" />
 
             <toolkit:SettingsCard Description="Light, dark, or follow your Windows setting." Header="App theme">
