@@ -58,6 +58,7 @@ public partial class App : Application
 					() => _window?.Content?.XamlRoot));
 				services.AddSingleton<IWebAuthenticator>(_ => new WebAuthenticator(() => _window?.Content?.XamlRoot));
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
+				services.AddDialog<AnimeSettingsDialog, AnimeSettingsDialogViewModel>();
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();
 				services.AddDataViewMap<AnimeDetailsPage, AnimeDetailsViewModel, AnimeModel>();

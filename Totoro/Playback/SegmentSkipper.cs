@@ -8,9 +8,10 @@ namespace Totoro.Playback;
 /// <summary>
 /// An episode's opening, ending and recap, for one playback: marks them as chapters in the player (so they show on
 /// its seek bar, and its next-chapter key skips them), then skips or offers to skip each as playback enters it,
-/// following the user's settings. Each segment is handled once, so seeking back into one doesn't skip it again.
+/// following the given modes (the anime's own, or the app-wide ones). Each segment is handled once, so seeking back
+/// into one doesn't skip it again.
 /// </summary>
-internal sealed class SegmentSkipper(IMediaPlayer player, IPreferences preferences, ILogger logger)
+internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, SkipMode endingMode, ILogger logger)
 {
 	// How long the "press Page Up to skip" hint stays up, at most.
 	private static readonly TimeSpan s_hintDuration = TimeSpan.FromSeconds(8);
@@ -80,7 +81,7 @@ internal sealed class SegmentSkipper(IMediaPlayer player, IPreferences preferenc
 		};
 
 		// A recap is skipped like an opening: both come before the episode proper.
-		var mode = segment.Type == MediaSegmentType.Ending ? preferences.EndingSkipMode : preferences.OpeningSkipMode;
+		var mode = segment.Type == MediaSegmentType.Ending ? endingMode : openingMode;
 		switch (mode)
 		{
 			case SkipMode.Automatic:

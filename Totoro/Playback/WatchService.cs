@@ -38,14 +38,12 @@ public sealed partial class WatchService(
 	IFactory<IAnimeTracker, Guid> trackers,
 	IEnumerable<IMediaSegmentsProvider> segmentProviders,
 	IPlaybackProgressStore progressStore,
+	IAnimeSettingsStore animeSettings,
 	IEnumerable<IModuleSettings> moduleSettings,
 	IDialogService dialogs,
 	IPreferences preferences,
 	ILogger<WatchService> logger) : ObservableObject
 {
-	/// <summary>Preference key of the shows chosen for anime, so they're only looked for once.</summary>
-	private const string ShowsKey = "ProviderShows";
-
 	// Progress is only worth keeping (and resuming) past the first moments.
 	private static readonly TimeSpan s_minimumProgress = TimeSpan.FromSeconds(30);
 	private static readonly TimeSpan s_saveInterval = TimeSpan.FromSeconds(10);
@@ -89,14 +87,15 @@ public sealed partial class WatchService(
 				return;
 			}
 
-			if (providers.CreateDefault() is not { } provider)
+			var settings = animeSettings.Get(anime);
+			if (GetProvider(settings) is not { } provider)
 			{
 				Show(PlaybackStatusKind.Error, "There's no anime provider to watch from.");
 				return;
 			}
 
 			Show(PlaybackStatusKind.Progress, $"Finding the show on {provider.Name}…", "Cancel", Cancel);
-			if (await FindShowAsync(provider, anime, ct) is not { } show)
+			if (await FindShowAsync(provider, anime, settings, ct) is not { } show)
 			{
 				IsOpen = false;
 				return;
@@ -117,7 +116,7 @@ public sealed partial class WatchService(
 
 			// Torrents go to the player as they are: mpv streams them itself, with a webtorrent script.
 			var media = new MediaItem(server.Url, $"{anime.Title} - Episode {number}", server.Headers);
-			await PlayAsync(player, anime, number, media, ct);
+			await PlayAsync(player, anime, number, media, settings, ct);
 		}
 		catch (OperationCanceledException) when (ct.IsCancellationRequested)
 		{
@@ -158,7 +157,7 @@ public sealed partial class WatchService(
 	/// Plays the episode and follows it until the player closes: saves the position, handles the opening and ending,
 	/// and if it was played to the end, marks it watched and offers the next one.
 	/// </summary>
-	private async Task PlayAsync(IMediaPlayer player, AnimeModel anime, int number, MediaItem media, CancellationToken ct)
+	private async Task PlayAsync(IMediaPlayer player, AnimeModel anime, int number, MediaItem media, AnimeSettings settings, CancellationToken ct)
 	{
 		var key = anime.ProgressKey;
 		var credits = TimeSpan.FromMinutes(anime.MediaFormat == AnimeMediaFormat.Movie ? 6 : 2);
@@ -171,7 +170,7 @@ public sealed partial class WatchService(
 		var duration = TimeSpan.Zero;
 		var position = start;
 		var lastSave = DateTime.MinValue;
-		var segments = new SegmentSkipper(player, preferences, logger);
+		var segments = new SegmentSkipper(player, settings.OpeningSkipMode ?? preferences.OpeningSkipMode, settings.EndingSkipMode ?? preferences.EndingSkipMode, logger);
 		var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		void Save()
@@ -310,11 +309,9 @@ public sealed partial class WatchService(
 	/// <summary>
 	/// The provider's show for the anime: the one chosen before, the only exact title match, or one the user picks.
 	/// </summary>
-	private async Task<ProviderShow?> FindShowAsync(IAnimeProvider provider, AnimeModel anime, CancellationToken ct)
+	private async Task<ProviderShow?> FindShowAsync(IAnimeProvider provider, AnimeModel anime, AnimeSettings settings, CancellationToken ct)
 	{
-		var key = $"{provider.Id}/{anime.ServiceId}/{anime.Id}";
-		var chosen = preferences.ReadKey<Dictionary<string, ProviderShow>>(ShowsKey) ?? [];
-		if (chosen.TryGetValue(key, out var known))
+		if (settings.Shows.TryGetValue(provider.Id, out var known))
 		{
 			return known;
 		}
@@ -343,11 +340,24 @@ public sealed partial class WatchService(
 
 		if (picked is not null)
 		{
-			chosen[key] = picked;
-			preferences.SaveKey(ShowsKey, chosen);
+			settings.Shows[provider.Id] = picked;
+			animeSettings.Save(anime, settings);
 		}
 
 		return picked;
+	}
+
+	/// <summary>The anime's own provider, or the selected one; set to use the anime's own settings for it, if it has any.</summary>
+	private IAnimeProvider? GetProvider(AnimeSettings settings)
+	{
+		var provider = (settings.ProviderId is { } id ? providers.Create(id) : null) ?? providers.CreateDefault();
+		if (provider is not null && settings.ProviderSettings.TryGetValue(provider.Id, out var own) &&
+			moduleSettings.FirstOrDefault(x => x.Descriptor.Id == provider.Id) is { } module)
+		{
+			provider.UseSettings(module.CreateCopy(own));
+		}
+
+		return provider;
 	}
 
 	/// <summary>

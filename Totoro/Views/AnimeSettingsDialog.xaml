@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.AnimeSettingsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Totoro.UI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <!--
+        Laid out like Settings: cards 4 apart, a section's header 4 above its cards and 24 below the previous section.
+        As wide as the dialog's content allows, so the cards keep their editors beside the headers.
+    -->
+    <StackPanel MinWidth="500" Spacing="4">
+        <TextBlock
+            Margin="0,0,0,8"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="Used when you watch this anime, instead of the settings in Settings."
+            TextWrapping="Wrap" />
+
+        <TextBlock
+            Margin="0,0,0,4"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            Text="Watching" />
+
+        <toolkit:SettingsCard Description="Where its episodes are found." Header="Anime provider">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE774;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <ComboBox
+                MinWidth="200"
+                ItemsSource="{x:Bind ViewModel.Providers}"
+                SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ProviderChoice">
+                        <TextBlock Text="{x:Bind Label}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </toolkit:SettingsCard>
+
+        <toolkit:SettingsCard
+            Description="{x:Bind ViewModel.ShowDescription, Mode=OneWay}"
+            Header="{x:Bind ViewModel.ShowHeader, Mode=OneWay}"
+            Visibility="{x:Bind ViewModel.HasProvider, Mode=OneWay}">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE714;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <Button
+                Command="{x:Bind ViewModel.ForgetShowCommand}"
+                Content="Find again"
+                ToolTipService.ToolTip="Forget this show; it's looked for again the next time you watch."
+                Visibility="{x:Bind ViewModel.HasShow, Mode=OneWay}" />
+        </toolkit:SettingsCard>
+
+        <toolkit:SettingsCard
+            Description="Instead of the ones in Settings, for this anime only."
+            Header="{x:Bind ViewModel.OwnSettingsHeader, Mode=OneWay}"
+            Visibility="{x:Bind ViewModel.HasProviderSettings, Mode=OneWay}">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE713;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <ToggleSwitch IsOn="{x:Bind ViewModel.UseOwnProviderSettings, Mode=TwoWay}" />
+        </toolkit:SettingsCard>
+
+        <controls:DataContainerEditor Properties="{x:Bind ViewModel.ProviderSettings, Mode=OneWay}" Visibility="{x:Bind ViewModel.UseOwnProviderSettings, Mode=OneWay}" />
+
+        <TextBlock
+            Margin="0,24,0,4"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            Text="Skipping" />
+
+        <toolkit:SettingsCard Description="When an opening or recap starts." Header="Openings">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE893;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <ComboBox
+                MinWidth="200"
+                ItemsSource="{x:Bind ViewModel.OpeningSkipModes}"
+                SelectedItem="{x:Bind ViewModel.OpeningSkip, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkipModeChoice">
+                        <TextBlock Text="{x:Bind Label}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </toolkit:SettingsCard>
+
+        <toolkit:SettingsCard Description="When the ending starts." Header="Endings">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE893;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <ComboBox
+                MinWidth="200"
+                ItemsSource="{x:Bind ViewModel.EndingSkipModes}"
+                SelectedItem="{x:Bind ViewModel.EndingSkip, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SkipModeChoice">
+                        <TextBlock Text="{x:Bind Label}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </toolkit:SettingsCard>
+    </StackPanel>
+</UserControl>

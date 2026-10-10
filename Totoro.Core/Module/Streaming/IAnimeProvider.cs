@@ -11,6 +11,15 @@ public interface IAnimeProvider
 
 	string Name { get; }
 
+	/// <summary>
+	/// Uses <paramref name="settings"/> instead of the module's settings, from now on and for this instance only, e.g.
+	/// an anime's own. It's a settings object of the module's type (see IModuleSettings.CreateCopy). Providers without
+	/// settings needn't implement it.
+	/// </summary>
+	void UseSettings(Settings.DataContainerConfig settings)
+	{
+	}
+
 	/// <summary>Shows whose title matches <paramref name="query"/>, best match first.</summary>
 	Task<List<ProviderShow>> SearchAsync(string query, CancellationToken ct);
 

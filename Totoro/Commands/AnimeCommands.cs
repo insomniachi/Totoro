@@ -43,6 +43,10 @@ public partial class AnimeCommands(IDialogService dialogs, IFactory<IAnimeTracke
 	[RelayCommand(AllowConcurrentExecutions = true)]
 	private Task WatchEpisodeAsync(EpisodeToWatch episode) => watch.WatchAsync(episode.Anime, episode.Number);
 
+	/// <summary>Edits the anime's own settings for watching it (provider, skipping...) in a dialog.</summary>
+	[RelayCommand]
+	private Task EditSettingsAsync(AnimeModel anime) => dialogs.ShowAsync<AnimeSettingsDialogViewModel, bool>(anime);
+
 	/// <summary>Edits the anime's tracking in a dialog and saves it to the selected tracker.</summary>
 	[RelayCommand]
 	private async Task EditTrackingAsync(AnimeModel anime)

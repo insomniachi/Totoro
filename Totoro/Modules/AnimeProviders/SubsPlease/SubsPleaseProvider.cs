@@ -15,11 +15,19 @@ namespace Totoro.Modules.AnimeProviders.SubsPlease;
 /// SubsPlease: English-subtitled simulcasts shortly after they air. Videos are torrents (hosted on nyaa.si), one per
 /// resolution, which the player streams itself (mpv with a webtorrent script).
 /// </summary>
-internal sealed partial class SubsPleaseProvider(IModuleSettings<Settings> settings) : IAnimeProvider
+internal sealed partial class SubsPleaseProvider(IModuleSettings<Settings> moduleSettings) : IAnimeProvider
 {
 	public Guid Id => SubsPleaseModule.Id;
 
 	public string Name => "SubsPlease";
+
+	// The module's settings, unless an anime's own are used instead.
+	private Settings _settings = moduleSettings.Value;
+
+	public void UseSettings(DataContainerConfig settings)
+	{
+		_settings = (Settings)settings;
+	}
 
 	public Task<List<ProviderShow>> SearchAsync(string query, CancellationToken ct)
 	{
@@ -46,7 +54,7 @@ internal sealed partial class SubsPleaseProvider(IModuleSettings<Settings> setti
 			return [];
 		}
 
-		var preferred = settings.Value.Quality.ToResolution();
+		var preferred = _settings.Quality.ToResolution();
 		return
 		[
 			.. release.Downloads

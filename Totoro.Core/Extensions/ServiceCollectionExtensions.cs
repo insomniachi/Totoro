@@ -83,6 +83,7 @@ public static class ServiceCollectionExtensions
 			return services.AddSingleton<IViewRegistry, ViewRegistry>()
 						   .AddSingleton<IPreferences, Preferences>()
 						   .AddSingleton<Module.Media.IPlaybackProgressStore, Module.Media.PlaybackProgressStore>()
+							   .AddSingleton<IAnimeSettingsStore, AnimeSettingsStore>()
 						   .AddLogging();
 		}
 

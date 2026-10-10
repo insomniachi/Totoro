@@ -52,7 +52,10 @@ internal class Preferences : IPreferences
 
 	public void RemoveKey(string key)
 	{
-		_settings.Remove(key);
+		if (_settings.Remove(key))
+		{
+			File.WriteAllText(_file, _settings.ToJsonString(_options));
+		}
 	}
 
 	public void SaveKey<T>(string key, T value)
