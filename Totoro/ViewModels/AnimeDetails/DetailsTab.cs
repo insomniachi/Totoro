@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Totoro.ViewModels;
+namespace Totoro.ViewModels.AnimeDetails;
 
 /// <summary>
 /// A tab of the anime details pane. A tab whose content comes with the details fills itself in directly; one that

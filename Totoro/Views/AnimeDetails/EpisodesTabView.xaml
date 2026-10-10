@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
-    xmlns:vm="using:Totoro.ViewModels">
+    xmlns:vm="using:Totoro.ViewModels.AnimeDetails">
 
     <Grid Padding="24,0">
         <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">

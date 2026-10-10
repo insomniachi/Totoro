@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Totoro.Core.Module.Anime;
 
-namespace Totoro.ViewModels;
+namespace Totoro.ViewModels.AnimeDetails;
 
 // Keeps the model too, to open its details when clicked.
 public sealed record RelatedItem(string Title, string? Image, AnimeModel Anime);

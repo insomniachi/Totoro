@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Module.Anime;
 
-namespace Totoro.ViewModels;
+namespace Totoro.ViewModels.AnimeDetails;
 
 // A display record rather than the model: the XAML compiler can't generate binding code for init-only properties.
 public sealed record EpisodeItem(string Number, string Title, string Details, string? Image, string Overview, bool IsWatched);

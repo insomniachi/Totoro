@@ -1,6 +1,6 @@
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml.Controls;
-using Totoro.ViewModels;
+using Totoro.ViewModels.AnimeDetails;
 
 namespace Totoro.Views.AnimeDetails;
 

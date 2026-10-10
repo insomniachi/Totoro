@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Totoro.Core.Module;
 using Totoro.Core.Module.Anime;
 using Totoro.UI.Navigation;
+using Totoro.ViewModels.AnimeDetails;
 
 namespace Totoro.ViewModels;
 

@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Module.Anime;
 
-namespace Totoro.ViewModels;
+namespace Totoro.ViewModels.AnimeDetails;
 
 public sealed record CharacterItem(string Name, string? Image);
 

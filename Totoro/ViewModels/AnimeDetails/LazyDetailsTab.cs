@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Totoro.ViewModels;
+namespace Totoro.ViewModels.AnimeDetails;
 
 /// <summary>A details tab that fetches its own data, the first time it's shown.</summary>
 public abstract class LazyDetailsTab : DetailsTab
