@@ -32,6 +32,7 @@ public partial class SettingsViewModel : ObservableObject
 		IEnumerable<NavigationItemViewModel> navigationItems,
 		IPreferences preferences,
 		IFactory<IAnimeTracker, Guid> trackers,
+		IEnumerable<IAccount> accounts,
 		IAppearanceService appearance)
 	{
 		_preferences = preferences;
@@ -47,7 +48,12 @@ public partial class SettingsViewModel : ObservableObject
 		// Trackers and metadata providers come in pairs per module, so listing the trackers lists the databases.
 		AnimeDatabases = [.. trackers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name))];
 		AnimeDatabase = AnimeDatabases.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? AnimeDatabases.FirstOrDefault();
+
+		Accounts = [.. accounts.Select(x => new AccountViewModel(x))];
 	}
+
+	/// <summary>The online services the user can sign in to.</summary>
+	public IReadOnlyList<AccountViewModel> Accounts { get; }
 
 	public IReadOnlyList<AnimeDatabaseOption> AnimeDatabases { get; }
 

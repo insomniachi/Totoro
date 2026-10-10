@@ -36,10 +36,47 @@
                     QueryIcon="Find" />
             </TitleBar.Content>
             <TitleBar.RightHeader>
-                <PersonPicture
-                    Width="30"
-                    Height="30"
-                    Initials="JD" />
+                <!--  The account of the selected anime database; click to sign in or out  -->
+                <Button
+                    Padding="0"
+                    AutomationProperties.Name="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    CornerRadius="16"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.Account.Status, Mode=OneWay}">
+                    <PersonPicture
+                        Width="30"
+                        Height="30"
+                        DisplayName="{x:Bind ViewModel.Account.UserName, Mode=OneWay}"
+                        ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Account.Avatar), Mode=OneWay}" />
+                    <Button.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedRight">
+                            <StackPanel MinWidth="240" Spacing="12">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <PersonPicture
+                                        Width="48"
+                                        Height="48"
+                                        DisplayName="{x:Bind ViewModel.Account.UserName, Mode=OneWay}"
+                                        ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Account.Avatar), Mode=OneWay}" />
+                                    <StackPanel VerticalAlignment="Center" Spacing="2">
+                                        <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.Account.Name, Mode=OneWay}" />
+                                        <TextBlock
+                                            MaxWidth="200"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <Button
+                                    HorizontalAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind ViewModel.Account.ActionName, Mode=OneWay}"
+                                    Command="{x:Bind ViewModel.Account.SignInOrOutCommand, Mode=OneWay}"
+                                    Content="{x:Bind ViewModel.Account.ActionText, Mode=OneWay}" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
             </TitleBar.RightHeader>
         </TitleBar>
 

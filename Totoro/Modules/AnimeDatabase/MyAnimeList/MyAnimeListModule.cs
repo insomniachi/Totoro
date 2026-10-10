@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.Serialization;
 using MalApi;
-using MalApi.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Extensions;
 using Totoro.Core.Module;
@@ -28,16 +27,11 @@ internal class MyAnimeListModule : IModule<Settings>
 		services.AddTransient(_ => Descriptor);
 		services.AddModuleSettings(this);
 
-		services.AddSingleton<IMalClient>(_ =>
-		{
-			var client = new MalClient();
-			client.SetClientId(Settings.ClientId);
-			return client;
-		});
 		services.AddSingleton<MyAnimeListSession>();
 
 		services.AddKeyedTransient<IAnimeTracker, MyAnimeListTracker>(Descriptor.Id);
 		services.AddKeyedTransient<IAnimeMetadataProvider, MyAnimeListMetadataProvider>(Descriptor.Id);
+		services.AddTransient<IAccount, MyAnimeListAccount>();
 	}
 }
 

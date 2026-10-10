@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Totoro.Commands;
 using Totoro.Core;
+using Totoro.Core.Authentication;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Extensions;
 using Totoro.Core.Module;
@@ -10,6 +11,7 @@ using Totoro.Core.Module.Anime;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
 using Totoro.UI;
+using Totoro.UI.Authentication;
 using Totoro.UI.Dialogs;
 using Totoro.UI.Theming;
 using Totoro.ViewModels;
@@ -45,6 +47,7 @@ public partial class App : Application
 					sp.GetRequiredService<IViewRegistry>(),
 					sp.GetRequiredService<IServiceScopeFactory>(),
 					() => _window?.Content?.XamlRoot));
+				services.AddSingleton<IWebAuthenticator>(_ => new WebAuthenticator(() => _window?.Content?.XamlRoot));
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();
 				services.AddDataViewMap<AnimeDetailsPage, AnimeDetailsViewModel, AnimeModel>();

@@ -6,12 +6,13 @@ using Totoro.Core.Settings;
 namespace Totoro.Modules.AnimeDatabase.MyAnimeList;
 
 /// <summary>
-/// The MyAnimeList client, signed in with the stored login when there is one. MAL logins expire, so the token is
-/// refreshed (and saved) on first use after it has.
+/// The MyAnimeList client and the user's login. MAL logins expire, so the token is refreshed (and saved) on first use
+/// after it has. A singleton, so everything shares one login: signing in or out takes effect everywhere.
 /// </summary>
-internal sealed class MyAnimeListSession(IMalClient client, IModuleSettings<Settings> settings, ILogger<MyAnimeListSession> logger)
+internal sealed class MyAnimeListSession(IModuleSettings<Settings> settings, ILogger<MyAnimeListSession> logger)
 {
 	private readonly SemaphoreSlim _lock = new(1, 1);
+	private IMalClient _client = CreateClient();
 
 	public bool IsSignedIn => settings.Value.Auth is not null;
 
@@ -25,15 +26,14 @@ internal sealed class MyAnimeListSession(IMalClient client, IModuleSettings<Sett
 	/// </summary>
 	public async Task<IMalClient> GetClientAsync()
 	{
-		if (settings.Value.Auth is null)
-		{
-			return client;
-		}
-
 		await _lock.WaitAsync();
 		try
 		{
-			var auth = settings.Value.Auth;
+			if (settings.Value.Auth is not { } auth)
+			{
+				return _client;
+			}
+
 			if (auth.IsExpired)
 			{
 				try
@@ -49,12 +49,52 @@ internal sealed class MyAnimeListSession(IMalClient client, IModuleSettings<Sett
 				}
 			}
 
-			client.SetAccessToken(auth.AccessToken);
-			return client;
+			_client.SetAccessToken(auth.AccessToken);
+			return _client;
 		}
 		finally
 		{
 			_lock.Release();
 		}
+	}
+
+	/// <summary>Finishes signing in with the code MAL's sign-in page redirected with.</summary>
+	public async Task SignInAsync(string code)
+	{
+		var auth = await MalAuthHelper.DoAuth(Settings.ClientId, code);
+
+		await _lock.WaitAsync();
+		try
+		{
+			settings.Value.Auth = auth;
+			settings.Save();
+		}
+		finally
+		{
+			_lock.Release();
+		}
+	}
+
+	public void SignOut()
+	{
+		_lock.Wait();
+		try
+		{
+			settings.Value.Auth = null;
+			settings.Save();
+			// The client keeps the token it was given; start over with one that has none.
+			_client = CreateClient();
+		}
+		finally
+		{
+			_lock.Release();
+		}
+	}
+
+	private static MalClient CreateClient()
+	{
+		var client = new MalClient();
+		client.SetClientId(Settings.ClientId);
+		return client;
 	}
 }

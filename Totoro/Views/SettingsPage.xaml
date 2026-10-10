@@ -60,6 +60,33 @@
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="Accounts" />
+
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Accounts}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AccountViewModel">
+                        <toolkit:SettingsCard Description="{x:Bind Status, Mode=OneWay}" Header="{x:Bind Name}">
+                            <toolkit:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE77B;" />
+                            </toolkit:SettingsCard.HeaderIcon>
+                            <Button
+                                MinWidth="120"
+                                AutomationProperties.Name="{x:Bind ActionName, Mode=OneWay}"
+                                Command="{x:Bind SignInOrOutCommand}"
+                                Content="{x:Bind ActionText, Mode=OneWay}" />
+                        </toolkit:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock
+                Margin="0,24,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="Appearance" />
 
             <toolkit:SettingsCard Description="Light, dark, or follow your Windows setting." Header="App theme">

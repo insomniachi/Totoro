@@ -87,7 +87,9 @@ public static class ServiceCollectionExtensions
 
 		public IServiceCollection AddModuleSettings<T>(IModule<T> module) where T : DataContainerConfig, new()
 		{
-			services.AddTransient<IModuleSettings<T>>(_ => new ModuleSettings<T>(module.Descriptor))
+			// One instance app-wide: each instance holds its own copy of the file, so a change saved through one (e.g.
+			// signing in) would go unseen by the others.
+			services.AddSingleton<IModuleSettings<T>>(_ => new ModuleSettings<T>(module.Descriptor))
 					.AddKeyedTransient(module.Descriptor.Id, (sp, _) =>
 					{
 						var settings = sp.GetRequiredService<IModuleSettings<T>>();

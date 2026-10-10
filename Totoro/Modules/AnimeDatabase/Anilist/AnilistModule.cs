@@ -32,21 +32,27 @@ internal class AnilistModule : IModule<Settings>
 
 		services.AddKeyedTransient<IAnimeTracker, AnilistTracker>(Descriptor.Id);
 		services.AddKeyedTransient<IAnimeMetadataProvider, AnilistMetadataProvider>(Descriptor.Id);
+		services.AddTransient<IAccount, AnilistAccount>();
 
-		services.AddHttpClient("anilist-client", (sp, client) =>
+		// The token is read each time a client is created, so clients created after signing in (or out) pick it up.
+		services.AddHttpClient(HttpClientName, (sp, client) =>
 		{
 			var settings = sp.GetRequiredService<IModuleSettings<Settings>>();
-			if (settings.Value.Token is { } token)
+			if (!string.IsNullOrEmpty(settings.Value.Token))
 			{
-				client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+				client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.Value.Token);
 			}
 		});
 
-		services.AddTransient(sp =>
-		{
-			var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("anilist-client");
-			return new GraphQLHttpClient("https://graphql.anilist.co/", new NewtonsoftJsonSerializer(), httpClient);
-		});
+		services.AddTransient(sp => CreateClient(sp.GetRequiredService<IHttpClientFactory>()));
+	}
+
+	private const string HttpClientName = "anilist-client";
+
+	/// <summary>An AniList GraphQL client, signed in with the current token if there is one.</summary>
+	internal static GraphQLHttpClient CreateClient(IHttpClientFactory httpClients)
+	{
+		return new GraphQLHttpClient("https://graphql.anilist.co/", new NewtonsoftJsonSerializer(), httpClients.CreateClient(HttpClientName));
 	}
 }
 

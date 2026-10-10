@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using Totoro.Core.Settings;
 
 namespace Totoro.Core.Module.Anime;
@@ -12,11 +13,21 @@ public static class AnimeDatabasePreferences
 
 	extension(IPreferences preferences)
 	{
-		/// <summary>Module id of the selected anime database; empty means the first one available.</summary>
+		/// <summary>
+		/// Module id of the selected anime database; empty means the first one available. Changing it sends an
+		/// <see cref="AnimeDatabaseChangedMessage"/>.
+		/// </summary>
 		public Guid SelectedAnimeDatabase
 		{
 			get => preferences.ReadKey<Guid>(Key);
-			set => preferences.SaveKey(Key, value);
+			set
+			{
+				preferences.SaveKey(Key, value);
+				WeakReferenceMessenger.Default.Send(new AnimeDatabaseChangedMessage(value));
+			}
 		}
 	}
 }
+
+/// <summary>Sent (with WeakReferenceMessenger.Default) after the selected anime database changes.</summary>
+public sealed record AnimeDatabaseChangedMessage(Guid ModuleId);
