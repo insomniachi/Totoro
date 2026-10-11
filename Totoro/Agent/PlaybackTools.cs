@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Totoro.Core.Agent;
+using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Playback;
 
@@ -20,6 +21,14 @@ public sealed record ShowCandidate(
 	string Title,
 	[property: Description("How well its title matched the anime's, from 0 to 1; 1 is an exact match.")]
 	double Score);
+
+[Description("An audio or subtitle track of the episode playing.")]
+public sealed record PlaybackTrack(
+	MediaTrackKind Kind,
+	[property: Description("What select_playback_track takes; -1 is \"no subtitles\".")]
+	int Id,
+	string Name,
+	bool IsSelected);
 
 [Description("The shows on the anime's provider it may be, and the one it's matched with, if any.")]
 public sealed record ProviderShows(string Provider, ShowCandidate? Matched, IReadOnlyList<ShowCandidate> Candidates);
@@ -59,6 +68,59 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch)
 	[AgentTool("get_playback_status")]
 	[Description("What's playing, or being got ready to play, and how it's going.")]
 	public PlaybackStatus GetPlaybackStatus() => watch.Status;
+
+	[AgentTool("set_playback_paused")]
+	[Description("Pauses or resumes the episode playing. Only in the built-in player.")]
+	public async Task<string> SetPlaybackPausedAsync(bool paused)
+	{
+		await Control(() => watch.SetPausedAsync(paused));
+		return paused ? "Paused." : "Playing.";
+	}
+
+	[AgentTool("seek_playback")]
+	[Description("Jumps to a time in the episode playing.")]
+	public async Task<string> SeekPlaybackAsync([Description("Where to jump to, in seconds from the start.")] double seconds)
+	{
+		var position = TimeSpan.FromSeconds(Math.Max(0, seconds));
+		await Control(() => watch.SeekAsync(position));
+		return $"Jumped to {position.ToString(@"h\:mm\:ss")}.";
+	}
+
+	[AgentTool("get_playback_tracks")]
+	[Description("The audio and subtitle tracks of the episode playing, and which are selected. Only in the built-in player.")]
+	public async Task<IReadOnlyList<PlaybackTrack>> GetPlaybackTracksAsync()
+	{
+		IReadOnlyList<MediaTrack> tracks = [];
+		await Control(() =>
+		{
+			tracks = watch.GetTracks();
+			return Task.CompletedTask;
+		});
+		return [.. tracks.Select(x => new PlaybackTrack(x.Kind, x.Id, x.Name, x.IsSelected))];
+	}
+
+	[AgentTool("select_playback_track")]
+	[Description("Switches the audio or subtitles of the episode playing to a track from get_playback_tracks. Returns the tracks as they are now.")]
+	public async Task<IReadOnlyList<PlaybackTrack>> SelectPlaybackTrackAsync(
+		MediaTrackKind kind,
+		[Description("The track's id; -1 turns subtitles off.")] int id)
+	{
+		await Control(() => watch.SelectTrackAsync(kind, id));
+		return await GetPlaybackTracksAsync();
+	}
+
+	/// <summary>Controls playback, with the reason it can't (nothing playing, another player) for the agent.</summary>
+	private static async Task Control(Func<Task> action)
+	{
+		try
+		{
+			await action();
+		}
+		catch (InvalidOperationException ex)
+		{
+			throw new AgentToolException(ex.Message);
+		}
+	}
 
 	[AgentTool("find_provider_shows")]
 	[Description("The shows on the anime's provider (where its episodes are streamed from) that may be the anime, and the one it's matched with.")]

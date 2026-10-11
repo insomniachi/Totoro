@@ -55,11 +55,13 @@
     <PackageReference Include="HtmlAgilityPack" />
     <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" />
     <PackageReference Include="JikanDotNet" />
+    <PackageReference Include="LibVLCSharp.WinUI" />
     <PackageReference Include="MalApi.V2" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Core\Totoro.Core.csproj" />
@@ -115,6 +117,13 @@
     <Content Include="$(RqbitDownloadFolder)rqbit.exe" Link="Tools\rqbit\rqbit.exe" CopyToOutputDirectory="PreserveNewest" />
     <None Remove="Modules\TorrentStreamers\Rqbit\LICENSE.txt" />
     <Content Include="Modules\TorrentStreamers\Rqbit\LICENSE.txt" Link="Tools\rqbit\LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!--
+    libvlc (VideoLAN.LibVLC.Windows), for the built-in player (Modules\MediaPlayers\Vlc): without what playing doesn't need
+    (import libraries, encoding and streaming out, visualizations, network discovery).
+  -->
+  <ItemGroup>
+    <VlcWindowsX64ExcludeFiles Include="libvlc.lib;libvlccore.lib;plugins\access_output\%2A;plugins\stream_out\%2A;plugins\mux\%2A;plugins\visualization\%2A;plugins\services_discovery\%2A;plugins\video_splitter\%2A" />
   </ItemGroup>
   <Target Name="DownloadRqbit" BeforeTargets="BeforeBuild" Condition="!Exists('$(RqbitDownloadFolder)rqbit.exe')">
     <DownloadFile SourceUrl="https://github.com/ikatson/rqbit/releases/download/v$(RqbitVersion)/rqbit.exe" DestinationFolder="$(RqbitDownloadFolder)" />

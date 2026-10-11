@@ -61,9 +61,21 @@ public sealed partial class WatchService(
 	private static readonly TimeSpan s_saveInterval = TimeSpan.FromSeconds(10);
 	private static readonly TimeSpan s_nextEpisodeCountdown = TimeSpan.FromSeconds(5);
 	private static readonly TimeSpan s_positionInterval = TimeSpan.FromSeconds(1);
+	// How long a message (e.g. "Marked episode 5 as watched") stays over the video in the built-in player.
+	private static readonly TimeSpan s_playerMessageDuration = TimeSpan.FromSeconds(4);
 
 	private CancellationTokenSource? _cancellation;
 	private Action? _action;
+
+	// The player of the episode playing, or of the last one.
+	private IMediaPlayer? _player;
+
+	// The built-in player whose episode list is followed (picking an episode plays it), and the anime it lists.
+	private IInteractiveMediaPlayer? _listingPlayer;
+	private AnimeModel? _listedAnime;
+
+	// Episode details (titles, thumbnails) from ani.zip, by anime: fetched once while watching it.
+	private readonly Dictionary<string, List<EpisodeInfo>> _episodeDetails = [];
 
 	/// <summary>Whether the status bar is showing. The user can close it while an episode plays (see <see cref="IsActive"/>).</summary>
 	[ObservableProperty] public partial bool IsOpen { get; set; }
@@ -302,7 +314,13 @@ public sealed partial class WatchService(
 		player.PlaybackStopped += OnStopped;
 		try
 		{
+			_player = player;
 			player.Play(media, start);
+			if (player is IInteractiveMediaPlayer interactive)
+			{
+				_ = ListEpisodesAsync(interactive, anime, number, ct);
+			}
+
 			Show(PlaybackStatusKind.Playing, start > TimeSpan.Zero
 						 ? $"Resumed at {start:h\\:mm\\:ss} in {player.Name}."
 						 : $"Playing in {player.Name}. It's marked as watched if you watch to the end.");
@@ -313,6 +331,7 @@ public sealed partial class WatchService(
 			player.DurationChanged -= OnDuration;
 			player.PositionChanged -= OnPosition;
 			player.PlaybackStopped -= OnStopped;
+			segments.Stop();
 			Save();
 			PlaybackFraction = -1;
 			PlaybackTime = "";
@@ -341,11 +360,32 @@ public sealed partial class WatchService(
 		await OfferNextAsync(anime, number, next);
 	}
 
-	/// <summary>Offers the next episode: plays it after a countdown if that's the setting, otherwise on request.</summary>
+	/// <summary>
+	/// Offers the next episode: plays it after a countdown if that's the setting, otherwise on request. In the built-in
+	/// player it's offered over the video, where the user is, rather than in the status bar.
+	/// </summary>
 	private async Task OfferNextAsync(AnimeModel anime, int watched, int next)
 	{
 		void Offer() => Show(PlaybackStatusKind.Success, $"Marked episode {watched} as watched.", $"Play episode {next}",
 							 () => _ = WatchAsync(anime, next));
+
+		if (_player is IInteractiveMediaPlayer { IsOpen: true } interactive)
+		{
+			Show(PlaybackStatusKind.Success, $"Marked episode {watched} as watched.");
+			// Cancelled by Cancel, or the next WatchAsync.
+			var offer = _cancellation = new CancellationTokenSource();
+			if (await interactive.OfferNextAsync($"Episode {next}", preferences.PlayNextAutomatically ? s_nextEpisodeCountdown : null, offer.Token))
+			{
+				_ = WatchAsync(anime, next);
+			}
+			else if (!interactive.IsOpen && ReferenceEquals(_cancellation, offer))
+			{
+				// The player was closed instead: offered here.
+				Offer();
+			}
+
+			return;
+		}
 
 		if (!preferences.PlayNextAutomatically)
 		{
@@ -593,6 +633,7 @@ public sealed partial class WatchService(
 	{
 		IsActive = false;
 		IsOpen = false;
+		(_player as IInteractiveMediaPlayer)?.ShowStatus(null);
 	}
 
 	/// <summary>Shows where playback is (while an episode is playing).</summary>
@@ -628,5 +669,149 @@ public sealed partial class WatchService(
 		IsActive = kind is PlaybackStatusKind.Progress or PlaybackStatusKind.Playing;
 		IsOpen = true;
 		StatusChanged?.Invoke(this, EventArgs.Empty);
+		ShowInPlayer(kind, message);
+	}
+
+	/// <summary>
+	/// Shows the status in the built-in player too, while it's open (e.g. getting the next episode ready, after the last
+	/// one ended in it): the user is watching there, not the main window.
+	/// </summary>
+	private void ShowInPlayer(PlaybackStatusKind kind, string message)
+	{
+		if (_player is not IInteractiveMediaPlayer { IsOpen: true } interactive)
+		{
+			return;
+		}
+
+		switch (kind)
+		{
+			case PlaybackStatusKind.Progress:
+				interactive.ShowStatus(message);
+				break;
+			case PlaybackStatusKind.Error:
+				interactive.ShowStatus(message, isError: true);
+				break;
+			case PlaybackStatusKind.Success:
+				interactive.ShowStatus(null);
+				_ = interactive.ShowMessageAsync(message, s_playerMessageDuration);
+				break;
+			default:
+				interactive.ShowStatus(null);
+				break;
+		}
+	}
+
+	/// <summary>
+	/// Gives the built-in player the anime's episodes (with their titles and thumbnails, where ani.zip has them) for its
+	/// episode list, and plays the one the user picks from it.
+	/// </summary>
+	private async Task ListEpisodesAsync(IInteractiveMediaPlayer interactive, AnimeModel anime, int current, CancellationToken ct)
+	{
+		_listedAnime = anime;
+		if (!ReferenceEquals(_listingPlayer, interactive))
+		{
+			_listingPlayer?.EpisodeRequested -= OnEpisodeRequested;
+			interactive.EpisodeRequested += OnEpisodeRequested;
+			_listingPlayer = interactive;
+		}
+
+		try
+		{
+			if (!_episodeDetails.TryGetValue(anime.StoreKey, out var details))
+			{
+				details = [.. (await anime.GetEpisodesAsync(ct)).Where(x => !x.IsSpecial)];
+				if (details.Count > 0)
+				{
+					_episodeDetails[anime.StoreKey] = details;
+				}
+			}
+
+			// The aired ones ani.zip knows of, or else as many as the anime has; the one playing at least.
+			var count = Math.Max(current, details.Count > 0 ? details.Max(x => x.EpisodeNumber) : anime.TotalEpisodes ?? current);
+			var watched = anime.Tracking?.WatchedEpisodes ?? 0;
+			var saved = progressStore.GetAll(anime);
+			List<PlayerEpisode> episodes = [];
+			for (var number = 1; number <= count; number++)
+			{
+				var info = details.FirstOrDefault(x => x.EpisodeNumber == number);
+				episodes.Add(new PlayerEpisode(
+					number,
+					info is null ? $"Episode {number}" : EpisodeTitle(info),
+					info is null ? "" : EpisodeDetails(info),
+					info?.Overview ?? "",
+					string.IsNullOrEmpty(info?.Image) ? null : info.Image,
+					number <= watched,
+					number == current,
+					saved.GetValueOrDefault(number)?.Fraction ?? 0));
+			}
+
+			if (ReferenceEquals(_listedAnime, anime))
+			{
+				interactive.SetEpisodes(episodes);
+			}
+		}
+		catch (OperationCanceledException)
+		{
+			// Another episode was started meanwhile; it lists them.
+		}
+	}
+
+	private void OnEpisodeRequested(object? sender, int number)
+	{
+		if (_listedAnime is { } anime)
+		{
+			_ = WatchAsync(anime, number);
+		}
+	}
+
+	private static string EpisodeTitle(EpisodeInfo info)
+	{
+		return new[] { info.Titles.English, info.Titles.Romaji, info.Titles.Japanese }.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))
+			   ?? $"Episode {info.EpisodeNumber}";
+	}
+
+	/// <summary>e.g. "3 Oct 2025 · 24 min".</summary>
+	private static string EpisodeDetails(EpisodeInfo info)
+	{
+		List<string> details = [];
+		if (info.AirDateUtc is { } aired)
+		{
+			details.Add(aired.ToLocalTime().ToString("d MMM yyyy"));
+		}
+
+		if (info.Runtime > 0)
+		{
+			details.Add($"{info.Runtime} min");
+		}
+
+		return string.Join(" · ", details);
+	}
+
+	/// <summary>The player of the episode playing; null when none is.</summary>
+	public IMediaPlayer? PlayingPlayer => IsActive && Kind == PlaybackStatusKind.Playing ? _player : null;
+
+	/// <summary>Jumps to <paramref name="position"/> in the episode playing.</summary>
+	public Task SeekAsync(TimeSpan position)
+	{
+		return PlayingPlayer?.SeekAsync(position) ?? throw new InvalidOperationException("Nothing's playing.");
+	}
+
+	/// <summary>Pauses or resumes the episode playing (in the built-in player).</summary>
+	public Task SetPausedAsync(bool paused) => GetInteractivePlayer().SetPausedAsync(paused);
+
+	/// <summary>The audio and subtitle tracks of the episode playing (in the built-in player).</summary>
+	public IReadOnlyList<MediaTrack> GetTracks() => GetInteractivePlayer().GetTracks();
+
+	/// <summary>Switches the audio or subtitles of the episode playing (in the built-in player).</summary>
+	public Task SelectTrackAsync(MediaTrackKind kind, int id) => GetInteractivePlayer().SelectTrackAsync(kind, id);
+
+	private IInteractiveMediaPlayer GetInteractivePlayer()
+	{
+		return PlayingPlayer switch
+		{
+			null => throw new InvalidOperationException("Nothing's playing."),
+			IInteractiveMediaPlayer interactive => interactive,
+			var other => throw new InvalidOperationException($"It's playing in {other.Name}, which the app can't control; only the built-in player."),
+		};
 	}
 }

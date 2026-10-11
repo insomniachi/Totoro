@@ -51,7 +51,7 @@ public partial class App : Application
 				services.RegisterFactory<IAnimeTracker>(AnimeDatabasePreferences.Key);
 				services.RegisterFactory<IAnimeMetadataProvider>(AnimeDatabasePreferences.Key);
 				services.RegisterFactory<IAnimeProvider>("SelectedAnimeProvider");
-				services.RegisterFactory<IMediaPlayer>("SelectedMediaPlayer");
+				services.RegisterFactory<IMediaPlayer>(PlaybackPreferences.MediaPlayerKey);
 				services.RegisterFactory<ITorrentStreamer>("SelectedTorrentStreamer");
 
 				// Watching: the watch service drives a playback from a card's Play.
@@ -105,6 +105,7 @@ public partial class App : Application
 				services.AddKeyedViewMap<HtmlRendererPage, HtmlRendererViewModel>(TestViewModel.HtmlRendererKey);
 				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
 				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
+				services.AddKeyedViewMap<BuiltInPlayerPage, BuiltInPlayerViewModel>(TestViewModel.BuiltInPlayerKey);
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
 					x.AnimatedIcon = Icons.SettingsAnimated;
@@ -122,6 +123,8 @@ public partial class App : Application
 			ViewModel = _host.Services.GetRequiredService<MainWindowViewModel>(),
 		};
 		_host.Services.GetRequiredService<IAppearanceService>().Apply();
+		// The app ends with its main window, the built-in player's window too.
+		_window.Closed += (_, _) => Exit();
 		_window.Activate();
 	}
 
@@ -145,6 +148,7 @@ public partial class App : Application
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
 			new Modules.AnimeProviders.SubsPlease.SubsPleaseModule(),
 			new Modules.MediaPlayers.Mpv.MpvModule(),
+			new Modules.MediaPlayers.Vlc.VlcModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
 			new Modules.MediaSegments.Aniskip.AniskipModule()
 		];

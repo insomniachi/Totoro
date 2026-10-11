@@ -23,6 +23,7 @@
                 Text="HTML renderer" />
             <SelectorBarItem Tag="Test.SettingsEditor" Text="Settings editor" />
             <SelectorBarItem Tag="Test.AgentTools" Text="Agent tools" />
+            <SelectorBarItem Tag="Test.BuiltInPlayer" Text="Built-in player" />
         </SelectorBar>
 
         <Frame Grid.Row="1">

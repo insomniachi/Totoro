@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Media;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
 using Totoro.UI.Navigation;
@@ -12,6 +13,11 @@ namespace Totoro.ViewModels;
 // ToString is what screen readers announce for each ComboBox item, so it returns the label rather than the record dump.
 
 public sealed record AnimeDatabaseOption(Guid Id, string Name)
+{
+	public override string ToString() => Name;
+}
+
+public sealed record MediaPlayerOption(Guid Id, string Name)
 {
 	public override string ToString() => Name;
 }
@@ -52,6 +58,8 @@ public partial class SettingsViewModel : ObservableObject
 		IEnumerable<NavigationItemViewModel> navigationItems,
 		IPreferences preferences,
 		IFactory<IAnimeTracker, Guid> trackers,
+		IFactory<IMediaPlayer, Guid> players,
+		IEnumerable<Descriptor> modules,
 		IEnumerable<IAccount> accounts,
 		IEnumerable<IModuleSettings> moduleSettings,
 		IDialogService dialogs,
@@ -75,6 +83,9 @@ public partial class SettingsViewModel : ObservableObject
 
 		OpeningSkip = SkipModes.First(x => x.Value == preferences.OpeningSkipMode);
 		EndingSkip = SkipModes.First(x => x.Value == preferences.EndingSkipMode);
+		// Named as their modules are (the built-in player's own name reads "the built-in player").
+		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
+		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
 
 		// Only modules with something to edit.
@@ -98,6 +109,20 @@ public partial class SettingsViewModel : ObservableObject
 		if (value is not null && value.Id != _preferences.SelectedAnimeDatabase)
 		{
 			_preferences.SelectedAnimeDatabase = value.Id;
+		}
+	}
+
+	public IReadOnlyList<MediaPlayerOption> MediaPlayers { get; }
+
+	/// <summary>The media player episodes play in.</summary>
+	[ObservableProperty]
+	public partial MediaPlayerOption? MediaPlayer { get; set; }
+
+	partial void OnMediaPlayerChanged(MediaPlayerOption? value)
+	{
+		if (value is not null && value.Id != _preferences.SelectedMediaPlayer)
+		{
+			_preferences.SelectedMediaPlayer = value.Id;
 		}
 	}
 

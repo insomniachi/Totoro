@@ -6,7 +6,7 @@ public enum SkipMode
 	/// <summary>Nothing; it plays.</summary>
 	Off,
 
-	/// <summary>Say it can be skipped (with the player's next-chapter key).</summary>
+	/// <summary>Offer to skip it: a button in the built-in player, a hint to press the next-chapter key in others.</summary>
 	Ask,
 
 	/// <summary>Skip it.</summary>
@@ -18,6 +18,10 @@ public static class PlaybackPreferences
 	public const string OpeningSkipKey = "OpeningSkipMode";
 	public const string EndingSkipKey = "EndingSkipMode";
 	public const string PlayNextKey = "PlayNextAutomatically";
+
+	/// <summary>Preference key holding the id of the module whose media player plays episodes.</summary>
+	public const string MediaPlayerKey = "SelectedMediaPlayer";
+	public const string VolumeKey = "PlayerVolume";
 
 	extension(IPreferences preferences)
 	{
@@ -38,6 +42,20 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(PlayNextKey, false);
 			set => preferences.SaveKey(PlayNextKey, value);
+		}
+
+		/// <summary>Module id of the media player episodes play in; empty means the first one available.</summary>
+		public Guid SelectedMediaPlayer
+		{
+			get => preferences.ReadKey<Guid>(MediaPlayerKey);
+			set => preferences.SaveKey(MediaPlayerKey, value);
+		}
+
+		/// <summary>The built-in player's volume, from 0 to 100, kept from one episode to the next.</summary>
+		public int PlayerVolume
+		{
+			get => preferences.ReadKey(VolumeKey, 100);
+			set => preferences.SaveKey(VolumeKey, value);
 		}
 	}
 }

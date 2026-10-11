@@ -4,6 +4,7 @@ using System.Reflection;
 using Totoro.Core.Agent;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Media;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
 
@@ -16,6 +17,9 @@ public sealed record AppSettings(
 	[property: Description("Where the user's list and anime information come from; one of animeDatabases.")]
 	string AnimeDatabase,
 	IReadOnlyList<string> AnimeDatabases,
+	[property: Description("Where episodes play; one of mediaPlayers. The built-in player offers skipping and the next episode over the video, and can be controlled with the playback tools.")]
+	string MediaPlayer,
+	IReadOnlyList<string> MediaPlayers,
 	[property: Description("What happens when an opening starts: Off (nothing), Ask (offer to skip) or Automatic (skip it).")]
 	SkipMode OpeningSkipMode,
 	SkipMode EndingSkipMode,
@@ -46,22 +50,28 @@ public sealed class AppSettingsTools(
 	IPreferences preferences,
 	IAppearanceService appearance,
 	IFactory<IAnimeTracker, Guid> trackers,
+	IFactory<IMediaPlayer, Guid> players,
+	IEnumerable<Descriptor> modules,
 	IEnumerable<IModuleSettings> moduleSettings,
 	IEnumerable<NavigationItemViewModel> pages,
 	IEnumerable<IAccount> accounts)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database, skipping, playing the next episode, startup page.")]
+	[Description("The app's settings: theme, anime database, media player, skipping, playing the next episode, startup page.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
 		var selected = databases.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? databases.FirstOrDefault();
 		var startupPages = pages.Where(x => !x.IsFooter).ToList();
+		var mediaPlayers = GetMediaPlayers();
+		var mediaPlayer = mediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? mediaPlayers.FirstOrDefault();
 		return new AppSettings(
 			appearance.Theme,
 			appearance.Backdrop,
 			selected?.Name ?? "",
 			[.. databases.Select(x => x.Name)],
+			mediaPlayer?.Name ?? "",
+			[.. mediaPlayers.Select(x => x.Name)],
 			preferences.OpeningSkipMode,
 			preferences.EndingSkipMode,
 			preferences.PlayNextAutomatically,
@@ -75,6 +85,7 @@ public sealed class AppSettingsTools(
 		AppTheme? theme = null,
 		AppBackdrop? backdrop = null,
 		[Description("One of animeDatabases from get_app_settings.")] string? animeDatabase = null,
+		[Description("One of mediaPlayers from get_app_settings.")] string? mediaPlayer = null,
 		SkipMode? openingSkipMode = null,
 		SkipMode? endingSkipMode = null,
 		bool? playNextAutomatically = null,
@@ -85,6 +96,13 @@ public sealed class AppSettingsTools(
 			var databases = trackers.CreateAll().ToList();
 			preferences.SelectedAnimeDatabase = databases.FirstOrDefault(x => x.Name.Equals(animeDatabase, StringComparison.OrdinalIgnoreCase))?.Id
 				?? throw new AgentToolException($"There's no anime database called {animeDatabase}; they're {string.Join(", ", databases.Select(x => x.Name))}.");
+		}
+
+		if (mediaPlayer is not null)
+		{
+			var mediaPlayers = GetMediaPlayers();
+			preferences.SelectedMediaPlayer = mediaPlayers.FirstOrDefault(x => x.Name.Equals(mediaPlayer, StringComparison.OrdinalIgnoreCase))?.Id
+				?? throw new AgentToolException($"There's no media player called {mediaPlayer}; they're {string.Join(", ", mediaPlayers.Select(x => x.Name))}.");
 		}
 
 		if (startupPage is not null)
@@ -183,6 +201,14 @@ public sealed class AppSettingsTools(
 		account.SignOut();
 		return $"Signed out of {account.Name}.";
 	}
+
+	/// <summary>The media players, named as their modules are.</summary>
+	private List<NamedPlayer> GetMediaPlayers()
+	{
+		return [.. players.CreateAll().Select(x => new NamedPlayer(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
+	}
+
+	private sealed record NamedPlayer(Guid Id, string Name);
 
 	private IAccount FindAccount(string service)
 	{

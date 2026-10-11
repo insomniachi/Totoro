@@ -89,7 +89,23 @@
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="Playback" />
 
-            <toolkit:SettingsCard Description="When an opening or recap starts. Offering to skip shows a hint in the player; press Page Up (next chapter) to skip." Header="Openings">
+            <toolkit:SettingsCard Description="Where episodes play. The built-in player offers skipping the opening and the next episode over the video; mpv is an app of its own, with its own settings and shaders." Header="Media player">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE714;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.MediaPlayers}"
+                    SelectedItem="{x:Bind ViewModel.MediaPlayer, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:MediaPlayerOption">
+                            <TextBlock Text="{x:Bind Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="When an opening or recap starts. Offering to skip shows a Skip button over the video in the built-in player, and a hint to press Page Up (next chapter) in mpv." Header="Openings">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE893;" />
                 </toolkit:SettingsCard.HeaderIcon>

@@ -8,8 +8,9 @@ namespace Totoro.Playback;
 /// <summary>
 /// An episode's opening, ending and recap, for one playback: marks them as chapters in the player (so they show on
 /// its seek bar, and its next-chapter key skips them), then skips or offers to skip each as playback enters it,
-/// following the given modes (the anime's own, or the app-wide ones). Each segment is handled once, so seeking back
-/// into one doesn't skip it again.
+/// following the given modes (the anime's own, or the app-wide ones). Each segment is skipped once, so seeking back
+/// into one doesn't skip it again. Offering to skip is a button over the video in the built-in player (as playback
+/// enters the segment, for a few seconds), and a hint to press the next-chapter key in others (once).
 /// </summary>
 internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, SkipMode endingMode, ILogger logger)
 {
@@ -19,6 +20,10 @@ internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, 
 	private readonly Lock _lock = new();
 	private readonly HashSet<MediaSegment> _handled = [];
 	private IReadOnlyList<MediaSegment> _segments = [];
+
+	// The built-in player's skip button: the segment it's for, and what takes it away.
+	private MediaSegment? _offered;
+	private CancellationTokenSource? _offer;
 
 	/// <summary>Gets the episode's segments (they're matched to its length) and marks them in the player.</summary>
 	public async Task LoadAsync(IMediaSegmentsProvider? provider, AnimeModel anime, int episode, TimeSpan duration, CancellationToken ct)
@@ -58,11 +63,23 @@ internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, 
 
 	public void OnPosition(TimeSpan position)
 	{
+		// In it and not nearly over.
+		bool IsIn(MediaSegment x) => position >= x.Start && position < x.End - TimeSpan.FromSeconds(1);
+
 		List<MediaSegment> entered;
+		MediaSegment? current;
 		lock (_lock)
 		{
-			// Entered and not nearly over; once each.
-			entered = [.. _segments.Where(x => position >= x.Start && position < x.End - TimeSpan.FromSeconds(1) && _handled.Add(x))];
+			// Once each.
+			entered = [.. _segments.Where(x => IsIn(x) && _handled.Add(x))];
+			current = _segments.FirstOrDefault(IsIn);
+		}
+
+		if (player is IInteractiveMediaPlayer interactive)
+		{
+			// Offered with a button instead.
+			UpdateOffer(interactive, current);
+			entered.RemoveAll(x => ModeOf(x) == SkipMode.Ask);
 		}
 
 		foreach (var segment in entered)
@@ -71,18 +88,52 @@ internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, 
 		}
 	}
 
+	/// <summary>Takes away the skip button, when playback ends.</summary>
+	public void Stop() => UpdateOffer(null, null);
+
+	/// <summary>Shows the skip button for the segment playback is in, if it's offered; takes it away once out of it.</summary>
+	private void UpdateOffer(IInteractiveMediaPlayer? interactive, MediaSegment? current)
+	{
+		if (current == _offered)
+		{
+			return;
+		}
+
+		_offer?.Cancel();
+		_offer = null;
+		_offered = null;
+		if (interactive is null || current is null || ModeOf(current) != SkipMode.Ask)
+		{
+			return;
+		}
+
+		_offered = current;
+		_offer = new CancellationTokenSource();
+		_ = OfferAsync(interactive, current, _offer.Token);
+	}
+
+	private async Task OfferAsync(IInteractiveMediaPlayer interactive, MediaSegment segment, CancellationToken ct)
+	{
+		if (await interactive.OfferAsync($"Skip {NameOf(segment)}", ct))
+		{
+			await player.SeekAsync(segment.End);
+		}
+	}
+
+	// A recap is skipped like an opening: both come before the episode proper.
+	private SkipMode ModeOf(MediaSegment segment) => segment.Type == MediaSegmentType.Ending ? endingMode : openingMode;
+
+	private static string NameOf(MediaSegment segment) => segment.Type switch
+	{
+		MediaSegmentType.Opening => "opening",
+		MediaSegmentType.Ending => "ending",
+		_ => "recap",
+	};
+
 	private async Task HandleAsync(MediaSegment segment, TimeSpan position)
 	{
-		var name = segment.Type switch
-		{
-			MediaSegmentType.Opening => "opening",
-			MediaSegmentType.Ending => "ending",
-			_ => "recap",
-		};
-
-		// A recap is skipped like an opening: both come before the episode proper.
-		var mode = segment.Type == MediaSegmentType.Ending ? endingMode : openingMode;
-		switch (mode)
+		var name = NameOf(segment);
+		switch (ModeOf(segment))
 		{
 			case SkipMode.Automatic:
 				await player.SeekAsync(segment.End);

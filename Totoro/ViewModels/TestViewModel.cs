@@ -16,6 +16,7 @@ public partial class TestViewModel : ObservableObject
 	public const string HtmlRendererKey = "Test.HtmlRenderer";
 	public const string SettingsEditorKey = "Test.SettingsEditor";
 	public const string AgentToolsKey = "Test.AgentTools";
+	public const string BuiltInPlayerKey = "Test.BuiltInPlayer";
 
 	public TestViewModel()
 	{
