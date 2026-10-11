@@ -104,6 +104,8 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	[ObservableProperty] public partial IReadOnlyList<string> Genres { get; set; } = [];
 	[ObservableProperty] public partial string Description { get; set; } = "";
 	[ObservableProperty] public partial string Studios { get; set; } = "";
+	/// <summary>Its videos: trailers and PVs (AniList has one, MyAnimeList often several), each opening in the browser.</summary>
+	[ObservableProperty] public partial IReadOnlyList<TrailerItem> Trailers { get; set; } = [];
 	[ObservableProperty] public partial Uri? Link { get; set; }
 	[ObservableProperty] public partial string LinkText { get; set; } = "";
 
@@ -208,6 +210,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Genres = [.. details.Genres];
 		Description = details.Description;
 		Studios = string.Join(", ", details.Studios);
+		Trailers = [.. details.Trailers.Select(TrailerItem.From).OfType<TrailerItem>()];
 		Link = Uri.TryCreate(details.Url, UriKind.Absolute, out var uri) ? uri : null;
 		LinkText = string.IsNullOrEmpty(details.ServiceName) ? "Open in browser" : $"Open on {details.ServiceName}";
 		Related.Show(details);
@@ -291,5 +294,31 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		}
 
 		return facts;
+	}
+}
+
+/// <summary>A trailer, as the overview shows it: opening its <see cref="Url"/> (YouTube) in the browser.</summary>
+/// <param name="Thumbnail">Its thumbnail's URL; empty (never null, for x:Bind) when there's none.</param>
+public sealed record TrailerItem(string Title, string Thumbnail, Uri Url)
+{
+	/// <summary>Its accessible name, e.g. "Watch Trailer in the browser".</summary>
+	public string Name => $"Watch {Title} in the browser";
+
+	public static TrailerItem? From(TrailerVideo video)
+	{
+		return Uri.TryCreate(video.Url, UriKind.Absolute, out var url)
+			? new TrailerItem(string.IsNullOrWhiteSpace(video.Title) ? "Trailer" : video.Title, Widescreen(video.Thumbnail ?? ""), url)
+			: null;
+	}
+
+	/// <summary>
+	/// YouTube's 16:9 thumbnail (mqdefault) for its 4:3 one (hqdefault, which AniList gives), whose black bars would show
+	/// in the 16:9 frame.
+	/// </summary>
+	private static string Widescreen(string thumbnail)
+	{
+		return thumbnail.Contains("ytimg.com", StringComparison.OrdinalIgnoreCase)
+			? thumbnail.Replace("/hqdefault.", "/mqdefault.", StringComparison.OrdinalIgnoreCase)
+			: thumbnail;
 	}
 }

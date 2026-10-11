@@ -6,7 +6,8 @@
     xmlns:commands="using:Totoro.Commands"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:text="using:Totoro.UI.Text"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels">
 
     <UserControl.Resources>
         <!--  A small rounded label, used for the facts and genres  -->
@@ -116,5 +117,67 @@
             Content="{x:Bind ViewModel.LinkText, Mode=OneWay}"
             NavigateUri="{x:Bind ViewModel.Link, Mode=OneWay}"
             Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(ViewModel.Link), Mode=OneWay}" />
+
+        <!--
+            Videos (trailers and PVs: one from AniList, often several from MyAnimeList), last: a thumbnail each, its title
+            over it, in a row that scrolls sideways; each opens on YouTube, in the browser
+        -->
+        <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Trailers), Mode=OneWay}">
+            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Videos" />
+            <ScrollView
+                ContentOrientation="Horizontal"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Hidden">
+                <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Trailers, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="12" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TrailerItem">
+                            <HyperlinkButton
+                                Padding="0"
+                                AutomationProperties.Name="{x:Bind Name}"
+                                NavigateUri="{x:Bind Url}"
+                                ToolTipService.ToolTip="{x:Bind Title}">
+                                <Grid
+                                    Width="240"
+                                    Height="135"
+                                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                    CornerRadius="8">
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Thumbnail)}" Stretch="UniformToFill" />
+                                    <Grid
+                                        Width="40"
+                                        Height="40"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                        <Ellipse Fill="{ThemeResource SmokeFillColorDefaultBrush}" />
+                                        <FontIcon
+                                            FontSize="16"
+                                            Foreground="White"
+                                            Glyph="&#xE768;" />
+                                    </Grid>
+                                    <!--  The title along the bottom, on a shade so it reads over any thumbnail  -->
+                                    <Border Padding="12,24,12,8" VerticalAlignment="Bottom">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Offset="0" Color="#00000000" />
+                                                <GradientStop Offset="1" Color="#CC000000" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock
+                                            Foreground="White"
+                                            Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                            Text="{x:Bind Title}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </Border>
+                                </Grid>
+                            </HyperlinkButton>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollView>
+        </StackPanel>
     </StackPanel>
 </UserControl>

@@ -67,14 +67,17 @@ public sealed partial record AnimeDetails(
 	[property: Description("Its page on the anime database's website.")]
 	string? Url,
 	[property: Description("Related anime: sequels, prequels, side stories...")]
-	IReadOnlyList<AnimeSummary> Related)
+	IReadOnlyList<AnimeSummary> Related,
+	[property: Description("Its trailers and promotional videos (YouTube links).")]
+	IReadOnlyList<TrailerLink> Trailers)
 {
 	public static AnimeDetails From(AnimeModel anime) => new(
 		AnimeSummary.From(anime),
 		ToPlainText(anime.Description),
 		anime.Studios,
 		string.IsNullOrEmpty(anime.Url) ? null : anime.Url,
-		[.. anime.Related.Select(AnimeSummary.From)]);
+		[.. anime.Related.Select(AnimeSummary.From)],
+		[.. anime.Trailers.Where(x => !string.IsNullOrEmpty(x.Url)).Select(x => new TrailerLink(string.IsNullOrWhiteSpace(x.Title) ? "Trailer" : x.Title, x.Url))]);
 
 	/// <summary>The description's HTML (AniList's markup) as plain text.</summary>
 	private static string ToPlainText(string html)
@@ -90,6 +93,9 @@ public sealed partial record AnimeDetails(
 	[GeneratedRegex("<[^>]+>")]
 	private static partial Regex Tag();
 }
+
+[Description("A trailer or promotional video of an anime.")]
+public sealed record TrailerLink(string Title, string Url);
 
 [Description("An episode of an anime.")]
 public sealed record EpisodeSummary(
