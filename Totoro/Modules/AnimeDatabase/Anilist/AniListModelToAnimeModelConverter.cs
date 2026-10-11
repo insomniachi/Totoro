@@ -48,7 +48,7 @@ public static partial class AniListModelToAnimeModelConverter
             ServiceName = nameof(AnimeId.Anilist),
             // Requested as HTML (asHtml: true), so all of AniList's markup arrives as HTML; views render it with Totoro.UI.Text.HtmlText.
             Description = media.Description ?? string.Empty,
-            Related = ConvertSimple(media.Relations?.Nodes ?? []),
+            Related = ConvertRelated(media.Relations?.Edges),
             Recommended = ConvertSimple(media.Recommendations?.Nodes.Select(x => x.MediaRecommendation).Where(x => x is not null)
                                              .Where(x => x.Type == MediaType.Anime) ?? []),
             Episodes = ConvertEpisodes(media),
@@ -182,6 +182,34 @@ public static partial class AniListModelToAnimeModelConverter
         return result;
     }
 
+    /// <summary>Related anime, with how each relates (sequel, prequel...).</summary>
+    public static AnimeModel[] ConvertRelated(IEnumerable<MediaEdge>? edges)
+    {
+        return
+        [
+            .. (edges ?? []).Where(x => x.Node is { Type: MediaType.Anime })
+                            .Select(x =>
+                            {
+                                var anime = ConvertSimple([x.Node])[0];
+                                anime.Relation = ConvertRelation(x.RelationType);
+                                return anime;
+                            })
+        ];
+    }
+
+    public static AnimeRelationType? ConvertRelation(MediaRelation? relation) => relation switch
+    {
+        MediaRelation.Sequel => AnimeRelationType.Sequel,
+        MediaRelation.Prequel => AnimeRelationType.Prequel,
+        MediaRelation.SideStory => AnimeRelationType.SideStory,
+        MediaRelation.Parent => AnimeRelationType.Parent,
+        MediaRelation.Alternative => AnimeRelationType.Alternative,
+        MediaRelation.Summary => AnimeRelationType.Summary,
+        MediaRelation.SpinOff => AnimeRelationType.SpinOff,
+        null => null,
+        _ => AnimeRelationType.Other,
+    };
+
     public static AnimeModel[] ConvertSimple(IEnumerable<Media>? media)
     {
         if (media is null)
@@ -199,6 +227,9 @@ public static partial class AniListModelToAnimeModelConverter
                         RomajiTitle = x.Title.Romaji ?? x.Title.English ?? string.Empty,
                         Description = x.Description,
                         Id = x.Id ?? 0,
+                        ExternalIds = new AnimeId { Anilist = x.Id ?? 0, MyAnimeList = x.IdMal ?? 0 },
+                        TotalEpisodes = x.Episodes,
+                        Season = GetSeason(x.Season, x.SeasonYear),
                         Image = x.CoverImage.Large,
                         Tracking = ConvertTracking(x.MediaListEntry),
                         AiringStatus = ConvertStatus(x.Status),

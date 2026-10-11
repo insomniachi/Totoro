@@ -81,7 +81,24 @@ internal static class MalToModelConverter
 
 		if (malModel.RelatedAnime is { Length: > 0 } related)
 		{
-			model.Related = [.. related.Select(x => ConvertModel(x.Anime))];
+			model.Related =
+			[
+				.. related.Select(x =>
+				{
+					var anime = ConvertModel(x.Anime);
+					anime.Relation = x.RelationType switch
+					{
+						MalApi.RelationType.Sequel => AnimeRelationType.Sequel,
+						MalApi.RelationType.Prequel => AnimeRelationType.Prequel,
+						MalApi.RelationType.SideStory => AnimeRelationType.SideStory,
+						MalApi.RelationType.ParentStory or MalApi.RelationType.FullStory => AnimeRelationType.Parent,
+						MalApi.RelationType.AlternativeSetting or MalApi.RelationType.AlternativeVersion => AnimeRelationType.Alternative,
+						MalApi.RelationType.Summary => AnimeRelationType.Summary,
+						_ => AnimeRelationType.Other,
+					};
+					return anime;
+				}),
+			];
 		}
 
 		if (malModel.Recommendations is { Length: > 0 } recommended)

@@ -101,12 +101,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <!-- A copy of anime-relations (public domain), used until a newer one is fetched from GitHub; see IAnimeRelations -->
-  <ItemGroup>
-    <None Remove="Data\anime-relations.txt" />
-    <Content Include="Data\anime-relations.txt" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
   <!--
     rqbit, which streams torrents (Modules\TorrentStreamers\Rqbit): its release exe, downloaded once at build time (into
     obj, not the repo) and checked against its SHA-256, then copied to Tools\rqbit with its license. To update, change

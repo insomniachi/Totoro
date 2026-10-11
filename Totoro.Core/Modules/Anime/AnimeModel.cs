@@ -30,6 +30,10 @@ public partial class AnimeModel : ObservableObject
 	/// <summary>HTML (AniList renders all of its markup to HTML), which views render, e.g. with Totoro.UI.Text.HtmlText.</summary>
 	public string Description { get; set; } = "";
 	public IEnumerable<AnimeModel> Related { get; set; } = [];
+
+	/// <summary>How it relates to the anime whose <see cref="Related"/> it's in (e.g. its sequel); null outside such a list.</summary>
+	public AnimeRelationType? Relation { get; set; }
+
 	public IEnumerable<AnimeModel> Recommended { get; set; } = [];
 	public List<EpisodeInfo> Episodes { get; init; } = [];
 	public string Url { get; init; } = "";
@@ -95,6 +99,20 @@ public enum AnimeSeason
 	Spring,
 	Summer,
 	Fall
+}
+
+/// <summary>How an anime relates to another, e.g. as its sequel.</summary>
+public enum AnimeRelationType
+{
+	Sequel,
+	Prequel,
+	SideStory,
+	/// <summary>The story it's part of, e.g. a side story's main series.</summary>
+	Parent,
+	Alternative,
+	Summary,
+	SpinOff,
+	Other,
 }
 
 public enum AnimeMediaFormat

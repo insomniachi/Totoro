@@ -6,7 +6,8 @@ namespace Totoro.ViewModels.Relations;
 
 /// <summary>An anime a rule is about: its title, to show, and its ids, which the rule keeps.</summary>
 /// <param name="Episodes">Its number of episodes, if known.</param>
-public sealed record RelationAnime(string Title, string Details, RelationIds Ids, int? Episodes = null)
+/// <param name="DatabaseId">Its id in the selected anime database, when it was found there (not for a saved rule's anime).</param>
+public sealed record RelationAnime(string Title, string Details, RelationIds Ids, int? Episodes = null, long DatabaseId = 0)
 {
 	public static RelationAnime From(AnimeModel anime)
 	{
@@ -21,21 +22,36 @@ public sealed record RelationAnime(string Title, string Details, RelationIds Ids
 			details.Add($"{episodes} episodes");
 		}
 
-		return new RelationAnime(anime.Title, string.Join(" · ", details), RelationIds.Of(anime), anime.TotalEpisodes is > 0 ? anime.TotalEpisodes : null);
+		return new RelationAnime(anime.Title, string.Join(" · ", details), RelationIds.Of(anime), anime.TotalEpisodes is > 0 ? anime.TotalEpisodes : null,
+								 anime.Id);
 	}
 
 	public override string ToString() => Title;
 }
 
+/// <summary>A season of a series, in its order (see SeasonMap).</summary>
+public sealed record SeasonMapEntry(int Number, RelationAnime Anime, bool IsChosen)
+{
+	/// <summary>e.g. "2. Seihantai na Kimi to Boku 2nd Season · Summer 2026 · 13 episodes (this one)".</summary>
+	public string Text => $"{Number}. {Anime.Title}{(Anime.Details.Length > 0 ? $" · {Anime.Details}" : "")}{(IsChosen ? "  (this one)" : "")}";
+}
+
 /// <summary>
 /// Edits an anime-relations rule, worded as what it means for watching: "this season's episodes 1 to 13 are numbered
 /// on from 13 by an earlier entry". Anime are picked by searching the selected anime database, which gives their ids.
-/// Used by the rule dialog, and inline in an anime's settings, where the season is that anime.
+/// Once the season is chosen, its series' seasons are found (prequels and sequels, see SeasonMap), and the rest is
+/// filled in from them: numbered on from the first season, from the episodes of the seasons in between. Used by the
+/// rule dialog, and inline in an anime's settings, where the season is that anime.
 /// </summary>
 public sealed partial class RelationRuleEditorViewModel : ObservableObject
 {
 	private readonly IAnimeMetadataProvider? _database;
 	private CancellationTokenSource? _search;
+	private CancellationTokenSource? _mapping;
+
+	// The series' seasons, once found, and which of them the chosen season is.
+	private IReadOnlyList<AnimeModel> _seasons = [];
+	private int _seasonIndex = -1;
 
 	/// <param name="season">The season the rule is for, if it's given (then it can't be changed).</param>
 	public RelationRuleEditorViewModel(IAnimeMetadataProvider? database, AnimeModel? season = null)
@@ -85,6 +101,18 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 	/// <summary>The rule's "!": also when the provider names the show as this season but still numbers it on.</summary>
 	[ObservableProperty] public partial bool AlsoCountsOnItself { get; set; } = true;
 
+	/// <summary>The series' seasons, first to last, the chosen one marked; empty until found.</summary>
+	[ObservableProperty] public partial IReadOnlyList<SeasonMapEntry> Seasons { get; private set; } = [];
+
+	/// <summary>The seasons before the chosen one, which the earlier entry is picked from.</summary>
+	[ObservableProperty] public partial IReadOnlyList<RelationAnime> EarlierSeasons { get; private set; } = [];
+
+	/// <summary>Whether the earlier entry is picked from the series' seasons, rather than searched for.</summary>
+	public bool HasEarlierSeasons => EarlierSeasons.Count > 0;
+
+	/// <summary>How finding the series' seasons is going; empty (never null) when there's nothing to say.</summary>
+	[ObservableProperty] public partial string SeasonsStatus { get; private set; } = "";
+
 	[ObservableProperty] public partial IReadOnlyList<RelationAnime> SeasonResults { get; private set; } = [];
 	[ObservableProperty] public partial IReadOnlyList<RelationAnime> EarlierResults { get; private set; } = [];
 
@@ -106,10 +134,25 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		}
 
 		OnRuleChanged();
+		_ = MapSeasonsAsync(value);
 	}
-	partial void OnSeasonFirstChanged(double value) => OnRuleChanged();
+
+	partial void OnEarlierSeasonsChanged(IReadOnlyList<RelationAnime> value) => OnPropertyChanged(nameof(HasEarlierSeasons));
+
+	partial void OnSeasonFirstChanged(double value)
+	{
+		FillEarlierFirst();
+		OnRuleChanged();
+	}
+
 	partial void OnSeasonLastChanged(double value) => OnRuleChanged();
-	partial void OnEarlierChanged(RelationAnime? value) => OnRuleChanged();
+
+	partial void OnEarlierChanged(RelationAnime? value)
+	{
+		FillEarlierFirst();
+		OnRuleChanged();
+	}
+
 	partial void OnEarlierFirstChanged(double value) => OnRuleChanged();
 	partial void OnAlsoCountsOnItselfChanged(bool value) => OnRuleChanged();
 
@@ -132,6 +175,74 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		{
 			Title = $"{Earlier.Title} -> {Season.Title}",
 		};
+	}
+
+	/// <summary>
+	/// Finds the season's series (its prequels and sequels), and fills the rule in from it: numbered on from the first
+	/// season, over the seasons in between.
+	/// </summary>
+	private async Task MapSeasonsAsync(RelationAnime? season)
+	{
+		_mapping?.Cancel();
+		var mapping = _mapping = new CancellationTokenSource();
+		_seasons = [];
+		_seasonIndex = -1;
+		Seasons = [];
+		EarlierSeasons = [];
+		if (season is not { DatabaseId: > 0 } || _database is null)
+		{
+			SeasonsStatus = "";
+			return;
+		}
+
+		SeasonsStatus = "Finding its other seasons…";
+		try
+		{
+			var seasons = await SeasonMap.GetSeasonsAsync(_database, season.DatabaseId, mapping.Token);
+			if (mapping.IsCancellationRequested)
+			{
+				return;
+			}
+
+			var index = seasons.ToList().FindIndex(x => x.Id == season.DatabaseId);
+			_seasons = seasons;
+			_seasonIndex = index;
+			Seasons = [.. seasons.Select((x, i) => new SeasonMapEntry(i + 1, RelationAnime.From(x), i == index))];
+			EarlierSeasons = [.. seasons.Take(Math.Max(index, 0)).Select(RelationAnime.From)];
+			SeasonsStatus = index > 0 ? "" : "It's the first season, with nothing before it to number on from.";
+			if (index > 0)
+			{
+				// Usually one show for the whole series: numbered on from the first season.
+				SeasonFirst = 1;
+				Earlier = EarlierSeasons[0];
+				FillEarlierFirst();
+			}
+		}
+		catch (OperationCanceledException)
+		{
+		}
+		catch (Exception)
+		{
+			if (!mapping.IsCancellationRequested)
+			{
+				SeasonsStatus = "Couldn't find its other seasons. Search for the entry it's numbered on from instead.";
+			}
+		}
+	}
+
+	/// <summary>The number the earlier season gives this one's first episode, from the seasons in between, when they're known.</summary>
+	private void FillEarlierFirst()
+	{
+		if (_seasonIndex <= 0 || Earlier is null)
+		{
+			return;
+		}
+
+		var from = _seasons.Take(_seasonIndex).ToList().FindIndex(x => RelationIds.Of(x).Matches(Earlier.Ids));
+		if (from >= 0 && SeasonMap.NumberedOnFrom(_seasons, from, _seasonIndex) is { } first)
+		{
+			EarlierFirst = first + (IsEpisode(SeasonFirst) ? (int)SeasonFirst - 1 : 0);
+		}
 	}
 
 	/// <summary>Searches the anime database for the season, as the user types.</summary>

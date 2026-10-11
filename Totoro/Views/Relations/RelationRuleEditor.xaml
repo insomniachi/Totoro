@@ -3,6 +3,8 @@
     x:Class="Totoro.Views.Relations.RelationRuleEditor"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:local="using:Totoro.Views.Relations"
     xmlns:relations="using:Totoro.ViewModels.Relations">
 
     <UserControl.Resources>
@@ -32,6 +34,27 @@
             TextMemberPath="Title"
             Visibility="{x:Bind ViewModel.CanChangeSeason}" />
 
+        <!--  The series' seasons, found from the season's prequels and sequels: what the rest is filled in from  -->
+        <StackPanel Spacing="4">
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Style="{ThemeResource CaptionTextBlockStyle}"
+                Text="{x:Bind ViewModel.SeasonsStatus, Mode=OneWay}"
+                TextWrapping="Wrap"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.SeasonsStatus), Mode=OneWay}" />
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Seasons, Mode=OneWay}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="relations:SeasonMapEntry">
+                        <TextBlock
+                            Foreground="{x:Bind local:RelationRuleEditor.SeasonForeground(IsChosen)}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{x:Bind Text}"
+                            TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+
         <Grid ColumnSpacing="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
@@ -52,6 +75,16 @@
                 Value="{x:Bind ViewModel.SeasonLast, Mode=TwoWay}" />
         </Grid>
 
+        <!--  The earlier entry: one of the series' seasons when they're known, otherwise searched for  -->
+        <ComboBox
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="Numbered on from"
+            Header="Numbered on from"
+            ItemTemplate="{StaticResource AnimeTemplate}"
+            ItemsSource="{x:Bind ViewModel.EarlierSeasons, Mode=OneWay}"
+            SelectedItem="{x:Bind ViewModel.Earlier, Mode=TwoWay}"
+            Visibility="{x:Bind ViewModel.HasEarlierSeasons, Mode=OneWay}" />
+
         <AutoSuggestBox
             x:Name="EarlierBox"
             AutomationProperties.Name="Numbered on from"
@@ -62,7 +95,8 @@
             QueryIcon="Find"
             SuggestionChosen="OnEarlierChosen"
             TextChanged="OnEarlierTextChanged"
-            TextMemberPath="Title" />
+            TextMemberPath="Title"
+            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasEarlierSeasons), Mode=OneWay}" />
 
         <NumberBox
             AutomationProperties.Name="Which numbers the season's first episode"

@@ -16,8 +16,8 @@ public sealed record AnimeRelationsInfo(int RuleCount, string? LastModified, Dat
 /// <summary>
 /// Where an anime's episodes are when a provider numbers them on from an earlier entry: e.g. a single SubsPlease show
 /// for two seasons, whose 2nd season starts at episode 13. Uses anime-relations (https://github.com/erengy/anime-relations),
-/// kept locally (a copy comes with the app; newer ones are fetched from GitHub), and the user's own rules, which come
-/// first and are kept apart, in the same format, so updates never touch them.
+/// downloaded from GitHub when it's first needed and kept on this PC (refreshed about once a day), and the user's own
+/// rules, which come first and are kept apart, in the same format, so updates never touch them.
 /// </summary>
 public interface IAnimeRelations
 {
@@ -49,6 +49,12 @@ public interface IAnimeRelations
 
 	/// <summary>Fetches anime-relations in the background, if it hasn't been in the last day.</summary>
 	void UpdateIfStale();
+
+	/// <summary>
+	/// Makes sure there's a copy of anime-relations: downloads it if there's none on this PC yet (waiting for it), and
+	/// otherwise refreshes it in the background if it's a day old. Call before looking rules up.
+	/// </summary>
+	Task EnsureAvailableAsync(CancellationToken ct);
 }
 
 public sealed class AnimeRelations : IAnimeRelations
@@ -57,7 +63,6 @@ public sealed class AnimeRelations : IAnimeRelations
 	private static readonly TimeSpan s_maxAge = TimeSpan.FromDays(1);
 	private static readonly HttpClient s_http = new() { Timeout = TimeSpan.FromSeconds(30) };
 
-	private readonly string _bundledFile;
 	private readonly string _downloadedFile = FileHelper.GetPath("anime-relations.txt");
 	private readonly string _userFile = FileHelper.GetPath("anime-relations.user.txt");
 	private readonly ILogger<AnimeRelations> _logger;
@@ -67,10 +72,8 @@ public sealed class AnimeRelations : IAnimeRelations
 	private List<AnimeRelationRule> _userRules;
 	private Task? _updating;
 
-	/// <param name="bundledFile">The copy of anime-relations that comes with the app.</param>
-	public AnimeRelations(string bundledFile, ILogger<AnimeRelations> logger)
+	public AnimeRelations(ILogger<AnimeRelations> logger)
 	{
-		_bundledFile = bundledFile;
 		_logger = logger;
 		_upstream = LoadUpstream();
 		_userRules = [.. Read(_userFile)?.Rules ?? []];
@@ -170,6 +173,24 @@ public sealed class AnimeRelations : IAnimeRelations
 		}
 	}
 
+	public async Task EnsureAvailableAsync(CancellationToken ct)
+	{
+		if (File.Exists(_downloadedFile))
+		{
+			UpdateIfStale();
+			return;
+		}
+
+		Task updating;
+		lock (_lock)
+		{
+			// One download, however many ask for it at once.
+			updating = _updating is { IsCompleted: false } running ? running : _updating = UpdateAsync(CancellationToken.None);
+		}
+
+		await updating.WaitAsync(ct);
+	}
+
 	/// <summary>Every rule, the user's first.</summary>
 	private List<(AnimeRelationRule Rule, bool IsUserRule)> AllRules()
 	{
@@ -200,15 +221,8 @@ public sealed class AnimeRelations : IAnimeRelations
 		Changed?.Invoke(this, EventArgs.Empty);
 	}
 
-	/// <summary>The newer of the copy that comes with the app and the one fetched from GitHub.</summary>
-	private AnimeRelationsFile LoadUpstream()
-	{
-		var bundled = Read(_bundledFile);
-		var downloaded = Read(_downloadedFile);
-		return string.CompareOrdinal(downloaded?.LastModified, bundled?.LastModified) >= 0 && downloaded is not null
-			? downloaded
-			: bundled ?? downloaded ?? new AnimeRelationsFile([], null);
-	}
+	/// <summary>The copy downloaded from GitHub; empty until there is one.</summary>
+	private AnimeRelationsFile LoadUpstream() => Read(_downloadedFile) ?? new AnimeRelationsFile([], null);
 
 	private AnimeRelationsFile? Read(string file)
 	{

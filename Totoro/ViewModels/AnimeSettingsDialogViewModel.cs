@@ -82,7 +82,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 
 		Numbering = NumberingChoices.First(x => x.Value == _settings.EpisodeNumbering);
 		NewRule = new RelationRuleEditorViewModel(databases.CreateDefault(), anime);
-		RuleSummary = DescribeRule(anime, relations);
+		_ = ShowRuleAsync(anime);
 	}
 
 	public IReadOnlyList<ProviderChoice> Providers { get; }
@@ -104,7 +104,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 	[ObservableProperty] public partial NumberingChoice Numbering { get; set; }
 
 	/// <summary>The rule that says where its episodes are when numbered on, or that there's none.</summary>
-	public string RuleSummary { get; }
+	[ObservableProperty] public partial string RuleSummary { get; private set; } = "Looking for a rule…";
 
 	/// <summary>A rule of the user's own for it, added when saving if it's filled in.</summary>
 	public RelationRuleEditorViewModel NewRule { get; }
@@ -235,6 +235,21 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		_store.Save(_anime, _settings);
 		Result = true;
 		return Task.FromResult(true);
+	}
+
+	/// <summary>Shows its rule, once anime-relations is here (it's downloaded the first time it's needed).</summary>
+	private async Task ShowRuleAsync(AnimeModel anime)
+	{
+		try
+		{
+			await _relations.EnsureAvailableAsync(CancellationToken.None);
+		}
+		catch (Exception)
+		{
+			// Shown from whatever rules there are.
+		}
+
+		RuleSummary = DescribeRule(anime, _relations);
 	}
 
 	private static string DescribeRule(AnimeModel anime, IAnimeRelations relations)

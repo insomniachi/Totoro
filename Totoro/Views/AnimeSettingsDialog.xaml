@@ -72,7 +72,7 @@
             Text="Episode numbering" />
 
         <!--  How its provider numbers its episodes; the description says which rule places them when numbered on  -->
-        <toolkit:SettingsCard Description="{x:Bind ViewModel.RuleSummary}" Header="Its provider numbers it">
+        <toolkit:SettingsCard Description="{x:Bind ViewModel.RuleSummary, Mode=OneWay}" Header="Its provider numbers it">
             <toolkit:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE8AB;" />
             </toolkit:SettingsCard.HeaderIcon>

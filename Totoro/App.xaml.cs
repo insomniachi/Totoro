@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Totoro.Agent;
 using Totoro.Commands;
@@ -80,9 +79,8 @@ public partial class App : Application
 
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
 				services.AddDialog<AnimeSettingsDialog, AnimeSettingsDialogViewModel>();
-				// Episode numbering: anime-relations (a copy comes with the app, in Data) and the user's own rules.
-				services.AddSingleton<IAnimeRelations>(sp => new AnimeRelations(
-					Path.Combine(AppContext.BaseDirectory, "Data", "anime-relations.txt"), sp.GetRequiredService<ILogger<AnimeRelations>>()));
+				// Episode numbering: anime-relations (downloaded when first needed) and the user's own rules.
+				services.AddSingleton<IAnimeRelations, AnimeRelations>();
 				services.AddViewMap<AnimeRelationsPage, AnimeRelationsViewModel>();
 				services.AddDialog<RelationRuleDialog, RelationRuleDialogViewModel>();
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();

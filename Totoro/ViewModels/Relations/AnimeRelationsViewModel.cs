@@ -29,6 +29,8 @@ public sealed partial class AnimeRelationsViewModel : NavigatableViewModel
 		_dialogs = dialogs;
 		Show();
 		relations.Changed += OnChanged;
+		// Downloads anime-relations if it never has been (the page then shows it, on Changed).
+		_ = relations.EnsureAvailableAsync(CancellationToken.None);
 	}
 
 	/// <summary>e.g. "543 rules · changed 3 Aug 2026 · checked today".</summary>
@@ -93,6 +95,14 @@ public sealed partial class AnimeRelationsViewModel : NavigatableViewModel
 	private void Show()
 	{
 		var info = _relations.Info;
+		if (info.LastChecked is null)
+		{
+			UpstreamSummary = "Not downloaded yet. It's downloaded the first time it's needed.";
+			UserRules = [.. _relations.UserRules.Select((x, i) => new UserRuleItem(i, x))];
+			HasUserRules = UserRules.Count > 0;
+			return;
+		}
+
 		List<string> parts = [$"{info.RuleCount} rules"];
 		if (DateTime.TryParse(info.LastModified, out var modified))
 		{

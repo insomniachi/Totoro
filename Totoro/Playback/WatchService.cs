@@ -162,7 +162,7 @@ public sealed partial class WatchService(
 			}
 
 			Show(PlaybackStatusKind.Progress, $"Getting episode {number}…", "Cancel", Cancel);
-			relations.UpdateIfStale();
+			await relations.EnsureAvailableAsync(ct);
 			if (PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), anime, number, settings.EpisodeNumbering) is not { } episode)
 			{
 				// Perhaps the provider numbers it on from an earlier season, and there's no rule for it yet.

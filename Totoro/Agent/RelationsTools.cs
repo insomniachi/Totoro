@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Totoro.Core.Agent;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Relations;
 using Totoro.ViewModels.Relations;
 
@@ -18,6 +19,16 @@ public sealed record NumberingRule(
 	[property: Description("The rule in anime-relations syntax.")]
 	string Line);
 
+[Description("A season of a series.")]
+public sealed record SeriesSeason(
+	[property: Description("Its place in the series, from 1.")]
+	int Number,
+	long AnimeId,
+	string Title,
+	int? Episodes,
+	[property: Description("The number its first episode gets when one show numbers the whole series on from the first season; null if an earlier season's length isn't known.")]
+	int? NumberedOnFrom);
+
 [Description("anime-relations, kept on this PC, and the user's own numbering rules.")]
 public sealed record NumberingRules(int AnimeRelationsRules, string? AnimeRelationsLastChanged, IReadOnlyList<NumberingRule> UserRules);
 
@@ -32,6 +43,7 @@ public sealed class RelationsTools(AnimeLookup lookup, IAnimeRelations relations
 				 "or with no anime, anime-relations' state and all of the user's own rules.")]
 	public async Task<object> GetNumberingRulesAsync(long? animeId = null)
 	{
+		await relations.EnsureAvailableAsync(CancellationToken.None);
 		var userRules = relations.UserRules;
 		NumberingRule Describe(AnimeRelationRule rule, bool isUserRule)
 		{
@@ -54,8 +66,10 @@ public sealed class RelationsTools(AnimeLookup lookup, IAnimeRelations relations
 				 "(e.g. one show for both seasons, the 2nd season's first episode numbered 13) and anime-relations has no rule for it.")]
 	public async Task<NumberingRule> AddNumberingRuleAsync(
 		[Description("The season the rule places, e.g. the 2nd season.")] long seasonAnimeId,
-		[Description("The entry whose numbering the provider continues, e.g. the first season.")] long earlierAnimeId,
-		[Description("The number the provider gives the season's first episode, e.g. 13.")] int earlierFirstEpisode,
+		[Description("The entry whose numbering the provider continues; leave it out for the series' first season (see get_series_seasons).")]
+		long? earlierAnimeId = null,
+		[Description("The number the provider gives the season's first episode, e.g. 13; leave it out to count it from the seasons in between.")]
+		int? earlierFirstEpisode = null,
 		[Description("The season's first episode the rule covers.")] int seasonFirstEpisode = 1,
 		[Description("The season's last episode the rule covers; leave it out while the season airs.")] int? seasonLastEpisode = null,
 		[Description("Also when the provider names the show as the season itself but still numbers it on.")] bool alsoWhenNamedAsSeason = true)
@@ -66,11 +80,33 @@ public sealed class RelationsTools(AnimeLookup lookup, IAnimeRelations relations
 		}
 
 		var season = await lookup.GetAsync(seasonAnimeId);
-		var earlier = await lookup.GetAsync(earlierAnimeId);
+		AnimeModel earlier;
+		if (earlierAnimeId is { } earlierId && earlierFirstEpisode is { } given)
+		{
+			earlier = await lookup.GetAsync(earlierId);
+		}
+		else
+		{
+			// Filled in from the series' seasons: numbered on from the first, over the seasons in between.
+			var seasons = await SeasonMap.GetSeasonsAsync(lookup.Database, seasonAnimeId, CancellationToken.None);
+			var index = seasons.ToList().FindIndex(x => x.Id == seasonAnimeId);
+			var from = earlierAnimeId is { } id ? seasons.ToList().FindIndex(x => x.Id == id) : 0;
+			if (index <= 0 || from < 0 || from >= index)
+			{
+				throw new AgentToolException(index <= 0
+					? "It's the first season of its series; there's nothing before it to number on from."
+					: "That entry isn't one of the seasons before it; see get_series_seasons.");
+			}
+
+			earlier = seasons[from];
+			given = earlierFirstEpisode ?? (SeasonMap.NumberedOnFrom(seasons, from, index) + seasonFirstEpisode - 1)
+				?? throw new AgentToolException("A season in between hasn't a known episode count; give earlierFirstEpisode.");
+		}
+
 		var last = seasonLastEpisode ?? (season.TotalEpisodes is > 0 and var total ? total : null);
 		var rule = new AnimeRelationRule(
 			RelationIds.Of(earlier),
-			new EpisodeRange(earlierFirstEpisode, last is { } l ? earlierFirstEpisode + l - seasonFirstEpisode : null),
+			new EpisodeRange(given, last is { } l ? given + l - seasonFirstEpisode : null),
 			RelationIds.Of(season),
 			new EpisodeRange(seasonFirstEpisode, last),
 			alsoWhenNamedAsSeason)
@@ -80,6 +116,19 @@ public sealed class RelationsTools(AnimeLookup lookup, IAnimeRelations relations
 
 		relations.AddUserRule(rule);
 		return new NumberingRule(RelationRuleText.Title(rule), RelationRuleText.Effect(rule), true, relations.UserRules.Count - 1, rule.ToLine());
+	}
+
+	[AgentTool("get_series_seasons")]
+	[Description("The seasons of the series an anime belongs to, first to last (TV and ONA entries, found through prequels and sequels), " +
+				 "with their episode counts: what a provider numbering one show for the whole series counts through.")]
+	public async Task<IReadOnlyList<SeriesSeason>> GetSeriesSeasonsAsync(long animeId)
+	{
+		var seasons = await SeasonMap.GetSeasonsAsync(lookup.Database, animeId, CancellationToken.None);
+		return
+		[
+			.. seasons.Select((x, i) => new SeriesSeason(i + 1, x.Id, x.Title, x.TotalEpisodes is > 0 ? x.TotalEpisodes : null,
+														SeasonMap.NumberedOnFrom(seasons, 0, i))),
+		];
 	}
 
 	[AgentTool("remove_numbering_rule", RequiresApproval = true)]

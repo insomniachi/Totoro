@@ -388,8 +388,11 @@ internal partial class AnilistMetadataProvider(
 								.WithNodes(new StudioQueryBuilder()
 										   .WithName()
 										   .WithIsAnimationStudio()))
+			   // Edges rather than nodes: they say how each relates (sequel, prequel...), which finding seasons needs.
 			   .WithRelations(new MediaConnectionQueryBuilder()
-								  .WithNodes(MediaQueryBuilderSimple()))
+								  .WithEdges(new MediaEdgeQueryBuilder()
+												 .WithRelationType()
+												 .WithNode(MediaQueryBuilderSimple())))
 			   .WithRecommendations(new RecommendationConnectionQueryBuilder()
 										.WithNodes(new RecommendationQueryBuilder()
 													   .WithMediaRecommendation(MediaQueryBuilderSimple())))
@@ -417,6 +420,9 @@ internal partial class AnilistMetadataProvider(
 								   .WithLarge())
 			   .WithType()
 			   .WithFormat()
+			   .WithEpisodes()
+			   .WithSeason()
+			   .WithSeasonYear()
 			   .WithMediaListEntry(MediaListEntryQueryBuilder())
 			   .WithStatus();
 	}

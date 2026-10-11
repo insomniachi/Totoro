@@ -1,5 +1,7 @@
 using CommunityToolkit.WinUI;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Totoro.ViewModels.Relations;
 
 namespace Totoro.Views.Relations;
@@ -21,6 +23,10 @@ public sealed partial class RelationRuleEditor : UserControl
 		SeasonBox.Text = newValue?.Season?.Title ?? "";
 		EarlierBox.Text = newValue?.Earlier?.Title ?? "";
 	}
+
+	/// <summary>The chosen season stands out in the list of the series' seasons.</summary>
+	public static Brush SeasonForeground(bool isChosen) =>
+		(Brush)Application.Current.Resources[isChosen ? "AccentTextFillColorPrimaryBrush" : "TextFillColorSecondaryBrush"];
 
 	private void OnSeasonTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 	{
