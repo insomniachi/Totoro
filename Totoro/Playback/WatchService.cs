@@ -22,8 +22,10 @@ public enum PlaybackStatusKind
 	Error,
 }
 
-/// <param name="IsActive">Whether the status bar is showing; when it isn't, nothing is going on.</param>
-public sealed record PlaybackStatus(bool IsActive, PlaybackStatusKind Kind, string Title, string Message);
+/// <param name="IsActive">Whether an episode is being got ready or is playing (even with the status bar closed); when it
+/// isn't, Kind and Message say how the last one went.</param>
+/// <param name="Position">Where playback is, e.g. "12:34 / 24:01", while an episode is playing.</param>
+public sealed record PlaybackStatus(bool IsActive, PlaybackStatusKind Kind, string Title, string Message, string? Position = null);
 
 /// <summary>An episode to play, as a command parameter.</summary>
 public sealed record EpisodeToWatch(AnimeModel Anime, int Number);
@@ -56,11 +58,16 @@ public sealed partial class WatchService(
 	private static readonly TimeSpan s_minimumProgress = TimeSpan.FromSeconds(30);
 	private static readonly TimeSpan s_saveInterval = TimeSpan.FromSeconds(10);
 	private static readonly TimeSpan s_nextEpisodeCountdown = TimeSpan.FromSeconds(5);
+	private static readonly TimeSpan s_positionInterval = TimeSpan.FromSeconds(1);
 
 	private CancellationTokenSource? _cancellation;
 	private Action? _action;
 
+	/// <summary>Whether the status bar is showing. The user can close it while an episode plays (see <see cref="IsActive"/>).</summary>
 	[ObservableProperty] public partial bool IsOpen { get; set; }
+
+	/// <summary>Whether an episode is being got ready or is playing, whether or not the status bar is showing.</summary>
+	[ObservableProperty] public partial bool IsActive { get; private set; }
 	[ObservableProperty] public partial string Title { get; private set; } = "";
 	[ObservableProperty] public partial string Message { get; private set; } = "";
 	[ObservableProperty] public partial PlaybackStatusKind Kind { get; private set; }
@@ -68,13 +75,19 @@ public sealed partial class WatchService(
 	/// <summary>The status bar's button (Cancel, "Play episode 6"...); empty, never null, when there's none.</summary>
 	[ObservableProperty] public partial string ActionText { get; private set; } = "";
 
+	/// <summary>How far through the episode playback is, from 0 to 1; -1 when nothing's playing or its length isn't known yet.</summary>
+	[ObservableProperty] public partial double PlaybackFraction { get; private set; } = -1;
+
+	/// <summary>Where playback is, e.g. "12:34 / 24:01"; empty (never null) when nothing's playing.</summary>
+	[ObservableProperty] public partial string PlaybackTime { get; private set; } = "";
+
 	/// <summary>Raised when the status (what the status bar shows) changes.</summary>
 	public event EventHandler? StatusChanged;
 
 	/// <summary>What it's up to: the status bar's contents, e.g. for an agent.</summary>
-	public PlaybackStatus Status => new(IsOpen, Kind, Title, Message);
+	public PlaybackStatus Status => new(IsActive, Kind, Title, Message, PlaybackTime.Length > 0 ? PlaybackTime : null);
 
-	partial void OnIsOpenChanged(bool value) => StatusChanged?.Invoke(this, EventArgs.Empty);
+	partial void OnIsActiveChanged(bool value) => StatusChanged?.Invoke(this, EventArgs.Empty);
 
 	/// <summary>The episode after the last one watched (the first if the anime isn't on the list).</summary>
 	public static int NextEpisode(AnimeModel anime) => (anime.Tracking?.WatchedEpisodes ?? 0) + 1;
@@ -89,7 +102,7 @@ public sealed partial class WatchService(
 		var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		void OnStatusChanged(object? sender, EventArgs e)
 		{
-			if (!IsOpen || Kind != PlaybackStatusKind.Progress)
+			if (!IsActive || Kind != PlaybackStatusKind.Progress)
 			{
 				settled.TrySetResult();
 			}
@@ -142,7 +155,7 @@ public sealed partial class WatchService(
 			Show(PlaybackStatusKind.Progress, $"Finding the show on {provider.Name}…", "Cancel", Cancel);
 			if (await FindOrPickShowAsync(provider, anime, ct) is not { } show)
 			{
-				IsOpen = false;
+				Hide();
 				return;
 			}
 
@@ -174,7 +187,7 @@ public sealed partial class WatchService(
 			// Replaced by another episode, or cancelled: only the latter should clear the status bar.
 			if (ReferenceEquals(_cancellation, cancellation))
 			{
-				IsOpen = false;
+				Hide();
 			}
 		}
 		catch (Exception ex)
@@ -221,6 +234,9 @@ public sealed partial class WatchService(
 		var duration = TimeSpan.Zero;
 		var position = start;
 		var lastSave = DateTime.MinValue;
+		var lastShown = DateTime.MinValue;
+		// The player reports from its own thread; the status bar is shown on this one.
+		var ui = SynchronizationContext.Current;
 		var segments = new SegmentSkipper(player, settings.OpeningSkipMode ?? preferences.OpeningSkipMode, settings.EndingSkipMode ?? preferences.EndingSkipMode, logger);
 		var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -247,6 +263,20 @@ public sealed partial class WatchService(
 		{
 			position = value;
 			segments.OnPosition(value);
+			if (DateTime.Now - lastShown > s_positionInterval)
+			{
+				lastShown = DateTime.Now;
+				var (shownPosition, shownDuration) = (value, duration);
+				if (ui is null)
+				{
+					ShowPosition(shownPosition, shownDuration);
+				}
+				else
+				{
+					ui.Post(_ => ShowPosition(shownPosition, shownDuration), null);
+				}
+			}
+
 			if (DateTime.Now - lastSave > s_saveInterval)
 			{
 				lastSave = DateTime.Now;
@@ -273,13 +303,15 @@ public sealed partial class WatchService(
 			player.PositionChanged -= OnPosition;
 			player.PlaybackStopped -= OnStopped;
 			Save();
+			PlaybackFraction = -1;
+			PlaybackTime = "";
 			WeakReferenceMessenger.Default.Send(new PlaybackProgressChangedMessage(key));
 		}
 
 		// Watched to the end, give or take the credits.
 		if (duration == TimeSpan.Zero || duration - position > credits)
 		{
-			IsOpen = false;
+			Hide();
 			return;
 		}
 
@@ -508,12 +540,48 @@ public sealed partial class WatchService(
 		return null;
 	}
 
+	/// <summary>Shows the status bar again after the user closed it, e.g. to see how playing is going.</summary>
+	[RelayCommand]
+	private void ShowStatus() => IsOpen = true;
+
+	/// <summary>Nothing more to show: closes the status bar.</summary>
+	private void Hide()
+	{
+		IsActive = false;
+		IsOpen = false;
+	}
+
+	/// <summary>Shows where playback is (while an episode is playing).</summary>
+	private void ShowPosition(TimeSpan position, TimeSpan duration)
+	{
+		if (Kind != PlaybackStatusKind.Playing || duration <= TimeSpan.Zero)
+		{
+			return;
+		}
+
+		PlaybackFraction = Math.Clamp(position / duration, 0, 1);
+		PlaybackTime = $"{FormatTime(position, duration)} / {FormatTime(duration, duration)}";
+	}
+
+	/// <summary>m:ss, or h:mm:ss for something an hour or longer (a movie).</summary>
+	private static string FormatTime(TimeSpan time, TimeSpan duration)
+	{
+		return time.ToString(duration.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss");
+	}
+
 	private void Show(PlaybackStatusKind kind, string message, string actionText = "", Action? action = null)
 	{
+		if (kind != PlaybackStatusKind.Playing)
+		{
+			PlaybackFraction = -1;
+			PlaybackTime = "";
+		}
+
 		Kind = kind;
 		Message = message;
 		ActionText = actionText;
 		_action = action;
+		IsActive = kind is PlaybackStatusKind.Progress or PlaybackStatusKind.Playing;
 		IsOpen = true;
 		StatusChanged?.Invoke(this, EventArgs.Empty);
 	}

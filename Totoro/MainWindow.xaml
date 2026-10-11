@@ -39,47 +39,77 @@
                     QueryIcon="Find" />
             </TitleBar.Content>
             <TitleBar.RightHeader>
-                <!--  The account of the selected anime database; click to sign in or out  -->
-                <Button
-                    Padding="0"
-                    AutomationProperties.Name="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    CornerRadius="16"
-                    ToolTipService.ToolTip="{x:Bind ViewModel.Account.Status, Mode=OneWay}">
-                    <PersonPicture
-                        Width="30"
-                        Height="30"
-                        DisplayName="{x:Bind ViewModel.Account.UserName, Mode=OneWay}"
-                        ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Account.Avatar), Mode=OneWay}" />
-                    <Button.Flyout>
-                        <Flyout Placement="BottomEdgeAlignedRight">
-                            <StackPanel MinWidth="240" Spacing="12">
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <PersonPicture
-                                        Width="48"
-                                        Height="48"
-                                        DisplayName="{x:Bind ViewModel.Account.UserName, Mode=OneWay}"
-                                        ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Account.Avatar), Mode=OneWay}" />
-                                    <StackPanel VerticalAlignment="Center" Spacing="2">
-                                        <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.Account.Name, Mode=OneWay}" />
-                                        <TextBlock
-                                            MaxWidth="200"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
-                                            TextWrapping="Wrap" />
+                <!--  8 between the buttons, per the Windows guidelines  -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <!--
+                        What's playing, while the status bar is closed during an episode: brings it back. A spinner while
+                        the episode is being got ready, a playing-video icon while it plays.
+                    -->
+                    <Button
+                        Height="32"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="{x:Bind local:MainWindow.NowPlayingName(ViewModel.Playback.Title), Mode=OneWay}"
+                        Command="{x:Bind ViewModel.Playback.ShowStatusCommand}"
+                        ToolTipService.ToolTip="{x:Bind local:MainWindow.NowPlayingName(ViewModel.Playback.Title), Mode=OneWay}"
+                        Visibility="{x:Bind local:MainWindow.VisibleWhileStatusHidden(ViewModel.Playback.IsActive, ViewModel.Playback.IsOpen), Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Grid Width="16" Height="16">
+                                <ProgressRing
+                                    Width="16"
+                                    Height="16"
+                                    IsActive="{x:Bind local:MainWindow.IsWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+                                <FontIcon
+                                    FontSize="16"
+                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                    Glyph="&#xE786;"
+                                    Visibility="{x:Bind local:MainWindow.VisibleWhilePlayingKind(ViewModel.Playback.Kind), Mode=OneWay}" />
+                            </Grid>
+                            <TextBlock Text="{x:Bind local:MainWindow.NowPlayingText(ViewModel.Playback.Kind), Mode=OneWay}" />
+                        </StackPanel>
+                    </Button>
+
+                    <!--  The account of the selected anime database; click to sign in or out  -->
+                    <Button
+                        Padding="0"
+                        AutomationProperties.Name="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        CornerRadius="16"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.Account.Status, Mode=OneWay}">
+                        <PersonPicture
+                            Width="30"
+                            Height="30"
+                            DisplayName="{x:Bind ViewModel.Account.UserName, Mode=OneWay}"
+                            ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Account.Avatar), Mode=OneWay}" />
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                <StackPanel MinWidth="240" Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <PersonPicture
+                                            Width="48"
+                                            Height="48"
+                                            DisplayName="{x:Bind ViewModel.Account.UserName, Mode=OneWay}"
+                                            ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Account.Avatar), Mode=OneWay}" />
+                                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.Account.Name, Mode=OneWay}" />
+                                            <TextBlock
+                                                MaxWidth="200"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
+                                                TextWrapping="Wrap" />
+                                        </StackPanel>
                                     </StackPanel>
+                                    <Button
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.Name="{x:Bind ViewModel.Account.ActionName, Mode=OneWay}"
+                                        Command="{x:Bind ViewModel.Account.SignInOrOutCommand, Mode=OneWay}"
+                                        Content="{x:Bind ViewModel.Account.ActionText, Mode=OneWay}" />
                                 </StackPanel>
-                                <Button
-                                    HorizontalAlignment="Stretch"
-                                    AutomationProperties.Name="{x:Bind ViewModel.Account.ActionName, Mode=OneWay}"
-                                    Command="{x:Bind ViewModel.Account.SignInOrOutCommand, Mode=OneWay}"
-                                    Content="{x:Bind ViewModel.Account.ActionText, Mode=OneWay}" />
-                            </StackPanel>
-                        </Flyout>
-                    </Button.Flyout>
-                </Button>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
             </TitleBar.RightHeader>
         </TitleBar>
 
@@ -166,10 +196,33 @@
                             Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
                             Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />
                     </InfoBar.ActionButton>
-                    <ProgressBar
-                        Margin="0,0,0,12"
-                        IsIndeterminate="True"
-                        Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+                    <StackPanel>
+                        <ProgressBar
+                            Margin="0,0,0,12"
+                            IsIndeterminate="True"
+                            Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+
+                        <!--  How far through the episode, while it plays  -->
+                        <Grid
+                            Margin="0,0,0,12"
+                            ColumnSpacing="12"
+                            Visibility="{x:Bind local:MainWindow.VisibleWhilePlaying(ViewModel.Playback.PlaybackFraction), Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ProgressBar
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="Playback position"
+                                Maximum="1"
+                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind ViewModel.Playback.PlaybackTime, Mode=OneWay}" />
+                        </Grid>
+                    </StackPanel>
                 </InfoBar>
             </Border>
         </Grid>

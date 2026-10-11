@@ -61,4 +61,21 @@ public sealed partial class MainWindow : Window
 
 	/// <summary>The progress bar and Cancel, while getting an episode ready.</summary>
 	public static Visibility VisibleWhileWorking(PlaybackStatusKind kind) => kind == PlaybackStatusKind.Progress ? Visibility.Visible : Visibility.Collapsed;
+
+	// For the title bar's now-playing button.
+
+	public static bool IsWorking(PlaybackStatusKind kind) => kind == PlaybackStatusKind.Progress;
+
+	public static Visibility VisibleWhilePlayingKind(PlaybackStatusKind kind) => kind == PlaybackStatusKind.Playing ? Visibility.Visible : Visibility.Collapsed;
+
+	/// <summary>While an episode is being got ready or plays, but the status bar was closed.</summary>
+	public static Visibility VisibleWhileStatusHidden(bool isActive, bool isOpen) => isActive && !isOpen ? Visibility.Visible : Visibility.Collapsed;
+
+	public static string NowPlayingText(PlaybackStatusKind kind) => kind == PlaybackStatusKind.Progress ? "Getting ready…" : "Now playing";
+
+	/// <summary>The button's tooltip and accessible name, e.g. "Frieren · Episode 5: show how it's going".</summary>
+	public static string NowPlayingName(string title) => string.IsNullOrEmpty(title) ? "Show what's playing" : $"{title}: show how it's going";
+
+	/// <summary>The playback position, while an episode plays (see WatchService.PlaybackFraction).</summary>
+	public static Visibility VisibleWhilePlaying(double fraction) => fraction >= 0 ? Visibility.Visible : Visibility.Collapsed;
 }
