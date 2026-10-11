@@ -8,6 +8,7 @@ using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Services;
+using Totoro.Core.Relations;
 using Totoro.Core.Settings;
 using Totoro.ViewModels;
 
@@ -49,6 +50,7 @@ public sealed partial class WatchService(
 	IEnumerable<IMediaSegmentsProvider> segmentProviders,
 	IPlaybackProgressStore progressStore,
 	IAnimeSettingsStore animeSettings,
+	IAnimeRelations relations,
 	IEnumerable<IModuleSettings> moduleSettings,
 	IDialogService dialogs,
 	IPreferences preferences,
@@ -160,10 +162,19 @@ public sealed partial class WatchService(
 			}
 
 			Show(PlaybackStatusKind.Progress, $"Getting episode {number}…", "Cancel", Cancel);
-			if (PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), number) is not { } episode)
+			relations.UpdateIfStale();
+			if (PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), anime, number, settings.EpisodeNumbering) is not { } episode)
 			{
-				Show(PlaybackStatusKind.Error, $"Episode {number} isn't on {provider.Name} yet.");
+				// Perhaps the provider numbers it on from an earlier season, and there's no rule for it yet.
+				Show(PlaybackStatusKind.Error,
+					 $"Episode {number} isn't on {provider.Name} yet. If {provider.Name} numbers this season on from an earlier one, set that in its episode numbering.",
+					 "Episode numbering…", () => _ = EditNumberingAsync(anime, number));
 				return;
+			}
+
+			if ((int)episode.Number != number)
+			{
+				logger.LogInformation("Episode {Episode} of {Anime} is {Provider}'s {ProviderEpisode}", number, anime.Title, provider.Name, episode.Number);
 			}
 
 			if ((await provider.GetServersAsync(episode, ct)).FirstOrDefault() is not { } server)
@@ -472,19 +483,52 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>
-	/// The episode with the number, skipping specials like 12.5. Providers sometimes carry on a season's numbering
-	/// (a second season starting at 13), so if there's no such number, the episodes are counted from their first.
+	/// The provider's episode for the anime's episode <paramref name="number"/>, skipping specials like 12.5. Providers may
+	/// number a season on from an earlier one (one show for both seasons, the second from 13): then anime-relations (and
+	/// the user's rules) say where the episode is. <paramref name="numbering"/> is the anime's setting: each season from 1,
+	/// numbered on, or (null) worked out from the provider's episode numbers.
 	/// </summary>
-	private static ProviderEpisode? PickEpisode(List<ProviderEpisode> episodes, int number)
+	private ProviderEpisode? PickEpisode(List<ProviderEpisode> episodes, AnimeModel anime, int number, EpisodeNumbering? numbering)
 	{
 		var regular = episodes.Where(x => x.Number == MathF.Floor(x.Number)).ToList();
-		if (regular.FirstOrDefault(x => (int)x.Number == number) is { } episode)
+		ProviderEpisode? Numbered(int n) => regular.FirstOrDefault(x => (int)x.Number == n);
+
+		// Numbered on from an earlier entry (one show for several seasons): anime-relations says where the episode is.
+		if (numbering != EpisodeNumbering.Season && relations.FindContinuedEpisode(anime, number) is { } continued)
 		{
-			return episode;
+			if (numbering == EpisodeNumbering.Continued)
+			{
+				return Numbered(continued.Episode);
+			}
+
+			// Worked out: numbered on if the provider's numbers go past this season's, or it hasn't this season's number.
+			var seasonLength = anime.TotalEpisodes ?? continued.Rule.DestinationEpisodes.Last;
+			var countsOn = seasonLength is { } length && regular.Any(x => x.Number > length) || Numbered(number) is null;
+			if (countsOn && Numbered(continued.Episode) is { } numberedOn)
+			{
+				return numberedOn;
+			}
 		}
 
+		var seasonEpisode = Numbered(number);
+		if (seasonEpisode is not null || numbering == EpisodeNumbering.Season)
+		{
+			return seasonEpisode;
+		}
+
+		// No rule: providers that only list a later season's episodes may number them on (a second season from 13); count
+		// from their first.
 		var offset = regular.Count > 0 ? (int)regular.Min(x => x.Number) - 1 : 0;
-		return offset > 0 ? regular.FirstOrDefault(x => (int)x.Number == number + offset) : null;
+		return offset > 0 ? Numbered(number + offset) : null;
+	}
+
+	/// <summary>Edits the anime's settings (its episode numbering, a rule for it), then plays the episode again if saved.</summary>
+	private async Task EditNumberingAsync(AnimeModel anime, int number)
+	{
+		if (await dialogs.ShowAsync<AnimeSettingsDialogViewModel, bool>(anime))
+		{
+			await WatchAsync(anime, number);
+		}
 	}
 
 	/// <summary>

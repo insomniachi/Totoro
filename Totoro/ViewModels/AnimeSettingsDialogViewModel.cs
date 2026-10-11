@@ -4,7 +4,9 @@ using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Streaming;
+using Totoro.Core.Relations;
 using Totoro.Core.Settings;
+using Totoro.ViewModels.Relations;
 
 namespace Totoro.ViewModels;
 
@@ -12,6 +14,12 @@ namespace Totoro.ViewModels;
 
 /// <param name="Id">The provider's (module's) id; null for whichever is selected in Settings.</param>
 public sealed record ProviderChoice(Guid? Id, string Label)
+{
+	public override string ToString() => Label;
+}
+
+/// <param name="Value">Null to work it out from the provider's episode numbers.</param>
+public sealed record NumberingChoice(string Label, EpisodeNumbering? Value)
 {
 	public override string ToString() => Label;
 }
@@ -34,6 +42,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 	private readonly IAnimeSettingsStore _store;
 	private readonly List<IModuleSettings> _moduleSettings;
 	private readonly IAnimeProvider? _defaultProvider;
+	private readonly IAnimeRelations _relations;
 
 	// Each provider's own settings as edited, by provider id; kept while switching between providers, so switching back
 	// doesn't lose the edits. Only what's been shown is here.
@@ -44,6 +53,8 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		AnimeModel anime,
 		IAnimeSettingsStore store,
 		IFactory<IAnimeProvider, Guid> providers,
+		IFactory<IAnimeMetadataProvider, Guid> databases,
+		IAnimeRelations relations,
 		IEnumerable<IModuleSettings> moduleSettings,
 		IPreferences preferences)
 	{
@@ -52,6 +63,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		_settings = store.Get(anime);
 		_moduleSettings = [.. moduleSettings];
 		_defaultProvider = providers.CreateDefault();
+		_relations = relations;
 
 		Title = anime.Title;
 		PrimaryButtonText = "Save";
@@ -67,6 +79,10 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		SelectedProvider = Providers.FirstOrDefault(x => x.Id == _settings.ProviderId) ?? Providers[0];
 		OpeningSkip = OpeningSkipModes.First(x => x.Value == _settings.OpeningSkipMode);
 		EndingSkip = EndingSkipModes.First(x => x.Value == _settings.EndingSkipMode);
+
+		Numbering = NumberingChoices.First(x => x.Value == _settings.EpisodeNumbering);
+		NewRule = new RelationRuleEditorViewModel(databases.CreateDefault(), anime);
+		RuleSummary = DescribeRule(anime, relations);
 	}
 
 	public IReadOnlyList<ProviderChoice> Providers { get; }
@@ -76,6 +92,22 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 	[ObservableProperty] public partial ProviderChoice SelectedProvider { get; set; }
 	[ObservableProperty] public partial SkipModeChoice OpeningSkip { get; set; }
 	[ObservableProperty] public partial SkipModeChoice EndingSkip { get; set; }
+
+	public IReadOnlyList<NumberingChoice> NumberingChoices { get; } =
+	[
+		new("Work it out", null),
+		new("Each season from 1", EpisodeNumbering.Season),
+		new("Numbered on from an earlier season", EpisodeNumbering.Continued),
+	];
+
+	/// <summary>How its provider numbers its episodes (see <see cref="AnimeSettings.EpisodeNumbering"/>).</summary>
+	[ObservableProperty] public partial NumberingChoice Numbering { get; set; }
+
+	/// <summary>The rule that says where its episodes are when numbered on, or that there's none.</summary>
+	public string RuleSummary { get; }
+
+	/// <summary>A rule of the user's own for it, added when saving if it's filled in.</summary>
+	public RelationRuleEditorViewModel NewRule { get; }
 
 	// About the provider it'll be watched from (the selected one, or the default). Strings are never null: they're passed
 	// to x:Bind functions.
@@ -176,6 +208,11 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		_settings.ProviderId = SelectedProvider.Id;
 		_settings.OpeningSkipMode = OpeningSkip.Value;
 		_settings.EndingSkipMode = EndingSkip.Value;
+		_settings.EpisodeNumbering = Numbering.Value;
+		if (NewRule.ToRule() is { } rule)
+		{
+			_relations.AddUserRule(rule);
+		}
 
 		foreach (var (id, draft) in _drafts)
 		{
@@ -198,6 +235,18 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		_store.Save(_anime, _settings);
 		Result = true;
 		return Task.FromResult(true);
+	}
+
+	private static string DescribeRule(AnimeModel anime, IAnimeRelations relations)
+	{
+		var ids = RelationIds.Of(anime);
+		if (relations.GetRules(anime).FirstOrDefault(x => x.Rule.Destination.Matches(ids)) is not { } match)
+		{
+			return "No rule for it. If its provider numbers it on from an earlier season, add one below.";
+		}
+
+		var source = match.IsUserRule ? "Your rule" : "anime-relations";
+		return $"{source}: its episodes {match.Rule.DestinationEpisodes} are numbered {match.Rule.SourceEpisodes}.";
 	}
 
 	private static List<SkipModeChoice> CreateSkipModes(SkipMode appWide)

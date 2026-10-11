@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Totoro.UI.Controls"
+    xmlns:relations="using:Totoro.Views.Relations"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:Totoro.ViewModels">
 
@@ -64,6 +65,40 @@
         </toolkit:SettingsCard>
 
         <controls:DataContainerEditor Properties="{x:Bind ViewModel.ProviderSettings, Mode=OneWay}" Visibility="{x:Bind ViewModel.UseOwnProviderSettings, Mode=OneWay}" />
+
+        <TextBlock
+            Margin="0,24,0,4"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            Text="Episode numbering" />
+
+        <!--  How its provider numbers its episodes; the description says which rule places them when numbered on  -->
+        <toolkit:SettingsCard Description="{x:Bind ViewModel.RuleSummary}" Header="Its provider numbers it">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xE8AB;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <ComboBox
+                MinWidth="200"
+                ItemsSource="{x:Bind ViewModel.NumberingChoices}"
+                SelectedItem="{x:Bind ViewModel.Numbering, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NumberingChoice">
+                        <TextBlock Text="{x:Bind Label}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </toolkit:SettingsCard>
+
+        <!--  A rule of the user's own for it, added on Save once it's filled in  -->
+        <toolkit:SettingsExpander Description="When its provider numbers it on and there's no rule for it (yet). Added when you save." Header="Add a numbering rule">
+            <toolkit:SettingsExpander.HeaderIcon>
+                <FontIcon Glyph="&#xE710;" />
+            </toolkit:SettingsExpander.HeaderIcon>
+            <toolkit:SettingsExpander.Items>
+                <toolkit:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                    <relations:RelationRuleEditor ViewModel="{x:Bind ViewModel.NewRule}" />
+                </toolkit:SettingsCard>
+            </toolkit:SettingsExpander.Items>
+        </toolkit:SettingsExpander>
 
         <TextBlock
             Margin="0,24,0,4"

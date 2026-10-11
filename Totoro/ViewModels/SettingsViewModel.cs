@@ -5,6 +5,7 @@ using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
+using Totoro.UI.Navigation;
 
 namespace Totoro.ViewModels;
 
@@ -123,6 +124,14 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool PlayNextAutomatically { get; set; }
 
 	partial void OnPlayNextAutomaticallyChanged(bool value) => _preferences.PlayNextAutomatically = value;
+
+	/// <summary>Opens the episode numbering rules (anime-relations and the user's own).</summary>
+	[RelayCommand]
+	private Task OpenEpisodeNumberingAsync()
+	{
+		return Navigators.TryGetNavigator("main", out var main) ? main.NavigateToViewModelAsync(typeof(Relations.AnimeRelationsViewModel)) : Task.CompletedTask;
+	}
+
 	public IReadOnlyList<ThemeOption> Themes { get; } =
 	[
 		new("Use system setting", AppTheme.System),

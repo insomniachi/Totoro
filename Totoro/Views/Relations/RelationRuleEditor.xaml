@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.Relations.RelationRuleEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:relations="using:Totoro.ViewModels.Relations">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="AnimeTemplate" x:DataType="relations:RelationAnime">
+            <StackPanel Padding="0,4">
+                <TextBlock Text="{x:Bind Title}" TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="{x:Bind Details}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <!--  12 between fields, per the Windows guidelines  -->
+    <StackPanel Spacing="12">
+        <AutoSuggestBox
+            x:Name="SeasonBox"
+            AutomationProperties.Name="Season"
+            Header="Season"
+            ItemTemplate="{StaticResource AnimeTemplate}"
+            ItemsSource="{x:Bind ViewModel.SeasonResults, Mode=OneWay}"
+            PlaceholderText="Search for it, e.g. a 2nd season"
+            QueryIcon="Find"
+            SuggestionChosen="OnSeasonChosen"
+            TextChanged="OnSeasonTextChanged"
+            TextMemberPath="Title"
+            Visibility="{x:Bind ViewModel.CanChangeSeason}" />
+
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <NumberBox
+                AutomationProperties.Name="Its episodes, from"
+                Header="Its episodes, from"
+                Minimum="1"
+                SpinButtonPlacementMode="Compact"
+                Value="{x:Bind ViewModel.SeasonFirst, Mode=TwoWay}" />
+            <NumberBox
+                Grid.Column="1"
+                AutomationProperties.Name="To"
+                Header="To (empty while it airs)"
+                Minimum="1"
+                SpinButtonPlacementMode="Compact"
+                Value="{x:Bind ViewModel.SeasonLast, Mode=TwoWay}" />
+        </Grid>
+
+        <AutoSuggestBox
+            x:Name="EarlierBox"
+            AutomationProperties.Name="Numbered on from"
+            Header="Numbered on from"
+            ItemTemplate="{StaticResource AnimeTemplate}"
+            ItemsSource="{x:Bind ViewModel.EarlierResults, Mode=OneWay}"
+            PlaceholderText="Search for the earlier entry, e.g. the first season"
+            QueryIcon="Find"
+            SuggestionChosen="OnEarlierChosen"
+            TextChanged="OnEarlierTextChanged"
+            TextMemberPath="Title" />
+
+        <NumberBox
+            AutomationProperties.Name="Which numbers the season's first episode"
+            Header="Which numbers the season's first episode"
+            Minimum="1"
+            PlaceholderText="e.g. 13"
+            SpinButtonPlacementMode="Compact"
+            Value="{x:Bind ViewModel.EarlierFirst, Mode=TwoWay}" />
+
+        <CheckBox Content="Also when the provider names it as this season but still numbers it on" IsChecked="{x:Bind ViewModel.AlsoCountsOnItself, Mode=TwoWay}" />
+
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{x:Bind ViewModel.Summary, Mode=OneWay}"
+            TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>

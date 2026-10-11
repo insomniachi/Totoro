@@ -128,6 +128,16 @@
                 <ToggleSwitch IsOn="{x:Bind ViewModel.PlayNextAutomatically, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard
+                Command="{x:Bind ViewModel.OpenEpisodeNumberingCommand}"
+                Description="For providers with one show for several seasons, which number a later season on from an earlier one. Rules from anime-relations, and your own."
+                Header="Episode numbering"
+                IsClickEnabled="True">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8AB;" />
+                </toolkit:SettingsCard.HeaderIcon>
+            </toolkit:SettingsCard>
+
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"

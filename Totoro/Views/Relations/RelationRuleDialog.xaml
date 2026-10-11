@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.Relations.RelationRuleDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:relations="using:Totoro.Views.Relations">
+
+    <StackPanel MinWidth="460" Spacing="12">
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="For a provider that has one show for several seasons, and numbers a season on from an earlier one: e.g. a 2nd season's first episode as 13."
+            TextWrapping="Wrap" />
+        <relations:RelationRuleEditor ViewModel="{x:Bind ViewModel.Editor, Mode=OneWay}" />
+    </StackPanel>
+</UserControl>

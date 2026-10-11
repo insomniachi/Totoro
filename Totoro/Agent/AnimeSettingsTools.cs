@@ -18,7 +18,9 @@ public sealed record AnimeWatchSettings(
 	[property: Description("The show it's matched with on each provider, by provider name.")]
 	IReadOnlyDictionary<string, string> Shows,
 	[property: Description("Providers it has its own settings for (e.g. video quality), set in the app.")]
-	IReadOnlyList<string> OwnProviderSettings);
+	IReadOnlyList<string> OwnProviderSettings,
+	[property: Description("How its provider numbers its episodes: Season (each season from 1), Continued (on from an earlier season, placed by numbering rules), or null to work it out.")]
+	EpisodeNumbering? EpisodeNumbering);
 
 /// <summary>Agent tools for an anime's own settings (see <see cref="AnimeSettings"/>).</summary>
 public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore store, IFactory<IAnimeProvider, Guid> providers)
@@ -39,7 +41,9 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 		string? provider = null,
 		[Description("Off (don't skip), Ask (offer to skip) or Automatic (skip), or Default to follow the app-wide setting.")]
 		AnimeSkipMode? openingSkipMode = null,
-		[Description("As openingSkipMode, for endings.")] AnimeSkipMode? endingSkipMode = null)
+		[Description("As openingSkipMode, for endings.")] AnimeSkipMode? endingSkipMode = null,
+		[Description("How its provider numbers its episodes: Season (each season from 1), Continued (on from an earlier season, as numbering rules say), or Automatic to work it out.")]
+		AnimeEpisodeNumbering? episodeNumbering = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
 		var settings = store.Get(anime);
@@ -61,6 +65,16 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 			settings.EndingSkipMode = ToSkipMode(ending);
 		}
 
+		if (episodeNumbering is { } numbering)
+		{
+			settings.EpisodeNumbering = numbering switch
+			{
+				AnimeEpisodeNumbering.Season => EpisodeNumbering.Season,
+				AnimeEpisodeNumbering.Continued => EpisodeNumbering.Continued,
+				_ => null,
+			};
+		}
+
 		store.Save(anime, settings);
 		return Describe(settings);
 	}
@@ -75,7 +89,8 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 			settings.OpeningSkipMode,
 			settings.EndingSkipMode,
 			settings.Shows.ToDictionary(x => NameOf(x.Key), x => x.Value.Title),
-			[.. settings.ProviderSettings.Keys.Select(NameOf)]);
+			[.. settings.ProviderSettings.Keys.Select(NameOf)],
+			settings.EpisodeNumbering);
 	}
 
 	private IEnumerable<string> ProviderNames() => providers.CreateAll().Select(x => x.Name);
@@ -96,4 +111,12 @@ public enum AnimeSkipMode
 	Off,
 	Ask,
 	Automatic,
+}
+
+/// <summary>An <see cref="EpisodeNumbering"/>, or worked out.</summary>
+public enum AnimeEpisodeNumbering
+{
+	Automatic,
+	Season,
+	Continued,
 }

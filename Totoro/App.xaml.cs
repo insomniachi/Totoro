@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Totoro.Agent;
 using Totoro.Commands;
@@ -13,6 +14,7 @@ using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
+using Totoro.Core.Relations;
 using Totoro.Core.Settings;
 using Totoro.Playback;
 using Totoro.UI;
@@ -21,8 +23,10 @@ using Totoro.UI.Dialogs;
 using Totoro.UI.Theming;
 using Totoro.UI.Threading;
 using Totoro.ViewModels;
+using Totoro.ViewModels.Relations;
 using Totoro.ViewModels.Test;
 using Totoro.Views;
+using Totoro.Views.Relations;
 using Totoro.Views.Test;
 
 
@@ -71,10 +75,16 @@ public partial class App : Application
 						.AddAgentTools<PlaybackTools>()
 						.AddAgentTools<AnimeSettingsTools>()
 						.AddAgentTools<AppSettingsTools>()
-						.AddAgentTools<NavigationTools>();
+						.AddAgentTools<NavigationTools>()
+						.AddAgentTools<RelationsTools>();
 
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
 				services.AddDialog<AnimeSettingsDialog, AnimeSettingsDialogViewModel>();
+				// Episode numbering: anime-relations (a copy comes with the app, in Data) and the user's own rules.
+				services.AddSingleton<IAnimeRelations>(sp => new AnimeRelations(
+					Path.Combine(AppContext.BaseDirectory, "Data", "anime-relations.txt"), sp.GetRequiredService<ILogger<AnimeRelations>>()));
+				services.AddViewMap<AnimeRelationsPage, AnimeRelationsViewModel>();
+				services.AddDialog<RelationRuleDialog, RelationRuleDialogViewModel>();
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();
 				services.AddDataViewMap<AnimeDetailsPage, AnimeDetailsViewModel, AnimeModel>();

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.Relations.AnimeRelationsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:relations="using:Totoro.ViewModels.Relations"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+
+    <!--  Laid out like Settings: cards 4 apart, a section's header 4 above its cards and 24 below the previous section  -->
+    <ScrollView>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16"
+            Spacing="4">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Episode numbering" />
+            <TextBlock
+                Margin="0,8,0,24"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Some providers have one show for several seasons and number a later season on from an earlier one: a 2nd season's first episode as 13, say. These rules say where each season's episodes are. They come from anime-relations, kept on this PC, and from your own rules, which come first."
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="anime-relations" />
+            <toolkit:SettingsCard Description="{x:Bind ViewModel.UpstreamSummary, Mode=OneWay}" Header="Rules from anime-relations">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE71B;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <!--  8 between buttons, per the Windows guidelines  -->
+                <StackPanel
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.UpdateMessage, Mode=OneWay}" />
+                    <HyperlinkButton Content="On GitHub" NavigateUri="https://github.com/erengy/anime-relations" />
+                    <Button Command="{x:Bind ViewModel.UpdateCommand}" Content="Update now" />
+                </StackPanel>
+            </toolkit:SettingsCard>
+
+            <Grid Margin="0,24,0,4">
+                <TextBlock
+                    VerticalAlignment="Bottom"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                    Text="Your rules" />
+                <Button
+                    HorizontalAlignment="Right"
+                    AutomationProperties.Name="Add rule"
+                    Command="{x:Bind ViewModel.AddCommand}"
+                    Style="{ThemeResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE710;" />
+                        <TextBlock Text="Add rule" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="None yet. Add one when a provider numbers a season on and anime-relations has no rule for it (or not yet)."
+                TextWrapping="Wrap"
+                Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasUserRules), Mode=OneWay}" />
+
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.UserRules, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="relations:UserRuleItem">
+                        <toolkit:SettingsCard Description="{x:Bind Effect}" Header="{x:Bind Title}">
+                            <toolkit:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8AB;" />
+                            </toolkit:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    AutomationProperties.Name="Edit rule"
+                                    Click="OnEditClick"
+                                    Tag="{x:Bind}"
+                                    ToolTipService.ToolTip="Edit">
+                                    <FontIcon FontSize="16" Glyph="&#xE70F;" />
+                                </Button>
+                                <Button
+                                    AutomationProperties.Name="Delete rule"
+                                    Click="OnRemoveClick"
+                                    Tag="{x:Bind}"
+                                    ToolTipService.ToolTip="Delete">
+                                    <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                                </Button>
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollView>
+</Page>

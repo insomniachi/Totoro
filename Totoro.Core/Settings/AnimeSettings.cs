@@ -32,9 +32,26 @@ public sealed class AnimeSettings
 	/// <summary>What to do when an ending starts; null to follow the app-wide setting.</summary>
 	public SkipMode? EndingSkipMode { get; set; }
 
+	/// <summary>How its provider numbers its episodes; null to work it out (see <see cref="Settings.EpisodeNumbering"/>).</summary>
+	public EpisodeNumbering? EpisodeNumbering { get; set; }
+
 	/// <summary>Nothing set: the app-wide settings apply throughout.</summary>
 	[JsonIgnore]
-	public bool IsEmpty => ProviderId is null && ProviderSettings.Count == 0 && Shows.Count == 0 && OpeningSkipMode is null && EndingSkipMode is null;
+	public bool IsEmpty => ProviderId is null && ProviderSettings.Count == 0 && Shows.Count == 0 && OpeningSkipMode is null && EndingSkipMode is null &&
+						   EpisodeNumbering is null;
+}
+
+/// <summary>How a provider numbers an anime's episodes.</summary>
+public enum EpisodeNumbering
+{
+	/// <summary>As the anime database does: each season from 1.</summary>
+	Season,
+
+	/// <summary>
+	/// On from an earlier entry, e.g. a 2nd season from 13 when the provider has one show for both seasons. Where its
+	/// episodes are comes from anime-relations (see Relations.IAnimeRelations).
+	/// </summary>
+	Continued,
 }
 
 /// <summary>
