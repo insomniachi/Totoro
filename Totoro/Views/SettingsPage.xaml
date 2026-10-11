@@ -84,6 +84,13 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <toolkit:SettingsCard Description="When you're signed in to both AniList and MyAnimeList, changes to your list (watching an episode, editing an entry, removing an anime) are made on both. Your main list is the anime database's." Header="Keep my other lists in sync">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE895;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.SyncOtherLists, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"

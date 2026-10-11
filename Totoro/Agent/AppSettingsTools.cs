@@ -17,6 +17,8 @@ public sealed record AppSettings(
 	[property: Description("Where the user's list and anime information come from; one of animeDatabases.")]
 	string AnimeDatabase,
 	IReadOnlyList<string> AnimeDatabases,
+	[property: Description("Whether changes to the user's list (in the anime database) are made on their other lists too: the other databases they're signed in to.")]
+	bool SyncOtherLists,
 	[property: Description("Where episodes play; one of mediaPlayers. The built-in player offers skipping and the next episode over the video, and can be controlled with the playback tools.")]
 	string MediaPlayer,
 	IReadOnlyList<string> MediaPlayers,
@@ -57,7 +59,7 @@ public sealed class AppSettingsTools(
 	IEnumerable<IAccount> accounts)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database, media player, skipping, playing the next episode, startup page.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), media player, skipping, playing the next episode, startup page.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
@@ -70,6 +72,7 @@ public sealed class AppSettingsTools(
 			appearance.Backdrop,
 			selected?.Name ?? "",
 			[.. databases.Select(x => x.Name)],
+			preferences.SyncOtherLists,
 			mediaPlayer?.Name ?? "",
 			[.. mediaPlayers.Select(x => x.Name)],
 			preferences.OpeningSkipMode,
@@ -85,6 +88,7 @@ public sealed class AppSettingsTools(
 		AppTheme? theme = null,
 		AppBackdrop? backdrop = null,
 		[Description("One of animeDatabases from get_app_settings.")] string? animeDatabase = null,
+		[Description("Whether changes to the user's list are made on their other lists too.")] bool? syncOtherLists = null,
 		[Description("One of mediaPlayers from get_app_settings.")] string? mediaPlayer = null,
 		SkipMode? openingSkipMode = null,
 		SkipMode? endingSkipMode = null,
@@ -130,6 +134,11 @@ public sealed class AppSettingsTools(
 		if (endingSkipMode is { } ending)
 		{
 			preferences.EndingSkipMode = ending;
+		}
+
+		if (syncOtherLists is { } sync)
+		{
+			preferences.SyncOtherLists = sync;
 		}
 
 		if (playNextAutomatically is { } playNext)

@@ -153,6 +153,37 @@
             </SplitView>
         </NavigationView>
 
+        <!--
+            A change to the user's list that couldn't be made on their other list (see AnimeTrackingService), over the
+            top-right corner of the content; raised like the status bar below
+        -->
+        <Grid
+            Grid.Row="1"
+            MaxWidth="440"
+            Margin="0,24,24,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top">
+            <ui:Effects.Shadow>
+                <media:AttachedCardShadow
+                    BlurRadius="24"
+                    CornerRadius="4"
+                    Offset="0,8"
+                    Opacity="0.6"
+                    Color="Black" />
+            </ui:Effects.Shadow>
+            <Border
+                Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+                BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource ControlCornerRadius}">
+                <InfoBar
+                    Title="Your other list wasn't updated"
+                    IsOpen="{x:Bind ViewModel.IsSyncWarningOpen, Mode=TwoWay}"
+                    Message="{x:Bind ViewModel.SyncWarning, Mode=OneWay}"
+                    Severity="Warning" />
+            </Border>
+        </Grid>
+
         <!--  What playing an episode is up to (see WatchService), over the bottom-right corner of the content  -->
         <!--
             A drop shadow, so it looks raised above the content: on this wrapper rather than the Border, whose rounded

@@ -3,12 +3,13 @@ using CommunityToolkit.Mvvm.Messaging;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
+using Totoro.Core.Services;
 using Totoro.Core.Settings;
 using Totoro.Playback;
 
 namespace Totoro.ViewModels;
 
-public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDatabaseChangedMessage>
+public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDatabaseChangedMessage>, IRecipient<OtherListSyncFailedMessage>
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
 
@@ -22,7 +23,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 		_accounts = [.. accounts.Select(x => new AccountViewModel(x))];
 		ShowAccount(preferences.SelectedAnimeDatabase);
-		WeakReferenceMessenger.Default.Register(this);
+		WeakReferenceMessenger.Default.RegisterAll(this);
 	}
 
 	[ObservableProperty]
@@ -44,6 +45,19 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	public void Receive(AnimeDatabaseChangedMessage message)
 	{
 		ShowAccount(message.ModuleId);
+	}
+
+	/// <summary>Why a change to the user's list wasn't made on their other list, e.g. MyAnimeList; empty, never null, when it was.</summary>
+	[ObservableProperty]
+	public partial string SyncWarning { get; private set; } = "";
+
+	[ObservableProperty]
+	public partial bool IsSyncWarningOpen { get; set; }
+
+	public void Receive(OtherListSyncFailedMessage message)
+	{
+		SyncWarning = message.Message;
+		IsSyncWarningOpen = true;
 	}
 
 	private void ShowAccount(Guid databaseId)

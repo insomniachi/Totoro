@@ -80,6 +80,7 @@ public partial class SettingsViewModel : ObservableObject
 		AnimeDatabase = AnimeDatabases.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? AnimeDatabases.FirstOrDefault();
 
 		Accounts = [.. accounts.Select(x => new AccountViewModel(x))];
+		SyncOtherLists = preferences.SyncOtherLists;
 
 		OpeningSkip = SkipModes.First(x => x.Value == preferences.OpeningSkipMode);
 		EndingSkip = SkipModes.First(x => x.Value == preferences.EndingSkipMode);
@@ -97,6 +98,12 @@ public partial class SettingsViewModel : ObservableObject
 
 	/// <summary>The online services the user can sign in to.</summary>
 	public IReadOnlyList<AccountViewModel> Accounts { get; }
+
+	/// <summary>Whether changes to the user's list are made on their other lists too.</summary>
+	[ObservableProperty]
+	public partial bool SyncOtherLists { get; set; }
+
+	partial void OnSyncOtherListsChanged(bool value) => _preferences.SyncOtherLists = value;
 
 	public IReadOnlyList<AnimeDatabaseOption> AnimeDatabases { get; }
 

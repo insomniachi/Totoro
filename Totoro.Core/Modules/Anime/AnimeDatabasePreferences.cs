@@ -11,6 +11,8 @@ public static class AnimeDatabasePreferences
 	/// </summary>
 	public const string Key = "SelectedAnimeDatabase";
 
+	public const string SyncOtherListsKey = "SyncOtherLists";
+
 	extension(IPreferences preferences)
 	{
 		/// <summary>
@@ -25,6 +27,16 @@ public static class AnimeDatabasePreferences
 				preferences.SaveKey(Key, value);
 				WeakReferenceMessenger.Default.Send(new AnimeDatabaseChangedMessage(value));
 			}
+		}
+
+		/// <summary>
+		/// Whether changes to the user's list are made on their other lists too (the other databases they're signed in to,
+		/// e.g. MyAnimeList as well as AniList).
+		/// </summary>
+		public bool SyncOtherLists
+		{
+			get => preferences.ReadKey(SyncOtherListsKey, true);
+			set => preferences.SaveKey(SyncOtherListsKey, value);
 		}
 	}
 }
