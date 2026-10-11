@@ -1,14 +1,16 @@
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Messaging;
 using DynamicData;
 using DynamicData.Binding;
 using Totoro.Core.Filtering;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
+using Totoro.Core.Services;
 using Totoro.UI.Navigation;
 
 namespace Totoro.ViewModels;
 
-public partial class UserListViewModel : NavigatableViewModel
+public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>
 {
 	private readonly IFactory<IAnimeTracker, Guid> _factory;
 	private readonly SourceCache<AnimeModel, long> _source = new(x => x.Id);
@@ -16,6 +18,9 @@ public partial class UserListViewModel : NavigatableViewModel
 
 	// Position of each item in the list the tracker returned, so filtering keeps that order.
 	private readonly Dictionary<long, int> _order = [];
+
+	// The database the list is from, once loaded.
+	private Guid _trackerId;
 
 	public UserListViewModel(IFactory<IAnimeTracker, Guid> factory)
 	{
@@ -51,6 +56,12 @@ public partial class UserListViewModel : NavigatableViewModel
 			return;
 		}
 
+		_trackerId = tracker.Id;
+		if (!WeakReferenceMessenger.Default.IsRegistered<AnimeTrackingChangedMessage>(this))
+		{
+			WeakReferenceMessenger.Default.Register(this);
+		}
+
 		var anime = await tracker.GetUserListAsync(CancellationToken.None);
 
 		_order.Clear();
@@ -64,5 +75,39 @@ public partial class UserListViewModel : NavigatableViewModel
 			cache.Clear();
 			cache.AddOrUpdate(anime);
 		});
+	}
+
+	protected override Task OnNavigatedFromInternalAsync()
+	{
+		WeakReferenceMessenger.Default.Unregister<AnimeTrackingChangedMessage>(this);
+		return Task.CompletedTask;
+	}
+
+	/// <summary>
+	/// An anime's list entry changed (in a dialog, by playing it, or by an agent): moves its card to its new tab, or
+	/// adds or removes it. Only for anime from this list's database.
+	/// </summary>
+	public void Receive(AnimeTrackingChangedMessage message)
+	{
+		var anime = message.Anime;
+		if (anime.ServiceId is { } serviceId && serviceId != _trackerId)
+		{
+			return;
+		}
+
+		var listed = _source.Lookup(anime.Id);
+		if (message.Tracking is null)
+		{
+			_source.RemoveKey(anime.Id);
+		}
+		else if (listed.HasValue)
+		{
+			// A different instance (e.g. fetched by an agent tool): the card shows the listed one.
+			listed.Value.Tracking = message.Tracking;
+		}
+		else
+		{
+			_source.AddOrUpdate(anime);
+		}
 	}
 }

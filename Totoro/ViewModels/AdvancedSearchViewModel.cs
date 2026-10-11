@@ -9,8 +9,8 @@ using CommunityToolkit.Mvvm.Input;
 using DynamicData;
 using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Settings;
 using Totoro.UI.Navigation;
 
@@ -264,7 +264,7 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 	[RelayCommand]
 	private void CurrentSeason()
 	{
-		var season = Core.Module.Anime.Season.Of(DateTime.Now);
+		var season = Core.Modules.Anime.Season.Of(DateTime.Now);
 		YearMode = YearFilterMode.Year;
 		Year = season.Year;
 		Season = season.SeasonName;

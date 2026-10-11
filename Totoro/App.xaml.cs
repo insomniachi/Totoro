@@ -1,15 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Totoro.Agent;
 using Totoro.Commands;
 using Totoro.Core;
+using Totoro.Core.Agent;
 using Totoro.Core.Authentication;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Extensions;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
-using Totoro.Core.Module.Media;
-using Totoro.Core.Module.Streaming;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Media;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
 using Totoro.Playback;
@@ -17,6 +19,7 @@ using Totoro.UI;
 using Totoro.UI.Authentication;
 using Totoro.UI.Dialogs;
 using Totoro.UI.Theming;
+using Totoro.UI.Threading;
 using Totoro.ViewModels;
 using Totoro.Views;
 
@@ -58,6 +61,16 @@ public partial class App : Application
 					sp.GetRequiredService<IServiceScopeFactory>(),
 					() => _window?.Content?.XamlRoot));
 				services.AddSingleton<IWebAuthenticator>(_ => new WebAuthenticator(() => _window?.Content?.XamlRoot));
+
+				// Everything the app does, as tools an AI agent can call (see Agent/). A new feature adds its tools here too.
+				services.AddSingleton<IMainThread>(_ => new MainThread(() => _window?.DispatcherQueue));
+				services.AddTransient<AnimeLookup>();
+				services.AddAgentTools<AnimeTools>()
+						.AddAgentTools<PlaybackTools>()
+						.AddAgentTools<AnimeSettingsTools>()
+						.AddAgentTools<AppSettingsTools>()
+						.AddAgentTools<NavigationTools>();
+
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
 				services.AddDialog<AnimeSettingsDialog, AnimeSettingsDialogViewModel>();
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();

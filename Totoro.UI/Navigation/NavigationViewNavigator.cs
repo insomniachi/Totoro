@@ -32,12 +32,16 @@ internal class NavigationViewNavigator : FrameBasedNavigator
 		};
 		var frame = GetFrame();
 		frame.Navigated += OnFrameNavigated;
+		// Navigation not started from the menu (e.g. by an agent tool) still highlights its page.
+		frame.Navigated += (_, _) => SyncSelection();
 		frame.Navigating += OnFrameNavigating;
 	}
 
-	protected override void OnWentBack()
+	protected override void OnWentBack() => SyncSelection();
+
+	/// <summary>Highlights the menu item of the page being shown, without navigating again.</summary>
+	private void SyncSelection()
 	{
-		// Highlight the menu item for the page we went back to, without navigating again.
 		if (GetCurrentViewModelType() is not { } vmType)
 		{
 			return;

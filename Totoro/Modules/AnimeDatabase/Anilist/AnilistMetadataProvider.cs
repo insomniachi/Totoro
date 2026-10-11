@@ -1,9 +1,9 @@
 using GraphQL;
 using GraphQL.Client.Http;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Settings;
-using TotoroNext.Anime.Anilist;
+using Totoro.Modules.AnimeDatabase.Anilist.GraphQl;
 
 namespace Totoro.Modules.AnimeDatabase.Anilist;
 

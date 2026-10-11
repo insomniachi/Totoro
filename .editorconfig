@@ -116,3 +116,13 @@ dotnet_naming_rule.parameters_and_locals_are_camel_case.style = camel_case
 dotnet_naming_rule.parameters_and_locals_are_camel_case.severity = warning
 
 dotnet_diagnostic.IDE1006.severity = warning
+
+# --- Structure ---
+# A file's namespace follows its folder (Totoro.Core/Modules/Anime -> Totoro.Core.Modules.Anime), and is declared
+# file-scoped. Reported as IDE0130 and IDE0161 warnings, at build time too.
+
+dotnet_style_namespace_match_folder = true
+dotnet_diagnostic.IDE0130.severity = warning
+
+csharp_style_namespace_declarations = file_scoped
+dotnet_diagnostic.IDE0161.severity = warning

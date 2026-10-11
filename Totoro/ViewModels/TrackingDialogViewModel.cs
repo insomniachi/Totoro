@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Totoro.Core.Dialogs;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules.Anime;
 
 namespace Totoro.ViewModels;
 

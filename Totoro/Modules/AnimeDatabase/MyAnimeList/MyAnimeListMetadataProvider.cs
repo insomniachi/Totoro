@@ -4,9 +4,9 @@ using GraphQL.Client.Http;
 using JikanDotNet;
 using MalApi;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules.Anime;
 using Totoro.Modules.AnimeDatabase.Anilist;
-using AdvancedSearchRequest = Totoro.Core.Module.Anime.AdvancedSearchRequest;
+using AdvancedSearchRequest = Totoro.Core.Modules.Anime.AdvancedSearchRequest;
 using Genre = JikanDotNet.Genre;
 
 namespace Totoro.Modules.AnimeDatabase.MyAnimeList;

@@ -5,8 +5,8 @@ using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Extensions;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Settings;
 
 namespace Totoro.Modules.AnimeDatabase.Anilist;

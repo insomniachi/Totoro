@@ -3,11 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Dialogs;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
-using Totoro.Core.Module.Media;
-using Totoro.Core.Module.Streaming;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Media;
+using Totoro.Core.Modules.Streaming;
+using Totoro.Core.Services;
 using Totoro.Core.Settings;
+using Totoro.ViewModels;
 
 namespace Totoro.Playback;
 
@@ -19,6 +21,9 @@ public enum PlaybackStatusKind
 	Success,
 	Error,
 }
+
+/// <param name="IsActive">Whether the status bar is showing; when it isn't, nothing is going on.</param>
+public sealed record PlaybackStatus(bool IsActive, PlaybackStatusKind Kind, string Title, string Message);
 
 /// <summary>An episode to play, as a command parameter.</summary>
 public sealed record EpisodeToWatch(AnimeModel Anime, int Number);
@@ -38,7 +43,7 @@ public sealed partial class WatchService(
 	IFactory<IAnimeProvider, Guid> providers,
 	IFactory<IMediaPlayer, Guid> players,
 	IFactory<ITorrentStreamer, Guid> torrentStreamers,
-	IFactory<IAnimeTracker, Guid> trackers,
+	AnimeTrackingService tracking,
 	IEnumerable<IMediaSegmentsProvider> segmentProviders,
 	IPlaybackProgressStore progressStore,
 	IAnimeSettingsStore animeSettings,
@@ -63,8 +68,45 @@ public sealed partial class WatchService(
 	/// <summary>The status bar's button (Cancel, "Play episode 6"...); empty, never null, when there's none.</summary>
 	[ObservableProperty] public partial string ActionText { get; private set; } = "";
 
+	/// <summary>Raised when the status (what the status bar shows) changes.</summary>
+	public event EventHandler? StatusChanged;
+
+	/// <summary>What it's up to: the status bar's contents, e.g. for an agent.</summary>
+	public PlaybackStatus Status => new(IsOpen, Kind, Title, Message);
+
+	partial void OnIsOpenChanged(bool value) => StatusChanged?.Invoke(this, EventArgs.Empty);
+
 	/// <summary>The episode after the last one watched (the first if the anime isn't on the list).</summary>
 	public static int NextEpisode(AnimeModel anime) => (anime.Tracking?.WatchedEpisodes ?? 0) + 1;
+
+	/// <summary>
+	/// Starts playing episode <paramref name="number"/> like <see cref="WatchAsync"/>, but returns once it's playing or
+	/// couldn't be played (or, if getting it ready takes longer than <paramref name="timeout"/>, while still at it),
+	/// rather than when playback ends: for callers that don't follow the whole playback, e.g. agent tools.
+	/// </summary>
+	public async Task<PlaybackStatus> StartWatchingAsync(AnimeModel anime, int number, TimeSpan timeout)
+	{
+		var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		void OnStatusChanged(object? sender, EventArgs e)
+		{
+			if (!IsOpen || Kind != PlaybackStatusKind.Progress)
+			{
+				settled.TrySetResult();
+			}
+		}
+
+		StatusChanged += OnStatusChanged;
+		try
+		{
+			var watching = WatchAsync(anime, number);
+			await Task.WhenAny(settled.Task, watching, Task.Delay(timeout));
+			return Status;
+		}
+		finally
+		{
+			StatusChanged -= OnStatusChanged;
+		}
+	}
 
 	public Task WatchNextAsync(AnimeModel anime) => WatchAsync(anime, NextEpisode(anime));
 
@@ -98,7 +140,7 @@ public sealed partial class WatchService(
 			}
 
 			Show(PlaybackStatusKind.Progress, $"Finding the show on {provider.Name}…", "Cancel", Cancel);
-			if (await FindShowAsync(provider, anime, settings, ct) is not { } show)
+			if (await FindOrPickShowAsync(provider, anime, ct) is not { } show)
 			{
 				IsOpen = false;
 				return;
@@ -295,16 +337,9 @@ public sealed partial class WatchService(
 
 	private async Task MarkWatchedAsync(AnimeModel anime, int number)
 	{
-		// The tracker of the database the anime came from; its id means nothing to the others.
-		var tracker = (anime.ServiceId is { } serviceId ? trackers.Create(serviceId) : null) ?? trackers.CreateDefault();
-		if (tracker is null)
-		{
-			return;
-		}
-
 		var current = anime.Tracking;
 		var completed = anime.TotalEpisodes == number;
-		anime.Tracking = await tracker.UpdateAsync(anime.Id, new Tracking
+		await tracking.UpdateAsync(anime, new Tracking
 		{
 			WatchedEpisodes = number,
 			Status = completed ? ListItemStatus.Completed
@@ -316,15 +351,45 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>
-	/// The provider's show for the anime: the one chosen before, the only exact title match, or one the user picks.
+	/// The provider to watch the anime from: its own (see <see cref="AnimeSettings"/>), or the selected one; set to use
+	/// the anime's own settings for it, if it has any.
 	/// </summary>
-	private async Task<ProviderShow?> FindShowAsync(IAnimeProvider provider, AnimeModel anime, AnimeSettings settings, CancellationToken ct)
+	public IAnimeProvider? GetProvider(AnimeModel anime) => GetProvider(animeSettings.Get(anime));
+
+	/// <summary>Matches the anime with a show on the provider: it's watched from that show from now on.</summary>
+	public void SetShow(AnimeModel anime, IAnimeProvider provider, ProviderShow show)
 	{
-		if (settings.Shows.TryGetValue(provider.Id, out var known))
+		var settings = animeSettings.Get(anime);
+		settings.Shows[provider.Id] = show;
+		animeSettings.Save(anime, settings);
+	}
+
+	/// <summary>
+	/// The show to watch the anime from on the provider: the one it's matched with, or else the only exact title match
+	/// (which becomes its match). Otherwise no show, and the shows it may be, best match first, to choose from.
+	/// </summary>
+	public async Task<(ProviderShow? Show, IReadOnlyList<ProviderShow> Candidates)> FindShowAsync(IAnimeProvider provider, AnimeModel anime,
+																							   CancellationToken ct)
+	{
+		if (animeSettings.Get(anime).Shows.TryGetValue(provider.Id, out var known))
 		{
-			return known;
+			return (known, [known]);
 		}
 
+		var results = await SearchShowsAsync(provider, anime, ct);
+		var exact = results.Where(x => x.Score >= 1).ToList();
+		if (exact.Count != 1)
+		{
+			return (null, results);
+		}
+
+		SetShow(anime, provider, exact[0]);
+		return (exact[0], results);
+	}
+
+	/// <summary>The provider's shows that may be the anime, best match first; a score of 1 is an exact title match.</summary>
+	public static async Task<List<ProviderShow>> SearchShowsAsync(IAnimeProvider provider, AnimeModel anime, CancellationToken ct)
+	{
 		// Any of the anime's titles may be the one the provider uses (SubsPlease uses romaji).
 		string[] titles = [.. new[] { anime.Title, anime.RomajiTitle, anime.EngTitle }.Concat(anime.AlternateTitles)
 																							.Where(x => !string.IsNullOrWhiteSpace(x))
@@ -341,22 +406,27 @@ public sealed partial class WatchService(
 			}
 		}
 
-		var results = matches.Values.OrderByDescending(x => x.Score).ToList();
-		var exact = results.Where(x => x.Score >= 1).ToList();
-		var picked = exact.Count == 1
-			? exact[0]
-			: await dialogs.ShowAsync<ShowPickerDialogViewModel, ProviderShow>(new ShowPickerRequest(provider, anime.Title, results));
+		return [.. matches.Values.OrderByDescending(x => x.Score)];
+	}
 
+	/// <summary>The provider's show for the anime: as <see cref="FindShowAsync"/> finds it, or else one the user picks.</summary>
+	private async Task<ProviderShow?> FindOrPickShowAsync(IAnimeProvider provider, AnimeModel anime, CancellationToken ct)
+	{
+		var (show, candidates) = await FindShowAsync(provider, anime, ct);
+		if (show is not null)
+		{
+			return show;
+		}
+
+		var picked = await dialogs.ShowAsync<ShowPickerDialogViewModel, ProviderShow>(new ShowPickerRequest(provider, anime.Title, candidates));
 		if (picked is not null)
 		{
-			settings.Shows[provider.Id] = picked;
-			animeSettings.Save(anime, settings);
+			SetShow(anime, provider, picked);
 		}
 
 		return picked;
 	}
 
-	/// <summary>The anime's own provider, or the selected one; set to use the anime's own settings for it, if it has any.</summary>
 	private IAnimeProvider? GetProvider(AnimeSettings settings)
 	{
 		var provider = (settings.ProviderId is { } id ? providers.Create(id) : null) ?? providers.CreateDefault();
@@ -445,5 +515,6 @@ public sealed partial class WatchService(
 		ActionText = actionText;
 		_action = action;
 		IsOpen = true;
+		StatusChanged?.Invoke(this, EventArgs.Empty);
 	}
 }

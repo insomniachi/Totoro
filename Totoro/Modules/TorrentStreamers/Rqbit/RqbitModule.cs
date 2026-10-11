@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Extensions;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Streaming;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
 
 namespace Totoro.Modules.TorrentStreamers.Rqbit;

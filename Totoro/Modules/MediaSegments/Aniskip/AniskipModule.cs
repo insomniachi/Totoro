@@ -4,8 +4,8 @@ using Flurl;
 using Flurl.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Media;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Media;
 
 namespace Totoro.Modules.MediaSegments.Aniskip;
 

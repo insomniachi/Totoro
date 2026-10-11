@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Totoro.Core.Dialogs;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
-using Totoro.Core.Module.Streaming;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
 
 namespace Totoro.ViewModels;

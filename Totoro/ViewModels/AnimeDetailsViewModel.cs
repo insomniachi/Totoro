@@ -2,9 +2,10 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
-using Totoro.Core.Module.Media;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Media;
+using Totoro.Core.Services;
 using Totoro.Playback;
 using Totoro.UI.Navigation;
 using Totoro.ViewModels.AnimeDetails;
@@ -15,7 +16,8 @@ namespace Totoro.ViewModels;
 /// Details of an anime, shown in the main window's side pane (see AnimeCommands.ShowDetails).
 /// Exposes display-ready values rather than the model, so the view binds to flat properties only.
 /// </summary>
-public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<PlaybackProgressChangedMessage>
+public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<PlaybackProgressChangedMessage>,
+	IRecipient<AnimeTrackingChangedMessage>
 {
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
 	private readonly ILogger<AnimeDetailsViewModel> _logger;
@@ -49,7 +51,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 
 		UpdateTracking();
 		Anime.PropertyChanged += OnAnimePropertyChanged;
-		WeakReferenceMessenger.Default.Register(this);
+		WeakReferenceMessenger.Default.RegisterAll(this);
 	}
 
 	// Tab keys; the page's SelectorBarItems carry these as their Tag.
@@ -149,7 +151,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	{
 		// Anime outlives this view model (it's still in the list); don't let it keep us alive.
 		Anime.PropertyChanged -= OnAnimePropertyChanged;
-		WeakReferenceMessenger.Default.Unregister<PlaybackProgressChangedMessage>(this);
+		WeakReferenceMessenger.Default.UnregisterAll(this);
 		return Task.CompletedTask;
 	}
 
@@ -163,6 +165,15 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 			{
 				Episodes.Refresh();
 			}
+		}
+	}
+
+	/// <summary>The anime's list entry was changed through another instance of it (e.g. by an agent tool): show it.</summary>
+	public void Receive(AnimeTrackingChangedMessage message)
+	{
+		if (!ReferenceEquals(message.Anime, Anime) && message.Anime.StoreKey == Anime.StoreKey)
+		{
+			Anime.Tracking = message.Tracking;
 		}
 	}
 

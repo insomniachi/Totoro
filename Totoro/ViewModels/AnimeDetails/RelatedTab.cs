@@ -1,5 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules.Anime;
 
 namespace Totoro.ViewModels.AnimeDetails;
 

@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:Totoro.Helpers"
-    xmlns:streaming="using:Totoro.Core.Module.Streaming">
+    xmlns:streaming="using:Totoro.Core.Modules.Streaming">
 
     <!--  Spacing per the Windows guidelines: 12 between content areas  -->
     <StackPanel MinWidth="440" Spacing="12">

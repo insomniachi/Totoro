@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
-using Totoro.Core.Module.Media;
+using Totoro.Core.Modules.Media;
 using Totoro.Core.Settings;
 
 namespace Totoro.Modules.MediaPlayers.Mpv;

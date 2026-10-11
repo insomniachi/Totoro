@@ -2,7 +2,7 @@ using System.Web;
 using MalApi;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Authentication;
-using Totoro.Core.Module;
+using Totoro.Core.Modules;
 
 namespace Totoro.Modules.AnimeDatabase.MyAnimeList;
 

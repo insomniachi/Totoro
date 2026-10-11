@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Helpers;
-using Totoro.Core.Module.Streaming;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
 using Totoro.Helpers;
 

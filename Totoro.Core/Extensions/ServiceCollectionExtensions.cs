@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Totoro.Core.Module;
+using Totoro.Core.Modules;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
 
@@ -82,8 +82,10 @@ public static class ServiceCollectionExtensions
 		{
 			return services.AddSingleton<IViewRegistry, ViewRegistry>()
 						   .AddSingleton<IPreferences, Preferences>()
-						   .AddSingleton<Module.Media.IPlaybackProgressStore, Module.Media.PlaybackProgressStore>()
+						   .AddSingleton<Modules.Media.IPlaybackProgressStore, Modules.Media.PlaybackProgressStore>()
 							   .AddSingleton<IAnimeSettingsStore, AnimeSettingsStore>()
+							   .AddSingleton<Services.AnimeTrackingService>()
+							   .AddSingleton<Agent.IAgentTools, Agent.AgentTools>()
 						   .AddLogging();
 		}
 
@@ -99,6 +101,17 @@ public static class ServiceCollectionExtensions
 					});
 			// Untyped, for listing and editing every module's settings; the same instance as above.
 			services.AddSingleton<IModuleSettings>(sp => sp.GetRequiredService<IModuleSettings<T>>());
+			return services;
+		}
+
+		/// <summary>
+		/// Registers a class of agent tools: its methods marked <see cref="Agent.AgentToolAttribute"/> become tools of
+		/// <see cref="Agent.IAgentTools"/>. Modules can add their own tools this way too.
+		/// </summary>
+		public IServiceCollection AddAgentTools<T>() where T : class
+		{
+			services.AddTransient<T>();
+			services.AddSingleton(new Agent.AgentToolSet(typeof(T)));
 			return services;
 		}
 

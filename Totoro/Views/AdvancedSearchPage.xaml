@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:anime="using:Totoro.Core.Module.Anime"
+    xmlns:anime="using:Totoro.Core.Modules.Anime"
     xmlns:commands="using:Totoro.Commands"
     xmlns:controls="using:Totoro.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

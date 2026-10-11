@@ -1,5 +1,5 @@
 ﻿
-using Totoro.Core.Module;
+using Totoro.Core.Modules;
 
 namespace Totoro.Core.Helpers;
 

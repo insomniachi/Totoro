@@ -2,8 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Totoro.Core.Helpers;
-using Totoro.Core.Module.Anime;
-using Totoro.Core.Module.Streaming;
+using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Streaming;
 
 namespace Totoro.Core.Settings;
 

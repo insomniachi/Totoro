@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using Totoro.Core.Module.Anime;
-using Totoro.Core.Module.Media;
+using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Media;
 using Totoro.Playback;
 
 namespace Totoro.ViewModels.AnimeDetails;

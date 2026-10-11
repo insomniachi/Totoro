@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using Totoro.Core.Helpers;
-using Totoro.Core.Module;
+using Totoro.Core.Modules;
 
 namespace Totoro.Core.Settings;
 

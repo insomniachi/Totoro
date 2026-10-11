@@ -9,4 +9,9 @@
 	  <!-- Report .editorconfig code-style rules (the naming conventions, IDE1006) when building, not only in the editor -->
 	  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
+  <ItemGroup>
+	  <!-- The namespace-matches-folder rule (IDE0130) needs these to run at build time -->
+	  <CompilerVisibleProperty Include="RootNamespace" />
+	  <CompilerVisibleProperty Include="ProjectDir" />
+  </ItemGroup>
 </Project>

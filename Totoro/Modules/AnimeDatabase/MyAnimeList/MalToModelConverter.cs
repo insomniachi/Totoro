@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Net;
 using MalApi;
-using Totoro.Core.Module.Anime;
-using AiringStatus = Totoro.Core.Module.Anime.AiringStatus;
-using AnimeSeason = Totoro.Core.Module.Anime.AnimeSeason;
-using Season = Totoro.Core.Module.Anime.Season;
+using Totoro.Core.Modules.Anime;
+using AiringStatus = Totoro.Core.Modules.Anime.AiringStatus;
+using AnimeSeason = Totoro.Core.Modules.Anime.AnimeSeason;
+using Season = Totoro.Core.Modules.Anime.Season;
 
 namespace Totoro.Modules.AnimeDatabase.MyAnimeList;
 
@@ -59,7 +59,8 @@ internal static class MalToModelConverter
 			Tracking = ConvertTracking(malModel.UserStatus),
 			AiringStatus = (AiringStatus)(int)(malModel.Status ?? MalApi.AiringStatus.NotYetAired),
 			TotalEpisodes = malModel.TotalEpisodes is > 0 ? malModel.TotalEpisodes : null,
-			MeanScore = malModel.MeanScore,
+			// Out of 100, like AniList's (see AnimeModel.MeanScore); MyAnimeList's is out of 10.
+			MeanScore = malModel.MeanScore * 10,
 			Popularity = malModel.Popularity ?? 0,
 		};
 
@@ -110,7 +111,7 @@ internal static class MalToModelConverter
 			ServiceName = nameof(AnimeId.MyAnimeList),
 			Description = ToHtml(jikanModel.Synopsis),
 			Url = $"https://myanimelist.net/anime/{id}/",
-			MeanScore = (float?)jikanModel.Score,
+			MeanScore = (float?)jikanModel.Score * 10,
 			TotalEpisodes = jikanModel.Episodes is > 0 ? jikanModel.Episodes : null,
 			AiringStatus = jikanModel.Status switch
 			{

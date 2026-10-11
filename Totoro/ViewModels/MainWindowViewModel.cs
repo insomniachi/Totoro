@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Totoro.Core.Module;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
 using Totoro.Playback;

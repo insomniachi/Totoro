@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Flurl;
 using Totoro.Core;
-using Totoro.Core.Module.Anime;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Settings;
-using TotoroNext.Anime.Anilist;
+using Totoro.Modules.AnimeDatabase.Anilist.GraphQl;
 
 namespace Totoro.Modules.AnimeDatabase.Anilist;
 

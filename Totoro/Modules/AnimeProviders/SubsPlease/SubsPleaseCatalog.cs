@@ -4,7 +4,7 @@ using Flurl.Http;
 using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Core.Helpers;
-using Totoro.Core.Module.Streaming;
+using Totoro.Core.Modules.Streaming;
 
 namespace Totoro.Modules.AnimeProviders.SubsPlease;
 
