@@ -2,13 +2,13 @@
   <Configurations>
     <Platform Name="x64" />
   </Configurations>
-  <Project Path="Totoro.Core/Totoro.Core.csproj">
+  <Project Path="src/Totoro.Core/Totoro.Core.csproj">
     <Platform Project="x64" />
   </Project>
-  <Project Path="Totoro.UI/Totoro.UI.csproj" Id="04436c4a-cf02-4a3a-a135-cc3ba6264243">
+  <Project Path="src/Totoro.UI/Totoro.UI.csproj" Id="04436c4a-cf02-4a3a-a135-cc3ba6264243">
     <Platform Project="x64" />
   </Project>
-  <Project Path="Totoro/Totoro.csproj">
+  <Project Path="src/Totoro/Totoro.csproj">
     <Platform Project="x64" />
   </Project>
 </Solution>

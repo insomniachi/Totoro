@@ -4,6 +4,8 @@ A WinUI 3 app (.NET 10, Windows App SDK) for tracking and watching anime.
 
 ## Projects and folders
 
+The projects are in `src/`; the solution (`Totoro.slnx`) and the build settings they share (`Directory.Build.props`, `Directory.Packages.props` for package versions) are at the root. Paths below are within `src/`.
+
 | Project | Holds |
 |---|---|
 | `Totoro.Core` | What doesn't depend on WinUI: module contracts, settings, services, agent tool infrastructure. |
