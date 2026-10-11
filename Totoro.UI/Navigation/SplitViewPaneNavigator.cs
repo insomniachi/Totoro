@@ -7,7 +7,7 @@ using Totoro.Core.Navigation;
 
 namespace Totoro.UI.Navigation;
 
-internal class SplitViewPaneNavigator : FrameBasedNavigator
+internal class SplitViewPaneNavigator : FrameBasedNavigator, IDismissibleNavigator
 {
 	private readonly SplitView _splitView;
 	private readonly Frame _frame;
@@ -29,6 +29,8 @@ internal class SplitViewPaneNavigator : FrameBasedNavigator
 	{
 		_splitView.IsPaneOpen = true;
 	}
+
+	public void Close() => _splitView.IsPaneOpen = false;
 
 	protected override Frame GetFrame() => _frame;
 

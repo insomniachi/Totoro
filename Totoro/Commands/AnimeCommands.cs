@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Totoro.Core;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Navigation;
 using Totoro.Core.Services;
 using Totoro.Playback;
 using Totoro.UI.Navigation;
@@ -37,11 +38,28 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 	[RelayCommand(AllowConcurrentExecutions = true)]
 	// Concurrent: playback lasts until the player closes, and a command that can't run concurrently is disabled until
 	// then, which would disable every play button. Starting another episode replaces the one playing.
-	private Task WatchAsync(AnimeModel anime) => watch.WatchNextAsync(anime);
+	private Task WatchAsync(AnimeModel anime)
+	{
+		ClosePane();
+		return watch.WatchNextAsync(anime);
+	}
 
 	/// <summary>Plays a particular episode, from where it was left off if it wasn't finished.</summary>
 	[RelayCommand(AllowConcurrentExecutions = true)]
-	private Task WatchEpisodeAsync(EpisodeToWatch episode) => watch.WatchAsync(episode.Anime, episode.Number);
+	private Task WatchEpisodeAsync(EpisodeToWatch episode)
+	{
+		ClosePane();
+		return watch.WatchAsync(episode.Anime, episode.Number);
+	}
+
+	/// <summary>Puts the details pane away when watching starts from it, so the status bar and the list are in view.</summary>
+	private static void ClosePane()
+	{
+		if (Navigators.TryGetNavigator(PaneNavigatorKey, out var pane) && pane is IDismissibleNavigator dismissible)
+		{
+			dismissible.Close();
+		}
+	}
 
 	/// <summary>Edits the anime's own settings for watching it (provider, skipping...) in a dialog.</summary>
 	[RelayCommand]
