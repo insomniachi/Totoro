@@ -3,272 +3,32 @@
     x:Class="Totoro.Views.TestPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Totoro.UI.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:text="using:Totoro.UI.Text"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
-    xmlns:vm="using:Totoro.ViewModels"
-    mc:Ignorable="d">
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:uiNavigation="using:Totoro.UI.Navigation">
 
-    <!--  Playgrounds for reusable pieces of UI, one per tab  -->
+    <!--
+        Playgrounds for reusable pieces of the app, one per tab. Each is a page of its own, which the "test" navigator shows
+        in the frame below; the tabs' Tags are their navigation keys (see TestViewModel).
+    -->
     <Grid RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <SelectorBar x:Name="Demos" Margin="-8,0,0,0">
+        <SelectorBar Margin="-8,0,0,0" SelectionChanged="OnPlaygroundSelected">
             <SelectorBarItem
                 IsSelected="True"
-                Tag="Html"
+                Tag="Test.HtmlRenderer"
                 Text="HTML renderer" />
-            <SelectorBarItem Tag="Settings" Text="Settings editor" />
-            <SelectorBarItem Tag="Agent" Text="Agent tools" />
+            <SelectorBarItem Tag="Test.SettingsEditor" Text="Settings editor" />
+            <SelectorBarItem Tag="Test.AgentTools" Text="Agent tools" />
         </SelectorBar>
 
-        <toolkit:SwitchPresenter Grid.Row="1" Value="{x:Bind Demos.SelectedItem.Tag, Mode=OneWay}">
-
-            <!--  HtmlText: edit the HTML on the left, see it rendered on the right  -->
-            <toolkit:Case Value="Html">
-                <Grid ColumnSpacing="24" RowSpacing="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid Grid.ColumnSpan="2" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Style="{ThemeResource SubtitleTextBlockStyle}"
-                            Text="HTML renderer" />
-                        <Button
-                            Grid.Column="1"
-                            Click="OnResetClick"
-                            Content="Reset sample" />
-                    </Grid>
-
-                    <TextBox
-                        Grid.Row="1"
-                        AcceptsReturn="True"
-                        FontFamily="Consolas"
-                        Header="HTML"
-                        IsSpellCheckEnabled="False"
-                        ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        Text="{x:Bind ViewModel.Html, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        TextWrapping="Wrap" />
-
-                    <Grid
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        RowSpacing="8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="Rendered" />
-                        <Border
-                            Grid.Row="1"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8">
-                            <ScrollView Padding="20">
-                                <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Html, Mode=OneWay}" />
-                            </ScrollView>
-                        </Border>
-                    </Grid>
-                </Grid>
-            </toolkit:Case>
-
-            <!--
-                DataContainerEditor: the editor inline on the left (edits apply straight away), the values it produces on the
-                right, and the dialog version, which edits a copy and applies it only when saved.
-            -->
-            <toolkit:Case Value="Settings">
-                <Grid ColumnSpacing="24" RowSpacing="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="3*" />
-                        <ColumnDefinition Width="2*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Grid Grid.ColumnSpan="2" ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Style="{ThemeResource SubtitleTextBlockStyle}"
-                            Text="Settings editor" />
-                        <Button
-                            Grid.Column="1"
-                            Command="{x:Bind ViewModel.EditInDialogCommand}"
-                            Content="Edit in dialog"
-                            Style="{ThemeResource AccentButtonStyle}" />
-                    </Grid>
-
-                    <ScrollView Grid.Row="1">
-                        <controls:DataContainerEditor Properties="{x:Bind ViewModel.Settings}" />
-                    </ScrollView>
-
-                    <StackPanel
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Spacing="8">
-                        <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Values" />
-                        <Border
-                            Padding="16"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8">
-                            <TextBlock
-                                FontFamily="Consolas"
-                                IsTextSelectionEnabled="True"
-                                Text="{x:Bind ViewModel.Values, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </Border>
-                        <TextBlock
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind ViewModel.DialogResult, Mode=OneWay}"
-                            TextWrapping="Wrap" />
-                    </StackPanel>
-                </Grid>
-            </toolkit:Case>
-
-            <!--
-                Agent tools: every tool an AI agent can call (IAgentTools), with what the agent sees of it (its description and
-                parameters' schema). Call one with JSON arguments to see what the agent would get back.
-            -->
-            <toolkit:Case Value="Agent">
-                <Grid ColumnSpacing="24" RowSpacing="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="280" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock
-                        Grid.ColumnSpan="2"
-                        Style="{ThemeResource SubtitleTextBlockStyle}"
-                        Text="Agent tools" />
-
-                    <ListView
-                        Grid.Row="1"
-                        AutomationProperties.Name="Tools"
-                        ItemsSource="{x:Bind ViewModel.Tools}"
-                        SelectedItem="{x:Bind ViewModel.SelectedTool, Mode=TwoWay}"
-                        SelectionMode="Single">
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="vm:AgentToolItem">
-                                <TextBlock
-                                    Padding="0,8"
-                                    FontFamily="Consolas"
-                                    Text="{x:Bind Name}" />
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-
-                    <Grid
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        RowSpacing="12">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.ColumnSpan="2" Spacing="4">
-                            <TextBlock
-                                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                Text="{x:Bind ViewModel.SelectedTool.Description, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                            <TextBlock
-                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind ViewModel.SelectedTool.ApprovalText, Mode=OneWay}" />
-                        </StackPanel>
-
-                        <!--  What the agent sees of the tool's parameters  -->
-                        <Grid Grid.Row="1" RowSpacing="8">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="Parameters (JSON schema)" />
-                            <Border
-                                Grid.Row="1"
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8">
-                                <ScrollView Padding="12">
-                                    <TextBlock
-                                        AutomationProperties.AutomationId="ToolSchema"
-                                        FontFamily="Consolas"
-                                        IsTextSelectionEnabled="True"
-                                        Text="{x:Bind ViewModel.SelectedTool.Schema, Mode=OneWay}" />
-                                </ScrollView>
-                            </Border>
-                        </Grid>
-
-                        <TextBox
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            AcceptsReturn="True"
-                            FontFamily="Consolas"
-                            Header="Arguments (JSON)"
-                            IsSpellCheckEnabled="False"
-                            Text="{x:Bind ViewModel.ToolArguments, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                            TextWrapping="Wrap" />
-
-                        <Button
-                            Grid.Row="2"
-                            Command="{x:Bind ViewModel.RunToolCommand}"
-                            Content="Run"
-                            Style="{ThemeResource AccentButtonStyle}" />
-
-                        <Border
-                            Grid.Row="3"
-                            Grid.ColumnSpan="2"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8">
-                            <ScrollView Padding="12">
-                                <TextBlock
-                                    AutomationProperties.AutomationId="ToolResult"
-                                    FontFamily="Consolas"
-                                    IsTextSelectionEnabled="True"
-                                    Text="{x:Bind ViewModel.ToolResult, Mode=OneWay}"
-                                    TextWrapping="Wrap" />
-                            </ScrollView>
-                        </Border>
-                    </Grid>
-                </Grid>
-            </toolkit:Case>
-        </toolkit:SwitchPresenter>
+        <Frame Grid.Row="1">
+            <Interactivity:Interaction.Behaviors>
+                <uiNavigation:RegisterForNavigationBehavior NavigatorKey="test" />
+            </Interactivity:Interaction.Behaviors>
+        </Frame>
     </Grid>
 </Page>

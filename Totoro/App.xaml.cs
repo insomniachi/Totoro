@@ -21,7 +21,9 @@ using Totoro.UI.Dialogs;
 using Totoro.UI.Theming;
 using Totoro.UI.Threading;
 using Totoro.ViewModels;
+using Totoro.ViewModels.Test;
 using Totoro.Views;
+using Totoro.Views.Test;
 
 
 namespace Totoro;
@@ -91,6 +93,10 @@ public partial class App : Application
 					x.UnselectedIcon = Icons.Home;
 					x.SelectedIcon = Icons.HomeFilled;
 				});
+				// The Test page's playgrounds, shown by its own navigator.
+				services.AddKeyedViewMap<HtmlRendererPage, HtmlRendererViewModel>(TestViewModel.HtmlRendererKey);
+				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
+				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
 					x.UnselectedIcon = Icons.Settings;

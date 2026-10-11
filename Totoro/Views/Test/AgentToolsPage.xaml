@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.Test.AgentToolsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Totoro.ViewModels.Test">
+
+    <!--
+        Every tool an AI agent can call, with what the agent sees of it (its description and parameters' schema). Call one
+        with JSON arguments to see what the agent would get back.
+    -->
+    <Grid ColumnSpacing="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock
+            Grid.ColumnSpan="2"
+            Style="{ThemeResource SubtitleTextBlockStyle}"
+            Text="Agent tools" />
+
+        <ListView
+            Grid.Row="1"
+            AutomationProperties.Name="Tools"
+            ItemsSource="{x:Bind ViewModel.Tools}"
+            SelectedItem="{x:Bind ViewModel.SelectedTool, Mode=TwoWay}"
+            SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="vm:AgentToolItem">
+                    <TextBlock
+                        Padding="0,8"
+                        FontFamily="Consolas"
+                        Text="{x:Bind Name}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Grid
+            Grid.Row="1"
+            Grid.Column="1"
+            RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.ColumnSpan="2" Spacing="4">
+                <TextBlock
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                    Text="{x:Bind ViewModel.SelectedTool.Description, Mode=OneWay}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ViewModel.SelectedTool.ApprovalText, Mode=OneWay}" />
+            </StackPanel>
+
+            <!--  What the agent sees of the tool's parameters  -->
+            <Grid Grid.Row="1" RowSpacing="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Parameters (JSON schema)" />
+                <Border
+                    Grid.Row="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <ScrollView Padding="12">
+                        <TextBlock
+                            AutomationProperties.AutomationId="ToolSchema"
+                            FontFamily="Consolas"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind ViewModel.SelectedTool.Schema, Mode=OneWay}" />
+                    </ScrollView>
+                </Border>
+            </Grid>
+
+            <TextBox
+                Grid.Row="1"
+                Grid.Column="1"
+                AcceptsReturn="True"
+                FontFamily="Consolas"
+                Header="Arguments (JSON)"
+                IsSpellCheckEnabled="False"
+                Text="{x:Bind ViewModel.ToolArguments, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                TextWrapping="Wrap" />
+
+            <Button
+                Grid.Row="2"
+                Command="{x:Bind ViewModel.RunToolCommand}"
+                Content="Run"
+                Style="{ThemeResource AccentButtonStyle}" />
+
+            <Border
+                Grid.Row="3"
+                Grid.ColumnSpan="2"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <ScrollView Padding="12">
+                    <TextBlock
+                        AutomationProperties.AutomationId="ToolResult"
+                        FontFamily="Consolas"
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind ViewModel.ToolResult, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                </ScrollView>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

@@ -1,5 +1,4 @@
 using CommunityToolkit.WinUI;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.ViewModels;
 
@@ -15,8 +14,11 @@ public sealed partial class TestPage : Page
 	[GeneratedDependencyProperty]
 	public partial TestViewModel? ViewModel { get; set; }
 
-	private void OnResetClick(object sender, RoutedEventArgs e)
+	private void OnPlaygroundSelected(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
 	{
-		ViewModel?.Html = TestViewModel.Sample;
+		if (ViewModel is { } viewModel && sender.SelectedItem?.Tag is string key)
+		{
+			viewModel.SelectedPlayground = key;
+		}
 	}
 }
