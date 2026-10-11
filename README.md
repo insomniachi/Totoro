@@ -37,6 +37,12 @@ Or open `Totoro.slnx` in Visual Studio and run the `Totoro` project. The first b
 └── AGENTS.md            How the code is organised, and its conventions
 ```
 
+## License
+
+Totoro is MIT licensed; see [LICENSE](LICENSE). What it includes, and their licenses, are in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). libvlc, which it ships, is LGPL-2.1; its license and where its
+source is go with it.
+
 ## Thanks
 
 - [rqbit](https://github.com/ikatson/rqbit) (Apache-2.0) streams torrents.

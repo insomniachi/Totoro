@@ -53,7 +53,6 @@
     <PackageReference Include="CommunityToolkit.WinUI.Media" />
     <PackageReference Include="DevWinUI" />
     <PackageReference Include="HtmlAgilityPack" />
-    <PackageReference Include="HtmlAgilityPack.CssSelectors.NetCore" />
     <PackageReference Include="JikanDotNet" />
     <PackageReference Include="LibVLCSharp.WinUI" />
     <PackageReference Include="MalApi.V2" />
@@ -104,6 +103,11 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <!--  Totoro's license, and the notices of what it's built with, go with the app  -->
+  <ItemGroup>
+    <Content Include="..\..\LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
   <!--
     rqbit, which streams torrents (Modules\TorrentStreamers\Rqbit): its release exe, downloaded once at build time (into
     obj, not the repo) and checked against its SHA-256, then copied to Tools\rqbit with its license. To update, change
@@ -121,10 +125,14 @@
   </ItemGroup>
   <!--
     libvlc (VideoLAN.LibVLC.Windows), for the built-in player (Modules\MediaPlayers\Vlc): without what playing doesn't need
-    (import libraries, encoding and streaming out, visualizations, network discovery).
+    (import libraries, encoding and streaming out, visualizations, network discovery). Its license (LGPL-2.1) and where
+    its source is go with it, as the LGPL asks; the package has neither.
   -->
   <ItemGroup>
     <VlcWindowsX64ExcludeFiles Include="libvlc.lib;libvlccore.lib;plugins\access_output\%2A;plugins\stream_out\%2A;plugins\mux\%2A;plugins\visualization\%2A;plugins\services_discovery\%2A;plugins\video_splitter\%2A" />
+    <None Remove="Modules\MediaPlayers\Vlc\COPYING.LIB;Modules\MediaPlayers\Vlc\NOTICE.txt" />
+    <Content Include="Modules\MediaPlayers\Vlc\COPYING.LIB" Link="libvlc\win-x64\COPYING.LIB" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Modules\MediaPlayers\Vlc\NOTICE.txt" Link="libvlc\win-x64\NOTICE.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="DownloadRqbit" BeforeTargets="BeforeBuild" Condition="!Exists('$(RqbitDownloadFolder)rqbit.exe')">
     <DownloadFile SourceUrl="https://github.com/ikatson/rqbit/releases/download/v$(RqbitVersion)/rqbit.exe" DestinationFolder="$(RqbitDownloadFolder)" />

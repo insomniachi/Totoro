@@ -1,0 +1,12 @@
+libvlc (VLC media player's engine), included unmodified in this folder, from the VideoLAN.LibVLC.Windows 3.0.24
+package. It plays videos in Totoro's built-in player, and songs' audio.
+
+Copyright (C) 1996-2026 the VideoLAN team and VLC authors.
+
+libvlc is free software, licensed under the GNU Lesser General Public License, version 2.1 or later; see COPYING.LIB.
+Some of its plugins have licenses of their own, listed in VLC's source.
+
+Its source code is at https://code.videolan.org/videolan/vlc (version 3.0.24), with release archives at
+https://download.videolan.org/pub/videolan/vlc/3.0.24/.
+
+You may replace these files with your own build of libvlc 3.0.x: Totoro loads them from this folder.

@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using Flurl;
 using Flurl.Http;
 using HtmlAgilityPack;
-using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
 
@@ -77,7 +76,7 @@ internal sealed partial class SubsPleaseProvider(IModuleSettings<Settings> modul
 		var document = new HtmlDocument();
 		document.LoadHtml(html);
 
-		var sid = document.QuerySelector("#show-release-table")?.GetAttributeValue("sid", "");
+		var sid = document.GetElementbyId("show-release-table")?.GetAttributeValue("sid", "");
 		if (string.IsNullOrEmpty(sid))
 		{
 			return [];

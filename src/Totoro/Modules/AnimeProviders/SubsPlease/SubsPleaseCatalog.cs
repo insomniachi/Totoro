@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Flurl.Http;
 using HtmlAgilityPack;
-using HtmlAgilityPack.CssSelectors.NetCore;
 using Totoro.Core.Helpers;
 using Totoro.Core.Modules.Streaming;
 
@@ -81,7 +80,8 @@ internal static partial class SubsPleaseCatalog
 
 		return
 		[
-			.. document.QuerySelectorAll(".all-shows-link a")
+			// The links in the .all-shows-link blocks (by class, which may have others with it).
+			.. (document.DocumentNode.SelectNodes("//*[contains(concat(' ', normalize-space(@class), ' '), ' all-shows-link ')]//a") ?? Enumerable.Empty<HtmlNode>())
 					   .Select(x => new CatalogShow(x.GetAttributeValue("href", "").Replace("/shows/", "").Trim('/'),
 													HtmlEntity.DeEntitize(x.GetAttributeValue("title", x.InnerText)).Trim()))
 					   .Where(x => x.Id.Length > 0 && x.Title.Length > 0)
