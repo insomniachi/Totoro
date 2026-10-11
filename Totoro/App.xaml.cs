@@ -85,13 +85,13 @@ public partial class App : Application
 				});
 				services.AddMainNavigationItem<AdvancedSearchPage, AdvancedSearchViewModel>("Search", x =>
 				{
-					x.UnselectedIcon = Icons.Search;
-					x.SelectedIcon = Icons.Search;
+					x.AnimatedIcon = Icons.SearchAnimated;
 				});
 				services.AddMainNavigationItem<TestPage, TestViewModel>("Test", x =>
 				{
-					x.UnselectedIcon = Icons.Home;
-					x.SelectedIcon = Icons.HomeFilled;
+					// No filled beaker in Segoe Fluent Icons, so the same one either way.
+					x.UnselectedIcon = Icons.Test;
+					x.SelectedIcon = Icons.Test;
 				});
 				// The Test page's playgrounds, shown by its own navigator.
 				services.AddKeyedViewMap<HtmlRendererPage, HtmlRendererViewModel>(TestViewModel.HtmlRendererKey);
@@ -99,8 +99,7 @@ public partial class App : Application
 				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
-					x.UnselectedIcon = Icons.Settings;
-					x.SelectedIcon = Icons.Settings;
+					x.AnimatedIcon = Icons.SettingsAnimated;
 					x.IsFooter = true;
 				});
 			})

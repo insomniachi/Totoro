@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 
 namespace Totoro.UI;
 
@@ -8,6 +9,28 @@ public static class Icons
 	public static FontIcon HomeFilled => new() { Glyph = "\uEA8A" };
 	public static SymbolIcon Settings => new(Symbol.Setting);
 	public static SymbolIcon Search => new(Symbol.Find);
+
+	// Animated icons, from WinUI's built-in animations. Use one wherever there is one; there are only a few (no home, for
+	// instance). They animate with their container's AnimatedIcon.State, which must be one of the names WinUI's own
+	// templates use (Normal, PointerOver, Pressed): other names leave them still. The fallback shows where
+	// animations can't play.
+
+	/// <summary>The magnifier moving, as in WinUI's search box.</summary>
+	public static AnimatedIcon SearchAnimated => new()
+	{
+		Source = new AnimatedFindVisualSource(),
+		FallbackIconSource = new SymbolIconSource { Symbol = Symbol.Find },
+	};
+
+	/// <summary>The gear turning, as on WinUI's own Settings menu item.</summary>
+	public static AnimatedIcon SettingsAnimated => new()
+	{
+		Source = new AnimatedSettingsVisualSource(),
+		FallbackIconSource = new SymbolIconSource { Symbol = Symbol.Setting },
+	};
+
+	/// <summary>A lab beaker, for experiments and playgrounds.</summary>
+	public static FontIcon Test => new() { Glyph = "\uF196" };
 
 	public static FontIcon Play => new() { Glyph = "\uE768" };
 	public static FontIcon Clock => new() { Glyph = "\uE823" };
@@ -24,6 +47,7 @@ public static class Icons
 		nameof(Home) => Home,
 		nameof(HomeFilled) => HomeFilled,
 		nameof(Settings) => Settings,
+		nameof(Test) => Test,
 		nameof(Search) => Search,
 		nameof(Play) => Play,
 		nameof(Clock) => Clock,

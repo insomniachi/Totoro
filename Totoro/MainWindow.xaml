@@ -100,6 +100,7 @@
                     <NavigationViewItem
                         AutomationProperties.Name="{x:Bind Label}"
                         Content="{x:Bind}"
+                        Icon="{x:Bind (IconElement)AnimatedIcon}"
                         Style="{StaticResource MainNavigationViewItemStyle}" />
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
