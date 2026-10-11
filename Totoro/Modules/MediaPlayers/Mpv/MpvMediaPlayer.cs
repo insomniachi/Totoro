@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Settings;
+using Totoro.Helpers;
 
 namespace Totoro.Modules.MediaPlayers.Mpv;
 
@@ -78,6 +79,8 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		};
 
 		process.Start();
+		// Ends with the app: without it nothing tracks what's watched, which is the point of playing from here.
+		ChildProcesses.Add(process);
 		_process = process;
 		_ = Task.Run(() => FollowAsync(process, pipeName));
 	}

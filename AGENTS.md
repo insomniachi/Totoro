@@ -30,6 +30,7 @@ Also:
 - **UI layout:** follow the Windows spacing guidelines: 8 between buttons and from a header to its control, 12 between content areas, 16 for a surface's padding. Line sections up with each other.
 - **Toolkit choice:** prefer CommunityToolkit controls over DevWinUI's when both have one.
 - **x:Bind:** it doesn't call a function whose argument is null. Strings passed to x:Bind functions are never null (use `""`).
+- **Processes the app starts** (media players, rqbit...) end with it: pass them to `ChildProcesses.Add`. Without the app, nothing tracks what's watched.
 
 ## Everything the app does is available to AI agents
 
