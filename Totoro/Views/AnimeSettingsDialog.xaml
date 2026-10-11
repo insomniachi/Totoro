@@ -71,8 +71,8 @@
             Style="{ThemeResource BodyStrongTextBlockStyle}"
             Text="Episode numbering" />
 
-        <!--  How its provider numbers its episodes; the description says which rule places them when numbered on  -->
-        <toolkit:SettingsCard Description="{x:Bind ViewModel.RuleSummary, Mode=OneWay}" Header="Its provider numbers it">
+        <!--  By season or absolute; the description says which rule places its episodes in absolute numbering  -->
+        <toolkit:SettingsCard Description="{x:Bind ViewModel.RuleSummary, Mode=OneWay}" Header="Numbering on its provider">
             <toolkit:SettingsCard.HeaderIcon>
                 <FontIcon Glyph="&#xE8AB;" />
             </toolkit:SettingsCard.HeaderIcon>
@@ -89,7 +89,7 @@
         </toolkit:SettingsCard>
 
         <!--  A rule of the user's own for it, added on Save once it's filled in  -->
-        <toolkit:SettingsExpander Description="When its provider numbers it on and there's no rule for it (yet). Added when you save." Header="Add a numbering rule">
+        <toolkit:SettingsExpander Description="When its provider uses absolute numbering and there's no rule for it (yet). Added when you save." Header="Add an absolute numbering rule">
             <toolkit:SettingsExpander.HeaderIcon>
                 <FontIcon Glyph="&#xE710;" />
             </toolkit:SettingsExpander.HeaderIcon>

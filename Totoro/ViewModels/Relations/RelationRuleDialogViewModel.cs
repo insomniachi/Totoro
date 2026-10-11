@@ -16,7 +16,7 @@ public sealed class RelationRuleDialogViewModel : DialogViewModel<AnimeRelationR
 	{
 		var database = databases.CreateDefault();
 		Editor = request.Rule is { } rule ? new RelationRuleEditorViewModel(database, rule) : new RelationRuleEditorViewModel(database, request.Season);
-		Title = request.Rule is null ? "Add a numbering rule" : "Edit numbering rule";
+		Title = request.Rule is null ? "Add an absolute numbering rule" : "Edit absolute numbering rule";
 		PrimaryButtonText = "Save";
 		CanConfirm = Editor.IsValid;
 		Editor.PropertyChanged += (_, _) => CanConfirm = Editor.IsValid;

@@ -4,7 +4,7 @@ using Totoro.Core.Modules.Anime;
 
 namespace Totoro.Core.Relations;
 
-/// <param name="Episode">The episode's number in the source's numbering, e.g. 16 for a 2nd season's 4th episode.</param>
+/// <param name="Episode">The episode's absolute number (in the source's numbering), e.g. 16 for a 2nd season's 4th episode.</param>
 /// <param name="IsUserRule">Whether it's one of the user's own rules rather than anime-relations'.</param>
 public sealed record AnimeRelationMatch(AnimeRelationRule Rule, int Episode, bool IsUserRule);
 
@@ -14,10 +14,11 @@ public sealed record AnimeRelationMatch(AnimeRelationRule Rule, int Episode, boo
 public sealed record AnimeRelationsInfo(int RuleCount, string? LastModified, DateTime? LastChecked);
 
 /// <summary>
-/// Where an anime's episodes are when a provider numbers them on from an earlier entry: e.g. a single SubsPlease show
-/// for two seasons, whose 2nd season starts at episode 13. Uses anime-relations (https://github.com/erengy/anime-relations),
-/// downloaded from GitHub when it's first needed and kept on this PC (refreshed about once a day), and the user's own
-/// rules, which come first and are kept apart, in the same format, so updates never touch them.
+/// Where an anime's episodes are when a provider uses absolute numbering, carrying on across seasons: e.g. a single
+/// SubsPlease show for two seasons, whose 2nd season starts at episode 13. Uses anime-relations
+/// (https://github.com/erengy/anime-relations), downloaded from GitHub when it's first needed and kept on this PC
+/// (refreshed about once a day), and the user's own rules, which come first and are kept apart, in the same format, so
+/// updates never touch them.
 /// </summary>
 public interface IAnimeRelations
 {
@@ -30,10 +31,10 @@ public interface IAnimeRelations
 	IReadOnlyList<AnimeRelationRule> UserRules { get; }
 
 	/// <summary>
-	/// Where the anime's episode is in the numbering it continues (e.g. 16 for a 2nd season's 4th episode), from the first
-	/// rule that covers it; null if none does.
+	/// The anime's episode's absolute number (e.g. 16 for a 2nd season's 4th episode), from the first rule that covers
+	/// it; null if none does.
 	/// </summary>
-	AnimeRelationMatch? FindContinuedEpisode(AnimeModel anime, int episode);
+	AnimeRelationMatch? FindAbsoluteEpisode(AnimeModel anime, int episode);
 
 	/// <summary>The rules about the anime, as either side of them; the user's first.</summary>
 	IReadOnlyList<AnimeRelationMatch> GetRules(AnimeModel anime);
@@ -95,15 +96,15 @@ public sealed class AnimeRelations : IAnimeRelations
 		}
 	}
 
-	public AnimeRelationMatch? FindContinuedEpisode(AnimeModel anime, int episode)
+	public AnimeRelationMatch? FindAbsoluteEpisode(AnimeModel anime, int episode)
 	{
 		var ids = RelationIds.Of(anime);
 		foreach (var (rule, isUserRule) in AllRules())
 		{
 			// The rule itself, and with "!", the destination counting on itself: the same numbers either way.
-			if (rule.Destination.Matches(ids) && rule.ToSourceEpisode(episode) is { } continued)
+			if (rule.Destination.Matches(ids) && rule.ToSourceEpisode(episode) is { } absolute)
 			{
-				return new AnimeRelationMatch(rule, continued, isUserRule);
+				return new AnimeRelationMatch(rule, absolute, isUserRule);
 			}
 		}
 

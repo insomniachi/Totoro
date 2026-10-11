@@ -37,14 +37,14 @@ public sealed record EpisodeRange(int First, int? Last)
 /// <summary>
 /// A rule from anime-relations (https://github.com/erengy/anime-relations): episodes <see cref="SourceEpisodes"/> of
 /// <see cref="Source"/> are episodes <see cref="DestinationEpisodes"/> of <see cref="Destination"/>. E.g. "Seihantai na
-/// Kimi to Boku 13-25 are ~ 2nd Season 1-13": a provider that counts on from the first season calls the 2nd season's
-/// first episode its 13th.
+/// Kimi to Boku 13-25 are ~ 2nd Season 1-13": a provider using absolute numbering from the first season calls the 2nd
+/// season's first episode its 13th.
 /// </summary>
 /// <param name="AlsoCountsOnItself">
-/// The rule's "!": the destination may itself be numbered on like this (e.g. a "2nd Season" show whose episodes are
-/// 13-25), which is the same mapping with the destination as the source. It matters to tools that work out the anime
-/// from a file's name (Taiga, anime-relations' own); Totoro looks rules up by the season being watched, where both give
-/// the same number, so it's kept for the file's sake only.
+/// The rule's "!": the destination's own show may use the same absolute numbering (e.g. a "2nd Season" show whose
+/// episodes are 13-25), which is the same mapping with the destination as the source. It matters to tools that work out
+/// the anime from a file's name (Taiga, anime-relations' own); Totoro looks rules up by the season being watched, where
+/// both give the same number, so it's kept for the file's sake only.
 /// </param>
 public sealed partial record AnimeRelationRule(
 	RelationIds Source,

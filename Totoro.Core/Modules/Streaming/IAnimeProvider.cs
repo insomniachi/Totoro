@@ -33,7 +33,7 @@ public interface IAnimeProvider
 /// <param name="Score">How well the title matched the search, from 0 to 1; 1 is an exact match.</param>
 public sealed record ProviderShow(string Id, string Title, double Score = 0);
 
-/// <param name="Number">The episode number as the provider numbers it (it may continue on from a previous season).</param>
+/// <param name="Number">The episode number as the provider numbers it (with absolute numbering, it carries on from a previous season).</param>
 public sealed record ProviderEpisode(string ShowId, string Id, float Number);
 
 public enum VideoServerKind

@@ -165,9 +165,9 @@ public sealed partial class WatchService(
 			await relations.EnsureAvailableAsync(ct);
 			if (PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), anime, number, settings.EpisodeNumbering) is not { } episode)
 			{
-				// Perhaps the provider numbers it on from an earlier season, and there's no rule for it yet.
+				// Perhaps the provider uses absolute numbering, and there's no rule for it yet.
 				Show(PlaybackStatusKind.Error,
-					 $"Episode {number} isn't on {provider.Name} yet. If {provider.Name} numbers this season on from an earlier one, set that in its episode numbering.",
+					 $"Episode {number} isn't on {provider.Name} yet. If {provider.Name} uses absolute numbering (on across seasons), set that in its episode numbering.",
 					 "Episode numbering…", () => _ = EditNumberingAsync(anime, number));
 				return;
 			}
@@ -484,29 +484,29 @@ public sealed partial class WatchService(
 
 	/// <summary>
 	/// The provider's episode for the anime's episode <paramref name="number"/>, skipping specials like 12.5. Providers may
-	/// number a season on from an earlier one (one show for both seasons, the second from 13): then anime-relations (and
-	/// the user's rules) say where the episode is. <paramref name="numbering"/> is the anime's setting: each season from 1,
-	/// numbered on, or (null) worked out from the provider's episode numbers.
+	/// use absolute numbering, carrying on across seasons (one show for both seasons, the second from 13): then
+	/// anime-relations (and the user's rules) say where the episode is. <paramref name="numbering"/> is the anime's
+	/// setting: by season, absolute, or (null) worked out from the provider's episode numbers.
 	/// </summary>
 	private ProviderEpisode? PickEpisode(List<ProviderEpisode> episodes, AnimeModel anime, int number, EpisodeNumbering? numbering)
 	{
 		var regular = episodes.Where(x => x.Number == MathF.Floor(x.Number)).ToList();
 		ProviderEpisode? Numbered(int n) => regular.FirstOrDefault(x => (int)x.Number == n);
 
-		// Numbered on from an earlier entry (one show for several seasons): anime-relations says where the episode is.
-		if (numbering != EpisodeNumbering.Season && relations.FindContinuedEpisode(anime, number) is { } continued)
+		// Absolute numbering (one show for several seasons): anime-relations says where the episode is.
+		if (numbering != EpisodeNumbering.Season && relations.FindAbsoluteEpisode(anime, number) is { } absolute)
 		{
-			if (numbering == EpisodeNumbering.Continued)
+			if (numbering == EpisodeNumbering.Absolute)
 			{
-				return Numbered(continued.Episode);
+				return Numbered(absolute.Episode);
 			}
 
-			// Worked out: numbered on if the provider's numbers go past this season's, or it hasn't this season's number.
-			var seasonLength = anime.TotalEpisodes ?? continued.Rule.DestinationEpisodes.Last;
-			var countsOn = seasonLength is { } length && regular.Any(x => x.Number > length) || Numbered(number) is null;
-			if (countsOn && Numbered(continued.Episode) is { } numberedOn)
+			// Worked out: absolute if the provider's numbers go past this season's, or it hasn't this season's number.
+			var seasonLength = anime.TotalEpisodes ?? absolute.Rule.DestinationEpisodes.Last;
+			var isAbsolute = seasonLength is { } length && regular.Any(x => x.Number > length) || Numbered(number) is null;
+			if (isAbsolute && Numbered(absolute.Episode) is { } absoluteEpisode)
 			{
-				return numberedOn;
+				return absoluteEpisode;
 			}
 		}
 
@@ -516,8 +516,8 @@ public sealed partial class WatchService(
 			return seasonEpisode;
 		}
 
-		// No rule: providers that only list a later season's episodes may number them on (a second season from 13); count
-		// from their first.
+		// No rule: providers that only list a later season's episodes may still use absolute numbering (a second season
+		// from 13); count from their first.
 		var offset = regular.Count > 0 ? (int)regular.Min(x => x.Number) - 1 : 0;
 		return offset > 0 ? Numbered(number + offset) : null;
 	}

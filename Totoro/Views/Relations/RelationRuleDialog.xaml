@@ -8,7 +8,7 @@
     <StackPanel MinWidth="460" Spacing="12">
         <TextBlock
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Text="For a provider that has one show for several seasons, and numbers a season on from an earlier one: e.g. a 2nd season's first episode as 13."
+            Text="For a provider that uses absolute numbering: one show for several seasons, whose numbers carry on across them, e.g. a 2nd season from 13."
             TextWrapping="Wrap" />
         <relations:RelationRuleEditor ViewModel="{x:Bind ViewModel.Editor, Mode=OneWay}" />
     </StackPanel>

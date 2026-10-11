@@ -19,7 +19,7 @@ public sealed record AnimeWatchSettings(
 	IReadOnlyDictionary<string, string> Shows,
 	[property: Description("Providers it has its own settings for (e.g. video quality), set in the app.")]
 	IReadOnlyList<string> OwnProviderSettings,
-	[property: Description("How its provider numbers its episodes: Season (each season from 1), Continued (on from an earlier season, placed by numbering rules), or null to work it out.")]
+	[property: Description("How its provider numbers its episodes: Season (each season from 1), Absolute (carrying on across seasons, placed by numbering rules), or null for automatic.")]
 	EpisodeNumbering? EpisodeNumbering);
 
 /// <summary>Agent tools for an anime's own settings (see <see cref="AnimeSettings"/>).</summary>
@@ -42,7 +42,7 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 		[Description("Off (don't skip), Ask (offer to skip) or Automatic (skip), or Default to follow the app-wide setting.")]
 		AnimeSkipMode? openingSkipMode = null,
 		[Description("As openingSkipMode, for endings.")] AnimeSkipMode? endingSkipMode = null,
-		[Description("How its provider numbers its episodes: Season (each season from 1), Continued (on from an earlier season, as numbering rules say), or Automatic to work it out.")]
+		[Description("How its provider numbers its episodes: Season (each season from 1), Absolute (carrying on across seasons, as numbering rules say), or Automatic to work it out from the provider's episodes.")]
 		AnimeEpisodeNumbering? episodeNumbering = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
@@ -70,7 +70,7 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 			settings.EpisodeNumbering = numbering switch
 			{
 				AnimeEpisodeNumbering.Season => EpisodeNumbering.Season,
-				AnimeEpisodeNumbering.Continued => EpisodeNumbering.Continued,
+				AnimeEpisodeNumbering.Absolute => EpisodeNumbering.Absolute,
 				_ => null,
 			};
 		}
@@ -118,5 +118,5 @@ public enum AnimeEpisodeNumbering
 {
 	Automatic,
 	Season,
-	Continued,
+	Absolute,
 }

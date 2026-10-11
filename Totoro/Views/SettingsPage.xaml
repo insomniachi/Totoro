@@ -130,7 +130,7 @@
 
             <toolkit:SettingsCard
                 Command="{x:Bind ViewModel.OpenEpisodeNumberingCommand}"
-                Description="For providers with one show for several seasons, which number a later season on from an earlier one. Rules from anime-relations, and your own."
+                Description="For providers that use absolute numbering, carrying on across seasons (a 2nd season from 13). Rules from anime-relations, and your own."
                 Header="Episode numbering"
                 IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>

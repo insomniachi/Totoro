@@ -18,7 +18,7 @@ public sealed record ProviderChoice(Guid? Id, string Label)
 	public override string ToString() => Label;
 }
 
-/// <param name="Value">Null to work it out from the provider's episode numbers.</param>
+/// <param name="Value">Null to work it out from the provider's episode numbers (automatic).</param>
 public sealed record NumberingChoice(string Label, EpisodeNumbering? Value)
 {
 	public override string ToString() => Label;
@@ -95,15 +95,15 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 
 	public IReadOnlyList<NumberingChoice> NumberingChoices { get; } =
 	[
-		new("Work it out", null),
-		new("Each season from 1", EpisodeNumbering.Season),
-		new("Numbered on from an earlier season", EpisodeNumbering.Continued),
+		new("Automatic", null),
+		new("By season", EpisodeNumbering.Season),
+		new("Absolute", EpisodeNumbering.Absolute),
 	];
 
 	/// <summary>How its provider numbers its episodes (see <see cref="AnimeSettings.EpisodeNumbering"/>).</summary>
 	[ObservableProperty] public partial NumberingChoice Numbering { get; set; }
 
-	/// <summary>The rule that says where its episodes are when numbered on, or that there's none.</summary>
+	/// <summary>The rule that says where its episodes are in absolute numbering, or that there's none.</summary>
 	[ObservableProperty] public partial string RuleSummary { get; private set; } = "Looking for a rule…";
 
 	/// <summary>A rule of the user's own for it, added when saving if it's filled in.</summary>
@@ -257,11 +257,11 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		var ids = RelationIds.Of(anime);
 		if (relations.GetRules(anime).FirstOrDefault(x => x.Rule.Destination.Matches(ids)) is not { } match)
 		{
-			return "No rule for it. If its provider numbers it on from an earlier season, add one below.";
+			return "Absolute numbering carries on across seasons. There's no rule for it yet: add one below if its provider uses it.";
 		}
 
-		var source = match.IsUserRule ? "Your rule" : "anime-relations";
-		return $"{source}: its episodes {match.Rule.DestinationEpisodes} are numbered {match.Rule.SourceEpisodes}.";
+		var source = match.IsUserRule ? "your rule" : "anime-relations";
+		return $"Absolute numbering carries on across seasons: its episodes {match.Rule.DestinationEpisodes} are {match.Rule.SourceEpisodes} ({source}).";
 	}
 
 	private static List<SkipModeChoice> CreateSkipModes(SkipMode appWide)

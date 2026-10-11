@@ -20,6 +20,6 @@ public static class RelationRuleText
 		return parts.Length == 2 ? $"{parts[0]} → {parts[1].Replace("~", parts[0])}" : rule.Title;
 	}
 
-	/// <summary>What it does, e.g. "Episodes 1-13 are numbered 13-25".</summary>
-	public static string Effect(AnimeRelationRule rule) => $"Episodes {rule.DestinationEpisodes} are numbered {rule.SourceEpisodes}";
+	/// <summary>What it does, e.g. "Episodes 1-13 are 13-25 in absolute numbering".</summary>
+	public static string Effect(AnimeRelationRule rule) => $"Episodes {rule.DestinationEpisodes} are {rule.SourceEpisodes} in absolute numbering";
 }

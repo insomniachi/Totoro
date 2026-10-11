@@ -75,11 +75,11 @@
                 Value="{x:Bind ViewModel.SeasonLast, Mode=TwoWay}" />
         </Grid>
 
-        <!--  The earlier entry: one of the series' seasons when they're known, otherwise searched for  -->
+        <!--  Where absolute numbering starts: one of the series' seasons when they're known, otherwise searched for  -->
         <ComboBox
             HorizontalAlignment="Stretch"
-            AutomationProperties.Name="Numbered on from"
-            Header="Numbered on from"
+            AutomationProperties.Name="Absolute numbering starts at"
+            Header="Absolute numbering starts at"
             ItemTemplate="{StaticResource AnimeTemplate}"
             ItemsSource="{x:Bind ViewModel.EarlierSeasons, Mode=OneWay}"
             SelectedItem="{x:Bind ViewModel.Earlier, Mode=TwoWay}"
@@ -87,11 +87,11 @@
 
         <AutoSuggestBox
             x:Name="EarlierBox"
-            AutomationProperties.Name="Numbered on from"
-            Header="Numbered on from"
+            AutomationProperties.Name="Absolute numbering starts at"
+            Header="Absolute numbering starts at"
             ItemTemplate="{StaticResource AnimeTemplate}"
             ItemsSource="{x:Bind ViewModel.EarlierResults, Mode=OneWay}"
-            PlaceholderText="Search for the earlier entry, e.g. the first season"
+            PlaceholderText="Search for the season it starts at, e.g. the first"
             QueryIcon="Find"
             SuggestionChosen="OnEarlierChosen"
             TextChanged="OnEarlierTextChanged"
@@ -99,8 +99,8 @@
             Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasEarlierSeasons), Mode=OneWay}" />
 
         <NumberBox
-            AutomationProperties.Name="Which numbers the season's first episode"
-            Header="Which numbers the season's first episode"
+            AutomationProperties.Name="Absolute number of its first episode"
+            Header="Absolute number of its first episode"
             Minimum="1"
             PlaceholderText="e.g. 13"
             SpinButtonPlacementMode="Compact"

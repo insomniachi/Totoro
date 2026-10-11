@@ -37,11 +37,11 @@ public sealed record SeasonMapEntry(int Number, RelationAnime Anime, bool IsChos
 }
 
 /// <summary>
-/// Edits an anime-relations rule, worded as what it means for watching: "this season's episodes 1 to 13 are numbered
-/// on from 13 by an earlier entry". Anime are picked by searching the selected anime database, which gives their ids.
-/// Once the season is chosen, its series' seasons are found (prequels and sequels, see SeasonMap), and the rest is
-/// filled in from them: numbered on from the first season, from the episodes of the seasons in between. Used by the
-/// rule dialog, and inline in an anime's settings, where the season is that anime.
+/// Edits an anime-relations rule, worded as what it means for watching: "this season's episodes 1 to 13 are 13 to 25 in
+/// absolute numbering, counting from an earlier season". Anime are picked by searching the selected anime database,
+/// which gives their ids. Once the season is chosen, its series' seasons are found (prequels and sequels, see
+/// SeasonMap), and the rest is filled in from them: absolute numbering from the first season, over the episodes of the
+/// seasons in between. Used by the rule dialog, and inline in an anime's settings, where the season is that anime.
 /// </summary>
 public sealed partial class RelationRuleEditorViewModel : ObservableObject
 {
@@ -94,10 +94,10 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 	/// <summary>The season's last episode the rule covers; empty (NaN) while it's still airing.</summary>
 	[ObservableProperty] public partial double SeasonLast { get; set; } = double.NaN;
 
-	/// <summary>The entry whose numbering the provider continues, e.g. the first season.</summary>
+	/// <summary>Where absolute numbering starts: the entry whose numbering the provider carries on, e.g. the first season.</summary>
 	[ObservableProperty] public partial RelationAnime? Earlier { get; set; }
 
-	/// <summary>The number the provider gives the season's first episode (of those covered), e.g. 13.</summary>
+	/// <summary>The absolute number of the season's first episode (of those covered), e.g. 13.</summary>
 	[ObservableProperty] public partial double EarlierFirst { get; set; } = double.NaN;
 
 	/// <summary>
@@ -127,10 +127,10 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 
 	/// <summary>What the rule means, in words; or what's still missing. Never null (it's passed to x:Bind functions).</summary>
 	public string Summary => ToRule() is { } rule
-		? $"{Season!.Title}'s episodes {rule.DestinationEpisodes} are {Earlier!.Title}'s {rule.SourceEpisodes}."
+		? $"{Season!.Title}'s episodes {rule.DestinationEpisodes} are {rule.SourceEpisodes} in absolute numbering from {Earlier!.Title}."
 		: Season is null ? "Choose the season."
-		: Earlier is null ? "Choose the entry it's numbered on from."
-		: "Give the number its provider gives the season's first episode.";
+		: Earlier is null ? "Choose where absolute numbering starts."
+		: "Give the absolute number of the season's first episode.";
 
 	public bool IsValid => ToRule() is not null;
 
@@ -192,8 +192,8 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 	}
 
 	/// <summary>
-	/// Finds the season's series (its prequels and sequels), and fills the rule in from it: numbered on from the first
-	/// season, over the seasons in between.
+	/// Finds the season's series (its prequels and sequels), and fills the rule in from it: absolute numbering from the
+	/// first season, over the seasons in between.
 	/// </summary>
 	private async Task MapSeasonsAsync(RelationAnime? season)
 	{
@@ -225,10 +225,10 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 			_seasonIndex = index;
 			Seasons = [.. seasons.Select((x, i) => new SeasonMapEntry(i + 1, RelationAnime.From(x), i == index))];
 			EarlierSeasons = [.. seasons.Take(Math.Max(index, 0)).Select(RelationAnime.From)];
-			SeasonsStatus = index > 0 ? "" : "It's the first season, with nothing before it to number on from.";
+			SeasonsStatus = index > 0 ? "" : "It's the first season: absolute numbering starts with it, so it needs no rule.";
 			if (index > 0)
 			{
-				// Usually one show for the whole series: numbered on from the first season.
+				// Usually one show for the whole series: absolute numbering from the first season.
 				SeasonFirst = 1;
 				Earlier = EarlierSeasons[0];
 				FillEarlierFirst();
@@ -241,12 +241,12 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		{
 			if (!mapping.IsCancellationRequested)
 			{
-				SeasonsStatus = "Couldn't find its other seasons. Search for the entry it's numbered on from instead.";
+				SeasonsStatus = "Couldn't find its other seasons. Search for where absolute numbering starts instead.";
 			}
 		}
 	}
 
-	/// <summary>The number the earlier season gives this one's first episode, from the seasons in between, when they're known.</summary>
+	/// <summary>The absolute number of this season's first episode, from the seasons in between, when they're known.</summary>
 	private void FillEarlierFirst()
 	{
 		if (_seasonIndex <= 0 || Earlier is null)
@@ -255,7 +255,7 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		}
 
 		var from = _seasons.Take(_seasonIndex).ToList().FindIndex(x => RelationIds.Of(x).Matches(Earlier.Ids));
-		if (from >= 0 && SeasonMap.NumberedOnFrom(_seasons, from, _seasonIndex) is { } first)
+		if (from >= 0 && SeasonMap.AbsoluteFirstEpisode(_seasons, from, _seasonIndex) is { } first)
 		{
 			_calculatedEarlierFirst = first + (IsEpisode(SeasonFirst) ? (int)SeasonFirst - 1 : 0);
 			EarlierFirst = _calculatedEarlierFirst.Value;

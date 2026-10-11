@@ -4,7 +4,7 @@ namespace Totoro.Core.Relations;
 
 /// <summary>
 /// A series' seasons, first to last, found by following prequels and sequels in the anime database: what a provider's
-/// numbering runs on through when it has one show for the whole series. Only TV-like entries (TV, ONA) count as
+/// absolute numbering counts through when it has one show for the whole series. Only TV-like entries (TV, ONA) count as
 /// seasons; movies, OVAs and specials, which providers number apart, are left out.
 /// </summary>
 public static class SeasonMap
@@ -41,10 +41,10 @@ public static class SeasonMap
 	}
 
 	/// <summary>
-	/// The number a provider gives season <paramref name="seasonIndex"/>'s first episode when its numbering runs on from
-	/// season <paramref name="fromIndex"/>; null if a season in between hasn't a known length.
+	/// The absolute number of season <paramref name="seasonIndex"/>'s first episode, counting from season
+	/// <paramref name="fromIndex"/>'s first; null if a season in between hasn't a known length.
 	/// </summary>
-	public static int? NumberedOnFrom(IReadOnlyList<AnimeModel> seasons, int fromIndex, int seasonIndex)
+	public static int? AbsoluteFirstEpisode(IReadOnlyList<AnimeModel> seasons, int fromIndex, int seasonIndex)
 	{
 		var first = 1;
 		for (var i = fromIndex; i < seasonIndex; i++)

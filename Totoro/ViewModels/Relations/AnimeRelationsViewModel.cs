@@ -14,7 +14,7 @@ public sealed record UserRuleItem(int Index, AnimeRelationRule Rule)
 }
 
 /// <summary>
-/// Episode numbering rules, for providers that number a season on from an earlier one: anime-relations' (kept
+/// Episode numbering rules, for providers that use absolute numbering across seasons: anime-relations' (kept
 /// locally, updated from GitHub) and the user's own, which they add, edit and remove here.
 /// </summary>
 public sealed partial class AnimeRelationsViewModel : NavigatableViewModel

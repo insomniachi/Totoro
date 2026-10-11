@@ -32,7 +32,7 @@ public sealed class AnimeSettings
 	/// <summary>What to do when an ending starts; null to follow the app-wide setting.</summary>
 	public SkipMode? EndingSkipMode { get; set; }
 
-	/// <summary>How its provider numbers its episodes; null to work it out (see <see cref="Settings.EpisodeNumbering"/>).</summary>
+	/// <summary>How its provider numbers its episodes, by season or absolute; null to work it out (see <see cref="Settings.EpisodeNumbering"/>).</summary>
 	public EpisodeNumbering? EpisodeNumbering { get; set; }
 
 	/// <summary>Nothing set: the app-wide settings apply throughout.</summary>
@@ -44,14 +44,14 @@ public sealed class AnimeSettings
 /// <summary>How a provider numbers an anime's episodes.</summary>
 public enum EpisodeNumbering
 {
-	/// <summary>As the anime database does: each season from 1.</summary>
+	/// <summary>By season, as the anime database does: each season from 1.</summary>
 	Season,
 
 	/// <summary>
-	/// On from an earlier entry, e.g. a 2nd season from 13 when the provider has one show for both seasons. Where its
-	/// episodes are comes from anime-relations (see Relations.IAnimeRelations).
+	/// Absolute numbering, which carries on across seasons: e.g. a 2nd season from 13, when the provider has one show for
+	/// both seasons. Where its episodes are comes from anime-relations (see Relations.IAnimeRelations).
 	/// </summary>
-	Continued,
+	Absolute,
 }
 
 /// <summary>
@@ -82,7 +82,7 @@ internal sealed class AnimeSettingsStore : IAnimeSettingsStore
 		try
 		{
 			_settings = File.Exists(_file)
-				? JsonSerializer.Deserialize<Dictionary<string, AnimeSettings>>(File.ReadAllText(_file), s_options) ?? []
+				? JsonSerializer.Deserialize<Dictionary<string, AnimeSettings>>(UpgradeNames(File.ReadAllText(_file)), s_options) ?? []
 				: [];
 		}
 		catch (JsonException)
@@ -165,6 +165,12 @@ internal sealed class AnimeSettingsStore : IAnimeSettingsStore
 	{
 		Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
 		File.WriteAllText(_file, JsonSerializer.Serialize(_settings, s_options));
+	}
+
+	/// <summary>Names saved by earlier versions, renamed since: EpisodeNumbering.Absolute was Continued.</summary>
+	private static string UpgradeNames(string json)
+	{
+		return json.Replace("\"EpisodeNumbering\":\"Continued\"", "\"EpisodeNumbering\":\"Absolute\"", StringComparison.Ordinal);
 	}
 
 	/// <summary>A deep copy, so changes to one given out don't reach the stored one until saved.</summary>

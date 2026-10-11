@@ -17,7 +17,7 @@
             <TextBlock
                 Margin="0,8,0,24"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Some providers have one show for several seasons and number a later season on from an earlier one: a 2nd season's first episode as 13, say. These rules say where each season's episodes are. They come from anime-relations, kept on this PC, and from your own rules, which come first."
+                Text="Some providers use absolute numbering: one show for several seasons, whose episode numbers carry on across them (a 2nd season from 13, say). These rules say where each season's episodes are in it. They come from anime-relations, kept on this PC, and from your own rules, which come first."
                 TextWrapping="Wrap" />
 
             <TextBlock
@@ -61,7 +61,7 @@
 
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="None yet. Add one when a provider numbers a season on and anime-relations has no rule for it (or not yet)."
+                Text="None yet. Add one when a provider uses absolute numbering for a season anime-relations has no rule for (or not yet)."
                 TextWrapping="Wrap"
                 Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasUserRules), Mode=OneWay}" />
 
