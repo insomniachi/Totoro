@@ -260,6 +260,16 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 		Message = NoFiltersMessage;
 	}
 
+	/// <summary>What the current season button does, e.g. "This season (Fall 2026)", for its tooltip and name.</summary>
+	public string CurrentSeasonName
+	{
+		get
+		{
+			var season = Core.Modules.Anime.Season.Of(DateTime.Now);
+			return $"This season ({season.SeasonName} {season.Year})";
+		}
+	}
+
 	/// <summary>Filters to this season's anime.</summary>
 	[RelayCommand]
 	private void CurrentSeason()

@@ -134,6 +134,21 @@
             CornerRadius="8">
             <ScrollView>
                 <StackPanel Padding="16" Spacing="12">
+                    <!--  The panel's heading, with clearing every filter at its end  -->
+                    <Grid>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            Style="{ThemeResource BodyStrongTextBlockStyle}"
+                            Text="Filters" />
+                        <HyperlinkButton
+                            Padding="8,4"
+                            HorizontalAlignment="Right"
+                            AutomationProperties.Name="Clear all filters"
+                            Command="{x:Bind ViewModel.ClearSearchFiltersCommand}"
+                            Content="Clear all"
+                            ToolTipService.ToolTip="Clear all filters" />
+                    </Grid>
+
                     <ComboBox
                         HorizontalAlignment="Stretch"
                         Header="Database"
@@ -151,17 +166,36 @@
                         PlaceholderText="Any title"
                         Text="{x:Bind ViewModel.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <ComboBox
-                        HorizontalAlignment="Stretch"
-                        Header="Season"
-                        ItemsSource="{x:Bind ViewModel.Seasons}"
-                        SelectedItem="{x:Bind ViewModel.SelectedSeason, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="vm:SeasonOption">
-                                <TextBlock Text="{x:Bind Label}" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <!--  As with Sort by: the label is outside the row, so the dropdown and the button line up  -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Season" />
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox
+                                HorizontalAlignment="Stretch"
+                                AutomationProperties.Name="Season"
+                                ItemsSource="{x:Bind ViewModel.Seasons}"
+                                SelectedItem="{x:Bind ViewModel.SelectedSeason, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SeasonOption">
+                                        <TextBlock Text="{x:Bind Label}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <!--  Picks the current season and year  -->
+                            <Button
+                                Grid.Column="1"
+                                VerticalAlignment="Stretch"
+                                AutomationProperties.Name="{x:Bind ViewModel.CurrentSeasonName}"
+                                Command="{x:Bind ViewModel.CurrentSeasonCommand}"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.CurrentSeasonName}">
+                                <FontIcon FontSize="14" Glyph="&#xE787;" />
+                            </Button>
+                        </Grid>
+                    </StackPanel>
 
                     <!--  Any, one year, or a range; a range may be open at either end  -->
                     <StackPanel Spacing="8">
@@ -281,18 +315,6 @@
                                 <FontIcon FontSize="14" Glyph="{x:Bind local:AdvancedSearchPage.SortOrderGlyph(ViewModel.IsAscending), Mode=OneWay}" />
                             </Button>
                         </Grid>
-                    </StackPanel>
-
-                    <StackPanel Spacing="8">
-                        <Button
-                            HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.CurrentSeasonCommand}"
-                            Content="This season"
-                            Style="{ThemeResource AccentButtonStyle}" />
-                        <Button
-                            HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.ClearSearchFiltersCommand}"
-                            Content="Clear filters" />
                     </StackPanel>
                 </StackPanel>
             </ScrollView>
