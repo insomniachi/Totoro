@@ -69,6 +69,12 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 
 	[ObservableProperty] public partial bool IsFullScreen { get; set; }
 
+	/// <summary>
+	/// Whether it's a short video (e.g. an opening, from the Music tab) rather than an episode: the controls are just play,
+	/// the seek bar, volume and full screen.
+	/// </summary>
+	[ObservableProperty] public partial bool IsClip { get; private set; }
+
 	/// <summary>The opening, ending... as chapters, marked on the seek bar.</summary>
 	[ObservableProperty] public partial IReadOnlyList<MediaChapter> Chapters { get; private set; } = [];
 
@@ -151,10 +157,17 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 
 	/// <summary>Plays <paramref name="uri"/> from <paramref name="start"/>, replacing what's playing.</summary>
 	/// <param name="options">libvlc media options, e.g. ":http-referrer=...".</param>
-	public async Task PlayAsync(Uri uri, string title, IEnumerable<string> options, TimeSpan start)
+	/// <param name="isClip">A short video (e.g. an opening) rather than an episode: only the simple controls show, and no episodes.</param>
+	public async Task PlayAsync(Uri uri, string title, IEnumerable<string> options, TimeSpan start, bool isClip = false)
 	{
 		Title = title;
+		IsClip = isClip;
 		ResetForNewVideo();
+		if (isClip)
+		{
+			SetEpisodes([]);
+		}
+
 		IsBuffering = true;
 
 		await _initialized.Task;

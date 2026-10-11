@@ -130,6 +130,9 @@ public sealed partial class PlayerWindow : Window
 	/// <summary>The "Up next" card: 16:9 with a thumbnail (its details over it); as tall as its details without one.</summary>
 	public static double NextCardHeight(string image) => image.Length > 0 ? 360 * 9 / 16.0 : double.NaN;
 
+	/// <summary>The episode controls (previous, next, skipping ahead, the episode list...): not for a short video, e.g. an opening.</summary>
+	public static Visibility HiddenForClips(bool isClip) => isClip ? Visibility.Collapsed : Visibility.Visible;
+
 	public static Visibility VisibleIfAny(string text) => text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 	private void OnVideoInitialized(object? sender, InitializedEventArgs e) => _ = ViewModel.InitializeAsync(e.SwapChainOptions);

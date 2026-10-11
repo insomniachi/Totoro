@@ -78,7 +78,7 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 			options.Add($":sub-language={settings.Value.SubtitleLanguage}");
 		}
 
-		_ = viewModel.PlayAsync(uri, media.Title, options, startPosition);
+		_ = viewModel.PlayAsync(uri, media.Title, options, startPosition, media.IsClip);
 	}
 
 	public Task SeekAsync(TimeSpan position) => _window?.ViewModel.SeekAsync(position) ?? Task.CompletedTask;

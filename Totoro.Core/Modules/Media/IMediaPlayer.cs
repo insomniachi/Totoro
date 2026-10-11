@@ -36,7 +36,9 @@ public interface IMediaPlayer
 
 /// <param name="Title">What the player shows as the title, e.g. "Frieren - Episode 5".</param>
 /// <param name="Headers">HTTP headers to send with requests for the video.</param>
-public sealed record MediaItem(Uri Uri, string Title, IReadOnlyDictionary<string, string>? Headers = null);
+/// <param name="IsClip">A short video (e.g. an opening, from the Music tab) rather than an episode: a player with its own controls
+/// shows only the simple ones (play, seek, volume, full screen).</param>
+public sealed record MediaItem(Uri Uri, string Title, IReadOnlyDictionary<string, string>? Headers = null, bool IsClip = false);
 
 /// <summary>A chapter starting at <paramref name="Start"/> and lasting until the next one.</summary>
 public sealed record MediaChapter(string Title, TimeSpan Start);

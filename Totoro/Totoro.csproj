@@ -57,6 +57,7 @@
     <PackageReference Include="JikanDotNet" />
     <PackageReference Include="LibVLCSharp.WinUI" />
     <PackageReference Include="MalApi.V2" />
+    <PackageReference Include="NAudio.Wasapi" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />

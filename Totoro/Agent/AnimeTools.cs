@@ -19,7 +19,9 @@ public sealed class AnimeTools(
 	AnimeLookup lookup,
 	IFactory<IAnimeTracker, Guid> trackers,
 	AnimeTrackingService tracking,
-	IPlaybackProgressStore progress)
+	IPlaybackProgressStore progress,
+	AnimeSongService songs,
+	ISongPlayer songPlayer)
 {
 	[AgentTool("search_anime")]
 	[Description("Searches the anime database. Give at least one filter; results are best match first.")]
@@ -98,6 +100,57 @@ public sealed class AnimeTools(
 		var watched = anime.Tracking?.WatchedEpisodes ?? 0;
 		var saved = progress.GetAll(anime);
 		return [.. episodes.Select(x => EpisodeSummary.From(x, watched, x.IsSpecial ? null : saved.GetValueOrDefault(x.EpisodeNumber)))];
+	}
+
+	[AgentTool("get_anime_songs")]
+	[Description("An anime's songs: its openings, endings and insert songs, with who sings them and the episodes they're in. Each may have its audio and a creditless video, which play_anime_song plays.")]
+	public async Task<IReadOnlyList<AnimeSong>> GetAnimeSongsAsync(long animeId)
+	{
+		var anime = await lookup.GetAsync(animeId);
+		return await songs.GetSongsAsync(anime);
+	}
+
+	[AgentTool("play_anime_song")]
+	[Description("Plays one of an anime's songs: its audio in the app (the Music tab), or its creditless video in the media player.")]
+	public async Task<string> PlayAnimeSongAsync(
+		long animeId,
+		AnimeSongKind kind,
+		[Description("Its number from get_anime_songs; leave it out if it has none.")] int? number = null,
+		[Description("Play its video in the media player rather than its audio in the app.")] bool video = false)
+	{
+		var anime = await lookup.GetAsync(animeId);
+		var song = (await songs.GetSongsAsync(anime)).FirstOrDefault(x => x.Kind == kind && x.Number == number)
+			?? throw new AgentToolException($"{anime.Title} has no such song; get_anime_songs lists them.");
+		try
+		{
+			if (video)
+			{
+				songs.PlayVideo(anime, song);
+			}
+			else
+			{
+				await songs.PlayAudioAsync(song);
+			}
+		}
+		catch (InvalidOperationException ex)
+		{
+			throw new AgentToolException(ex.Message);
+		}
+
+		return $"Playing {song.Label}: {song.Title}.";
+	}
+
+	[AgentTool("stop_anime_song")]
+	[Description("Stops the song playing in the app (from play_anime_song or the Music tab).")]
+	public string StopAnimeSong()
+	{
+		if (songPlayer.Current is not { } song)
+		{
+			return "No song is playing.";
+		}
+
+		songPlayer.Stop();
+		return $"Stopped {song.Label}: {song.Title}.";
 	}
 
 	[AgentTool("update_list_entry")]

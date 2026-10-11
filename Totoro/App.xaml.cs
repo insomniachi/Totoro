@@ -14,6 +14,7 @@ using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Relations;
+using Totoro.Core.Services;
 using Totoro.Core.Settings;
 using Totoro.Playback;
 using Totoro.UI;
@@ -56,6 +57,8 @@ public partial class App : Application
 
 				// Watching: the watch service drives a playback from a card's Play.
 				services.AddSingleton<WatchService>();
+				// Songs' audio, played in the Music tab.
+				services.AddSingleton<ISongPlayer, SongAudioPlayer>();
 				services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();
 
 				services.AddCoreServices();

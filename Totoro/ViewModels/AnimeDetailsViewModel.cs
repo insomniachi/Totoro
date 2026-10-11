@@ -31,6 +31,8 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		AnimeModel anime,
 		IFactory<IAnimeMetadataProvider, Guid> providers,
 		IPlaybackProgressStore progress,
+		AnimeSongService songs,
+		ISongPlayer songPlayer,
 		ILogger<AnimeDetailsViewModel> logger)
 	{
 		_providers = providers;
@@ -47,6 +49,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Characters = new CharactersTab(
 			() => _provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>()),
 			logger);
+		Music = new MusicTab(() => songs.GetSongsAsync(_details), songs.PlayAudioAsync, song => songs.PlayVideo(_details, song), songPlayer, logger);
 		Related = new RelatedTab();
 
 		UpdateTracking();
@@ -58,10 +61,12 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	public const string OverviewTab = "Overview";
 	public const string EpisodesTabKey = "Episodes";
 	public const string CharactersTabKey = "Characters";
+	public const string MusicTabKey = "Music";
 	public const string RelatedTabKey = "Related";
 
 	public EpisodesTab Episodes { get; }
 	public CharactersTab Characters { get; }
+	public MusicTab Music { get; }
 	public RelatedTab Related { get; }
 
 	/// <summary>The key of the tab being shown; a tab loads its content the first time it's selected.</summary>
@@ -74,6 +79,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		{
 			EpisodesTabKey => Episodes,
 			CharactersTabKey => Characters,
+			MusicTabKey => Music,
 			RelatedTabKey => Related,
 			_ => null,
 		};

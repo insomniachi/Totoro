@@ -85,6 +85,7 @@ public static class ServiceCollectionExtensions
 						   .AddSingleton<Modules.Media.IPlaybackProgressStore, Modules.Media.PlaybackProgressStore>()
 							   .AddSingleton<IAnimeSettingsStore, AnimeSettingsStore>()
 							   .AddSingleton<Services.AnimeTrackingService>()
+							   .AddSingleton<Services.AnimeSongService>()
 							   .AddSingleton<Agent.IAgentTools, Agent.AgentTools>()
 						   .AddLogging();
 		}

@@ -92,6 +92,7 @@
                         Text="Overview" />
                     <SelectorBarItem Tag="Episodes" Text="Episodes" />
                     <SelectorBarItem Tag="Characters" Text="Characters" />
+                    <SelectorBarItem Tag="Music" Text="Music" />
                     <SelectorBarItem Tag="Related" Text="Related" />
                 </SelectorBar>
 
@@ -104,6 +105,9 @@
                     </toolkit:Case>
                     <toolkit:Case Value="Characters">
                         <details:CharactersTabView ViewModel="{x:Bind ViewModel.Characters, Mode=OneWay}" />
+                    </toolkit:Case>
+                    <toolkit:Case Value="Music">
+                        <details:MusicTabView ViewModel="{x:Bind ViewModel.Music, Mode=OneWay}" />
                     </toolkit:Case>
                     <toolkit:Case Value="Related">
                         <details:RelatedTabView ViewModel="{x:Bind ViewModel.Related, Mode=OneWay}" />

@@ -346,6 +346,7 @@
                     Spacing="12">
                     <Button
                         AutomationProperties.Name="Previous episode"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
                         Command="{x:Bind ViewModel.PreviousEpisodeCommand}"
                         IsEnabled="{x:Bind ViewModel.HasPreviousEpisode, Mode=OneWay}"
                         Style="{StaticResource PlayerButtonStyle}"
@@ -354,6 +355,7 @@
                     </Button>
                     <Button
                         AutomationProperties.Name="Back 10 seconds"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
                         Command="{x:Bind ViewModel.SeekByCommand}"
                         Style="{StaticResource PlayerButtonStyle}"
                         ToolTipService.ToolTip="Back 10 seconds">
@@ -383,6 +385,7 @@
                     </Button>
                     <Button
                         AutomationProperties.Name="Forward 30 seconds"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
                         Command="{x:Bind ViewModel.SeekByCommand}"
                         Style="{StaticResource PlayerButtonStyle}"
                         ToolTipService.ToolTip="Forward 30 seconds">
@@ -393,6 +396,7 @@
                     </Button>
                     <Button
                         AutomationProperties.Name="Next episode"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
                         Command="{x:Bind ViewModel.NextEpisodeCommand}"
                         IsEnabled="{x:Bind ViewModel.HasNextEpisode, Mode=OneWay}"
                         Style="{StaticResource PlayerButtonStyle}"
@@ -411,6 +415,7 @@
                         Width="NaN"
                         Padding="8,0"
                         AutomationProperties.Name="Skip 85 seconds"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
                         Command="{x:Bind ViewModel.SkipAheadCommand}"
                         Style="{StaticResource PlayerButtonStyle}"
                         ToolTipService.ToolTip="Skip 85 seconds, an opening's length">
@@ -420,6 +425,7 @@
                     <Button
                         x:Name="EpisodesButton"
                         AutomationProperties.Name="Episodes"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
                         Click="OnEpisodesButtonClick"
                         Style="{StaticResource PlayerButtonStyle}"
                         ToolTipService.ToolTip="Episodes (E)">
@@ -558,6 +564,7 @@
                     </Button>
                     <Button
                         AutomationProperties.Name="Audio and subtitles"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
                         Style="{StaticResource PlayerButtonStyle}"
                         ToolTipService.ToolTip="Audio and subtitles">
                         <FontIcon Glyph="&#xED1E;" />
