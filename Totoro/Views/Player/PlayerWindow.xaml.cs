@@ -124,6 +124,12 @@ public sealed partial class PlayerWindow : Window
 	/// <summary>The width of an episode's progress bar on its 128-wide thumbnail (inset 6 either side).</summary>
 	public static double EpisodeProgressWidth(double progress) => Math.Max(4, progress * 116);
 
+	/// <summary>e.g. "Up next · Episode 6".</summary>
+	public static string UpNext(string title) => $"Up next · {title}";
+
+	/// <summary>The "Up next" card: 16:9 with a thumbnail (its details over it); as tall as its details without one.</summary>
+	public static double NextCardHeight(string image) => image.Length > 0 ? 360 * 9 / 16.0 : double.NaN;
+
 	public static Visibility VisibleIfAny(string text) => text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 	private void OnVideoInitialized(object? sender, InitializedEventArgs e) => _ = ViewModel.InitializeAsync(e.SwapChainOptions);
@@ -157,10 +163,15 @@ public sealed partial class PlayerWindow : Window
 				// Paused or over: the controls stay until it plays again.
 				ShowControls();
 				break;
-			case nameof(PlayerViewModel.IsEpisodeListOpen) when ViewModel.IsEpisodeListOpen:
-				if (ViewModel.Episodes.FirstOrDefault(x => x.IsCurrent) is { } current)
+			case nameof(PlayerViewModel.IsEpisodeListOpen):
+				// Opened or closed from elsewhere (a key, picking an episode): the pop-up follows.
+				if (ViewModel.IsEpisodeListOpen && !EpisodeFlyout.IsOpen)
 				{
-					EpisodeListView.ScrollIntoView(current, ScrollIntoViewAlignment.Leading);
+					ShowEpisodeList();
+				}
+				else if (!ViewModel.IsEpisodeListOpen && EpisodeFlyout.IsOpen)
+				{
+					EpisodeFlyout.Hide();
 				}
 
 				break;
@@ -201,9 +212,6 @@ public sealed partial class PlayerWindow : Window
 			case VirtualKey.F or VirtualKey.F11:
 				ViewModel.ToggleFullScreenCommand.Execute(null);
 				break;
-			case VirtualKey.Escape when ViewModel.IsEpisodeListOpen:
-				ViewModel.IsEpisodeListOpen = false;
-				break;
 			case VirtualKey.E:
 				ViewModel.ToggleEpisodeListCommand.Execute(null);
 				break;
@@ -226,17 +234,28 @@ public sealed partial class PlayerWindow : Window
 
 	private void OnPointerMoved(object sender, PointerRoutedEventArgs e) => ShowControls();
 
-	private void OnVideoTapped(object sender, TappedRoutedEventArgs e)
-	{
-		// With the episode list open, a click beside it closes it.
-		if (ViewModel.IsEpisodeListOpen)
-		{
-			ViewModel.IsEpisodeListOpen = false;
-			return;
-		}
+	private void OnVideoTapped(object sender, TappedRoutedEventArgs e) => ViewModel.PlayPauseCommand.Execute(null);
 
-		ViewModel.PlayPauseCommand.Execute(null);
+	private void OnEpisodesButtonClick(object sender, RoutedEventArgs e) => ViewModel.ToggleEpisodeListCommand.Execute(null);
+
+	/// <summary>Opens the episode list above the controls (clear of the seek bar), centred over the Episodes button.</summary>
+	private void ShowEpisodeList()
+	{
+		ShowControls();
+		var button = EpisodesButton.TransformToVisual(Controls).TransformPoint(new Point(EpisodesButton.ActualWidth / 2, 0));
+		EpisodeFlyout.ShowAt(Controls, new FlyoutShowOptions { Placement = FlyoutPlacementMode.Top, Position = new Point(button.X, -8) });
 	}
+
+	private void OnEpisodeListOpened(object? sender, object e)
+	{
+		ViewModel.IsEpisodeListOpen = true;
+		if (ViewModel.Episodes.FirstOrDefault(x => x.IsCurrent) is { } current)
+		{
+			EpisodeListView.ScrollIntoView(current, ScrollIntoViewAlignment.Leading);
+		}
+	}
+
+	private void OnEpisodeListClosed(object? sender, object e) => ViewModel.IsEpisodeListOpen = false;
 
 	private void OnVideoDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
 	{
@@ -436,13 +455,14 @@ public sealed partial class PlayerWindow : Window
 	/// </summary>
 	private void SetChromeShown(bool shown)
 	{
-		var controlsHeight = (float)Controls.ActualHeight;
+		var controlsSpace = (float)ControlsSpace;
 		Controls.Opacity = shown ? 1 : 0;
 		Controls.Translation = shown ? Vector3.Zero : new Vector3(0, ChromeSlide, 0);
 		Controls.IsHitTestVisible = shown;
 		TitleBarArea.Opacity = shown ? 1 : 0;
 		TitleBarArea.Translation = shown ? Vector3.Zero : new Vector3(0, -ChromeSlide, 0);
-		Offers.Translation = shown ? Vector3.Zero : new Vector3(0, controlsHeight, 0);
+		// Down to 24 from the bottom: it sits 12 above the controls.
+		Offers.Translation = shown ? Vector3.Zero : new Vector3(0, controlsSpace - 12, 0);
 
 		// The window's own buttons (minimise, maximise, close) go too: drawn see-through.
 		var titleBar = AppWindow.TitleBar;
@@ -450,12 +470,14 @@ public sealed partial class PlayerWindow : Window
 		titleBar.ButtonInactiveForegroundColor = shown ? Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF) : Colors.Transparent;
 	}
 
-	/// <summary>Over the video, what's offered and the episode list stay clear of the title bar and the controls.</summary>
+	/// <summary>What's offered over the video (the skip button...) sits just above the controls.</summary>
 	private void OnControlsSizeChanged(object sender, SizeChangedEventArgs e)
 	{
-		Offers.Margin = new Thickness(16, 16, 16, 16 + Controls.ActualHeight);
-		EpisodeList.Margin = new Thickness(0, TitleBarArea.ActualHeight, 0, Controls.ActualHeight);
+		Offers.Margin = new Thickness(0, 16, 0, ControlsSpace + 12);
 	}
+
+	// How much of the bottom of the video the floating controls take: their height and the gap under them.
+	private double ControlsSpace => Controls.ActualHeight + Controls.Margin.Bottom;
 
 	private void SetCursorHidden(bool hidden)
 	{

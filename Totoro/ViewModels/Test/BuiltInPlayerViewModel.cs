@@ -14,6 +14,9 @@ public partial class BuiltInPlayerViewModel(IFactory<IMediaPlayer, Guid> players
 {
 	private readonly IInteractiveMediaPlayer? _player = players.Create(VlcModule.Id) as IInteractiveMediaPlayer;
 
+	// A thumbnail for the made-up third episode, so the "Up next" card shows one.
+	private const string SampleImage = "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx150672-WqmmwZ4nMzAy.png";
+
 	/// <summary>A file path or URL.</summary>
 	[ObservableProperty]
 	public partial string Source { get; set; } = "";
@@ -51,7 +54,7 @@ public partial class BuiltInPlayerViewModel(IFactory<IMediaPlayer, Guid> players
 		[
 			new PlayerEpisode(1, "The first episode", "3 Oct 2025 · 24 min", "What happens in the first episode.", null, true, false, 0),
 			new PlayerEpisode(2, "The second episode", "10 Oct 2025 · 24 min", "What happens in the second.", null, false, true, 0),
-			new PlayerEpisode(3, "The third episode", "17 Oct 2025 · 24 min", "What happens in the third.", null, false, false, 0.4),
+			new PlayerEpisode(3, "The third episode", "17 Oct 2025 · 24 min", "What happens in the third.", SampleImage, false, false, 0.4),
 		]);
 		_player.EpisodeRequested -= OnEpisodeRequested;
 		_player.EpisodeRequested += OnEpisodeRequested;
@@ -72,7 +75,7 @@ public partial class BuiltInPlayerViewModel(IFactory<IMediaPlayer, Guid> players
 	private async Task OfferNextAsync()
 	{
 		Result = "Offered, with a countdown…";
-		Result = _player is not null && await _player.OfferNextAsync("Episode 2", TimeSpan.FromSeconds(5), CancellationToken.None)
+		Result = _player is not null && await _player.OfferNextAsync("Episode 3", TimeSpan.FromSeconds(5), CancellationToken.None)
 			? "The next episode was accepted."
 			: "The next episode was declined.";
 	}

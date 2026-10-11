@@ -88,6 +88,12 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 	/// <summary>The next episode's card: its title, e.g. "Episode 6".</summary>
 	[ObservableProperty] public partial string NextTitle { get; private set; } = "";
 
+	/// <summary>The next episode's own title, if known (otherwise <see cref="NextTitle"/> again).</summary>
+	[ObservableProperty] public partial string NextName { get; private set; } = "";
+
+	/// <summary>The next episode's thumbnail URL; empty (never null, for x:Bind) when there's none.</summary>
+	[ObservableProperty] public partial string NextImage { get; private set; } = "";
+
 	[ObservableProperty] public partial bool IsNextVisible { get; private set; }
 
 	/// <summary>e.g. "Playing in 5…"; empty when it waits to be asked.</summary>
@@ -290,6 +296,11 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 		_next?.TrySetResult(false);
 		var next = _next = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 		NextTitle = title;
+		// Its thumbnail and title, from the episode list.
+		var current = Episodes.FirstOrDefault(x => x.IsCurrent);
+		var upNext = current is null ? null : Episodes.FirstOrDefault(x => x.Number == current.Number + 1);
+		NextName = upNext?.Title ?? title;
+		NextImage = upNext?.Image ?? "";
 		NextCountdown = "";
 		IsNextVisible = true;
 		await using var registration = ct.Register(() => next.TrySetResult(false));
