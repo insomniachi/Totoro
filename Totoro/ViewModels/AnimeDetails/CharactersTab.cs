@@ -6,7 +6,7 @@ namespace Totoro.ViewModels.AnimeDetails;
 
 public sealed record CharacterItem(string Name, string? Image);
 
-/// <summary>The anime's characters.</summary>
+/// <summary>The anime's characters: those with a picture (minor ones without are left out).</summary>
 public sealed partial class CharactersTab(Func<Task<List<CharacterModel>>> fetch, ILogger logger)
 	: LazyDetailsTab("No characters listed.", logger)
 {
@@ -15,7 +15,7 @@ public sealed partial class CharactersTab(Func<Task<List<CharacterModel>>> fetch
 
 	protected override async Task<int> LoadAsync()
 	{
-		Characters = [.. (await fetch()).Select(x => new CharacterItem(x.Name, x.Image?.AbsoluteUri))];
+		Characters = [.. (await fetch()).Where(x => x.Image is not null).Select(x => new CharacterItem(x.Name, x.Image!.AbsoluteUri))];
 		return Characters.Count;
 	}
 }

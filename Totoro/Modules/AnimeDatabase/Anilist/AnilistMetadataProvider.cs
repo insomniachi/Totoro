@@ -166,12 +166,15 @@ internal partial class AnilistMetadataProvider(
 			.. characters.Where(x => x is not null).Select(x => new CharacterModel
 			{
 				Name = x.Name?.Full ?? "",
-				Image = Uri.TryCreate(x.Image?.Large, UriKind.Absolute, out var uri) ? uri : null,
+				Image = Uri.TryCreate(x.Image?.Large, UriKind.Absolute, out var uri) && !IsPlaceholder(uri) ? uri : null,
 				Description = x.Description ?? "",
 				Gender = x.Gender ?? "",
 			})
 		];
 	}
+
+	/// <summary>AniList's stand-in for a character without a picture (character/large/default.jpg): no image, really.</summary>
+	private static bool IsPlaceholder(Uri image) => image.AbsolutePath.EndsWith("/default.jpg", StringComparison.OrdinalIgnoreCase);
 
 	public async Task<List<AnimeModel>> GetPopularAnimeAsync(CancellationToken ct)
 	{
