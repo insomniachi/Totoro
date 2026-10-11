@@ -42,7 +42,9 @@ public sealed record EpisodeRange(int First, int? Last)
 /// </summary>
 /// <param name="AlsoCountsOnItself">
 /// The rule's "!": the destination may itself be numbered on like this (e.g. a "2nd Season" show whose episodes are
-/// 13-25), which is the same mapping with the destination as the source.
+/// 13-25), which is the same mapping with the destination as the source. It matters to tools that work out the anime
+/// from a file's name (Taiga, anime-relations' own); Totoro looks rules up by the season being watched, where both give
+/// the same number, so it's kept for the file's sake only.
 /// </param>
 public sealed partial record AnimeRelationRule(
 	RelationIds Source,

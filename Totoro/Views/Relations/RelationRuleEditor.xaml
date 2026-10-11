@@ -105,8 +105,15 @@
             PlaceholderText="e.g. 13"
             SpinButtonPlacementMode="Compact"
             Value="{x:Bind ViewModel.EarlierFirst, Mode=TwoWay}" />
+        <!--  Under the box rather than its Description, which doesn't wrap; 4 below it, like a description  -->
+        <TextBlock
+            Margin="0,-8,0,0"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Style="{ThemeResource CaptionTextBlockStyle}"
+            Text="{x:Bind ViewModel.EarlierFirstNote, Mode=OneWay}"
+            TextWrapping="Wrap"
+            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.EarlierFirstNote), Mode=OneWay}" />
 
-        <CheckBox Content="Also when the provider names it as this season but still numbers it on" IsChecked="{x:Bind ViewModel.AlsoCountsOnItself, Mode=TwoWay}" />
 
         <TextBlock
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"

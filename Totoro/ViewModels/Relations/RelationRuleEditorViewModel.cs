@@ -53,6 +53,9 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 	private IReadOnlyList<AnimeModel> _seasons = [];
 	private int _seasonIndex = -1;
 
+	// What EarlierFirst was worked out to be from the seasons in between, if it was.
+	private int? _calculatedEarlierFirst;
+
 	/// <param name="season">The season the rule is for, if it's given (then it can't be changed).</param>
 	public RelationRuleEditorViewModel(IAnimeMetadataProvider? database, AnimeModel? season = null)
 	{
@@ -78,7 +81,6 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		SeasonFirst = rule.DestinationEpisodes.First;
 		SeasonLast = rule.DestinationEpisodes.Last is { } last ? last : double.NaN;
 		EarlierFirst = rule.SourceEpisodes.First;
-		AlsoCountsOnItself = rule.AlsoCountsOnItself;
 	}
 
 	/// <summary>The season whose episodes the rule places, e.g. a 2nd season.</summary>
@@ -98,8 +100,15 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 	/// <summary>The number the provider gives the season's first episode (of those covered), e.g. 13.</summary>
 	[ObservableProperty] public partial double EarlierFirst { get; set; } = double.NaN;
 
-	/// <summary>The rule's "!": also when the provider names the show as this season but still numbers it on.</summary>
-	[ObservableProperty] public partial bool AlsoCountsOnItself { get; set; } = true;
+	/// <summary>
+	/// Where <see cref="EarlierFirst"/> came from, when it was worked out from the seasons in between (and whether it's
+	/// been changed since); empty otherwise. It's only worth changing when the provider's numbers don't match the
+	/// database's episode counts. Never null (it's passed to x:Bind functions): empty when there's nothing to say.
+	/// </summary>
+	public string EarlierFirstNote => _calculatedEarlierFirst is not { } calculated ? ""
+		: IsEpisode(EarlierFirst) && (int)EarlierFirst == calculated
+			? "Worked out from the seasons above. Change it only if the provider's numbers don't match, e.g. it numbers a recap or merges two episodes."
+			: $"Changed from {calculated}, which the seasons above give.";
 
 	/// <summary>The series' seasons, first to last, the chosen one marked; empty until found.</summary>
 	[ObservableProperty] public partial IReadOnlyList<SeasonMapEntry> Seasons { get; private set; } = [];
@@ -153,8 +162,11 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		OnRuleChanged();
 	}
 
-	partial void OnEarlierFirstChanged(double value) => OnRuleChanged();
-	partial void OnAlsoCountsOnItselfChanged(bool value) => OnRuleChanged();
+	partial void OnEarlierFirstChanged(double value)
+	{
+		OnPropertyChanged(nameof(EarlierFirstNote));
+		OnRuleChanged();
+	}
 
 	/// <summary>The rule as edited; null until it's complete.</summary>
 	public AnimeRelationRule? ToRule()
@@ -171,7 +183,9 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 			new EpisodeRange((int)EarlierFirst, seasonLast is { } last ? (int)EarlierFirst + last - (int)SeasonFirst : null),
 			Season.Ids,
 			new EpisodeRange((int)SeasonFirst, seasonLast),
-			AlsoCountsOnItself)
+			// "!", as anime-relations writes season rules. It doesn't change where Totoro finds episodes (rules are
+			// looked up by the season being watched); it keeps the rule meaning the same to anime-relations' other users.
+			AlsoCountsOnItself: true)
 		{
 			Title = $"{Earlier.Title} -> {Season.Title}",
 		};
@@ -187,6 +201,8 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		var mapping = _mapping = new CancellationTokenSource();
 		_seasons = [];
 		_seasonIndex = -1;
+		_calculatedEarlierFirst = null;
+		OnPropertyChanged(nameof(EarlierFirstNote));
 		Seasons = [];
 		EarlierSeasons = [];
 		if (season is not { DatabaseId: > 0 } || _database is null)
@@ -241,7 +257,9 @@ public sealed partial class RelationRuleEditorViewModel : ObservableObject
 		var from = _seasons.Take(_seasonIndex).ToList().FindIndex(x => RelationIds.Of(x).Matches(Earlier.Ids));
 		if (from >= 0 && SeasonMap.NumberedOnFrom(_seasons, from, _seasonIndex) is { } first)
 		{
-			EarlierFirst = first + (IsEpisode(SeasonFirst) ? (int)SeasonFirst - 1 : 0);
+			_calculatedEarlierFirst = first + (IsEpisode(SeasonFirst) ? (int)SeasonFirst - 1 : 0);
+			EarlierFirst = _calculatedEarlierFirst.Value;
+			OnPropertyChanged(nameof(EarlierFirstNote));
 		}
 	}
 

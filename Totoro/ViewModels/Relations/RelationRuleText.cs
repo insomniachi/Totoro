@@ -20,10 +20,6 @@ public static class RelationRuleText
 		return parts.Length == 2 ? $"{parts[0]} → {parts[1].Replace("~", parts[0])}" : rule.Title;
 	}
 
-	/// <summary>What it does, e.g. "Episodes 1-13 are numbered 13-25 · also when named as this season".</summary>
-	public static string Effect(AnimeRelationRule rule)
-	{
-		var effect = $"Episodes {rule.DestinationEpisodes} are numbered {rule.SourceEpisodes}";
-		return rule.AlsoCountsOnItself ? $"{effect} · also when named as that season" : effect;
-	}
+	/// <summary>What it does, e.g. "Episodes 1-13 are numbered 13-25".</summary>
+	public static string Effect(AnimeRelationRule rule) => $"Episodes {rule.DestinationEpisodes} are numbered {rule.SourceEpisodes}";
 }

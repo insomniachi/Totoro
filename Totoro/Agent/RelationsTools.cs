@@ -71,8 +71,7 @@ public sealed class RelationsTools(AnimeLookup lookup, IAnimeRelations relations
 		[Description("The number the provider gives the season's first episode, e.g. 13; leave it out to count it from the seasons in between.")]
 		int? earlierFirstEpisode = null,
 		[Description("The season's first episode the rule covers.")] int seasonFirstEpisode = 1,
-		[Description("The season's last episode the rule covers; leave it out while the season airs.")] int? seasonLastEpisode = null,
-		[Description("Also when the provider names the show as the season itself but still numbers it on.")] bool alsoWhenNamedAsSeason = true)
+		[Description("The season's last episode the rule covers; leave it out while the season airs.")] int? seasonLastEpisode = null)
 	{
 		if (earlierFirstEpisode < 1 || seasonFirstEpisode < 1 || seasonLastEpisode < seasonFirstEpisode)
 		{
@@ -109,7 +108,7 @@ public sealed class RelationsTools(AnimeLookup lookup, IAnimeRelations relations
 			new EpisodeRange(given, last is { } l ? given + l - seasonFirstEpisode : null),
 			RelationIds.Of(season),
 			new EpisodeRange(seasonFirstEpisode, last),
-			alsoWhenNamedAsSeason)
+			AlsoCountsOnItself: true)
 		{
 			Title = $"{earlier.Title} -> {season.Title}",
 		};
