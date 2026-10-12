@@ -747,7 +747,7 @@
                                 RowSpacing="6">
                                 <Grid.RowDefinitions>
                                     <RowDefinition />
-                                    <!--  Auto, not *: the footer measures items at a fixed height, where a star row is squeezed below the 20px icon and clips it  -->
+                                    <!--  Auto, not *: the footer measures items at a fixed height, where a star row is squeezed below the 24px icon and clips it  -->
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition />
@@ -756,8 +756,8 @@
                                 <ContentPresenter
                                     x:Name="Icon"
                                     Grid.Row="1"
-                                    Width="20"
-                                    Height="20"
+                                    Width="24"
+                                    Height="24"
                                     Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}"
                                     HorizontalContentAlignment="Stretch"
                                     VerticalContentAlignment="Stretch"
@@ -769,7 +769,7 @@
                                 <Viewbox
                                     x:Name="UnselectedIconBox"
                                     Grid.Row="1"
-                                    Height="20"
+                                    Height="24"
                                     Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}"
                                     animations:Implicit.Animations="{StaticResource RailNavigationIconImplicitOffsetAnimation}"
                                     Visibility="{Binding Content.HasAnimatedIcon, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource InvertedBooleanToVisibilityConverter}}">
@@ -779,7 +779,7 @@
                                 <Viewbox
                                     x:Name="SelectedIconBox"
                                     Grid.Row="1"
-                                    Height="20"
+                                    Height="24"
                                     Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}"
                                     animations:Implicit.Animations="{StaticResource RailNavigationIconImplicitOffsetAnimation}"
                                     Opacity="0"

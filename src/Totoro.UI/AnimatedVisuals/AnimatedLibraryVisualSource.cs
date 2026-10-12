@@ -7,7 +7,7 @@
 //           LottieGen -GenerateColorBindings -Language CSharp -Namespace Totoro.UI.AnimatedVisuals -Public -WinUIVersion 3.0 -InputFile AnimatedLibraryVisualSource.json
 //       
 //       Input file:
-//           AnimatedLibraryVisualSource.json (6799 bytes created 15:29+05:30 Oct 12 2026)
+//           AnimatedLibraryVisualSource.json (6805 bytes created 15:29+05:30 Oct 12 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -328,6 +328,7 @@ namespace Totoro.UI.AnimatedVisuals
                 if (_containerShape_0 != null) { return _containerShape_0; }
                 var result = _containerShape_0 = _c.CreateContainerShape();
                 result.CenterPoint = new Vector2(24F, 41F);
+                result.Offset = new Vector2(-4F, 2F);
                 var shapes = result.Shapes;
                 // ShapeGroup: Leaning book
                 shapes.Add(ContainerShape_1());
@@ -631,19 +632,19 @@ namespace Totoro.UI.AnimatedVisuals
             Vector2KeyFrameAnimation ScaleVector2Animation()
             {
                 // Frame 0.
-                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(1F, 1F), HoldThenStepEasingFunction());
+                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(1.10000002F, 1.10000002F), HoldThenStepEasingFunction());
                 // Frame 40.
-                result.InsertKeyFrame(0.5F, new Vector2(1F, 1F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.5F, new Vector2(1.10000002F, 1.10000002F), HoldThenStepEasingFunction());
                 // Frame 46.
-                result.InsertKeyFrame(0.574999988F, new Vector2(1F, 0.879999995F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.574999988F, new Vector2(1.10000002F, 0.967999995F), CubicBezierEasingFunction_0());
                 // Frame 50.
-                result.InsertKeyFrame(0.625F, new Vector2(1F, 0.879999995F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.625F, new Vector2(1.10000002F, 0.967999995F), HoldThenStepEasingFunction());
                 // Frame 59.
-                result.InsertKeyFrame(0.737500012F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.737500012F, new Vector2(1.10000002F, 1.10000002F), CubicBezierEasingFunction_0());
                 // Frame 64.
-                result.InsertKeyFrame(0.800000012F, new Vector2(1F, 0.879999995F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.800000012F, new Vector2(1.10000002F, 0.967999995F), HoldThenStepEasingFunction());
                 // Frame 79.
-                result.InsertKeyFrame(0.987500012F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.987500012F, new Vector2(1.10000002F, 1.10000002F), CubicBezierEasingFunction_0());
                 return result;
             }
 
