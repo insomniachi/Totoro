@@ -19,9 +19,8 @@
         <SelectorBar Margin="-8,0,0,0" SelectionChanged="OnPlaygroundSelected">
             <SelectorBarItem
                 IsSelected="True"
-                Tag="Test.HtmlRenderer"
-                Text="HTML renderer" />
-            <SelectorBarItem Tag="Test.SettingsEditor" Text="Settings editor" />
+                Tag="Test.SettingsEditor"
+                Text="Settings editor" />
             <SelectorBarItem Tag="Test.AgentTools" Text="Agent tools" />
             <SelectorBarItem Tag="Test.BuiltInPlayer" Text="Built-in player" />
         </SelectorBar>

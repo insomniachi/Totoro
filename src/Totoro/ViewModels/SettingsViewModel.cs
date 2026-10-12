@@ -5,6 +5,7 @@ using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Navigation;
+using Totoro.Core.Services;
 using Totoro.Core.Settings;
 using Totoro.UI.Navigation;
 
@@ -63,10 +64,18 @@ public partial class SettingsViewModel : ObservableObject
 		IEnumerable<IAccount> accounts,
 		IEnumerable<IModuleSettings> moduleSettings,
 		IDialogService dialogs,
-		IAppearanceService appearance)
+		IAppearanceService appearance,
+		UpdateService updates)
 	{
 		_preferences = preferences;
 		_appearance = appearance;
+		Updates = updates;
+		Updates.PropertyChanged += (_, _) =>
+		{
+			OnPropertyChanged(nameof(UpdateStatus));
+			OnPropertyChanged(nameof(CanUpdate));
+		};
+		CheckForUpdates = preferences.CheckForUpdates;
 
 		Theme = Themes.First(x => x.Value == appearance.Theme);
 		Backdrop = Backdrops.First(x => x.Value == appearance.Backdrop);
@@ -156,6 +165,37 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool PlayNextAutomatically { get; set; }
 
 	partial void OnPlayNextAutomaticallyChanged(bool value) => _preferences.PlayNextAutomatically = value;
+
+	/// <summary>Updating Totoro from its GitHub releases.</summary>
+	public UpdateService Updates { get; }
+
+	/// <summary>Whether Totoro looks for a newer version when it starts.</summary>
+	[ObservableProperty]
+	public partial bool CheckForUpdates { get; set; }
+
+	partial void OnCheckForUpdatesChanged(bool value) => _preferences.CheckForUpdates = value;
+
+	/// <summary>The version, and what checking for a newer one found.</summary>
+	public string UpdateStatus
+	{
+		get
+		{
+			var status = Updates.State switch
+			{
+				UpdateState.Checking => "Checking for updates…",
+				UpdateState.UpToDate => $"Totoro {Updates.CurrentVersion} is the latest version.",
+				UpdateState.Available => $"Totoro {Updates.Available?.Version} is available; you have {Updates.CurrentVersion}.",
+				UpdateState.Downloading => $"Downloading Totoro {Updates.Available?.Version}: {Updates.Progress:P0}",
+				UpdateState.Installing => "Installing it: Totoro closes, and starts again once it's done.",
+				UpdateState.Failed => Updates.Error,
+				_ => $"Totoro {Updates.CurrentVersion}.",
+			};
+			return Updates.CanInstall ? status : $"{status} This copy wasn't installed with the installer, so it can't update itself.";
+		}
+	}
+
+	/// <summary>Whether there's a newer version to install.</summary>
+	public bool CanUpdate => Updates.CanInstall && Updates.State is UpdateState.Available or UpdateState.Failed && Updates.Available is not null;
 
 	/// <summary>Opens the episode numbering rules (anime-relations and the user's own).</summary>
 	[RelayCommand]

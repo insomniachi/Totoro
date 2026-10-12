@@ -1,5 +1,7 @@
+using System.Reflection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Core.Services;
 using Totoro.Playback;
 using Totoro.UI.Navigation;
 using Totoro.ViewModels;
@@ -18,6 +20,8 @@ public sealed partial class MainWindow : Window
 		ExtendsContentIntoTitleBar = true;
 		SetTitleBar(AppTitleBar);
 		AppWindow.TitleBar.PreferredHeightOption = Microsoft.UI.Windowing.TitleBarHeightOption.Tall;
+		// The taskbar's and Alt+Tab's icon.
+		AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Totoro.ico"));
 		// The back button is hidden (not just disabled) until there is somewhere to go back to.
 		AppTitleBar.BackRequested += async (_, _) =>
 		{
@@ -49,6 +53,35 @@ public sealed partial class MainWindow : Window
 	}
 
 	public MainWindowViewModel? ViewModel { get; set; }
+
+	/// <summary>The app's version, e.g. "2.1.0", for the title bar: the release's (see .github/workflows), without the commit's hash.</summary>
+	public static string Version { get; } =
+		(typeof(MainWindow).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "")
+		.Split('+')[0];
+
+	// For the update bar's x:Bind function bindings.
+
+	// x:Bind calls these with null too, e.g. when a check finds no newer version (Available goes back to null).
+
+	public static string UpdateTitle(AppRelease? release) => release is null ? "" : $"Totoro {release.Version} is available";
+
+	public static Uri? ReleasePage(AppRelease? release) => release?.Page;
+
+	public static string UpdateMessage(UpdateState state, string error) => state switch
+	{
+		UpdateState.Downloading => "Downloading it…",
+		UpdateState.Installing => "Installing it: Totoro closes, and starts again once it's done.",
+		UpdateState.Failed => error,
+		_ => "Update to install it: Totoro closes, and starts again once it's done.",
+	};
+
+	public static InfoBarSeverity UpdateSeverity(UpdateState state) => state == UpdateState.Failed ? InfoBarSeverity.Error : InfoBarSeverity.Informational;
+
+	public static Visibility VisibleIfUpdatable(UpdateState state) => state is UpdateState.Available or UpdateState.Failed ? Visibility.Visible : Visibility.Collapsed;
+
+	public static Visibility VisibleWhileUpdating(UpdateState state) => state is UpdateState.Downloading or UpdateState.Installing ? Visibility.Visible : Visibility.Collapsed;
+
+	public static bool IsInstalling(UpdateState state) => state == UpdateState.Installing;
 
 	// For the status bar's x:Bind function bindings.
 

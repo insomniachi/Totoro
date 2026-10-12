@@ -13,7 +13,6 @@ public partial class TestViewModel : ObservableObject
 	public const string NavigatorKey = "test";
 
 	// The playgrounds' navigation keys (their pages are registered with AddKeyedViewMap); the tabs carry them as Tag.
-	public const string HtmlRendererKey = "Test.HtmlRenderer";
 	public const string SettingsEditorKey = "Test.SettingsEditor";
 	public const string AgentToolsKey = "Test.AgentTools";
 	public const string BuiltInPlayerKey = "Test.BuiltInPlayer";
@@ -26,7 +25,7 @@ public partial class TestViewModel : ObservableObject
 
 	/// <summary>The key of the playground being shown.</summary>
 	[ObservableProperty]
-	public partial string SelectedPlayground { get; set; } = HtmlRendererKey;
+	public partial string SelectedPlayground { get; set; } = SettingsEditorKey;
 
 	partial void OnSelectedPlaygroundChanged(string value) => _ = ShowAsync();
 

@@ -34,9 +34,9 @@
             Title="Totoro"
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False"
-            Subtitle="1.0">
+            Subtitle="{x:Bind local:MainWindow.Version}">
             <TitleBar.IconSource>
-                <ImageIconSource ImageSource="/Assets/StoreLogo.png" />
+                <ImageIconSource ImageSource="/Assets/Totoro.png" />
             </TitleBar.IconSource>
             <TitleBar.Content>
                 <AutoSuggestBox
@@ -76,12 +76,28 @@
                     </Button>
 
                     <!--  Opens and closes the assistant's panel  -->
+                    <!--  Just the icon, as subtle buttons are: the accent color while the panel's open, not a filled button  -->
                     <ToggleButton
                         Height="32"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Assistant"
+                        BorderThickness="0"
                         IsChecked="{x:Bind ViewModel.Chat.IsOpen, Mode=TwoWay}"
                         ToolTipService.ToolTip="Assistant">
+                        <ToggleButton.Resources>
+                            <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+                            <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+                            <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+                            <StaticResource x:Key="ToggleButtonBackgroundChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+                            <StaticResource x:Key="ToggleButtonBackgroundCheckedPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+                            <StaticResource x:Key="ToggleButtonBackgroundCheckedPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+                            <StaticResource x:Key="ToggleButtonForegroundChecked" ResourceKey="AccentTextFillColorPrimaryBrush" />
+                            <StaticResource x:Key="ToggleButtonForegroundCheckedPointerOver" ResourceKey="AccentTextFillColorSecondaryBrush" />
+                            <StaticResource x:Key="ToggleButtonForegroundCheckedPressed" ResourceKey="AccentTextFillColorTertiaryBrush" />
+                            <StaticResource x:Key="ToggleButtonBorderBrushChecked" ResourceKey="SubtleFillColorTransparentBrush" />
+                            <StaticResource x:Key="ToggleButtonBorderBrushCheckedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+                            <StaticResource x:Key="ToggleButtonBorderBrushCheckedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+                        </ToggleButton.Resources>
                         <FontIcon FontSize="16" Glyph="&#xE8BD;" />
                     </ToggleButton>
 
@@ -183,36 +199,81 @@
             <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat}" />
         </Border>
 
-        <!--
-            A change to the user's list that couldn't be made on their other list (see AnimeTrackingService), over the
-            top-right corner of the content; raised like the status bar below
-        -->
-        <Grid
+        <!--  Notices over the top-right corner of the content, raised like the status bar below  -->
+        <StackPanel
             Grid.Row="1"
             MaxWidth="440"
             Margin="0,24,24,0"
             HorizontalAlignment="Right"
-            VerticalAlignment="Top">
-            <ui:Effects.Shadow>
-                <media:AttachedCardShadow
-                    BlurRadius="24"
-                    CornerRadius="4"
-                    Offset="0,8"
-                    Opacity="0.6"
-                    Color="Black" />
-            </ui:Effects.Shadow>
-            <Border
-                Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
-                BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
-                BorderThickness="1"
-                CornerRadius="{ThemeResource ControlCornerRadius}">
-                <InfoBar
-                    Title="Your other list wasn't updated"
-                    IsOpen="{x:Bind ViewModel.IsSyncWarningOpen, Mode=TwoWay}"
-                    Message="{x:Bind ViewModel.SyncWarning, Mode=OneWay}"
-                    Severity="Warning" />
-            </Border>
-        </Grid>
+            VerticalAlignment="Top"
+            Spacing="12">
+            <!--  A newer version of Totoro (see UpdateService): updating, and how that's going  -->
+            <Grid>
+                <ui:Effects.Shadow>
+                    <media:AttachedCardShadow
+                        BlurRadius="24"
+                        CornerRadius="4"
+                        Offset="0,8"
+                        Opacity="0.6"
+                        Color="Black" />
+                </ui:Effects.Shadow>
+                <Border
+                    Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                    <InfoBar
+                        Title="{x:Bind local:MainWindow.UpdateTitle(ViewModel.Updates.Available), Mode=OneWay}"
+                        IsClosable="True"
+                        IsOpen="{x:Bind ViewModel.IsUpdateBarOpen, Mode=TwoWay}"
+                        Message="{x:Bind local:MainWindow.UpdateMessage(ViewModel.Updates.State, ViewModel.Updates.Error), Mode=OneWay}"
+                        Severity="{x:Bind local:MainWindow.UpdateSeverity(ViewModel.Updates.State), Mode=OneWay}">
+                        <InfoBar.ActionButton>
+                            <Button
+                                Command="{x:Bind ViewModel.Updates.InstallCommand}"
+                                Content="Update"
+                                Style="{ThemeResource AccentButtonStyle}"
+                                Visibility="{x:Bind local:MainWindow.VisibleIfUpdatable(ViewModel.Updates.State), Mode=OneWay}" />
+                        </InfoBar.ActionButton>
+                        <StackPanel Margin="0,0,0,12" Spacing="8">
+                            <ProgressBar
+                                AutomationProperties.Name="Download progress"
+                                IsIndeterminate="{x:Bind local:MainWindow.IsInstalling(ViewModel.Updates.State), Mode=OneWay}"
+                                Maximum="1"
+                                Visibility="{x:Bind local:MainWindow.VisibleWhileUpdating(ViewModel.Updates.State), Mode=OneWay}"
+                                Value="{x:Bind ViewModel.Updates.Progress, Mode=OneWay}" />
+                            <HyperlinkButton
+                                Padding="0"
+                                Content="What's new"
+                                NavigateUri="{x:Bind local:MainWindow.ReleasePage(ViewModel.Updates.Available), Mode=OneWay}" />
+                        </StackPanel>
+                    </InfoBar>
+                </Border>
+            </Grid>
+
+            <!--  A change to the user's list that couldn't be made on their other list (see AnimeTrackingService)  -->
+            <Grid>
+                <ui:Effects.Shadow>
+                    <media:AttachedCardShadow
+                        BlurRadius="24"
+                        CornerRadius="4"
+                        Offset="0,8"
+                        Opacity="0.6"
+                        Color="Black" />
+                </ui:Effects.Shadow>
+                <Border
+                    Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                    <InfoBar
+                        Title="Your other list wasn't updated"
+                        IsOpen="{x:Bind ViewModel.IsSyncWarningOpen, Mode=TwoWay}"
+                        Message="{x:Bind ViewModel.SyncWarning, Mode=OneWay}"
+                        Severity="Warning" />
+                </Border>
+            </Grid>
+        </StackPanel>
 
         <!--  What playing an episode is up to (see WatchService), over the bottom-right corner of the content  -->
         <!--

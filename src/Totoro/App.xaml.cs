@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using Totoro.Agent;
@@ -81,7 +82,8 @@ public partial class App : Application
 						.AddAgentTools<AnimeSettingsTools>()
 						.AddAgentTools<AppSettingsTools>()
 						.AddAgentTools<NavigationTools>()
-						.AddAgentTools<RelationsTools>();
+						.AddAgentTools<RelationsTools>()
+						.AddAgentTools<UpdateTools>();
 				// The assistant: a chat that calls those tools (see ChatService).
 				services.AddSingleton<ChatViewModel>();
 
@@ -110,7 +112,6 @@ public partial class App : Application
 					x.SelectedIcon = Icons.Test;
 				});
 				// The Test page's playgrounds, shown by its own navigator.
-				services.AddKeyedViewMap<HtmlRendererPage, HtmlRendererViewModel>(TestViewModel.HtmlRendererKey);
 				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
 				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
 				services.AddKeyedViewMap<BuiltInPlayerPage, BuiltInPlayerViewModel>(TestViewModel.BuiltInPlayerKey);
@@ -133,6 +134,8 @@ public partial class App : Application
 		_host.Services.GetRequiredService<IAppearanceService>().Apply();
 		// The app ends with its main window, the built-in player's window too.
 		_window.Closed += (_, _) => Exit();
+		// E.g. for the installer of a newer version to replace the app (see UpdateService).
+		WeakReferenceMessenger.Default.Register<App, AppExitRequestedMessage>(this, (app, _) => app._window?.Close());
 		_window.Activate();
 	}
 

@@ -397,14 +397,18 @@
                 <Button
                     AutomationProperties.Name="Send"
                     Command="{x:Bind ViewModel.SendCommand, Mode=OneWay}"
-                    Style="{ThemeResource AccentButtonStyle}"
+                    Style="{ThemeResource SubtleButtonStyle}"
                     ToolTipService.ToolTip="Send"
                     Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.Chat.IsBusy), Mode=OneWay}">
-                    <FontIcon FontSize="16" Glyph="&#xE724;" />
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xE724;" />
                 </Button>
                 <Button
                     AutomationProperties.Name="Stop"
                     Command="{x:Bind ViewModel.StopCommand, Mode=OneWay}"
+                    Style="{ThemeResource SubtleButtonStyle}"
                     ToolTipService.ToolTip="Stop"
                     Visibility="{x:Bind ViewModel.Chat.IsBusy, Mode=OneWay}">
                     <FontIcon FontSize="16" Glyph="&#xE71A;" />

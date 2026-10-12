@@ -5,6 +5,9 @@
 	<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
 	<RootNamespace>Totoro</RootNamespace>
 	<ApplicationManifest>app.manifest</ApplicationManifest>
+	<ApplicationIcon>Assets\Totoro.ico</ApplicationIcon>
+	<!-- The release's version; the build that makes the installer sets it from the release's tag (see .github/workflows) -->
+	<Version>2.0.0</Version>
 	<Platforms>x64</Platforms>
 	<RuntimeIdentifiers>win-x64;</RuntimeIdentifiers>
 	<PublishProfile>win-$(Platform).pubxml</PublishProfile>
@@ -13,6 +16,8 @@
 	<Nullable>enable</Nullable>
 	<WindowsPackageType>None</WindowsPackageType>
 	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	<!-- Published (for the installer) with the Windows App SDK's runtime, so it runs without installing that first -->
+	<WindowsAppSDKSelfContained Condition="'$(_IsPublishing)' == 'true'">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Styles\NavigationView.xaml" />
@@ -26,6 +31,9 @@
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
+    <!--  The app's icon: the exe's (and so the installer's and its shortcuts'), the title bar's and the taskbar's  -->
+    <Content Include="Assets\Totoro.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Totoro.ico" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 
