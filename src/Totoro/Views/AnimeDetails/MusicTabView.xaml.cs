@@ -1,5 +1,4 @@
 using CommunityToolkit.WinUI;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.ViewModels.AnimeDetails;
 
@@ -16,22 +15,4 @@ public sealed partial class MusicTabView : UserControl
 
 	[GeneratedDependencyProperty]
 	public partial MusicTab? ViewModel { get; set; }
-
-	// The songs' buttons are in a template, which can't bind to the tab's commands.
-
-	private void OnAudioClick(object sender, RoutedEventArgs e)
-	{
-		if (sender is FrameworkElement { DataContext: SongItem song })
-		{
-			ViewModel?.ToggleAudioCommand.Execute(song);
-		}
-	}
-
-	private void OnVideoClick(object sender, RoutedEventArgs e)
-	{
-		if (sender is FrameworkElement { DataContext: SongItem song })
-		{
-			ViewModel?.PlayVideoCommand.Execute(song);
-		}
-	}
 }

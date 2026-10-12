@@ -10,6 +10,7 @@ using Totoro.Core.Dialogs;
 using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Chat;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
@@ -23,6 +24,7 @@ using Totoro.UI.Dialogs;
 using Totoro.UI.Theming;
 using Totoro.UI.Threading;
 using Totoro.ViewModels;
+using Totoro.ViewModels.Chat;
 using Totoro.ViewModels.Relations;
 using Totoro.ViewModels.Test;
 using Totoro.Views;
@@ -54,6 +56,7 @@ public partial class App : Application
 				services.RegisterFactory<IAnimeProvider>("SelectedAnimeProvider");
 				services.RegisterFactory<IMediaPlayer>(PlaybackPreferences.MediaPlayerKey);
 				services.RegisterFactory<ITorrentStreamer>("SelectedTorrentStreamer");
+				services.RegisterFactory<IChatModel>("SelectedChatModel");
 
 				// Watching: the watch service drives a playback from a card's Play.
 				services.AddSingleton<WatchService>();
@@ -79,6 +82,8 @@ public partial class App : Application
 						.AddAgentTools<AppSettingsTools>()
 						.AddAgentTools<NavigationTools>()
 						.AddAgentTools<RelationsTools>();
+				// The assistant: a chat that calls those tools (see ChatService).
+				services.AddSingleton<ChatViewModel>();
 
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
 				services.AddDialog<AnimeSettingsDialog, AnimeSettingsDialogViewModel>();
@@ -153,7 +158,8 @@ public partial class App : Application
 			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.MediaPlayers.Vlc.VlcModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
-			new Modules.MediaSegments.Aniskip.AniskipModule()
+			new Modules.MediaSegments.Aniskip.AniskipModule(),
+			new Modules.ChatModels.Ollama.OllamaModule()
 		];
 	}
 }

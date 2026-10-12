@@ -23,7 +23,11 @@ public sealed record AgentToolSet(Type Type);
 /// <summary>What a tool returns when it fails: why, for the agent to act on (e.g. search first, or tell the user).</summary>
 public sealed record AgentToolError(string Error);
 
-internal sealed class AgentTools(IServiceProvider services, IEnumerable<AgentToolSet> sets, IMainThread mainThread, ILogger<AgentTools> logger)
+internal sealed class AgentTools(
+	IServiceProvider services,
+	IEnumerable<AgentToolSet> sets,
+	IMainThread mainThread,
+	ILogger<AgentTools> logger)
 	: IAgentTools
 {
 	private readonly Lazy<IReadOnlyList<AIFunction>> _tools = new(() => Create(services, sets, mainThread, logger));
@@ -36,7 +40,11 @@ internal sealed class AgentTools(IServiceProvider services, IEnumerable<AgentToo
 
 	public IReadOnlyList<AIFunction> Tools => _tools.Value;
 
-	private static List<AIFunction> Create(IServiceProvider services, IEnumerable<AgentToolSet> sets, IMainThread mainThread, ILogger logger)
+	private static List<AIFunction> Create(
+		IServiceProvider services,
+		IEnumerable<AgentToolSet> sets,
+		IMainThread mainThread,
+		ILogger logger)
 	{
 		List<AIFunction> tools = [];
 		foreach (var set in sets.DistinctBy(x => x.Type))
@@ -53,6 +61,8 @@ internal sealed class AgentTools(IServiceProvider services, IEnumerable<AgentToo
 				{
 					Name = attribute.Name,
 					SerializerOptions = SerializerOptions,
+					// As it is: AgentFunction makes it JSON, and keeps it for a chat to show (AgentToolResult).
+					MarshalResult = (result, type, _) => ValueTask.FromResult<object?>(new RawResult(result, type)),
 				}), mainThread, logger);
 				tools.Add(attribute.RequiresApproval ? new ApprovalRequiredAIFunction(tool) : tool);
 			}
@@ -73,6 +83,9 @@ internal sealed class AgentTools(IServiceProvider services, IEnumerable<AgentToo
 		return options;
 	}
 
+	/// <summary>A tool's result, before it's made JSON.</summary>
+	private sealed record RawResult(object? Value, Type? Type);
+
 	/// <summary>
 	/// Runs a tool on the UI thread (tools change state the UI is bound to), and turns its failures into an
 	/// <see cref="AgentToolError"/> result, so the agent learns what went wrong instead of the call just failing.
@@ -83,7 +96,14 @@ internal sealed class AgentTools(IServiceProvider services, IEnumerable<AgentToo
 		{
 			try
 			{
-				return await mainThread.InvokeAsync(async () => await base.InvokeCoreAsync(arguments, cancellationToken));
+				var result = await mainThread.InvokeAsync(async () => await base.InvokeCoreAsync(arguments, cancellationToken));
+				if (result is not RawResult raw)
+				{
+					return result;
+				}
+
+				AgentToolResult.Set(arguments, raw.Value);
+				return raw.Value is null ? null : JsonSerializer.SerializeToElement(raw.Value, raw.Type ?? raw.Value.GetType(), SerializerOptions);
 			}
 			catch (AgentToolException ex)
 			{

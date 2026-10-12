@@ -36,13 +36,13 @@ Also:
 
 ## Everything the app does is available to AI agents
 
-An AI chat may be added later, and agents (in-app, or over MCP) must be able to do whatever the user can do in the UI. So every feature has three parts:
+The app has an assistant: a chat panel (the title bar's Assistant button) whose model, a local one through Ollama for now, calls the agent tools (`ChatService`, with models as `IChatModel` modules under `Totoro/Modules/ChatModels`). Agents, in the app or later over MCP, must be able to do whatever the user can do in the UI. So every feature has three parts:
 
 1. **Logic in a service, not a view model or dialog.** Views and agent tools both call it, e.g. `AnimeTrackingService`, `WatchService`, `IAnimeSettingsStore`.
 2. **An agent tool.** It's a method marked `[AgentTool("snake_case_name")]` in a tool class under `Totoro/Agent`, or a module's own class, registered with `services.AddAgentTools<T>()`.
    - **Descriptions:** describe the method and each parameter with `[Description]`; that's all the agent knows about it.
    - **Ids, not UI objects:** take anime ids (in the selected database), names and enums.
-   - **Results:** return records (`Totoro/Agent/AgentResults.cs`) whose values say what they mean, e.g. scores out of 10.
+   - **Results:** return records (`Totoro/Agent/AgentResults.cs`) whose values say what they mean, e.g. scores out of 10. Return anime as `AnimeSummary` and songs as `AnimeSongList` (made with `From`): the chat shows them as the app's own cards, which open, add and play them. Any result can do that by implementing `IAgentAnime` or `IAgentSongs`, whose source objects stay out of its JSON (`AgentToolResult`).
    - **Failures:** throw `AgentToolException` with a message the agent can act on ("Search for it to get its id."). Other exceptions become a generic error.
    - **No dialogs:** where the UI asks the user (e.g. which show on a provider), return the choices and offer a tool to make the choice.
    - **Approval:** mark anything destructive `RequiresApproval = true` (removing from the list, signing out) so a chat asks the user first.

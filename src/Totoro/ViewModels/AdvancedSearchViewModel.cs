@@ -54,6 +54,7 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 	private static readonly TimeSpan s_titleDelay = TimeSpan.FromSeconds(1);
 
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
+	private readonly IFactory<IAnimeTracker, Guid> _trackers;
 	private readonly ILogger<AdvancedSearchViewModel> _logger;
 	private readonly SourceCache<AnimeModel, long> _results = new(x => x.Id);
 	private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
@@ -62,10 +63,12 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 
 	public AdvancedSearchViewModel(
 		IFactory<IAnimeMetadataProvider, Guid> providers,
+		IFactory<IAnimeTracker, Guid> trackers,
 		IPreferences preferences,
 		ILogger<AdvancedSearchViewModel> logger)
 	{
 		_providers = providers;
+		_trackers = trackers;
 		_logger = logger;
 
 		// Results arrive on background threads; bindings need them on the UI thread, which creates this view model.
@@ -337,11 +340,16 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 		}
 
 		IsLoading = true;
-		return Observable.FromAsync(async () =>
+		// Cancelled when another search starts (Switch), e.g. while retrying a misspelt title.
+		return Observable.FromAsync(async ct =>
 		{
 			try
 			{
-				return (IReadOnlyList<AnimeModel>)await provider.SearchAnimeAsync(request);
+				return (IReadOnlyList<AnimeModel>)await provider.FindAnimeAsync(request, _trackers.CreateDefault(), ct);
+			}
+			catch (OperationCanceledException)
+			{
+				return [];
 			}
 			catch (Exception ex)
 			{

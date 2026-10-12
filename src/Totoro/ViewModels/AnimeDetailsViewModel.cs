@@ -49,7 +49,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Characters = new CharactersTab(
 			() => _provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>()),
 			logger);
-		Music = new MusicTab(() => songs.GetSongsAsync(_details), songs.PlayAudioAsync, song => songs.PlayVideo(_details, song), songPlayer, logger);
+		Music = new MusicTab(() => songs.GetSongsAsync(_details), song => new SongItem(_details, song, songs, songPlayer), songPlayer, logger);
 		Related = new RelatedTab();
 
 		UpdateTracking();

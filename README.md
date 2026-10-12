@@ -7,6 +7,7 @@ A Windows app for tracking and watching anime, built with WinUI 3 and .NET 10.
 - **Skips openings and endings.** Using Aniskip's times, it offers to skip them or skips them for you. It offers the next episode, and marks episodes watched when you finish them.
 - **Episode numbering.** For providers that number episodes across seasons, it uses anime-relations, plus rules of your own.
 - **Music.** Each anime's openings and endings, from AnimeThemes, to listen to or watch.
+- **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "play the opening of Frieren"); it answers with the app's own cards. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (Settings > Modules).
 - **AI-agent friendly.** Everything the app does is also an agent tool (see [AGENTS.md](AGENTS.md)).
 
 ## Building

@@ -86,6 +86,7 @@ public static class ServiceCollectionExtensions
 							   .AddSingleton<IAnimeSettingsStore, AnimeSettingsStore>()
 							   .AddSingleton<Services.AnimeTrackingService>()
 							   .AddSingleton<Services.AnimeSongService>()
+							   .AddSingleton<Services.ChatService>()
 							   .AddSingleton<Agent.IAgentTools, Agent.AgentTools>()
 						   .AddLogging();
 		}

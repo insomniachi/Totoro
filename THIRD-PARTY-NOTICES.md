@@ -21,6 +21,7 @@ given. This file is shipped with the app.
 | MalApi.V2 | MIT | athulrajts | https://github.com/athulrajts/MyAnimeListApi-v2-Wrapper |
 | NAudio (NAudio.Core, NAudio.Wasapi) | MIT | Mark Heath | https://github.com/naudio/NAudio |
 | Newtonsoft.Json | MIT | James Newton-King | https://github.com/JamesNK/Newtonsoft.Json |
+| OllamaSharp | MIT | Andreas Wäscher | https://github.com/awaescher/OllamaSharp |
 | Reactive Extensions (System.Reactive) | MIT | .NET Foundation and Contributors | https://github.com/dotnet/reactive |
 | Polly, Polly.Extensions.Http | BSD-3-Clause | App vNext | https://github.com/App-vNext/Polly |
 | XAML Behaviors (Microsoft.Xaml.Behaviors.WinUI.Managed) | MIT | Microsoft | https://github.com/microsoft/XamlBehaviors |

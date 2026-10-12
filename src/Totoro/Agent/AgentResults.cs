@@ -1,8 +1,10 @@
 using System.ComponentModel;
 using System.Net;
 using System.Text.RegularExpressions;
+using Totoro.Core.Agent;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Services;
 
 namespace Totoro.Agent;
 
@@ -26,8 +28,13 @@ public sealed record AnimeSummary(
 	string? Season,
 	IReadOnlyCollection<string> Genres,
 	[property: Description("The user's list entry, if it's on their list.")]
-	ListEntry? ListEntry)
+	ListEntry? ListEntry) : IAgentAnime
 {
+	// The anime it describes, for the chat to show (not part of its JSON: explicit interface members aren't serialized).
+	private AnimeModel? _source;
+
+	AnimeModel? IAgentAnime.Source => _source;
+
 	public static AnimeSummary From(AnimeModel anime) => new(
 		anime.Id,
 		anime.Title,
@@ -38,7 +45,10 @@ public sealed record AnimeSummary(
 		anime.MeanScore is > 0 and var score ? Math.Round(score / 10, 1) : null,
 		anime.Season is { Year: > 1900 } season ? $"{season.SeasonName} {season.Year}" : null,
 		anime.Genres,
-		ListEntry.From(anime.Tracking));
+		ListEntry.From(anime.Tracking))
+	{
+		_source = anime,
+	};
 }
 
 [Description("The user's list entry for an anime.")]
@@ -69,8 +79,10 @@ public sealed partial record AnimeDetails(
 	[property: Description("Related anime: sequels, prequels, side stories...")]
 	IReadOnlyList<AnimeSummary> Related,
 	[property: Description("Its trailers and promotional videos (YouTube links).")]
-	IReadOnlyList<TrailerLink> Trailers)
+	IReadOnlyList<TrailerLink> Trailers) : IAgentAnime
 {
+	AnimeModel? IAgentAnime.Source => ((IAgentAnime)Anime).Source;
+
 	public static AnimeDetails From(AnimeModel anime) => new(
 		AnimeSummary.From(anime),
 		ToPlainText(anime.Description),
@@ -123,5 +135,80 @@ public sealed record EpisodeSummary(
 			episode.Runtime > 0 ? episode.Runtime : null,
 			!episode.IsSpecial && episode.EpisodeNumber <= watched,
 			progress is null ? null : progress.Position.ToString(@"h\:mm\:ss"));
+	}
+}
+
+[Description("An anime's songs: its openings, then its endings, then its insert songs.")]
+public sealed record AnimeSongList(IReadOnlyList<AnimeSong> Songs) : IAgentSongs
+{
+	// The anime, for the chat to show the songs with their player.
+	private AnimeModel? _anime;
+
+	AnimeModel? IAgentSongs.Anime => _anime;
+
+	public static AnimeSongList From(AnimeModel anime, IReadOnlyList<AnimeSong> songs) => new(songs) { _anime = anime };
+}
+
+[Description("A song that started playing.")]
+public sealed record SongPlaying(
+	[property: Description("e.g. \"OP2: Bling-Bang-Bang-Born\".")]
+	string Song,
+	[property: Description("In the app (its audio) or the media player (its video).")]
+	string PlayingIn) : IAgentSongs
+{
+	private AnimeModel? _anime;
+	private AnimeSong? _song;
+
+	AnimeModel? IAgentSongs.Anime => _anime;
+
+	IReadOnlyList<AnimeSong> IAgentSongs.Songs => _song is null ? [] : [_song];
+
+	public static SongPlaying From(AnimeModel anime, AnimeSong song, bool video) =>
+		new($"{song.Label}: {song.Title}", video ? "the media player" : "the app") { _anime = anime, _song = song };
+}
+
+[Description("Anime on the user's list, in the order asked for.")]
+public sealed record ListEntries(
+	[property: Description("How many anime on the list match; these are the first of them.")]
+	int Total,
+	IReadOnlyList<AnimeSummary> Anime) : IAgentAnimeList
+{
+	IReadOnlyList<IAgentAnime> IAgentAnimeList.Ranked => Anime;
+}
+
+[Description("The user's list, counted.")]
+public sealed record ListStats(
+	[property: Description("How many anime (that match).")]
+	int Anime,
+	[property: Description("How many of their episodes the user has watched, in all.")]
+	int EpisodesWatched,
+	[property: Description("The user's average score, out of 10, of those they've scored.")]
+	double? AverageScore,
+	[property: Description("The groups, biggest first.")]
+	IReadOnlyList<ListGroup> Groups)
+{
+	public static ListStats From(IReadOnlyCollection<AnimeModel> list, IReadOnlyList<ListGroup> groups) =>
+		new(list.Count, ListGroup.EpisodesOf(list), ListGroup.AverageScoreOf(list), groups);
+}
+
+[Description("Some of the user's list, e.g. their romance anime.")]
+public sealed record ListGroup(
+	string Name,
+	[property: Description("How many anime.")]
+	int Anime,
+	[property: Description("How many of their episodes the user has watched.")]
+	int EpisodesWatched,
+	[property: Description("The user's average score, out of 10, of those they've scored.")]
+	double? AverageScore)
+{
+	public static ListGroup From(string name, IReadOnlyCollection<AnimeModel> anime) =>
+		new(name, anime.Count, EpisodesOf(anime), AverageScoreOf(anime));
+
+	internal static int EpisodesOf(IEnumerable<AnimeModel> anime) => anime.Sum(x => x.Tracking?.WatchedEpisodes ?? 0);
+
+	internal static double? AverageScoreOf(IEnumerable<AnimeModel> anime)
+	{
+		var scores = anime.Select(x => x.Tracking?.Score ?? 0).Where(x => x > 0).ToList();
+		return scores.Count == 0 ? null : Math.Round(scores.Average(), 1);
 	}
 }

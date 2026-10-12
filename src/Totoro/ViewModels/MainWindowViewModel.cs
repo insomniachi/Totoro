@@ -6,6 +6,7 @@ using Totoro.Core.Navigation;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
 using Totoro.Playback;
+using Totoro.ViewModels.Chat;
 
 namespace Totoro.ViewModels;
 
@@ -13,9 +14,10 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat)
 	{
 		Playback = playback;
+		Chat = chat;
 		NavigationItems = [.. navigationItems.Where(x => !x.IsFooter)];
 		FooterNavigationItems = [.. navigationItems.Where(x => x.IsFooter)];
 
@@ -37,6 +39,9 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	/// <summary>What playing an episode is up to, for the status bar.</summary>
 	public WatchService Playback { get; }
+
+	/// <summary>The assistant, in a panel beside the pages.</summary>
+	public ChatViewModel Chat { get; }
 
 	/// <summary>The account of the selected anime database, shown in the title bar.</summary>
 	[ObservableProperty]

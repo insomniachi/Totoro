@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:chat="using:Totoro.Views.Chat"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="using:Totoro.Core.Navigation"
@@ -21,9 +22,15 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <!--  The pages, and the assistant's panel beside them when it's open  -->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
 
         <TitleBar
             x:Name="AppTitleBar"
+            Grid.ColumnSpan="2"
             Title="Totoro"
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False"
@@ -67,6 +74,16 @@
                             <TextBlock Text="{x:Bind local:MainWindow.NowPlayingText(ViewModel.Playback.Kind), Mode=OneWay}" />
                         </StackPanel>
                     </Button>
+
+                    <!--  Opens and closes the assistant's panel  -->
+                    <ToggleButton
+                        Height="32"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Assistant"
+                        IsChecked="{x:Bind ViewModel.Chat.IsOpen, Mode=TwoWay}"
+                        ToolTipService.ToolTip="Assistant">
+                        <FontIcon FontSize="16" Glyph="&#xE8BD;" />
+                    </ToggleButton>
 
                     <!--  The account of the selected anime database; click to sign in or out  -->
                     <Button
@@ -152,6 +169,19 @@
                 </Grid>
             </SplitView>
         </NavigationView>
+
+        <!--  The assistant (see ChatService): beside the pages rather than over them, so what it does shows as it does it  -->
+        <Border
+            Grid.Row="1"
+            Grid.Column="1"
+            Width="380"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1,1,0,0"
+            CornerRadius="8,0,0,0"
+            Visibility="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}">
+            <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat}" />
+        </Border>
 
         <!--
             A change to the user's list that couldn't be made on their other list (see AnimeTrackingService), over the

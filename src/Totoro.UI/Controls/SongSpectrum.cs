@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 using Totoro.Core.Services;
 
-namespace Totoro.Views.AnimeDetails;
+namespace Totoro.UI.Controls;
 
 /// <summary>
 /// A song's spectrum as a row of bars, low notes on the left, redrawn every frame while <see cref="IsActive"/>: each bar

@@ -12,9 +12,9 @@ public sealed class NavigationTools(AnimeLookup lookup, IEnumerable<NavigationIt
 	private const string MainNavigatorKey = "main";
 	private const string PaneNavigatorKey = "pane";
 
-	[AgentTool("show_anime")]
-	[Description("Opens an anime's details in the app's side pane, for the user to see.")]
-	public async Task<string> ShowAnimeAsync(long animeId)
+	[AgentTool("open_anime_details")]
+	[Description("Opens an anime's details page in the app's side pane. Only when the user asks to open it or see its details: anime the other tools return are already shown to them in the chat.")]
+	public async Task<string> OpenAnimeDetailsAsync(long animeId)
 	{
 		var anime = await lookup.GetAsync(animeId);
 		if (!Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
