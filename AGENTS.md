@@ -15,6 +15,7 @@ The projects are in `src/`; the solution (`Totoro.slnx`) and the build settings 
 - `Totoro.Core/Modules/<Area>`: what modules implement and use, e.g. `IAnimeTracker` (Anime), `IMediaPlayer` (Media), `IAnimeProvider` and `ITorrentStreamer` (Streaming).
 - `Totoro.Core/Services`: shared logic the UI and agent tools both call, e.g. `AnimeTrackingService`.
 - `Totoro.Core/Agent`: the agent tool infrastructure (`IAgentTools`, `[AgentTool]`).
+- `Totoro.UI/AnimatedVisuals`: our own animated icons (in `Icons`), as Lottie files and the code LottieGen generates from them: change a `.json` and run `Generate.ps1` there.
 - `Totoro/Modules/<Kind>/<Name>`: a module, e.g. `AnimeDatabase/Anilist`, `TorrentStreamers/Rqbit`. Code generated from a schema goes in a subfolder with its own namespace (`Anilist/GraphQl`). A module's window or pages go with the others in `Views` and `ViewModels`, e.g. the built-in player's (`MediaPlayers/Vlc`) in `Player/`.
 - `Totoro/Agent`: the app's agent tools.
 - `Totoro/ViewModels` and `Totoro/Views`: pages and dialogs, side by side by name (`AnimeSettingsDialogViewModel` and `AnimeSettingsDialog`). A page's parts go in a subfolder (`AnimeDetails/`).

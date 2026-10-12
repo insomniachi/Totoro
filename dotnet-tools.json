@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "lottiegen": {
+      "version": "8.2.250604",
+      "commands": [
+        "LottieGen"
+      ],
+      "rollForward": false
+    }
+  }
+}

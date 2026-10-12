@@ -10,16 +10,26 @@ public static class Icons
 	public static SymbolIcon Settings => new(Symbol.Setting);
 	public static SymbolIcon Search => new(Symbol.Find);
 
-	// Animated icons, from WinUI's built-in animations. Use one wherever there is one; there are only a few (no home, for
-	// instance). They animate with their container's AnimatedIcon.State, which must be one of the names WinUI's own
-	// templates use (Normal, PointerOver, Pressed): other names leave them still. The fallback shows where
-	// animations can't play.
+	// Animated icons, from WinUI's built-in animations or our own (AnimatedVisuals). Use one wherever there is one
+	// (there's no home, for instance). They animate with their container's AnimatedIcon.State, which must be one of the
+	// names WinUI's own templates use (Normal, PointerOver, Pressed): other names leave them still. The fallback shows
+	// where animations can't play.
 
 	/// <summary>The magnifier moving, as in WinUI's search box.</summary>
 	public static AnimatedIcon SearchAnimated => new()
 	{
 		Source = new AnimatedFindVisualSource(),
 		FallbackIconSource = new SymbolIconSource { Symbol = Symbol.Find },
+	};
+
+	/// <summary>
+	/// Books on a shelf, the leaning one swinging upright as the pointer comes over (our own, from its Lottie file in
+	/// AnimatedVisuals; see Generate.ps1 there).
+	/// </summary>
+	public static AnimatedIcon LibraryAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedLibraryVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
 	/// <summary>The gear turning, as on WinUI's own Settings menu item.</summary>

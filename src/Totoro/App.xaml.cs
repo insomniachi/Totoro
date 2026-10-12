@@ -96,10 +96,9 @@ public partial class App : Application
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();
 				services.AddDataViewMap<AnimeDetailsPage, AnimeDetailsViewModel, AnimeModel>();
-				services.AddMainNavigationItem<UserListPage,UserListViewModel>("Home", x =>
+				services.AddMainNavigationItem<UserListPage, UserListViewModel>("Library", x =>
 				{
-					x.UnselectedIcon = Icons.Home;
-					x.SelectedIcon = Icons.HomeFilled;
+					x.AnimatedIcon = Icons.LibraryAnimated;
 				});
 				services.AddMainNavigationItem<AdvancedSearchPage, AdvancedSearchViewModel>("Search", x =>
 				{
