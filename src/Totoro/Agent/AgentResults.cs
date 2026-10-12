@@ -167,9 +167,9 @@ public sealed record SongPlaying(
 		new($"{song.Label}: {song.Title}", video ? "the media player" : "the app") { _anime = anime, _song = song };
 }
 
-[Description("Anime on the user's list, in the order asked for.")]
+[Description("Anime, in the order asked for.")]
 public sealed record ListEntries(
-	[property: Description("How many anime on the list match; these are the first of them.")]
+	[property: Description("How many anime match; these are the first of them.")]
 	int Total,
 	IReadOnlyList<AnimeSummary> Anime) : IAgentAnimeList
 {

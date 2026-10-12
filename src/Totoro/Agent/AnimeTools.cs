@@ -150,6 +150,21 @@ public sealed class AnimeTools(
 		return ListStats.From(list, [.. groups]);
 	}
 
+	[AgentTool("find_new_seasons")]
+	[Description("New seasons (sequels) of anime on the user's list that start airing in a season, this one by default. E.g. whether anime they've completed have a new season this season: status Completed.")]
+	public async Task<ListEntries> FindNewSeasonsAsync(
+		[Description("Only sequels of anime with this status on their list, e.g. Completed; any if left out.")] ListItemStatus? status = null,
+		[Description("The season they start in; this one if left out.")] AnimeSeason? season = null,
+		[Description("The season's year; this year if left out.")] int? year = null)
+	{
+		var onList = Filter(await GetListAsync(), status, null, null, null, null).Select(x => x.Id).ToHashSet();
+		var now = Season.Of(DateTime.Now);
+		var seasonAnime = await lookup.Database.GetSeasonAnimeAsync(new Season(season ?? now.SeasonName, year ?? now.Year), CancellationToken.None);
+		// A new season is a sequel: its prequel is on the list.
+		var sequels = seasonAnime.Where(x => x.Related.Any(r => r.Relation == AnimeRelationType.Prequel && onList.Contains(r.Id))).ToList();
+		return new ListEntries(sequels.Count, [.. sequels.Select(AnimeSummary.From)]);
+	}
+
 	private async Task<List<AnimeModel>> GetListAsync()
 	{
 		var tracker = trackers.CreateDefault() ?? throw new AgentToolException("No anime database is set up.");
@@ -214,7 +229,7 @@ public sealed class AnimeTools(
 	public async Task<AnimeSongList> GetAnimeSongsAsync(
 		long animeId,
 		[Description("Only songs of this kind, e.g. Opening when the user asks for the openings.")] AnimeSongKind? kind = null,
-		[Description("Only the song with this number, e.g. 2 for the second opening; use with kind.")] int? number = null)
+		[Description("Only the song with this number, when the user asks for one, e.g. 2 for the second opening; use with kind. Leave it out for all of that kind.")] int? number = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
 		var all = await songs.GetSongsAsync(anime);

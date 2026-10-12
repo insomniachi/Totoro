@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.AI;
@@ -194,6 +196,12 @@ public sealed partial class ChatService(
 	private readonly List<ChatMessage> _history = [];
 	// What the tools returned, by call, from when they run to when their results are shown.
 	private readonly ConcurrentDictionary<string, object?> _results = new();
+
+	// The anime ids (and titles) tools have given the model in this conversation, oldest first: the ones it may use.
+	private readonly List<(long Id, string Title)> _knownAnime = [];
+
+	// Calls turned away because of a made-up anime id (see MadeUpAnimeId), whose entries are taken away.
+	private readonly ConcurrentDictionary<string, byte> _silentCalls = new();
 	private IChatClient? _client;
 	private CancellationTokenSource? _running;
 
@@ -233,6 +241,7 @@ public sealed partial class ChatService(
 
 		Entries.Add(new ChatUserEntry(text.Trim()));
 		_history.Add(new ChatMessage(ChatRole.User, text.Trim()));
+		RememberUserIds(text);
 		await RunAsync();
 	}
 
@@ -260,6 +269,11 @@ public sealed partial class ChatService(
 	{
 		Stop();
 		_history.Clear();
+		lock (_knownAnime)
+		{
+			_knownAnime.Clear();
+		}
+
 		Entries.Clear();
 		Refresh();
 	}
@@ -360,7 +374,15 @@ public sealed partial class ChatService(
 	/// </summary>
 	private async ValueTask<object?> InvokeToolAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
 	{
+		if (MadeUpAnimeId(context.Arguments) is { } madeUp)
+		{
+			// Not shown: the model corrects itself, which is all the user needs to see.
+			_silentCalls.TryAdd(context.CallContent.CallId, 0);
+			return JsonSerializer.SerializeToElement(new AgentToolError(madeUp), AgentTools.SerializerOptions);
+		}
+
 		var result = await context.Function.InvokeAsync(context.Arguments, cancellationToken);
+		RememberAnimeIds(result);
 		var raw = AgentToolResult.Of(context.Arguments);
 		_results[context.CallContent.CallId] = raw;
 		return ShownAs(raw) is { } shown && result is JsonElement json
@@ -368,6 +390,105 @@ public sealed partial class ChatService(
 				$"The user now sees {shown}. Don't describe it in text (the user won't see that). If this was a step towards what the user asked for (e.g. you searched to get an anime's id), carry on and do it; if not, you're done.",
 				json), AgentTools.SerializerOptions)
 			: result;
+	}
+
+	/// <summary>
+	/// Why an anime id the model passed is wrong, if it is: one no tool has given it in this conversation. Small models
+	/// garble long numbers they copy (135865 as 103574), and a made-up id can still be some other anime. The error lists
+	/// the ones it has been given, to pick from.
+	/// </summary>
+	private string? MadeUpAnimeId(AIFunctionArguments arguments)
+	{
+		foreach (var (name, value) in arguments)
+		{
+			if (!name.EndsWith("animeId", StringComparison.OrdinalIgnoreCase) || IdOf(value) is not { } id)
+			{
+				continue;
+			}
+
+			lock (_knownAnime)
+			{
+				if (_knownAnime.Any(x => x.Id == id))
+				{
+					continue;
+				}
+
+				var known = string.Join(", ", _knownAnime.AsEnumerable().Reverse().DistinctBy(x => x.Id).Take(8).Select(x => $"{x.Title} is {x.Id}"));
+				return known.Length == 0
+					? $"No tool has given you anime id {id}, so it's wrong. Search for the anime to get its id."
+					: $"No tool has given you anime id {id} in this conversation, so it's wrong: copy one they gave you exactly. Latest first: {known}. Or search for the anime to get its id.";
+			}
+		}
+
+		return null;
+
+		static long? IdOf(object? value) => value switch
+		{
+			long x => x,
+			int x => x,
+			JsonElement { ValueKind: JsonValueKind.Number } x when x.TryGetInt64(out var id) => id,
+			JsonElement { ValueKind: JsonValueKind.String } x when long.TryParse(x.GetString(), out var id) => id,
+			string x when long.TryParse(x, out var id) => id,
+			_ => null,
+		};
+	}
+
+	/// <summary>Numbers in the user's message are ids they gave, which the model may use too.</summary>
+	private void RememberUserIds(string text)
+	{
+		lock (_knownAnime)
+		{
+			foreach (var number in Regex.Matches(text, @"\b\d{3,}\b").Select(x => long.Parse(x.Value, CultureInfo.InvariantCulture)))
+			{
+				_knownAnime.Add((number, "the id you were given"));
+			}
+		}
+	}
+
+	/// <summary>Remembers the anime ids in a tool's result (with their titles), as ones the model may use.</summary>
+	private void RememberAnimeIds(object? result)
+	{
+		if (result is not JsonElement json)
+		{
+			return;
+		}
+
+		lock (_knownAnime)
+		{
+			Walk(json);
+		}
+
+		void Walk(JsonElement element)
+		{
+			if (element.ValueKind == JsonValueKind.Array)
+			{
+				foreach (var item in element.EnumerateArray())
+				{
+					Walk(item);
+				}
+
+				return;
+			}
+
+			if (element.ValueKind != JsonValueKind.Object)
+			{
+				return;
+			}
+
+			var title = element.TryGetProperty("title", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "";
+			foreach (var property in element.EnumerateObject())
+			{
+				if ((property.NameEquals("id") || property.Name.EndsWith("animeId", StringComparison.OrdinalIgnoreCase)) &&
+					property.Value.ValueKind == JsonValueKind.Number && property.Value.TryGetInt64(out var id))
+				{
+					_knownAnime.Add((id, title));
+				}
+				else
+				{
+					Walk(property.Value);
+				}
+			}
+		}
 	}
 
 	/// <summary>A tool's result that the user sees as cards, with a note for the model saying so.</summary>
@@ -429,6 +550,12 @@ public sealed partial class ChatService(
 				Entries.Add(new ChatToolEntry(call.CallId, call.Name, Format(call.Arguments)));
 				return null;
 			case FunctionResultContent result when Entries.OfType<ChatToolEntry>().LastOrDefault(x => x.CallId == result.CallId) is { } tool:
+				if (_silentCalls.TryRemove(result.CallId, out _))
+				{
+					Entries.Remove(tool);
+					return reply;
+				}
+
 				var error = ErrorOf(result.Result);
 				tool.State = error is null ? ChatToolState.Done : ChatToolState.Failed;
 				tool.Error = error ?? "";

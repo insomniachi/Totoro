@@ -233,6 +233,61 @@ internal partial class AnilistMetadataProvider(
 		}
 	}
 
+	public async Task<List<AnimeModel>> GetSeasonAnimeAsync(Season season, CancellationToken ct)
+	{
+		var media = await FetchSeasonAsync(client, season, logger, ct);
+		return [.. media.Where(FilterNsfw).Select(AniListModelToAnimeModelConverter.ConvertModel)];
+	}
+
+	// Pages of a season, at most: the busiest seasons have about 150 anime.
+	private const int MaxSeasonPages = 4;
+
+	/// <summary>
+	/// The anime that started airing in the season, most popular first, with their relations (as edges: how each
+	/// relates). Also used by the MyAnimeList provider, whose API has no relations in its lists.
+	/// </summary>
+	internal static async Task<List<Media>> FetchSeasonAsync(GraphQLHttpClient client, Season season, ILogger logger, CancellationToken ct)
+	{
+		List<Media> media = [];
+		try
+		{
+			for (var page = 1; page <= MaxSeasonPages; page++)
+			{
+				var response = await client.SendQueryAsync<Query>(new GraphQLRequest
+				{
+					Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
+																 .WithPageInfo(new PageInfoQueryBuilder().WithHasNextPage())
+																 .WithMedia(MediaQueryBuilder()
+																				.WithRelations(new MediaConnectionQueryBuilder()
+																								   .WithEdges(new MediaEdgeQueryBuilder()
+																												  .WithRelationType()
+																												  .WithNode(MediaQueryBuilderSimple()))),
+																			season: AniListModelToAnimeModelConverter.ConvertSeason(season.SeasonName),
+																			seasonYear: season.Year,
+																			sort: new List<MediaSort?> { MediaSort.PopularityDesc },
+																			type: MediaType.Anime), page, MaxPageSize).Build()
+				}, ct);
+
+				if (response.Errors?.Length > 0)
+				{
+					break;
+				}
+
+				media.AddRange(response.Data.Page.Media);
+				if (response.Data.Page.PageInfo?.HasNextPage != true)
+				{
+					break;
+				}
+			}
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			logger.LogWarning(ex, "AniList season request failed");
+		}
+
+		return media;
+	}
+
 	public async Task<List<AnimeModel>> GetAiringTodayAsync(CancellationToken ct)
 	{
 		try

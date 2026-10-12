@@ -17,4 +17,10 @@ public interface IAnimeMetadataProvider
 	Task<List<AnimeModel>> GetPopularAnimeAsync(CancellationToken ct);
 	Task<List<AnimeModel>> GetUpcomingAnimeAsync(CancellationToken ct);
 	Task<List<AnimeModel>> GetAiringTodayAsync(CancellationToken ct);
+
+	/// <summary>
+	/// The anime that started airing in <paramref name="season"/>, most popular first, each with its related anime
+	/// (<see cref="AnimeModel.Related"/>, with how each relates), e.g. to find which are sequels.
+	/// </summary>
+	Task<List<AnimeModel>> GetSeasonAnimeAsync(Season season, CancellationToken ct);
 }

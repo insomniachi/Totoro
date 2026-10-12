@@ -154,6 +154,30 @@ internal class MyAnimeListMetadataProvider(
 		return await GetRankingAsync(AnimeRankingType.Upcoming, ct);
 	}
 
+	public async Task<List<AnimeModel>> GetSeasonAnimeAsync(Core.Modules.Anime.Season season, CancellationToken ct)
+	{
+		// MyAnimeList's API has no relations in its lists, so AniList's, by their MyAnimeList ids: those are the ids the
+		// user's list and the rest of the app use. AniList doesn't know the user's MyAnimeList entries.
+		var media = await AnilistMetadataProvider.FetchSeasonAsync(anilistClient, season, logger, ct);
+		foreach (var anime in media)
+		{
+			anime.Id = anime.IdMal;
+			foreach (var edge in anime.Relations?.Edges ?? [])
+			{
+				if (edge.Node is { } node)
+				{
+					node.Id = node.IdMal;
+				}
+			}
+		}
+
+		return
+		[
+			.. media.Where(x => x.Id is > 0 && (session.IncludeNsfw || x.IsAdult is false or null))
+					.Select(AniListModelToAnimeModelConverter.ConvertModel)
+		];
+	}
+
 	public async Task<List<AnimeModel>> GetAiringTodayAsync(CancellationToken ct)
 	{
 		try
