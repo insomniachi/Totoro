@@ -3,7 +3,7 @@
 A Windows app for tracking and watching anime, built with WinUI 3 and .NET 10.
 
 - **Your list, from AniList or MyAnimeList.** Browse and search anime, and track what you watch. When you're signed in to both, changes are made on both.
-- **Watch episodes.** Episodes are found on an anime provider (SubsPlease) and streamed from torrents with rqbit. They play in the built-in player (libvlc), or in mpv.
+- **Watch episodes.** Episodes are found on an anime provider: SubsPlease, streamed from torrents with rqbit, or AnimePahe, streamed from Kwik (its site is behind Cloudflare, so the app asks you to do its check now and then). They play in the built-in player (libvlc), or in mpv.
 - **Skips openings and endings.** Using Aniskip's times, it offers to skip them or skips them for you. It offers the next episode, and marks episodes watched when you finish them.
 - **Episode numbering.** For providers that number episodes across seasons, it uses anime-relations, plus rules of your own.
 - **Music.** Each anime's openings and endings, from AnimeThemes, to listen to or watch.

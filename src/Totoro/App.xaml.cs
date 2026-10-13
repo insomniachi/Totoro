@@ -18,12 +18,14 @@ using Totoro.Core.Navigation;
 using Totoro.Core.Relations;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
+using Totoro.Core.Web;
 using Totoro.Playback;
 using Totoro.UI;
 using Totoro.UI.Authentication;
 using Totoro.UI.Dialogs;
 using Totoro.UI.Theming;
 using Totoro.UI.Threading;
+using Totoro.UI.Web;
 using Totoro.ViewModels;
 using Totoro.ViewModels.Chat;
 using Totoro.ViewModels.Relations;
@@ -73,6 +75,11 @@ public partial class App : Application
 					sp.GetRequiredService<IServiceScopeFactory>(),
 					() => _window?.Content?.XamlRoot));
 				services.AddSingleton<IWebAuthenticator>(_ => new WebAuthenticator(() => _window?.Content?.XamlRoot));
+				// Pages from sites that only serve browsers (e.g. AnimePahe, behind Cloudflare).
+				services.AddSingleton<IWebPageLoader>(sp => new WebPageLoader(
+					() => _window is null ? throw new InvalidOperationException("The app's window isn't open yet.") : WinRT.Interop.WindowNative.GetWindowHandle(_window),
+					() => _window?.Content?.XamlRoot,
+					sp.GetRequiredService<IMainThread>()));
 
 				// Everything the app does, as tools an AI agent can call (see Agent/). A new feature adds its tools here too.
 				services.AddSingleton<IMainThread>(_ => new MainThread(() => _window?.DispatcherQueue));
@@ -157,6 +164,7 @@ public partial class App : Application
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
 			new Modules.AnimeProviders.SubsPlease.SubsPleaseModule(),
+			new Modules.AnimeProviders.AnimePahe.AnimePaheModule(),
 			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.MediaPlayers.Vlc.VlcModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),

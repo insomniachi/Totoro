@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using Flurl.Http;
 using HtmlAgilityPack;
 using Totoro.Core.Helpers;
@@ -11,7 +10,7 @@ namespace Totoro.Modules.AnimeProviders.SubsPlease;
 /// Every show on SubsPlease (from its "all shows" page), cached on disk and refreshed daily, since new shows start
 /// each season. Searching matches titles loosely: SubsPlease uses romaji titles, punctuated its own way.
 /// </summary>
-internal static partial class SubsPleaseCatalog
+internal static class SubsPleaseCatalog
 {
 	private static readonly TimeSpan s_maxAge = TimeSpan.FromDays(1);
 	private static readonly SemaphoreSlim s_lock = new(1, 1);
@@ -22,15 +21,14 @@ internal static partial class SubsPleaseCatalog
 	public static async Task<List<ProviderShow>> SearchAsync(string query, CancellationToken ct)
 	{
 		var shows = await GetShowsAsync(ct);
-		var normalizedQuery = Normalize(query);
-		if (normalizedQuery.Length == 0)
+		if (TitleMatch.Normalize(query).Length == 0)
 		{
 			return [];
 		}
 
 		return
 		[
-			.. shows.Select(x => new ProviderShow(x.Id, x.Title, Score(normalizedQuery, Normalize(x.Title))))
+			.. shows.Select(x => new ProviderShow(x.Id, x.Title, TitleMatch.Score(query, x.Title)))
 					.Where(x => x.Score >= 0.4)
 					.OrderByDescending(x => x.Score)
 					.Take(10)
@@ -87,37 +85,4 @@ internal static partial class SubsPleaseCatalog
 					   .Where(x => x.Id.Length > 0 && x.Title.Length > 0)
 		];
 	}
-
-	/// <summary>1 for the same title; otherwise how many words they share, with a boost when one contains the other.</summary>
-	private static double Score(string query, string title)
-	{
-		if (query == title)
-		{
-			return 1;
-		}
-
-		var queryWords = query.Split(' ');
-		var titleWords = title.Split(' ');
-		var shared = queryWords.Intersect(titleWords).Count();
-		var score = (double)shared / queryWords.Union(titleWords).Count();
-
-		if (title.Contains(query) || query.Contains(title))
-		{
-			score = Math.Max(score, 0.6 + 0.3 * Math.Min(query.Length, title.Length) / Math.Max(query.Length, title.Length));
-		}
-
-		return score;
-	}
-
-	/// <summary>Lowercase words only: "Sousou no Frieren: Season 2" and "sousou no frieren season 2" match.</summary>
-	private static string Normalize(string title)
-	{
-		return Spaces().Replace(NotLetterOrDigit().Replace(title.ToLowerInvariant(), " "), " ").Trim();
-	}
-
-	[GeneratedRegex(@"[^\p{L}\p{N}]")]
-	private static partial Regex NotLetterOrDigit();
-
-	[GeneratedRegex(@"\s+")]
-	private static partial Regex Spaces();
 }
