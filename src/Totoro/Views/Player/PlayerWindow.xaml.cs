@@ -57,6 +57,8 @@ public sealed partial class PlayerWindow : Window
 		ExtendsContentIntoTitleBar = true;
 		SetTitleBar(TitleBarArea);
 		AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+		// The taskbar's and Alt+Tab's icon.
+		AppWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "Totoro.ico"));
 		// White window buttons over the video, in colours of their own (a preferred theme would override them), so they can
 		// fade with the title bar.
 		AppWindow.TitleBar.ButtonHoverBackgroundColor = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF);
