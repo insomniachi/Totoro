@@ -528,7 +528,10 @@ public sealed partial class WatchService(
 	/// anime-relations (and the user's rules) say where the episode is. <paramref name="numbering"/> is the anime's
 	/// setting: by season, absolute, or (null) worked out from the provider's episode numbers.
 	/// </summary>
-	private ProviderEpisode? PickEpisode(List<ProviderEpisode> episodes, AnimeModel anime, int number, EpisodeNumbering? numbering)
+	internal ProviderEpisode? PickEpisode(List<ProviderEpisode> episodes, AnimeModel anime, int number, EpisodeNumbering? numbering) =>
+		PickEpisode(episodes, anime, number, numbering, relations);
+
+	internal static ProviderEpisode? PickEpisode(List<ProviderEpisode> episodes, AnimeModel anime, int number, EpisodeNumbering? numbering, IAnimeRelations relations)
 	{
 		var regular = episodes.Where(x => x.Number == MathF.Floor(x.Number)).ToList();
 		ProviderEpisode? Numbered(int n) => regular.FirstOrDefault(x => (int)x.Number == n);
@@ -536,17 +539,36 @@ public sealed partial class WatchService(
 		// Absolute numbering (one show for several seasons): anime-relations says where the episode is.
 		if (numbering != EpisodeNumbering.Season && relations.FindAbsoluteEpisode(anime, number) is { } absolute)
 		{
-			if (numbering == EpisodeNumbering.Absolute)
+			// Worked out: absolute if the provider's numbers go past this season's, or it hasn't this season's number.
+			var seasonLength = anime.TotalEpisodes ?? absolute.Rule.DestinationEpisodes.Last;
+			var isAbsolute = numbering == EpisodeNumbering.Absolute ||
+							 (seasonLength is { } length && regular.Any(x => x.Number > length)) ||
+							 Numbered(number) is null;
+			if (isAbsolute)
 			{
 				return Numbered(absolute.Episode);
 			}
+		}
 
-			// Worked out: absolute if the provider's numbers go past this season's, or it hasn't this season's number.
-			var seasonLength = anime.TotalEpisodes ?? absolute.Rule.DestinationEpisodes.Last;
-			var isAbsolute = seasonLength is { } length && regular.Any(x => x.Number > length) || Numbered(number) is null;
-			if (isAbsolute && Numbered(absolute.Episode) is { } absoluteEpisode)
+		var offset = regular.Count > 0 ? (int)regular.Min(x => x.Number) - 1 : 0;
+		if (numbering == EpisodeNumbering.Absolute)
+		{
+			return offset > 0 ? Numbered(number + offset) : null;
+		}
+
+		// If this anime is a subsequent season in anime-relations, and the provider has episodes past this season's
+		// length (or starting at the absolute episode), the provider is using absolute numbering across seasons.
+		// Don't fall back to season numbers (e.g. episode 3 of season 1).
+		var ids = RelationIds.Of(anime);
+		var destinationRule = relations.GetRules(anime).FirstOrDefault(x => x.Rule.Destination.Matches(ids))?.Rule;
+		if (destinationRule is not null && numbering != EpisodeNumbering.Season)
+		{
+			var seasonLength = anime.TotalEpisodes ?? destinationRule.DestinationEpisodes.Last;
+			var isAbsolute = (seasonLength is { } length && regular.Any(x => x.Number > length)) ||
+							 regular.Any(x => x.Number >= destinationRule.SourceEpisodes.First);
+			if (isAbsolute)
 			{
-				return absoluteEpisode;
+				return null;
 			}
 		}
 
@@ -558,7 +580,6 @@ public sealed partial class WatchService(
 
 		// No rule: providers that only list a later season's episodes may still use absolute numbering (a second season
 		// from 13); count from their first.
-		var offset = regular.Count > 0 ? (int)regular.Min(x => x.Number) - 1 : 0;
 		return offset > 0 ? Numbered(number + offset) : null;
 	}
 
