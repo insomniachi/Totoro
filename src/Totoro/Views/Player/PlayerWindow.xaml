@@ -26,11 +26,13 @@
                 TargetType="Button">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="BorderBrush" Value="Transparent" />
-                <Setter Property="Width" Value="40" />
-                <Setter Property="Height" Value="40" />
+                <Setter Property="Width" Value="36" />
+                <Setter Property="Height" Value="36" />
                 <Setter Property="Padding" Value="0" />
                 <Setter Property="FontSize" Value="16" />
+                <Setter Property="Margin" Value="2,0" />
             </Style>
+
             <!--  The play button's ring  -->
             <LinearGradientBrush x:Key="PlayRingBrush" StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Offset="0" Color="{ThemeResource SystemAccentColorLight2}" />
@@ -42,6 +44,8 @@
                 so it'd be a flat grey.
             -->
             <SolidColorBrush x:Key="OverlayBackgroundBrush" Color="#B3141414" />
+            <!--  High-opacity background for flyouts like the episode list, ensuring text and details are completely legible  -->
+            <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="#FA141414" />
             <LinearGradientBrush x:Key="TitleBarBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
                 <GradientStop Offset="0" Color="#B3000000" />
                 <GradientStop Offset="1" Color="#00000000" />
@@ -335,293 +339,342 @@
                     TextAlignment="Right" />
             </Grid>
 
-            <Grid Grid.Row="1" ColumnSpacing="12">
+            <Grid Grid.Row="1" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!--  Previous, back, play, forward, next, as in Media Player (the title is in the title bar)  -->
-                <StackPanel
-                    Grid.Column="1"
-                    Orientation="Horizontal"
-                    Spacing="12">
-                    <Button
-                        AutomationProperties.Name="Previous episode"
-                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
-                        Command="{x:Bind ViewModel.PreviousEpisodeCommand}"
-                        IsEnabled="{x:Bind ViewModel.HasPreviousEpisode, Mode=OneWay}"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Previous episode">
-                        <FontIcon Glyph="&#xE892;" />
-                    </Button>
-                    <Button
-                        AutomationProperties.Name="Back 10 seconds"
-                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
-                        Command="{x:Bind ViewModel.SeekByCommand}"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Back 10 seconds">
-                        <Button.CommandParameter>
-                            <x:Double>-10</x:Double>
-                        </Button.CommandParameter>
-                        <FontIcon Glyph="&#xED3C;" />
-                    </Button>
-                    <Button
-                        x:Name="PlayPauseButton"
-                        Width="40"
-                        Height="40"
-                        Margin="8,0"
-                        Padding="0"
-                        AutomationProperties.Name="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying), Mode=OneWay}"
-                        Background="{ThemeResource ControlFillColorDefaultBrush}"
-                        BorderBrush="{StaticResource PlayRingBrush}"
-                        BorderThickness="2"
-                        Command="{x:Bind ViewModel.PlayPauseCommand}"
-                        CornerRadius="20"
-                        ToolTipService.ToolTip="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying), Mode=OneWay}">
-                        <Button.Resources>
-                            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="PlayRingBrush" />
-                            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="PlayRingBrush" />
-                        </Button.Resources>
-                        <FontIcon FontSize="16" Glyph="{x:Bind local:PlayerWindow.PlayPauseGlyph(ViewModel.IsPlaying), Mode=OneWay}" />
-                    </Button>
-                    <Button
-                        AutomationProperties.Name="Forward 30 seconds"
-                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
-                        Command="{x:Bind ViewModel.SeekByCommand}"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Forward 30 seconds">
-                        <Button.CommandParameter>
-                            <x:Double>30</x:Double>
-                        </Button.CommandParameter>
-                        <FontIcon Glyph="&#xED3D;" />
-                    </Button>
-                    <Button
-                        AutomationProperties.Name="Next episode"
-                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
-                        Command="{x:Bind ViewModel.NextEpisodeCommand}"
-                        IsEnabled="{x:Bind ViewModel.HasNextEpisode, Mode=OneWay}"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Next episode (N)">
-                        <FontIcon Glyph="&#xE893;" />
-                    </Button>
-                </StackPanel>
+                <!--  Left: Audio / Volume CommandBar with Flyout  -->
+                <CommandBar
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    DefaultLabelPosition="Collapsed"
+                    OverflowButtonVisibility="Collapsed">
+                    <AppBarElementContainer VerticalAlignment="Center">
+                        <Button
+                            AutomationProperties.Name="Volume"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Volume">
+                            <FontIcon FontSize="16" Glyph="{x:Bind local:PlayerWindow.VolumeGlyph(ViewModel.IsMuted, ViewModel.Volume), Mode=OneWay}" />
+                            <Button.Flyout>
+                                <Flyout Placement="Top">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Button
+                                            AutomationProperties.Name="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted), Mode=OneWay}"
+                                            Command="{x:Bind ViewModel.ToggleMuteCommand}"
+                                            Margin="0"
+                                            Style="{StaticResource PlayerButtonStyle}"
+                                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted), Mode=OneWay}">
+                                            <FontIcon FontSize="16" Glyph="{x:Bind local:PlayerWindow.VolumeGlyph(ViewModel.IsMuted, ViewModel.Volume), Mode=OneWay}" />
+                                        </Button>
+                                        <Slider
+                                            Width="160"
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.Name="Volume"
+                                            Maximum="100"
+                                            Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Width="28"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind local:PlayerWindow.VolumeText(ViewModel.Volume), Mode=OneWay}"
+                                            TextAlignment="Right" />
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </AppBarElementContainer>
+                </CommandBar>
 
-                <StackPanel
+                <!--  Center: Playback transport controls CommandBar  -->
+                <CommandBar
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    DefaultLabelPosition="Collapsed"
+                    OverflowButtonVisibility="Collapsed">
+                    <AppBarElementContainer
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
+                        <Button
+                            AutomationProperties.Name="Previous episode"
+                            Command="{x:Bind ViewModel.PreviousEpisodeCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasPreviousEpisode, Mode=OneWay}"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Previous episode">
+                            <FontIcon FontSize="16" Glyph="&#xE892;" />
+                        </Button>
+                    </AppBarElementContainer>
+                    <AppBarElementContainer
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
+                        <Button
+                            AutomationProperties.Name="Back 10 seconds"
+                            Command="{x:Bind ViewModel.SeekByCommand}"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Back 10 seconds">
+                            <Button.CommandParameter>
+                                <x:Double>-10</x:Double>
+                            </Button.CommandParameter>
+                            <FontIcon FontSize="16" Glyph="&#xED3C;" />
+                        </Button>
+                    </AppBarElementContainer>
+                    <AppBarElementContainer VerticalAlignment="Center">
+                        <Button
+                            x:Name="PlayPauseButton"
+                            Width="40"
+                            Height="40"
+                            Margin="2,0"
+                            Padding="0"
+                            AutomationProperties.Name="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying), Mode=OneWay}"
+                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                            BorderBrush="{StaticResource PlayRingBrush}"
+                            BorderThickness="2"
+                            Command="{x:Bind ViewModel.PlayPauseCommand}"
+                            CornerRadius="20"
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying), Mode=OneWay}">
+                            <Button.Resources>
+                                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="PlayRingBrush" />
+                                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="PlayRingBrush" />
+                            </Button.Resources>
+                            <FontIcon FontSize="16" Glyph="{x:Bind local:PlayerWindow.PlayPauseGlyph(ViewModel.IsPlaying), Mode=OneWay}" />
+                        </Button>
+                    </AppBarElementContainer>
+                    <AppBarElementContainer
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
+                        <Button
+                            AutomationProperties.Name="Forward 30 seconds"
+                            Command="{x:Bind ViewModel.SeekByCommand}"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Forward 30 seconds">
+                            <Button.CommandParameter>
+                                <x:Double>30</x:Double>
+                            </Button.CommandParameter>
+                            <FontIcon FontSize="16" Glyph="&#xED3D;" />
+                        </Button>
+                    </AppBarElementContainer>
+                    <AppBarElementContainer
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
+                        <Button
+                            AutomationProperties.Name="Next episode"
+                            Command="{x:Bind ViewModel.NextEpisodeCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasNextEpisode, Mode=OneWay}"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Next episode (N)">
+                            <FontIcon FontSize="16" Glyph="&#xE893;" />
+                        </Button>
+                    </AppBarElementContainer>
+                </CommandBar>
+
+                <!--  Right: Episode navigation, audio/subtitles, aspect ratio, and full screen CommandBar  -->
+                <CommandBar
                     Grid.Column="2"
                     HorizontalAlignment="Right"
-                    Orientation="Horizontal"
-                    Spacing="8">
-                    <!--  An opening's length, or skipping the OP/ED while it plays  -->
-                    <Button
-                        Width="NaN"
-                        Padding="8,0"
-                        AutomationProperties.Name="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}"
-                        Visibility="{x:Bind local:PlayerWindow.SkipButtonVisibility(ViewModel.IsClip, ViewModel.IsSkipButtonVisible), Mode=OneWay}"
-                        Command="{x:Bind ViewModel.SkipAheadCommand}"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}">
-                        <TextBlock Text="{x:Bind ViewModel.SkipButtonText, Mode=OneWay}" />
-                    </Button>
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    DefaultLabelPosition="Collapsed"
+                    OverflowButtonVisibility="Collapsed">
+                    <AppBarElementContainer
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind local:PlayerWindow.SkipButtonVisibility(ViewModel.IsClip, ViewModel.IsSkipButtonVisible), Mode=OneWay}">
+                        <!--  An opening's length, or skipping the OP/ED while it plays  -->
+                        <Button
+                            AutomationProperties.Name="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.SkipAheadCommand}"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}">
+                            <FontIcon FontSize="16" Glyph="&#xEB9D;" />
+                        </Button>
+                    </AppBarElementContainer>
                     <!--  The episode list pops up above the controls, over this button: each episode's thumbnail and details; picking one plays it  -->
-                    <Button
-                        x:Name="EpisodesButton"
-                        AutomationProperties.Name="Episodes"
-                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
-                        Click="OnEpisodesButtonClick"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Episodes (E)">
-                        <FontIcon Glyph="&#xE8FD;" />
-                        <FlyoutBase.AttachedFlyout>
-                            <Flyout
-                                x:Name="EpisodeFlyout"
-                                Closed="OnEpisodeListClosed"
-                                Opened="OnEpisodeListOpened"
-                                Placement="Top">
-                                <Flyout.FlyoutPresenterStyle>
-                                    <Style BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
-                                        <Setter Property="Padding" Value="0" />
-                                        <Setter Property="MaxWidth" Value="440" />
-                                        <Setter Property="MaxHeight" Value="560" />
-                                        <Setter Property="Background" Value="{StaticResource OverlayBackgroundBrush}" />
-                                        <!--  The list scrolls itself  -->
-                                        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-                                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
-                                    </Style>
-                                </Flyout.FlyoutPresenterStyle>
-                                <Grid Width="400" RequestedTheme="Dark">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid Padding="16,12,8,8">
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Style="{ThemeResource SubtitleTextBlockStyle}"
-                                            Text="Episodes" />
-                                        <Button
-                                            HorizontalAlignment="Right"
-                                            AutomationProperties.Name="Close the episode list"
-                                            Command="{x:Bind ViewModel.ToggleEpisodeListCommand}"
-                                            Style="{StaticResource PlayerButtonStyle}"
-                                            ToolTipService.ToolTip="Close (Esc)">
-                                            <FontIcon Glyph="&#xE711;" />
-                                        </Button>
-                                    </Grid>
-                                    <ListView
-                                        x:Name="EpisodeListView"
-                                        Grid.Row="1"
-                                        Padding="0,0,0,8"
-                                        IsItemClickEnabled="True"
-                                        ItemClick="OnEpisodeClick"
-                                        ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
-                                        SelectionMode="None">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="player:EpisodeListItem">
-                                                <Grid
-                                                    Padding="0,8"
-                                                    AutomationProperties.Name="{x:Bind Name}"
-                                                    ColumnSpacing="12">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <!--  The thumbnail, with where it was left off along its bottom  -->
+                    <AppBarElementContainer
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
+                        <Button
+                            x:Name="EpisodesButton"
+                            AutomationProperties.Name="Episodes"
+                            Click="OnEpisodesButtonClick"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Episodes (E)">
+                            <FontIcon FontSize="16" Glyph="&#xE8FD;" />
+                            <FlyoutBase.AttachedFlyout>
+                                <Flyout
+                                    x:Name="EpisodeFlyout"
+                                    Closed="OnEpisodeListClosed"
+                                    Opened="OnEpisodeListOpened"
+                                    Placement="Top">
+                                    <Flyout.FlyoutPresenterStyle>
+                                        <Style BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="MaxWidth" Value="440" />
+                                            <Setter Property="MaxHeight" Value="560" />
+                                            <Setter Property="Background" Value="{StaticResource FlyoutBackgroundBrush}" />
+                                            <!--  The list scrolls itself  -->
+                                            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+                                            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+                                        </Style>
+                                    </Flyout.FlyoutPresenterStyle>
+                                    <Grid Width="400" RequestedTheme="Dark">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+                                        <Grid Padding="16,12,8,8">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Style="{ThemeResource SubtitleTextBlockStyle}"
+                                                Text="Episodes" />
+                                            <Button
+                                                HorizontalAlignment="Right"
+                                                AutomationProperties.Name="Close the episode list"
+                                                Command="{x:Bind ViewModel.ToggleEpisodeListCommand}"
+                                                Margin="0"
+                                                Style="{StaticResource PlayerButtonStyle}"
+                                                ToolTipService.ToolTip="Close (Esc)">
+                                                <FontIcon FontSize="16" Glyph="&#xE711;" />
+                                            </Button>
+                                        </Grid>
+                                        <ListView
+                                            x:Name="EpisodeListView"
+                                            Grid.Row="1"
+                                            Padding="0,0,0,8"
+                                            IsItemClickEnabled="True"
+                                            ItemClick="OnEpisodeClick"
+                                            ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+                                            SelectionMode="None">
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="player:EpisodeListItem">
                                                     <Grid
-                                                        Width="128"
-                                                        Height="72"
-                                                        VerticalAlignment="Top"
-                                                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                                                        CornerRadius="4">
-                                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
-                                                        <Border
-                                                            Margin="4"
-                                                            Padding="6,2"
-                                                            HorizontalAlignment="Left"
-                                                            VerticalAlignment="Top"
-                                                            Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                                            CornerRadius="2"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsCurrent)}">
-                                                            <TextBlock
-                                                                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                                                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                Text="Playing" />
-                                                        </Border>
+                                                        Padding="0,8"
+                                                        AutomationProperties.Name="{x:Bind Name}"
+                                                        ColumnSpacing="12">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <!--  The thumbnail, with where it was left off along its bottom  -->
                                                         <Grid
-                                                            Height="3"
-                                                            Margin="6,0,6,6"
-                                                            VerticalAlignment="Bottom"
-                                                            Background="#66FFFFFF"
-                                                            CornerRadius="1.5"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasProgress)}">
-                                                            <Rectangle
-                                                                Width="{x:Bind local:PlayerWindow.EpisodeProgressWidth(Progress)}"
+                                                            Width="128"
+                                                            Height="72"
+                                                            VerticalAlignment="Top"
+                                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                            CornerRadius="4">
+                                                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                                            <Border
+                                                                Margin="4"
+                                                                Padding="6,2"
                                                                 HorizontalAlignment="Left"
-                                                                Fill="{ThemeResource AccentFillColorDefaultBrush}" />
+                                                                VerticalAlignment="Top"
+                                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                                CornerRadius="2"
+                                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsCurrent)}">
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                    Text="Playing" />
+                                                            </Border>
+                                                            <Grid
+                                                                Height="3"
+                                                                Margin="6,0,6,6"
+                                                                VerticalAlignment="Bottom"
+                                                                Background="#66FFFFFF"
+                                                                CornerRadius="1.5"
+                                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasProgress)}">
+                                                                <Rectangle
+                                                                    Width="{x:Bind local:PlayerWindow.EpisodeProgressWidth(Progress)}"
+                                                                    HorizontalAlignment="Left"
+                                                                    Fill="{ThemeResource AccentFillColorDefaultBrush}" />
+                                                            </Grid>
                                                         </Grid>
+                                                        <StackPanel Grid.Column="1" Spacing="2">
+                                                            <Grid ColumnSpacing="8">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                                    Text="{x:Bind NumberText}" />
+                                                                <TextBlock
+                                                                    Grid.Column="1"
+                                                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                                    Text="{x:Bind Title}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                                <FontIcon
+                                                                    Grid.Column="2"
+                                                                    FontSize="12"
+                                                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                                    Glyph="&#xE930;"
+                                                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsWatched)}" />
+                                                            </Grid>
+                                                            <TextBlock
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind Details}"
+                                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Details)}" />
+                                                            <TextBlock
+                                                                MaxLines="2"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind Overview}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                TextWrapping="Wrap" />
+                                                        </StackPanel>
                                                     </Grid>
-                                                    <StackPanel Grid.Column="1" Spacing="2">
-                                                        <Grid ColumnSpacing="8">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="Auto" />
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock
-                                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                                Text="{x:Bind NumberText}" />
-                                                            <TextBlock
-                                                                Grid.Column="1"
-                                                                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                                Text="{x:Bind Title}"
-                                                                TextTrimming="CharacterEllipsis" />
-                                                            <FontIcon
-                                                                Grid.Column="2"
-                                                                FontSize="12"
-                                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                                Glyph="&#xE930;"
-                                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsWatched)}" />
-                                                        </Grid>
-                                                        <TextBlock
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                                            Text="{x:Bind Details}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Details)}" />
-                                                        <TextBlock
-                                                            MaxLines="2"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                                            Text="{x:Bind Overview}"
-                                                            TextTrimming="CharacterEllipsis"
-                                                            TextWrapping="Wrap" />
-                                                    </StackPanel>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
-                                </Grid>
-                            </Flyout>
-                        </FlyoutBase.AttachedFlyout>
-                    </Button>
-                    <Button
-                        AutomationProperties.Name="Audio and subtitles"
-                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Audio and subtitles">
-                        <FontIcon Glyph="&#xED1E;" />
-                        <Button.Flyout>
-                            <MenuFlyout Opening="OnTracksMenuOpening" Placement="Top" />
-                        </Button.Flyout>
-                    </Button>
-                    <Button
-                        AutomationProperties.Name="Aspect ratio"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Aspect ratio (A)">
-                        <FontIcon Glyph="&#xE799;" />
-                        <Button.Flyout>
-                            <MenuFlyout Opening="OnAspectRatioMenuOpening" Placement="Top" />
-                        </Button.Flyout>
-                    </Button>
-                    <Button
-                        AutomationProperties.Name="Volume"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Volume">
-                        <FontIcon Glyph="{x:Bind local:PlayerWindow.VolumeGlyph(ViewModel.IsMuted, ViewModel.Volume), Mode=OneWay}" />
-                        <Button.Flyout>
-                            <Flyout Placement="Top">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button
-                                        AutomationProperties.Name="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted), Mode=OneWay}"
-                                        Command="{x:Bind ViewModel.ToggleMuteCommand}"
-                                        Style="{StaticResource PlayerButtonStyle}"
-                                        ToolTipService.ToolTip="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted), Mode=OneWay}">
-                                        <FontIcon Glyph="{x:Bind local:PlayerWindow.VolumeGlyph(ViewModel.IsMuted, ViewModel.Volume), Mode=OneWay}" />
-                                    </Button>
-                                    <Slider
-                                        Width="160"
-                                        VerticalAlignment="Center"
-                                        AutomationProperties.Name="Volume"
-                                        Maximum="100"
-                                        Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
-                                    <TextBlock
-                                        Width="28"
-                                        VerticalAlignment="Center"
-                                        Text="{x:Bind local:PlayerWindow.VolumeText(ViewModel.Volume), Mode=OneWay}"
-                                        TextAlignment="Right" />
-                                </StackPanel>
-                            </Flyout>
-                        </Button.Flyout>
-                    </Button>
-                    <Button
-                        AutomationProperties.Name="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen), Mode=OneWay}"
-                        Command="{x:Bind ViewModel.ToggleFullScreenCommand}"
-                        Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen), Mode=OneWay}">
-                        <FontIcon Glyph="{x:Bind local:PlayerWindow.FullScreenGlyph(ViewModel.IsFullScreen), Mode=OneWay}" />
-                    </Button>
-                </StackPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </Grid>
+                                </Flyout>
+                            </FlyoutBase.AttachedFlyout>
+                        </Button>
+                    </AppBarElementContainer>
+                    <AppBarElementContainer
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
+                        <Button
+                            AutomationProperties.Name="Audio and subtitles"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Audio and subtitles">
+                            <FontIcon FontSize="16" Glyph="&#xED1E;" />
+                            <Button.Flyout>
+                                <MenuFlyout Opening="OnTracksMenuOpening" Placement="Top" />
+                            </Button.Flyout>
+                        </Button>
+                    </AppBarElementContainer>
+                    <AppBarElementContainer VerticalAlignment="Center">
+                        <Button
+                            AutomationProperties.Name="Aspect ratio"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="Aspect ratio (A)">
+                            <FontIcon FontSize="16" Glyph="&#xE799;" />
+                            <Button.Flyout>
+                                <MenuFlyout Opening="OnAspectRatioMenuOpening" Placement="Top" />
+                            </Button.Flyout>
+                        </Button>
+                    </AppBarElementContainer>
+                    <AppBarElementContainer VerticalAlignment="Center">
+                        <Button
+                            AutomationProperties.Name="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen), Mode=OneWay}"
+                            Command="{x:Bind ViewModel.ToggleFullScreenCommand}"
+                            Style="{StaticResource PlayerButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen), Mode=OneWay}">
+                            <FontIcon FontSize="16" Glyph="{x:Bind local:PlayerWindow.FullScreenGlyph(ViewModel.IsFullScreen), Mode=OneWay}" />
+                        </Button>
+                    </AppBarElementContainer>
+                </CommandBar>
             </Grid>
         </Grid>
     </Grid>
