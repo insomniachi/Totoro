@@ -95,6 +95,39 @@ public sealed partial class WatchService(
 	/// <summary>Where playback is, e.g. "12:34 / 24:01"; empty (never null) when nothing's playing.</summary>
 	[ObservableProperty] public partial string PlaybackTime { get; private set; } = "";
 
+	/// <summary>The anime currently being watched or got ready; null when none is.</summary>
+	[ObservableProperty] public partial AnimeModel? Anime { get; private set; }
+
+	/// <summary>The episode number currently being watched or got ready.</summary>
+	[ObservableProperty] public partial int CurrentEpisode { get; private set; }
+
+	/// <summary>The episode's title if known (e.g. from ani.zip).</summary>
+	[ObservableProperty] public partial string EpisodeName { get; private set; } = "";
+
+	/// <summary>The image URL to display: episode thumbnail if available, or anime cover image.</summary>
+	[ObservableProperty] public partial string ImageUrl { get; private set; } = "";
+
+	/// <summary>The anime's banner image URL, if it has one.</summary>
+	[ObservableProperty] public partial string BannerUrl { get; private set; } = "";
+
+	/// <summary>The anime provider being watched from.</summary>
+	[ObservableProperty] public partial string? ProviderName { get; private set; }
+
+	/// <summary>The player being used.</summary>
+	[ObservableProperty] public partial string? PlayerName { get; private set; }
+
+	/// <summary>Metadata tags, e.g. "TV · Fall 2023 · ★ 8.8 · Madhouse".</summary>
+	[ObservableProperty] public partial string Metadata { get; private set; } = "";
+
+	/// <summary>Source and player tags, e.g. "AnimePahe · VLC".</summary>
+	[ObservableProperty] public partial string SourceInfo { get; private set; } = "";
+
+	/// <summary>Formatted percentage string, e.g. "45%".</summary>
+	[ObservableProperty] public partial string PlaybackPercent { get; private set; } = "";
+
+	/// <summary>Whether rich playback or anime details are available to show in the status bar card.</summary>
+	[ObservableProperty] public partial bool HasDetails { get; private set; }
+
 	/// <summary>Raised when the status (what the status bar shows) changes.</summary>
 	public event EventHandler? StatusChanged;
 
@@ -102,6 +135,62 @@ public sealed partial class WatchService(
 	public PlaybackStatus Status => new(IsActive, Kind, Title, Message, PlaybackTime.Length > 0 ? PlaybackTime : null);
 
 	partial void OnIsActiveChanged(bool value) => StatusChanged?.Invoke(this, EventArgs.Empty);
+	partial void OnAnimeChanged(AnimeModel? value) => UpdateMetadata();
+	partial void OnImageUrlChanged(string value) => UpdateDetails();
+	partial void OnProviderNameChanged(string? value) => UpdateMetadata();
+	partial void OnPlayerNameChanged(string? value) => UpdateMetadata();
+
+	private void UpdateDetails()
+	{
+		HasDetails = Anime is not null || !string.IsNullOrEmpty(ImageUrl) || Kind is PlaybackStatusKind.Progress or PlaybackStatusKind.Playing;
+	}
+
+	private void UpdateMetadata()
+	{
+		UpdateDetails();
+		if (Anime is null)
+		{
+			Metadata = "";
+			SourceInfo = "";
+			return;
+		}
+
+		List<string> parts = [];
+		if (Anime.MediaFormat != AnimeMediaFormat.Unknown)
+		{
+			parts.Add(Anime.MediaFormat.ToString().ToUpperInvariant());
+		}
+
+		if (Anime.Season is { } season)
+		{
+			parts.Add($"{season.SeasonName} {season.Year}");
+		}
+
+		if (Anime.MeanScore is > 0 and var score)
+		{
+			parts.Add($"★ {score / 10f:0.#}");
+		}
+
+		if (Anime.Studios.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)) is { } studio)
+		{
+			parts.Add(studio);
+		}
+
+		Metadata = string.Join(" · ", parts);
+
+		List<string> sourceParts = [];
+		if (!string.IsNullOrWhiteSpace(ProviderName))
+		{
+			sourceParts.Add(ProviderName);
+		}
+
+		if (!string.IsNullOrWhiteSpace(PlayerName))
+		{
+			sourceParts.Add(PlayerName);
+		}
+
+		SourceInfo = string.Join(" · ", sourceParts);
+	}
 
 	/// <summary>The episode after the last one watched (the first if the anime isn't on the list).</summary>
 	public static int NextEpisode(AnimeModel anime) => (anime.Tracking?.WatchedEpisodes ?? 0) + 1;
@@ -144,7 +233,19 @@ public sealed partial class WatchService(
 		using var cancellation = _cancellation = new CancellationTokenSource();
 		var ct = cancellation.Token;
 
+		Anime = anime;
+		CurrentEpisode = number;
+		ImageUrl = anime.Image;
+		BannerUrl = anime.BannerImage ?? "";
+		EpisodeName = "";
+		ProviderName = null;
+		PlayerName = null;
 		Title = $"{anime.Title} · Episode {number}";
+
+		if (_episodeDetails.TryGetValue(anime.StoreKey, out var cached) && cached.FirstOrDefault(x => x.EpisodeNumber == number) is { } cachedInfo)
+		{
+			EpisodeName = EpisodeTitle(cachedInfo);
+		}
 
 		try
 		{
@@ -159,12 +260,16 @@ public sealed partial class WatchService(
 				return;
 			}
 
+			PlayerName = player.Name;
+
 			var settings = animeSettings.Get(anime);
 			if (GetProvider(settings) is not { } provider)
 			{
 				Show(PlaybackStatusKind.Error, "There's no anime provider to watch from.");
 				return;
 			}
+
+			ProviderName = provider.Name;
 
 			Show(PlaybackStatusKind.Progress, $"Finding the show on {provider.Name}…", "Cancel", Cancel);
 			if (await FindOrPickShowAsync(provider, anime, ct) is not { } show)
@@ -335,6 +440,7 @@ public sealed partial class WatchService(
 			Save();
 			PlaybackFraction = -1;
 			PlaybackTime = "";
+			PlaybackPercent = "";
 			WeakReferenceMessenger.Default.Send(new PlaybackProgressChangedMessage(key));
 		}
 
@@ -654,6 +760,17 @@ public sealed partial class WatchService(
 	{
 		IsActive = false;
 		IsOpen = false;
+		Anime = null;
+		CurrentEpisode = 0;
+		ImageUrl = "";
+		BannerUrl = "";
+		EpisodeName = "";
+		ProviderName = null;
+		PlayerName = null;
+		Metadata = "";
+		SourceInfo = "";
+		PlaybackPercent = "";
+		HasDetails = false;
 		(_player as IInteractiveMediaPlayer)?.ShowStatus(null);
 	}
 
@@ -667,6 +784,7 @@ public sealed partial class WatchService(
 
 		PlaybackFraction = Math.Clamp(position / duration, 0, 1);
 		PlaybackTime = $"{FormatTime(position, duration)} / {FormatTime(duration, duration)}";
+		PlaybackPercent = $"{(int)Math.Round(PlaybackFraction * 100)}%";
 	}
 
 	/// <summary>m:ss, or h:mm:ss for something an hour or longer (a movie).</summary>
@@ -681,6 +799,7 @@ public sealed partial class WatchService(
 		{
 			PlaybackFraction = -1;
 			PlaybackTime = "";
+			PlaybackPercent = "";
 		}
 
 		Kind = kind;
@@ -688,6 +807,7 @@ public sealed partial class WatchService(
 		ActionText = actionText;
 		_action = action;
 		IsActive = kind is PlaybackStatusKind.Progress or PlaybackStatusKind.Playing;
+		UpdateDetails();
 		IsOpen = true;
 		StatusChanged?.Invoke(this, EventArgs.Empty);
 		ShowInPlayer(kind, message);
@@ -768,6 +888,11 @@ public sealed partial class WatchService(
 
 			if (ReferenceEquals(_listedAnime, anime))
 			{
+				if (details.FirstOrDefault(x => x.EpisodeNumber == current) is { } currentInfo)
+				{
+					EpisodeName = EpisodeTitle(currentInfo);
+				}
+
 				interactive.SetEpisodes(episodes);
 			}
 		}

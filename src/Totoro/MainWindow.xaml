@@ -4,13 +4,15 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:chat="using:Totoro.Views.Chat"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Totoro.Helpers"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:navigation="using:Totoro.Core.Navigation"
     xmlns:local="using:Totoro"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:uiNavigation="using:Totoro.UI.Navigation"
     Title="Totoro"
@@ -18,6 +20,262 @@
 
     <!--  Theme and backdrop come from the user's settings; see IAppearanceService  -->
     <Grid>
+        <Grid.Resources>
+            <helpers:StringToImageSourceConverter x:Key="StringToImageSourceConverter" />
+            <helpers:VisibleIfAnyConverter x:Key="VisibleIfAnyConverter" />
+
+            <!--  Close button for InfoBars: x icon only, no background or border on hover  -->
+            <Style x:Key="InfoBarCloseButtonStyle" TargetType="Button">
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid Background="Transparent">
+                                <ContentPresenter
+                                    x:Name="ContentPresenter"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Content="{TemplateBinding Content}"
+                                    Foreground="{TemplateBinding Foreground}" />
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorTertiaryBrush}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="PlaybackInfoBarStyle" TargetType="InfoBar">
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="{ThemeResource SurfaceStrokeColorFlyoutBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="InfoBar">
+                            <Border
+                                x:Name="ContentRoot"
+                                VerticalAlignment="Top"
+                                Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <Grid CornerRadius="{TemplateBinding CornerRadius}">
+                                    <!--  Blurred banner image of anime as background if it exists  -->
+                                    <Border CornerRadius="{TemplateBinding CornerRadius}" Visibility="{Binding BannerUrl, Converter={StaticResource VisibleIfAnyConverter}}">
+                                        <Border.Background>
+                                            <ImageBrush ImageSource="{Binding BannerUrl, Converter={StaticResource StringToImageSourceConverter}}" Stretch="UniformToFill" />
+                                        </Border.Background>
+                                        <Grid>
+                                            <Rectangle>
+                                                <Rectangle.Fill>
+                                                    <media:BackdropBlurBrush Amount="24" />
+                                                </Rectangle.Fill>
+                                            </Rectangle>
+                                            <Rectangle Fill="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" Opacity="0.82" />
+                                        </Grid>
+                                    </Border>
+
+                                    <!--  Card content: Poster image on the left, InfoBar elements on the right  -->
+                                    <Grid Margin="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!--  Poster image on the left  -->
+                                        <Border
+                                            Grid.Column="0"
+                                            Width="125"
+                                            Height="180"
+                                            Margin="0,0,14,0"
+                                            VerticalAlignment="Center"
+                                            Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Visibility="{Binding ImageUrl, Converter={StaticResource VisibleIfAnyConverter}}">
+                                            <Grid CornerRadius="6">
+                                                <toolkit:Shimmer CornerRadius="6" Visibility="{Binding ImageUrl, Converter={StaticResource VisibleIfAnyConverter}}" />
+                                                <Image Source="{Binding ImageUrl, Converter={StaticResource StringToImageSourceConverter}}" Stretch="UniformToFill" />
+                                            </Grid>
+                                        </Border>
+
+                                        <!--  Right column: InfoBar header (icon, title, message) and ContentArea  -->
+                                        <Grid
+                                            Grid.Column="1"
+                                            Margin="0,0,24,0"
+                                            VerticalAlignment="Center">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <!--  Standard Icon  -->
+                                            <Grid
+                                                x:Name="StandardIconArea"
+                                                Grid.Column="0"
+                                                Margin="0,0,10,0"
+                                                VerticalAlignment="Top"
+                                                Visibility="Collapsed">
+                                                <TextBlock
+                                                    x:Name="IconBackground"
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    FontSize="16"
+                                                    Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}"
+                                                    Text="&#xF136;" />
+                                                <TextBlock
+                                                    x:Name="StandardIcon"
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    FontSize="16"
+                                                    Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}"
+                                                    Text="&#xF13F;" />
+                                            </Grid>
+                                            <Viewbox
+                                                x:Name="UserIconBox"
+                                                Grid.Column="0"
+                                                MaxWidth="16"
+                                                MaxHeight="16"
+                                                Margin="0,0,10,0"
+                                                VerticalAlignment="Top"
+                                                Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"
+                                                Visibility="Collapsed" />
+
+                                            <!--  Title, Message, ActionButton  -->
+                                            <primitives:InfoBarPanel Grid.Column="1" VerticalAlignment="Top">
+                                                <TextBlock
+                                                    x:Name="Title"
+                                                    FontWeight="SemiBold"
+                                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                    Text="{TemplateBinding Title}"
+                                                    TextWrapping="WrapWholeWords" />
+                                                <TextBlock
+                                                    x:Name="Message"
+                                                    Margin="0,2,0,0"
+                                                    Style="{ThemeResource BodyTextBlockStyle}"
+                                                    Text="{TemplateBinding Message}"
+                                                    TextWrapping="WrapWholeWords" />
+                                                <ContentPresenter
+                                                    x:Name="ActionButtonPresenter"
+                                                    Margin="0,6,0,0"
+                                                    Content="{TemplateBinding ActionButton}" />
+                                            </primitives:InfoBarPanel>
+
+                                            <!--  ContentArea: where InfoBar.Content renders (EpisodeName, Metadata, Source, ProgressBar)  -->
+                                            <ContentPresenter
+                                                x:Name="ContentArea"
+                                                Grid.Row="1"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,6,0,0"
+                                                Content="{TemplateBinding Content}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                        </Grid>
+                                    </Grid>
+
+                                    <!--  Close Button: positioned at the top-right corner of the card  -->
+                                    <Button
+                                        x:Name="CloseButton"
+                                        Margin="0,6,6,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Command="{TemplateBinding CloseButtonCommand}"
+                                        CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
+                                        Style="{StaticResource InfoBarCloseButtonStyle}"
+                                        ToolTipService.ToolTip="Close">
+                                        <FontIcon FontSize="12" Glyph="&#xE711;" />
+                                    </Button>
+                                </Grid>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="SeverityLevels">
+                                        <VisualState x:Name="Informational" />
+                                        <VisualState x:Name="Error">
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                                <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
+                                                <Setter Target="StandardIcon.Text" Value="&#xF13D;" />
+                                                <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconForeground}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Warning">
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}" />
+                                                <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconBackground}" />
+                                                <Setter Target="StandardIcon.Text" Value="&#xF13C;" />
+                                                <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconForeground}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Success">
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}" />
+                                                <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconBackground}" />
+                                                <Setter Target="StandardIcon.Text" Value="&#xF13E;" />
+                                                <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="IconStates">
+                                        <VisualState x:Name="StandardIconVisible">
+                                            <VisualState.Setters>
+                                                <Setter Target="UserIconBox.Visibility" Value="Collapsed" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="UserIconVisible">
+                                            <VisualState.Setters>
+                                                <Setter Target="UserIconBox.Visibility" Value="Visible" />
+                                                <Setter Target="StandardIconArea.Visibility" Value="Collapsed" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="NoIconVisible" />
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="CloseButtonStates">
+                                        <VisualState x:Name="CloseButtonVisible">
+                                            <VisualState.Setters>
+                                                <Setter Target="CloseButton.Visibility" Value="Visible" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="CloseButtonCollapsed">
+                                            <VisualState.Setters>
+                                                <Setter Target="CloseButton.Visibility" Value="Collapsed" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -30,8 +288,8 @@
 
         <TitleBar
             x:Name="AppTitleBar"
-            Grid.ColumnSpan="2"
             Title="Totoro"
+            Grid.ColumnSpan="2"
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False"
             Subtitle="{x:Bind local:MainWindow.Version}">
@@ -213,8 +471,8 @@
                     <media:AttachedCardShadow
                         BlurRadius="24"
                         CornerRadius="4"
-                        Offset="0,8"
                         Opacity="0.6"
+                        Offset="0,8"
                         Color="Black" />
                 </ui:Effects.Shadow>
                 <Border
@@ -257,8 +515,8 @@
                     <media:AttachedCardShadow
                         BlurRadius="24"
                         CornerRadius="4"
-                        Offset="0,8"
                         Opacity="0.6"
+                        Offset="0,8"
                         Color="Black" />
                 </ui:Effects.Shadow>
                 <Border
@@ -283,70 +541,96 @@
         -->
         <Grid
             Grid.Row="1"
-            MaxWidth="440"
+            MaxWidth="560"
             Margin="0,0,24,24"
             HorizontalAlignment="Right"
-            VerticalAlignment="Bottom">
+            VerticalAlignment="Bottom"
+            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsOpen), Mode=OneWay}">
             <ui:Effects.Shadow>
                 <media:AttachedCardShadow
                     BlurRadius="24"
-                    CornerRadius="4"
-                    Offset="0,8"
+                    CornerRadius="8"
                     Opacity="0.6"
+                    Offset="0,8"
                     Color="Black" />
             </ui:Effects.Shadow>
-            <!--
-                On a solid surface the InfoBar's shape: its severity backgrounds are see-through tints, made for a plain
-                page, so over the content the text behind showed through. The tint still shows on top. Both size to the
-                InfoBar, so they're gone when it closes.
-            -->
-            <!--  The flyout border, as Windows draws its own floating surfaces (flyouts, menus) on top of their shadow  -->
-            <Border
-                Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
-                BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
-                BorderThickness="1"
-                CornerRadius="{ThemeResource ControlCornerRadius}">
-                <InfoBar
-                    IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
-                    Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
-                    Severity="{x:Bind local:MainWindow.ToSeverity(ViewModel.Playback.Kind), Mode=OneWay}"
-                    Title="{x:Bind ViewModel.Playback.Title, Mode=OneWay}">
-                    <InfoBar.ActionButton>
-                        <!--  Cancel while getting ready, "Play episode 6" once one's watched...  -->
-                        <Button
-                            Command="{x:Bind ViewModel.Playback.ActionCommand}"
-                            Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
-                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />
-                    </InfoBar.ActionButton>
-                    <StackPanel>
-                        <ProgressBar
-                            Margin="0,0,0,12"
-                            IsIndeterminate="True"
-                            Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+            <InfoBar
+                Title="{x:Bind ViewModel.Playback.Title, Mode=OneWay}"
+                DataContext="{x:Bind ViewModel.Playback, Mode=OneWay}"
+                IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
+                Severity="{x:Bind local:MainWindow.ToSeverity(ViewModel.Playback.Kind), Mode=OneWay}"
+                Style="{StaticResource PlaybackInfoBarStyle}">
+                <InfoBar.ActionButton>
+                    <!--  Cancel while getting ready, "Play episode 6" once one's watched...  -->
+                    <Button
+                        Command="{x:Bind ViewModel.Playback.ActionCommand}"
+                        Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />
+                </InfoBar.ActionButton>
+                <StackPanel Margin="0,4,0,0" Spacing="4">
+                    <!--  Episode Title from ani.zip if known  -->
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Playback.EpisodeName, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EpisodeName), Mode=OneWay}" />
 
-                        <!--  How far through the episode, while it plays  -->
-                        <Grid
-                            Margin="0,0,0,12"
-                            ColumnSpacing="12"
-                            Visibility="{x:Bind local:MainWindow.VisibleWhilePlaying(ViewModel.Playback.PlaybackFraction), Mode=OneWay}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ProgressBar
-                                VerticalAlignment="Center"
-                                AutomationProperties.Name="Playback position"
-                                Maximum="1"
-                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
+                    <!--  Metadata tags: Format, season/year, rating, studio  -->
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Playback.Metadata, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.Metadata), Mode=OneWay}" />
+
+                    <!--  Source tags: Provider, player  -->
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Playback.SourceInfo, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.SourceInfo), Mode=OneWay}" />
+
+                    <!--  Indeterminate progress while getting ready  -->
+                    <ProgressBar
+                        Margin="0,4,0,0"
+                        IsIndeterminate="True"
+                        Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+
+                    <!--  Playback progress and times while playing  -->
+                    <Grid
+                        Margin="0,4,0,0"
+                        RowSpacing="4"
+                        Visibility="{x:Bind local:MainWindow.VisibleWhilePlaying(ViewModel.Playback.PlaybackFraction), Mode=OneWay}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <ProgressBar
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Playback position"
+                            Maximum="1"
+                            Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
+                        <Grid Grid.Row="1">
                             <TextBlock
-                                Grid.Column="1"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
                                 Text="{x:Bind ViewModel.Playback.PlaybackTime, Mode=OneWay}" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind ViewModel.Playback.PlaybackPercent, Mode=OneWay}"
+                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.PlaybackPercent), Mode=OneWay}" />
                         </Grid>
-                    </StackPanel>
-                </InfoBar>
-            </Border>
+                    </Grid>
+                </StackPanel>
+            </InfoBar>
         </Grid>
     </Grid>
 </Window>

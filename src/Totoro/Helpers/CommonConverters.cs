@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml;
 
 namespace Totoro.Helpers;
 
@@ -17,6 +17,24 @@ public static class CommonConverters
 	/// </summary>
 	public static Microsoft.UI.Xaml.Media.ImageSource? ToImageSource(string? url) =>
 		Uri.TryCreate(url, UriKind.Absolute, out var uri) ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri) : null;
+}
+
+public partial class StringToImageSourceConverter : Microsoft.UI.Xaml.Data.IValueConverter
+{
+	public object? Convert(object? value, Type targetType, object parameter, string language) =>
+		CommonConverters.ToImageSource(value as string);
+
+	public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+		throw new NotSupportedException();
+}
+
+public partial class VisibleIfAnyConverter : Microsoft.UI.Xaml.Data.IValueConverter
+{
+	public object Convert(object? value, Type targetType, object parameter, string language) =>
+		CommonConverters.VisibleIfAny(value as string);
+
+	public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+		throw new NotSupportedException();
 }
 
 public partial class InvertedBooleanToVisibilityConverter : Microsoft.UI.Xaml.Data.IValueConverter
