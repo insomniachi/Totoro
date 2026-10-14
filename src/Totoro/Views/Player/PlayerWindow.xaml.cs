@@ -92,6 +92,7 @@ public sealed partial class PlayerWindow : Window
 		};
 		SetChromeShown(true);
 		ShowControls();
+		ViewModel.UpdateViewportSize(VideoArea.ActualWidth, VideoArea.ActualHeight);
 	}
 
 	public PlayerViewModel ViewModel { get; }
@@ -132,6 +133,9 @@ public sealed partial class PlayerWindow : Window
 
 	/// <summary>The episode controls (previous, next, skipping ahead, the episode list...): not for a short video, e.g. an opening.</summary>
 	public static Visibility HiddenForClips(bool isClip) => isClip ? Visibility.Collapsed : Visibility.Visible;
+
+	public static Visibility SkipButtonVisibility(bool isClip, bool isSkipButtonVisible) =>
+		isClip || !isSkipButtonVisible ? Visibility.Collapsed : Visibility.Visible;
 
 	public static Visibility VisibleIfAny(string text) => text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
@@ -224,6 +228,12 @@ public sealed partial class PlayerWindow : Window
 			case VirtualKey.PageUp or VirtualKey.S when ViewModel.HasOffer:
 				ViewModel.AcceptOfferCommand.Execute(null);
 				break;
+			case VirtualKey.PageUp or VirtualKey.S when ViewModel.IsSkipButtonVisible:
+				ViewModel.SkipAheadCommand.Execute(null);
+				break;
+			case VirtualKey.A:
+				ViewModel.CycleAspectRatioCommand.Execute(null);
+				break;
 			case VirtualKey.N:
 				ViewModel.NextEpisodeCommand.Execute(null);
 				break;
@@ -236,6 +246,9 @@ public sealed partial class PlayerWindow : Window
 	}
 
 	private void OnPointerMoved(object sender, PointerRoutedEventArgs e) => ShowControls();
+
+	private void OnVideoAreaSizeChanged(object sender, SizeChangedEventArgs e) =>
+		ViewModel.UpdateViewportSize(e.NewSize.Width, e.NewSize.Height);
 
 	private void OnVideoTapped(object sender, TappedRoutedEventArgs e) => ViewModel.PlayPauseCommand.Execute(null);
 
@@ -417,6 +430,24 @@ public sealed partial class PlayerWindow : Window
 			}
 
 			menu.Items.Add(group);
+		}
+	}
+
+	private void OnAspectRatioMenuOpening(object sender, object e)
+	{
+		var menu = (MenuFlyout)sender;
+		menu.Items.Clear();
+		var current = ViewModel.AspectRatio;
+		foreach (var mode in Enum.GetValues<PlayerAspectRatio>())
+		{
+			var item = new RadioMenuFlyoutItem
+			{
+				Text = PlayerViewModel.PlayerAspectRatioText(mode),
+				IsChecked = current == mode,
+				GroupName = "AspectRatio",
+			};
+			item.Click += (_, _) => ViewModel.SetAspectRatio(mode);
+			menu.Items.Add(item);
 		}
 	}
 

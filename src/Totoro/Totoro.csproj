@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<OutputType>WinExe</OutputType>
 	<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
@@ -138,6 +138,7 @@
     its source is go with it, as the LGPL asks; the package has neither.
   -->
   <ItemGroup>
+    <InternalsVisibleTo Include="Totoro.Tests" />
     <VlcWindowsX64ExcludeFiles Include="libvlc.lib;libvlccore.lib;plugins\access_output\%2A;plugins\stream_out\%2A;plugins\mux\%2A;plugins\visualization\%2A;plugins\services_discovery\%2A;plugins\video_splitter\%2A" />
     <None Remove="Modules\MediaPlayers\Vlc\COPYING.LIB;Modules\MediaPlayers\Vlc\NOTICE.txt" />
     <Content Include="Modules\MediaPlayers\Vlc\COPYING.LIB" Link="libvlc\win-x64\COPYING.LIB" CopyToOutputDirectory="PreserveNewest" />

@@ -14,8 +14,10 @@ namespace Totoro.ViewModels.Player;
 /// with the opening and ending marked, the skip button, the next episode...). Created on the UI thread; libvlc's
 /// events are brought to it, so properties and events change there.
 /// </summary>
-public sealed partial class PlayerViewModel(int volume, ILogger logger) : ObservableObject
+public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspectRatio, ILogger logger) : ObservableObject
 {
+	public PlayerViewModel(int volume, ILogger logger) : this(volume, PlayerAspectRatio.Fit, logger) { }
+
 	// An opening's length, give or take: what the "skip ahead" button skips.
 	public static readonly TimeSpan OpeningLength = TimeSpan.FromSeconds(85);
 
@@ -23,7 +25,7 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 	private static readonly TimeSpan s_offerDuration = TimeSpan.FromSeconds(5);
 	private static readonly TimeSpan s_offerTick = TimeSpan.FromMilliseconds(30);
 
-	private readonly DispatcherQueue _ui = DispatcherQueue.GetForCurrentThread();
+	private readonly DispatcherQueue? _ui = TryGetDispatcherQueue();
 	private readonly TaskCompletionSource _initialized = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	private readonly SemaphoreSlim _loading = new(1, 1);
 	private LibVLC? _libVlc;
@@ -68,6 +70,18 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 	[ObservableProperty] public partial bool IsMuted { get; set; }
 
 	[ObservableProperty] public partial bool IsFullScreen { get; set; }
+
+	[ObservableProperty] public partial PlayerAspectRatio AspectRatio { get; set; } = aspectRatio;
+
+	public double ViewportWidth { get; private set; }
+
+	public double ViewportHeight { get; private set; }
+
+	[ObservableProperty] public partial bool IsSkipButtonVisible { get; private set; } = true;
+
+	[ObservableProperty] public partial string SkipButtonText { get; private set; } = "+85s";
+
+	[ObservableProperty] public partial string SkipButtonToolTip { get; private set; } = "Skip 85 seconds, an opening's length";
 
 	/// <summary>
 	/// Whether it's a short video (e.g. an opening, from the Music tab) rather than an episode: the controls are just play,
@@ -152,6 +166,7 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 			OnEnded();
 		});
 		MediaPlayer = player;
+		ApplyAspectRatio();
 		_initialized.TrySetResult();
 	}
 
@@ -203,6 +218,10 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 			// Shown straight away rather than when libvlc next reports it.
 			OnTime(TimeSpan.FromMilliseconds(time), report: false);
 		}
+		else if (MediaPlayer is null)
+		{
+			OnTime(position, report: false);
+		}
 
 		return Task.CompletedTask;
 	}
@@ -240,6 +259,7 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 	public Task SetChaptersAsync(IReadOnlyList<MediaChapter> chapters)
 	{
 		Chapters = chapters;
+		UpdateSkipButtonState();
 		return Task.CompletedTask;
 	}
 
@@ -401,9 +421,132 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 	[RelayCommand]
 	private Task SeekBy(double seconds) => SeekAsync(TimeSpan.FromSeconds(Position + seconds));
 
-	/// <summary>Skips an opening's length, for when the opening isn't known.</summary>
+	/// <summary>Skips an opening or ending if currently playing one, or an opening's length otherwise.</summary>
 	[RelayCommand]
-	private Task SkipAhead() => SeekBy(OpeningLength.TotalSeconds);
+	private async Task SkipAhead()
+	{
+		if (CurrentSegmentEnd() is { } current)
+		{
+			await SeekAsync(current.End);
+			await ShowMessageAsync($"Skipped the {current.Name}", TimeSpan.FromSeconds(2));
+			return;
+		}
+
+		await SeekBy(OpeningLength.TotalSeconds);
+	}
+
+	internal (TimeSpan End, string Name)? CurrentSegmentEnd()
+	{
+		var seconds = Position;
+		for (var i = Chapters.Count - 1; i >= 0; i--)
+		{
+			if (Chapters[i].Start.TotalSeconds <= seconds)
+			{
+				if (Enum.TryParse<MediaSegmentType>(Chapters[i].Title, out var type))
+				{
+					var end = i + 1 < Chapters.Count ? Chapters[i + 1].Start : TimeSpan.FromSeconds(Duration);
+					var name = type switch
+					{
+						MediaSegmentType.Opening => "opening",
+						MediaSegmentType.Ending => "ending",
+						_ => "recap",
+					};
+					return (end, name);
+				}
+
+				return null;
+			}
+		}
+
+		return null;
+	}
+
+	public void UpdateViewportSize(double width, double height)
+	{
+		if (width <= 0 || height <= 0 || (Math.Abs(ViewportWidth - width) < 0.5 && Math.Abs(ViewportHeight - height) < 0.5))
+		{
+			return;
+		}
+
+		ViewportWidth = width;
+		ViewportHeight = height;
+
+		if (AspectRatio == PlayerAspectRatio.Stretch)
+		{
+			ApplyAspectRatio();
+		}
+	}
+
+	partial void OnAspectRatioChanged(PlayerAspectRatio value)
+	{
+		ApplyAspectRatio();
+	}
+
+	public void ApplyAspectRatio()
+	{
+		if (MediaPlayer is not { } player)
+		{
+			return;
+		}
+
+		switch (AspectRatio)
+		{
+			case PlayerAspectRatio.Fit:
+				player.Scale = 0;
+				player.AspectRatio = null;
+				break;
+			case PlayerAspectRatio.Stretch:
+				player.Scale = 0;
+				if (ViewportWidth > 0 && ViewportHeight > 0)
+				{
+					var w = Math.Max(1, (int)Math.Round(ViewportWidth));
+					var h = Math.Max(1, (int)Math.Round(ViewportHeight));
+					player.AspectRatio = $"{w}:{h}";
+				}
+				else
+				{
+					player.AspectRatio = null;
+				}
+				break;
+			case PlayerAspectRatio.Ratio16_9:
+				player.Scale = 0;
+				player.AspectRatio = "16:9";
+				break;
+			case PlayerAspectRatio.Ratio4_3:
+				player.Scale = 0;
+				player.AspectRatio = "4:3";
+				break;
+			case PlayerAspectRatio.Ratio21_9:
+				player.Scale = 0;
+				player.AspectRatio = "21:9";
+				break;
+		}
+	}
+
+	[RelayCommand]
+	private void CycleAspectRatio()
+	{
+		var values = Enum.GetValues<PlayerAspectRatio>();
+		var nextIndex = ((int)AspectRatio + 1) % values.Length;
+		SetAspectRatio(values[nextIndex]);
+	}
+
+	[RelayCommand]
+	public void SetAspectRatio(PlayerAspectRatio ratio)
+	{
+		AspectRatio = ratio;
+		_ = ShowMessageAsync($"Aspect ratio: {PlayerAspectRatioText(ratio)}", TimeSpan.FromSeconds(2));
+	}
+
+	public static string PlayerAspectRatioText(PlayerAspectRatio ratio) => ratio switch
+	{
+		PlayerAspectRatio.Fit => "Fit (original)",
+		PlayerAspectRatio.Stretch => "Stretch to fill",
+		PlayerAspectRatio.Ratio16_9 => "16:9",
+		PlayerAspectRatio.Ratio4_3 => "4:3",
+		PlayerAspectRatio.Ratio21_9 => "21:9",
+		_ => ratio.ToString(),
+	};
 
 	[RelayCommand]
 	private void ToggleMute() => IsMuted = !IsMuted;
@@ -508,6 +651,7 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 	{
 		IsPlaying = true;
 		IsBuffering = false;
+		ApplyAspectRatio();
 		// The volume only applies once there's audio.
 		if (MediaPlayer is { } player)
 		{
@@ -516,11 +660,12 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 		}
 	}
 
-	private void OnTime(TimeSpan time, bool report = true)
+	internal void OnTime(TimeSpan time, bool report = true)
 	{
 		Position = time.TotalSeconds;
 		IsBuffering = false;
 		UpdateTimeText();
+		UpdateSkipButtonState();
 		if (report)
 		{
 			PositionChanged?.Invoke(this, time);
@@ -548,6 +693,7 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 		Position = 0;
 		Duration = 0;
 		Chapters = [];
+		UpdateSkipButtonState();
 		UpdateTimeText();
 		ShowStatus(null);
 	}
@@ -557,6 +703,42 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 		var duration = TimeSpan.FromSeconds(Duration);
 		PositionText = Duration > 0 ? Format(TimeSpan.FromSeconds(Position), duration) : "";
 		DurationText = Duration > 0 ? Format(duration, duration) : "";
+	}
+
+	public bool HasOpOrEd => Chapters.Any(x => x.Title is "Opening" or "Ending" or "Recap");
+
+	private void UpdateSkipButtonState()
+	{
+		if (!HasOpOrEd)
+		{
+			IsSkipButtonVisible = true;
+			SkipButtonText = "+85s";
+			SkipButtonToolTip = "Skip 85 seconds, an opening's length";
+			return;
+		}
+
+		var segment = SegmentAt(Position);
+		if (segment is MediaSegmentType type)
+		{
+			IsSkipButtonVisible = true;
+			var name = type switch
+			{
+				MediaSegmentType.Opening => "OP",
+				MediaSegmentType.Ending => "ED",
+				_ => "recap",
+			};
+			SkipButtonText = $"Skip {name}";
+			SkipButtonToolTip = type switch
+			{
+				MediaSegmentType.Opening => "Skip opening",
+				MediaSegmentType.Ending => "Skip ending",
+				_ => "Skip recap",
+			};
+		}
+		else
+		{
+			IsSkipButtonVisible = false;
+		}
 	}
 
 	/// <summary>The opening, ending or recap <paramref name="seconds"/> is in; null if it's in none (or they aren't known).</summary>
@@ -580,13 +762,38 @@ public sealed partial class PlayerViewModel(int volume, ILogger logger) : Observ
 	}
 
 	// libvlc raises its events on its own threads, which mustn't call back into it either.
-	private void OnUi(Action action) => _ui.TryEnqueue(() =>
+	private void OnUi(Action action)
 	{
-		if (!_isClosed)
+		if (_ui is null)
 		{
-			action();
+			if (!_isClosed)
+			{
+				action();
+			}
 		}
-	});
+		else
+		{
+			_ui.TryEnqueue(() =>
+			{
+				if (!_isClosed)
+				{
+					action();
+				}
+			});
+		}
+	}
+
+	private static DispatcherQueue? TryGetDispatcherQueue()
+	{
+		try
+		{
+			return DispatcherQueue.GetForCurrentThread();
+		}
+		catch
+		{
+			return null;
+		}
+	}
 }
 
 /// <summary>An episode in the player's episode list, as it's shown.</summary>

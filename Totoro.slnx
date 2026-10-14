@@ -11,4 +11,7 @@
   <Project Path="src/Totoro/Totoro.csproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="tests/Totoro.Tests/Totoro.Tests.csproj">
+    <Platform Project="x64" />
+  </Project>
 </Solution>

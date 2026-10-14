@@ -1,3 +1,5 @@
+using Totoro.Core.Modules.Media;
+
 namespace Totoro.Core.Settings;
 
 /// <summary>What to do when an opening or ending starts.</summary>
@@ -22,6 +24,7 @@ public static class PlaybackPreferences
 	/// <summary>Preference key holding the id of the module whose media player plays episodes.</summary>
 	public const string MediaPlayerKey = "SelectedMediaPlayer";
 	public const string VolumeKey = "PlayerVolume";
+	public const string AspectRatioKey = "PlayerAspectRatio";
 
 	extension(IPreferences preferences)
 	{
@@ -56,6 +59,13 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(VolumeKey, 100);
 			set => preferences.SaveKey(VolumeKey, value);
+		}
+
+		/// <summary>How video is scaled or stretched in the built-in player.</summary>
+		public PlayerAspectRatio PlayerAspectRatio
+		{
+			get => preferences.ReadKey(AspectRatioKey, PlayerAspectRatio.Fit);
+			set => preferences.SaveKey(AspectRatioKey, value);
 		}
 	}
 }

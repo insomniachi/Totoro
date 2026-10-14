@@ -79,7 +79,10 @@
                 TextTrimming="CharacterEllipsis" />
         </Grid>
 
-        <Grid x:Name="VideoArea" Background="Black">
+        <Grid
+            x:Name="VideoArea"
+            Background="Black"
+            SizeChanged="OnVideoAreaSizeChanged">
             <vlc:VideoView
                 x:Name="Video"
                 Initialized="OnVideoInitialized"
@@ -410,16 +413,16 @@
                     HorizontalAlignment="Right"
                     Orientation="Horizontal"
                     Spacing="8">
-                    <!--  An opening's length, for when where the opening is isn't known  -->
+                    <!--  An opening's length, or skipping the OP/ED while it plays  -->
                     <Button
                         Width="NaN"
                         Padding="8,0"
-                        AutomationProperties.Name="Skip 85 seconds"
-                        Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}"
+                        Visibility="{x:Bind local:PlayerWindow.SkipButtonVisibility(ViewModel.IsClip, ViewModel.IsSkipButtonVisible), Mode=OneWay}"
                         Command="{x:Bind ViewModel.SkipAheadCommand}"
                         Style="{StaticResource PlayerButtonStyle}"
-                        ToolTipService.ToolTip="Skip 85 seconds, an opening's length">
-                        <TextBlock Text="+85s" />
+                        ToolTipService.ToolTip="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}">
+                        <TextBlock Text="{x:Bind ViewModel.SkipButtonText, Mode=OneWay}" />
                     </Button>
                     <!--  The episode list pops up above the controls, over this button: each episode's thumbnail and details; picking one plays it  -->
                     <Button
@@ -570,6 +573,15 @@
                         <FontIcon Glyph="&#xED1E;" />
                         <Button.Flyout>
                             <MenuFlyout Opening="OnTracksMenuOpening" Placement="Top" />
+                        </Button.Flyout>
+                    </Button>
+                    <Button
+                        AutomationProperties.Name="Aspect ratio"
+                        Style="{StaticResource PlayerButtonStyle}"
+                        ToolTipService.ToolTip="Aspect ratio (A)">
+                        <FontIcon Glyph="&#xE799;" />
+                        <Button.Flyout>
+                            <MenuFlyout Opening="OnAspectRatioMenuOpening" Placement="Top" />
                         </Button.Flyout>
                     </Button>
                     <Button
