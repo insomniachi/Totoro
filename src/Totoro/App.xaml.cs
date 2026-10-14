@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
@@ -165,6 +165,7 @@ public partial class App : Application
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
 			new Modules.AnimeProviders.SubsPlease.SubsPleaseModule(),
 			new Modules.AnimeProviders.AnimePahe.AnimePaheModule(),
+			new Modules.AnimeProviders.Senshi.SenshiModule(),
 			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.MediaPlayers.Vlc.VlcModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
