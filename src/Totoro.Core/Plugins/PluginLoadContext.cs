@@ -82,6 +82,7 @@ public sealed class PluginLoadContext : AssemblyLoadContext
 		}
 
 		return name.Equals("Totoro.Core", StringComparison.OrdinalIgnoreCase)
+			|| name.Equals("HtmlAgilityPack", StringComparison.OrdinalIgnoreCase)
 			|| name.StartsWith("Microsoft.Extensions.", StringComparison.OrdinalIgnoreCase)
 			|| name.StartsWith("System.", StringComparison.OrdinalIgnoreCase)
 			|| name.Equals("System", StringComparison.OrdinalIgnoreCase)

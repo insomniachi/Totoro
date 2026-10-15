@@ -15,6 +15,7 @@
     <PackageReference Include="Flurl.Http" />
     <PackageReference Include="GraphQL.Client" />
     <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" />
+    <PackageReference Include="HtmlAgilityPack" />
     <PackageReference Include="Microsoft.Extensions.AI" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
