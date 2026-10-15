@@ -39,4 +39,7 @@ public sealed record PluginCatalogItem
 
 	[JsonIgnore]
 	public string? InstalledVersion { get; set; }
+
+	[JsonIgnore]
+	public bool IsDev { get; set; }
 }

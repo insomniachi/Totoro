@@ -170,6 +170,14 @@ public partial class App : Application
 	{
 		var paths = new List<string>();
 		var args = Environment.GetCommandLineArgs();
+		bool ignoreDev = args.Any(a => a.Equals("--no-dev", StringComparison.OrdinalIgnoreCase) ||
+		                                a.Equals("--ignore-dev", StringComparison.OrdinalIgnoreCase));
+
+		if (ignoreDev)
+		{
+			return paths;
+		}
+
 		for (int i = 1; i < args.Length; i++)
 		{
 			if ((args[i].Equals("--plugin-dir", StringComparison.OrdinalIgnoreCase) ||

@@ -141,6 +141,13 @@
                                                 Style="{ThemeResource CaptionTextBlockStyle}"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 VerticalAlignment="Center" />
+                                            <Border
+                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                CornerRadius="4"
+                                                Padding="6,2"
+                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsDev)}">
+                                                <TextBlock Text="DEV ACTIVE" FontSize="10" Foreground="White" />
+                                            </Border>
                                             <Button
                                                 Content="Uninstall"
                                                 Command="{x:Bind UninstallCommand}" />

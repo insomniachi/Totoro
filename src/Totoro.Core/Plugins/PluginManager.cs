@@ -91,6 +91,7 @@ public sealed class PluginManager : IPluginManager
 			{
 				item.IsInstalled = true;
 				item.InstalledVersion = installed.Version;
+				item.IsDev = installed.IsDev;
 				if (Version.TryParse(item.Version, out var catalogVer) &&
 					Version.TryParse(installed.Version, out var installedVer))
 				{

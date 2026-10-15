@@ -28,6 +28,7 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	public string Author => Item.Author;
 	public string DownloadUrl => Item.DownloadUrl;
 	public string? IconUrl => Item.IconUrl;
+	public bool IsDev => Item.IsDev;
 
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(UpdateVisibility))]
