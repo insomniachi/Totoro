@@ -170,11 +170,20 @@ public partial class App : Application
 	{
 		var paths = new List<string>();
 		var args = Environment.GetCommandLineArgs();
-		bool ignoreDev = args.Any(a => a.Equals("--no-dev", StringComparison.OrdinalIgnoreCase) ||
-		                                a.Equals("--ignore-dev", StringComparison.OrdinalIgnoreCase));
 
-		if (ignoreDev)
+		// Dev mode is OFF by default. Only load external dev directories if explicitly requested via CLI:
+		// e.g. --dev, --enable-dev-plugins, or direct path via --plugin-dir / -p.
+		bool isDevExplicitlyEnabled = args.Any(a =>
+			a.Equals("--dev", StringComparison.OrdinalIgnoreCase) ||
+			a.Equals("--enable-dev", StringComparison.OrdinalIgnoreCase) ||
+			a.Equals("--enable-dev-plugins", StringComparison.OrdinalIgnoreCase) ||
+			a.Equals("--plugin-dir", StringComparison.OrdinalIgnoreCase) ||
+			a.Equals("-p", StringComparison.OrdinalIgnoreCase) ||
+			a.Equals("--dev-plugin", StringComparison.OrdinalIgnoreCase));
+
+		if (!isDevExplicitlyEnabled)
 		{
+			// Safe default: regular users only load verified installed plugins from %LocalAppData%\Totoro\Plugins
 			return paths;
 		}
 
@@ -190,47 +199,55 @@ public partial class App : Application
 			}
 		}
 
-		try
-		{
-			var prefs = new Preferences();
-			var saved = prefs.ReadKey<List<string>>("DevPluginPaths");
-			if (saved is not null)
-			{
-				paths.AddRange(saved);
-			}
-		}
-		catch
-		{
-			// Ignore read issues before full DI startup
-		}
+		bool scanDevDirectories = args.Any(a =>
+			a.Equals("--dev", StringComparison.OrdinalIgnoreCase) ||
+			a.Equals("--enable-dev", StringComparison.OrdinalIgnoreCase) ||
+			a.Equals("--enable-dev-plugins", StringComparison.OrdinalIgnoreCase));
 
-		// When developing inside the repository, automatically discover plugins in local plugins/ directory or sibling Totoro.Plugins repo
-		try
+		if (scanDevDirectories)
 		{
-			var dir = AppContext.BaseDirectory;
-			while (!string.IsNullOrEmpty(dir))
+			try
 			{
-				if (File.Exists(Path.Combine(dir, "Totoro.slnx")) || Directory.Exists(Path.Combine(dir, ".git")))
+				var prefs = new Preferences();
+				var saved = prefs.ReadKey<List<string>>("DevPluginPaths");
+				if (saved is not null)
 				{
-					var localPlugins = Path.Combine(dir, "plugins");
-					if (Directory.Exists(localPlugins))
-					{
-						paths.Add(localPlugins);
-					}
-
-					var siblingPlugins = Path.GetFullPath(Path.Combine(dir, "..", "Totoro.Plugins"));
-					if (Directory.Exists(siblingPlugins))
-					{
-						paths.Add(siblingPlugins);
-					}
-
-					break;
+					paths.AddRange(saved);
 				}
-				dir = Path.GetDirectoryName(dir);
 			}
-		}
-		catch
-		{
+			catch
+			{
+				// Ignore read issues before full DI startup
+			}
+
+			// When explicitly running with --dev in repository, discover plugins in local plugins/ directory or sibling Totoro.Plugins repo
+			try
+			{
+				var dir = AppContext.BaseDirectory;
+				while (!string.IsNullOrEmpty(dir))
+				{
+					if (File.Exists(Path.Combine(dir, "Totoro.slnx")) || Directory.Exists(Path.Combine(dir, ".git")))
+					{
+						var localPlugins = Path.Combine(dir, "plugins");
+						if (Directory.Exists(localPlugins))
+						{
+							paths.Add(localPlugins);
+						}
+
+						var siblingPlugins = Path.GetFullPath(Path.Combine(dir, "..", "Totoro.Plugins"));
+						if (Directory.Exists(siblingPlugins))
+						{
+							paths.Add(siblingPlugins);
+						}
+
+						break;
+					}
+					dir = Path.GetDirectoryName(dir);
+				}
+			}
+			catch
+			{
+			}
 		}
 
 		return paths;
