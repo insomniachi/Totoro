@@ -1,11 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Totoro.Core.Modules;
-using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Plugins;
 
-namespace Totoro.ViewModels.Test;
+namespace Totoro.ViewModels;
 
 public sealed partial class PluginItemViewModel : ObservableObject
 {
@@ -111,33 +109,26 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	}
 }
 
-public partial class PluginsPlaygroundViewModel : ObservableObject
+public partial class PluginsViewModel : ObservableObject
 {
 	private readonly IPluginLoader _pluginLoader;
 	private readonly IPluginManager _pluginManager;
-	private readonly IFactory<IAnimeProvider, Guid> _providers;
+	private readonly List<PluginItemViewModel> _allCatalogItems = [];
 
-	public PluginsPlaygroundViewModel(
+	public PluginsViewModel(
 		IPluginLoader pluginLoader,
-		IPluginManager pluginManager,
-		IFactory<IAnimeProvider, Guid> providers)
+		IPluginManager pluginManager)
 	{
 		_pluginLoader = pluginLoader;
 		_pluginManager = pluginManager;
-		_providers = providers;
 
-		Plugins = [.. _pluginLoader.Plugins];
-		DevPaths = new ObservableCollection<string>(_pluginManager.DevPluginPaths);
-		AvailableProviders = [.. _providers.CreateAll()];
-		SelectedProvider = AvailableProviders.FirstOrDefault();
+		InstalledPlugins = [.. _pluginLoader.Plugins];
 		RequiresRestart = _pluginManager.RequiresRestart;
 
 		_ = LoadCatalogAsync();
 	}
 
-	public IReadOnlyList<PluginInfo> Plugins { get; }
-	public ObservableCollection<string> DevPaths { get; }
-	public IReadOnlyList<IAnimeProvider> AvailableProviders { get; }
+	public IReadOnlyList<PluginInfo> InstalledPlugins { get; private set; }
 	public ObservableCollection<PluginItemViewModel> CatalogPlugins { get; } = [];
 
 	[ObservableProperty]
@@ -150,43 +141,13 @@ public partial class PluginsPlaygroundViewModel : ObservableObject
 	public partial bool RequiresRestart { get; set; }
 
 	[ObservableProperty]
-	public partial int SelectedTabIndex { get; set; } = 0;
+	public partial string SearchFilter { get; set; } = "";
 
-	[ObservableProperty]
-	public partial IAnimeProvider? SelectedProvider { get; set; }
+	partial void OnSearchFilterChanged(string value) => ApplyFilter();
 
-	[ObservableProperty]
-	public partial string SearchQuery { get; set; } = "Frieren";
-
-	[ObservableProperty]
-	public partial string NewDevPath { get; set; } = "";
 
 	[ObservableProperty]
 	public partial string StatusMessage { get; set; } = "";
-
-	public ObservableCollection<ProviderShow> Shows { get; } = [];
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(CanFetchEpisodes))]
-	public partial ProviderShow? SelectedShow { get; set; }
-
-	public bool CanFetchEpisodes => SelectedShow is not null;
-
-	public ObservableCollection<ProviderEpisode> Episodes { get; } = [];
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(CanFetchServers))]
-	public partial ProviderEpisode? SelectedEpisode { get; set; }
-
-	public bool CanFetchServers => SelectedEpisode is not null;
-
-	public ObservableCollection<VideoServer> Servers { get; } = [];
-
-	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(SearchingVisibility))]
-	public partial bool IsSearching { get; set; }
-
-	public Microsoft.UI.Xaml.Visibility SearchingVisibility => IsSearching ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
 
 	[RelayCommand]
 	public async Task LoadCatalogAsync()
@@ -194,15 +155,18 @@ public partial class PluginsPlaygroundViewModel : ObservableObject
 		IsLoadingCatalog = true;
 		StatusMessage = "Fetching plugins catalog...";
 		CatalogPlugins.Clear();
+		_allCatalogItems.Clear();
 
 		try
 		{
 			var items = await _pluginManager.GetCatalogAsync();
 			foreach (var item in items)
 			{
-				CatalogPlugins.Add(new PluginItemViewModel(item, _pluginManager));
+				var vm = new PluginItemViewModel(item, _pluginManager);
+				_allCatalogItems.Add(vm);
 			}
-			StatusMessage = $"Found {items.Count} plugins in online catalog.";
+			ApplyFilter();
+			StatusMessage = $"Found {items.Count} plugin(s) in catalog.";
 		}
 		catch (Exception ex)
 		{
@@ -212,6 +176,7 @@ public partial class PluginsPlaygroundViewModel : ObservableObject
 		{
 			IsLoadingCatalog = false;
 			RequiresRestart = _pluginManager.RequiresRestart;
+			InstalledPlugins = [.. _pluginLoader.Plugins];
 		}
 	}
 
@@ -221,7 +186,7 @@ public partial class PluginsPlaygroundViewModel : ObservableObject
 		if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return;
 
 		IsLoadingCatalog = true;
-		StatusMessage = $"Installing plugin from {Path.GetFileName(filePath)}...";
+		StatusMessage = $"Installing {Path.GetFileName(filePath)}...";
 
 		try
 		{
@@ -246,111 +211,21 @@ public partial class PluginsPlaygroundViewModel : ObservableObject
 		Microsoft.Windows.AppLifecycle.AppInstance.Restart("");
 	}
 
-	[RelayCommand]
-	private void AddDevPath()
+
+
+	private void ApplyFilter()
 	{
-		if (string.IsNullOrWhiteSpace(NewDevPath)) return;
-		_pluginManager.AddDevPluginPath(NewDevPath);
-		if (!DevPaths.Contains(NewDevPath))
+		CatalogPlugins.Clear();
+		var filter = SearchFilter.Trim();
+		foreach (var item in _allCatalogItems)
 		{
-			DevPaths.Add(NewDevPath);
-		}
-		NewDevPath = "";
-		StatusMessage = "Added dev path. Restart Totoro to load plugins from this directory.";
-	}
-
-	[RelayCommand]
-	private void RemoveDevPath(string path)
-	{
-		_pluginManager.RemoveDevPluginPath(path);
-		DevPaths.Remove(path);
-		StatusMessage = "Removed dev path. Restart Totoro to apply changes.";
-	}
-
-	[RelayCommand]
-	private async Task SearchShowsAsync()
-	{
-		if (SelectedProvider is null || string.IsNullOrWhiteSpace(SearchQuery)) return;
-
-		IsSearching = true;
-		StatusMessage = $"Searching {SelectedProvider.Name} for \"{SearchQuery}\"...";
-		Shows.Clear();
-		Episodes.Clear();
-		Servers.Clear();
-
-		try
-		{
-			var results = await SelectedProvider.SearchAsync(SearchQuery, CancellationToken.None);
-			foreach (var show in results)
+			if (string.IsNullOrWhiteSpace(filter) ||
+			    item.Name.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+			    item.Author.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+			    item.Description.Contains(filter, StringComparison.OrdinalIgnoreCase))
 			{
-				Shows.Add(show);
+				CatalogPlugins.Add(item);
 			}
-			StatusMessage = $"Found {results.Count} shows on {SelectedProvider.Name}.";
-		}
-		catch (Exception ex)
-		{
-			StatusMessage = $"Search error: {ex.Message}";
-		}
-		finally
-		{
-			IsSearching = false;
-		}
-	}
-
-	[RelayCommand]
-	private async Task GetEpisodesAsync()
-	{
-		if (SelectedProvider is null || SelectedShow is null) return;
-
-		IsSearching = true;
-		StatusMessage = $"Fetching episodes for {SelectedShow.Title}...";
-		Episodes.Clear();
-		Servers.Clear();
-
-		try
-		{
-			var results = await SelectedProvider.GetEpisodesAsync(SelectedShow.Id, CancellationToken.None);
-			foreach (var ep in results)
-			{
-				Episodes.Add(ep);
-			}
-			StatusMessage = $"Found {results.Count} episodes.";
-		}
-		catch (Exception ex)
-		{
-			StatusMessage = $"GetEpisodes error: {ex.Message}";
-		}
-		finally
-		{
-			IsSearching = false;
-		}
-	}
-
-	[RelayCommand]
-	private async Task GetServersAsync()
-	{
-		if (SelectedProvider is null || SelectedEpisode is null) return;
-
-		IsSearching = true;
-		StatusMessage = $"Fetching servers for ep {SelectedEpisode.Number}...";
-		Servers.Clear();
-
-		try
-		{
-			var results = await SelectedProvider.GetServersAsync(SelectedEpisode, CancellationToken.None);
-			foreach (var server in results)
-			{
-				Servers.Add(server);
-			}
-			StatusMessage = $"Found {results.Count} servers.";
-		}
-		catch (Exception ex)
-		{
-			StatusMessage = $"GetServers error: {ex.Message}";
-		}
-		finally
-		{
-			IsSearching = false;
 		}
 	}
 }

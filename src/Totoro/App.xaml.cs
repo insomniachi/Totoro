@@ -113,6 +113,11 @@ public partial class App : Application
 				{
 					x.AnimatedIcon = Icons.SearchAnimated;
 				});
+				services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
+				{
+					x.UnselectedIcon = Icons.Plugins;
+					x.SelectedIcon = Icons.Plugins;
+				});
 				services.AddMainNavigationItem<TestPage, TestViewModel>("Test", x =>
 				{
 					// No filled beaker in Segoe Fluent Icons, so the same one either way.
@@ -123,7 +128,6 @@ public partial class App : Application
 				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
 				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
 				services.AddKeyedViewMap<BuiltInPlayerPage, BuiltInPlayerViewModel>(TestViewModel.BuiltInPlayerKey);
-				services.AddKeyedViewMap<PluginsPlaygroundPage, PluginsPlaygroundViewModel>(TestViewModel.PluginsKey);
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
 					x.AnimatedIcon = Icons.SettingsAnimated;
@@ -206,20 +210,6 @@ public partial class App : Application
 
 		if (scanDevDirectories)
 		{
-			try
-			{
-				var prefs = new Preferences();
-				var saved = prefs.ReadKey<List<string>>("DevPluginPaths");
-				if (saved is not null)
-				{
-					paths.AddRange(saved);
-				}
-			}
-			catch
-			{
-				// Ignore read issues before full DI startup
-			}
-
 			// When explicitly running with --dev in repository, discover plugins in local plugins/ directory or sibling Totoro.Plugins repo
 			try
 			{

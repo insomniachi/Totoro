@@ -8,17 +8,9 @@ public interface IPluginManager
 	IReadOnlyList<PluginInfo> InstalledPlugins { get; }
 
 	/// <summary>
-	/// Additional local directories scanned for plugins during development.
-	/// </summary>
-	IReadOnlyList<string> DevPluginPaths { get; }
-
-	/// <summary>
 	/// Whether a plugin was installed or uninstalled requiring an application restart.
 	/// </summary>
 	bool RequiresRestart { get; }
-
-	void AddDevPluginPath(string path);
-	void RemoveDevPluginPath(string path);
 
 	Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(CancellationToken ct = default);
 	Task<PluginInfo> InstallFromFileAsync(string packageFilePath, CancellationToken ct = default);

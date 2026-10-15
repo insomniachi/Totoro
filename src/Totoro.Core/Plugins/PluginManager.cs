@@ -9,7 +9,6 @@ namespace Totoro.Core.Plugins;
 
 public sealed class PluginManager : IPluginManager
 {
-	private const string DevPathsKey = "DevPluginPaths";
 	private const string CatalogUrlKey = "PluginCatalogUrl";
 	private const string DefaultCatalogUrl = "https://raw.githubusercontent.com/insomniachi/Totoro.Plugins/main/plugins.json";
 
@@ -18,7 +17,6 @@ public sealed class PluginManager : IPluginManager
 	private readonly HttpClient _httpClient;
 	private readonly ILogger<PluginManager> _logger;
 
-	private readonly List<string> _devPluginPaths;
 	private bool _requiresRestart;
 
 	public PluginManager(
@@ -31,38 +29,11 @@ public sealed class PluginManager : IPluginManager
 		_preferences = preferences;
 		_httpClient = httpClient ?? new HttpClient();
 		_logger = logger ?? NullLogger<PluginManager>.Instance;
-
-		_devPluginPaths = _preferences.ReadKey<List<string>>(DevPathsKey) ?? [];
 	}
 
 	public IReadOnlyList<PluginInfo> InstalledPlugins => _pluginLoader.Plugins;
 
-	public IReadOnlyList<string> DevPluginPaths => _devPluginPaths;
-
 	public bool RequiresRestart => _requiresRestart;
-
-	public void AddDevPluginPath(string path)
-	{
-		if (string.IsNullOrWhiteSpace(path)) return;
-		var full = Path.GetFullPath(path);
-		if (!_devPluginPaths.Contains(full, StringComparer.OrdinalIgnoreCase))
-		{
-			_devPluginPaths.Add(full);
-			_preferences.SaveKey(DevPathsKey, _devPluginPaths);
-			_requiresRestart = true;
-		}
-	}
-
-	public void RemoveDevPluginPath(string path)
-	{
-		if (string.IsNullOrWhiteSpace(path)) return;
-		var full = Path.GetFullPath(path);
-		if (_devPluginPaths.RemoveAll(p => p.Equals(full, StringComparison.OrdinalIgnoreCase)) > 0)
-		{
-			_preferences.SaveKey(DevPathsKey, _devPluginPaths);
-			_requiresRestart = true;
-		}
-	}
 
 	public async Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(CancellationToken ct = default)
 	{
@@ -100,6 +71,25 @@ public sealed class PluginManager : IPluginManager
 			}
 		}
 
+		// Include any locally loaded/installed plugins (e.g. from adjacent repo or sideload) that aren't in the remote catalog
+		foreach (var (id, installed) in installedMap)
+		{
+			if (!items.Any(i => i.Id == id))
+			{
+				items.Add(new PluginCatalogItem
+				{
+					Id = installed.Id,
+					Name = installed.Name,
+					Description = installed.Description,
+					Version = installed.Version,
+					DownloadUrl = "",
+					IsInstalled = true,
+					InstalledVersion = installed.Version,
+					IsDev = installed.IsDev,
+				});
+			}
+		}
+
 		return items;
 	}
 
@@ -123,14 +113,11 @@ public sealed class PluginManager : IPluginManager
 				throw new InvalidOperationException("Package does not contain a valid plugin.json manifest.");
 			}
 
-			var manifestJson = await File.ReadAllTextAsync(manifestPath, ct);
-			var manifest = JsonSerializer.Deserialize<PluginManifest>(manifestJson)
-				?? throw new InvalidOperationException("Failed to parse plugin.json manifest from package.");
+			var json = await File.ReadAllTextAsync(manifestPath, ct);
+			var manifest = JsonSerializer.Deserialize<PluginManifest>(json)
+				?? throw new InvalidOperationException("Could not deserialize plugin manifest.");
 
-			var pluginsRoot = FileHelper.GetPath("Plugins");
-			var targetDir = Path.Combine(pluginsRoot, manifest.Name);
-			Directory.CreateDirectory(pluginsRoot);
-
+			var targetDir = Path.Combine(FileHelper.GetPath("Plugins"), manifest.Name);
 			if (Directory.Exists(targetDir))
 			{
 				try
@@ -139,13 +126,11 @@ public sealed class PluginManager : IPluginManager
 				}
 				catch (Exception ex)
 				{
-					_logger.LogWarning(ex, "Could not completely delete existing folder {TargetDir}, overwriting files.", targetDir);
+					_logger.LogWarning(ex, "Could not delete old plugin dir {TargetDir} directly; overwriting files instead.", targetDir);
 				}
 			}
 
 			Directory.CreateDirectory(targetDir);
-
-			// Copy all extracted files to target directory
 			CopyDirectory(tempExtractDir, targetDir);
 
 			_requiresRestart = true;
@@ -169,15 +154,14 @@ public sealed class PluginManager : IPluginManager
 			}
 			catch
 			{
-				// Ignore cleanup failures in temp
+				// Ignore temp folder cleanup failure
 			}
 		}
 	}
 
 	public async Task<PluginInfo> InstallFromUrlAsync(Uri packageUrl, IProgress<double>? progress = null, CancellationToken ct = default)
 	{
-		var tempPackageFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".totoro-plugin");
-
+		var tempPackagePath = Path.Combine(Path.GetTempPath(), $"totoro_plugin_{Guid.NewGuid():N}.totoro-plugin");
 		try
 		{
 			using var response = await _httpClient.GetAsync(packageUrl, HttpCompletionOption.ResponseHeadersRead, ct);
@@ -185,7 +169,7 @@ public sealed class PluginManager : IPluginManager
 
 			var totalBytes = response.Content.Headers.ContentLength;
 			await using var stream = await response.Content.ReadAsStreamAsync(ct);
-			await using var fileStream = new FileStream(tempPackageFile, FileMode.Create, FileAccess.Write, FileShare.None);
+			await using var fileStream = File.Create(tempPackagePath);
 
 			var buffer = new byte[81920];
 			long totalRead = 0;
@@ -201,14 +185,23 @@ public sealed class PluginManager : IPluginManager
 				}
 			}
 
+			await fileStream.FlushAsync(ct);
 			fileStream.Close();
-			return await InstallFromFileAsync(tempPackageFile, ct);
+
+			return await InstallFromFileAsync(tempPackagePath, ct);
 		}
 		finally
 		{
-			if (File.Exists(tempPackageFile))
+			try
 			{
-				try { File.Delete(tempPackageFile); } catch { }
+				if (File.Exists(tempPackagePath))
+				{
+					File.Delete(tempPackagePath);
+				}
+			}
+			catch
+			{
+				// Ignore temp file cleanup failure
 			}
 		}
 	}
@@ -234,10 +227,6 @@ public sealed class PluginManager : IPluginManager
 				var marker = Path.Combine(plugin.DirectoryPath, ".delete");
 				File.WriteAllText(marker, "pending-delete");
 			}
-		}
-		else if (plugin.IsDev)
-		{
-			RemoveDevPluginPath(plugin.DirectoryPath);
 		}
 
 		_requiresRestart = true;

@@ -1,4 +1,4 @@
-﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 
 namespace Totoro.UI;
@@ -42,6 +42,9 @@ public static class Icons
 	/// <summary>A lab beaker, for experiments and playgrounds.</summary>
 	public static FontIcon Test => new() { Glyph = "\uF196" };
 
+	/// <summary>Marketplace/store icon for community plugins.</summary>
+	public static FontIcon Plugins => new() { Glyph = "\uEA86" };
+
 	public static FontIcon Play => new() { Glyph = "\uE768" };
 	public static FontIcon Clock => new() { Glyph = "\uE823" };
 	public static FontIcon Completed => new() { Glyph = "\uE930" };
@@ -58,6 +61,7 @@ public static class Icons
 		nameof(HomeFilled) => HomeFilled,
 		nameof(Settings) => Settings,
 		nameof(Test) => Test,
+		nameof(Plugins) => Plugins,
 		nameof(Search) => Search,
 		nameof(Play) => Play,
 		nameof(Clock) => Clock,

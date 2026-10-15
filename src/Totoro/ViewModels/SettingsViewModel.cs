@@ -206,16 +206,9 @@ public partial class SettingsViewModel : ObservableObject
 
 	/// <summary>Opens the plugins store and management page.</summary>
 	[RelayCommand]
-	private async Task OpenPluginsAsync()
+	private Task OpenPluginsAsync()
 	{
-		if (Navigators.TryGetNavigator("main", out var main))
-		{
-			await main.NavigateToViewModelAsync(typeof(TestViewModel));
-			if (Navigators.TryGetNavigator(TestViewModel.NavigatorKey, out var testNav))
-			{
-				await testNav.NavigateToKeyAsync(TestViewModel.PluginsKey);
-			}
-		}
+		return Navigators.TryGetNavigator("main", out var main) ? main.NavigateToViewModelAsync(typeof(PluginsViewModel)) : Task.CompletedTask;
 	}
 
 	public IReadOnlyList<ThemeOption> Themes { get; } =
