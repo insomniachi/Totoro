@@ -15,6 +15,7 @@ using Totoro.Core.Modules.Chat;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
+using Totoro.Core.Plugins;
 using Totoro.Core.Relations;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
@@ -44,6 +45,7 @@ public partial class App : Application
 {
 	private Window? _window;
 	private IHost _host;
+	private readonly IPluginLoader _pluginLoader = new PluginLoader();
 
 	public App()
 	{
@@ -121,6 +123,7 @@ public partial class App : Application
 				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
 				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
 				services.AddKeyedViewMap<BuiltInPlayerPage, BuiltInPlayerViewModel>(TestViewModel.BuiltInPlayerKey);
+				services.AddKeyedViewMap<PluginsPlaygroundPage, PluginsPlaygroundViewModel>(TestViewModel.PluginsKey);
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
 					x.AnimatedIcon = Icons.SettingsAnimated;
@@ -147,14 +150,82 @@ public partial class App : Application
 
 	private void AddModules(IServiceCollection services)
 	{
+		var devPaths = GetDevPluginPaths();
+		var loaded = _pluginLoader.LoadPlugins(devPaths);
+
+		services.AddSingleton<IPluginLoader>(_pluginLoader);
+
 		List<IModule> modules =
 		[
 			..GetInBuiltModules(),
-				];
+			..loaded.Where(p => p.Module is not null).Select(p => p.Module!)
+		];
 		foreach (var module in modules)
 		{
 			module.ConfigureServices(services);
 		}
+	}
+
+	private static List<string> GetDevPluginPaths()
+	{
+		var paths = new List<string>();
+		var args = Environment.GetCommandLineArgs();
+		for (int i = 1; i < args.Length; i++)
+		{
+			if ((args[i].Equals("--plugin-dir", StringComparison.OrdinalIgnoreCase) ||
+				 args[i].Equals("-p", StringComparison.OrdinalIgnoreCase) ||
+				 args[i].Equals("--dev-plugin", StringComparison.OrdinalIgnoreCase)) &&
+				i + 1 < args.Length)
+			{
+				paths.Add(args[i + 1]);
+				i++;
+			}
+		}
+
+		try
+		{
+			var prefs = new Preferences();
+			var saved = prefs.ReadKey<List<string>>("DevPluginPaths");
+			if (saved is not null)
+			{
+				paths.AddRange(saved);
+			}
+		}
+		catch
+		{
+			// Ignore read issues before full DI startup
+		}
+
+		// When developing inside the repository, automatically discover plugins in local plugins/ directory or sibling Totoro.Plugins repo
+		try
+		{
+			var dir = AppContext.BaseDirectory;
+			while (!string.IsNullOrEmpty(dir))
+			{
+				if (File.Exists(Path.Combine(dir, "Totoro.slnx")) || Directory.Exists(Path.Combine(dir, ".git")))
+				{
+					var localPlugins = Path.Combine(dir, "plugins");
+					if (Directory.Exists(localPlugins))
+					{
+						paths.Add(localPlugins);
+					}
+
+					var siblingPlugins = Path.GetFullPath(Path.Combine(dir, "..", "Totoro.Plugins"));
+					if (Directory.Exists(siblingPlugins))
+					{
+						paths.Add(siblingPlugins);
+					}
+
+					break;
+				}
+				dir = Path.GetDirectoryName(dir);
+			}
+		}
+		catch
+		{
+		}
+
+		return paths;
 	}
 
 	private static List<IModule> GetInBuiltModules()
@@ -163,9 +234,6 @@ public partial class App : Application
 		[
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
-			new Modules.AnimeProviders.SubsPlease.SubsPleaseModule(),
-			new Modules.AnimeProviders.AnimePahe.AnimePaheModule(),
-			new Modules.AnimeProviders.Senshi.SenshiModule(),
 			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.MediaPlayers.Vlc.VlcModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),

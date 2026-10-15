@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
@@ -13,7 +13,7 @@ public interface IPreferences
 	void RemoveKey(string key);
 }
 
-internal class Preferences : IPreferences
+public class Preferences : IPreferences
 {
 	private readonly string _file;
 	private readonly JsonSerializerOptions _options;

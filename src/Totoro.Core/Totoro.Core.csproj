@@ -1,7 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Totoro.Core</RootNamespace>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <IsPackable>true</IsPackable>
+    <PackageId>Totoro.Core</PackageId>
+    <Version>2.0.0</Version>
+    <Description>Core contracts, interfaces, and plugin infrastructure for Totoro.</Description>
+    <Authors>Totoro</Authors>
+    <PackageOutputPath>$(SolutionDir)artifacts\packages</PackageOutputPath>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />

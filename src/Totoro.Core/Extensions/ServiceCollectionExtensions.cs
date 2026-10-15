@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Modules;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
@@ -88,6 +88,7 @@ public static class ServiceCollectionExtensions
 							   .AddSingleton<Services.AnimeSongService>()
 							   .AddSingleton<Services.ChatService>()
 							   .AddSingleton<Services.UpdateService>()
+							   .AddSingleton<Plugins.IPluginManager, Plugins.PluginManager>()
 							   .AddSingleton<Agent.IAgentTools, Agent.AgentTools>()
 						   .AddLogging();
 		}

@@ -204,6 +204,20 @@ public partial class SettingsViewModel : ObservableObject
 		return Navigators.TryGetNavigator("main", out var main) ? main.NavigateToViewModelAsync(typeof(Relations.AnimeRelationsViewModel)) : Task.CompletedTask;
 	}
 
+	/// <summary>Opens the plugins store and management page.</summary>
+	[RelayCommand]
+	private async Task OpenPluginsAsync()
+	{
+		if (Navigators.TryGetNavigator("main", out var main))
+		{
+			await main.NavigateToViewModelAsync(typeof(TestViewModel));
+			if (Navigators.TryGetNavigator(TestViewModel.NavigatorKey, out var testNav))
+			{
+				await testNav.NavigateToKeyAsync(TestViewModel.PluginsKey);
+			}
+		}
+	}
+
 	public IReadOnlyList<ThemeOption> Themes { get; } =
 	[
 		new("Use system setting", AppTheme.System),
