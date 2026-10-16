@@ -364,3 +364,6 @@ FodyWeavers.xsd
 # The installer's build (installer/build.ps1)
 installer/publish/
 installer/output/
+
+# Graphify knowledge graph & cache
+graphify-out/
