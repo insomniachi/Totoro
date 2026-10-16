@@ -60,6 +60,15 @@
                 </Button>
 
                 <Button
+                    Command="{x:Bind ViewModel.TestPluginsCommand}"
+                    ToolTipService.ToolTip="Test anime plugins functionality">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <FontIcon Glyph="&#xF196;" FontSize="14" />
+                        <TextBlock Text="Test plugins" />
+                    </StackPanel>
+                </Button>
+
+                <Button
                     Click="OnBrowsePluginPackageClicked"
                     ToolTipService.ToolTip="Install a .totoro-plugin package from your computer">
                     <StackPanel Orientation="Horizontal" Spacing="6">

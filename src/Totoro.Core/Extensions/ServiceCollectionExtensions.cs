@@ -89,6 +89,7 @@ public static class ServiceCollectionExtensions
 							   .AddSingleton<Services.ChatService>()
 							   .AddSingleton<Services.UpdateService>()
 							   .AddSingleton<Plugins.IPluginManager, Plugins.PluginManager>()
+							   .AddSingleton<Plugins.IAnimePluginTesterService, Plugins.AnimePluginTesterService>()
 							   .AddSingleton<Agent.IAgentTools, Agent.AgentTools>()
 						   .AddLogging();
 		}

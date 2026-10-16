@@ -211,6 +211,19 @@ public partial class PluginsViewModel : ObservableObject
 		Microsoft.Windows.AppLifecycle.AppInstance.Restart("");
 	}
 
+	[RelayCommand]
+	public async Task TestPluginsAsync()
+	{
+		if (Totoro.UI.Navigation.Navigators.TryGetNavigator("main", out var main))
+		{
+			await main.NavigateToViewModelAsync(typeof(TestViewModel));
+			if (Totoro.UI.Navigation.Navigators.TryGetNavigator(TestViewModel.NavigatorKey, out var testNav))
+			{
+				await testNav.NavigateToKeyAsync(TestViewModel.AnimePluginsKey);
+			}
+		}
+	}
+
 
 
 	private void ApplyFilter()

@@ -212,3 +212,31 @@ public sealed record ListGroup(
 		return scores.Count == 0 ? null : Math.Round(scores.Average(), 1);
 	}
 }
+
+[Description("The results of testing anime provider plugins (Search, GetEpisodes, GetServers).")]
+public sealed record AnimePluginTestReport(
+	[property: Description("The show title queried during testing.")]
+	string ShowTitle,
+	[property: Description("Total number of provider plugins tested.")]
+	int TotalTested,
+	[property: Description("Number of plugins that passed all stages.")]
+	int PassedCount,
+	[property: Description("Number of plugins that failed at one or more stages.")]
+	int FailedCount,
+	[property: Description("Detailed breakdown of results for each plugin.")]
+	IReadOnlyList<AnimePluginProviderReport> Plugins);
+
+[Description("Test results for a single anime provider plugin.")]
+public sealed record AnimePluginProviderReport(
+	string Name,
+	[property: Description("Whether all three stages (Search, GetEpisodes, GetServers) succeeded.")]
+	bool Passed,
+	[property: Description("Result of the Search stage.")]
+	string SearchResult,
+	[property: Description("Result of the GetEpisodes stage.")]
+	string EpisodesResult,
+	[property: Description("Result of the GetServers stage.")]
+	string ServersResult,
+	[property: Description("Error message if the plugin failed, otherwise null.")]
+	string? Error);
+

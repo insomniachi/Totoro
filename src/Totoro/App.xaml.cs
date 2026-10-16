@@ -92,7 +92,8 @@ public partial class App : Application
 						.AddAgentTools<AppSettingsTools>()
 						.AddAgentTools<NavigationTools>()
 						.AddAgentTools<RelationsTools>()
-						.AddAgentTools<UpdateTools>();
+						.AddAgentTools<UpdateTools>()
+						.AddAgentTools<AnimePluginTools>();
 				// The assistant: a chat that calls those tools (see ChatService).
 				services.AddSingleton<ChatViewModel>();
 
@@ -128,6 +129,7 @@ public partial class App : Application
 				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
 				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
 				services.AddKeyedViewMap<BuiltInPlayerPage, BuiltInPlayerViewModel>(TestViewModel.BuiltInPlayerKey);
+				services.AddKeyedViewMap<AnimePluginsTestPage, AnimePluginsTestViewModel>(TestViewModel.AnimePluginsKey);
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
 					x.AnimatedIcon = Icons.SettingsAnimated;
