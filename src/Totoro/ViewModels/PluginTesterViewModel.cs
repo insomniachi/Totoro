@@ -6,7 +6,7 @@ using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Plugins;
 using Totoro.UI.Navigation;
 
-namespace Totoro.ViewModels.Test;
+namespace Totoro.ViewModels;
 
 public sealed record ProviderFilterOption(Guid? Id, string Name)
 {
@@ -242,13 +242,13 @@ public sealed partial class PluginTestItemViewModel : ObservableObject
 	}
 }
 
-public partial class AnimePluginsTestViewModel : ObservableObject
+public partial class PluginTesterViewModel : ObservableObject
 {
 	private readonly IAnimePluginTesterService _tester;
 	private readonly IPluginLoader _pluginLoader;
 	private CancellationTokenSource? _cancellation;
 
-	public AnimePluginsTestViewModel(
+	public PluginTesterViewModel(
 		IAnimePluginTesterService tester,
 		IPluginLoader pluginLoader)
 	{

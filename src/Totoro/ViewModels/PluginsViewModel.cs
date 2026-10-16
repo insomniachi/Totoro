@@ -216,11 +216,7 @@ public partial class PluginsViewModel : ObservableObject
 	{
 		if (Totoro.UI.Navigation.Navigators.TryGetNavigator("main", out var main))
 		{
-			await main.NavigateToViewModelAsync(typeof(TestViewModel));
-			if (Totoro.UI.Navigation.Navigators.TryGetNavigator(TestViewModel.NavigatorKey, out var testNav))
-			{
-				await testNav.NavigateToKeyAsync(TestViewModel.AnimePluginsKey);
-			}
+			await main.NavigateToViewModelAsync(typeof(PluginTesterViewModel));
 		}
 	}
 

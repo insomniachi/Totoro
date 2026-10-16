@@ -129,7 +129,7 @@ public partial class App : Application
 				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
 				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
 				services.AddKeyedViewMap<BuiltInPlayerPage, BuiltInPlayerViewModel>(TestViewModel.BuiltInPlayerKey);
-				services.AddKeyedViewMap<AnimePluginsTestPage, AnimePluginsTestViewModel>(TestViewModel.AnimePluginsKey);
+				services.AddViewMap<PluginTesterPage, PluginTesterViewModel>();
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
 					x.AnimatedIcon = Icons.SettingsAnimated;
