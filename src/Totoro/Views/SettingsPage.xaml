@@ -273,6 +273,13 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="On the cards of anime you're watching or planning to watch: how long until the next episode airs." Header="Show when the next episode airs">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE823;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowNextEpisodeOnCards, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"

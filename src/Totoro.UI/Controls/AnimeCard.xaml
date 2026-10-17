@@ -44,7 +44,7 @@
                     TextWrapping="WrapWholeWords" />
             </Border>
 
-            <Grid x:Name="WidgetCanvas" Background="Transparent" />
+            <Grid x:Name="OverlayLayer" Background="Transparent" />
 
         </Grid>
     </devwinui:EdgeLighting>

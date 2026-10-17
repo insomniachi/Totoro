@@ -31,6 +31,8 @@ public sealed record AppSettings(
 	SkipMode EndingSkipMode,
 	[property: Description("Whether the next episode plays by itself when one is finished.")]
 	bool PlayNextAutomatically,
+	[property: Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")]
+	bool ShowNextEpisodeOnCards,
 	[property: Description("The page the app opens on; one of startupPages.")]
 	string StartupPage,
 	IReadOnlyList<string> StartupPages);
@@ -64,7 +66,7 @@ public sealed class AppSettingsTools(
 	IEnumerable<IAccount> accounts)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, startup page.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, what anime cards show, startup page.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
@@ -87,6 +89,7 @@ public sealed class AppSettingsTools(
 			preferences.OpeningSkipMode,
 			preferences.EndingSkipMode,
 			preferences.PlayNextAutomatically,
+			preferences.ShowNextEpisodeOnCards,
 			preferences.FindStartupItem(startupPages)?.Label ?? "",
 			[.. startupPages.Select(x => x.Label)]);
 	}
@@ -103,6 +106,7 @@ public sealed class AppSettingsTools(
 		SkipMode? openingSkipMode = null,
 		SkipMode? endingSkipMode = null,
 		bool? playNextAutomatically = null,
+		[Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")] bool? showNextEpisodeOnCards = null,
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null)
 	{
 		if (animeDatabase is not null)
@@ -161,6 +165,11 @@ public sealed class AppSettingsTools(
 		if (syncOtherLists is { } sync)
 		{
 			preferences.SyncOtherLists = sync;
+		}
+
+		if (showNextEpisodeOnCards is { } showNextEpisode)
+		{
+			preferences.ShowNextEpisodeOnCards = showNextEpisode;
 		}
 
 		if (playNextAutomatically is { } playNext)

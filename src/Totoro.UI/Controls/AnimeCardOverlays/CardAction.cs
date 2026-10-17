@@ -3,10 +3,10 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Totoro.UI.Controls.AnimeCardWidgets;
+namespace Totoro.UI.Controls.AnimeCardOverlays;
 
 /// <summary>
-/// An action a card widget offers, e.g. one of the <see cref="FloatingActionButtonWidget"/>'s sub-buttons.
+/// An action a card overlay offers, e.g. one of the <see cref="ActionsOverlay"/>'s sub-buttons.
 /// <see cref="Command"/> receives <see cref="CommandParameter"/> if set, otherwise the card's <c>AnimeModel</c>.
 /// </summary>
 public sealed partial class CardAction : DependencyObject

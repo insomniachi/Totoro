@@ -31,7 +31,7 @@ public sealed partial class AnimeCard : UserControl
 
 	private void OnTapped(object sender, TappedRoutedEventArgs e)
 	{
-		if (IsFromWidget(e.OriginalSource) || Command is not { } command || !command.CanExecute(Anime))
+		if (IsFromOverlay(e.OriginalSource) || Command is not { } command || !command.CanExecute(Anime))
 		{
 			return;
 		}
@@ -41,15 +41,15 @@ public sealed partial class AnimeCard : UserControl
 	}
 
 	/// <summary>
-	/// Whether a tap came from a widget on the card (e.g. the floating action button) rather than the card itself.
+	/// Whether a tap came from an overlay on the card (e.g. the actions button) rather than the card itself.
 	/// Buttons don't mark Tapped handled, so their taps bubble up here too and would otherwise also open the card.
-	/// Widgets are hosted in WidgetCanvas, which itself covers the whole card, so a tap on the canvas is a card tap.
+	/// Overlays are hosted in OverlayLayer, which itself covers the whole card, so a tap on the layer itself is a card tap.
 	/// </summary>
-	private bool IsFromWidget(object? source)
+	private bool IsFromOverlay(object? source)
 	{
 		for (var element = source as DependencyObject; element is not null && element != this; element = VisualTreeHelper.GetParent(element))
 		{
-			if (VisualTreeHelper.GetParent(element) == WidgetCanvas)
+			if (VisualTreeHelper.GetParent(element) == OverlayLayer)
 			{
 				return true;
 			}

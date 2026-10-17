@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 
-namespace Totoro.UI.Controls.AnimeCardWidgets;
+namespace Totoro.UI.Controls.AnimeCardOverlays;
 
 public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 {
@@ -41,7 +41,7 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 
 		// FindName works as soon as InitializeComponent has run. FindDescendant needs the
 		// visual tree, which may not exist yet when the card comes from a DataTemplate.
-		_canvas = AssociatedObject.FindName("WidgetCanvas") as Grid;
+		_canvas = AssociatedObject.FindName("OverlayLayer") as Grid;
 		_lighting = AssociatedObject.FindName("Lighting") as EdgeLighting;
 
 		if (_canvas is null || _lighting is null)

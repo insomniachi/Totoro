@@ -15,22 +15,22 @@
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkitui="using:CommunityToolkit.WinUI"
     xmlns:ui="using:Totoro.UI"
-    xmlns:widgets="using:Totoro.UI.Controls.AnimeCardWidgets"
+    xmlns:overlays="using:Totoro.UI.Controls.AnimeCardOverlays"
     mc:Ignorable="d">
 
     <Page.Resources>
         <!--  Sub-buttons of each card's floating action button; each Command receives the card's AnimeModel  -->
-        <widgets:CardActionCollection x:Key="CardActions">
-            <widgets:CardAction
+        <overlays:CardActionCollection x:Key="CardActions">
+            <overlays:CardAction
                 Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Play}"
                 Label="Play" />
-            <widgets:CardAction
+            <overlays:CardAction
                 Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Edit}"
                 Label="Edit" />
-            <widgets:CardAction Icon="{toolkitui:SymbolIconSource Symbol=Download}" Label="Download" />
-        </widgets:CardActionCollection>
+            <overlays:CardAction Icon="{toolkitui:SymbolIconSource Symbol=Download}" Label="Download" />
+        </overlays:CardActionCollection>
     </Page.Resources>
 
     <Grid>
@@ -115,8 +115,9 @@
                                 <DataTemplate x:DataType="anime:AnimeModel">
                                     <controls:AnimeCard Anime="{x:Bind}" Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}">
                                         <Interactivity:Interaction.Behaviors>
-                                            <widgets:FloatingActionButtonWidget Actions="{StaticResource CardActions}" />
-                                            <widgets:HoverEffectsBehavior />
+                                            <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
+                                            <overlays:NextEpisodeOverlay />
+                                            <overlays:HoverEffectsBehavior />
                                         </Interactivity:Interaction.Behaviors>
                                     </controls:AnimeCard>
                                 </DataTemplate>

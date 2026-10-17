@@ -107,6 +107,7 @@ public partial class SettingsViewModel : ObservableObject
 		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
+		ShowNextEpisodeOnCards = preferences.ShowNextEpisodeOnCards;
 
 		// Only modules with something to edit.
 		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
@@ -192,6 +193,18 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool PlayNextAutomatically { get; set; }
 
 	partial void OnPlayNextAutomaticallyChanged(bool value) => _preferences.PlayNextAutomatically = value;
+
+	/// <summary>Whether cards of anime being watched or planned show how long until the next episode airs.</summary>
+	[ObservableProperty]
+	public partial bool ShowNextEpisodeOnCards { get; set; }
+
+	partial void OnShowNextEpisodeOnCardsChanged(bool value)
+	{
+		if (value != _preferences.ShowNextEpisodeOnCards)
+		{
+			_preferences.ShowNextEpisodeOnCards = value;
+		}
+	}
 
 	/// <summary>Updating Totoro from its GitHub releases.</summary>
 	public UpdateService Updates { get; }

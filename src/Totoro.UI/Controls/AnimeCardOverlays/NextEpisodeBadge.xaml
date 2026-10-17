@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.UI.Controls.AnimeCardOverlays.NextEpisodeBadge"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Margin="8"
+    HorizontalAlignment="Left"
+    VerticalAlignment="Top"
+    IsHitTestVisible="False">
+
+    <!--  When the next episode airs, on the cover's top left: acrylic, so it reads on any art  -->
+    <Border
+        Padding="6,2"
+        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="{ThemeResource ControlCornerRadius}">
+        <!--  The clock, then "Ep 4 in 5d 22h"  -->
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <FontIcon
+                VerticalAlignment="Center"
+                FontSize="12"
+                Glyph="&#xE823;" />
+            <TextBlock VerticalAlignment="Center" Style="{ThemeResource CaptionTextBlockStyle}">
+                <Run x:Name="EpisodeText" FontWeight="SemiBold" /><Run Text=" in " /><Run x:Name="TimeText" />
+            </TextBlock>
+        </StackPanel>
+    </Border>
+</UserControl>

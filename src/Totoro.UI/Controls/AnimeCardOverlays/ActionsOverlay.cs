@@ -13,15 +13,15 @@ using Microsoft.UI.Xaml.Shapes;
 // DevWinUI has its own FindDescendant; prefer the Community Toolkit one.
 using VisualTree = CommunityToolkit.WinUI.DependencyObjectExtensions;
 
-namespace Totoro.UI.Controls.AnimeCardWidgets;
+namespace Totoro.UI.Controls.AnimeCardOverlays;
 
 /// <summary>
 /// A gooey "more" button shown on hover that fans out into one sub-button per entry in <see cref="Actions"/>.
 /// Declare the actions inline, or as a shared <see cref="CardActionCollection"/> resource.
 /// </summary>
-public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
+public partial class ActionsOverlay : AnimeCardOverlay<Viewbox>
 {
-	public FloatingActionButtonWidget()
+	public ActionsOverlay()
 	{
 		// Non-null by default so actions can be declared inline with property element syntax.
 		Actions = new CardActionCollection();
@@ -30,16 +30,16 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 	[GeneratedDependencyProperty]
 	public partial IList<CardAction>? Actions { get; set; }
 
-	protected override Viewbox CreateWidget()
+	protected override Viewbox CreateOverlay()
 	{
 		var control = new GooeyButton()
 		{
 			Content = CreateIcon(Symbol.More, 32),
 		};
 
-		// Colours come from theme resources (see FloatingActionButtonWidgetResources) rather than being set here,
+		// Colours come from theme resources (see ActionsOverlayResources) rather than being set here,
 		// so they follow the card's own theme and update when it changes.
-		control.Resources.MergedDictionaries.Add(new FloatingActionButtonWidgetResources());
+		control.Resources.MergedDictionaries.Add(new ActionsOverlayResources());
 
 		control.ItemInvoked += OnInvoked;
 		control.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((_, _) => ClampGooeyEffect(control)), handledEventsToo: true);
@@ -115,13 +115,13 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 		}
 	}
 
-	protected override void OnHiding(Viewbox widget)
+	protected override void OnHiding(Viewbox overlay)
 	{
 		// Collapsed items are parked under the main circle, and XAML fades each element on its own rather than as a
 		// flattened layer, so they would show through while the button fades out. That covers both items whose
 		// collapse animation hasn't finished yet and their Win2D blobs, which are still drawn when collapsed
 		// (setting Opacity hides those too). Expanded items sit clear of the main circle, so leave them to fade.
-		if (widget.Child is not GooeyButton { Expanded: false } button)
+		if (overlay.Child is not GooeyButton { Expanded: false } button)
 		{
 			return;
 		}
@@ -173,7 +173,7 @@ public partial class FloatingActionButtonWidget : AnimeCardWidget<Viewbox>
 
 	private const double ItemIconSize = 28;
 
-	// The widget is scaled down by its Viewbox (80px -> 45px), so this ends up roughly 1px on screen.
+	// The overlay is scaled down by its Viewbox (80px -> 45px), so this ends up roughly 1px on screen.
 	private const double BorderWidth = 1.8;
 	private static readonly SolidColorBrush s_borderBrush = new(Colors.Black);
 

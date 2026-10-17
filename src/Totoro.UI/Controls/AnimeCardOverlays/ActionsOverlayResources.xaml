@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-    Colours for the FloatingActionButtonWidget's GooeyButton, by overriding the theme resource keys its default styles use.
+    Colours for the ActionsOverlay's GooeyButton, by overriding the theme resource keys its default styles use.
     Being theme resources, they resolve against the card's own theme (e.g. the app theme picked in Settings), not the system's,
     and update when it changes. Accent fill with on-accent icons stands out on any cover art, unlike the default
     (BaseHigh fill, AltHigh icon), which is a white blob in dark theme.
 -->
 <ResourceDictionary
-    x:Class="Totoro.UI.Controls.AnimeCardWidgets.FloatingActionButtonWidgetResources"
+    x:Class="Totoro.UI.Controls.AnimeCardOverlays.ActionsOverlayResources"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>

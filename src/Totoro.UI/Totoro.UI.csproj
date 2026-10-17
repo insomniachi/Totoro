@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Core\Totoro.Core.csproj" />
+    <InternalsVisibleTo Include="Totoro.Tests" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\AnimeCard.xaml">
