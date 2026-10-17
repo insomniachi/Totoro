@@ -36,8 +36,16 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 	private CoreWebView2Environment? _environment;
 	private CoreWebView2Controller? _controller;
 
+	// The hidden browser, got once and kept: each read of CoreWebView2 may give another wrapper of it, and one with handlers
+	// on it that's collected takes them with it, so the browser's next event to them crashed the app (at random, whenever
+	// the GC had run: Cloudflare's check, with its reloads, made that likely).
+	private CoreWebView2? _browser;
+
 	// The page the hidden browser is opening, and as from where (see AddReferrer).
 	private (Uri Url, Uri? Referrer)? _opening;
+
+	// The load waiting for the hidden browser's next page (see NextLoadAsync).
+	private PendingLoad? _load;
 
 	public bool IsWaitingForUser { get; private set; }
 
@@ -63,8 +71,14 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 			var page = await NavigateAsync(browser, url, referrer, ct);
 			if (page.Check)
 			{
-				// Cloudflare's automatic check reloads the page when it passes.
+				// Cloudflare's automatic check reloads the page when it passes, but by posting its form to it: what
+				// answers that isn't the page (an API that only takes GET says "Method Not Allowed"). With the check
+				// passed, its cookie gets the page itself.
 				page = await WaitForPassAsync(browser, page, s_automaticCheck, ct);
+				if (!page.Check)
+				{
+					page = await NavigateAsync(browser, url, referrer, ct);
+				}
 			}
 
 			if (page.Check)
@@ -95,37 +109,57 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 	private async Task<CoreWebView2> EnsureBrowserAsync()
 	{
 		_environment ??= await CoreWebView2Environment.CreateWithOptionsAsync(null, FileHelper.GetPath("WebView2"), new CoreWebView2EnvironmentOptions());
-		if (_controller is null)
+		if (_browser is null)
 		{
 			var window = CoreWebView2ControllerWindowReference.CreateFromWindowHandle((ulong)windowHandle());
 			_controller = await _environment.CreateCoreWebView2ControllerAsync(window);
 			_controller.IsVisible = false;
-			_controller.CoreWebView2.IsMuted = true;
-			AddReferrer(_controller.CoreWebView2, () => _opening);
+			_browser = _controller.CoreWebView2;
+			_browser.IsMuted = true;
+			AddReferrer(_browser, () => _opening);
+			FollowNavigations(_browser);
 		}
 
-		return _controller.CoreWebView2;
+		return _browser;
 	}
 
 	/// <summary>Opens the page, as from a link on <paramref name="referrer"/>, once it's loaded (its HTML, not its images).</summary>
 	private async Task<PageState> NavigateAsync(CoreWebView2 browser, Uri url, Uri? referrer, CancellationToken ct)
 	{
-		var loaded = NextLoadAsync(browser, url, s_loadTimeout, ct);
+		var loaded = NextLoadAsync(url, s_loadTimeout, ct);
 		_opening = (url, referrer);
-		browser.Navigate(url.AbsoluteUri);
-		await loaded;
+		// Just this page's request is seen (see AddReferrer), not every other the browser makes (e.g. Cloudflare's check's).
+		var filter = referrer is null ? null : url.AbsoluteUri;
+		if (filter is not null)
+		{
+			browser.AddWebResourceRequestedFilter(filter, CoreWebView2WebResourceContext.Document);
+		}
+
+		try
+		{
+			browser.Navigate(url.AbsoluteUri);
+			await loaded;
+		}
+		finally
+		{
+			if (filter is not null)
+			{
+				browser.RemoveWebResourceRequestedFilter(filter, CoreWebView2WebResourceContext.Document);
+			}
+		}
+
 		return await ReadAsync(browser);
 	}
 
 	/// <summary>Waits for Cloudflare's check to pass and reload the page; returns the page as it is then.</summary>
-	private static async Task<PageState> WaitForPassAsync(CoreWebView2 browser, PageState page, TimeSpan timeout, CancellationToken ct)
+	private async Task<PageState> WaitForPassAsync(CoreWebView2 browser, PageState page, TimeSpan timeout, CancellationToken ct)
 	{
 		var deadline = DateTime.UtcNow + timeout;
 		while (page.Check && DateTime.UtcNow < deadline)
 		{
 			try
 			{
-				await NextLoadAsync(browser, new Uri(page.Url), deadline - DateTime.UtcNow, ct);
+				await NextLoadAsync(new Uri(page.Url), deadline - DateTime.UtcNow, ct);
 			}
 			catch (TimeoutException)
 			{
@@ -142,65 +176,78 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 	/// When the browser's next page has loaded its HTML; fails if it couldn't be loaded at all. Only navigations that
 	/// start from now count: not the about:blank the last load ended on, which may still be finishing.
 	/// </summary>
-	private static async Task NextLoadAsync(CoreWebView2 browser, Uri url, TimeSpan timeout, CancellationToken ct)
+	private async Task NextLoadAsync(Uri url, TimeSpan timeout, CancellationToken ct)
 	{
-		var loaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		HashSet<ulong> navigations = [];
-		void OnStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
-		{
-			if (!args.Uri.StartsWith("about:", StringComparison.OrdinalIgnoreCase))
-			{
-				navigations.Add(args.NavigationId);
-			}
-		}
-
-		void OnContentLoaded(CoreWebView2 sender, CoreWebView2DOMContentLoadedEventArgs args)
-		{
-			if (navigations.Contains(args.NavigationId))
-			{
-				loaded.TrySetResult();
-			}
-		}
-
-		void OnCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
-		{
-			// An HTTP error still loads a page (Cloudflare's check is a 403), which DOMContentLoaded reports; only a
-			// failure to connect at all ends here.
-			if (navigations.Contains(args.NavigationId) && !args.IsSuccess && args.HttpStatusCode == 0 &&
-				args.WebErrorStatus != CoreWebView2WebErrorStatus.OperationCanceled)
-			{
-				loaded.TrySetException(new WebPageException($"Couldn't load {url} ({args.WebErrorStatus})."));
-			}
-		}
-
-		browser.NavigationStarting += OnStarting;
-		browser.DOMContentLoaded += OnContentLoaded;
-		browser.NavigationCompleted += OnCompleted;
+		var load = new PendingLoad(url);
+		_load = load;
 		try
 		{
-			await loaded.Task.WaitAsync(timeout, ct);
+			await load.Loaded.Task.WaitAsync(timeout, ct);
 		}
 		finally
 		{
-			browser.NavigationStarting -= OnStarting;
-			browser.DOMContentLoaded -= OnContentLoaded;
-			browser.NavigationCompleted -= OnCompleted;
+			if (_load == load)
+			{
+				_load = null;
+			}
 		}
 	}
 
 	/// <summary>
+	/// Follows the hidden browser's navigations for the load waiting on one (<see cref="NextLoadAsync"/>): subscribed
+	/// once, for the browser's life, rather than for each load.
+	/// </summary>
+	private void FollowNavigations(CoreWebView2 browser)
+	{
+		browser.NavigationStarting += (_, args) =>
+		{
+			if (!args.Uri.StartsWith("about:", StringComparison.OrdinalIgnoreCase))
+			{
+				_load?.Navigations.Add(args.NavigationId);
+			}
+		};
+		browser.DOMContentLoaded += (_, args) =>
+		{
+			if (_load is { } load && load.Navigations.Contains(args.NavigationId))
+			{
+				load.Loaded.TrySetResult();
+			}
+		};
+		browser.NavigationCompleted += (_, args) =>
+		{
+			// An HTTP error still loads a page (Cloudflare's check is a 403), which DOMContentLoaded reports; only a
+			// failure to connect at all ends here.
+			if (_load is { } load && load.Navigations.Contains(args.NavigationId) && !args.IsSuccess && args.HttpStatusCode == 0 &&
+				args.WebErrorStatus != CoreWebView2WebErrorStatus.OperationCanceled)
+			{
+				load.Loaded.TrySetException(new WebPageException($"Couldn't load {load.Url} ({args.WebErrorStatus})."));
+			}
+		};
+	}
+
+	/// <summary>A load waiting for its page: the navigations that may be it (redirects and reloads too).</summary>
+	private sealed class PendingLoad(Uri url)
+	{
+		public Uri Url { get; } = url;
+		public HashSet<ulong> Navigations { get; } = [];
+		public TaskCompletionSource Loaded { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	}
+
+	/// <summary>
 	/// Sends the referrer with the page's request, as it goes out: set on the navigation itself (NavigateWithWebResourceRequest),
-	/// Chromium drops the navigation. Only for the page (its site), not what it loads.
+	/// Chromium drops the navigation. Only for the page (its site), not what it loads; and only for getting it: Cloudflare's
+	/// check posts its answer to the page, and given another referrer it turns the answer down (and asks again, and again).
 	/// </summary>
 	private static void AddReferrer(CoreWebView2 browser, Func<(Uri Url, Uri? Referrer)?> opening)
 	{
-		browser.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.Document);
+		// Requests are only seen while a page is loaded with a referrer, and only its own (see NavigateAsync).
 		browser.WebResourceRequested += (_, args) =>
 		{
-			if (opening() is { Referrer: { } referrer } page && Uri.TryCreate(args.Request.Uri, UriKind.Absolute, out var requested) &&
-				requested.Host == page.Url.Host)
+			var request = args.Request;
+			if (opening() is { Referrer: { } referrer } page && request.Method == "GET" &&
+				Uri.TryCreate(request.Uri, UriKind.Absolute, out var requested) && requested == page.Url)
 			{
-				args.Request.Headers.SetHeader("Referer", referrer.AbsoluteUri);
+				request.Headers.SetHeader("Referer", referrer.AbsoluteUri);
 			}
 		};
 	}
@@ -268,6 +315,10 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 				}
 			};
 			AddReferrer(browser, () => (url, referrer));
+			if (referrer is not null)
+			{
+				browser.AddWebResourceRequestedFilter(url.AbsoluteUri, CoreWebView2WebResourceContext.Document);
+			}
 			browser.Navigate(url.AbsoluteUri);
 		};
 

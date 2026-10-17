@@ -507,7 +507,9 @@ public partial class PluginTesterViewModel : ObservableObject
 			{
 				InfoBarSeverity = InfoBarSeverity.Error;
 				InfoBarTitle = $"{item.Name} failed";
-				InfoBarMessage = item.ErrorDetails;
+				// The failing stage's message; its card has the whole error (with the stack trace).
+				InfoBarMessage = new[] { item.SearchStage, item.EpisodesStage, item.ServersStage }.FirstOrDefault(x => x.IsFailed)?.Message
+					?? "Its card has the details.";
 				StatusMessage = $"{item.Name} failed.";
 			}
 		}
