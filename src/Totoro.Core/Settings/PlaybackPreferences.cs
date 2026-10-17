@@ -21,6 +21,9 @@ public static class PlaybackPreferences
 	public const string EndingSkipKey = "EndingSkipMode";
 	public const string PlayNextKey = "PlayNextAutomatically";
 
+	/// <summary>Preference key holding the id of the anime provider episodes are found on (unless an anime has its own).</summary>
+	public const string AnimeProviderKey = "SelectedAnimeProvider";
+
 	/// <summary>Preference key holding the id of the module whose media player plays episodes.</summary>
 	public const string MediaPlayerKey = "SelectedMediaPlayer";
 	public const string VolumeKey = "PlayerVolume";
@@ -45,6 +48,13 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(PlayNextKey, false);
 			set => preferences.SaveKey(PlayNextKey, value);
+		}
+
+		/// <summary>Id of the anime provider episodes are found on, unless an anime has its own; empty means the first one available.</summary>
+		public Guid SelectedAnimeProvider
+		{
+			get => preferences.ReadKey<Guid>(AnimeProviderKey);
+			set => preferences.SaveKey(AnimeProviderKey, value);
 		}
 
 		/// <summary>Module id of the media player episodes play in; empty means the first one available.</summary>

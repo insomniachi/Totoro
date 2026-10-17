@@ -71,7 +71,7 @@ public partial class App : Application
 				// A module provides its tracker and metadata provider as a pair, so one setting picks both.
 				services.RegisterFactory<IAnimeTracker>(AnimeDatabasePreferences.Key);
 				services.RegisterFactory<IAnimeMetadataProvider>(AnimeDatabasePreferences.Key);
-				services.RegisterFactory<IAnimeProvider>("SelectedAnimeProvider");
+				services.RegisterFactory<IAnimeProvider>(PlaybackPreferences.AnimeProviderKey);
 				services.RegisterFactory<IMediaPlayer>(PlaybackPreferences.MediaPlayerKey);
 				services.RegisterFactory<ITorrentStreamer>("SelectedTorrentStreamer");
 				services.RegisterFactory<IChatModel>("SelectedChatModel");

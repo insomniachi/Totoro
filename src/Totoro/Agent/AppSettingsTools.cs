@@ -5,6 +5,7 @@ using Totoro.Core.Agent;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
 
@@ -19,6 +20,9 @@ public sealed record AppSettings(
 	IReadOnlyList<string> AnimeDatabases,
 	[property: Description("Whether changes to the user's list (in the anime database) are made on their other lists too: the other databases they're signed in to.")]
 	bool SyncOtherLists,
+	[property: Description("Where episodes are found (unless an anime has its own); one of animeProviders. Empty when none is installed: they come as plugins (install_plugin).")]
+	string AnimeProvider,
+	IReadOnlyList<string> AnimeProviders,
 	[property: Description("Where episodes play; one of mediaPlayers. The built-in player offers skipping and the next episode over the video, and can be controlled with the playback tools.")]
 	string MediaPlayer,
 	IReadOnlyList<string> MediaPlayers,
@@ -52,6 +56,7 @@ public sealed class AppSettingsTools(
 	IPreferences preferences,
 	IAppearanceService appearance,
 	IFactory<IAnimeTracker, Guid> trackers,
+	IFactory<IAnimeProvider, Guid> providers,
 	IFactory<IMediaPlayer, Guid> players,
 	IEnumerable<Descriptor> modules,
 	IEnumerable<IModuleSettings> moduleSettings,
@@ -59,12 +64,14 @@ public sealed class AppSettingsTools(
 	IEnumerable<IAccount> accounts)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database (and keeping other lists in sync), media player, skipping, playing the next episode, startup page.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, startup page.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
 		var selected = databases.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? databases.FirstOrDefault();
 		var startupPages = pages.Where(x => !x.IsFooter).ToList();
+		var animeProviders = GetAnimeProviders();
+		var animeProvider = animeProviders.FirstOrDefault(x => x.Id == preferences.SelectedAnimeProvider) ?? animeProviders.FirstOrDefault();
 		var mediaPlayers = GetMediaPlayers();
 		var mediaPlayer = mediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? mediaPlayers.FirstOrDefault();
 		return new AppSettings(
@@ -73,6 +80,8 @@ public sealed class AppSettingsTools(
 			selected?.Name ?? "",
 			[.. databases.Select(x => x.Name)],
 			preferences.SyncOtherLists,
+			animeProvider?.Name ?? "",
+			[.. animeProviders.Select(x => x.Name)],
 			mediaPlayer?.Name ?? "",
 			[.. mediaPlayers.Select(x => x.Name)],
 			preferences.OpeningSkipMode,
@@ -89,6 +98,7 @@ public sealed class AppSettingsTools(
 		AppBackdrop? backdrop = null,
 		[Description("One of animeDatabases from get_app_settings.")] string? animeDatabase = null,
 		[Description("Whether changes to the user's list are made on their other lists too.")] bool? syncOtherLists = null,
+		[Description("One of animeProviders from get_app_settings.")] string? animeProvider = null,
 		[Description("One of mediaPlayers from get_app_settings.")] string? mediaPlayer = null,
 		SkipMode? openingSkipMode = null,
 		SkipMode? endingSkipMode = null,
@@ -100,6 +110,18 @@ public sealed class AppSettingsTools(
 			var databases = trackers.CreateAll().ToList();
 			preferences.SelectedAnimeDatabase = databases.FirstOrDefault(x => x.Name.Equals(animeDatabase, StringComparison.OrdinalIgnoreCase))?.Id
 				?? throw new AgentToolException($"There's no anime database called {animeDatabase}; they're {string.Join(", ", databases.Select(x => x.Name))}.");
+		}
+
+		if (animeProvider is not null)
+		{
+			var animeProviders = GetAnimeProviders();
+			if (animeProviders.Count == 0)
+			{
+				throw new AgentToolException("No anime provider is installed: they come as plugins. Use list_plugins and install_plugin to get one.");
+			}
+
+			preferences.SelectedAnimeProvider = animeProviders.FirstOrDefault(x => x.Name.Equals(animeProvider, StringComparison.OrdinalIgnoreCase))?.Id
+				?? throw new AgentToolException($"There's no anime provider called {animeProvider}; they're {string.Join(", ", animeProviders.Select(x => x.Name))}.");
 		}
 
 		if (mediaPlayer is not null)
@@ -212,12 +234,17 @@ public sealed class AppSettingsTools(
 	}
 
 	/// <summary>The media players, named as their modules are.</summary>
-	private List<NamedPlayer> GetMediaPlayers()
+	private List<NamedModule> GetAnimeProviders()
 	{
-		return [.. players.CreateAll().Select(x => new NamedPlayer(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
+		return [.. providers.CreateAll().DistinctBy(x => x.Id).Select(x => new NamedModule(x.Id, x.Name))];
 	}
 
-	private sealed record NamedPlayer(Guid Id, string Name);
+	private List<NamedModule> GetMediaPlayers()
+	{
+		return [.. players.CreateAll().Select(x => new NamedModule(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
+	}
+
+	private sealed record NamedModule(Guid Id, string Name);
 
 	private IAccount FindAccount(string service)
 	{

@@ -4,6 +4,7 @@ using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
@@ -14,6 +15,11 @@ namespace Totoro.ViewModels;
 // ToString is what screen readers announce for each ComboBox item, so it returns the label rather than the record dump.
 
 public sealed record AnimeDatabaseOption(Guid Id, string Name)
+{
+	public override string ToString() => Name;
+}
+
+public sealed record AnimeProviderOption(Guid Id, string Name)
 {
 	public override string ToString() => Name;
 }
@@ -59,6 +65,7 @@ public partial class SettingsViewModel : ObservableObject
 		IEnumerable<NavigationItemViewModel> navigationItems,
 		IPreferences preferences,
 		IFactory<IAnimeTracker, Guid> trackers,
+		IFactory<IAnimeProvider, Guid> providers,
 		IFactory<IMediaPlayer, Guid> players,
 		IEnumerable<Descriptor> modules,
 		IEnumerable<IAccount> accounts,
@@ -93,6 +100,9 @@ public partial class SettingsViewModel : ObservableObject
 
 		OpeningSkip = SkipModes.First(x => x.Value == preferences.OpeningSkipMode);
 		EndingSkip = SkipModes.First(x => x.Value == preferences.EndingSkipMode);
+		// Anime providers come as plugins: on a fresh install there are none (see HasAnimeProviders).
+		AnimeProviders = [.. providers.CreateAll().DistinctBy(x => x.Id).Select(x => new AnimeProviderOption(x.Id, x.Name))];
+		AnimeProvider = AnimeProviders.FirstOrDefault(x => x.Id == preferences.SelectedAnimeProvider) ?? AnimeProviders.FirstOrDefault();
 		// Named as their modules are (the built-in player's own name reads "the built-in player").
 		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
@@ -125,6 +135,23 @@ public partial class SettingsViewModel : ObservableObject
 		if (value is not null && value.Id != _preferences.SelectedAnimeDatabase)
 		{
 			_preferences.SelectedAnimeDatabase = value.Id;
+		}
+	}
+
+	public IReadOnlyList<AnimeProviderOption> AnimeProviders { get; }
+
+	/// <summary>Whether any anime provider is installed: they come as plugins.</summary>
+	public bool HasAnimeProviders => AnimeProviders.Count > 0;
+
+	/// <summary>The anime provider episodes are found on, unless an anime has its own (its anime settings).</summary>
+	[ObservableProperty]
+	public partial AnimeProviderOption? AnimeProvider { get; set; }
+
+	partial void OnAnimeProviderChanged(AnimeProviderOption? value)
+	{
+		if (value is not null && value.Id != _preferences.SelectedAnimeProvider)
+		{
+			_preferences.SelectedAnimeProvider = value.Id;
 		}
 	}
 

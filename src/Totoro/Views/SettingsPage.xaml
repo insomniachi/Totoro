@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Totoro.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:navigation="using:Totoro.Core.Navigation"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
@@ -95,6 +96,32 @@
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="Playback" />
+
+            <toolkit:SettingsCard Description="Where episodes are found. Providers come as plugins; an anime can use another one in its own settings." Header="Anime provider">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xEA86;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <Grid>
+                    <ComboBox
+                        MinWidth="200"
+                        ItemsSource="{x:Bind ViewModel.AnimeProviders}"
+                        SelectedItem="{x:Bind ViewModel.AnimeProvider, Mode=TwoWay}"
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasAnimeProviders)}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AnimeProviderOption">
+                                <TextBlock Text="{x:Bind Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <!--  None installed yet (a fresh install): where to get one  -->
+                    <Button
+                        MinWidth="120"
+                        Command="{x:Bind ViewModel.OpenPluginsCommand}"
+                        Content="Get one from Plugins"
+                        Style="{ThemeResource AccentButtonStyle}"
+                        Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasAnimeProviders)}" />
+                </Grid>
+            </toolkit:SettingsCard>
 
             <toolkit:SettingsCard Description="Where episodes play. The built-in player offers skipping the opening and the next episode over the video; mpv is an app of its own, with its own settings and shaders." Header="Media player">
                 <toolkit:SettingsCard.HeaderIcon>
