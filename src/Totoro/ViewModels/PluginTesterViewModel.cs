@@ -24,8 +24,6 @@ public sealed partial class StageItemViewModel : ObservableObject
 	public string Name { get; }
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(Glyph))]
-	[NotifyPropertyChangedFor(nameof(StatusDisplay))]
 	[NotifyPropertyChangedFor(nameof(IsPassed))]
 	[NotifyPropertyChangedFor(nameof(IsFailed))]
 	[NotifyPropertyChangedFor(nameof(IsRunning))]
@@ -44,24 +42,6 @@ public sealed partial class StageItemViewModel : ObservableObject
 
 	[ObservableProperty]
 	public partial string DurationText { get; set; } = "";
-
-	public string Glyph => Status switch
-	{
-		PluginTestStageStatus.Passed => "\uE73E",    // CheckMark
-		PluginTestStageStatus.Failed => "\uE711",    // Dismiss / Cross
-		PluginTestStageStatus.Running => "\uE768",   // Play / in progress
-		PluginTestStageStatus.Skipped => "\uE71A",   // Skip
-		_ => "\uE823"                                // Clock
-	};
-
-	public string StatusDisplay => Status switch
-	{
-		PluginTestStageStatus.Passed => "Passed",
-		PluginTestStageStatus.Failed => "Failed",
-		PluginTestStageStatus.Running => "Running...",
-		PluginTestStageStatus.Skipped => "Skipped",
-		_ => "Pending"
-	};
 }
 
 public sealed partial class PluginTestItemViewModel : ObservableObject
@@ -76,8 +56,8 @@ public sealed partial class PluginTestItemViewModel : ObservableObject
 		Description = pluginInfo?.Description ?? "";
 
 		SearchStage = new StageItemViewModel("Search");
-		EpisodesStage = new StageItemViewModel("GetEpisodes");
-		ServersStage = new StageItemViewModel("GetServers");
+		EpisodesStage = new StageItemViewModel("Episodes");
+		ServersStage = new StageItemViewModel("Video servers");
 	}
 
 	public IAnimeProvider Provider { get; }
@@ -86,6 +66,9 @@ public sealed partial class PluginTestItemViewModel : ObservableObject
 	public string Version { get; }
 	public bool IsDev { get; }
 	public string Description { get; }
+
+	/// <summary>e.g. "Version 1.0.0 · Dev plugin".</summary>
+	public string VersionText => IsDev ? $"Version {Version} · Dev plugin" : $"Version {Version}";
 
 	public StageItemViewModel SearchStage { get; }
 	public StageItemViewModel EpisodesStage { get; }
@@ -97,7 +80,6 @@ public sealed partial class PluginTestItemViewModel : ObservableObject
 	private void RunTest() => OnRunSingle?.Invoke(this);
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(OverallStatusGlyph))]
 	[NotifyPropertyChangedFor(nameof(OverallStatusText))]
 	[NotifyPropertyChangedFor(nameof(IsPassed))]
 	[NotifyPropertyChangedFor(nameof(IsFailed))]
@@ -110,35 +92,20 @@ public sealed partial class PluginTestItemViewModel : ObservableObject
 	public bool IsRunning => OverallStatus == PluginTestStageStatus.Running;
 	public bool IsNotStarted => OverallStatus == PluginTestStageStatus.NotStarted;
 
-	public string OverallStatusGlyph => OverallStatus switch
-	{
-		PluginTestStageStatus.Passed => "\uE73E",
-		PluginTestStageStatus.Failed => "\uE711",
-		PluginTestStageStatus.Running => "\uE768",
-		_ => "\uE823"
-	};
-
 	public string OverallStatusText => OverallStatus switch
 	{
-		PluginTestStageStatus.Passed => "PASSED",
-		PluginTestStageStatus.Failed => "FAILED",
-		PluginTestStageStatus.Running => "TESTING",
-		_ => "NOT TESTED"
+		PluginTestStageStatus.Passed => "Passed",
+		PluginTestStageStatus.Failed => "Failed",
+		PluginTestStageStatus.Running => "Testing…",
+		_ => "Not tested"
 	};
 
 	[ObservableProperty]
 	public partial string TotalDurationText { get; set; } = "";
 
+	/// <summary>Whether the card shows each stage's result and what it found.</summary>
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(ExpandButtonText))]
-	[NotifyPropertyChangedFor(nameof(ExpandChevronGlyph))]
 	public partial bool IsExpanded { get; set; }
-
-	public string ExpandButtonText => IsExpanded ? "Hide details" : "Show details";
-	public string ExpandChevronGlyph => IsExpanded ? "\uE70E" : "\uE70D"; // ChevronUp vs ChevronDown
-
-	[RelayCommand]
-	private void ToggleExpanded() => IsExpanded = !IsExpanded;
 
 	[ObservableProperty]
 	public partial string ShowsDetails { get; set; } = "";
@@ -318,17 +285,8 @@ public partial class PluginTesterViewModel : ObservableObject
 
 		SelectedFilterOption = FilterOptions.FirstOrDefault();
 
-		if (!HasProviders)
-		{
-			InfoBarIsOpen = true;
-			InfoBarSeverity = InfoBarSeverity.Informational;
-			InfoBarTitle = "No anime plugins detected";
-			InfoBarMessage = "There are no anime provider plugins installed or loaded. Install plugins from the Plugins page to test them.";
-		}
-		else
-		{
-			InfoBarIsOpen = false;
-		}
+		// With none, the page's empty state says so (and leads to the Plugins page).
+		InfoBarIsOpen = false;
 	}
 
 	[RelayCommand]

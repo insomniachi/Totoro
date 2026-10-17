@@ -4,570 +4,250 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:Totoro.Helpers"
+    xmlns:tester="using:Totoro.Views.PluginTester"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:Totoro.ViewModels">
 
-    <Grid RowSpacing="12" Padding="0,0,16,16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Page.Resources>
+        <!--  The test's details: what each stage found, or why it failed  -->
+        <Style x:Key="DetailsTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Cascadia Mono, Consolas" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="IsTextSelectionEnabled" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Page.Resources>
 
-        <!-- Top Notification Banner -->
-        <InfoBar
-            Grid.Row="0"
-            IsOpen="{x:Bind ViewModel.InfoBarIsOpen, Mode=OneWay}"
-            Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
-            Title="{x:Bind ViewModel.InfoBarTitle, Mode=OneWay}"
-            Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}">
-            <InfoBar.ActionButton>
-                <Button
-                    Content="Open Plugins"
-                    Command="{x:Bind ViewModel.GoToPluginsCommand}"
-                    Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasProviders), Mode=OneWay}" />
-            </InfoBar.ActionButton>
-        </InfoBar>
+    <!--  Laid out like Settings: cards 4 apart, a section's header 4 above its cards and 24 below what's before it  -->
+    <ScrollView>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16"
+            Spacing="4">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Plugin tester" />
+            <TextBlock
+                Margin="0,8,0,24"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Checks that anime providers work: each one searches for a show, gets its episodes, and finds video servers for an episode."
+                TextWrapping="Wrap" />
 
-        <!-- Header -->
-        <Grid Grid.Row="1" ColumnSpacing="16" VerticalAlignment="Center">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+            <!--  Collapsed while closed (a closed info bar keeps its margin); open, 24 above the next section like one  -->
+            <InfoBar
+                Margin="0,0,0,20"
+                IsOpen="{x:Bind ViewModel.InfoBarIsOpen, Mode=TwoWay}"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.InfoBarIsOpen), Mode=OneWay}"
+                Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}"
+                Severity="{x:Bind ViewModel.InfoBarSeverity, Mode=OneWay}"
+                Title="{x:Bind ViewModel.InfoBarTitle, Mode=OneWay}" />
 
-            <StackPanel Spacing="2">
-                <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Anime plugin tester" />
-                <TextBlock
-                    Style="{ThemeResource CaptionTextBlockStyle}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Verify that anime provider plugins can find shows, fetch episodes, and resolve video stream servers." />
-            </StackPanel>
-
-            <Button
-                Grid.Column="1"
-                Command="{x:Bind ViewModel.LoadProvidersCommand}"
-                ToolTipService.ToolTip="Reload installed plugins">
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon Glyph="&#xE72C;" FontSize="14" />
-                    <TextBlock Text="Reload plugins" />
-                </StackPanel>
-            </Button>
-        </Grid>
-
-        <!-- Test Controls Bar -->
-        <Border
-            Grid.Row="2"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8"
-            Padding="16">
-            <StackPanel Spacing="12">
-                <Grid ColumnSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="260" />
-                        <ColumnDefinition Width="220" />
-                        <ColumnDefinition Width="110" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Show Title Input -->
-                    <TextBox
-                        Grid.Column="0"
-                        Header="Show title to test"
-                        PlaceholderText="e.g. Frieren, One Piece, Naruto..."
-                        Text="{x:Bind ViewModel.ShowTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <!-- Provider Selection -->
-                    <ComboBox
-                        Grid.Column="1"
-                        Header="Target provider"
-                        HorizontalAlignment="Stretch"
-                        ItemsSource="{x:Bind ViewModel.FilterOptions, Mode=OneWay}"
-                        SelectedItem="{x:Bind ViewModel.SelectedFilterOption, Mode=TwoWay}" />
-
-                    <!-- Timeout Input -->
-                    <NumberBox
-                        Grid.Column="2"
-                        Header="Timeout (s)"
-                        Minimum="1"
-                        Maximum="120"
-                        SpinButtonPlacementMode="Compact"
-                        Value="{x:Bind ViewModel.TimeoutSeconds, Mode=TwoWay}" />
-
-                    <!-- Run Tests Button -->
-                    <Button
-                        Grid.Column="3"
-                        VerticalAlignment="Bottom"
-                        Style="{ThemeResource AccentButtonStyle}"
-                        Command="{x:Bind ViewModel.RunTestsCommand}"
-                        IsEnabled="{x:Bind ViewModel.CanRun, Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE768;" FontSize="14" />
-                            <TextBlock Text="Run tests" />
+            <TextBlock
+                Margin="0,0,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="Test" />
+            <!--  A card like a SettingsCard (its fill, stroke and corners), with a surface's 16 padding  -->
+            <Border
+                Padding="16"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource ControlCornerRadius}">
+                <StackPanel Spacing="12">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="140" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox
+                            Header="Show"
+                            PlaceholderText="A show's title, e.g. Frieren"
+                            Text="{x:Bind ViewModel.ShowTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ComboBox
+                            Grid.Column="1"
+                            HorizontalAlignment="Stretch"
+                            Header="Provider"
+                            ItemsSource="{x:Bind ViewModel.FilterOptions, Mode=OneWay}"
+                            SelectedItem="{x:Bind ViewModel.SelectedFilterOption, Mode=TwoWay}" />
+                        <NumberBox
+                            Grid.Column="2"
+                            Header="Timeout (seconds)"
+                            Maximum="300"
+                            Minimum="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.TimeoutSeconds, Mode=TwoWay}" />
+                        <!--  8 between buttons, per the Windows guidelines  -->
+                        <StackPanel
+                            Grid.Column="3"
+                            VerticalAlignment="Bottom"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button
+                                MinWidth="120"
+                                Command="{x:Bind ViewModel.RunTestsCommand}"
+                                Content="Run tests"
+                                IsEnabled="{x:Bind ViewModel.CanRun, Mode=OneWay}"
+                                Style="{ThemeResource AccentButtonStyle}" />
+                            <Button
+                                MinWidth="120"
+                                Command="{x:Bind ViewModel.CancelTestsCommand}"
+                                Content="Cancel"
+                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
                         </StackPanel>
-                    </Button>
+                    </Grid>
 
-                    <!-- Cancel Button -->
-                    <Button
-                        Grid.Column="4"
-                        VerticalAlignment="Bottom"
-                        Command="{x:Bind ViewModel.CancelTestsCommand}"
-                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE711;" FontSize="14" />
-                            <TextBlock Text="Cancel" />
-                        </StackPanel>
-                    </Button>
-                </Grid>
-
-                <!-- Busy Progress and Status -->
-                <StackPanel
-                    Spacing="6"
-                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}">
-                    <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" />
-                    <TextBlock
-                        Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                        Style="{ThemeResource CaptionTextBlockStyle}"
-                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                </StackPanel>
-            </StackPanel>
-        </Border>
-
-        <!-- Main Content Area: List of Providers or Empty State -->
-        <ScrollViewer Grid.Row="3" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="12">
-
-                <!-- Empty State (No Providers Installed) -->
-                <Border
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="32"
-                    HorizontalAlignment="Stretch"
-                    Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasProviders), Mode=OneWay}">
-                    <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <FontIcon Glyph="&#xEA86;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                    <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}">
+                        <ProgressBar IsIndeterminate="True" />
                         <TextBlock
-                            Text="No anime provider plugins found"
-                            Style="{ThemeResource SubtitleTextBlockStyle}"
-                            HorizontalAlignment="Center" />
-                        <TextBlock
-                            Text="Totoro uses plugins to search for shows and stream episodes. Install community plugins from the Plugins page to enable streaming and test them here."
-                            Style="{ThemeResource BodyTextBlockStyle}"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            TextWrapping="Wrap"
-                            TextAlignment="Center"
-                            MaxWidth="500" />
-                        <Button
-                            Content="Go to Plugins page"
-                            Style="{ThemeResource AccentButtonStyle}"
-                            Command="{x:Bind ViewModel.GoToPluginsCommand}"
-                            HorizontalAlignment="Center"
-                            Margin="0,8,0,0" />
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
                     </StackPanel>
-                </Border>
+                </StackPanel>
+            </Border>
 
-                <!-- Providers Test Cards List -->
-                <ItemsControl
-                    ItemsSource="{x:Bind ViewModel.Plugins, Mode=OneWay}"
-                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasProviders), Mode=OneWay}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="12" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:PluginTestItemViewModel">
-                            <Border
-                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="16">
-                                <StackPanel Spacing="14">
-                                    <!-- Top row: Provider info, Overall status badge, and Run Single button -->
-                                    <Grid ColumnSpacing="12" VerticalAlignment="Center">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
+            <Grid Margin="0,24,0,4">
+                <TextBlock
+                    VerticalAlignment="Bottom"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                    Text="Anime providers" />
+                <Button
+                    HorizontalAlignment="Right"
+                    AutomationProperties.Name="Reload providers"
+                    Command="{x:Bind ViewModel.LoadProvidersCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                        <TextBlock Text="Reload" />
+                    </StackPanel>
+                </Button>
+            </Grid>
 
-                                        <!-- Provider Icon -->
-                                        <Border
-                                            Width="36"
-                                            Height="36"
-                                            CornerRadius="6"
-                                            Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                            BorderThickness="1"
-                                            VerticalAlignment="Center">
-                                            <FontIcon
-                                                Glyph="&#xEA86;"
-                                                FontSize="18"
-                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center" />
-                                        </Border>
+            <toolkit:SettingsCard
+                Description="Anime providers come as plugins. Install one, then test it here."
+                Header="No anime providers"
+                Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasProviders), Mode=OneWay}">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xEA86;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <Button
+                    MinWidth="120"
+                    Command="{x:Bind ViewModel.GoToPluginsCommand}"
+                    Content="Open Plugins"
+                    Style="{ThemeResource AccentButtonStyle}" />
+            </toolkit:SettingsCard>
 
-                                        <!-- Provider Name & Tags -->
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                                <TextBlock Text="{x:Bind Name}" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="16" />
-                                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
-                                                    <TextBlock Text="{x:Bind Version}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                </Border>
-                                                <Border
-                                                    Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                                    CornerRadius="4"
-                                                    Padding="6,1"
-                                                    VerticalAlignment="Center"
-                                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsDev)}">
-                                                    <TextBlock Text="DEV" FontSize="10" Foreground="White" FontWeight="SemiBold" />
-                                                </Border>
-                                                <TextBlock
-                                                    Text="{x:Bind TotalDurationText, Mode=OneWay}"
-                                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    VerticalAlignment="Center"
-                                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(TotalDurationText), Mode=OneWay}" />
-                                            </StackPanel>
-                                            <TextBlock
-                                                Text="{x:Bind Description}"
-                                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                TextTrimming="CharacterEllipsis"
-                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Description)}" />
-                                        </StackPanel>
-
-                                        <!-- Overall Status Badge -->
-                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                            <!-- Passed State Pill -->
-                                            <Border
-                                                Background="{ThemeResource SystemFillColorSuccessBrush}"
-                                                CornerRadius="12"
-                                                Padding="10,4"
-                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsPassed), Mode=OneWay}">
-                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <FontIcon Glyph="&#xE73E;" FontSize="12" Foreground="White" />
-                                                    <TextBlock Text="PASSED" FontSize="11" FontWeight="SemiBold" Foreground="White" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- Failed State Pill -->
-                                            <Border
-                                                Background="{ThemeResource SystemFillColorCriticalBrush}"
-                                                CornerRadius="12"
-                                                Padding="10,4"
-                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsFailed), Mode=OneWay}">
-                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <FontIcon Glyph="&#xE711;" FontSize="12" Foreground="White" />
-                                                    <TextBlock Text="FAILED" FontSize="11" FontWeight="SemiBold" Foreground="White" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- Running State Pill -->
-                                            <Border
-                                                Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                                CornerRadius="12"
-                                                Padding="10,4"
-                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsRunning), Mode=OneWay}">
-                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <ProgressRing Width="12" Height="12" IsActive="True" Foreground="White" />
-                                                    <TextBlock Text="TESTING" FontSize="11" FontWeight="SemiBold" Foreground="White" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- Not Started Pill -->
-                                            <Border
-                                                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="12"
-                                                Padding="10,4"
-                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsNotStarted), Mode=OneWay}">
-                                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <FontIcon Glyph="&#xE823;" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                    <TextBlock Text="NOT TESTED" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
-
-                                        <!-- Retest Single Provider Button -->
-                                        <Button
-                                            Grid.Column="3"
-                                            VerticalAlignment="Center"
-                                            Command="{x:Bind RunTestCommand}"
-                                            ToolTipService.ToolTip="Test this provider individually">
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                                <FontIcon Glyph="&#xE768;" FontSize="12" />
-                                                <TextBlock Text="Test" />
-                                            </StackPanel>
-                                        </Button>
-                                    </Grid>
-
-                                    <!-- 3-Stage Pipeline: Search -> GetEpisodes -> GetServers -->
-                                    <Grid ColumnSpacing="12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Stage 1: Search -->
-                                        <Border
-                                            Grid.Column="0"
-                                            Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                            CornerRadius="6"
-                                            Padding="12,10">
-                                            <StackPanel Spacing="6">
-                                                <Grid>
-                                                    <TextBlock Text="1. Search" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="13" />
-                                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-                                                        <TextBlock
-                                                            Text="{x:Bind SearchStage.DurationText, Mode=OneWay}"
-                                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(SearchStage.DurationText), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE73E;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(SearchStage.IsPassed), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE711;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(SearchStage.IsFailed), Mode=OneWay}" />
-                                                        <ProgressRing
-                                                            Width="12"
-                                                            Height="12"
-                                                            IsActive="True"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(SearchStage.IsRunning), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE823;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(SearchStage.IsNotStarted), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE71A;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(SearchStage.IsSkipped), Mode=OneWay}" />
-                                                    </StackPanel>
-                                                </Grid>
-                                                <TextBlock
-                                                    Text="{x:Bind SearchStage.Message, Mode=OneWay}"
-                                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    TextWrapping="Wrap" />
-                                            </StackPanel>
-                                        </Border>
-
-                                        <!-- Stage 2: GetEpisodes -->
-                                        <Border
-                                            Grid.Column="1"
-                                            Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                            CornerRadius="6"
-                                            Padding="12,10">
-                                            <StackPanel Spacing="6">
-                                                <Grid>
-                                                    <TextBlock Text="2. GetEpisodes" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="13" />
-                                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-                                                        <TextBlock
-                                                            Text="{x:Bind EpisodesStage.DurationText, Mode=OneWay}"
-                                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(EpisodesStage.DurationText), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE73E;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(EpisodesStage.IsPassed), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE711;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(EpisodesStage.IsFailed), Mode=OneWay}" />
-                                                        <ProgressRing
-                                                            Width="12"
-                                                            Height="12"
-                                                            IsActive="True"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(EpisodesStage.IsRunning), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE823;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(EpisodesStage.IsNotStarted), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE71A;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(EpisodesStage.IsSkipped), Mode=OneWay}" />
-                                                    </StackPanel>
-                                                </Grid>
-                                                <TextBlock
-                                                    Text="{x:Bind EpisodesStage.Message, Mode=OneWay}"
-                                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    TextWrapping="Wrap" />
-                                            </StackPanel>
-                                        </Border>
-
-                                        <!-- Stage 3: GetServers -->
-                                        <Border
-                                            Grid.Column="2"
-                                            Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                            CornerRadius="6"
-                                            Padding="12,10">
-                                            <StackPanel Spacing="6">
-                                                <Grid>
-                                                    <TextBlock Text="3. GetServers" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="13" />
-                                                    <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-                                                        <TextBlock
-                                                            Text="{x:Bind ServersStage.DurationText, Mode=OneWay}"
-                                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ServersStage.DurationText), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE73E;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ServersStage.IsPassed), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE711;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ServersStage.IsFailed), Mode=OneWay}" />
-                                                        <ProgressRing
-                                                            Width="12"
-                                                            Height="12"
-                                                            IsActive="True"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ServersStage.IsRunning), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE823;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ServersStage.IsNotStarted), Mode=OneWay}" />
-                                                        <FontIcon
-                                                            Glyph="&#xE71A;"
-                                                            FontSize="12"
-                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ServersStage.IsSkipped), Mode=OneWay}" />
-                                                    </StackPanel>
-                                                </Grid>
-                                                <TextBlock
-                                                    Text="{x:Bind ServersStage.Message, Mode=OneWay}"
-                                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                    TextWrapping="Wrap" />
-                                            </StackPanel>
-                                        </Border>
-                                    </Grid>
-
-                                    <!-- Expandable Details / Error Section -->
-                                    <StackPanel Spacing="8">
-                                        <HyperlinkButton
-                                            Command="{x:Bind ToggleExpandedCommand}"
-                                            Padding="0"
-                                            HorizontalAlignment="Left">
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                                <FontIcon Glyph="{x:Bind ExpandChevronGlyph, Mode=OneWay}" FontSize="10" />
-                                                <TextBlock Text="{x:Bind ExpandButtonText, Mode=OneWay}" FontSize="12" />
-                                            </StackPanel>
-                                        </HyperlinkButton>
-
-                                        <!-- Details Content when Expanded -->
-                                        <StackPanel
-                                            Spacing="8"
-                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsExpanded), Mode=OneWay}">
-
-                                            <!-- Error Display if any -->
-                                            <Border
-                                                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                                BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="6"
-                                                Padding="12"
-                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasError), Mode=OneWay}">
-                                                <StackPanel Spacing="4">
-                                                    <TextBlock
-                                                        Text="Error Details"
-                                                        Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                                        FontSize="12" />
-                                                    <TextBlock
-                                                        Text="{x:Bind ErrorDetails, Mode=OneWay}"
-                                                        FontFamily="Consolas"
-                                                        FontSize="11"
-                                                        IsTextSelectionEnabled="True"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- Discovered Shows -->
-                                            <Border
-                                                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                                CornerRadius="6"
-                                                Padding="12"
-                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ShowsDetails), Mode=OneWay}">
-                                                <StackPanel Spacing="4">
-                                                    <TextBlock Text="Discovered Shows" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="12" />
-                                                    <TextBlock
-                                                        Text="{x:Bind ShowsDetails, Mode=OneWay}"
-                                                        FontFamily="Consolas"
-                                                        FontSize="11"
-                                                        IsTextSelectionEnabled="True"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- Discovered Episodes -->
-                                            <Border
-                                                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                                CornerRadius="6"
-                                                Padding="12"
-                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(EpisodesDetails), Mode=OneWay}">
-                                                <StackPanel Spacing="4">
-                                                    <TextBlock Text="Discovered Episodes" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="12" />
-                                                    <TextBlock
-                                                        Text="{x:Bind EpisodesDetails, Mode=OneWay}"
-                                                        FontFamily="Consolas"
-                                                        FontSize="11"
-                                                        IsTextSelectionEnabled="True"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-                                            </Border>
-
-                                            <!-- Discovered Servers -->
-                                            <Border
-                                                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                                                CornerRadius="6"
-                                                Padding="12"
-                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ServersDetails), Mode=OneWay}">
-                                                <StackPanel Spacing="4">
-                                                    <TextBlock Text="Discovered Video Servers" Style="{ThemeResource BodyStrongTextBlockStyle}" FontSize="12" />
-                                                    <TextBlock
-                                                        Text="{x:Bind ServersDetails, Mode=OneWay}"
-                                                        FontFamily="Consolas"
-                                                        FontSize="11"
-                                                        IsTextSelectionEnabled="True"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-                                            </Border>
-                                        </StackPanel>
-                                    </StackPanel>
+            <ItemsControl
+                IsTabStop="False"
+                ItemsSource="{x:Bind ViewModel.Plugins, Mode=OneWay}"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasProviders), Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PluginTestItemViewModel">
+                        <toolkit:SettingsExpander Header="{x:Bind Name}" IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}">
+                            <toolkit:SettingsExpander.HeaderIcon>
+                                <FontIcon Glyph="&#xEA86;" />
+                            </toolkit:SettingsExpander.HeaderIcon>
+                            <toolkit:SettingsExpander.Description>
+                                <StackPanel Spacing="4">
+                                    <TextBlock
+                                        Text="{x:Bind Description}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Description)}" />
+                                    <TextBlock Text="{x:Bind VersionText}" />
                                 </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
-    </Grid>
+                            </toolkit:SettingsExpander.Description>
+
+                            <!--  The result, and a test of just this provider  -->
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <tester:TestStatusIcon VerticalAlignment="Center" Status="{x:Bind OverallStatus, Mode=OneWay}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind OverallStatusText, Mode=OneWay}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind TotalDurationText, Mode=OneWay}"
+                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(TotalDurationText), Mode=OneWay}" />
+                                <Button
+                                    MinWidth="120"
+                                    Margin="4,0,0,0"
+                                    Command="{x:Bind RunTestCommand}"
+                                    Content="Test" />
+                            </StackPanel>
+
+                            <toolkit:SettingsExpander.Items>
+                                <toolkit:SettingsCard Description="{x:Bind SearchStage.Message, Mode=OneWay}" Header="{x:Bind SearchStage.Name}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind SearchStage.DurationText, Mode=OneWay}" />
+                                        <tester:TestStatusIcon VerticalAlignment="Center" Status="{x:Bind SearchStage.Status, Mode=OneWay}" />
+                                    </StackPanel>
+                                </toolkit:SettingsCard>
+                                <toolkit:SettingsCard Description="{x:Bind EpisodesStage.Message, Mode=OneWay}" Header="{x:Bind EpisodesStage.Name}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind EpisodesStage.DurationText, Mode=OneWay}" />
+                                        <tester:TestStatusIcon VerticalAlignment="Center" Status="{x:Bind EpisodesStage.Status, Mode=OneWay}" />
+                                    </StackPanel>
+                                </toolkit:SettingsCard>
+                                <toolkit:SettingsCard Description="{x:Bind ServersStage.Message, Mode=OneWay}" Header="{x:Bind ServersStage.Name}">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{x:Bind ServersStage.DurationText, Mode=OneWay}" />
+                                        <tester:TestStatusIcon VerticalAlignment="Center" Status="{x:Bind ServersStage.Status, Mode=OneWay}" />
+                                    </StackPanel>
+                                </toolkit:SettingsCard>
+
+                                <!--  What went wrong, and what each stage found  -->
+                                <toolkit:SettingsCard
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    Header="Error"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasError), Mode=OneWay}">
+                                    <TextBlock
+                                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                        Style="{StaticResource DetailsTextStyle}"
+                                        Text="{x:Bind ErrorDetails, Mode=OneWay}" />
+                                </toolkit:SettingsCard>
+                                <toolkit:SettingsCard
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    Header="Shows found"
+                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ShowsDetails), Mode=OneWay}">
+                                    <TextBlock Style="{StaticResource DetailsTextStyle}" Text="{x:Bind ShowsDetails, Mode=OneWay}" />
+                                </toolkit:SettingsCard>
+                                <toolkit:SettingsCard
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    Header="Episodes found"
+                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(EpisodesDetails), Mode=OneWay}">
+                                    <TextBlock Style="{StaticResource DetailsTextStyle}" Text="{x:Bind EpisodesDetails, Mode=OneWay}" />
+                                </toolkit:SettingsCard>
+                                <toolkit:SettingsCard
+                                    HorizontalContentAlignment="Stretch"
+                                    ContentAlignment="Vertical"
+                                    Header="Video servers found"
+                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ServersDetails), Mode=OneWay}">
+                                    <TextBlock Style="{StaticResource DetailsTextStyle}" Text="{x:Bind ServersDetails, Mode=OneWay}" />
+                                </toolkit:SettingsCard>
+                            </toolkit:SettingsExpander.Items>
+                        </toolkit:SettingsExpander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollView>
 </Page>

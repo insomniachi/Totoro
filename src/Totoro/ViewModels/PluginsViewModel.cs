@@ -31,15 +31,41 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	/// <summary>Why it can't be installed, for a plugin needing a later version of Totoro.</summary>
 	public string IncompatibleText => IsCompatible ? "" : $"Needs Totoro {Item.MinAppVersion}";
 
+	/// <summary>The card's version line, e.g. "Version 1.0.0 installed · 1.1.0 available".</summary>
+	public string VersionText
+	{
+		get
+		{
+			var text = !IsInstalled ? $"Version {Version}"
+				: HasUpdate ? $"Version {InstalledVersion} installed · {Version} available"
+				: $"Version {InstalledVersion} installed";
+			if (IsDev)
+			{
+				text += " · Dev plugin";
+			}
+
+			return IsCompatible ? text : $"{text} · {IncompatibleText}";
+		}
+	}
+
+	/// <summary>Whether <see cref="StatusText"/> is an error.</summary>
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled), nameof(ShowsNotInstalled))]
+	[NotifyPropertyChangedFor(nameof(ShowsStatus))]
+	public partial bool HasError { get; set; }
+
+	/// <summary>Whether there's a status that isn't an error (those show in red).</summary>
+	public bool ShowsStatus => !HasError && StatusText.Length > 0;
+
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled), nameof(ShowsNotInstalled), nameof(ShowsUninstall), nameof(VersionText))]
 	public partial bool IsInstalled { get; set; }
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled))]
+	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled), nameof(VersionText))]
 	public partial bool HasUpdate { get; set; }
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(VersionText))]
 	public partial string InstalledVersion { get; set; } = "";
 
 	[ObservableProperty]
@@ -50,13 +76,14 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	public bool ShowsInstalled => IsInstalled && !HasUpdate;
 	public bool ShowsNotInstalled => !IsInstalled;
 
-	/// <summary>Dev plugins are loaded from their own folders: removed there, not here.</summary>
-	public bool CanUninstall => !IsDev;
+	/// <summary>Installed, and not a dev plugin: those are loaded from their own folders, and removed there.</summary>
+	public bool ShowsUninstall => IsInstalled && !IsDev;
 
 	[ObservableProperty]
 	public partial double Progress { get; set; }
 
 	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(ShowsStatus))]
 	public partial string StatusText { get; set; } = "";
 
 	/// <summary>Shows the plugin's state as the plugin manager has it, e.g. after an agent installed it.</summary>
@@ -69,6 +96,7 @@ public sealed partial class PluginItemViewModel : ObservableObject
 		if (!IsBusy && Item.LoadError is { } error)
 		{
 			StatusText = $"Didn't load: {error}";
+			HasError = true;
 		}
 	}
 
@@ -78,17 +106,19 @@ public sealed partial class PluginItemViewModel : ObservableObject
 		if (string.IsNullOrWhiteSpace(DownloadUrl)) return;
 
 		IsBusy = true;
-		StatusText = HasUpdate ? "Updating..." : "Installing...";
+		HasError = false;
+		StatusText = HasUpdate ? "Updating…" : "Installing…";
 
 		try
 		{
 			var progressHandler = new Progress<double>(p => Progress = p * 100);
 			await _pluginManager.InstallAsync(Item, progressHandler);
-			StatusText = "Installed! Restart required.";
+			StatusText = "Installed. Restart Totoro to use it.";
 		}
 		catch (Exception ex)
 		{
-			StatusText = $"Error: {ex.Message}";
+			StatusText = ex.Message;
+			HasError = true;
 		}
 		finally
 		{
@@ -101,16 +131,18 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	public async Task UninstallAsync()
 	{
 		IsBusy = true;
-		StatusText = "Uninstalling...";
+		HasError = false;
+		StatusText = "Uninstalling…";
 
 		try
 		{
 			await _pluginManager.UninstallAsync(Id);
-			StatusText = "Uninstalled. Restart required.";
+			StatusText = "Uninstalled. Restart Totoro to finish.";
 		}
 		catch (Exception ex)
 		{
-			StatusText = $"Error: {ex.Message}";
+			StatusText = ex.Message;
+			HasError = true;
 		}
 		finally
 		{
@@ -171,7 +203,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 	public async Task LoadCatalogAsync()
 	{
 		IsLoadingCatalog = true;
-		StatusMessage = "Fetching plugins catalog...";
+		StatusMessage = "";
 		CatalogPlugins.Clear();
 		_allCatalogItems.Clear();
 
@@ -184,11 +216,10 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 				_allCatalogItems.Add(vm);
 			}
 			ApplyFilter();
-			StatusMessage = $"Found {items.Count} plugin(s) in catalog.";
 		}
 		catch (Exception ex)
 		{
-			StatusMessage = $"Failed to load catalog: {ex.Message}";
+			StatusMessage = $"Couldn't load the catalog: {ex.Message}";
 		}
 		finally
 		{
@@ -204,17 +235,16 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 		if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath)) return;
 
 		IsLoadingCatalog = true;
-		StatusMessage = $"Installing {Path.GetFileName(filePath)}...";
+		StatusMessage = "";
 
 		try
 		{
-			var installed = await _pluginManager.InstallFromFileAsync(filePath);
+			await _pluginManager.InstallFromFileAsync(filePath);
 			await LoadCatalogAsync();
-			StatusMessage = $"Successfully installed {installed.Name} v{installed.Version}! Restart Totoro to load.";
 		}
 		catch (Exception ex)
 		{
-			StatusMessage = $"Failed to install package: {ex.Message}";
+			StatusMessage = $"Couldn't install {Path.GetFileName(filePath)}: {ex.Message}";
 		}
 		finally
 		{

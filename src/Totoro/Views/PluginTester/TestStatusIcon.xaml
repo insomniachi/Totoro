@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.PluginTester.TestStatusIcon"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  One of these shows: a test (or a stage of one) passed, failed, is running, was skipped, or hasn't run  -->
+    <Grid Width="16" Height="16">
+        <FontIcon
+            FontSize="16"
+            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+            Glyph="&#xEC61;"
+            Visibility="{x:Bind VisibleIf(Status, 'Passed'), Mode=OneWay}" />
+        <FontIcon
+            FontSize="16"
+            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+            Glyph="&#xEB90;"
+            Visibility="{x:Bind VisibleIf(Status, 'Failed'), Mode=OneWay}" />
+        <ProgressRing
+            Width="16"
+            Height="16"
+            IsActive="True"
+            Visibility="{x:Bind VisibleIf(Status, 'Running'), Mode=OneWay}" />
+        <FontIcon
+            FontSize="16"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            Glyph="&#xE738;"
+            Visibility="{x:Bind VisibleIf(Status, 'Skipped'), Mode=OneWay}" />
+        <FontIcon
+            FontSize="16"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            Glyph="&#xE823;"
+            Visibility="{x:Bind VisibleIf(Status, 'NotStarted'), Mode=OneWay}" />
+    </Grid>
+</UserControl>

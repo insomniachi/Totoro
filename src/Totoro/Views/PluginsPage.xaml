@@ -7,191 +7,145 @@
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:Totoro.ViewModels">
 
-    <Grid RowSpacing="12" Padding="0,0,16,16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <!--  Laid out like Settings: cards 4 apart, a section's header 4 above its cards and 24 below what's before it  -->
+    <ScrollView>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16"
+            Spacing="4">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Plugins" />
+            <TextBlock
+                Margin="0,8,0,24"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Plugins add anime providers, the sites Totoro finds episodes on, and more. Install them from the catalog, or from a .totoro-plugin file."
+                TextWrapping="Wrap" />
 
-        <!-- Top Notification Banner when Restart is Needed -->
-        <InfoBar
-            Grid.Row="0"
-            IsOpen="{x:Bind ViewModel.RequiresRestart, Mode=OneWay}"
-            Severity="Warning"
-            Title="Restart Required"
-            Message="A plugin was installed, updated, or removed. Restart Totoro to apply changes.">
-            <InfoBar.ActionButton>
-                <Button
-                    Content="Restart Totoro"
-                    Command="{x:Bind ViewModel.RestartAppCommand}"
-                    Style="{ThemeResource AccentButtonStyle}" />
-            </InfoBar.ActionButton>
-        </InfoBar>
+            <!--  Collapsed while closed (a closed info bar keeps its margin); open, 24 above the next section like one  -->
+            <InfoBar
+                Margin="0,0,0,20"
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.RequiresRestart, Mode=OneWay}"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.RequiresRestart), Mode=OneWay}"
+                Message="Plugins were installed or uninstalled. They take effect once Totoro restarts."
+                Severity="Informational"
+                Title="Restart to apply changes">
+                <InfoBar.ActionButton>
+                    <Button Command="{x:Bind ViewModel.RestartAppCommand}" Content="Restart now" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <InfoBar
+                Margin="0,0,0,20"
+                IsOpen="{x:Bind helpers:CommonConverters.IsAny(ViewModel.StatusMessage), Mode=OneWay}"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.StatusMessage), Mode=OneWay}"
+                Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                Severity="Error" />
 
-        <!-- Header with Title, Search & Action Buttons -->
-        <Grid Grid.Row="1" ColumnSpacing="16" VerticalAlignment="Center">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Spacing="2">
-                <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Plugins &amp; Extensions" />
+            <Grid Margin="0,0,0,4" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <TextBlock
-                    Style="{ThemeResource CaptionTextBlockStyle}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Discover, install, and manage community anime providers and extensions." />
-            </StackPanel>
+                    VerticalAlignment="Bottom"
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                    Text="Catalog" />
+                <!--  8 between buttons, per the Windows guidelines  -->
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <AutoSuggestBox
+                        Width="240"
+                        AutomationProperties.Name="Search plugins"
+                        PlaceholderText="Search plugins"
+                        QueryIcon="Find"
+                        Text="{x:Bind ViewModel.SearchFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button
+                        AutomationProperties.Name="Refresh"
+                        Command="{x:Bind ViewModel.LoadCatalogCommand}"
+                        ToolTipService.ToolTip="Refresh">
+                        <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                    </Button>
+                    <Button AutomationProperties.Name="Test plugins" Command="{x:Bind ViewModel.TestPluginsCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xF196;" />
+                            <TextBlock Text="Test plugins" />
+                        </StackPanel>
+                    </Button>
+                    <Button AutomationProperties.Name="Install from file" Click="OnBrowsePluginPackageClicked">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE8E5;" />
+                            <TextBlock Text="Install from file" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                <TextBox
-                    Width="200"
-                    PlaceholderText="Search plugins..."
-                    Text="{x:Bind ViewModel.SearchFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoadingCatalog), Mode=OneWay}" />
 
-                <Button
-                    Command="{x:Bind ViewModel.LoadCatalogCommand}"
-                    ToolTipService.ToolTip="Refresh online catalog">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE72C;" FontSize="14" />
-                        <TextBlock Text="Refresh" />
-                    </StackPanel>
-                </Button>
-
-                <Button
-                    Command="{x:Bind ViewModel.TestPluginsCommand}"
-                    ToolTipService.ToolTip="Test anime plugins functionality">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xF196;" FontSize="14" />
-                        <TextBlock Text="Test plugins" />
-                    </StackPanel>
-                </Button>
-
-                <Button
-                    Click="OnBrowsePluginPackageClicked"
-                    ToolTipService.ToolTip="Install a .totoro-plugin package from your computer">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE8B7;" FontSize="14" />
-                        <TextBlock Text="Install from file..." />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </Grid>
-
-        <!-- Online Catalog / Store -->
-        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="12">
-                <ProgressBar
-                    IsIndeterminate="True"
-                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoadingCatalog), Mode=OneWay}"
-                    HorizontalAlignment="Stretch" />
-
-                <TextBlock
-                    Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                    Style="{ThemeResource CaptionTextBlockStyle}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
-                <ItemsControl ItemsSource="{x:Bind ViewModel.CatalogPlugins, Mode=OneWay}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="8" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:PluginItemViewModel">
-                            <toolkit:SettingsCard
-                                Header="{x:Bind Name}"
-                                Description="{x:Bind Description}">
-                                <toolkit:SettingsCard.HeaderIcon>
-                                    <FontIcon Glyph="&#xEA86;" />
-                                </toolkit:SettingsCard.HeaderIcon>
-
-                                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                                    <!-- Update Available State -->
-                                    <StackPanel
-                                        Orientation="Horizontal"
-                                        Spacing="8"
-                                        VerticalAlignment="Center"
-                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUpdate), Mode=OneWay}">
-                                        <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2">
-                                            <TextBlock Text="UPDATE AVAILABLE" FontSize="10" Foreground="White" />
-                                        </Border>
-                                        <TextBlock
-                                            Text="{x:Bind Version}"
-                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                            VerticalAlignment="Center" />
-                                        <Button
-                                            Content="Update"
-                                            Style="{ThemeResource AccentButtonStyle}"
-                                            IsEnabled="{x:Bind IsCompatible}"
-                                            Command="{x:Bind InstallOrUpdateCommand}" />
-                                    </StackPanel>
-
-                                    <!-- Installed & Up-to-date State -->
-                                    <StackPanel
-                                        Orientation="Horizontal"
-                                        Spacing="8"
-                                        VerticalAlignment="Center"
-                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsInstalled), Mode=OneWay}">
-                                        <TextBlock
-                                            Text="{x:Bind InstalledVersion, Mode=OneWay}"
-                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            VerticalAlignment="Center" />
-                                        <Border
-                                            Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                            CornerRadius="4"
-                                            Padding="6,2"
-                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsDev)}">
-                                            <TextBlock Text="DEV ACTIVE" FontSize="10" Foreground="White" />
-                                        </Border>
-                                        <Button
-                                            Content="Uninstall"
-                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(CanUninstall)}"
-                                            Command="{x:Bind UninstallCommand}" />
-                                    </StackPanel>
-
-                                    <!-- Not Installed State -->
-                                    <StackPanel
-                                        Orientation="Horizontal"
-                                        Spacing="8"
-                                        VerticalAlignment="Center"
-                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsNotInstalled), Mode=OneWay}">
-                                        <TextBlock
-                                            Text="{x:Bind Version}"
-                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            VerticalAlignment="Center" />
-                                        <TextBlock
-                                            Text="{x:Bind IncompatibleText}"
-                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                            VerticalAlignment="Center"
-                                            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(IsCompatible)}" />
-                                        <Button
-                                            Content="Install"
-                                            Style="{ThemeResource AccentButtonStyle}"
-                                            IsEnabled="{x:Bind IsCompatible}"
-                                            Command="{x:Bind InstallOrUpdateCommand}" />
-                                    </StackPanel>
-
-                                    <!-- Progress & Status Text -->
-                                    <ProgressBar
-                                        IsIndeterminate="True"
-                                        Width="60"
-                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsBusy), Mode=OneWay}" />
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.CatalogPlugins, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PluginItemViewModel">
+                        <toolkit:SettingsCard Header="{x:Bind Name}">
+                            <toolkit:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEA86;" />
+                            </toolkit:SettingsCard.HeaderIcon>
+                            <toolkit:SettingsCard.Description>
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{x:Bind Description}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{x:Bind VersionText, Mode=OneWay}" TextWrapping="Wrap" />
                                     <TextBlock
                                         Text="{x:Bind StatusText, Mode=OneWay}"
-                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                        VerticalAlignment="Center" />
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsStatus), Mode=OneWay}" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind StatusText, Mode=OneWay}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasError), Mode=OneWay}" />
                                 </StackPanel>
-                            </toolkit:SettingsCard>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
-    </Grid>
+                            </toolkit:SettingsCard.Description>
+
+                            <!--  8 between buttons, per the Windows guidelines  -->
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <ProgressRing
+                                    Width="20"
+                                    Height="20"
+                                    IsActive="True"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsBusy), Mode=OneWay}" />
+                                <Button
+                                    MinWidth="120"
+                                    Command="{x:Bind InstallOrUpdateCommand}"
+                                    Content="Update"
+                                    IsEnabled="{x:Bind IsCompatible}"
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUpdate), Mode=OneWay}" />
+                                <Button
+                                    MinWidth="120"
+                                    Command="{x:Bind UninstallCommand}"
+                                    Content="Uninstall"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUninstall), Mode=OneWay}" />
+                                <Button
+                                    MinWidth="120"
+                                    Command="{x:Bind InstallOrUpdateCommand}"
+                                    Content="Install"
+                                    IsEnabled="{x:Bind IsCompatible}"
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsNotInstalled), Mode=OneWay}" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollView>
 </Page>
