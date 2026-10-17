@@ -314,6 +314,8 @@
                     SizeChanged="OnSeekTrackSizeChanged">
                     <Canvas x:Name="TrackSections" />
                     <Canvas x:Name="PlayedSections" />
+                    <!--  A notch where the episode counts as watched, until it has been (see DrawWatchedMark)  -->
+                    <Canvas x:Name="WatchedMark" />
                 </Grid>
                 <Slider
                     x:Name="SeekBar"
@@ -334,12 +336,26 @@
                     </Slider.Resources>
                 </Slider>
 
-                <TextBlock
+                <!--  The length, with a check once the episode has been marked watched  -->
+                <StackPanel
                     Grid.Column="2"
+                    HorizontalAlignment="Right"
                     VerticalAlignment="Center"
-                    Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind ViewModel.DurationText, Mode=OneWay}"
-                    TextAlignment="Right" />
+                    Orientation="Horizontal"
+                    Spacing="4">
+                    <FontIcon
+                        AutomationProperties.Name="Marked as watched"
+                        FontSize="12"
+                        Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                        Glyph="&#xEC61;"
+                        ToolTipService.ToolTip="Marked as watched"
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsWatched), Mode=OneWay}" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.DurationText, Mode=OneWay}"
+                        TextAlignment="Right" />
+                </StackPanel>
             </Grid>
 
             <Grid Grid.Row="1" ColumnSpacing="8">

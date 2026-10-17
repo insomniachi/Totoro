@@ -111,4 +111,13 @@ public sealed partial class MainWindow : Window
 
 	/// <summary>The playback position, while an episode plays (see WatchService.PlaybackFraction).</summary>
 	public static Visibility VisibleWhilePlaying(double fraction) => fraction >= 0 ? Visibility.Visible : Visibility.Collapsed;
+
+	// The notch on the playback position where the episode counts as watched (see WatchService.CountsAtFraction): the
+	// columns either side of it, and only until it's been marked.
+
+	public static Visibility VisibleWhileNotMarked(double countsAt, bool isMarked) => countsAt >= 0 && !isMarked ? Visibility.Visible : Visibility.Collapsed;
+
+	public static GridLength Before(double countsAt) => new(Math.Clamp(countsAt, 0, 1), GridUnitType.Star);
+
+	public static GridLength After(double countsAt) => new(1 - Math.Clamp(countsAt, 0, 1), GridUnitType.Star);
 }

@@ -61,6 +61,18 @@ internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, 
 		}
 	}
 
+	/// <summary>Where the ending starts, once the segments are known and if there's one.</summary>
+	public TimeSpan? EndingStart
+	{
+		get
+		{
+			lock (_lock)
+			{
+				return _segments.FirstOrDefault(x => x.Type == MediaSegmentType.Ending)?.Start;
+			}
+		}
+	}
+
 	public void OnPosition(TimeSpan position)
 	{
 		// In it and not nearly over.

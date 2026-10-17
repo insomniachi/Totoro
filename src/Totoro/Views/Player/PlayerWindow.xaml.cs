@@ -162,6 +162,9 @@ public sealed partial class PlayerWindow : Window
 				SetSeekBar(() => SeekBar.Maximum = ViewModel.Duration);
 				DrawSections();
 				break;
+			case nameof(PlayerViewModel.WatchedAt) or nameof(PlayerViewModel.IsWatched):
+				DrawWatchedMark();
+				break;
 			case nameof(PlayerViewModel.Chapters):
 				DrawSections();
 				break;
@@ -362,6 +365,35 @@ public sealed partial class PlayerWindow : Window
 		}
 
 		UpdatePlayed(_isDraggingSeekBar ? SeekBar.Value : ViewModel.Position);
+		DrawWatchedMark();
+	}
+
+	/// <summary>
+	/// A notch across the track where the episode counts as watched, while it hasn't been yet (then a check by its length
+	/// says it has).
+	/// </summary>
+	private void DrawWatchedMark()
+	{
+		WatchedMark.Children.Clear();
+		var width = SeekTrack.ActualWidth;
+		if (ViewModel.IsWatched || ViewModel.WatchedAt < 0 || ViewModel.Duration <= 0 || width <= 0)
+		{
+			return;
+		}
+
+		const double NotchHeight = 12;
+		var notch = new Rectangle
+		{
+			Width = 2,
+			Height = NotchHeight,
+			RadiusX = 1,
+			RadiusY = 1,
+			Fill = new SolidColorBrush(Colors.White),
+			IsHitTestVisible = false,
+		};
+		Canvas.SetLeft(notch, ToTrackX(Math.Clamp(ViewModel.WatchedAt / ViewModel.Duration, 0, 1), width) - notch.Width / 2);
+		Canvas.SetTop(notch, (SeekTrack.ActualHeight - NotchHeight) / 2);
+		WatchedMark.Children.Add(notch);
 	}
 
 	/// <summary>Brightens the track up to <paramref name="seconds"/>.</summary>

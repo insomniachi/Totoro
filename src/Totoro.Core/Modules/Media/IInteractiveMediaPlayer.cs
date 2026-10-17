@@ -38,6 +38,12 @@ public interface IInteractiveMediaPlayer : IMediaPlayer
 	/// </summary>
 	void ShowStatus(string? text, bool isError = false);
 
+	/// <summary>
+	/// Shows on the seek bar where the episode counts as watched (<paramref name="countsAt"/>, null when it isn't known
+	/// yet), and whether it has been marked watched.
+	/// </summary>
+	void SetWatchedMark(TimeSpan? countsAt, bool isWatched);
+
 	/// <summary>The episodes of what's playing, for the player's episode list and its previous and next buttons.</summary>
 	void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes);
 

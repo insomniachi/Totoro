@@ -11,7 +11,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:navigation="using:Totoro.Core.Navigation"
-    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:uiNavigation="using:Totoro.UI.Navigation"
@@ -139,6 +138,7 @@
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
 
                                             <!--  Standard Icon  -->
@@ -171,8 +171,8 @@
                                                 Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}"
                                                 Visibility="Collapsed" />
 
-                                            <!--  Title, Message, ActionButton  -->
-                                            <primitives:InfoBarPanel Grid.Column="1" VerticalAlignment="Top">
+                                            <!--  Title, and the Message on its own line under it (side by side, they ran together in a card this narrow)  -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Top">
                                                 <TextBlock
                                                     x:Name="Title"
                                                     FontWeight="SemiBold"
@@ -185,11 +185,7 @@
                                                     Style="{ThemeResource BodyTextBlockStyle}"
                                                     Text="{TemplateBinding Message}"
                                                     TextWrapping="WrapWholeWords" />
-                                                <ContentPresenter
-                                                    x:Name="ActionButtonPresenter"
-                                                    Margin="0,6,0,0"
-                                                    Content="{TemplateBinding ActionButton}" />
-                                            </primitives:InfoBarPanel>
+                                            </StackPanel>
 
                                             <!--  ContentArea: where InfoBar.Content renders (EpisodeName, Metadata, Source, ProgressBar)  -->
                                             <ContentPresenter
@@ -199,6 +195,16 @@
                                                 Margin="0,6,0,0"
                                                 Content="{TemplateBinding Content}"
                                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                                            <!--  ActionButton (Cancel, Play episode 6...) at the bottom, below the progress; 12 from the content above, and none of it while the button's hidden  -->
+                                            <ContentPresenter
+                                                x:Name="ActionButtonPresenter"
+                                                Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Margin="0,12,0,0"
+                                                HorizontalAlignment="Right"
+                                                Content="{TemplateBinding ActionButton}"
+                                                Visibility="{Binding ActionButton.Visibility, RelativeSource={RelativeSource TemplatedParent}}" />
                                         </Grid>
                                     </Grid>
 
@@ -240,6 +246,8 @@
                                                 <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconBackground}" />
                                                 <Setter Target="StandardIcon.Text" Value="&#xF13E;" />
                                                 <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}" />
+                                                <!--  The check says the episode was marked watched (or the like), instead of words  -->
+                                                <Setter Target="StandardIconArea.Visibility" Value="Visible" />
                                             </VisualState.Setters>
                                         </VisualState>
                                     </VisualStateGroup>
@@ -611,16 +619,56 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <ProgressBar
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Playback position"
-                            Maximum="1"
-                            Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
+                        <!--  The position: green once the episode is marked watched; until then, a notch where it will be  -->
+                        <Grid>
+                            <ProgressBar
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="Playback position"
+                                Maximum="1"
+                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}"
+                                Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}" />
+                            <ProgressBar
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="Playback position, marked as watched"
+                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                Maximum="1"
+                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}"
+                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}" />
+                            <Grid IsHitTestVisible="False" Visibility="{x:Bind local:MainWindow.VisibleWhileNotMarked(ViewModel.Playback.CountsAtFraction, ViewModel.Playback.IsMarkedWatched), Mode=OneWay}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="{x:Bind local:MainWindow.Before(ViewModel.Playback.CountsAtFraction), Mode=OneWay}" />
+                                    <ColumnDefinition Width="{x:Bind local:MainWindow.After(ViewModel.Playback.CountsAtFraction), Mode=OneWay}" />
+                                </Grid.ColumnDefinitions>
+                                <Rectangle
+                                    Grid.Column="1"
+                                    Width="2"
+                                    Height="10"
+                                    Margin="-1,0,0,0"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                                    RadiusX="1"
+                                    RadiusY="1"
+                                    AutomationProperties.Name="Counts as watched here"
+                                    ToolTipService.ToolTip="Counts as watched here" />
+                            </Grid>
+                        </Grid>
                         <Grid Grid.Row="1">
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind ViewModel.Playback.PlaybackTime, Mode=OneWay}" />
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <FontIcon
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="Marked as watched"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                    Glyph="&#xEC61;"
+                                    ToolTipService.ToolTip="Marked as watched"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind ViewModel.Playback.PlaybackTime, Mode=OneWay}" />
+                            </StackPanel>
                             <TextBlock
                                 HorizontalAlignment="Right"
                                 Foreground="{ThemeResource TextFillColorTertiaryBrush}"

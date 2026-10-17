@@ -102,6 +102,8 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 
 	public void ShowStatus(string? text, bool isError = false) => _window?.ViewModel.ShowStatus(text, isError);
 
+	public void SetWatchedMark(TimeSpan? countsAt, bool isWatched) => _window?.ViewModel.SetWatchedMark(countsAt, isWatched);
+
 	public void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes) => _window?.ViewModel.SetEpisodes(episodes);
 
 	/// <summary>The window's view model, opening the window if it isn't.</summary>

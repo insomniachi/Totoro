@@ -64,6 +64,19 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	/// <summary>The video's length, e.g. "24:01"; empty until it's known.</summary>
 	[ObservableProperty] public partial string DurationText { get; private set; } = "";
 
+	/// <summary>Where the episode counts as watched, in seconds, marked on the seek bar; -1 when it isn't known.</summary>
+	[ObservableProperty] public partial double WatchedAt { get; private set; } = -1;
+
+	/// <summary>Whether the episode has been marked watched: a check by its length.</summary>
+	[ObservableProperty] public partial bool IsWatched { get; private set; }
+
+	/// <inheritdoc cref="IInteractiveMediaPlayer.SetWatchedMark"/>
+	public void SetWatchedMark(TimeSpan? countsAt, bool isWatched)
+	{
+		WatchedAt = countsAt?.TotalSeconds ?? -1;
+		IsWatched = isWatched;
+	}
+
 	/// <summary>From 0 to 100.</summary>
 	[ObservableProperty] public partial double Volume { get; set; } = volume;
 

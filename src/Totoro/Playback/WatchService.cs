@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -26,7 +27,16 @@ public enum PlaybackStatusKind
 /// <param name="IsActive">Whether an episode is being got ready or is playing (even with the status bar closed); when it
 /// isn't, Kind and Message say how the last one went.</param>
 /// <param name="Position">Where playback is, e.g. "12:34 / 24:01", while an episode is playing.</param>
-public sealed record PlaybackStatus(bool IsActive, PlaybackStatusKind Kind, string Title, string Message, string? Position = null);
+public sealed record PlaybackStatus(
+	bool IsActive,
+	PlaybackStatusKind Kind,
+	string Title,
+	string Message,
+	string? Position = null,
+	[property: Description("Where in the episode playing it counts as watched (it's marked then, as it plays, if most of the way there was played rather than skipped).")]
+	string? CountsAsWatchedAt = null,
+	[property: Description("Whether the episode playing has been marked watched.")]
+	bool IsMarkedWatched = false);
 
 /// <summary>An episode to play, as a command parameter.</summary>
 public sealed record EpisodeToWatch(AnimeModel Anime, int Number);
@@ -61,10 +71,19 @@ public sealed partial class WatchService(
 	private static readonly TimeSpan s_saveInterval = TimeSpan.FromSeconds(10);
 	private static readonly TimeSpan s_nextEpisodeCountdown = TimeSpan.FromSeconds(5);
 	private static readonly TimeSpan s_positionInterval = TimeSpan.FromSeconds(1);
+
+	// A jump in the playback position longer than this is a seek, not playing.
+	private static readonly TimeSpan s_seekStep = TimeSpan.FromSeconds(5);
+
+	// How much of the way to the ending (from where it was started) must have been played for it to count as watched.
+	private const double PlayedToCount = 0.5;
 	// How long a message (e.g. "Marked episode 5 as watched") stays over the video in the built-in player.
 	private static readonly TimeSpan s_playerMessageDuration = TimeSpan.FromSeconds(4);
 
 	private CancellationTokenSource? _cancellation;
+
+	// Marking the episode playing watched (see MarkWatchedWhilePlayingAsync), once it's started: whether it was, and the message.
+	private Task<(bool Marked, string Message)>? _marked;
 	private Action? _action;
 
 	// The player of the episode playing, or of the last one.
@@ -128,11 +147,21 @@ public sealed partial class WatchService(
 	/// <summary>Whether rich playback or anime details are available to show in the status bar card.</summary>
 	[ObservableProperty] public partial bool HasDetails { get; private set; }
 
+	/// <summary>Where in the episode playing it counts as watched, e.g. "21:30"; empty until its length is known.</summary>
+	[ObservableProperty] public partial string CountsAsWatchedAt { get; private set; } = "";
+
+	/// <summary>Where it counts as watched as a fraction of the episode, for a notch on the status bar's progress; -1 until known.</summary>
+	[ObservableProperty] public partial double CountsAtFraction { get; private set; } = -1;
+
+	/// <summary>Whether the episode playing has been marked watched (it is as playback reaches its ending).</summary>
+	[ObservableProperty] public partial bool IsMarkedWatched { get; private set; }
+
 	/// <summary>Raised when the status (what the status bar shows) changes.</summary>
 	public event EventHandler? StatusChanged;
 
 	/// <summary>What it's up to: the status bar's contents, e.g. for an agent.</summary>
-	public PlaybackStatus Status => new(IsActive, Kind, Title, Message, PlaybackTime.Length > 0 ? PlaybackTime : null);
+	public PlaybackStatus Status => new(IsActive, Kind, Title, Message, PlaybackTime.Length > 0 ? PlaybackTime : null,
+		CountsAsWatchedAt.Length > 0 ? CountsAsWatchedAt : null, IsMarkedWatched);
 
 	partial void OnIsActiveChanged(bool value) => StatusChanged?.Invoke(this, EventArgs.Empty);
 	partial void OnAnimeChanged(AnimeModel? value) => UpdateMetadata();
@@ -235,6 +264,8 @@ public sealed partial class WatchService(
 
 		Anime = anime;
 		CurrentEpisode = number;
+		IsMarkedWatched = false;
+		CountsAtFraction = -1;
 		ImageUrl = anime.Image;
 		BannerUrl = anime.BannerImage ?? "";
 		EpisodeName = "";
@@ -374,10 +405,35 @@ public sealed partial class WatchService(
 		var ui = SynchronizationContext.Current;
 		var segments = new SegmentSkipper(player, settings.OpeningSkipMode ?? preferences.OpeningSkipMode, settings.EndingSkipMode ?? preferences.EndingSkipMode, logger);
 		var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		var playing = start > TimeSpan.Zero ? $"Resumed at {start:h\\:mm\\:ss} in {player.Name}." : $"Playing in {player.Name}.";
+		_marked = null;
+		CountsAsWatchedAt = "";
+		CountsAtFraction = -1;
+		(player as IInteractiveMediaPlayer)?.SetWatchedMark(null, false);
+
+		// It's marked watched as playback reaches the ending (or the credits), while it plays, rather than when the player
+		// closes: so it's known before then, and isn't lost if the player is closed early or ends badly. Only once most of
+		// the way there has been played, so skipping ahead to the end doesn't count.
+		var played = TimeSpan.Zero;
+		var marking = false;
+		TimeSpan? shownCountsAt = null;
+
+		void Post(Action action)
+		{
+			if (ui is null)
+			{
+				action();
+			}
+			else
+			{
+				ui.Post(_ => action(), null);
+			}
+		}
 
 		void Save()
 		{
-			if (position > s_minimumProgress && duration > TimeSpan.Zero)
+			// Once it's watched, where in the credits it was stopped isn't kept: the next play starts it from the start.
+			if (!marking && position > s_minimumProgress && duration > TimeSpan.Zero)
 			{
 				progressStore.Save(anime, number, new EpisodeProgress(position, duration));
 			}
@@ -396,20 +452,34 @@ public sealed partial class WatchService(
 
 		void OnPosition(object? sender, TimeSpan value)
 		{
+			// Played, not skipped: the player reports many times a second, so a jump further than this is a seek.
+			var step = value - position;
+			if (step > TimeSpan.Zero && step < s_seekStep)
+			{
+				played += step;
+			}
+
 			position = value;
 			segments.OnPosition(value);
+			if (CountsAt(duration, segments.EndingStart, credits) is { } countsAt && !marking)
+			{
+				if (value >= countsAt && played >= (countsAt - start) * PlayedToCount)
+				{
+					marking = true;
+					Post(() => _ = MarkWatchedWhilePlayingAsync(player, anime, number));
+				}
+				else if (countsAt != shownCountsAt)
+				{
+					shownCountsAt = countsAt;
+					Post(() => ShowCountsAt(player, countsAt, duration));
+				}
+			}
+
 			if (DateTime.Now - lastShown > s_positionInterval)
 			{
 				lastShown = DateTime.Now;
 				var (shownPosition, shownDuration) = (value, duration);
-				if (ui is null)
-				{
-					ShowPosition(shownPosition, shownDuration);
-				}
-				else
-				{
-					ui.Post(_ => ShowPosition(shownPosition, shownDuration), null);
-				}
+				Post(() => ShowPosition(shownPosition, shownDuration));
 			}
 
 			if (DateTime.Now - lastSave > s_saveInterval)
@@ -433,9 +503,7 @@ public sealed partial class WatchService(
 				_ = ListEpisodesAsync(interactive, anime, number, ct);
 			}
 
-			Show(PlaybackStatusKind.Playing, start > TimeSpan.Zero
-						 ? $"Resumed at {start:h\\:mm\\:ss} in {player.Name}."
-						 : $"Playing in {player.Name}. It's marked as watched if you watch to the end.");
+			Show(PlaybackStatusKind.Playing, playing);
 			await stopped.Task.WaitAsync(ct);
 		}
 		finally
@@ -451,40 +519,116 @@ public sealed partial class WatchService(
 			WeakReferenceMessenger.Default.Send(new PlaybackProgressChangedMessage(key));
 		}
 
-		// Watched to the end, give or take the credits.
-		if (duration == TimeSpan.Zero || duration - position > credits)
+		// Not watched (stopped before the ending, or skipped to it): nothing more to do.
+		if (!marking)
 		{
 			Hide();
 			return;
 		}
 
-		Show(PlaybackStatusKind.Progress, $"Marking episode {number} as watched…");
-		await MarkWatchedAsync(anime, number);
-		progressStore.Remove(anime, number);
-		WeakReferenceMessenger.Default.Send(new PlaybackProgressChangedMessage(key));
+		// Marked as it played (see MarkWatchedWhilePlayingAsync); waits for that, if it's still going, or starts it if the
+		// player stopped just as it reached the ending.
+		var (marked, message) = await MarkWatchedWhilePlayingAsync(player, anime, number);
+		if (!marked)
+		{
+			Show(PlaybackStatusKind.Error, message);
+			return;
+		}
 
 		var next = number + 1;
 		if (anime.TotalEpisodes is > 0 and var total && next > total)
 		{
-			Show(PlaybackStatusKind.Success, $"Marked episode {number} as watched. That was the last one.");
+			// Said with the card's colour and the check, not words.
+			Show(PlaybackStatusKind.Success, "");
 			return;
 		}
 
-		await OfferNextAsync(anime, number, next);
+		await OfferNextAsync(anime, next);
+	}
+
+	/// <summary>
+	/// Where playback counts as watched: where the ending starts (if it's known, and in the second half), or else the
+	/// credits' usual length before the end. Null until the episode's length is known.
+	/// </summary>
+	internal static TimeSpan? CountsAt(TimeSpan duration, TimeSpan? endingStart, TimeSpan credits)
+	{
+		if (duration <= TimeSpan.Zero)
+		{
+			return null;
+		}
+
+		return endingStart is { } ending && ending > duration / 2 && ending < duration
+			? ending
+			: duration - credits > TimeSpan.Zero ? duration - credits : duration;
+	}
+
+	/// <summary>Says, while it plays, where the episode will count as watched: so it's known before closing the player.</summary>
+	private void ShowCountsAt(IMediaPlayer player, TimeSpan countsAt, TimeSpan duration)
+	{
+		CountsAsWatchedAt = FormatTime(countsAt, duration);
+		CountsAtFraction = Math.Clamp(countsAt / duration, 0, 1);
+		(player as IInteractiveMediaPlayer)?.SetWatchedMark(countsAt, false);
+	}
+
+	/// <summary>
+	/// Marks the episode watched as playback reaches its ending, and says so in the status bar and over the video; playback
+	/// carries on. The next one is offered when it's over, as before. <see cref="_marked"/> is whether it was, and the
+	/// message saying so (or why not).
+	/// </summary>
+	private Task<(bool Marked, string Message)> MarkWatchedWhilePlayingAsync(IMediaPlayer player, AnimeModel anime, int number)
+	{
+		// Once per playback.
+		if (_marked is { } started)
+		{
+			return started;
+		}
+
+		async Task<(bool, string)> MarkAsync()
+		{
+			string message;
+			bool marked;
+			try
+			{
+				message = await MarkWatchedAsync(anime, number)
+					? $"Marked episode {number} as watched."
+					: $"Episode {number} was already marked as watched.";
+				marked = true;
+				progressStore.Remove(anime, number);
+				WeakReferenceMessenger.Default.Send(new PlaybackProgressChangedMessage(anime.StoreKey));
+				// Shown as a check (in the status bar, and by the length in the built-in player), not said.
+				IsMarkedWatched = true;
+				(player as IInteractiveMediaPlayer)?.SetWatchedMark(null, true);
+			}
+			catch (Exception ex)
+			{
+				// A failure is said, though: it needs explaining.
+				logger.LogWarning(ex, "Couldn't mark episode {Episode} of {Anime} as watched", number, anime.Title);
+				message = $"Couldn't mark episode {number} as watched: {ex.Message}";
+				marked = false;
+				if (Kind == PlaybackStatusKind.Playing)
+				{
+					Show(PlaybackStatusKind.Playing, message);
+				}
+			}
+
+			return (marked, message);
+		}
+
+		return _marked = MarkAsync();
 	}
 
 	/// <summary>
 	/// Offers the next episode: plays it after a countdown if that's the setting, otherwise on request. In the built-in
 	/// player it's offered over the video, where the user is, rather than in the status bar.
 	/// </summary>
-	private async Task OfferNextAsync(AnimeModel anime, int watched, int next)
+	private async Task OfferNextAsync(AnimeModel anime, int next)
 	{
-		void Offer() => Show(PlaybackStatusKind.Success, $"Marked episode {watched} as watched.", $"Play episode {next}",
+		void Offer() => Show(PlaybackStatusKind.Success, "", $"Play episode {next}",
 							 () => _ = WatchAsync(anime, next));
 
 		if (_player is IInteractiveMediaPlayer { IsOpen: true } interactive)
 		{
-			Show(PlaybackStatusKind.Success, $"Marked episode {watched} as watched.");
+			Show(PlaybackStatusKind.Success, "");
 			// Cancelled by Cancel, or the next WatchAsync.
 			var offer = _cancellation = new CancellationTokenSource();
 			if (await interactive.OfferNextAsync($"Episode {next}", preferences.PlayNextAutomatically ? s_nextEpisodeCountdown : null, offer.Token))
@@ -512,7 +656,7 @@ public sealed partial class WatchService(
 		{
 			for (var left = s_nextEpisodeCountdown; left > TimeSpan.Zero; left -= TimeSpan.FromSeconds(1))
 			{
-				Show(PlaybackStatusKind.Progress, $"Marked episode {watched} as watched. Playing episode {next} in {left.TotalSeconds:0}…",
+				Show(PlaybackStatusKind.Progress, $"Playing episode {next} in {left.TotalSeconds:0}…",
 					 "Cancel", Cancel);
 				await Task.Delay(TimeSpan.FromSeconds(1), countdown.Token);
 			}
@@ -531,9 +675,18 @@ public sealed partial class WatchService(
 		_ = WatchAsync(anime, next);
 	}
 
-	private async Task MarkWatchedAsync(AnimeModel anime, int number)
+	/// <summary>
+	/// Marks the anime watched up to the episode. False when it already was: watching an earlier episode again doesn't
+	/// take the list back to it, unless the anime is being rewatched (then it's how far the rewatch has got).
+	/// </summary>
+	private async Task<bool> MarkWatchedAsync(AnimeModel anime, int number)
 	{
 		var current = anime.Tracking;
+		if (current is { } tracked && tracked.WatchedEpisodes >= number && tracked.Status != ListItemStatus.Rewatching)
+		{
+			return false;
+		}
+
 		var completed = anime.TotalEpisodes == number;
 		await tracking.UpdateAsync(anime, new Tracking
 		{
@@ -544,6 +697,7 @@ public sealed partial class WatchService(
 			StartDate = current?.StartDate ?? DateTime.Today,
 			FinishDate = completed ? DateTime.Today : current?.FinishDate,
 		});
+		return true;
 	}
 
 	/// <summary>
@@ -772,6 +926,8 @@ public sealed partial class WatchService(
 		IsOpen = false;
 		Anime = null;
 		CurrentEpisode = 0;
+		IsMarkedWatched = false;
+		CountsAtFraction = -1;
 		ImageUrl = "";
 		BannerUrl = "";
 		EpisodeName = "";
@@ -844,7 +1000,11 @@ public sealed partial class WatchService(
 				break;
 			case PlaybackStatusKind.Success:
 				interactive.ShowStatus(null);
-				_ = interactive.ShowMessageAsync(message, s_playerMessageDuration);
+				if (message.Length > 0)
+				{
+					_ = interactive.ShowMessageAsync(message, s_playerMessageDuration);
+				}
+
 				break;
 			default:
 				interactive.ShowStatus(null);
