@@ -79,6 +79,11 @@ internal static class MalToModelConverter
 			}
 		}
 
+		if (DateTime.TryParseExact(malModel.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end))
+		{
+			model.EndDate = end;
+		}
+
 		if (malModel.RelatedAnime is { Length: > 0 } related)
 		{
 			model.Related =

@@ -24,6 +24,8 @@ public partial class AnimeModel : ObservableObject
 	public int Popularity { get; set; }
 	public DateTime? NextEpisodeAt { get; set; }
 	public int AiredEpisodes { get; set; }
+	/// <summary>When it finished (or will finish) airing, if known: the day, in its own time zone.</summary>
+	public DateTime? EndDate { get; set; }
 	public Season? Season { get; set; }
 	public Guid? ServiceId { get; init; }
 	public string? ServiceName { get; init; }

@@ -86,6 +86,7 @@
                                         <Interactivity:Interaction.Behaviors>
                                             <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
                                             <overlays:NextEpisodeOverlay />
+                                            <overlays:NewEpisodesOverlay />
                                             <overlays:HoverEffectsBehavior />
                                         </Interactivity:Interaction.Behaviors>
                                     </controls:AnimeCard>

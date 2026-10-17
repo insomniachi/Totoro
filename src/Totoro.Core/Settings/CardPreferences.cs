@@ -6,6 +6,7 @@ namespace Totoro.Core.Settings;
 public static class CardPreferences
 {
 	public const string ShowNextEpisodeKey = "ShowNextEpisodeOnCards";
+	public const string ShowNewEpisodesKey = "ShowNewEpisodesOnCards";
 
 	extension(IPreferences preferences)
 	{
@@ -19,6 +20,20 @@ public static class CardPreferences
 			set
 			{
 				preferences.SaveKey(ShowNextEpisodeKey, value);
+				WeakReferenceMessenger.Default.Send(new CardPreferencesChangedMessage());
+			}
+		}
+
+		/// <summary>
+		/// Whether cards of anime being watched show how many aired episodes haven't been watched (while it airs, and for
+		/// a while after). Changing it sends a <see cref="CardPreferencesChangedMessage"/>.
+		/// </summary>
+		public bool ShowNewEpisodesOnCards
+		{
+			get => preferences.ReadKey(ShowNewEpisodesKey, true);
+			set
+			{
+				preferences.SaveKey(ShowNewEpisodesKey, value);
 				WeakReferenceMessenger.Default.Send(new CardPreferencesChangedMessage());
 			}
 		}

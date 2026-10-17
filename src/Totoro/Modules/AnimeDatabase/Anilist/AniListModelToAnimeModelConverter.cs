@@ -43,6 +43,7 @@ public static partial class AniListModelToAnimeModelConverter
             Tracking = ConvertTracking(media.MediaListEntry),
             NextEpisodeAt = ConvertToExactTime(media.NextAiringEpisode?.TimeUntilAiring),
             AiredEpisodes = media.NextAiringEpisode?.Episode - 1 ?? 0,
+            EndDate = ConvertDate(media.EndDate),
             Season = GetSeason(media.Season, media.SeasonYear),
             ServiceId = AnilistModule.Id,
             ServiceName = nameof(AnimeId.Anilist),

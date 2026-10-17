@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.UI.Controls.AnimeCardOverlays.NewEpisodesBadge"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    Margin="8"
+    HorizontalAlignment="Right"
+    VerticalAlignment="Top"
+    IsHitTestVisible="False">
+
+    <!--
+        Fluent's InfoBadge, in a ring of the window's background colour with a shadow under it: on cover art in the
+        accent's own colours (a pink cover, a pink accent), the badge alone is lost; the ring sets it apart from anything.
+    -->
+    <Border
+        Padding="2"
+        Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+        CornerRadius="12">
+        <ui:Effects.Shadow>
+            <media:AttachedCardShadow
+                BlurRadius="8"
+                CornerRadius="12"
+                Opacity="0.5"
+                Offset="0,1"
+                Color="Black" />
+        </ui:Effects.Shadow>
+        <InfoBadge
+            x:Name="Badge"
+            MinWidth="20"
+            MinHeight="20"
+            FontSize="13"
+            FontWeight="Bold" />
+    </Border>
+</UserControl>

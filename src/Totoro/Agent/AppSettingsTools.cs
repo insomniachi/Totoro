@@ -33,6 +33,8 @@ public sealed record AppSettings(
 	bool PlayNextAutomatically,
 	[property: Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")]
 	bool ShowNextEpisodeOnCards,
+	[property: Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched (while it airs, and for four weeks after).")]
+	bool ShowNewEpisodesOnCards,
 	[property: Description("The page the app opens on; one of startupPages.")]
 	string StartupPage,
 	IReadOnlyList<string> StartupPages);
@@ -90,6 +92,7 @@ public sealed class AppSettingsTools(
 			preferences.EndingSkipMode,
 			preferences.PlayNextAutomatically,
 			preferences.ShowNextEpisodeOnCards,
+			preferences.ShowNewEpisodesOnCards,
 			preferences.FindStartupItem(startupPages)?.Label ?? "",
 			[.. startupPages.Select(x => x.Label)]);
 	}
@@ -107,6 +110,7 @@ public sealed class AppSettingsTools(
 		SkipMode? endingSkipMode = null,
 		bool? playNextAutomatically = null,
 		[Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")] bool? showNextEpisodeOnCards = null,
+		[Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched.")] bool? showNewEpisodesOnCards = null,
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null)
 	{
 		if (animeDatabase is not null)
@@ -170,6 +174,11 @@ public sealed class AppSettingsTools(
 		if (showNextEpisodeOnCards is { } showNextEpisode)
 		{
 			preferences.ShowNextEpisodeOnCards = showNextEpisode;
+		}
+
+		if (showNewEpisodesOnCards is { } showNewEpisodes)
+		{
+			preferences.ShowNewEpisodesOnCards = showNewEpisodes;
 		}
 
 		if (playNextAutomatically is { } playNext)

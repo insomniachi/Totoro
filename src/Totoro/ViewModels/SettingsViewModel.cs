@@ -108,6 +108,7 @@ public partial class SettingsViewModel : ObservableObject
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
 		ShowNextEpisodeOnCards = preferences.ShowNextEpisodeOnCards;
+		ShowNewEpisodesOnCards = preferences.ShowNewEpisodesOnCards;
 
 		// Only modules with something to edit.
 		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
@@ -203,6 +204,18 @@ public partial class SettingsViewModel : ObservableObject
 		if (value != _preferences.ShowNextEpisodeOnCards)
 		{
 			_preferences.ShowNextEpisodeOnCards = value;
+		}
+	}
+
+	/// <summary>Whether cards of anime being watched show how many aired episodes haven't been watched.</summary>
+	[ObservableProperty]
+	public partial bool ShowNewEpisodesOnCards { get; set; }
+
+	partial void OnShowNewEpisodesOnCardsChanged(bool value)
+	{
+		if (value != _preferences.ShowNewEpisodesOnCards)
+		{
+			_preferences.ShowNewEpisodesOnCards = value;
 		}
 	}
 
