@@ -115,7 +115,7 @@
                                             </Rectangle>
                                             <Rectangle RadiusX="10" RadiusY="10">
                                                 <Rectangle.Fill>
-                                                    <media:BackdropBlurBrush Amount="24" />
+                                                    <media:BackdropBlurBrush Amount="3" />
                                                 </Rectangle.Fill>
                                             </Rectangle>
                                             <Rectangle Fill="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" Opacity="0.82" />
@@ -661,15 +661,15 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.Name="Playback position"
                                 Maximum="1"
-                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}"
-                                Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}" />
+                                Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}"
+                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
                             <ProgressBar
                                 VerticalAlignment="Center"
                                 AutomationProperties.Name="Playback position, marked as watched"
                                 Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                                 Maximum="1"
-                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}"
-                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}" />
+                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}"
+                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
                             <Grid IsHitTestVisible="False" Visibility="{x:Bind local:MainWindow.VisibleWhileNotMarked(ViewModel.Playback.CountsAtFraction, ViewModel.Playback.IsMarkedWatched), Mode=OneWay}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="{x:Bind local:MainWindow.Before(ViewModel.Playback.CountsAtFraction), Mode=OneWay}" />
@@ -682,10 +682,10 @@
                                     Margin="-1,0,0,0"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
+                                    AutomationProperties.Name="Counts as watched here"
                                     Fill="{ThemeResource TextFillColorSecondaryBrush}"
                                     RadiusX="1"
                                     RadiusY="1"
-                                    AutomationProperties.Name="Counts as watched here"
                                     ToolTipService.ToolTip="Counts as watched here" />
                             </Grid>
                         </Grid>

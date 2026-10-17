@@ -121,7 +121,6 @@ public sealed partial class PlayerWindow : Window
 	public static string FullScreenGlyph(bool isFullScreen) => isFullScreen ? "" : "";
 
 	public static string VolumeText(double volume) => $"{volume:0}";
-
 	public static string WindowTitle(string title) => title.Length > 0 ? $"{title} - Totoro" : "Totoro";
 
 	/// <summary>The width of an episode's progress bar on its 128-wide thumbnail (inset 6 either side).</summary>

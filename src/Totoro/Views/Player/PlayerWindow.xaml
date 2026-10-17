@@ -290,24 +290,16 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!--  The seek bar: its track is in sections, the opening and ending coloured apart from the episode  -->
-            <Grid ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="40" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" MinWidth="40" />
-                </Grid.ColumnDefinitions>
-
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind ViewModel.PositionText, Mode=OneWay}" />
-
+            <!--
+                The seek bar, the controls' full width (the times are under it): its track is in sections, the opening and
+                ending coloured apart from the episode
+            -->
+            <Grid>
                 <Grid
                     x:Name="SeekTrack"
-                    Grid.Column="1"
                     Height="4"
                     VerticalAlignment="Center"
                     IsHitTestVisible="False"
@@ -319,7 +311,6 @@
                 </Grid>
                 <Slider
                     x:Name="SeekBar"
-                    Grid.Column="1"
                     AutomationProperties.Name="Seek"
                     ThumbToolTipValueConverter="{x:Bind TimeConverter}"
                     ValueChanged="OnSeekBarValueChanged">
@@ -335,15 +326,21 @@
                         <SolidColorBrush x:Key="SliderTrackValueFillDisabled" Color="Transparent" />
                     </Slider.Resources>
                 </Slider>
+            </Grid>
 
-                <!--  The length, with a check once the episode has been marked watched  -->
+            <!--  Under the bar, at its ends: where it is, and how long it is (with a check once it's been marked watched)  -->
+            <!--  Pulled up into the space the slider leaves under its track, to sit just under the bar  -->
+            <Grid Grid.Row="1" Margin="0,-8,0,0">
+                <TextBlock
+                    HorizontalAlignment="Left"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ViewModel.PositionText, Mode=OneWay}" />
                 <StackPanel
-                    Grid.Column="2"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
                     Orientation="Horizontal"
                     Spacing="4">
                     <FontIcon
+                        VerticalAlignment="Center"
                         AutomationProperties.Name="Marked as watched"
                         FontSize="12"
                         Foreground="{ThemeResource SystemFillColorSuccessBrush}"
@@ -353,12 +350,11 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         Style="{ThemeResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.DurationText, Mode=OneWay}"
-                        TextAlignment="Right" />
+                        Text="{x:Bind ViewModel.DurationText, Mode=OneWay}" />
                 </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="1" ColumnSpacing="8">
+            <Grid Grid.Row="2" ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
