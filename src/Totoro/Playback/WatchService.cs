@@ -62,6 +62,7 @@ public sealed partial class WatchService(
 	IAnimeSettingsStore animeSettings,
 	IAnimeRelations relations,
 	IEnumerable<IModuleSettings> moduleSettings,
+	IEnumerable<Descriptor> modules,
 	IDialogService dialogs,
 	IPreferences preferences,
 	ILogger<WatchService> logger) : ObservableObject
@@ -101,7 +102,9 @@ public sealed partial class WatchService(
 
 	/// <summary>Whether an episode is being got ready or is playing, whether or not the status bar is showing.</summary>
 	[ObservableProperty] public partial bool IsActive { get; private set; }
-	[ObservableProperty] public partial string Title { get; private set; } = "";
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(CardTitle))]
+	public partial string Title { get; private set; } = "";
 	[ObservableProperty] public partial string Message { get; private set; } = "";
 	[ObservableProperty] public partial PlaybackStatusKind Kind { get; private set; }
 
@@ -115,13 +118,43 @@ public sealed partial class WatchService(
 	[ObservableProperty] public partial string PlaybackTime { get; private set; } = "";
 
 	/// <summary>The anime currently being watched or got ready; null when none is.</summary>
-	[ObservableProperty] public partial AnimeModel? Anime { get; private set; }
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(CardTitle), nameof(EnglishTitle))]
+	public partial AnimeModel? Anime { get; private set; }
 
 	/// <summary>The episode number currently being watched or got ready.</summary>
-	[ObservableProperty] public partial int CurrentEpisode { get; private set; }
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(EpisodeLine))]
+	public partial int CurrentEpisode { get; private set; }
 
 	/// <summary>The episode's title if known (e.g. from ani.zip).</summary>
-	[ObservableProperty] public partial string EpisodeName { get; private set; } = "";
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(EpisodeLine))]
+	public partial string EpisodeName { get; private set; } = "";
+
+	// The status bar's card says the anime, its English title and the episode each once: the title is the anime's alone
+	// (Title, with the episode, is for where there's no episode line, e.g. the now-playing button and agents).
+
+	/// <summary>The card's title: the anime's, or (with none) <see cref="Title"/>.</summary>
+	public string CardTitle => Anime?.Title ?? Title;
+
+	/// <summary>The anime's English title, under its own; empty when it's the same or there's none.</summary>
+	public string EnglishTitle => Anime is { EngTitle: { Length: > 0 } english } anime && !english.Equals(anime.Title, StringComparison.OrdinalIgnoreCase) ? english : "";
+
+	/// <summary>e.g. "5 · The Journey's End", or "Episode 5" without a name (a number alone wouldn't say what it is); empty with no episode.</summary>
+	public string EpisodeLine
+	{
+		get
+		{
+			if (CurrentEpisode <= 0)
+			{
+				return EpisodeName;
+			}
+
+			var number = $"Episode {CurrentEpisode}";
+			return EpisodeName.Length > 0 && !EpisodeName.Equals(number, StringComparison.OrdinalIgnoreCase) ? $"{CurrentEpisode} · {EpisodeName}" : number;
+		}
+	}
 
 	/// <summary>The image URL to display: episode thumbnail if available, or anime cover image.</summary>
 	[ObservableProperty] public partial string ImageUrl { get; private set; } = "";
@@ -291,7 +324,8 @@ public sealed partial class WatchService(
 				return;
 			}
 
-			PlayerName = player.Name;
+			// As its module is named (e.g. "Built-in player"): the player's own name reads in a sentence ("the built-in player").
+			PlayerName = modules.FirstOrDefault(x => x.Id == player.Id)?.Name ?? player.Name;
 
 			var settings = animeSettings.Get(anime);
 			if (GetProvider(settings) is not { } provider)
@@ -405,7 +439,6 @@ public sealed partial class WatchService(
 		var ui = SynchronizationContext.Current;
 		var segments = new SegmentSkipper(player, settings.OpeningSkipMode ?? preferences.OpeningSkipMode, settings.EndingSkipMode ?? preferences.EndingSkipMode, logger);
 		var stopped = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var playing = start > TimeSpan.Zero ? $"Resumed at {start:h\\:mm\\:ss} in {player.Name}." : $"Playing in {player.Name}.";
 		_marked = null;
 		CountsAsWatchedAt = "";
 		CountsAtFraction = -1;
@@ -503,7 +536,8 @@ public sealed partial class WatchService(
 				_ = ListEpisodesAsync(interactive, anime, number, ct);
 			}
 
-			Show(PlaybackStatusKind.Playing, playing);
+			// Nothing to say while it plays: the card shows the episode, the player and the progress.
+			Show(PlaybackStatusKind.Playing, "");
 			await stopped.Task.WaitAsync(ct);
 		}
 		finally

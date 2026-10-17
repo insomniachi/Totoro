@@ -22,6 +22,7 @@
         <Grid.Resources>
             <helpers:StringToImageSourceConverter x:Key="StringToImageSourceConverter" />
             <helpers:VisibleIfAnyConverter x:Key="VisibleIfAnyConverter" />
+            <helpers:VisibleIfNoneConverter x:Key="VisibleIfNoneConverter" />
 
             <!--  Close button for InfoBars: x icon only, no background or border on hover  -->
             <Style x:Key="InfoBarCloseButtonStyle" TargetType="Button">
@@ -78,26 +79,47 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="InfoBar">
+                            <!--
+                                One rounded layer behind the content, so its corners have one edge: the banner when there's one,
+                                else the plain severity background. Both under it, each with its own rounded edge, the background
+                                showed through the banner's antialiased edge as a light fringe at the corners. The severity colour
+                                is a tint inside the banner, clipped by its edge, rather than the background under it (hidden).
+                            -->
                             <Border
                                 x:Name="ContentRoot"
                                 VerticalAlignment="Top"
-                                Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{TemplateBinding CornerRadius}">
-                                <Grid CornerRadius="{TemplateBinding CornerRadius}">
+                                <!--  Inside the 1px border: 7, one less than its 8 (OverlayCornerRadius), so the layers meet it with no gap  -->
+                                <Grid>
+                                    <Border
+                                        x:Name="SeverityBackground"
+                                        Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
+                                        CornerRadius="7"
+                                        Visibility="{Binding BannerUrl, Converter={StaticResource VisibleIfNoneConverter}}" />
+
                                     <!--  Blurred banner image of anime as background if it exists  -->
-                                    <Border CornerRadius="{TemplateBinding CornerRadius}" Visibility="{Binding BannerUrl, Converter={StaticResource VisibleIfAnyConverter}}">
-                                        <Border.Background>
-                                            <ImageBrush ImageSource="{Binding BannerUrl, Converter={StaticResource StringToImageSourceConverter}}" Stretch="UniformToFill" />
-                                        </Border.Background>
+                                    <!--
+                                        Each layer is clipped to the corners on its own, so where an edge pixel is partly covered, the light
+                                        image showed through the dark layer over it (a light fringe, as on the anime card). The image and its
+                                        blur are rounded a little more (10 to the clip's 7), so they stay just inside the curve, and the
+                                        dark layer alone draws the corners.
+                                    -->
+                                    <Border CornerRadius="7" Visibility="{Binding BannerUrl, Converter={StaticResource VisibleIfAnyConverter}}">
                                         <Grid>
-                                            <Rectangle>
+                                            <Rectangle RadiusX="10" RadiusY="10">
+                                                <Rectangle.Fill>
+                                                    <ImageBrush ImageSource="{Binding BannerUrl, Converter={StaticResource StringToImageSourceConverter}}" Stretch="UniformToFill" />
+                                                </Rectangle.Fill>
+                                            </Rectangle>
+                                            <Rectangle RadiusX="10" RadiusY="10">
                                                 <Rectangle.Fill>
                                                     <media:BackdropBlurBrush Amount="24" />
                                                 </Rectangle.Fill>
                                             </Rectangle>
                                             <Rectangle Fill="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" Opacity="0.82" />
+                                            <Rectangle x:Name="SeverityTint" Fill="Transparent" />
                                         </Grid>
                                     </Border>
 
@@ -184,7 +206,8 @@
                                                     Margin="0,2,0,0"
                                                     Style="{ThemeResource BodyTextBlockStyle}"
                                                     Text="{TemplateBinding Message}"
-                                                    TextWrapping="WrapWholeWords" />
+                                                    TextWrapping="WrapWholeWords"
+                                                    Visibility="{Binding Message, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource VisibleIfAnyConverter}}" />
                                             </StackPanel>
 
                                             <!--  ContentArea: where InfoBar.Content renders (EpisodeName, Metadata, Source, ProgressBar)  -->
@@ -192,7 +215,7 @@
                                                 x:Name="ContentArea"
                                                 Grid.Row="1"
                                                 Grid.ColumnSpan="2"
-                                                Margin="0,6,0,0"
+                                                Margin="0,2,0,0"
                                                 Content="{TemplateBinding Content}"
                                                 ContentTemplate="{TemplateBinding ContentTemplate}" />
 
@@ -226,7 +249,8 @@
                                         <VisualState x:Name="Informational" />
                                         <VisualState x:Name="Error">
                                             <VisualState.Setters>
-                                                <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                                <Setter Target="SeverityBackground.Background" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
+                                                <Setter Target="SeverityTint.Fill" Value="{ThemeResource InfoBarErrorSeverityBackgroundBrush}" />
                                                 <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconBackground}" />
                                                 <Setter Target="StandardIcon.Text" Value="&#xF13D;" />
                                                 <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarErrorSeverityIconForeground}" />
@@ -234,7 +258,8 @@
                                         </VisualState>
                                         <VisualState x:Name="Warning">
                                             <VisualState.Setters>
-                                                <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}" />
+                                                <Setter Target="SeverityBackground.Background" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}" />
+                                                <Setter Target="SeverityTint.Fill" Value="{ThemeResource InfoBarWarningSeverityBackgroundBrush}" />
                                                 <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconBackground}" />
                                                 <Setter Target="StandardIcon.Text" Value="&#xF13C;" />
                                                 <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarWarningSeverityIconForeground}" />
@@ -242,7 +267,8 @@
                                         </VisualState>
                                         <VisualState x:Name="Success">
                                             <VisualState.Setters>
-                                                <Setter Target="ContentRoot.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}" />
+                                                <Setter Target="SeverityBackground.Background" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}" />
+                                                <Setter Target="SeverityTint.Fill" Value="{ThemeResource InfoBarSuccessSeverityBackgroundBrush}" />
                                                 <Setter Target="IconBackground.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconBackground}" />
                                                 <Setter Target="StandardIcon.Text" Value="&#xF13E;" />
                                                 <Setter Target="StandardIcon.Foreground" Value="{ThemeResource InfoBarSuccessSeverityIconForeground}" />
@@ -563,7 +589,7 @@
                     Color="Black" />
             </ui:Effects.Shadow>
             <InfoBar
-                Title="{x:Bind ViewModel.Playback.Title, Mode=OneWay}"
+                Title="{x:Bind ViewModel.Playback.CardTitle, Mode=OneWay}"
                 DataContext="{x:Bind ViewModel.Playback, Mode=OneWay}"
                 IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
                 Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
@@ -576,15 +602,25 @@
                         Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
                         Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />
                 </InfoBar.ActionButton>
-                <StackPanel Margin="0,4,0,0" Spacing="4">
-                    <!--  Episode Title from ani.zip if known  -->
+                <StackPanel Spacing="4">
+                    <!--  The English title, under the anime's own (the card's title), if it's another  -->
                     <TextBlock
-                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        Style="{ThemeResource BodyStrongTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Playback.EpisodeName, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource BodyTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Playback.EnglishTitle, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
-                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EpisodeName), Mode=OneWay}" />
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EnglishTitle), Mode=OneWay}" />
+
+                    <!--  The episode, once: "5 · The Journey's End" (its name from ani.zip, when known); set apart from the titles above  -->
+                    <TextBlock
+                        Margin="0,8,0,0"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Playback.EpisodeLine, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EpisodeLine), Mode=OneWay}" />
 
                     <!--  Metadata tags: Format, season/year, rating, studio  -->
                     <TextBlock

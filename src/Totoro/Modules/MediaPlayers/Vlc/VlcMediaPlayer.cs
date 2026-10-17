@@ -59,9 +59,12 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 		var uri = media.Uri;
 		List<string> options = [];
 		var headers = media.Headers ?? new Dictionary<string, string>();
-		if (headers.Keys.All(s_ownHeaders.ContainsKey))
+		// libvlc fetches it itself when it can send what's asked (Origin aside: only browsers send it, and video hosts
+		// don't need it). Through the proxy, .NET does the fetching, which hosts behind Cloudflare's bot checks may turn
+		// away by how it connects (AnimePahe's, uwucdn, does: 403), where they let libvlc (and mpv) in.
+		if (headers.Keys.Where(x => !x.Equals("Origin", StringComparison.OrdinalIgnoreCase)).All(s_ownHeaders.ContainsKey))
 		{
-			options.AddRange(headers.Select(x => $"{s_ownHeaders[x.Key]}={x.Value}"));
+			options.AddRange(headers.Where(x => s_ownHeaders.ContainsKey(x.Key)).Select(x => $"{s_ownHeaders[x.Key]}={x.Value}"));
 		}
 		else
 		{

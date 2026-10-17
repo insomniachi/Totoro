@@ -38,6 +38,16 @@ public partial class VisibleIfAnyConverter : Microsoft.UI.Xaml.Data.IValueConver
 		throw new NotSupportedException();
 }
 
+/// <summary>Visible when the string is empty: the other half of <see cref="VisibleIfAnyConverter"/>.</summary>
+public partial class VisibleIfNoneConverter : Microsoft.UI.Xaml.Data.IValueConverter
+{
+	public object Convert(object? value, Type targetType, object parameter, string language) =>
+		CommonConverters.VisibleIfAny(value as string) == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+
+	public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+		throw new NotSupportedException();
+}
+
 public partial class InvertedBooleanToVisibilityConverter : Microsoft.UI.Xaml.Data.IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, string language)
