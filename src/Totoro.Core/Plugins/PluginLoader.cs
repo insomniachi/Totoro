@@ -9,6 +9,12 @@ namespace Totoro.Core.Plugins;
 
 public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPluginLoader
 {
+	/// <summary>The suffix of a plugin's folder holding its update, staged while the plugin was loaded.</summary>
+	public const string PendingSuffix = ".pending";
+
+	/// <summary>A file marking a plugin's folder for deletion at the next start, when it couldn't be deleted at once.</summary>
+	public const string DeleteMarker = ".delete";
+
 	private readonly ILogger<PluginLoader> _logger = logger ?? NullLogger<PluginLoader>.Instance;
 	private readonly List<PluginInfo> _plugins = [];
 
@@ -32,24 +38,11 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 			}
 		}
 
-		// 2. Environment variables: TOTORO_PLUGIN_DIRS or TOTORO_DEV_PLUGIN_DIR
-		var envDirs = Environment.GetEnvironmentVariable("TOTORO_PLUGIN_DIRS")
-					  ?? Environment.GetEnvironmentVariable("TOTORO_DEV_PLUGIN_DIR");
-		if (!string.IsNullOrWhiteSpace(envDirs))
-		{
-			foreach (var dir in envDirs.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-			{
-				if (Directory.Exists(dir))
-				{
-					searchDirectories.Add(Path.GetFullPath(dir));
-				}
-			}
-		}
-
-		// 3. Standard app data plugins folder: %LocalAppData%\Totoro\Plugins
+		// 2. Standard app data plugins folder: %LocalAppData%\Totoro\Plugins
 		var standardPluginsDir = FileHelper.GetPath("Plugins");
 		if (Directory.Exists(standardPluginsDir))
 		{
+			ApplyPendingInstalls(standardPluginsDir);
 			searchDirectories.Add(Path.GetFullPath(standardPluginsDir));
 		}
 
@@ -72,6 +65,11 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 				{
 					foreach (var subDir in Directory.GetDirectories(dir))
 					{
+						if (subDir.EndsWith(PendingSuffix, StringComparison.OrdinalIgnoreCase))
+						{
+							continue;
+						}
+
 						if (IsPluginDirectory(subDir))
 						{
 							candidatePluginDirs.Add((subDir, isDevDir));
@@ -107,7 +105,8 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 				continue;
 			}
 
-			if (pluginInfo.IsLoaded && !seenPluginIds.Add(pluginInfo.Id))
+			// Failed ones too (if their id is known): one plugin in two places is listed once, whichever loaded first.
+			if (pluginInfo.Id != Guid.Empty && !seenPluginIds.Add(pluginInfo.Id))
 			{
 				_logger.LogWarning("Duplicate plugin ID {Id} detected in {Directory}; ignoring duplicate.", pluginInfo.Id, pluginDir);
 				continue;
@@ -119,6 +118,31 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 		return _plugins;
 	}
 
+	/// <summary>
+	/// Swaps in the updates PluginManager staged while their plugins were loaded (and so locked): before anything is
+	/// loaded, nothing holds the old folders.
+	/// </summary>
+	private void ApplyPendingInstalls(string pluginsDir)
+	{
+		foreach (var pending in Directory.GetDirectories(pluginsDir, "*" + PendingSuffix))
+		{
+			var target = pending[..^PendingSuffix.Length];
+			try
+			{
+				if (Directory.Exists(target))
+				{
+					Directory.Delete(target, recursive: true);
+				}
+
+				Directory.Move(pending, target);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning(ex, "Failed to apply the staged plugin update {Directory}", pending);
+			}
+		}
+	}
+
 	private static bool IsPluginDirectory(string dir)
 	{
 		return File.Exists(Path.Combine(dir, "plugin.json"))
@@ -127,17 +151,19 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 
 	private PluginInfo? LoadPluginFromDirectory(string directory, bool isDev)
 	{
-		if (File.Exists(Path.Combine(directory, ".delete")))
+		if (File.Exists(Path.Combine(directory, DeleteMarker)))
 		{
 			try
 			{
 				Directory.Delete(directory, recursive: true);
-				return null;
 			}
 			catch (Exception ex)
 			{
+				// Still uninstalled: not loaded, and tried again at the next start.
 				_logger.LogWarning(ex, "Failed to delete plugin marked for removal: {Directory}", directory);
 			}
+
+			return null;
 		}
 
 		string manifestPath = Path.Combine(directory, "plugin.json");
@@ -196,7 +222,8 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 
 		if (assemblyPath is null)
 		{
-			// Search for DLL matching folder name, or any non-framework DLL in folder
+			// The DLL named after the folder, else the one the build's deps.json is for (X.deps.json goes with X.dll): the
+			// folder holds the plugin's dependencies too (Flurl...), so any other DLL may not be the plugin.
 			string folderName = Path.GetFileName(directory);
 			string candidate = Path.Combine(directory, folderName + ".dll");
 			if (File.Exists(candidate))
@@ -205,18 +232,46 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 			}
 			else
 			{
-				var dlls = Directory.GetFiles(directory, "*.dll")
-					.Where(f => !Path.GetFileName(f).StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase)
-							 && !Path.GetFileName(f).StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+				var fromDeps = Directory.GetFiles(directory, "*.deps.json")
+					.Select(f => Path.Combine(directory, Path.GetFileName(f)[..^".deps.json".Length] + ".dll"))
+					.Where(File.Exists)
 					.ToList();
-
-				assemblyPath = dlls.FirstOrDefault();
+				if (fromDeps.Count == 1)
+				{
+					assemblyPath = fromDeps[0];
+				}
+				else
+				{
+					// No way to tell, unless there's only the one.
+					var dlls = Directory.GetFiles(directory, "*.dll")
+						.Where(f => !Path.GetFileName(f).StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase)
+								 && !Path.GetFileName(f).StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+						.ToList();
+					assemblyPath = dlls.Count == 1 ? dlls[0] : null;
+					if (dlls.Count > 1)
+					{
+						_logger.LogWarning("Can't tell which DLL is the plugin in {Directory}: add an entryPoint to its plugin.json.", directory);
+					}
+				}
 			}
 		}
 
 		if (assemblyPath is null || !File.Exists(assemblyPath))
 		{
 			return null;
+		}
+
+		// Built against a later Totoro.Core, it would fail with missing types or methods, perhaps only once used.
+		if (manifest is not null && !AppInfo.IsAtLeast(manifest.MinAppVersion))
+		{
+			return new PluginInfo
+			{
+				Manifest = manifest,
+				DirectoryPath = directory,
+				AssemblyPath = assemblyPath,
+				IsDev = isDev,
+				LoadError = $"Needs Totoro {manifest.MinAppVersion} or later (this is {AppInfo.Version}).",
+			};
 		}
 
 		PluginLoadContext? loadContext = null;

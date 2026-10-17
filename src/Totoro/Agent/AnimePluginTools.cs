@@ -24,7 +24,7 @@ public sealed class AnimePluginTools(IAnimePluginTesterService tester)
 			var provider = providers.FirstOrDefault(p => p.Name.Equals(providerName.Trim(), StringComparison.OrdinalIgnoreCase))
 				?? throw new AgentToolException($"No anime provider plugin named '{providerName}' was found. Available: {string.Join(", ", providers.Select(p => p.Name))}.");
 
-			var result = await tester.TestProviderAsync(provider, showTitle, timeout: TimeSpan.FromSeconds(10), ct: CancellationToken.None);
+			var result = await tester.TestProviderAsync(provider, showTitle, timeout: AnimePluginTesterService.DefaultTimeout, ct: CancellationToken.None);
 			var reportItem = new AnimePluginProviderReport(
 				result.ProviderName,
 				result.Passed,
@@ -41,7 +41,7 @@ public sealed class AnimePluginTools(IAnimePluginTesterService tester)
 				Plugins: [reportItem]);
 		}
 
-		var summary = await tester.TestAllProvidersAsync(showTitle, timeout: TimeSpan.FromSeconds(10), ct: CancellationToken.None);
+		var summary = await tester.TestAllProvidersAsync(showTitle, timeout: AnimePluginTesterService.DefaultTimeout, ct: CancellationToken.None);
 		var reports = summary.Results.Select(r => new AnimePluginProviderReport(
 			r.ProviderName,
 			r.Passed,

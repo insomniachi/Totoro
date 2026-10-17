@@ -84,7 +84,7 @@
             <StackPanel MaxWidth="900" HorizontalAlignment="Left" Spacing="12">
                 <ProgressBar
                     IsIndeterminate="True"
-                    Visibility="{x:Bind ViewModel.LoadingVisibility, Mode=OneWay}"
+                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoadingCatalog), Mode=OneWay}"
                     HorizontalAlignment="Stretch" />
 
                 <TextBlock
@@ -113,7 +113,7 @@
                                         Orientation="Horizontal"
                                         Spacing="8"
                                         VerticalAlignment="Center"
-                                        Visibility="{x:Bind UpdateVisibility, Mode=OneWay}">
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUpdate), Mode=OneWay}">
                                         <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2">
                                             <TextBlock Text="UPDATE AVAILABLE" FontSize="10" Foreground="White" />
                                         </Border>
@@ -124,6 +124,7 @@
                                         <Button
                                             Content="Update"
                                             Style="{ThemeResource AccentButtonStyle}"
+                                            IsEnabled="{x:Bind IsCompatible}"
                                             Command="{x:Bind InstallOrUpdateCommand}" />
                                     </StackPanel>
 
@@ -132,9 +133,9 @@
                                         Orientation="Horizontal"
                                         Spacing="8"
                                         VerticalAlignment="Center"
-                                        Visibility="{x:Bind InstalledVisibility, Mode=OneWay}">
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsInstalled), Mode=OneWay}">
                                         <TextBlock
-                                            Text="{x:Bind InstalledVersion}"
+                                            Text="{x:Bind InstalledVersion, Mode=OneWay}"
                                             Style="{ThemeResource CaptionTextBlockStyle}"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             VerticalAlignment="Center" />
@@ -147,6 +148,7 @@
                                         </Border>
                                         <Button
                                             Content="Uninstall"
+                                            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(CanUninstall)}"
                                             Command="{x:Bind UninstallCommand}" />
                                     </StackPanel>
 
@@ -155,15 +157,22 @@
                                         Orientation="Horizontal"
                                         Spacing="8"
                                         VerticalAlignment="Center"
-                                        Visibility="{x:Bind NotInstalledVisibility, Mode=OneWay}">
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsNotInstalled), Mode=OneWay}">
                                         <TextBlock
                                             Text="{x:Bind Version}"
                                             Style="{ThemeResource CaptionTextBlockStyle}"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             VerticalAlignment="Center" />
+                                        <TextBlock
+                                            Text="{x:Bind IncompatibleText}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                            VerticalAlignment="Center"
+                                            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(IsCompatible)}" />
                                         <Button
                                             Content="Install"
                                             Style="{ThemeResource AccentButtonStyle}"
+                                            IsEnabled="{x:Bind IsCompatible}"
                                             Command="{x:Bind InstallOrUpdateCommand}" />
                                     </StackPanel>
 
@@ -171,7 +180,7 @@
                                     <ProgressBar
                                         IsIndeterminate="True"
                                         Width="60"
-                                        Visibility="{x:Bind BusyVisibility, Mode=OneWay}" />
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsBusy), Mode=OneWay}" />
                                     <TextBlock
                                         Text="{x:Bind StatusText, Mode=OneWay}"
                                         Style="{ThemeResource CaptionTextBlockStyle}"

@@ -13,6 +13,12 @@ public interface IWebPageLoader
 	/// </summary>
 	/// <exception cref="WebPageException">The site wouldn't serve it, e.g. the user didn't do its check.</exception>
 	Task<WebPage> LoadAsync(Uri url, Uri? referrer, CancellationToken ct);
+
+	/// <summary>
+	/// Whether a load is waiting on the user doing a site's check: time spent then is the user's, so timeouts (e.g. the
+	/// plugin tester's) don't count it.
+	/// </summary>
+	bool IsWaitingForUser => false;
 }
 
 /// <param name="Url">Where it ended up, after redirects.</param>

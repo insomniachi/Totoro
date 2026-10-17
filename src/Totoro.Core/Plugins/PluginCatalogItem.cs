@@ -31,6 +31,18 @@ public sealed record PluginCatalogItem
 	[JsonPropertyName("repositoryUrl")]
 	public string? RepositoryUrl { get; init; }
 
+	/// <summary>The oldest version of the app the plugin works with.</summary>
+	[JsonPropertyName("minTotoroVersion")]
+	public string? MinAppVersion { get; init; }
+
+	/// <summary>The package's SHA-256 (hex), checked before it's installed when the catalog gives one.</summary>
+	[JsonPropertyName("sha256")]
+	public string? Sha256 { get; init; }
+
+	/// <summary>Whether this version of the app can run it.</summary>
+	[JsonIgnore]
+	public bool IsCompatible => AppInfo.IsAtLeast(MinAppVersion);
+
 	[JsonIgnore]
 	public bool IsInstalled { get; set; }
 
@@ -42,4 +54,8 @@ public sealed record PluginCatalogItem
 
 	[JsonIgnore]
 	public bool IsDev { get; set; }
+
+	/// <summary>Why the installed plugin didn't load, if it didn't.</summary>
+	[JsonIgnore]
+	public string? LoadError { get; set; }
 }

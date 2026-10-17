@@ -3,14 +3,19 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Streaming;
+using Totoro.Core.Web;
 
 namespace Totoro.Core.Plugins;
 
 public sealed class AnimePluginTesterService(
 	IFactory<IAnimeProvider, Guid> providers,
+	IWebPageLoader? pages = null,
 	ILogger<AnimePluginTesterService>? logger = null) : IAnimePluginTesterService
 {
-	public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
+	// Long enough for a provider that loads its pages in a browser (IWebPageLoader), which may first wait out a site's
+	// automatic bot check.
+	public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
+	private static readonly TimeSpan s_pollInterval = TimeSpan.FromMilliseconds(250);
 	private readonly ILogger<AnimePluginTesterService> _logger = logger ?? NullLogger<AnimePluginTesterService>.Instance;
 
 	public IReadOnlyList<IAnimeProvider> GetAvailableProviders()
@@ -363,7 +368,7 @@ public sealed class AnimePluginTesterService(
 		return new AnimePluginsTestSummary(showTitle, results, totalStopwatch.Elapsed);
 	}
 
-	private static async Task<T> ExecuteWithTimeoutAsync<T>(
+	private async Task<T> ExecuteWithTimeoutAsync<T>(
 		Func<CancellationToken, Task<T>> action,
 		TimeSpan timeout,
 		CancellationToken ct)
@@ -372,14 +377,27 @@ public sealed class AnimePluginTesterService(
 		using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutCts.Token);
 
 		var workTask = action(linkedCts.Token);
-		var delayTask = Task.Delay(timeout, ct);
 
-		var completed = await Task.WhenAny(workTask, delayTask);
-		if (completed == delayTask)
+		// The time a site's check waits on the user (see IWebPageLoader.IsWaitingForUser) isn't the provider's.
+		var elapsed = TimeSpan.Zero;
+		var clock = Stopwatch.StartNew();
+		while (!workTask.IsCompleted)
 		{
-			timeoutCts.Cancel();
+			var remaining = timeout - elapsed;
+			await Task.WhenAny(workTask, Task.Delay(remaining < s_pollInterval ? remaining : s_pollInterval, ct));
 			ct.ThrowIfCancellationRequested();
-			throw new TimeoutException($"Timed out after {timeout.TotalSeconds:0}s.");
+
+			if (pages?.IsWaitingForUser != true)
+			{
+				elapsed += clock.Elapsed;
+			}
+
+			clock.Restart();
+			if (!workTask.IsCompleted && elapsed >= timeout)
+			{
+				timeoutCts.Cancel();
+				throw new TimeoutException($"Timed out after {timeout.TotalSeconds:0}s.");
+			}
 		}
 
 		try

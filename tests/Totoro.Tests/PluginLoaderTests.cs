@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Totoro.Tests;
 
+[Collection(PluginTestCollection.Name)]
 public class PluginLoaderTests
 {
 	[Fact]
@@ -140,6 +141,46 @@ public class PluginLoaderTests
 		}
 	}
 
+	[Theory]
+	[InlineData("..")]
+	[InlineData("")]
+	[InlineData("..\\Outside")]
+	public async Task PluginManager_InstallsUnderPluginsFolder_WhenNameIsNotAFolderName(string name)
+	{
+		var id = Guid.NewGuid();
+		var packageDir = Path.Combine(Path.GetTempPath(), "Totoro_Bad_Plugin_" + Guid.NewGuid().ToString("N"));
+		var packageFile = packageDir + ".totoro-plugin";
+		Directory.CreateDirectory(packageDir);
+		File.WriteAllText(Path.Combine(packageDir, "plugin.json"), System.Text.Json.JsonSerializer.Serialize(new PluginManifest
+		{
+			Id = id,
+			Name = name,
+			Version = "1.0.0",
+			EntryPoint = "Bad.dll",
+		}));
+		System.IO.Compression.ZipFile.CreateFromDirectory(packageDir, packageFile);
+
+		PluginInfo? installed = null;
+		try
+		{
+			var manager = new PluginManager(new PluginLoader(), new FakePreferences());
+			installed = await manager.InstallFromFileAsync(packageFile);
+
+			var pluginsDir = Path.GetFullPath(Totoro.Core.Helpers.FileHelper.GetPath("Plugins"));
+			Assert.Equal(pluginsDir, Path.GetDirectoryName(installed.DirectoryPath), ignoreCase: true);
+			Assert.Equal(id.ToString("N"), Path.GetFileName(installed.DirectoryPath));
+		}
+		finally
+		{
+			Directory.Delete(packageDir, recursive: true);
+			File.Delete(packageFile);
+			if (installed is not null && Directory.Exists(installed.DirectoryPath))
+			{
+				Directory.Delete(installed.DirectoryPath, recursive: true);
+			}
+		}
+	}
+
 	[Fact]
 	public void PluginLoader_HandlesCorruptDirectory_GracefullyWithoutThrowing()
 	{
@@ -190,7 +231,7 @@ public class PluginLoaderTests
 		return sibling;
 	}
 
-	private static string FindPluginBin(string pluginName)
+	internal static string FindPluginBin(string pluginName)
 	{
 		var pluginsRoot = FindPluginsRepoRoot();
 		var inSrc = Path.Combine(pluginsRoot, "src", pluginName, "bin", "Debug", "net10.0");
@@ -226,7 +267,7 @@ public class PluginLoaderTests
 		return Path.Combine(FindRepoRoot(), "plugins", $"Totoro.Plugins.{shortName}", "bin", "Release", "Package", $"{shortName}.totoro-plugin");
 	}
 
-	private sealed class FakePreferences : IPreferences
+	internal sealed class FakePreferences : IPreferences
 	{
 		private readonly Dictionary<string, object?> _store = [];
 

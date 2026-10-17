@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Totoro.Core.Plugins;
 
 namespace Totoro.ViewModels;
@@ -13,9 +14,7 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	{
 		Item = item;
 		_pluginManager = pluginManager;
-		IsInstalled = item.IsInstalled;
-		HasUpdate = item.HasUpdate;
-		InstalledVersion = item.InstalledVersion;
+		Refresh();
 	}
 
 	public PluginCatalogItem Item { get; }
@@ -27,35 +26,51 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	public string DownloadUrl => Item.DownloadUrl;
 	public string? IconUrl => Item.IconUrl;
 	public bool IsDev => Item.IsDev;
+	public bool IsCompatible => Item.IsCompatible;
+
+	/// <summary>Why it can't be installed, for a plugin needing a later version of Totoro.</summary>
+	public string IncompatibleText => IsCompatible ? "" : $"Needs Totoro {Item.MinAppVersion}";
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(UpdateVisibility))]
-	[NotifyPropertyChangedFor(nameof(InstalledVisibility))]
-	[NotifyPropertyChangedFor(nameof(NotInstalledVisibility))]
+	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled), nameof(ShowsNotInstalled))]
 	public partial bool IsInstalled { get; set; }
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(UpdateVisibility))]
-	[NotifyPropertyChangedFor(nameof(InstalledVisibility))]
+	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled))]
 	public partial bool HasUpdate { get; set; }
 
 	[ObservableProperty]
-	public partial string? InstalledVersion { get; set; }
+	public partial string InstalledVersion { get; set; } = "";
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(BusyVisibility))]
 	public partial bool IsBusy { get; set; }
 
-	public Microsoft.UI.Xaml.Visibility UpdateVisibility => HasUpdate ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-	public Microsoft.UI.Xaml.Visibility InstalledVisibility => (IsInstalled && !HasUpdate) ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-	public Microsoft.UI.Xaml.Visibility NotInstalledVisibility => !IsInstalled ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-	public Microsoft.UI.Xaml.Visibility BusyVisibility => IsBusy ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
+	// Which of the card's states shows.
+	public bool ShowsUpdate => IsInstalled && HasUpdate;
+	public bool ShowsInstalled => IsInstalled && !HasUpdate;
+	public bool ShowsNotInstalled => !IsInstalled;
+
+	/// <summary>Dev plugins are loaded from their own folders: removed there, not here.</summary>
+	public bool CanUninstall => !IsDev;
 
 	[ObservableProperty]
 	public partial double Progress { get; set; }
 
 	[ObservableProperty]
 	public partial string StatusText { get; set; } = "";
+
+	/// <summary>Shows the plugin's state as the plugin manager has it, e.g. after an agent installed it.</summary>
+	public void Refresh()
+	{
+		_pluginManager.Annotate(Item);
+		IsInstalled = Item.IsInstalled;
+		HasUpdate = Item.HasUpdate;
+		InstalledVersion = Item.InstalledVersion ?? "";
+		if (!IsBusy && Item.LoadError is { } error)
+		{
+			StatusText = $"Didn't load: {error}";
+		}
+	}
 
 	[RelayCommand]
 	public async Task InstallOrUpdateAsync()
@@ -68,10 +83,7 @@ public sealed partial class PluginItemViewModel : ObservableObject
 		try
 		{
 			var progressHandler = new Progress<double>(p => Progress = p * 100);
-			await _pluginManager.InstallFromUrlAsync(new Uri(DownloadUrl), progressHandler);
-			IsInstalled = true;
-			HasUpdate = false;
-			InstalledVersion = Version;
+			await _pluginManager.InstallAsync(Item, progressHandler);
 			StatusText = "Installed! Restart required.";
 		}
 		catch (Exception ex)
@@ -81,6 +93,7 @@ public sealed partial class PluginItemViewModel : ObservableObject
 		finally
 		{
 			IsBusy = false;
+			Refresh();
 		}
 	}
 
@@ -93,9 +106,6 @@ public sealed partial class PluginItemViewModel : ObservableObject
 		try
 		{
 			await _pluginManager.UninstallAsync(Id);
-			IsInstalled = false;
-			HasUpdate = false;
-			InstalledVersion = null;
 			StatusText = "Uninstalled. Restart required.";
 		}
 		catch (Exception ex)
@@ -105,11 +115,12 @@ public sealed partial class PluginItemViewModel : ObservableObject
 		finally
 		{
 			IsBusy = false;
+			Refresh();
 		}
 	}
 }
 
-public partial class PluginsViewModel : ObservableObject
+public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChangedMessage>
 {
 	private readonly IPluginLoader _pluginLoader;
 	private readonly IPluginManager _pluginManager;
@@ -124,6 +135,8 @@ public partial class PluginsViewModel : ObservableObject
 
 		InstalledPlugins = [.. _pluginLoader.Plugins];
 		RequiresRestart = _pluginManager.RequiresRestart;
+		// Installs and uninstalls from anywhere (an item here, or an agent).
+		WeakReferenceMessenger.Default.Register(this);
 
 		_ = LoadCatalogAsync();
 	}
@@ -132,10 +145,7 @@ public partial class PluginsViewModel : ObservableObject
 	public ObservableCollection<PluginItemViewModel> CatalogPlugins { get; } = [];
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(LoadingVisibility))]
 	public partial bool IsLoadingCatalog { get; set; }
-
-	public Microsoft.UI.Xaml.Visibility LoadingVisibility => IsLoadingCatalog ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
 
 	[ObservableProperty]
 	public partial bool RequiresRestart { get; set; }
@@ -145,9 +155,17 @@ public partial class PluginsViewModel : ObservableObject
 
 	partial void OnSearchFilterChanged(string value) => ApplyFilter();
 
-
 	[ObservableProperty]
 	public partial string StatusMessage { get; set; } = "";
+
+	public void Receive(PluginsChangedMessage message)
+	{
+		RequiresRestart = _pluginManager.RequiresRestart;
+		foreach (var item in _allCatalogItems)
+		{
+			item.Refresh();
+		}
+	}
 
 	[RelayCommand]
 	public async Task LoadCatalogAsync()
@@ -191,9 +209,8 @@ public partial class PluginsViewModel : ObservableObject
 		try
 		{
 			var installed = await _pluginManager.InstallFromFileAsync(filePath);
-			StatusMessage = $"Successfully installed {installed.Name} v{installed.Version}! Restart Totoro to load.";
-			RequiresRestart = true;
 			await LoadCatalogAsync();
+			StatusMessage = $"Successfully installed {installed.Name} v{installed.Version}! Restart Totoro to load.";
 		}
 		catch (Exception ex)
 		{
@@ -206,10 +223,7 @@ public partial class PluginsViewModel : ObservableObject
 	}
 
 	[RelayCommand]
-	public void RestartApp()
-	{
-		Microsoft.Windows.AppLifecycle.AppInstance.Restart("");
-	}
+	public void RestartApp() => App.Restart();
 
 	[RelayCommand]
 	public async Task TestPluginsAsync()
@@ -219,8 +233,6 @@ public partial class PluginsViewModel : ObservableObject
 			await main.NavigateToViewModelAsync(typeof(PluginTesterViewModel));
 		}
 	}
-
-
 
 	private void ApplyFilter()
 	{

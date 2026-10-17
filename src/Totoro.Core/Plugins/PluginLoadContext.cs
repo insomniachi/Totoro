@@ -29,7 +29,10 @@ public sealed class PluginLoadContext : AssemblyLoadContext
 	{
 		// Shared framework and core contracts must be loaded from the default host context
 		// so that interfaces (IAnimeProvider, IModule, IServiceCollection) share identical type identity.
-		if (IsHostSharedAssembly(assemblyName.Name))
+		// So must anything else the host has, at the plugin's version or later: Totoro.Core's own dependencies (Flurl,
+		// CommunityToolkit.Mvvm's messenger, which the app's messages go through), WinRT... A plugin needing a later
+		// version than the host's gets its own copy.
+		if (IsHostSharedAssembly(assemblyName.Name) || IsProvidedByHost(assemblyName))
 		{
 			return null;
 		}
@@ -72,6 +75,37 @@ public sealed class PluginLoadContext : AssemblyLoadContext
 		}
 
 		return IntPtr.Zero;
+	}
+
+	/// <summary>The host's assemblies (the runtime's list of them, by name), and their versions once asked for.</summary>
+	private static readonly Lazy<Dictionary<string, string>> s_hostAssemblies = new(() =>
+		((AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string) ?? "")
+			.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+			.DistinctBy(Path.GetFileNameWithoutExtension, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(p => Path.GetFileNameWithoutExtension(p), StringComparer.OrdinalIgnoreCase));
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, Version?> s_hostVersions = new(StringComparer.OrdinalIgnoreCase);
+
+	private static bool IsProvidedByHost(AssemblyName assemblyName)
+	{
+		if (assemblyName.Name is not { } name || !s_hostAssemblies.Value.TryGetValue(name, out var path))
+		{
+			return false;
+		}
+
+		var hostVersion = s_hostVersions.GetOrAdd(name, _ =>
+		{
+			try
+			{
+				return AssemblyName.GetAssemblyName(path).Version;
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		});
+
+		return hostVersion is not null && (assemblyName.Version is null || hostVersion >= assemblyName.Version);
 	}
 
 	private static bool IsHostSharedAssembly(string? name)

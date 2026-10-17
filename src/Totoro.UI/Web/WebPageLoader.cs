@@ -39,6 +39,8 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 	// The page the hidden browser is opening, and as from where (see AddReferrer).
 	private (Uri Url, Uri? Referrer)? _opening;
 
+	public bool IsWaitingForUser { get; private set; }
+
 	public async Task<WebPage> LoadAsync(Uri url, Uri? referrer, CancellationToken ct)
 	{
 		await _gate.WaitAsync(ct);
@@ -271,12 +273,14 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 
 		using (ct.Register(() => dialog.Hide()))
 		{
+			IsWaitingForUser = true;
 			try
 			{
 				await dialog.ShowAsync();
 			}
 			finally
 			{
+				IsWaitingForUser = false;
 				webView.Close();
 			}
 		}

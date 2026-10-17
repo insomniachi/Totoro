@@ -274,7 +274,7 @@ public partial class PluginTesterViewModel : ObservableObject
 	public bool CanRun => !IsBusy;
 
 	[ObservableProperty]
-	public partial double TimeoutSeconds { get; set; } = 10;
+	public partial double TimeoutSeconds { get; set; } = AnimePluginTesterService.DefaultTimeout.TotalSeconds;
 
 	[ObservableProperty]
 	public partial bool HasProviders { get; set; }
@@ -361,6 +361,7 @@ public partial class PluginTesterViewModel : ObservableObject
 		IsBusy = true;
 		InfoBarIsOpen = false;
 		_cancellation?.Cancel();
+		_cancellation?.Dispose();
 		_cancellation = new CancellationTokenSource();
 		var ct = _cancellation.Token;
 
@@ -505,6 +506,7 @@ public partial class PluginTesterViewModel : ObservableObject
 		StatusMessage = $"Testing {item.Name}...";
 
 		_cancellation?.Cancel();
+		_cancellation?.Dispose();
 		_cancellation = new CancellationTokenSource();
 		var ct = _cancellation.Token;
 

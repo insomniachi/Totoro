@@ -265,7 +265,14 @@ public sealed partial class WatchService(
 			var settings = animeSettings.Get(anime);
 			if (GetProvider(settings) is not { } provider)
 			{
-				Show(PlaybackStatusKind.Error, "There's no anime provider to watch from.");
+				// Anime providers come as plugins: on a fresh install there are none.
+				Show(PlaybackStatusKind.Error, "There's no anime provider to watch from: install one from the Plugins page.", "Plugins", () =>
+				{
+					if (Totoro.UI.Navigation.Navigators.TryGetNavigator("main", out var main))
+					{
+						_ = main.NavigateToViewModelAsync(typeof(PluginsViewModel));
+					}
+				});
 				return;
 			}
 
@@ -656,17 +663,20 @@ public sealed partial class WatchService(
 			}
 		}
 
+		// Whether anime-relations says this anime carries on from an earlier season.
+		var ids = RelationIds.Of(anime);
+		var destinationRule = relations.GetRules(anime).FirstOrDefault(x => x.Rule.Destination.Matches(ids))?.Rule;
+
 		var offset = regular.Count > 0 ? (int)regular.Min(x => x.Number) - 1 : 0;
 		if (numbering == EpisodeNumbering.Absolute)
 		{
-			return offset > 0 ? Numbered(number + offset) : null;
+			// A first season's absolute numbers are its own. A later one's, from 1, would be an earlier season's episode.
+			return offset > 0 || destinationRule is null ? Numbered(number + offset) : null;
 		}
 
 		// If this anime is a subsequent season in anime-relations, and the provider has episodes past this season's
 		// length (or starting at the absolute episode), the provider is using absolute numbering across seasons.
 		// Don't fall back to season numbers (e.g. episode 3 of season 1).
-		var ids = RelationIds.Of(anime);
-		var destinationRule = relations.GetRules(anime).FirstOrDefault(x => x.Rule.Destination.Matches(ids))?.Rule;
 		if (destinationRule is not null && numbering != EpisodeNumbering.Season)
 		{
 			var seasonLength = anime.TotalEpisodes ?? destinationRule.DestinationEpisodes.Last;

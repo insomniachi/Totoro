@@ -21,5 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" />
     <PackageReference Include="System.Reactive" />
+    <InternalsVisibleTo Include="Totoro.Tests" />
   </ItemGroup>
 </Project>

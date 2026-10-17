@@ -232,11 +232,7 @@ public sealed partial class UpdateService(IPreferences preferences, ILogger<Upda
 		return path;
 	}
 
-	private static Version GetCurrentVersion()
-	{
-		var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "";
-		return Version.TryParse(version.Split('+', '-')[0], out var parsed) ? parsed : new Version(0, 0);
-	}
+	private static Version GetCurrentVersion() => AppInfo.Version;
 
 	private static HttpClient CreateClient()
 	{

@@ -428,7 +428,8 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		if (CurrentSegmentEnd() is { } current)
 		{
 			await SeekAsync(current.End);
-			await ShowMessageAsync($"Skipped the {current.Name}", TimeSpan.FromSeconds(2));
+			// Not awaited: the message stays up for a while, and the command would be busy (ignoring presses) until it went.
+			_ = ShowMessageAsync($"Skipped the {current.Name}", TimeSpan.FromSeconds(2));
 			return;
 		}
 
@@ -444,6 +445,12 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 			{
 				if (Enum.TryParse<MediaSegmentType>(Chapters[i].Title, out var type))
 				{
+					// The last chapter ends with the video; while its length isn't known yet, there's no end to skip to.
+					if (i + 1 >= Chapters.Count && Duration <= 0)
+					{
+						return null;
+					}
+
 					var end = i + 1 < Chapters.Count ? Chapters[i + 1].Start : TimeSpan.FromSeconds(Duration);
 					var name = type switch
 					{

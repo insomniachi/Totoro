@@ -121,6 +121,46 @@ public class PickEpisodeTests
 	}
 
 	[Fact]
+	public void PickEpisode_WhenAbsoluteSetOnFirstSeason_PicksSameNumber()
+	{
+		// A first season isn't the destination of any rule: its absolute numbers are its own.
+		var relations = new FakeAnimeRelations();
+		var anime = new AnimeModel
+		{
+			Title = "The Apothecary Diaries",
+			TotalEpisodes = 24,
+			ExternalIds = new AnimeId { MyAnimeList = 54492, Anilist = 161645 },
+		};
+
+		var providerEpisodes = Enumerable.Range(1, 24)
+			.Select(i => new ProviderEpisode("show1", $"ep_{i}", i))
+			.ToList();
+
+		var ep3 = WatchService.PickEpisode(providerEpisodes, anime, 3, EpisodeNumbering.Absolute, relations);
+		Assert.NotNull(ep3);
+		Assert.Equal(3, (int)ep3.Number);
+	}
+
+	[Fact]
+	public void PickEpisode_WhenAbsoluteSetOnLaterSeasonWithoutMapping_ReturnsNull()
+	{
+		// Season 3 maps 1-12 to 49-60, so episode 13 has no mapping; it must not be season 1's episode 13.
+		var rule = AnimeRelationRule.Parse("- 54492|47083|161645:49-60 -> 61987|50021|195516:1-12!")!;
+		var relations = new FakeAnimeRelations(rule);
+		var anime = new AnimeModel
+		{
+			Title = "The Apothecary Diaries Season 3",
+			ExternalIds = new AnimeId { MyAnimeList = 61987, Anilist = 195516 },
+		};
+
+		var providerEpisodes = Enumerable.Range(1, 30)
+			.Select(i => new ProviderEpisode("show1", $"ep_{i}", i))
+			.ToList();
+
+		Assert.Null(WatchService.PickEpisode(providerEpisodes, anime, 13, EpisodeNumbering.Absolute, relations));
+	}
+
+	[Fact]
 	public void PickEpisode_WhenProviderUsesSeasonNumbering_PicksSeasonEpisode()
 	{
 		var rule = AnimeRelationRule.Parse("- 54492|47083|161645:49-60 -> 61987|50021|195516:1-12!")!;

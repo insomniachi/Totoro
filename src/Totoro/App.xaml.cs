@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Totoro.Agent;
 using Totoro.Commands;
@@ -45,7 +46,19 @@ public partial class App : Application
 {
 	private Window? _window;
 	private IHost _host;
-	private readonly IPluginLoader _pluginLoader = new PluginLoader();
+	// Made before the host (its plugins add services), so with a logger of its own, to the debugger's output like the host's.
+	private readonly IPluginLoader _pluginLoader = new PluginLoader(
+		LoggerFactory.Create(x => x.AddDebug().SetMinimumLevel(LogLevel.Information)).CreateLogger<PluginLoader>());
+
+	/// <summary>
+	/// Restarts the app, e.g. to load plugins that were installed, with the arguments it was started with (so dev
+	/// plugins, from --dev or --plugin-dir, are still loaded).
+	/// </summary>
+	public static void Restart()
+	{
+		var args = Environment.GetCommandLineArgs().Skip(1).Select(x => x.Contains(' ') ? $"\"{x}\"" : x);
+		Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Join(' ', args));
+	}
 
 	public App()
 	{
@@ -93,7 +106,8 @@ public partial class App : Application
 						.AddAgentTools<NavigationTools>()
 						.AddAgentTools<RelationsTools>()
 						.AddAgentTools<UpdateTools>()
-						.AddAgentTools<AnimePluginTools>();
+						.AddAgentTools<AnimePluginTools>()
+						.AddAgentTools<PluginTools>();
 				// The assistant: a chat that calls those tools (see ChatService).
 				services.AddSingleton<ChatViewModel>();
 
@@ -161,14 +175,30 @@ public partial class App : Application
 
 		services.AddSingleton<IPluginLoader>(_pluginLoader);
 
-		List<IModule> modules =
-		[
-			..GetInBuiltModules(),
-			..loaded.Where(p => p.Module is not null).Select(p => p.Module!)
-		];
-		foreach (var module in modules)
+		foreach (var module in GetInBuiltModules())
 		{
 			module.ConfigureServices(services);
+		}
+
+		// A plugin that throws here (a bug, or built against another version of Totoro.Core) is left out rather than
+		// stopping the app from starting, which would leave no way to remove it. What it registered before throwing is
+		// taken out again (it only adds, e.g. TryAdd in AddHttpClient), and the Plugins page shows the error.
+		foreach (var plugin in loaded.Where(p => p.IsLoaded))
+		{
+			var count = services.Count;
+			try
+			{
+				plugin.Module!.ConfigureServices(services);
+			}
+			catch (Exception ex)
+			{
+				while (services.Count > count)
+				{
+					services.RemoveAt(services.Count - 1);
+				}
+
+				plugin.LoadError = $"Failed to set up: {ex.Message}";
+			}
 		}
 	}
 
@@ -191,6 +221,14 @@ public partial class App : Application
 		{
 			// Safe default: regular users only load verified installed plugins from %LocalAppData%\Totoro\Plugins
 			return paths;
+		}
+
+		// Folders in TOTORO_PLUGIN_DIRS (or TOTORO_DEV_PLUGIN_DIR), separated by ';'.
+		var envDirs = Environment.GetEnvironmentVariable("TOTORO_PLUGIN_DIRS")
+					  ?? Environment.GetEnvironmentVariable("TOTORO_DEV_PLUGIN_DIR");
+		if (!string.IsNullOrWhiteSpace(envDirs))
+		{
+			paths.AddRange(envDirs.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 		}
 
 		for (int i = 1; i < args.Length; i++)
