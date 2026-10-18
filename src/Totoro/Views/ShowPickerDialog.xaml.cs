@@ -16,6 +16,13 @@ public sealed partial class ShowPickerDialog : UserControl
 
 	private void OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
 	{
-		ViewModel?.SearchCommand.Execute(null);
+		if (ViewModel is null)
+		{
+			return;
+		}
+
+		// The two-way binding passes the text on only when the box loses focus: Enter would search for the old text.
+		ViewModel.Query = args.QueryText;
+		ViewModel.SearchCommand.Execute(null);
 	}
 }

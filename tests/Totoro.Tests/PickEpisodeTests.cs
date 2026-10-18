@@ -45,6 +45,18 @@ public class PickEpisodeTests
 	}
 
 	[Fact]
+	public void AnimeEpisode_WhenProviderNumbersOnFromAnEarlierSeason_IsTheSeasonsOwnNumber()
+	{
+		var anime = new AnimeModel { Title = "Frieren Season 2", TotalEpisodes = 10 };
+		var providerEpisodes = Enumerable.Range(29, 10).Select(i => new ProviderEpisode("show", $"ep_{i}", i)).ToList();
+		var relations = new FakeAnimeRelations();
+
+		Assert.Equal(1, WatchService.AnimeEpisode(providerEpisodes, anime, providerEpisodes[0], EpisodeNumbering.Absolute, relations));
+		// By season, 29 is nothing of this anime's: left as the provider numbers it.
+		Assert.Equal(29, WatchService.AnimeEpisode(providerEpisodes, anime, providerEpisodes[0], EpisodeNumbering.Season, relations));
+	}
+
+	[Fact]
 	public void PickEpisode_WhenAbsoluteEpisodeAvailable_PicksMappedEpisode()
 	{
 		// Kusuriya no Hitorigoto (Apothecary Diaries) Season 3:

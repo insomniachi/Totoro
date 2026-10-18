@@ -266,7 +266,15 @@ public sealed partial class WatchService(
 	/// couldn't be played (or, if getting it ready takes longer than <paramref name="timeout"/>, while still at it),
 	/// rather than when playback ends: for callers that don't follow the whole playback, e.g. agent tools.
 	/// </summary>
-	public async Task<PlaybackStatus> StartWatchingAsync(AnimeModel anime, int number, TimeSpan timeout)
+	public Task<PlaybackStatus> StartWatchingAsync(AnimeModel anime, int number, TimeSpan timeout) =>
+		StartAsync(() => WatchAsync(anime, number), timeout);
+
+	/// <summary>Starts <see cref="WatchFromAsync"/> like <see cref="StartWatchingAsync"/>.</summary>
+	public Task<PlaybackStatus> StartWatchingFromAsync(AnimeModel anime, int number, IAnimeProvider provider, ProviderEpisode episode,
+													   VideoServer server, bool track, TimeSpan timeout) =>
+		StartAsync(() => WatchFromAsync(anime, number, provider, episode, server, track), timeout);
+
+	private async Task<PlaybackStatus> StartAsync(Func<Task> watch, TimeSpan timeout)
 	{
 		var settled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		void OnStatusChanged(object? sender, EventArgs e)
@@ -280,7 +288,7 @@ public sealed partial class WatchService(
 		StatusChanged += OnStatusChanged;
 		try
 		{
-			var watching = WatchAsync(anime, number);
+			var watching = watch();
 			await Task.WhenAny(settled.Task, watching, Task.Delay(timeout));
 			return Status;
 		}
@@ -293,7 +301,126 @@ public sealed partial class WatchService(
 	public Task WatchNextAsync(AnimeModel anime) => WatchAsync(anime, NextEpisode(anime));
 
 	/// <summary>Plays episode <paramref name="number"/>, from where it was left off if it wasn't finished.</summary>
-	public async Task WatchAsync(AnimeModel anime, int number)
+	public Task WatchAsync(AnimeModel anime, int number) => RunAsync(anime, number, async ct =>
+	{
+		if (anime.TotalEpisodes is > 0 and var total && number > total)
+		{
+			Show(PlaybackStatusKind.Error, $"It only has {total} episodes.");
+			return;
+		}
+
+		if (await GetPlayerAsync() is not { } player)
+		{
+			return;
+		}
+
+		var settings = animeSettings.Get(anime);
+		if (GetProvider(settings) is not { } provider)
+		{
+			// Anime providers come as plugins: on a fresh install there are none.
+			Show(PlaybackStatusKind.Error, "There's no anime provider to watch from: install one from the Plugins page.", "Plugins", () =>
+			{
+				if (Totoro.UI.Navigation.Navigators.TryGetNavigator("main", out var main))
+				{
+					_ = main.NavigateToViewModelAsync(typeof(PluginsViewModel));
+				}
+			});
+			return;
+		}
+
+		ProviderName = provider.Name;
+
+		Show(PlaybackStatusKind.Progress, $"Finding the show on {provider.Name}…", "Cancel", Cancel);
+		if (await FindOrPickShowAsync(provider, anime, ct) is not { } show)
+		{
+			Hide();
+			return;
+		}
+
+		Show(PlaybackStatusKind.Progress, $"Getting episode {number}…", "Cancel", Cancel);
+		await relations.EnsureAvailableAsync(ct);
+		if (PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), anime, number, settings.EpisodeNumbering) is not { } episode)
+		{
+			// Perhaps the provider uses absolute numbering, and there's no rule for it yet.
+			Show(PlaybackStatusKind.Error,
+				 $"Episode {number} isn't on {provider.Name} yet. If {provider.Name} uses absolute numbering (on across seasons), set that in its episode numbering.",
+				 "Episode numbering…", () => _ = EditNumberingAsync(anime, number));
+			return;
+		}
+
+		if ((int)episode.Number != number)
+		{
+			logger.LogInformation("Episode {Episode} of {Anime} is {Provider}'s {ProviderEpisode}", number, anime.Title, provider.Name, episode.Number);
+		}
+
+		if ((await provider.GetServersAsync(episode, ct)).FirstOrDefault() is not { } server)
+		{
+			Show(PlaybackStatusKind.Error, $"{provider.Name} has no video for episode {number}.");
+			return;
+		}
+
+		await PlayServerAsync(player, anime, number, server, settings, track: true, offerEpisodes: true, ct);
+	});
+
+	/// <summary>
+	/// Plays a video the user chose on a provider (from <see cref="IAnimeProvider.GetServersAsync"/>) as the anime's episode
+	/// <paramref name="number"/> (see <see cref="GetAnimeEpisodeAsync"/>), leaving the anime's settings (its provider, show)
+	/// as they are. With <paramref name="track"/> off it doesn't resume, save progress or mark the episode watched. The next
+	/// episode isn't offered either way: it'd be played from the anime's own provider.
+	/// </summary>
+	public Task WatchFromAsync(AnimeModel anime, int number, IAnimeProvider provider, ProviderEpisode episode, VideoServer server, bool track)
+	{
+		return RunAsync(anime, number, async ct =>
+		{
+			if (await GetPlayerAsync() is not { } player)
+			{
+				return;
+			}
+
+			ProviderName = provider.Name;
+			await PlayServerAsync(player, anime, number, server, animeSettings.Get(anime), track, offerEpisodes: false, ct);
+		});
+	}
+
+	/// <summary>
+	/// The anime's episode that's the provider's <paramref name="episode"/>, numbered as <paramref name="numbering"/> says:
+	/// the one playing the anime from that show would find it as (see <see cref="PickEpisode(List{ProviderEpisode}, AnimeModel, int, EpisodeNumbering?)"/>),
+	/// so a later season a provider numbers on from the first (29 for its 1) is its own episode. The provider's number when
+	/// none of the anime's episodes is that one.
+	/// </summary>
+	public async Task<int> GetAnimeEpisodeAsync(AnimeModel anime, IReadOnlyList<ProviderEpisode> episodes, ProviderEpisode episode,
+												EpisodeNumbering? numbering, CancellationToken ct)
+	{
+		await relations.EnsureAvailableAsync(ct);
+		return AnimeEpisode([.. episodes], anime, episode, numbering, relations);
+	}
+
+	internal static int AnimeEpisode(List<ProviderEpisode> episodes, AnimeModel anime, ProviderEpisode episode, EpisodeNumbering? numbering,
+									 IAnimeRelations relations)
+	{
+		for (var number = 1; number <= (anime.TotalEpisodes ?? episodes.Count); number++)
+		{
+			if (PickEpisode(episodes, anime, number, numbering, relations)?.Id == episode.Id)
+			{
+				return number;
+			}
+		}
+
+		return (int)episode.Number;
+	}
+
+	/// <summary>Plays the server's video (streaming it first if it's a torrent) until the player closes.</summary>
+	private async Task PlayServerAsync(IMediaPlayer player, AnimeModel anime, int number, VideoServer server, AnimeSettings settings, bool track,
+									   bool offerEpisodes, CancellationToken ct)
+	{
+		// A torrent is streamed to the player over HTTP, until playback ends.
+		await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(server, ct) : null;
+		var media = new MediaItem(stream?.Url ?? server.Url, $"{anime.Title} - Episode {number}", stream?.Headers ?? server.Headers);
+		await PlayAsync(player, anime, number, media, settings, track, offerEpisodes, ct);
+	}
+
+	/// <summary>Shows the anime and episode in the status bar, and runs <paramref name="play"/>, saying there how it goes.</summary>
+	private async Task RunAsync(AnimeModel anime, int number, Func<CancellationToken, Task> play)
 	{
 		_cancellation?.Cancel();
 		using var cancellation = _cancellation = new CancellationTokenSource();
@@ -317,69 +444,7 @@ public sealed partial class WatchService(
 
 		try
 		{
-			if (anime.TotalEpisodes is > 0 and var total && number > total)
-			{
-				Show(PlaybackStatusKind.Error, $"It only has {total} episodes.");
-				return;
-			}
-
-			if (await GetPlayerAsync() is not { } player)
-			{
-				return;
-			}
-
-			// As its module is named (e.g. "Built-in player"): the player's own name reads in a sentence ("the built-in player").
-			PlayerName = modules.FirstOrDefault(x => x.Id == player.Id)?.Name ?? player.Name;
-
-			var settings = animeSettings.Get(anime);
-			if (GetProvider(settings) is not { } provider)
-			{
-				// Anime providers come as plugins: on a fresh install there are none.
-				Show(PlaybackStatusKind.Error, "There's no anime provider to watch from: install one from the Plugins page.", "Plugins", () =>
-				{
-					if (Totoro.UI.Navigation.Navigators.TryGetNavigator("main", out var main))
-					{
-						_ = main.NavigateToViewModelAsync(typeof(PluginsViewModel));
-					}
-				});
-				return;
-			}
-
-			ProviderName = provider.Name;
-
-			Show(PlaybackStatusKind.Progress, $"Finding the show on {provider.Name}…", "Cancel", Cancel);
-			if (await FindOrPickShowAsync(provider, anime, ct) is not { } show)
-			{
-				Hide();
-				return;
-			}
-
-			Show(PlaybackStatusKind.Progress, $"Getting episode {number}…", "Cancel", Cancel);
-			await relations.EnsureAvailableAsync(ct);
-			if (PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), anime, number, settings.EpisodeNumbering) is not { } episode)
-			{
-				// Perhaps the provider uses absolute numbering, and there's no rule for it yet.
-				Show(PlaybackStatusKind.Error,
-					 $"Episode {number} isn't on {provider.Name} yet. If {provider.Name} uses absolute numbering (on across seasons), set that in its episode numbering.",
-					 "Episode numbering…", () => _ = EditNumberingAsync(anime, number));
-				return;
-			}
-
-			if ((int)episode.Number != number)
-			{
-				logger.LogInformation("Episode {Episode} of {Anime} is {Provider}'s {ProviderEpisode}", number, anime.Title, provider.Name, episode.Number);
-			}
-
-			if ((await provider.GetServersAsync(episode, ct)).FirstOrDefault() is not { } server)
-			{
-				Show(PlaybackStatusKind.Error, $"{provider.Name} has no video for episode {number}.");
-				return;
-			}
-
-			// A torrent is streamed to the player over HTTP, until playback ends.
-			await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(server, ct) : null;
-			var media = new MediaItem(stream?.Url ?? server.Url, $"{anime.Title} - Episode {number}", stream?.Headers ?? server.Headers);
-			await PlayAsync(player, anime, number, media, settings, ct);
+			await play(ct);
 		}
 		catch (TorrentStreamException ex)
 		{
@@ -425,13 +490,16 @@ public sealed partial class WatchService(
 	/// Plays the episode and follows it until the player closes: saves the position, handles the opening and ending,
 	/// and if it was played to the end, marks it watched and offers the next one.
 	/// </summary>
-	private async Task PlayAsync(IMediaPlayer player, AnimeModel anime, int number, MediaItem media, AnimeSettings settings, CancellationToken ct)
+	/// <param name="track">Whether to resume, save progress and mark it watched.</param>
+	/// <param name="offerEpisodes">Whether to offer the next episode, and list them in the built-in player, from the anime's own provider.</param>
+	private async Task PlayAsync(IMediaPlayer player, AnimeModel anime, int number, MediaItem media, AnimeSettings settings, bool track,
+								 bool offerEpisodes, CancellationToken ct)
 	{
 		var key = anime.StoreKey;
 		var credits = TimeSpan.FromMinutes(anime.MediaFormat == AnimeMediaFormat.Movie ? 6 : 2);
 
 		// Resume a little before where it was left, unless that was in the credits.
-		var start = progressStore.Get(anime, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
+		var start = track && progressStore.Get(anime, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
 			? saved.Position - TimeSpan.FromSeconds(3)
 			: TimeSpan.Zero;
 
@@ -470,7 +538,7 @@ public sealed partial class WatchService(
 		void Save()
 		{
 			// Once it's watched, where in the credits it was stopped isn't kept: the next play starts it from the start.
-			if (!marking && position > s_minimumProgress && duration > TimeSpan.Zero)
+			if (track && !marking && position > s_minimumProgress && duration > TimeSpan.Zero)
 			{
 				progressStore.Save(anime, number, new EpisodeProgress(position, duration));
 			}
@@ -498,7 +566,7 @@ public sealed partial class WatchService(
 
 			position = value;
 			segments.OnPosition(value);
-			if (CountsAt(duration, segments.EndingStart, credits) is { } countsAt && !marking)
+			if (track && CountsAt(duration, segments.EndingStart, credits) is { } countsAt && !marking)
 			{
 				if (value >= countsAt && played >= (countsAt - start) * PlayedToCount)
 				{
@@ -537,7 +605,16 @@ public sealed partial class WatchService(
 			player.Play(media, start);
 			if (player is IInteractiveMediaPlayer interactive)
 			{
-				_ = ListEpisodesAsync(interactive, anime, number, ct);
+				if (offerEpisodes)
+				{
+					_ = ListEpisodesAsync(interactive, anime, number, ct);
+				}
+				else
+				{
+					// An earlier anime's list would play from its own provider.
+					_listedAnime = null;
+					interactive.SetEpisodes([]);
+				}
 			}
 
 			// Nothing to say while it plays: the card shows the episode, the player and the progress.
@@ -574,7 +651,7 @@ public sealed partial class WatchService(
 		}
 
 		var next = number + 1;
-		if (anime.TotalEpisodes is > 0 and var total && next > total)
+		if (!offerEpisodes || anime.TotalEpisodes is > 0 and var total && next > total)
 		{
 			// Said with the card's colour and the check, not words.
 			Show(PlaybackStatusKind.Success, "");
@@ -938,6 +1015,8 @@ public sealed partial class WatchService(
 			return null;
 		}
 
+		// As its module is named (e.g. "Built-in player"): the player's own name reads in a sentence ("the built-in player").
+		PlayerName = modules.FirstOrDefault(x => x.Id == player.Id)?.Name ?? player.Name;
 		if (player.IsAvailable())
 		{
 			return player;

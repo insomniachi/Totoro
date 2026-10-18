@@ -129,6 +129,11 @@ public partial class App : Application
 				{
 					x.AnimatedIcon = Icons.SearchAnimated;
 				});
+				services.AddMainNavigationItem<ProviderWatchPage, ProviderWatchViewModel>("Watch", x =>
+				{
+					x.UnselectedIcon = Icons.Play;
+					x.SelectedIcon = Icons.Play;
+				});
 				services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
 				{
 					x.UnselectedIcon = Icons.Plugins;

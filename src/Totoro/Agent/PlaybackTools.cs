@@ -1,7 +1,10 @@
 using System.ComponentModel;
 using Totoro.Core.Agent;
+using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
+using Totoro.Core.Settings;
 using Totoro.Playback;
 
 namespace Totoro.Agent;
@@ -33,8 +36,14 @@ public sealed record PlaybackTrack(
 [Description("The shows on the anime's provider it may be, and the one it's matched with, if any.")]
 public sealed record ProviderShows(string Provider, ShowCandidate? Matched, IReadOnlyList<ShowCandidate> Candidates);
 
+[Description("An episode of a show on an anime provider.")]
+public sealed record ProviderEpisodeItem(
+	string Id,
+	[property: Description("Its number as the provider numbers it (with absolute numbering, it carries on from a previous season).")]
+	float Number);
+
 /// <summary>Agent tools for watching anime (see <see cref="WatchService"/>).</summary>
-public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch)
+public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, IFactory<IAnimeProvider, Guid> providers)
 {
 	// Long enough for a torrent to find peers.
 	private static readonly TimeSpan s_startTimeout = TimeSpan.FromSeconds(90);
@@ -145,6 +154,69 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch)
 		var provider = watch.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to watch from.");
 		watch.SetShow(anime, provider, new ProviderShow(showId, showTitle, 1));
 		return $"{anime.Title} is now played from \"{showTitle}\" on {provider.Name}.";
+	}
+
+	[AgentTool("search_provider")]
+	[Description("Searches an anime provider for shows, to watch an episode from it with play_from_provider without changing the anime's settings.")]
+	public async Task<IReadOnlyList<ShowCandidate>> SearchProviderAsync(
+		[Description("The provider's name (get_anime_settings lists them).")] string provider,
+		string query)
+	{
+		return [.. (await GetProvider(provider).SearchAsync(query, CancellationToken.None)).Select(ToCandidate)];
+	}
+
+	[AgentTool("get_provider_episodes")]
+	[Description("The episodes a show on an anime provider (from search_provider) has, by the provider's numbering.")]
+	public async Task<IReadOnlyList<ProviderEpisodeItem>> GetProviderEpisodesAsync(string provider, string showId)
+	{
+		var episodes = await GetProvider(provider).GetEpisodesAsync(showId, CancellationToken.None);
+		return [.. episodes.OrderBy(x => x.Number).Select(x => new ProviderEpisodeItem(x.Id, x.Number))];
+	}
+
+	[AgentTool("get_provider_streams")]
+	[Description("The streams (qualities, mirrors...) of an episode on an anime provider, the provider's preferred one first.")]
+	public async Task<IReadOnlyList<string>> GetProviderStreamsAsync(string provider, string showId, string episodeId, float episodeNumber)
+	{
+		var servers = await GetProvider(provider).GetServersAsync(new ProviderEpisode(showId, episodeId, episodeNumber), CancellationToken.None);
+		return [.. servers.Select(x => x.Name)];
+	}
+
+	[AgentTool("play_from_provider")]
+	[Description("Plays an episode of a show on any anime provider (from search_provider and get_provider_episodes), whatever provider and " +
+				 "show an anime's settings say. Tracked as an anime from the database when its id is given.")]
+	public async Task<PlayResult> PlayFromProviderAsync(
+		string provider,
+		string showId,
+		string showTitle,
+		string episodeId,
+		float episodeNumber,
+		[Description("The stream's name, from get_provider_streams; leave it out for the provider's preferred one.")] string? stream = null,
+		[Description("The anime (in the database) to track it as: resuming where the user left off, saving progress and marking the episode " +
+					 "watched on their list when finished. Leave it out to play it untracked.")] long? animeId = null,
+		[Description("How the provider numbers the show's episodes, to tell which of the anime's episodes it is when tracked: Season (each " +
+					 "season from 1), Absolute (on across seasons, e.g. a second season from 29), or leave it out to work it out.")] EpisodeNumbering? numbering = null)
+	{
+		var anime = animeId is { } id ? await lookup.GetAsync(id) : new AnimeModel { Title = showTitle };
+		var source = GetProvider(provider);
+		var episode = new ProviderEpisode(showId, episodeId, episodeNumber);
+		var servers = await source.GetServersAsync(episode, CancellationToken.None);
+		var server = (stream is null ? servers.FirstOrDefault() : servers.FirstOrDefault(x => x.Name.Equals(stream, StringComparison.OrdinalIgnoreCase)))
+					 ?? throw new AgentToolException(servers.Count == 0
+						 ? $"{source.Name} has no streams for that episode."
+						 : $"There's no stream called {stream}; they are {string.Join(", ", servers.Select(x => x.Name))}.");
+		var number = animeId is null
+			? (int)episodeNumber
+			: await watch.GetAnimeEpisodeAsync(anime, await source.GetEpisodesAsync(showId, CancellationToken.None), episode, numbering, CancellationToken.None);
+		var status = await watch.StartWatchingFromAsync(anime, number, source, episode, server, track: animeId is not null, s_startTimeout);
+		var started = status.IsActive && status.Kind is PlaybackStatusKind.Playing or PlaybackStatusKind.Progress;
+		return new PlayResult(started, status.IsActive ? status.Message : "It was cancelled.");
+	}
+
+	private IAnimeProvider GetProvider(string name)
+	{
+		var all = providers.CreateAll().ToList();
+		return all.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+			   ?? throw new AgentToolException($"There's no provider called {name}; the providers are {string.Join(", ", all.Select(x => x.Name))}.");
 	}
 
 	private static ShowCandidate ToCandidate(ProviderShow show) => new(show.Id, show.Title, Math.Round(show.Score, 2));

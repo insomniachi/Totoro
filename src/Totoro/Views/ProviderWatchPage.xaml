@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.ProviderWatchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:anime="using:Totoro.Core.Modules.Anime"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:streaming="using:Totoro.Core.Modules.Streaming"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <!--
+        One screen: the anime found (cards), and beside them the picked one's episodes, with the stream, tracking and Play.
+        Spacing per the Windows guidelines: 16 padding, 12 between content areas, 8 between buttons and from a header to its control.
+    -->
+    <Grid
+        MaxWidth="1400"
+        Margin="16"
+        RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="8">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Watch" />
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Watch from any provider, just this once: anime's own settings stay as they are."
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ComboBox
+                MinWidth="180"
+                AutomationProperties.Name="Anime provider"
+                ItemsSource="{x:Bind ViewModel.Providers}"
+                SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ProviderChoice">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Image
+                                Width="16"
+                                Height="16"
+                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                            <TextBlock Text="{x:Bind Label}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button
+                Grid.Column="1"
+                VerticalAlignment="Stretch"
+                AutomationProperties.Name="Provider settings"
+                Command="{x:Bind ViewModel.EditProviderSettingsCommand}"
+                ToolTipService.ToolTip="Provider settings (as in Settings)">
+                <FontIcon FontSize="16" Glyph="&#xE713;" />
+            </Button>
+            <AutoSuggestBox
+                Grid.Column="2"
+                AutomationProperties.Name="Search the provider"
+                PlaceholderText="Search by title"
+                QueryIcon="Find"
+                QuerySubmitted="OnQuerySubmitted"
+                Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
+        </Grid>
+
+        <StackPanel Grid.Row="2" Spacing="8">
+            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind ViewModel.Message, Mode=OneWay}"
+                TextWrapping="Wrap"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
+        </StackPanel>
+
+        <Grid Grid.Row="3" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <!--  Auto: the cards take the whole width until an anime is picked  -->
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Cards with the whole title under the cover: shows' titles often differ only at the end ("Season 2")  -->
+            <GridView
+                AutomationProperties.Name="Shows"
+                ItemsSource="{x:Bind ViewModel.ShowCards, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedCard, Mode=TwoWay}"
+                SelectionMode="Single">
+                <!--  24 apart, as the library's cards are  -->
+                <GridView.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource DefaultGridViewItemStyle}" TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="0,0,24,24" />
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="anime:AnimeModel">
+                        <StackPanel
+                            Width="180"
+                            Padding="0,0,0,8"
+                            AutomationProperties.Name="{x:Bind Title}"
+                            Spacing="8">
+                            <Border
+                                Height="256"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                <Grid>
+                                    <!--  Shown when the database had no cover for it  -->
+                                    <FontIcon
+                                        FontSize="32"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        Glyph="&#xE714;" />
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                </Grid>
+                            </Border>
+                            <!--  Three lines' height whatever the title: the grid sizes every card as its first  -->
+                            <TextBlock
+                                Height="60"
+                                MaxLines="3"
+                                Text="{x:Bind Title}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+
+            <!--  The picked anime's episodes, and the episode's stream and tracking  -->
+            <Grid
+                Grid.Column="1"
+                Width="400"
+                Padding="16"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource OverlayCornerRadius}"
+                RowSpacing="12"
+                Visibility="{x:Bind ViewModel.HasShow, Mode=OneWay}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="{x:Bind ViewModel.SelectedShow.Title, Mode=OneWay, FallbackValue=''}"
+                    TextWrapping="Wrap" />
+
+                <GridView
+                    Grid.Row="1"
+                    AutomationProperties.Name="Episodes"
+                    ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedEpisode, Mode=TwoWay}"
+                    SelectionMode="Single">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:EpisodeChoice">
+                            <Border
+                                Width="56"
+                                Height="44"
+                                AutomationProperties.Name="{x:Bind Label}"
+                                Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{ThemeResource ControlCornerRadius}">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind Number}" />
+                            </Border>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+
+                <StackPanel
+                    Grid.Row="2"
+                    Spacing="12"
+                    Visibility="{x:Bind ViewModel.HasEpisode, Mode=OneWay}">
+                    <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.SelectedEpisode.Label, Mode=OneWay, FallbackValue=''}" />
+                    <ComboBox
+                        HorizontalAlignment="Stretch"
+                        Header="Stream"
+                        ItemsSource="{x:Bind ViewModel.Streams, Mode=OneWay}"
+                        PlaceholderText="No streams"
+                        SelectedItem="{x:Bind ViewModel.SelectedStream, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="streaming:VideoServer">
+                                <TextBlock Text="{x:Bind Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <ToggleSwitch
+                        Header="Track it"
+                        IsOn="{x:Bind ViewModel.Track, Mode=TwoWay}"
+                        OffContent="Leave my list as it is"
+                        OnContent="Mark it watched on my list" />
+                    <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.Track, Mode=OneWay}">
+                    <ComboBox
+                        HorizontalAlignment="Stretch"
+                        Header="Track as"
+                        ItemsSource="{x:Bind ViewModel.Matches, Mode=OneWay}"
+                        PlaceholderText="No anime found for this show"
+                        SelectedItem="{x:Bind ViewModel.SelectedAnime, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="anime:AnimeModel">
+                                <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <!--  A later season a provider numbers on from the first (29 for its 1) is tracked as its own episode with Absolute  -->
+                    <StackPanel Spacing="8">
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            Header="Episode numbering"
+                            ItemsSource="{x:Bind ViewModel.NumberingChoices}"
+                            SelectedItem="{x:Bind ViewModel.Numbering, Mode=TwoWay}" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.TrackedEpisode, Mode=OneWay}"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.TrackedEpisode), Mode=OneWay}" />
+                    </StackPanel>
+                    </StackPanel>
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        Command="{x:Bind ViewModel.PlayCommand}"
+                        Style="{ThemeResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="14" Glyph="&#xE768;" />
+                            <TextBlock Text="Play" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>
