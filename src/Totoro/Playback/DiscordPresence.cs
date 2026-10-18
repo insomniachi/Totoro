@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using DiscordRPC;
+using Microsoft.UI.Dispatching;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Settings;
 
@@ -17,17 +18,28 @@ public sealed class DiscordPresence : IDisposable
 	// An end time this far off where it was last said is a seek (or a pause, since): said again.
 	private static readonly TimeSpan s_drift = TimeSpan.FromSeconds(5);
 
+	// Players only say where playback is while it moves: it's paused once it hasn't for this long.
+	private static readonly TimeSpan s_pausedAfter = TimeSpan.FromSeconds(3);
+
 	private readonly WatchService _watch;
 	private readonly IPreferences _preferences;
 	private DiscordRpcClient? _client;
 	private (string Key, int Episode)? _shown;
 	private DateTime _shownEnd;
+	private bool _shownPaused;
+	private TimeSpan _lastPosition;
+	private DateTime _lastMoved;
+	private readonly DispatcherQueueTimer _pauseCheck;
 
 	public DiscordPresence(WatchService watch, IPreferences preferences)
 	{
 		_watch = watch;
 		_preferences = preferences;
 		watch.PropertyChanged += OnWatchChanged;
+		// Made on the UI thread (at startup), where WatchService changes.
+		_pauseCheck = DispatcherQueue.GetForCurrentThread().CreateTimer();
+		_pauseCheck.Interval = TimeSpan.FromSeconds(1);
+		_pauseCheck.Tick += (_, _) => Update();
 	}
 
 	private void OnWatchChanged(object? sender, PropertyChangedEventArgs e)
@@ -46,9 +58,17 @@ public sealed class DiscordPresence : IDisposable
 			return;
 		}
 
-		var end = DateTime.UtcNow + (_watch.PlaybackDuration - _watch.PlaybackPosition);
+		var now = DateTime.UtcNow;
+		if (_watch.PlaybackPosition != _lastPosition || _shown != (anime.StoreKey, _watch.CurrentEpisode))
+		{
+			_lastPosition = _watch.PlaybackPosition;
+			_lastMoved = now;
+		}
+
+		var end = now + (_watch.PlaybackDuration - _watch.PlaybackPosition);
 		var known = _watch.PlaybackDuration > TimeSpan.Zero;
-		if (_shown == (anime.StoreKey, _watch.CurrentEpisode) && (!known || (end - _shownEnd).Duration() < s_drift))
+		var paused = known && now - _lastMoved > s_pausedAfter;
+		if (_shown == (anime.StoreKey, _watch.CurrentEpisode) && paused == _shownPaused && (!known || paused || (end - _shownEnd).Duration() < s_drift))
 		{
 			return;
 		}
@@ -62,13 +82,16 @@ public sealed class DiscordPresence : IDisposable
 
 		_shown = (anime.StoreKey, _watch.CurrentEpisode);
 		_shownEnd = end;
+		_shownPaused = paused;
+		_pauseCheck.Start();
+		var episode = anime.MediaFormat == AnimeMediaFormat.Movie ? "" : _watch.EpisodeLine;
 		_client.SetPresence(new RichPresence
 		{
 			Type = ActivityType.Watching,
 			Details = Fit(anime.Title),
-			State = anime.MediaFormat == AnimeMediaFormat.Movie ? null : Fit(_watch.EpisodeLine),
+			State = Fit(paused ? episode.Length > 0 ? $"{episode} (paused)" : "Paused" : episode),
 			Assets = new Assets { LargeImageKey = anime.Image, LargeImageText = Fit(anime.EngTitle) },
-			Timestamps = known ? new Timestamps(end - _watch.PlaybackDuration, end) : null,
+			Timestamps = known && !paused ? new Timestamps(end - _watch.PlaybackDuration, end) : null,
 		});
 	}
 
@@ -80,6 +103,7 @@ public sealed class DiscordPresence : IDisposable
 		}
 
 		_shown = null;
+		_pauseCheck.Stop();
 		_client?.ClearPresence();
 	}
 
@@ -89,6 +113,7 @@ public sealed class DiscordPresence : IDisposable
 	public void Dispose()
 	{
 		_watch.PropertyChanged -= OnWatchChanged;
+		_pauseCheck.Stop();
 		_client?.Dispose();
 	}
 }
