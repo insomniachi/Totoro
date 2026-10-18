@@ -36,8 +36,15 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <!--  The cards slide to their new place when the filters open or close, rather than jump  -->
+        <Grid.ChildrenTransitions>
+            <TransitionCollection>
+                <RepositionThemeTransition />
+            </TransitionCollection>
+        </Grid.ChildrenTransitions>
         <toolkit:Segmented
             Grid.Row="0"
             Margin="16,0,16,16"
@@ -70,8 +77,119 @@
             </toolkit:Segmented.ItemContainerStyle>
 
         </toolkit:Segmented>
-        <toolkit:SwitchPresenter
+
+        <!--  As in the Store: the filters (title, genres, season, year) and sorting show only while Filters is on; it's right of the tabs  -->
+        <ToggleButton
+            Margin="16,0,16,16"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch"
+            AutomationProperties.Name="Filters"
+            IsChecked="{x:Bind ViewModel.ShowFilters, Mode=TwoWay}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon FontSize="16" Glyph="&#xE71C;" />
+                <TextBlock Text="Filters" />
+            </StackPanel>
+        </ToggleButton>
+
+        <!--  The filters on a card of their own: a surface's padding (16)  -->
+        <Border
             Grid.Row="1"
+            Margin="16,0,16,8"
+            Padding="16"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{ThemeResource OverlayCornerRadius}"
+            Visibility="{x:Bind ViewModel.ShowFilters, Mode=OneWay}">
+            <animations:Implicit.ShowAnimations>
+                <animations:OpacityAnimation
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.2" />
+                <animations:TranslationAnimation
+                    From="0,-16,0"
+                    To="0"
+                    Duration="0:0:0.2" />
+            </animations:Implicit.ShowAnimations>
+            <animations:Implicit.HideAnimations>
+                <animations:OpacityAnimation
+                    From="1"
+                    To="0"
+                    Duration="0:0:0.15" />
+                <animations:TranslationAnimation
+                    From="0"
+                    To="0,-16,0"
+                    Duration="0:0:0.15" />
+            </animations:Implicit.HideAnimations>
+        <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <AutoSuggestBox
+                    Width="260"
+                    AutomationProperties.Name="Search your list"
+                    PlaceholderText="Search your list"
+                    QueryIcon="Find"
+                    Text="{x:Bind ViewModel.TitleFilter.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <DropDownButton AutomationProperties.Name="Genres" Content="{x:Bind ViewModel.GenreFilter.Label, Mode=OneWay}">
+                    <DropDownButton.Flyout>
+                        <Flyout Placement="BottomEdgeAlignedLeft">
+                            <ScrollViewer MaxHeight="360">
+                                <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.GenreFilter.Options}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="anime:GenreOption">
+                                            <CheckBox Content="{x:Bind Name}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </Flyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+
+                <ComboBox
+                    MinWidth="140"
+                    AutomationProperties.Name="Season"
+                    ItemsSource="{x:Bind ViewModel.SeasonFilter.Seasons}"
+                    SelectedItem="{x:Bind ViewModel.SeasonFilter.Season, Mode=TwoWay}" />
+                <ComboBox
+                    MinWidth="120"
+                    AutomationProperties.Name="Year"
+                    ItemsSource="{x:Bind ViewModel.SeasonFilter.Years}"
+                    SelectedItem="{x:Bind ViewModel.SeasonFilter.Year, Mode=TwoWay}" />
+
+                <!--  Always there, so it's found; enabled once a filter's set  -->
+                <Button
+                    Command="{x:Bind ViewModel.ClearFiltersCommand}"
+                    Content="Clear filters"
+                    IsEnabled="{x:Bind ViewModel.HasActiveFilters, Mode=OneWay}" />
+            </StackPanel>
+
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Spacing="8">
+                <ComboBox
+                    MinWidth="160"
+                    AutomationProperties.Name="Sort by"
+                    ItemsSource="{x:Bind ViewModel.SortOptions}"
+                    SelectedItem="{x:Bind ViewModel.Sort, Mode=TwoWay}" />
+                <Button
+                    AutomationProperties.Name="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}"
+                    Command="{x:Bind ViewModel.ToggleSortDirectionCommand}"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}">
+                    <FontIcon FontSize="16" Glyph="{x:Bind ViewModel.SortDirectionGlyph, Mode=OneWay}" />
+                </Button>
+            </StackPanel>
+        </Grid>
+        </Border>
+
+        <toolkit:SwitchPresenter
+            Grid.Row="2"
             TargetType="x:Boolean"
             Value="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
             <toolkit:Case Value="True">

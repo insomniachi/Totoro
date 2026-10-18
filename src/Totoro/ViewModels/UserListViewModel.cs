@@ -1,4 +1,8 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Reactive.Subjects;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using DynamicData;
 using DynamicData.Binding;
@@ -25,6 +29,17 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 	public UserListViewModel(IFactory<IAnimeTracker, Guid> factory)
 	{
 		_factory = factory;
+		Sort = SortOptions[0];
+		foreach (var filter in new INotifyPropertyChanged[] { TitleFilter, GenreFilter, SeasonFilter })
+		{
+			filter.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == "IsActive")
+				{
+					OnPropertyChanged(nameof(HasActiveFilters));
+				}
+			};
+		}
 
 		// Changes are pushed on the UI thread (the list is loaded from OnNavigatedToAsync and the
 		// filters change from bindings), so no ObserveOn is needed before binding.
@@ -33,19 +48,81 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 		_source.Connect()
 			   .AutoRefresh(x => x.Tracking)
 			   .Filter(Filters.Combine())
-			   .SortAndBind(out _anime,
-							SortExpressionComparer<AnimeModel>.Ascending(x => _order.GetValueOrDefault(x.Id, int.MaxValue)),
-							new SortAndBindOptions { ResetThreshold = int.MaxValue })
+			   .SortAndBind(out _anime, _comparer, new SortAndBindOptions { ResetThreshold = int.MaxValue })
 			   .Subscribe();
 	}
 
 	public ListStatusFilter StatusFilter { get; } = new();
 
+	public TitleFilter TitleFilter { get; } = new();
+
+	public GenreFilter GenreFilter { get; } = new();
+
+	public SeasonFilter SeasonFilter { get; } = new();
+
+	/// <summary>Whether the filters and sorting show (the Filters button is on).</summary>
+	[ObservableProperty]
+	public partial bool ShowFilters { get; set; }
+
+	/// <summary>Whether any filter besides the status tabs narrows the list (so it can be cleared).</summary>
+	public bool HasActiveFilters => TitleFilter.IsActive || GenreFilter.IsActive || SeasonFilter.IsActive;
+
 	/// <summary>Filtered view of the user's list, for the view to bind to.</summary>
 	public ReadOnlyObservableCollection<AnimeModel> Anime => _anime;
 
 	/// <summary>Every filter applied to the list; an item has to pass all of them. Add new filters here.</summary>
-	private IEnumerable<IFilter<AnimeModel>> Filters => [StatusFilter];
+	private IEnumerable<IFilter<AnimeModel>> Filters => [StatusFilter, TitleFilter, GenreFilter, SeasonFilter];
+
+	public IReadOnlyList<FilterOption<ListSort>> SortOptions { get; } =
+	[
+		new("Last updated", ListSort.LastUpdated),
+		new("Title", ListSort.Title),
+		new("Your score", ListSort.UserScore),
+		new("Average score", ListSort.AverageScore),
+		new("Airing date", ListSort.Year),
+	];
+
+	/// <summary>What the list is sorted by.</summary>
+	[ObservableProperty]
+	public partial FilterOption<ListSort>? Sort { get; set; }
+
+	/// <summary>Highest (or latest, or Z) first; for a title, A to Z unless it's on.</summary>
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(SortDirectionGlyph), nameof(SortDirectionName))]
+	public partial bool SortDescending { get; set; } = true;
+
+	public string SortDirectionGlyph => SortDescending ? "" : "";
+
+	public string SortDirectionName => SortDescending ? "Descending" : "Ascending";
+
+	partial void OnSortChanged(FilterOption<ListSort>? value)
+	{
+		// A title reads A to Z; the rest, highest (or latest) first.
+		SortDescending = value?.Value != ListSort.Title;
+		UpdateSort();
+	}
+
+	partial void OnSortDescendingChanged(bool value) => UpdateSort();
+
+	[RelayCommand]
+	private void ToggleSortDirection() => SortDescending = !SortDescending;
+
+	[RelayCommand]
+	private void ClearFilters()
+	{
+		TitleFilter.Text = "";
+		GenreFilter.Clear();
+		SeasonFilter.Clear();
+	}
+
+	// Ties (and anime without the value sorted by) keep the order the tracker returned.
+	private readonly BehaviorSubject<IComparer<AnimeModel>> _comparer = new(Comparer<AnimeModel>.Default);
+
+	private void UpdateSort()
+	{
+		var listOrder = SortExpressionComparer<AnimeModel>.Ascending(x => _order.GetValueOrDefault(x.Id, int.MaxValue));
+		_comparer.OnNext(UserListQuery.Comparer(Sort?.Value ?? ListSort.LastUpdated, SortDescending, listOrder));
+	}
 
 	protected override async Task OnNavigatedToInternalAsync()
 	{
@@ -70,6 +147,10 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 			_order.TryAdd(item.Id, _order.Count);
 		}
 
+		// The genres and years to pick from are those of the list.
+		GenreFilter.SetGenres(anime);
+		SeasonFilter.SetYears(anime);
+		UpdateSort();
 		_source.Edit(cache =>
 		{
 			cache.Clear();

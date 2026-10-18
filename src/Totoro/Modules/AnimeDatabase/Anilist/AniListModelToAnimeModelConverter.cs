@@ -280,7 +280,8 @@ public static partial class AniListModelToAnimeModelConverter
             Score = (int?)(listEntry.Score is > 0 ? listEntry.Score : null),
             Status = ConvertListStatus(listEntry.Status),
             StartDate = ConvertDate(listEntry.StartedAt),
-            FinishDate = ConvertDate(listEntry.CompletedAt)
+            FinishDate = ConvertDate(listEntry.CompletedAt),
+            UpdatedAt = listEntry.UpdatedAt is > 0 and var updated ? DateTimeOffset.FromUnixTimeSeconds(updated).LocalDateTime : null
         };
     }
 

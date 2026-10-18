@@ -15,20 +15,6 @@ public enum DiscoverKind
 	[Description("Airing an episode today")] AiringToday,
 }
 
-/// <summary>What get_user_list sorts by.</summary>
-public enum ListSort
-{
-	[Description("When the user last changed its entry")] LastUpdated,
-	[Description("Its number of episodes")] Episodes,
-	[Description("How many episodes the user has watched")] WatchedEpisodes,
-	[Description("The user's score")] UserScore,
-	[Description("Its average score")] AverageScore,
-	[Description("When it aired")] Year,
-	Popularity,
-	[Description("When the user started it")] StartDate,
-	[Description("When the user finished it")] FinishDate,
-}
-
 /// <summary>What get_list_stats groups by.</summary>
 public enum ListGrouping
 {
@@ -117,12 +103,16 @@ public sealed class AnimeTools(
 		[Description("Only anime of this format, e.g. Movie.")] AnimeMediaFormat? format = null,
 		[Description("Only anime that started airing in or after this year.")] int? fromYear = null,
 		[Description("Only anime that started airing in or before this year.")] int? toYear = null,
+		[Description("Only anime whose title (its own, English or another) contains this, e.g. part of a name the user remembers.")] string? title = null,
+		[Description("Only anime that aired in this season (of any year, or of fromYear/toYear's).")] AnimeSeason? season = null,
 		[Description("What to sort them by; LastUpdated (what they changed last) if left out.")] ListSort sortBy = ListSort.LastUpdated,
-		[Description("Highest first (true) or lowest first (false).")] bool descending = true,
+		[Description("Highest first (true) or lowest first (false); for Title, Z to A (true) or A to Z (false).")] bool descending = true,
 		[Description("How many to return, at most.")] int limit = 10)
 	{
-		var list = Filter(await GetListAsync(), status, genre, format, fromYear, toYear).ToList();
-		var sorted = Sort(list, sortBy, descending);
+		var list = Filter(await GetListAsync(), status, genre, format, fromYear, toYear)
+				   .Where(x => UserListQuery.MatchesTitle(x, title) && UserListQuery.MatchesSeason(x, season, null))
+				   .ToList();
+		var sorted = UserListQuery.Sort(list, sortBy, descending);
 		return new ListEntries(list.Count, [.. sorted.Take(Math.Clamp(limit, 1, 50)).Select(AnimeSummary.From)]);
 	}
 
@@ -179,25 +169,6 @@ public sealed class AnimeTools(
 				   .Where(x => format is null || x.MediaFormat == format)
 				   .Where(x => fromYear is null || x.Season?.Year >= fromYear)
 				   .Where(x => toYear is null || x.Season is { Year: > 1900 } && x.Season.Year <= toYear);
-	}
-
-	private static IEnumerable<AnimeModel> Sort(IEnumerable<AnimeModel> list, ListSort sortBy, bool descending)
-	{
-		// Anime without the value go last either way.
-		Func<AnimeModel, double?> key = sortBy switch
-		{
-			ListSort.Episodes => x => x.TotalEpisodes is > 0 ? x.TotalEpisodes : null,
-			ListSort.WatchedEpisodes => x => x.Tracking?.WatchedEpisodes,
-			ListSort.UserScore => x => x.Tracking?.Score is > 0 ? x.Tracking.Score : null,
-			ListSort.AverageScore => x => x.MeanScore is > 0 ? x.MeanScore : null,
-			ListSort.Year => x => x.Season is { Year: > 1900 } season ? season.Year * 10 + (int)season.SeasonName : null,
-			ListSort.Popularity => x => x.Popularity,
-			ListSort.StartDate => x => x.Tracking?.StartDate?.Ticks,
-			ListSort.FinishDate => x => x.Tracking?.FinishDate?.Ticks,
-			_ => x => x.Tracking?.UpdatedAt?.Ticks,
-		};
-		var known = list.Where(x => key(x) is not null);
-		return [.. (descending ? known.OrderByDescending(key) : known.OrderBy(key)), .. list.Where(x => key(x) is null)];
 	}
 
 	private static IEnumerable<string> KeysOf(AnimeModel anime, ListGrouping groupBy) => groupBy switch

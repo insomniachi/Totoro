@@ -181,6 +181,7 @@ internal class AnilistTracker(GraphQLHttpClient client) : IAnimeTracker
 																		   .WithStatus()
 																		   .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
 																		   .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
-																		   .WithProgress()))));
+																		   .WithProgress()
+																		   .WithUpdatedAt()))));
 	}
 }
