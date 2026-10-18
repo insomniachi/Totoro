@@ -32,6 +32,16 @@ public static class Icons
 		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
+	/// <summary>
+	/// A play triangle nudging forward as the pointer comes over, and pressed in when clicked (our own, from its Lottie file
+	/// in AnimatedVisuals).
+	/// </summary>
+	public static AnimatedIcon PlayAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedPlayVisualSource(),
+		FallbackIconSource = new SymbolIconSource { Symbol = Symbol.Play },
+	};
+
 	/// <summary>The gear turning, as on WinUI's own Settings menu item.</summary>
 	public static AnimatedIcon SettingsAnimated => new()
 	{

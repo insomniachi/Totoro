@@ -131,8 +131,7 @@ public partial class App : Application
 				});
 				services.AddMainNavigationItem<ProviderWatchPage, ProviderWatchViewModel>("Watch", x =>
 				{
-					x.UnselectedIcon = Icons.Play;
-					x.SelectedIcon = Icons.Play;
+					x.AnimatedIcon = Icons.PlayAnimated;
 				});
 				services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
 				{
