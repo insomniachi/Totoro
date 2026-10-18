@@ -51,3 +51,7 @@ The app has an assistant: a chat panel (the title bar's Assistant button) whose 
 3. **The UI follows changes made elsewhere.** Changes go out as messages (`AnimeTrackingChangedMessage`, `PlaybackProgressChangedMessage`...) that views apply, so a change made by an agent shows straight away.
 
 Try the tools in the app on **Test → Agent tools**. It lists every tool with the schema the agent sees, and calls a tool with JSON arguments.
+
+## Finding your way around: graphify
+
+The code is mapped as a knowledge graph in `graphify-out/` (rebuilt by a git hook after each commit). Follow `.agents/rules/graphify.md`: for questions about the code, ask the graph first, with the `graphify` MCP server's tools (`query_graph`, `get_node`, `shortest_path`..., set up in `.mcp.json`). The CLI is `py -3.13 -m graphify` (its `graphify.exe` isn't on the PATH), e.g. `py -3.13 -m graphify query "..."` or `py -3.13 -m graphify update .` after changing code.
