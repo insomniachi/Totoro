@@ -15,6 +15,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.2.251219" />
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" Version="8.2.251219" />
     <PackageVersion Include="CommunityToolkit.WinUI.Media" Version="8.2.251219" />
+    <PackageVersion Include="DiscordRichPresence" Version="1.6.1.70" />
     <PackageVersion Include="DevWinUI" Version="10.6.0" />
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Flurl.Http" Version="4.0.2" />

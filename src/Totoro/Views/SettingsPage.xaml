@@ -178,6 +178,13 @@
                 <ToggleSwitch IsOn="{x:Bind ViewModel.PlayNextAutomatically, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="While an episode plays, show the anime and episode as your activity on Discord (when Discord is running)." Header="Show what you're watching on Discord">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8BD;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowOnDiscord, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard
                 Command="{x:Bind ViewModel.OpenEpisodeNumberingCommand}"
                 Description="For providers that use absolute numbering, carrying on across seasons (a 2nd season from 13). Rules from anime-relations, and your own."

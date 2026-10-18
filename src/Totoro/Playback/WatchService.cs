@@ -174,6 +174,10 @@ public sealed partial class WatchService(
 	/// <summary>Source and player tags, e.g. "AnimePahe · VLC".</summary>
 	[ObservableProperty] public partial string SourceInfo { get; private set; } = "";
 
+	/// <summary>Where playback is, and the episode's length, as of <see cref="PlaybackFraction"/>.</summary>
+	public TimeSpan PlaybackPosition { get; private set; }
+	public TimeSpan PlaybackDuration { get; private set; }
+
 	/// <summary>Formatted percentage string, e.g. "45%".</summary>
 	[ObservableProperty] public partial string PlaybackPercent { get; private set; } = "";
 
@@ -982,6 +986,7 @@ public sealed partial class WatchService(
 			return;
 		}
 
+		(PlaybackPosition, PlaybackDuration) = (position, duration);
 		PlaybackFraction = Math.Clamp(position / duration, 0, 1);
 		PlaybackTime = $"{FormatTime(position, duration)} / {FormatTime(duration, duration)}";
 		PlaybackPercent = $"{(int)Math.Round(PlaybackFraction * 100)}%";

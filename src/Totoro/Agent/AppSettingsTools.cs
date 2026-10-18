@@ -31,6 +31,8 @@ public sealed record AppSettings(
 	SkipMode EndingSkipMode,
 	[property: Description("Whether the next episode plays by itself when one is finished.")]
 	bool PlayNextAutomatically,
+	[property: Description("Whether the episode playing shows as the user's activity on Discord.")]
+	bool ShowOnDiscord,
 	[property: Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")]
 	bool ShowNextEpisodeOnCards,
 	[property: Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched (while it airs, and for four weeks after).")]
@@ -68,7 +70,7 @@ public sealed class AppSettingsTools(
 	IEnumerable<IAccount> accounts)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, what anime cards show, startup page.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
@@ -91,6 +93,7 @@ public sealed class AppSettingsTools(
 			preferences.OpeningSkipMode,
 			preferences.EndingSkipMode,
 			preferences.PlayNextAutomatically,
+			preferences.ShowOnDiscord,
 			preferences.ShowNextEpisodeOnCards,
 			preferences.ShowNewEpisodesOnCards,
 			preferences.FindStartupItem(startupPages)?.Label ?? "",
@@ -109,6 +112,7 @@ public sealed class AppSettingsTools(
 		SkipMode? openingSkipMode = null,
 		SkipMode? endingSkipMode = null,
 		bool? playNextAutomatically = null,
+		[Description("Whether the episode playing shows as the user's activity on Discord.")] bool? showOnDiscord = null,
 		[Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")] bool? showNextEpisodeOnCards = null,
 		[Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched.")] bool? showNewEpisodesOnCards = null,
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null)
@@ -184,6 +188,11 @@ public sealed class AppSettingsTools(
 		if (playNextAutomatically is { } playNext)
 		{
 			preferences.PlayNextAutomatically = playNext;
+		}
+
+		if (showOnDiscord is { } discord)
+		{
+			preferences.ShowOnDiscord = discord;
 		}
 
 		return GetAppSettings();

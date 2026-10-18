@@ -78,6 +78,7 @@ public partial class App : Application
 
 				// Watching: the watch service drives a playback from a card's Play.
 				services.AddSingleton<WatchService>();
+				services.AddSingleton<DiscordPresence>();
 				// Songs' audio, played in the Music tab.
 				services.AddSingleton<ISongPlayer, SongAudioPlayer>();
 				services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();
@@ -161,6 +162,8 @@ public partial class App : Application
 			ViewModel = _host.Services.GetRequiredService<MainWindowViewModel>(),
 		};
 		_host.Services.GetRequiredService<IAppearanceService>().Apply();
+		// Follows playback from now on.
+		_host.Services.GetRequiredService<DiscordPresence>();
 		// The app ends with its main window, the built-in player's window too.
 		_window.Closed += (_, _) => Exit();
 		// E.g. for the installer of a newer version to replace the app (see UpdateService).

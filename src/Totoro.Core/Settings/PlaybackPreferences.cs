@@ -20,6 +20,7 @@ public static class PlaybackPreferences
 	public const string OpeningSkipKey = "OpeningSkipMode";
 	public const string EndingSkipKey = "EndingSkipMode";
 	public const string PlayNextKey = "PlayNextAutomatically";
+	public const string ShowOnDiscordKey = "ShowOnDiscord";
 
 	/// <summary>Preference key holding the id of the anime provider episodes are found on (unless an anime has its own).</summary>
 	public const string AnimeProviderKey = "SelectedAnimeProvider";
@@ -48,6 +49,13 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(PlayNextKey, false);
 			set => preferences.SaveKey(PlayNextKey, value);
+		}
+
+		/// <summary>Whether the episode playing shows as the user's activity on Discord.</summary>
+		public bool ShowOnDiscord
+		{
+			get => preferences.ReadKey(ShowOnDiscordKey, true);
+			set => preferences.SaveKey(ShowOnDiscordKey, value);
 		}
 
 		/// <summary>Id of the anime provider episodes are found on, unless an anime has its own; empty means the first one available.</summary>

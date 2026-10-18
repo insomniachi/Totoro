@@ -61,6 +61,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" />
     <PackageReference Include="CommunityToolkit.WinUI.Media" />
     <PackageReference Include="DevWinUI" />
+    <PackageReference Include="DiscordRichPresence" />
     <PackageReference Include="HtmlAgilityPack" />
     <PackageReference Include="JikanDotNet" />
     <PackageReference Include="LibVLCSharp.WinUI" />

@@ -107,6 +107,7 @@ public partial class SettingsViewModel : ObservableObject
 		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
+		ShowOnDiscord = preferences.ShowOnDiscord;
 		ShowNextEpisodeOnCards = preferences.ShowNextEpisodeOnCards;
 		ShowNewEpisodesOnCards = preferences.ShowNewEpisodesOnCards;
 
@@ -194,6 +195,12 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool PlayNextAutomatically { get; set; }
 
 	partial void OnPlayNextAutomaticallyChanged(bool value) => _preferences.PlayNextAutomatically = value;
+
+	/// <summary>Whether the episode playing shows as the user's activity on Discord.</summary>
+	[ObservableProperty]
+	public partial bool ShowOnDiscord { get; set; }
+
+	partial void OnShowOnDiscordChanged(bool value) => _preferences.ShowOnDiscord = value;
 
 	/// <summary>Whether cards of anime being watched or planned show how long until the next episode airs.</summary>
 	[ObservableProperty]
