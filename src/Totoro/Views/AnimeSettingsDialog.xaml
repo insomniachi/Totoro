@@ -136,5 +136,17 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
         </toolkit:SettingsCard>
+
+        <TextBlock
+            Margin="0,24,0,4"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            Text="Privacy" />
+
+        <toolkit:SettingsCard Description="Don't show this anime as your activity on Discord while you watch it." Header="Hide from Discord">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xED1A;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <ToggleSwitch IsOn="{x:Bind ViewModel.HideFromDiscord, Mode=TwoWay}" />
+        </toolkit:SettingsCard>
     </StackPanel>
 </UserControl>

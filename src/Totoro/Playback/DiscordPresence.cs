@@ -8,7 +8,7 @@ namespace Totoro.Playback;
 
 /// <summary>
 /// Shows the episode playing as the user's activity on Discord (if Discord is running and it's turned on, see
-/// <see cref="PlaybackPreferences"/>), following <see cref="WatchService"/>; cleared when nothing's playing.
+/// <see cref="PlaybackPreferences"/>), following <see cref="WatchService"/>; cleared when nothing's playing, or the anime is hidden from it (see <see cref="AnimeSettings.HideFromDiscord"/>).
 /// </summary>
 public sealed class DiscordPresence : IDisposable
 {
@@ -23,6 +23,7 @@ public sealed class DiscordPresence : IDisposable
 
 	private readonly WatchService _watch;
 	private readonly IPreferences _preferences;
+	private readonly IAnimeSettingsStore _animeSettings;
 	private DiscordRpcClient? _client;
 	private (string Key, int Episode)? _shown;
 	private DateTime _shownEnd;
@@ -31,8 +32,9 @@ public sealed class DiscordPresence : IDisposable
 	private DateTime _lastMoved;
 	private readonly DispatcherQueueTimer _pauseCheck;
 
-	public DiscordPresence(WatchService watch, IPreferences preferences)
+	public DiscordPresence(WatchService watch, IPreferences preferences, IAnimeSettingsStore animeSettings)
 	{
+		_animeSettings = animeSettings;
 		_watch = watch;
 		_preferences = preferences;
 		watch.PropertyChanged += OnWatchChanged;
@@ -52,7 +54,8 @@ public sealed class DiscordPresence : IDisposable
 
 	private void Update()
 	{
-		if (!_preferences.ShowOnDiscord || !_watch.IsActive || _watch.Kind != PlaybackStatusKind.Playing || _watch.Anime is not { } anime)
+		if (!_preferences.ShowOnDiscord || !_watch.IsActive || _watch.Kind != PlaybackStatusKind.Playing || _watch.Anime is not { } anime ||
+			_animeSettings.Get(anime).HideFromDiscord)
 		{
 			Clear();
 			return;

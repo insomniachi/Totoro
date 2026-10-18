@@ -81,6 +81,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		EndingSkip = EndingSkipModes.First(x => x.Value == _settings.EndingSkipMode);
 
 		Numbering = NumberingChoices.First(x => x.Value == _settings.EpisodeNumbering);
+		HideFromDiscord = _settings.HideFromDiscord;
 		NewRule = new RelationRuleEditorViewModel(databases.CreateDefault(), anime);
 		_ = ShowRuleAsync(anime);
 	}
@@ -102,6 +103,9 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 
 	/// <summary>How its provider numbers its episodes (see <see cref="AnimeSettings.EpisodeNumbering"/>).</summary>
 	[ObservableProperty] public partial NumberingChoice Numbering { get; set; }
+
+	/// <summary>Whether watching it is kept off Discord (see <see cref="AnimeSettings.HideFromDiscord"/>).</summary>
+	[ObservableProperty] public partial bool HideFromDiscord { get; set; }
 
 	/// <summary>The rule that says where its episodes are in absolute numbering, or that there's none.</summary>
 	[ObservableProperty] public partial string RuleSummary { get; private set; } = "Looking for a rule…";
@@ -209,6 +213,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		_settings.OpeningSkipMode = OpeningSkip.Value;
 		_settings.EndingSkipMode = EndingSkip.Value;
 		_settings.EpisodeNumbering = Numbering.Value;
+		_settings.HideFromDiscord = HideFromDiscord;
 		if (NewRule.ToRule() is { } rule)
 		{
 			_relations.AddUserRule(rule);

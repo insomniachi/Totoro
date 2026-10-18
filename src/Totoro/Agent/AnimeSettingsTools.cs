@@ -20,13 +20,15 @@ public sealed record AnimeWatchSettings(
 	[property: Description("Providers it has its own settings for (e.g. video quality), set in the app.")]
 	IReadOnlyList<string> OwnProviderSettings,
 	[property: Description("How its provider numbers its episodes: Season (each season from 1), Absolute (carrying on across seasons, placed by numbering rules), or null for automatic.")]
-	EpisodeNumbering? EpisodeNumbering);
+	EpisodeNumbering? EpisodeNumbering,
+	[property: Description("Whether watching it is kept off Discord, where the episode playing otherwise shows as the user's activity (e.g. for NSFW anime).")]
+	bool HideFromDiscord);
 
 /// <summary>Agent tools for an anime's own settings (see <see cref="AnimeSettings"/>).</summary>
 public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore store, IFactory<IAnimeProvider, Guid> providers)
 {
 	[AgentTool("get_anime_settings")]
-	[Description("An anime's own settings for watching it: its provider, and how its openings and endings are skipped.")]
+	[Description("An anime's own settings for watching it: its provider, how its openings and endings are skipped, and whether it's hidden from Discord.")]
 	public async Task<AnimeWatchSettings> GetAnimeSettingsAsync(long animeId)
 	{
 		var anime = await lookup.GetAsync(animeId);
@@ -43,7 +45,9 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 		AnimeSkipMode? openingSkipMode = null,
 		[Description("As openingSkipMode, for endings.")] AnimeSkipMode? endingSkipMode = null,
 		[Description("How its provider numbers its episodes: Season (each season from 1), Absolute (carrying on across seasons, as numbering rules say), or Automatic to work it out from the provider's episodes.")]
-		AnimeEpisodeNumbering? episodeNumbering = null)
+		AnimeEpisodeNumbering? episodeNumbering = null,
+		[Description("Whether watching it is kept off Discord, where the episode playing otherwise shows as the user's activity.")]
+		bool? hideFromDiscord = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
 		var settings = store.Get(anime);
@@ -75,6 +79,11 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 			};
 		}
 
+		if (hideFromDiscord is { } hide)
+		{
+			settings.HideFromDiscord = hide;
+		}
+
 		store.Save(anime, settings);
 		return Describe(settings);
 	}
@@ -90,7 +99,8 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 			settings.EndingSkipMode,
 			settings.Shows.ToDictionary(x => NameOf(x.Key), x => x.Value.Title),
 			[.. settings.ProviderSettings.Keys.Select(NameOf)],
-			settings.EpisodeNumbering);
+			settings.EpisodeNumbering,
+			settings.HideFromDiscord);
 	}
 
 	private IEnumerable<string> ProviderNames() => providers.CreateAll().Select(x => x.Name);

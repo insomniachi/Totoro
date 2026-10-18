@@ -35,10 +35,13 @@ public sealed class AnimeSettings
 	/// <summary>How its provider numbers its episodes, by season or absolute; null to work it out (see <see cref="Settings.EpisodeNumbering"/>).</summary>
 	public EpisodeNumbering? EpisodeNumbering { get; set; }
 
+	/// <summary>Whether watching it is kept off Discord, where the episode playing otherwise shows as the user's activity.</summary>
+	public bool HideFromDiscord { get; set; }
+
 	/// <summary>Nothing set: the app-wide settings apply throughout.</summary>
 	[JsonIgnore]
 	public bool IsEmpty => ProviderId is null && ProviderSettings.Count == 0 && Shows.Count == 0 && OpeningSkipMode is null && EndingSkipMode is null &&
-						   EpisodeNumbering is null;
+						   EpisodeNumbering is null && !HideFromDiscord;
 }
 
 /// <summary>How a provider numbers an anime's episodes.</summary>
