@@ -16,7 +16,8 @@ internal class OllamaModule : IModule<Settings>
 		Id = Id,
 		Name = "Ollama",
 		Description = "The assistant, with a model running on this PC through Ollama: it can do what you can in the app. Needs Ollama running, with a model that can use tools.",
-		EntryPoint = "Ollama"
+		EntryPoint = "Ollama",
+		Image = @"Assets\Modules\Ollama.png"
 	};
 
 	public void ConfigureServices(IServiceCollection services)

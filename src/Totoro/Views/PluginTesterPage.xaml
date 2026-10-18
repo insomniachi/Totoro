@@ -147,10 +147,10 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:PluginTestItemViewModel">
-                        <toolkit:SettingsExpander Header="{x:Bind Name}" IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}">
-                            <toolkit:SettingsExpander.HeaderIcon>
-                                <FontIcon Glyph="&#xEA86;" />
-                            </toolkit:SettingsExpander.HeaderIcon>
+                        <toolkit:SettingsExpander
+                            Header="{x:Bind Name}"
+                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xEA86;')}"
+                            IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}">
                             <toolkit:SettingsExpander.Description>
                                 <StackPanel Spacing="4">
                                     <TextBlock

@@ -26,6 +26,11 @@ public class Descriptor
 	public string EntryPoint { get; set; } = Assembly.GetCallingAssembly().GetName().Name ?? "";
 	public List<string> Components { get; init; } = [];
 	public string? Description { get; init; }
-	public string? Image { get; init; }
+	/// <summary>
+	/// The module's icon: an image file, relative to the module's assembly (e.g. a plugin's "icon.png"). Read, it's the
+	/// full path, or null when the file isn't there (a plugin installed before it had one).
+	/// </summary>
+	public string? Image { get => field; init => field = value is not null && Path.Combine(_directory, value) is var path && File.Exists(path) ? path : null; }
+	private readonly string _directory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) is { Length: > 0 } directory ? directory : AppContext.BaseDirectory;
 	public Type? SettingViewModel { get; init; }
 }

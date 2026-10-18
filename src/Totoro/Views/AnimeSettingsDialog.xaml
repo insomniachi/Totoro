@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Totoro.UI.Controls"
+    xmlns:helpers="using:Totoro.Helpers"
     xmlns:relations="using:Totoro.Views.Relations"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:Totoro.ViewModels">
@@ -34,7 +35,13 @@
                 SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ProviderChoice">
-                        <TextBlock Text="{x:Bind Label}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Image
+                                Width="16"
+                                Height="16"
+                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                            <TextBlock Text="{x:Bind Label}" />
+                        </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>

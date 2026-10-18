@@ -23,6 +23,9 @@ public sealed partial class AccountViewModel : ObservableObject, IRecipient<Acco
 
 	public Guid Id => _account.Id;
 
+	/// <summary>The account's module's icon; "" when it has none.</summary>
+	public string Icon { get; init; } = "";
+
 	public string Name { get; }
 
 	[ObservableProperty] public partial string Status { get; private set; } = "";

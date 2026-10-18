@@ -65,6 +65,7 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 		IFactory<IAnimeMetadataProvider, Guid> providers,
 		IFactory<IAnimeTracker, Guid> trackers,
 		IPreferences preferences,
+		IEnumerable<Descriptor> modules,
 		ILogger<AdvancedSearchViewModel> logger)
 	{
 		_providers = providers;
@@ -83,7 +84,7 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 
 		_subscriptions.Add(SearchWhenFiltersChange(ui));
 
-		Providers = [.. providers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name))];
+		Providers = [.. providers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))];
 		// The selected anime database, as elsewhere in the app; unset (or unknown) means the first.
 		Provider = Providers.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? Providers.FirstOrDefault();
 		SelectedSeason = Seasons[0];

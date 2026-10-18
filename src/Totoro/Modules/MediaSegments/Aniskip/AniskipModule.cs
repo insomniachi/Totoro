@@ -18,7 +18,8 @@ internal class AniskipModule : IModule
 		Id = Id,
 		Name = "Aniskip",
 		Description = "A community database of where episodes' openings, endings and recaps are.",
-		EntryPoint = "Aniskip"
+		EntryPoint = "Aniskip",
+		Image = @"Assets\Modules\Aniskip.png"
 	};
 
 	public void ConfigureServices(IServiceCollection services)

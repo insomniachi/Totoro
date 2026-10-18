@@ -14,17 +14,19 @@ namespace Totoro.ViewModels;
 
 // ToString is what screen readers announce for each ComboBox item, so it returns the label rather than the record dump.
 
-public sealed record AnimeDatabaseOption(Guid Id, string Name)
+// Icon is the module's (Descriptor.Image), "" when it has none.
+
+public sealed record AnimeDatabaseOption(Guid Id, string Name, string Icon)
 {
 	public override string ToString() => Name;
 }
 
-public sealed record AnimeProviderOption(Guid Id, string Name)
+public sealed record AnimeProviderOption(Guid Id, string Name, string Icon)
 {
 	public override string ToString() => Name;
 }
 
-public sealed record MediaPlayerOption(Guid Id, string Name)
+public sealed record MediaPlayerOption(Guid Id, string Name, string Icon)
 {
 	public override string ToString() => Name;
 }
@@ -48,6 +50,7 @@ public sealed record SkipModeOption(string Label, SkipMode Value)
 public sealed partial class ModuleSettingsItem(IModuleSettings settings, IDialogService dialogs)
 {
 	public string Name => settings.Descriptor.Name;
+	public string Icon => settings.Descriptor.Image ?? "";
 
 	/// <summary>What there is to edit, e.g. "Include NSFW, Search Limit".</summary>
 	public string Summary { get; } = string.Join(", ", settings.Config.ToDataContainer().Select(x => x.DisplayName ?? x.Name));
@@ -91,20 +94,22 @@ public partial class SettingsViewModel : ObservableObject
 		StartupPages = [.. navigationItems.Where(x => !x.IsFooter)];
 		StartupPage = preferences.FindStartupItem(StartupPages);
 
+		string IconOf(Guid id) => modules.FirstOrDefault(m => m.Id == id)?.Image ?? "";
+
 		// Trackers and metadata providers come in pairs per module, so listing the trackers lists the databases.
-		AnimeDatabases = [.. trackers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name))];
+		AnimeDatabases = [.. trackers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, IconOf(x.Id)))];
 		AnimeDatabase = AnimeDatabases.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? AnimeDatabases.FirstOrDefault();
 
-		Accounts = [.. accounts.Select(x => new AccountViewModel(x))];
+		Accounts = [.. accounts.Select(x => new AccountViewModel(x) { Icon = IconOf(x.Id) })];
 		SyncOtherLists = preferences.SyncOtherLists;
 
 		OpeningSkip = SkipModes.First(x => x.Value == preferences.OpeningSkipMode);
 		EndingSkip = SkipModes.First(x => x.Value == preferences.EndingSkipMode);
 		// Anime providers come as plugins: on a fresh install there are none (see HasAnimeProviders).
-		AnimeProviders = [.. providers.CreateAll().DistinctBy(x => x.Id).Select(x => new AnimeProviderOption(x.Id, x.Name))];
+		AnimeProviders = [.. providers.CreateAll().DistinctBy(x => x.Id).Select(x => new AnimeProviderOption(x.Id, x.Name, IconOf(x.Id)))];
 		AnimeProvider = AnimeProviders.FirstOrDefault(x => x.Id == preferences.SelectedAnimeProvider) ?? AnimeProviders.FirstOrDefault();
 		// Named as their modules are (the built-in player's own name reads "the built-in player").
-		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name))];
+		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name, IconOf(x.Id)))];
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
 		ShowOnDiscord = preferences.ShowOnDiscord;

@@ -24,7 +24,8 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	public string Description => Item.Description;
 	public string Author => Item.Author;
 	public string DownloadUrl => Item.DownloadUrl;
-	public string? IconUrl => Item.IconUrl;
+	/// <summary>The plugin's own icon when it's loaded (no download, and dev plugins aren't in the catalog), else the catalog's.</summary>
+	public string Icon => Item.LocalIcon ?? Item.IconUrl ?? "";
 	public bool IsDev => Item.IsDev;
 	public bool IsCompatible => Item.IsCompatible;
 

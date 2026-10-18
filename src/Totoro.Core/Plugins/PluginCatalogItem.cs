@@ -55,6 +55,10 @@ public sealed record PluginCatalogItem
 	[JsonIgnore]
 	public bool IsDev { get; set; }
 
+	/// <summary>The loaded plugin's own icon file (its descriptor's Image), if it has one.</summary>
+	[JsonIgnore]
+	public string? LocalIcon { get; set; }
+
 	/// <summary>Why the installed plugin didn't load, if it didn't.</summary>
 	[JsonIgnore]
 	public string? LoadError { get; set; }

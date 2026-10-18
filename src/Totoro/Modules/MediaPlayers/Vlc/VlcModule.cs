@@ -16,7 +16,8 @@ internal class VlcModule : IModule<Settings>
 		Id = Id,
 		Name = "Built-in player",
 		Description = "Plays videos in Totoro's own window, with libvlc (VLC's engine): skipping the opening and the next episode are offered over the video.",
-		EntryPoint = "Vlc"
+		EntryPoint = "Vlc",
+		Image = @"Assets\Totoro.png"
 	};
 
 	public void ConfigureServices(IServiceCollection services)

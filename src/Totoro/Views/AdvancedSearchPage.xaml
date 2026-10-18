@@ -159,7 +159,13 @@
                         SelectedItem="{x:Bind ViewModel.Provider, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:AnimeDatabaseOption">
-                                <TextBlock Text="{x:Bind Name}" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Image
+                                        Width="16"
+                                        Height="16"
+                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                                    <TextBlock Text="{x:Bind Name}" />
+                                </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>

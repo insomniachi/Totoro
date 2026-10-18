@@ -108,6 +108,7 @@ public sealed class PluginManager : IPluginManager
 		item.IsInstalled = installedVersion is not null;
 		item.InstalledVersion = installedVersion;
 		item.IsDev = loaded?.IsDev == true;
+		item.LocalIcon = loaded?.Module?.Descriptor.Image;
 		item.LoadError = item.IsInstalled && !_installedThisSession.ContainsKey(item.Id) ? loaded?.LoadError : null;
 		item.HasUpdate = item.IsInstalled
 			&& Version.TryParse(item.Version, out var catalogVer)

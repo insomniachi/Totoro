@@ -13,7 +13,8 @@ namespace Totoro.ViewModels;
 // ToString is what screen readers announce for each ComboBox item, so it returns the label rather than the record dump.
 
 /// <param name="Id">The provider's (module's) id; null for whichever is selected in Settings.</param>
-public sealed record ProviderChoice(Guid? Id, string Label)
+/// <param name="Icon">The provider's module's icon; "" when it has none.</param>
+public sealed record ProviderChoice(Guid? Id, string Label, string Icon)
 {
 	public override string ToString() => Label;
 }
@@ -56,6 +57,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		IFactory<IAnimeMetadataProvider, Guid> databases,
 		IAnimeRelations relations,
 		IEnumerable<IModuleSettings> moduleSettings,
+		IEnumerable<Descriptor> modules,
 		IPreferences preferences)
 	{
 		_anime = anime;
@@ -68,10 +70,12 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		Title = anime.Title;
 		PrimaryButtonText = "Save";
 
+		string IconOf(Guid? id) => modules.FirstOrDefault(m => m.Id == id)?.Image ?? "";
+
 		Providers =
 		[
-			new(null, _defaultProvider is null ? "Default" : $"Default ({_defaultProvider.Name})"),
-			.. providers.CreateAll().Select(x => new ProviderChoice(x.Id, x.Name)),
+			new(null, _defaultProvider is null ? "Default" : $"Default ({_defaultProvider.Name})", IconOf(_defaultProvider?.Id)),
+			.. providers.CreateAll().Select(x => new ProviderChoice(x.Id, x.Name, IconOf(x.Id))),
 		];
 		OpeningSkipModes = CreateSkipModes(preferences.OpeningSkipMode);
 		EndingSkipModes = CreateSkipModes(preferences.EndingSkipMode);

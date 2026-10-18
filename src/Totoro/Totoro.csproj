@@ -34,6 +34,8 @@
     <!--  The app's icon: the exe's (and so the installer's and its shortcuts'), the title bar's and the taskbar's  -->
     <Content Include="Assets\Totoro.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\Totoro.ico" CopyToOutputDirectory="PreserveNewest" />
+    <!--  The modules' icons (their descriptors' Image), read from beside the exe  -->
+    <Content Include="Assets\Modules\*.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 

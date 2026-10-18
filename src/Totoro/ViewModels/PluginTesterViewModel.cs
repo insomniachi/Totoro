@@ -54,6 +54,7 @@ public sealed partial class PluginTestItemViewModel : ObservableObject
 		Version = pluginInfo?.Version ?? "1.0.0";
 		IsDev = pluginInfo?.IsDev ?? false;
 		Description = pluginInfo?.Description ?? "";
+		Icon = pluginInfo?.Module?.Descriptor.Image ?? "";
 
 		SearchStage = new StageItemViewModel("Search");
 		EpisodesStage = new StageItemViewModel("Episodes");
@@ -66,6 +67,7 @@ public sealed partial class PluginTestItemViewModel : ObservableObject
 	public string Version { get; }
 	public bool IsDev { get; }
 	public string Description { get; }
+	public string Icon { get; }
 
 	/// <summary>e.g. "Version 1.0.0 · Dev plugin".</summary>
 	public string VersionText => IsDev ? $"Version {Version} · Dev plugin" : $"Version {Version}";

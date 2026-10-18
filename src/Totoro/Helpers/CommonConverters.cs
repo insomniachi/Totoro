@@ -18,6 +18,12 @@ public static class CommonConverters
 	/// </summary>
 	public static Microsoft.UI.Xaml.Media.ImageSource? ToImageSource(string? url) =>
 		Uri.TryCreate(url, UriKind.Absolute, out var uri) ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri) : null;
+
+	/// <summary>A module's icon (its file or URL), or the glyph when it has none: for a settings card's HeaderIcon.</summary>
+	public static Microsoft.UI.Xaml.Controls.IconElement ToIcon(string image, string glyph) =>
+		ToImageSource(image) is { } source
+			? new Microsoft.UI.Xaml.Controls.ImageIcon { Source = source }
+			: new Microsoft.UI.Xaml.Controls.FontIcon { Glyph = glyph };
 }
 
 public partial class StringToImageSourceConverter : Microsoft.UI.Xaml.Data.IValueConverter
