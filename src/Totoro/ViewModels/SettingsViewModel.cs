@@ -110,6 +110,7 @@ public partial class SettingsViewModel : ObservableObject
 		ShowOnDiscord = preferences.ShowOnDiscord;
 		ShowNextEpisodeOnCards = preferences.ShowNextEpisodeOnCards;
 		ShowNewEpisodesOnCards = preferences.ShowNewEpisodesOnCards;
+		ShowAiringStatusOnCards = preferences.ShowAiringStatusOnCards;
 
 		// Only modules with something to edit.
 		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
@@ -223,6 +224,18 @@ public partial class SettingsViewModel : ObservableObject
 		if (value != _preferences.ShowNewEpisodesOnCards)
 		{
 			_preferences.ShowNewEpisodesOnCards = value;
+		}
+	}
+
+	/// <summary>Whether cards show a dot when their anime is airing or yet to air.</summary>
+	[ObservableProperty]
+	public partial bool ShowAiringStatusOnCards { get; set; }
+
+	partial void OnShowAiringStatusOnCardsChanged(bool value)
+	{
+		if (value != _preferences.ShowAiringStatusOnCards)
+		{
+			_preferences.ShowAiringStatusOnCards = value;
 		}
 	}
 

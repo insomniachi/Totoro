@@ -294,6 +294,13 @@
                 <ToggleSwitch IsOn="{x:Bind ViewModel.ShowNewEpisodesOnCards, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="A dot on anime cards: green while it airs, amber before it starts." Header="Show airing status">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xEC92;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowAiringStatusOnCards, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"

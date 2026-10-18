@@ -37,6 +37,8 @@ public sealed record AppSettings(
 	bool ShowNextEpisodeOnCards,
 	[property: Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched (while it airs, and for four weeks after).")]
 	bool ShowNewEpisodesOnCards,
+	[property: Description("Whether anime cards show a dot when the anime is airing (green) or yet to air (amber).")]
+	bool ShowAiringStatusOnCards,
 	[property: Description("The page the app opens on; one of startupPages.")]
 	string StartupPage,
 	IReadOnlyList<string> StartupPages);
@@ -96,6 +98,7 @@ public sealed class AppSettingsTools(
 			preferences.ShowOnDiscord,
 			preferences.ShowNextEpisodeOnCards,
 			preferences.ShowNewEpisodesOnCards,
+			preferences.ShowAiringStatusOnCards,
 			preferences.FindStartupItem(startupPages)?.Label ?? "",
 			[.. startupPages.Select(x => x.Label)]);
 	}
@@ -115,6 +118,7 @@ public sealed class AppSettingsTools(
 		[Description("Whether the episode playing shows as the user's activity on Discord.")] bool? showOnDiscord = null,
 		[Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")] bool? showNextEpisodeOnCards = null,
 		[Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched.")] bool? showNewEpisodesOnCards = null,
+		[Description("Whether anime cards show a dot when the anime is airing (green) or yet to air (amber).")] bool? showAiringStatusOnCards = null,
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null)
 	{
 		if (animeDatabase is not null)
@@ -183,6 +187,11 @@ public sealed class AppSettingsTools(
 		if (showNewEpisodesOnCards is { } showNewEpisodes)
 		{
 			preferences.ShowNewEpisodesOnCards = showNewEpisodes;
+		}
+
+		if (showAiringStatusOnCards is { } showAiringStatus)
+		{
+			preferences.ShowAiringStatusOnCards = showAiringStatus;
 		}
 
 		if (playNextAutomatically is { } playNext)

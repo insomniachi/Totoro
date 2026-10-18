@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.UI.Controls.AnimeCardOverlays.AiringStatusBadge"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    Margin="8"
+    HorizontalAlignment="Left"
+    VerticalAlignment="Bottom"
+    IsHitTestVisible="False">
+
+    <!--
+        A dot on the cover's bottom left (actions take the right on hover): green while airing, amber before. In a ring of
+        the window's background colour with a shadow under it, as the new episodes badge is, so it reads on any art.
+    -->
+    <Border
+        Padding="3"
+        Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+        CornerRadius="9">
+        <ui:Effects.Shadow>
+            <media:AttachedCardShadow
+                BlurRadius="8"
+                CornerRadius="9"
+                Opacity="0.5"
+                Offset="0,1"
+                Color="Black" />
+        </ui:Effects.Shadow>
+        <!--  One dot per status, so each takes its colour from the theme  -->
+        <Grid>
+            <Ellipse
+                x:Name="AiringDot"
+                Width="12"
+                Height="12"
+                Fill="{ThemeResource SystemFillColorSuccessBrush}" />
+            <Ellipse
+                x:Name="UpcomingDot"
+                Width="12"
+                Height="12"
+                Fill="{ThemeResource SystemFillColorCautionBrush}" />
+        </Grid>
+    </Border>
+</UserControl>

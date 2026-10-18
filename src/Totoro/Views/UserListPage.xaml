@@ -236,6 +236,7 @@
                                             <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
                                             <overlays:NextEpisodeOverlay />
                                             <overlays:NewEpisodesOverlay />
+                                            <overlays:AiringStatusOverlay />
                                             <overlays:HoverEffectsBehavior />
                                         </Interactivity:Interaction.Behaviors>
                                     </controls:AnimeCard>

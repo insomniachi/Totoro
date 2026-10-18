@@ -7,6 +7,7 @@ public static class CardPreferences
 {
 	public const string ShowNextEpisodeKey = "ShowNextEpisodeOnCards";
 	public const string ShowNewEpisodesKey = "ShowNewEpisodesOnCards";
+	public const string ShowAiringStatusKey = "ShowAiringStatusOnCards";
 
 	extension(IPreferences preferences)
 	{
@@ -34,6 +35,20 @@ public static class CardPreferences
 			set
 			{
 				preferences.SaveKey(ShowNewEpisodesKey, value);
+				WeakReferenceMessenger.Default.Send(new CardPreferencesChangedMessage());
+			}
+		}
+
+		/// <summary>
+		/// Whether cards show a dot when their anime is airing or yet to air. Changing it sends a
+		/// <see cref="CardPreferencesChangedMessage"/>.
+		/// </summary>
+		public bool ShowAiringStatusOnCards
+		{
+			get => preferences.ReadKey(ShowAiringStatusKey, true);
+			set
+			{
+				preferences.SaveKey(ShowAiringStatusKey, value);
 				WeakReferenceMessenger.Default.Send(new CardPreferencesChangedMessage());
 			}
 		}
