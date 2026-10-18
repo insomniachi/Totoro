@@ -39,12 +39,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <!--  The cards slide to their new place when the filters open or close, rather than jump  -->
-        <Grid.ChildrenTransitions>
-            <TransitionCollection>
-                <RepositionThemeTransition />
-            </TransitionCollection>
-        </Grid.ChildrenTransitions>
         <toolkit:Segmented
             Grid.Row="0"
             Margin="16,0,16,16"
@@ -192,6 +186,13 @@
             Grid.Row="2"
             TargetType="x:Boolean"
             Value="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
+            <!--  The cards slide to their new place when the filters open or close, rather than jump. Only on the cards: the filters,
+                  never laid out while collapsed, would also slide down from the top the first time they show  -->
+            <toolkit:SwitchPresenter.Transitions>
+                <TransitionCollection>
+                    <RepositionThemeTransition />
+                </TransitionCollection>
+            </toolkit:SwitchPresenter.Transitions>
             <toolkit:Case Value="True">
                 <!--  Placeholder cards laid out like the real grid, so the page doesn't jump when the list arrives  -->
                 <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind PlaceholderCards}">
