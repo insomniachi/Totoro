@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:services="using:Totoro.Core.Services"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:uiNavigation="using:Totoro.UI.Navigation"
@@ -331,11 +332,64 @@
                 <ImageIconSource ImageSource="/Assets/Totoro.png" />
             </TitleBar.IconSource>
             <TitleBar.Content>
+                <!--  Finds anime in the selected database; choosing one opens its details in the side pane  -->
                 <AutoSuggestBox
                     Width="360"
                     VerticalAlignment="Center"
-                    PlaceholderText="Search.."
-                    QueryIcon="Find" />
+                    AutomationProperties.Name="Search anime"
+                    ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
+                    PlaceholderText="Search anime"
+                    QueryIcon="Find"
+                    QuerySubmitted="OnSearchSubmitted"
+                    TextChanged="OnSearchTextChanged"
+                    UpdateTextOnSelect="False">
+                    <AutoSuggestBox.Resources>
+                        <!--  The suggestions list's padding: room under the last cover, which otherwise touches the edge  -->
+                        <Thickness x:Key="AutoSuggestListMargin">0,4,0,8</Thickness>
+                    </AutoSuggestBox.Resources>
+                    <!--  Each as the chat's anime cards are: cover, title, facts, and where it is on the user's list  -->
+                    <AutoSuggestBox.ItemTemplate>
+                        <DataTemplate x:DataType="services:ChatAnimeItem">
+                            <Grid
+                                Padding="0,4"
+                                AutomationProperties.Name="{x:Bind Anime.Title}"
+                                ColumnSpacing="12"
+                                ToolTipService.ToolTip="{x:Bind FullTitle}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border
+                                    Width="40"
+                                    Height="56"
+                                    Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                    CornerRadius="4">
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Anime.Image)}" Stretch="UniformToFill" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock
+                                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                        Text="{x:Bind Anime.Title}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Facts}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind ListStatus}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap"
+                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ListStatus)}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </AutoSuggestBox.ItemTemplate>
+                </AutoSuggestBox>
             </TitleBar.Content>
             <TitleBar.RightHeader>
                 <!--  8 between the buttons, per the Windows guidelines  -->

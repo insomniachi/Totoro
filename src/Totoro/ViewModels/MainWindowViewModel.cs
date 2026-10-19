@@ -13,9 +13,12 @@ namespace Totoro.ViewModels;
 public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDatabaseChangedMessage>, IRecipient<OtherListSyncFailedMessage>
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
+	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
+	private CancellationTokenSource? _search;
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases)
 	{
+		_databases = databases;
 		Playback = playback;
 		Chat = chat;
 		Updates = updates;
@@ -80,6 +83,41 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	{
 		SyncWarning = message.Message;
 		IsSyncWarningOpen = true;
+	}
+
+	/// <summary>The title bar's search: anime in the selected database matching what's typed.</summary>
+	[ObservableProperty]
+	public partial List<ChatAnimeItem> SearchResults { get; set; } = [];
+
+	/// <summary>Searches the selected anime database, as the user types in the title bar.</summary>
+	public async Task SearchAsync(string query)
+	{
+		_search?.Cancel();
+		var search = _search = new CancellationTokenSource();
+		if (query.Trim().Length < 2 || _databases.CreateDefault() is not { } database)
+		{
+			SearchResults = [];
+			return;
+		}
+
+		try
+		{
+			// Searches after typing pauses.
+			await Task.Delay(300, search.Token);
+			var anime = await database.SearchAnimeAsync(query.Trim());
+			if (!search.IsCancellationRequested)
+			{
+				SearchResults = [.. anime.Take(10).Select(x => new ChatAnimeItem(x))];
+			}
+		}
+		catch (OperationCanceledException)
+		{
+		}
+		catch (Exception) when (!search.IsCancellationRequested)
+		{
+			// Offline, or the database is down: no suggestions rather than a crash from the title bar.
+			SearchResults = [];
+		}
 	}
 
 	private void ShowAccount(Guid databaseId)

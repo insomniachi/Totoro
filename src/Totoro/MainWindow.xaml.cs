@@ -54,6 +54,28 @@ public sealed partial class MainWindow : Window
 
 	public MainWindowViewModel? ViewModel { get; set; }
 
+	private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+	{
+		if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+		{
+			_ = ViewModel?.SearchAsync(sender.Text);
+		}
+	}
+
+	private async void OnSearchSubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+	{
+		// A suggestion picked, or Enter with suggestions showing: the first one.
+		var anime = (args.ChosenSuggestion as ChatAnimeItem ?? ViewModel?.SearchResults.FirstOrDefault())?.Anime;
+		if (anime is not null && Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
+		{
+			sender.Text = "";
+			ViewModel!.SearchResults = [];
+			await pane.NavigateToDataAsync(anime);
+		}
+	}
+
+	private const string PaneNavigatorKey = "pane";
+
 	/// <summary>The app's version, e.g. "2.1.0", for the title bar: the release's (see .github/workflows), without the commit's hash.</summary>
 	public static string Version { get; } =
 		(typeof(MainWindow).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "")
