@@ -91,6 +91,7 @@ public static class ServiceCollectionExtensions
 							   .AddSingleton<Plugins.IPluginManager, Plugins.PluginManager>()
 							   .AddSingleton<Plugins.IAnimePluginTesterService, Plugins.AnimePluginTesterService>()
 							   .AddSingleton<Agent.IAgentTools, Agent.AgentTools>()
+							   .ConfigureHttpClientDefaults(x => x.ConfigurePrimaryHttpMessageHandler(() => new System.Net.Http.SocketsHttpHandler { ConnectCallback = Helpers.HttpConnect.PreferIPv4Async }))
 						   .AddLogging();
 		}
 
