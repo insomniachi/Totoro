@@ -110,7 +110,7 @@ public sealed class AnimeTools(
 		[Description("How many to return, at most.")] int limit = 10)
 	{
 		var list = Filter(await GetListAsync(), status, genre, format, fromYear, toYear)
-				   .Where(x => UserListQuery.MatchesTitle(x, title) && UserListQuery.MatchesSeason(x, season, null))
+				   .Where(x => UserListQuery.MatchesTitle(x, title) && UserListQuery.MatchesSeason(x, season, null, null))
 				   .ToList();
 		var sorted = UserListQuery.Sort(list, sortBy, descending);
 		return new ListEntries(list.Count, [.. sorted.Take(Math.Clamp(limit, 1, 50)).Select(AnimeSummary.From)]);

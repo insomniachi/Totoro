@@ -35,14 +35,6 @@ public sealed record SortOption(string Label, SearchSortField Value)
 	public override string ToString() => Label;
 }
 
-/// <summary>How the years are filtered: not at all, one year, or a range (either end may be open).</summary>
-public enum YearFilterMode
-{
-	Any,
-	Year,
-	Range,
-}
-
 /// <summary>
 /// Searches an anime database by title, season, years, score and genres. Searches run by themselves as the filters
 /// change (after a short pause), against the chosen provider; results are sorted by <see cref="SortField"/>.

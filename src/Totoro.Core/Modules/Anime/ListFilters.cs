@@ -96,7 +96,15 @@ public sealed partial class GenreFilter : ObservableObject, IFilter<AnimeModel>
 	}
 }
 
-/// <summary>Anime that aired in a season, a year, or both.</summary>
+/// <summary>How the years are filtered: not at all, one year, or a range (either end may be open).</summary>
+public enum YearFilterMode
+{
+	Any,
+	Year,
+	Range,
+}
+
+/// <summary>Anime that aired in a season, in a year or a range of years, or both.</summary>
 public sealed partial class SeasonFilter : ObservableObject, IFilter<AnimeModel>
 {
 	private readonly BehaviorSubject<Func<AnimeModel, bool>> _predicate = new(_ => true);
@@ -104,7 +112,6 @@ public sealed partial class SeasonFilter : ObservableObject, IFilter<AnimeModel>
 	public SeasonFilter()
 	{
 		Season = Seasons[0];
-		Year = Years[0];
 	}
 
 	public IReadOnlyList<FilterOption<AnimeSeason?>> Seasons { get; } =
@@ -116,50 +123,78 @@ public sealed partial class SeasonFilter : ObservableObject, IFilter<AnimeModel>
 		new("Fall", AnimeSeason.Fall),
 	];
 
-	/// <summary>"Any year", then the years of the list's anime, latest first.</summary>
-	public ObservableCollection<FilterOption<int?>> Years { get; } = [new("Any year", null)];
+	/// <summary>The latest year to offer: next year's, for anime planned that haven't started.</summary>
+	public int LatestYear { get; } = DateTime.Now.Year + 1;
 
 	[ObservableProperty]
 	public partial FilterOption<AnimeSeason?>? Season { get; set; }
 
 	[ObservableProperty]
-	public partial FilterOption<int?>? Year { get; set; }
+	public partial int? MinimumYear { get; set; }
+
+	[ObservableProperty]
+	public partial int? MaximumYear { get; set; }
+
+	/// <summary>
+	/// Whether the years filter on one year (<see cref="Year"/>) or a range (<see cref="MinimumYear"/> to
+	/// <see cref="MaximumYear"/>). Any clears the years; Year narrows a range to its start.
+	/// </summary>
+	[ObservableProperty]
+	public partial YearFilterMode YearMode { get; set; }
+
+	/// <summary><see cref="YearMode"/> as an index, for a segmented control.</summary>
+	public int YearModeIndex
+	{
+		get => (int)YearMode;
+		set => YearMode = (YearFilterMode)value;
+	}
+
+	/// <summary>The year in <see cref="YearFilterMode.Year"/> mode: both ends of the range, so it's one year.</summary>
+	public int? Year
+	{
+		get => MinimumYear;
+		set => MinimumYear = MaximumYear = value;
+	}
 
 	public IObservable<Func<AnimeModel, bool>> Predicate => _predicate;
 
-	public bool IsActive => Season?.Value is not null || Year?.Value is not null;
-
-	/// <summary>Offers the years of these anime; the year picked stays picked if it's still one of them.</summary>
-	public void SetYears(IEnumerable<AnimeModel> anime)
-	{
-		var picked = Year?.Value;
-		while (Years.Count > 1)
-		{
-			Years.RemoveAt(1);
-		}
-
-		foreach (var year in anime.Select(x => x.Season?.Year ?? 0).Where(x => x > 1900).Distinct().OrderDescending())
-		{
-			Years.Add(new(year.ToString(System.Globalization.CultureInfo.InvariantCulture), year));
-		}
-
-		Year = Years.FirstOrDefault(x => x.Value == picked) ?? Years[0];
-	}
+	public bool IsActive => Season?.Value is not null || MinimumYear is not null || MaximumYear is not null;
 
 	public void Clear()
 	{
 		Season = Seasons[0];
-		Year = Years[0];
+		YearMode = YearFilterMode.Any;
+		MinimumYear = MaximumYear = null;
+	}
+
+	partial void OnYearModeChanged(YearFilterMode value)
+	{
+		OnPropertyChanged(nameof(YearModeIndex));
+		switch (value)
+		{
+			case YearFilterMode.Any:
+				MinimumYear = MaximumYear = null;
+				break;
+			case YearFilterMode.Year:
+				Year = MinimumYear ?? MaximumYear;
+				break;
+		}
 	}
 
 	partial void OnSeasonChanged(FilterOption<AnimeSeason?>? value) => Update();
 
-	partial void OnYearChanged(FilterOption<int?>? value) => Update();
+	partial void OnMinimumYearChanged(int? value)
+	{
+		OnPropertyChanged(nameof(Year));
+		Update();
+	}
+
+	partial void OnMaximumYearChanged(int? value) => Update();
 
 	private void Update()
 	{
-		var (season, year) = (Season?.Value, Year?.Value);
-		_predicate.OnNext(anime => UserListQuery.MatchesSeason(anime, season, year));
+		var (season, from, to) = (Season?.Value, MinimumYear, MaximumYear);
+		_predicate.OnNext(anime => UserListQuery.MatchesSeason(anime, season, from, to));
 		OnPropertyChanged(nameof(IsActive));
 	}
 }

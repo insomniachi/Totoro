@@ -33,12 +33,6 @@ public sealed record AppSettings(
 	bool PlayNextAutomatically,
 	[property: Description("Whether the episode playing shows as the user's activity on Discord.")]
 	bool ShowOnDiscord,
-	[property: Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")]
-	bool ShowNextEpisodeOnCards,
-	[property: Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched (while it airs, and for four weeks after).")]
-	bool ShowNewEpisodesOnCards,
-	[property: Description("Whether anime cards show a dot when the anime is airing (green) or yet to air (amber).")]
-	bool ShowAiringStatusOnCards,
 	[property: Description("The page the app opens on; one of startupPages.")]
 	string StartupPage,
 	IReadOnlyList<string> StartupPages,
@@ -100,9 +94,6 @@ public sealed class AppSettingsTools(
 			preferences.EndingSkipMode,
 			preferences.PlayNextAutomatically,
 			preferences.ShowOnDiscord,
-			preferences.ShowNextEpisodeOnCards,
-			preferences.ShowNewEpisodesOnCards,
-			preferences.ShowAiringStatusOnCards,
 			preferences.FindStartupItem(startupPages)?.Label ?? "",
 			[.. startupPages.Select(x => x.Label)],
 			preferences.DownloadFolder,
@@ -122,9 +113,6 @@ public sealed class AppSettingsTools(
 		SkipMode? endingSkipMode = null,
 		bool? playNextAutomatically = null,
 		[Description("Whether the episode playing shows as the user's activity on Discord.")] bool? showOnDiscord = null,
-		[Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")] bool? showNextEpisodeOnCards = null,
-		[Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched.")] bool? showNewEpisodesOnCards = null,
-		[Description("Whether anime cards show a dot when the anime is airing (green) or yet to air (amber).")] bool? showAiringStatusOnCards = null,
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null,
 		[Description("A folder to download episodes to; empty for the default (Videos\\Totoro).")] string? downloadFolder = null,
 		[Description("The path of yt-dlp.exe, which downloads HLS streams; empty to find it on the PATH.")] string? ytDlpPath = null)
@@ -185,21 +173,6 @@ public sealed class AppSettingsTools(
 		if (syncOtherLists is { } sync)
 		{
 			preferences.SyncOtherLists = sync;
-		}
-
-		if (showNextEpisodeOnCards is { } showNextEpisode)
-		{
-			preferences.ShowNextEpisodeOnCards = showNextEpisode;
-		}
-
-		if (showNewEpisodesOnCards is { } showNewEpisodes)
-		{
-			preferences.ShowNewEpisodesOnCards = showNewEpisodes;
-		}
-
-		if (showAiringStatusOnCards is { } showAiringStatus)
-		{
-			preferences.ShowAiringStatusOnCards = showAiringStatus;
 		}
 
 		if (playNextAutomatically is { } playNext)

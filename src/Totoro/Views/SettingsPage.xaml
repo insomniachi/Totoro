@@ -216,6 +216,40 @@
             <TextBlock
                 Margin="0,24,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="Paths" />
+
+            <toolkit:SettingsCard Description="Episodes go into a folder for each anime, named with its AniList and MyAnimeList ids." Header="Download folder">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE896;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBox
+                        Width="320"
+                        AutomationProperties.Name="Download folder"
+                        IsReadOnly="True"
+                        Text="{x:Bind ViewModel.DownloadFolder, Mode=OneWay}" />
+                    <Button Click="OnChangeDownloadFolderClick" Content="Change…" />
+                    <Button Command="{x:Bind ViewModel.OpenDownloadFolderCommand}" Content="Open" />
+                </StackPanel>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="Downloads HLS streams (.m3u8). Leave empty to use the one on the PATH." Header="yt-dlp">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE896;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBox
+                        Width="320"
+                        AutomationProperties.Name="yt-dlp"
+                        PlaceholderText="yt-dlp.exe on the PATH"
+                        Text="{x:Bind ViewModel.YtDlpPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Click="OnBrowseYtDlpClick" Content="Browse…" />
+                </StackPanel>
+            </toolkit:SettingsCard>
+
+            <TextBlock
+                Margin="0,24,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="Modules" />
 
             <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Modules}">
@@ -294,27 +328,6 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="On the cards of anime you're watching or planning to watch: how long until the next episode airs." Header="Show when the next episode airs">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE823;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowNextEpisodeOnCards, Mode=TwoWay}" />
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="On the cards of anime you're watching, while they air and for four weeks after: how many episodes have aired that you haven't watched." Header="Show new episodes">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE7E7;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowNewEpisodesOnCards, Mode=TwoWay}" />
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="A dot on anime cards: green while it airs, amber before it starts." Header="Show airing status">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xEC92;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowAiringStatusOnCards, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
             <TextBlock

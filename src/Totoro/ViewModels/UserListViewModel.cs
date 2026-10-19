@@ -149,7 +149,6 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 
 		// The genres and years to pick from are those of the list.
 		GenreFilter.SetGenres(anime);
-		SeasonFilter.SetYears(anime);
 		UpdateSort();
 		_source.Edit(cache =>
 		{

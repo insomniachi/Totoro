@@ -38,11 +38,12 @@ public static class UserListQuery
 			.Any(x => !string.IsNullOrEmpty(x) && compare.IndexOf(x, query.Trim(), Options) >= 0);
 	}
 
-	/// <summary>Whether it aired in that season and year (either left out matches any).</summary>
-	public static bool MatchesSeason(AnimeModel anime, AnimeSeason? season, int? year)
+	/// <summary>Whether it aired in that season and from fromYear to toYear (any left out matches any).</summary>
+	public static bool MatchesSeason(AnimeModel anime, AnimeSeason? season, int? fromYear, int? toYear)
 	{
 		return (season is null || anime.Season?.SeasonName == season && anime.Season.Year > 1900) &&
-			   (year is null || anime.Season?.Year == year);
+			   (fromYear is null || anime.Season?.Year >= fromYear) &&
+			   (toYear is null || anime.Season is { Year: > 1900 } && anime.Season.Year <= toYear);
 	}
 
 	/// <summary>

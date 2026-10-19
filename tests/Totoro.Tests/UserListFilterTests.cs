@@ -64,18 +64,40 @@ public class UserListFilterTests
 		var fall2023 = Anime("A", season: new Season(AnimeSeason.Fall, 2023));
 		var spring2023 = Anime("B", season: new Season(AnimeSeason.Spring, 2023));
 		var filter = new SeasonFilter();
-		filter.SetYears([fall2023, spring2023]);
 
 		filter.Season = filter.Seasons.Single(x => x.Value == AnimeSeason.Fall);
 		Assert.True(Current(filter)(fall2023));
 		Assert.False(Current(filter)(spring2023));
 
 		filter.Season = filter.Seasons[0];
-		filter.Year = filter.Years.Single(x => x.Value == 2023);
+		filter.YearMode = YearFilterMode.Year;
+		filter.Year = 2023;
 		Assert.True(Current(filter)(spring2023));
 		Assert.True(filter.IsActive);
 
 		filter.Clear();
+		Assert.False(filter.IsActive);
+	}
+
+	[Fact]
+	public void Season_MatchesYearRange()
+	{
+		var anime2010 = Anime("A", season: new Season(AnimeSeason.Fall, 2010));
+		var anime2020 = Anime("B", season: new Season(AnimeSeason.Spring, 2020));
+		var noSeason = Anime("C");
+		var filter = new SeasonFilter { YearMode = YearFilterMode.Range, MinimumYear = 2015 };
+
+		Assert.False(Current(filter)(anime2010));
+		Assert.True(Current(filter)(anime2020));
+
+		filter.MinimumYear = null;
+		filter.MaximumYear = 2015;
+		Assert.True(Current(filter)(anime2010));
+		Assert.False(Current(filter)(anime2020));
+		Assert.False(Current(filter)(noSeason));
+
+		// Back to Any clears the range
+		filter.YearMode = YearFilterMode.Any;
 		Assert.False(filter.IsActive);
 	}
 

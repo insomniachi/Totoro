@@ -40,9 +40,8 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 	/// <summary>Where torrents are downloaded to.</summary>
 	public static string DownloadFolder => FileHelper.GetPath("Torrents");
 
-	private string FileName => string.IsNullOrWhiteSpace(settings.Value.FileName)
-		? Path.Combine(AppContext.BaseDirectory, "Tools", "rqbit", "rqbit.exe")
-		: settings.Value.FileName;
+	/// <summary>The rqbit.exe that comes with Totoro.</summary>
+	private static string FileName => Path.Combine(AppContext.BaseDirectory, "Tools", "rqbit", "rqbit.exe");
 
 	public bool IsAvailable() => File.Exists(FileName);
 
@@ -187,7 +186,7 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 
 			if (!IsAvailable())
 			{
-				throw new TorrentStreamException("rqbit wasn't found. Choose rqbit.exe in its settings.");
+				throw new TorrentStreamException("rqbit wasn't found: it comes with Totoro, so reinstall Totoro.");
 			}
 
 			if (!settings.Value.KeepDownloads)

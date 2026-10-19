@@ -221,7 +221,7 @@
                             <toolkit:SegmentedItem Content="Range" />
                         </toolkit:Segmented>
                         <!--  TargetType converts the cases' names to the enum, to compare them with the value  -->
-                        <toolkit:SwitchPresenter TargetType="vm:YearFilterMode" Value="{x:Bind ViewModel.YearMode, Mode=OneWay}">
+                        <toolkit:SwitchPresenter TargetType="anime:YearFilterMode" Value="{x:Bind ViewModel.YearMode, Mode=OneWay}">
                             <toolkit:Case Value="Year">
                                 <NumberBox
                                     AutomationProperties.Name="Year"

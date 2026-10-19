@@ -33,11 +33,6 @@ internal class RqbitModule : IModule<Settings>
 
 public sealed class Settings : DataContainerConfig
 {
-	[DisplayName("Executable")]
-	[Description("rqbit.exe. Leave empty to use the one that comes with Totoro.")]
-	[Editor(DataContainerEditors.FileBrowser, "")]
-	public string FileName { get; set; } = "";
-
 	[DisplayName("Keep downloaded episodes")]
 	[Description(@"In %LOCALAPPDATA%\Totoro\Torrents. Otherwise they're deleted when you stop watching.")]
 	public bool KeepDownloads { get; set; }

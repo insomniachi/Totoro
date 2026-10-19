@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Totoro.Core.Dialogs;
@@ -79,6 +80,8 @@ public partial class SettingsViewModel : ObservableObject
 	{
 		_preferences = preferences;
 		_appearance = appearance;
+		DownloadFolder = preferences.DownloadFolder;
+		YtDlpPath = preferences.YtDlpPath;
 		Updates = updates;
 		Updates.PropertyChanged += (_, _) =>
 		{
@@ -113,9 +116,6 @@ public partial class SettingsViewModel : ObservableObject
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
 		ShowOnDiscord = preferences.ShowOnDiscord;
-		ShowNextEpisodeOnCards = preferences.ShowNextEpisodeOnCards;
-		ShowNewEpisodesOnCards = preferences.ShowNewEpisodesOnCards;
-		ShowAiringStatusOnCards = preferences.ShowAiringStatusOnCards;
 
 		// Only modules with something to edit.
 		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
@@ -208,42 +208,6 @@ public partial class SettingsViewModel : ObservableObject
 
 	partial void OnShowOnDiscordChanged(bool value) => _preferences.ShowOnDiscord = value;
 
-	/// <summary>Whether cards of anime being watched or planned show how long until the next episode airs.</summary>
-	[ObservableProperty]
-	public partial bool ShowNextEpisodeOnCards { get; set; }
-
-	partial void OnShowNextEpisodeOnCardsChanged(bool value)
-	{
-		if (value != _preferences.ShowNextEpisodeOnCards)
-		{
-			_preferences.ShowNextEpisodeOnCards = value;
-		}
-	}
-
-	/// <summary>Whether cards of anime being watched show how many aired episodes haven't been watched.</summary>
-	[ObservableProperty]
-	public partial bool ShowNewEpisodesOnCards { get; set; }
-
-	partial void OnShowNewEpisodesOnCardsChanged(bool value)
-	{
-		if (value != _preferences.ShowNewEpisodesOnCards)
-		{
-			_preferences.ShowNewEpisodesOnCards = value;
-		}
-	}
-
-	/// <summary>Whether cards show a dot when their anime is airing or yet to air.</summary>
-	[ObservableProperty]
-	public partial bool ShowAiringStatusOnCards { get; set; }
-
-	partial void OnShowAiringStatusOnCardsChanged(bool value)
-	{
-		if (value != _preferences.ShowAiringStatusOnCards)
-		{
-			_preferences.ShowAiringStatusOnCards = value;
-		}
-	}
-
 	/// <summary>Updating Totoro from its GitHub releases.</summary>
 	public UpdateService Updates { get; }
 
@@ -327,6 +291,26 @@ public partial class SettingsViewModel : ObservableObject
 			_appearance.Backdrop = value.Value;
 		}
 	}
+
+	/// <summary>Where episodes are downloaded to, a folder for each anime.</summary>
+	[ObservableProperty]
+	public partial string DownloadFolder { get; private set; }
+
+	/// <summary>Downloads go to <paramref name="folder"/> from now on.</summary>
+	public void SetDownloadFolder(string folder) => DownloadFolder = _preferences.DownloadFolder = folder;
+
+	[RelayCommand]
+	private void OpenDownloadFolder()
+	{
+		Directory.CreateDirectory(DownloadFolder);
+		Process.Start("explorer.exe", $"\"{DownloadFolder}\"");
+	}
+
+	/// <summary>yt-dlp.exe, which downloads HLS streams; empty, it's found on the PATH.</summary>
+	[ObservableProperty]
+	public partial string YtDlpPath { get; set; }
+
+	partial void OnYtDlpPathChanged(string value) => _preferences.YtDlpPath = value.Trim().Trim('"');
 
 	public IReadOnlyList<NavigationItemViewModel> StartupPages { get; }
 

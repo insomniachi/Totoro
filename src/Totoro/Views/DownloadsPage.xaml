@@ -14,7 +14,6 @@
         RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -22,62 +21,17 @@
             <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Downloads" />
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Episodes go into a folder for each anime, named with its AniList and MyAnimeList ids. Right-click an episode in an anime's details to download it, or download from the Watch page."
+                Text="Episodes go into a folder for each anime, named with its AniList and MyAnimeList ids. Right-click an episode in an anime's details to download it, or download from the Watch page. The download folder is in Settings."
                 TextWrapping="Wrap" />
         </StackPanel>
 
-        <!--  Buttons at the bottom, level with the boxes under their headers  -->
-        <Grid
-            Grid.Row="1"
-            ColumnSpacing="8"
-            RowSpacing="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBox
-                Header="Download folder"
-                IsReadOnly="True"
-                Text="{x:Bind ViewModel.Folder, Mode=OneWay}" />
-            <Button
-                Grid.Column="1"
-                VerticalAlignment="Bottom"
-                Click="OnChangeFolderClick"
-                Content="Change…" />
-            <Button
-                Grid.Column="2"
-                VerticalAlignment="Bottom"
-                Command="{x:Bind ViewModel.OpenFolderCommand}"
-                Content="Open" />
-
-            <!--  HLS streams (.m3u8) are downloaded with yt-dlp, which gets past Cloudflare by connecting as a browser  -->
-            <TextBox
-                Grid.Row="1"
-                Header="yt-dlp (downloads HLS streams)"
-                PlaceholderText="yt-dlp.exe on the PATH"
-                Text="{x:Bind ViewModel.YtDlpPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-            <Button
-                Grid.Row="1"
-                Grid.Column="1"
-                Grid.ColumnSpan="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Bottom"
-                Click="OnBrowseYtDlpClick"
-                Content="Browse…" />
-        </Grid>
-
         <TextBlock
-            Grid.Row="2"
+            Grid.Row="1"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Text="Nothing downloaded yet."
             Visibility="{x:Bind local:DownloadsPage.VisibleIfNone(ViewModel.Downloads.Count), Mode=OneWay}" />
         <ListView
-            Grid.Row="2"
+            Grid.Row="1"
             ItemsSource="{x:Bind ViewModel.Downloads}"
             SelectionMode="None">
             <ListView.ItemContainerStyle>

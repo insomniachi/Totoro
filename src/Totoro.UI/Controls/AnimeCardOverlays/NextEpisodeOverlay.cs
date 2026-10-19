@@ -1,23 +1,21 @@
 using System.Globalization;
 using Microsoft.UI.Xaml;
 using Totoro.Core.Modules.Anime;
-using Totoro.Core.Settings;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
 
 /// <summary>
 /// The next episode of an anime being watched or planned, and how long until it airs (e.g. "Ep 4 in 5d 22h"), on its
-/// card's top left, while there's one coming and the setting's on (see <see cref="CardPreferences"/>).
+/// card's top left, while there's one coming.
 /// </summary>
 public sealed class NextEpisodeOverlay : LiveAnimeCardOverlay<NextEpisodeBadge>
 {
 	protected override NextEpisodeBadge Create() => new();
 
-	protected override void Update(NextEpisodeBadge badge, AnimeModel? anime, IPreferences? preferences, DateTime now)
+	protected override void Update(NextEpisodeBadge badge, AnimeModel? anime, DateTime now)
 	{
 		var left = anime?.NextEpisodeAt - now;
-		var shown = (preferences?.ShowNextEpisodeOnCards ?? true) &&
-					anime?.Tracking?.Status is ListItemStatus.Watching or ListItemStatus.PlanToWatch && left > TimeSpan.Zero;
+		var shown = anime?.Tracking?.Status is ListItemStatus.Watching or ListItemStatus.PlanToWatch && left > TimeSpan.Zero;
 		badge.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
 		if (shown && anime is { NextEpisodeAt: { } at })
 		{

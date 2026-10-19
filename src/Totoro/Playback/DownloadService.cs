@@ -415,7 +415,7 @@ public sealed class DownloadService(
 													  IProgress<DownloadProgress> progress, CancellationToken ct)
 	{
 		var ytDlp = FindYtDlp() ?? throw new DownloadException(
-			"Downloading this stream (HLS) needs yt-dlp. Install it (e.g. \"winget install yt-dlp\") or choose yt-dlp.exe on the Downloads page, then download again.");
+			"Downloading this stream (HLS) needs yt-dlp. Install it (e.g. \"winget install yt-dlp\") or choose yt-dlp.exe in Settings, then download again.");
 
 		var startInfo = new ProcessStartInfo(ytDlp)
 		{
