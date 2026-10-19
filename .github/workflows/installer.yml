@@ -1,18 +1,18 @@
-# Builds Totoro's installer (installer/build.ps1).
-# - On pushes and pull requests: an installer to download from the run (its artifacts), versioned
-#   <the project's version>.<run number>.
-# - On a version tag (v2.1.0): the installer of that version, attached to a GitHub release of the tag.
+# Builds Totoro's installer (installer/build.ps1) and releases it, when run by hand (Actions → Installer → Run workflow).
+# The version is the one given, or the last release's (its v* tag) with the patch number incremented; the project's
+# version wins when it's higher (e.g. 2.0.0 after 1.7.x). The release gets a tag of it (v2.0.1) on the commit built.
 name: Installer
 
 on:
-  push:
-    branches: [next, main]
-    tags: ['v*']
-  pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Version, e.g. 2.1.0. Leave empty for the last release's, with the patch number incremented.
+        required: false
+        default: ''
 
 permissions:
-  # To create the release on a tag.
+  # To create the release and its tag.
   contents: write
 
 jobs:
@@ -20,6 +20,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The tags, to find the last release.
+          fetch-depth: 0
+          fetch-tags: true
 
       - uses: actions/setup-dotnet@v6
         with:
@@ -28,12 +32,27 @@ jobs:
       - name: Work out the version
         id: version
         shell: pwsh
+        env:
+          REQUESTED: ${{ inputs.version }}
         run: |
-          if ('${{ github.ref_type }}' -eq 'tag') {
-            $version = '${{ github.ref_name }}'.TrimStart('v')
+          $requested = $env:REQUESTED.Trim().TrimStart('v', 'V')
+          if ($requested) {
+            $parsed = $null
+            if (-not [version]::TryParse($requested, [ref]$parsed) -or $parsed.Build -lt 0 -or $parsed.Revision -ge 0) {
+              throw "'$env:REQUESTED' isn't a version like 2.1.0."
+            }
+            $version = $parsed
           } else {
-            $project = ([xml](Get-Content src/Totoro/Totoro.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
-            $version = "$project.${{ github.run_number }}"
+            $last = git tag --list 'v*' |
+              ForEach-Object { $v = $null; if ([version]::TryParse($_.Substring(1), [ref]$v)) { $v } } |
+              Sort-Object -Descending | Select-Object -First 1
+            $project = [version](([xml](Get-Content src/Totoro/Totoro.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+            $version = if ($last) { [version]::new($last.Major, $last.Minor, [Math]::Max($last.Build, 0) + 1) } else { $project }
+            if ($project -gt $version) { $version = $project }
+            Write-Host "Last release: $last; project: $project"
+          }
+          if (git tag --list "v$version") {
+            throw "v$version is already released."
           }
           "version=$version" >> $env:GITHUB_OUTPUT
           Write-Host "Version $version"
@@ -56,8 +75,9 @@ jobs:
           if-no-files-found: error
 
       - name: Release
-        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: v${{ steps.version.outputs.version }}
+          target_commitish: ${{ github.sha }}
           files: installer/output/*.exe
           generate_release_notes: true
