@@ -34,6 +34,7 @@ using Totoro.ViewModels.Relations;
 using Totoro.ViewModels.Test;
 using Totoro.Views;
 using Totoro.Views.Relations;
+using Totoro.Views.Settings;
 using Totoro.Views.Test;
 
 
@@ -161,6 +162,13 @@ public partial class App : Application
 					x.AnimatedIcon = Icons.SettingsAnimated;
 					x.IsFooter = true;
 				});
+				// Settings' categories, after it: the navigator finds the first page registered for SettingsViewModel.
+				services.AddKeyedViewMap<GeneralSettingsPage, SettingsViewModel>(SettingsViewModel.GeneralKey);
+				services.AddKeyedViewMap<AccountsSettingsPage, SettingsViewModel>(SettingsViewModel.AccountsKey);
+				services.AddKeyedViewMap<PlaybackSettingsPage, SettingsViewModel>(SettingsViewModel.PlaybackKey);
+				services.AddKeyedViewMap<DownloadsSettingsPage, SettingsViewModel>(SettingsViewModel.DownloadsKey);
+				services.AddKeyedViewMap<ModulesSettingsPage, SettingsViewModel>(SettingsViewModel.ModulesKey);
+				services.AddKeyedViewMap<AboutSettingsPage, SettingsViewModel>(SettingsViewModel.AboutKey);
 			})
 			.Build();
 	}

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.Settings.GeneralSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:settings="using:Totoro.Views.Settings"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <ScrollView>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16"
+            Spacing="4">
+            <settings:SettingsHeader Title="General" />
+
+            <toolkit:SettingsCard Description="The page Totoro opens on when it starts." Header="Startup page">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE80F;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.StartupPages, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.StartupPage, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="navigation:NavigationItemViewModel">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="Light, dark, or follow your Windows setting." Header="App theme">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE790;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.Themes}"
+                    SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ThemeOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="The material behind the window: Mica and Mica Alt tint it with your desktop wallpaper, Acrylic blurs what's behind it." Header="Backdrop">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE771;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.Backdrops}"
+                    SelectedItem="{x:Bind ViewModel.Backdrop, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:BackdropOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+        </StackPanel>
+    </ScrollView>
+</Page>

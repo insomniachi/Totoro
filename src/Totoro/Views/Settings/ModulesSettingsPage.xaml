@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.Settings.ModulesSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:settings="using:Totoro.Views.Settings"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <ScrollView>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16"
+            Spacing="4">
+            <settings:SettingsHeader Title="Modules &amp; plugins" />
+
+            <toolkit:SettingsCard
+                Header="Manage plugins &amp; updates"
+                Description="Browse community anime providers, download updates, or install local plugin packages."
+                IsClickEnabled="True"
+                Command="{x:Bind ViewModel.OpenPluginsCommand}">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xEA86;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <toolkit:SettingsCard.ActionIcon>
+                    <FontIcon Glyph="&#xE8A7;" />
+                </toolkit:SettingsCard.ActionIcon>
+            </toolkit:SettingsCard>
+
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Modules}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ModuleSettingsItem">
+                        <toolkit:SettingsCard
+                            AutomationProperties.Name="{x:Bind Name}"
+                            Command="{x:Bind EditCommand}"
+                            Description="{x:Bind Summary}"
+                            Header="{x:Bind Name}"
+                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE74C;')}"
+                            IsClickEnabled="True">
+                            <toolkit:SettingsCard.ActionIcon>
+                                <FontIcon Glyph="&#xE8A7;" />
+                            </toolkit:SettingsCard.ActionIcon>
+                        </toolkit:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollView>
+</Page>

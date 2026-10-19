@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.Settings.DownloadsSettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:navigation="using:Totoro.Core.Navigation"
+    xmlns:settings="using:Totoro.Views.Settings"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <ScrollView>
+        <StackPanel
+            MaxWidth="1000"
+            Margin="16"
+            Spacing="4">
+            <settings:SettingsHeader Title="Downloads" />
+
+            <toolkit:SettingsCard Description="Episodes go into a folder for each anime, named with its AniList and MyAnimeList ids." Header="Download folder">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE896;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBox
+                        Width="320"
+                        AutomationProperties.Name="Download folder"
+                        IsReadOnly="True"
+                        Text="{x:Bind ViewModel.DownloadFolder, Mode=OneWay}" />
+                    <Button Click="OnChangeDownloadFolderClick" Content="Change…" />
+                    <Button Command="{x:Bind ViewModel.OpenDownloadFolderCommand}" Content="Open" />
+                </StackPanel>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="Downloads HLS streams (.m3u8). Leave empty to use the one on the PATH." Header="yt-dlp">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE896;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBox
+                        Width="320"
+                        AutomationProperties.Name="yt-dlp"
+                        PlaceholderText="yt-dlp.exe on the PATH"
+                        Text="{x:Bind ViewModel.YtDlpPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Click="OnBrowseYtDlpClick" Content="Browse…" />
+                </StackPanel>
+            </toolkit:SettingsCard>
+        </StackPanel>
+    </ScrollView>
+</Page>

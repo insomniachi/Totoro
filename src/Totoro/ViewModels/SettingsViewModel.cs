@@ -60,8 +60,20 @@ public sealed partial class ModuleSettingsItem(IModuleSettings settings, IDialog
 	private Task EditAsync() => dialogs.EditSettingsAsync(settings);
 }
 
+/// <summary>
+/// Settings: a page of categories, each opening a page of its own on the main navigator. They all share this view model,
+/// so the menu's Settings item stays selected on them (the navigator highlights items by view model).
+/// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
+	// The categories' navigation keys (their pages are registered with AddKeyedViewMap); the cards pass them to Open.
+	public const string GeneralKey = "Settings.General";
+	public const string AccountsKey = "Settings.Accounts";
+	public const string PlaybackKey = "Settings.Playback";
+	public const string DownloadsKey = "Settings.Downloads";
+	public const string ModulesKey = "Settings.Modules";
+	public const string AboutKey = "Settings.About";
+
 	private readonly IPreferences _preferences;
 	private readonly IAppearanceService _appearance;
 
@@ -238,6 +250,13 @@ public partial class SettingsViewModel : ObservableObject
 
 	/// <summary>Whether there's a newer version to install.</summary>
 	public bool CanUpdate => Updates.CanInstall && Updates.State is UpdateState.Available or UpdateState.Failed && Updates.Available is not null;
+
+	/// <summary>Opens a category's page.</summary>
+	[RelayCommand]
+	private Task OpenAsync(string key)
+	{
+		return Navigators.TryGetNavigator("main", out var main) ? main.NavigateToKeyAsync(key) : Task.CompletedTask;
+	}
 
 	/// <summary>Opens the episode numbering rules (anime-relations and the user's own).</summary>
 	[RelayCommand]

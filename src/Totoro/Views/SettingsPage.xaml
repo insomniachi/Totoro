@@ -3,14 +3,9 @@
     x:Class="Totoro.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:helpers="using:Totoro.Helpers"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:navigation="using:Totoro.Core.Navigation"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
-    xmlns:vm="using:Totoro.ViewModels"
-    mc:Ignorable="d">
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
 
+    <!--  The categories, each a page of its own (Views/Settings); the cards' CommandParameters are their navigation keys (see SettingsViewModel)  -->
     <ScrollView>
         <StackPanel
             MaxWidth="1000"
@@ -21,340 +16,70 @@
                 Style="{ThemeResource TitleTextBlockStyle}"
                 Text="Settings" />
 
-            <TextBlock
-                Margin="0,0,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="General" />
-
-            <toolkit:SettingsCard Description="The page Totoro opens on when it starts." Header="Startup page">
+            <toolkit:SettingsCard
+                Command="{x:Bind ViewModel.OpenCommand}"
+                CommandParameter="Settings.General"
+                Description="Startup page, theme and backdrop"
+                Header="General"
+                IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE80F;" />
+                    <FontIcon Glyph="&#xE713;" />
                 </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.StartupPages, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.StartupPage, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="navigation:NavigationItemViewModel">
-                            <TextBlock Text="{x:Bind Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
             </toolkit:SettingsCard>
 
-            <toolkit:SettingsCard Description="Where your anime list and anime details come from. Pages pick up a change the next time they're opened." Header="Anime database">
+            <toolkit:SettingsCard
+                Command="{x:Bind ViewModel.OpenCommand}"
+                CommandParameter="Settings.Accounts"
+                Description="Anime database, signing in, and keeping your lists in sync"
+                Header="Accounts"
+                IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE8F1;" />
+                    <FontIcon Glyph="&#xE77B;" />
                 </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.AnimeDatabases, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.AnimeDatabase, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:AnimeDatabaseOption">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Image
-                                    Width="16"
-                                    Height="16"
-                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                <TextBlock Text="{x:Bind Name}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
             </toolkit:SettingsCard>
 
-            <TextBlock
-                Margin="0,24,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="Accounts" />
-
-            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Accounts}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Spacing="4" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:AccountViewModel">
-                        <toolkit:SettingsCard
-                            Description="{x:Bind Status, Mode=OneWay}"
-                            Header="{x:Bind Name}"
-                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE77B;')}">
-                            <Button
-                                MinWidth="120"
-                                AutomationProperties.Name="{x:Bind ActionName, Mode=OneWay}"
-                                Command="{x:Bind SignInOrOutCommand}"
-                                Content="{x:Bind ActionText, Mode=OneWay}" />
-                        </toolkit:SettingsCard>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-            <toolkit:SettingsCard Description="When you're signed in to both AniList and MyAnimeList, changes to your list (watching an episode, editing an entry, removing an anime) are made on both. Your main list is the anime database's." Header="Keep my other lists in sync">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE895;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ToggleSwitch IsOn="{x:Bind ViewModel.SyncOtherLists, Mode=TwoWay}" />
-            </toolkit:SettingsCard>
-
-            <TextBlock
-                Margin="0,24,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="Playback" />
-
-            <toolkit:SettingsCard Description="Where episodes are found. Providers come as plugins; an anime can use another one in its own settings." Header="Anime provider">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xEA86;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <Grid>
-                    <ComboBox
-                        MinWidth="200"
-                        ItemsSource="{x:Bind ViewModel.AnimeProviders}"
-                        SelectedItem="{x:Bind ViewModel.AnimeProvider, Mode=TwoWay}"
-                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasAnimeProviders)}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="vm:AnimeProviderOption">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Image
-                                        Width="16"
-                                        Height="16"
-                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                    <TextBlock Text="{x:Bind Name}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                    <!--  None installed yet (a fresh install): where to get one  -->
-                    <Button
-                        MinWidth="120"
-                        Command="{x:Bind ViewModel.OpenPluginsCommand}"
-                        Content="Get one from Plugins"
-                        Style="{ThemeResource AccentButtonStyle}"
-                        Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasAnimeProviders)}" />
-                </Grid>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="Where episodes play. The built-in player offers skipping the opening and the next episode over the video; mpv is an app of its own, with its own settings and shaders." Header="Media player">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE714;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.MediaPlayers}"
-                    SelectedItem="{x:Bind ViewModel.MediaPlayer, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:MediaPlayerOption">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Image
-                                    Width="16"
-                                    Height="16"
-                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                <TextBlock Text="{x:Bind Name}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="When an opening or recap starts. Offering to skip shows a Skip button over the video in the built-in player, and a hint to press Page Up (next chapter) in mpv." Header="Openings">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE893;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.SkipModes}"
-                    SelectedItem="{x:Bind ViewModel.OpeningSkip, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:SkipModeOption">
-                            <TextBlock Text="{x:Bind Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="When the ending starts." Header="Endings">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE893;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.SkipModes}"
-                    SelectedItem="{x:Bind ViewModel.EndingSkip, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:SkipModeOption">
-                            <TextBlock Text="{x:Bind Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="When you finish an episode, start the next one after a short countdown. Otherwise it's offered." Header="Play the next episode automatically">
+            <toolkit:SettingsCard
+                Command="{x:Bind ViewModel.OpenCommand}"
+                CommandParameter="Settings.Playback"
+                Description="Anime provider, media player, skipping, the next episode, Discord"
+                Header="Playback"
+                IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE768;" />
                 </toolkit:SettingsCard.HeaderIcon>
-                <ToggleSwitch IsOn="{x:Bind ViewModel.PlayNextAutomatically, Mode=TwoWay}" />
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="While an episode plays, show the anime and episode as your activity on Discord (when Discord is running)." Header="Show what you're watching on Discord">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE8BD;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowOnDiscord, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
             <toolkit:SettingsCard
-                Command="{x:Bind ViewModel.OpenEpisodeNumberingCommand}"
-                Description="For providers that use absolute numbering, carrying on across seasons (a 2nd season from 13). Rules from anime-relations, and your own."
-                Header="Episode numbering"
+                Command="{x:Bind ViewModel.OpenCommand}"
+                CommandParameter="Settings.Downloads"
+                Description="Download folder and yt-dlp"
+                Header="Downloads"
                 IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE8AB;" />
-                </toolkit:SettingsCard.HeaderIcon>
-            </toolkit:SettingsCard>
-
-            <TextBlock
-                Margin="0,24,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="Paths" />
-
-            <toolkit:SettingsCard Description="Episodes go into a folder for each anime, named with its AniList and MyAnimeList ids." Header="Download folder">
-                <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE896;" />
                 </toolkit:SettingsCard.HeaderIcon>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBox
-                        Width="320"
-                        AutomationProperties.Name="Download folder"
-                        IsReadOnly="True"
-                        Text="{x:Bind ViewModel.DownloadFolder, Mode=OneWay}" />
-                    <Button Click="OnChangeDownloadFolderClick" Content="Change…" />
-                    <Button Command="{x:Bind ViewModel.OpenDownloadFolderCommand}" Content="Open" />
-                </StackPanel>
             </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="Downloads HLS streams (.m3u8). Leave empty to use the one on the PATH." Header="yt-dlp">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE896;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBox
-                        Width="320"
-                        AutomationProperties.Name="yt-dlp"
-                        PlaceholderText="yt-dlp.exe on the PATH"
-                        Text="{x:Bind ViewModel.YtDlpPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Click="OnBrowseYtDlpClick" Content="Browse…" />
-                </StackPanel>
-            </toolkit:SettingsCard>
-
-            <TextBlock
-                Margin="0,24,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="Modules" />
-
-            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Modules}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Spacing="4" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ModuleSettingsItem">
-                        <toolkit:SettingsCard
-                            AutomationProperties.Name="{x:Bind Name}"
-                            Command="{x:Bind EditCommand}"
-                            Description="{x:Bind Summary}"
-                            Header="{x:Bind Name}"
-                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE74C;')}"
-                            IsClickEnabled="True">
-                            <toolkit:SettingsCard.ActionIcon>
-                                <FontIcon Glyph="&#xE8A7;" />
-                            </toolkit:SettingsCard.ActionIcon>
-                        </toolkit:SettingsCard>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-            <TextBlock
-                Margin="0,24,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="Plugins &amp; Extensions" />
 
             <toolkit:SettingsCard
-                Header="Manage plugins &amp; updates"
-                Description="Browse community anime providers, download updates, or install local plugin packages."
-                IsClickEnabled="True"
-                Command="{x:Bind ViewModel.OpenPluginsCommand}">
+                Command="{x:Bind ViewModel.OpenCommand}"
+                CommandParameter="Settings.Modules"
+                Description="Plugins, and each module's own settings"
+                Header="Modules &amp; plugins"
+                IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xEA86;" />
                 </toolkit:SettingsCard.HeaderIcon>
-                <toolkit:SettingsCard.ActionIcon>
-                    <FontIcon Glyph="&#xE8A7;" />
-                </toolkit:SettingsCard.ActionIcon>
             </toolkit:SettingsCard>
 
-            <TextBlock
-                Margin="0,24,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="Appearance" />
-
-            <toolkit:SettingsCard Description="Light, dark, or follow your Windows setting." Header="App theme">
+            <toolkit:SettingsCard
+                Command="{x:Bind ViewModel.OpenCommand}"
+                CommandParameter="Settings.About"
+                Description="{x:Bind ViewModel.UpdateStatus, Mode=OneWay}"
+                Header="About &amp; updates"
+                IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE790;" />
+                    <FontIcon Glyph="&#xE946;" />
                 </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.Themes}"
-                    SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:ThemeOption">
-                            <TextBlock Text="{x:Bind Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="The material behind the window: Mica and Mica Alt tint it with your desktop wallpaper, Acrylic blurs what's behind it." Header="Backdrop">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE771;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.Backdrops}"
-                    SelectedItem="{x:Bind ViewModel.Backdrop, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:BackdropOption">
-                            <TextBlock Text="{x:Bind Label}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </toolkit:SettingsCard>
-
-            <TextBlock
-                Margin="0,24,0,4"
-                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                Text="About" />
-
-            <!--  Updating from GitHub releases (see UpdateService)  -->
-            <toolkit:SettingsCard Description="{x:Bind ViewModel.UpdateStatus, Mode=OneWay}" Header="Updates">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE895;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Command="{x:Bind ViewModel.Updates.CheckCommand}" Content="Check for updates" />
-                    <Button
-                        Command="{x:Bind ViewModel.Updates.InstallCommand}"
-                        Content="Update"
-                        Style="{ThemeResource AccentButtonStyle}"
-                        Visibility="{x:Bind ViewModel.CanUpdate, Mode=OneWay}" />
-                </StackPanel>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard Description="Look for a newer version on GitHub when Totoro starts, and offer it." Header="Check for updates when Totoro starts">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE823;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ToggleSwitch IsOn="{x:Bind ViewModel.CheckForUpdates, Mode=TwoWay}" />
             </toolkit:SettingsCard>
         </StackPanel>
     </ScrollView>
