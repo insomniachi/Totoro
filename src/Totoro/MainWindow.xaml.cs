@@ -75,6 +75,8 @@ public sealed partial class MainWindow : Window
 		_ => "Update to install it: Totoro closes, and starts again once it's done.",
 	};
 
+	public static Visibility VisibleIfPositive(int count) => count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
 	public static InfoBarSeverity UpdateSeverity(UpdateState state) => state == UpdateState.Failed ? InfoBarSeverity.Error : InfoBarSeverity.Informational;
 
 	public static Visibility VisibleIfUpdatable(UpdateState state) => state is UpdateState.Available or UpdateState.Failed ? Visibility.Visible : Visibility.Collapsed;

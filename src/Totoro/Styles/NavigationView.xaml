@@ -661,6 +661,13 @@
                             StrokeThickness="1"
                             Visibility="Collapsed" />
                         <!--  Visibility="{Binding (ui:NavItemIconHelper.ShowNotificationDot), RelativeSource={RelativeSource Mode=TemplatedParent}}"  -->
+                        <!--  The item's InfoBadge (e.g. active downloads), over the icon's top right like the dot  -->
+                        <ContentPresenter
+                            Margin="0,4,6,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Content="{TemplateBinding InfoBadge}"
+                            IsHitTestVisible="False" />
                         <ItemsRepeater
                             x:Name="NavigationViewItemMenuItemsHost"
                             Grid.Row="1"

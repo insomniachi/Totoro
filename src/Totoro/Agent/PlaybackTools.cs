@@ -42,8 +42,24 @@ public sealed record ProviderEpisodeItem(
 	[property: Description("Its number as the provider numbers it (with absolute numbering, it carries on from a previous season).")]
 	float Number);
 
-/// <summary>Agent tools for watching anime (see <see cref="WatchService"/>).</summary>
-public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, IFactory<IAnimeProvider, Guid> providers)
+[Description("An episode downloaded or being downloaded.")]
+public sealed record DownloadInfo(
+	[property: Description("What cancel_download takes.")]
+	string Title,
+	DownloadState State,
+	[property: Description("How much is downloaded, out of 100, when known.")]
+	int? Percent,
+	[property: Description("What it's doing, or why it failed.")]
+	string Message,
+	[property: Description("The episode's file once downloaded; until then the anime's folder.")]
+	string Path);
+
+[Description("Where episodes are downloaded to (a folder for each anime, named with its AniList and MyAnimeList ids), and the downloads.")]
+public sealed record Downloads(string Folder, IReadOnlyList<DownloadInfo> Items);
+
+/// <summary>Agent tools for watching and downloading anime (see <see cref="WatchService"/> and <see cref="DownloadService"/>).</summary>
+public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, DownloadService downloads, IPreferences preferences,
+								  IFactory<IAnimeProvider, Guid> providers)
 {
 	// Long enough for a torrent to find peers.
 	private static readonly TimeSpan s_startTimeout = TimeSpan.FromSeconds(90);
@@ -197,6 +213,75 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, IFacto
 					 "season from 1), Absolute (on across seasons, e.g. a second season from 29), or leave it out to work it out.")] EpisodeNumbering? numbering = null)
 	{
 		var anime = animeId is { } id ? await lookup.GetAsync(id) : new AnimeModel { Title = showTitle };
+		var (source, episode, server, number) = await FindStreamAsync(provider, showId, episodeId, episodeNumber, stream, animeId is null ? null : anime, numbering);
+		var status = await watch.StartWatchingFromAsync(anime, number, source, episode, server, track: animeId is not null, s_startTimeout);
+		var started = status.IsActive && status.Kind is PlaybackStatusKind.Playing or PlaybackStatusKind.Progress;
+		return new PlayResult(started, status.IsActive ? status.Message : "It was cancelled.");
+	}
+
+	[AgentTool("download_episodes")]
+	[Description("Downloads episodes of an anime from its provider to the download folder, one after the other in the background " +
+				 "(get_downloads shows how they go). Episodes already in the folder aren't downloaded again.")]
+	public async Task<IReadOnlyList<DownloadInfo>> DownloadEpisodesAsync(
+		long animeId,
+		[Description("The first episode to download.")] int fromEpisode,
+		[Description("The last episode to download; leave it out for just the first.")] int? toEpisode = null)
+	{
+		if (toEpisode < fromEpisode)
+		{
+			throw new AgentToolException("toEpisode can't be before fromEpisode.");
+		}
+
+		var anime = await lookup.GetAsync(animeId);
+		var provider = watch.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to download from.");
+		var (show, _) = await watch.FindShowAsync(provider, anime, CancellationToken.None);
+		if (show is null)
+		{
+			throw new AgentToolException($"It isn't clear which {provider.Name} show {anime.Title} is: pick one from find_provider_shows with set_provider_show, then download again.");
+		}
+
+		return [.. (await downloads.DownloadEpisodesAsync(anime, fromEpisode, toEpisode ?? fromEpisode)).Select(ToInfo)];
+	}
+
+	[AgentTool("download_from_provider")]
+	[Description("Downloads an episode of a show on any anime provider (from search_provider and get_provider_episodes) to the download folder, in the background. " +
+				 "Give the anime it is (in the database) so its folder is named with its ids and the episode numbered as the anime's.")]
+	public async Task<DownloadInfo> DownloadFromProviderAsync(
+		string provider,
+		string showId,
+		string showTitle,
+		string episodeId,
+		float episodeNumber,
+		[Description("The stream's name, from get_provider_streams; leave it out for the provider's preferred one.")] string? stream = null,
+		long? animeId = null,
+		[Description("How the provider numbers the show's episodes, as for play_from_provider.")] EpisodeNumbering? numbering = null)
+	{
+		var anime = animeId is { } id ? await lookup.GetAsync(id) : null;
+		var (_, _, server, number) = await FindStreamAsync(provider, showId, episodeId, episodeNumber, stream, anime, numbering);
+		return ToInfo(await downloads.DownloadAsync(anime, anime?.Title ?? showTitle, number, server));
+	}
+
+	[AgentTool("get_downloads")]
+	[Description("The episodes downloaded or being downloaded since the app started, newest first, and the folder they go to.")]
+	public Downloads GetDownloads() => new(preferences.DownloadFolder, [.. downloads.Downloads.Select(ToInfo)]);
+
+	[AgentTool("cancel_download")]
+	[Description("Stops downloading an episode.")]
+	public string CancelDownload([Description("The download's title, from get_downloads.")] string title)
+	{
+		var item = downloads.Downloads.FirstOrDefault(x => x.IsActive && x.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+				   ?? throw new AgentToolException($"Nothing called {title} is downloading; get_downloads lists them.");
+		item.Cancel();
+		return $"Cancelled {item.Title}.";
+	}
+
+	private static DownloadInfo ToInfo(DownloadItem item) =>
+		new(item.Title, item.State, item.Progress < 0 ? null : (int)(item.Progress * 100), item.Message, item.FilePath.Length > 0 ? item.FilePath : item.Folder);
+
+	/// <summary>A stream of a provider's episode, and which of the anime's episodes it is (the provider's number without an anime).</summary>
+	private async Task<(IAnimeProvider Provider, ProviderEpisode Episode, VideoServer Server, int Number)> FindStreamAsync(
+		string provider, string showId, string episodeId, float episodeNumber, string? stream, AnimeModel? anime, EpisodeNumbering? numbering)
+	{
 		var source = GetProvider(provider);
 		var episode = new ProviderEpisode(showId, episodeId, episodeNumber);
 		var servers = await source.GetServersAsync(episode, CancellationToken.None);
@@ -204,12 +289,10 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, IFacto
 					 ?? throw new AgentToolException(servers.Count == 0
 						 ? $"{source.Name} has no streams for that episode."
 						 : $"There's no stream called {stream}; they are {string.Join(", ", servers.Select(x => x.Name))}.");
-		var number = animeId is null
+		var number = anime is null
 			? (int)episodeNumber
 			: await watch.GetAnimeEpisodeAsync(anime, await source.GetEpisodesAsync(showId, CancellationToken.None), episode, numbering, CancellationToken.None);
-		var status = await watch.StartWatchingFromAsync(anime, number, source, episode, server, track: animeId is not null, s_startTimeout);
-		var started = status.IsActive && status.Kind is PlaybackStatusKind.Playing or PlaybackStatusKind.Progress;
-		return new PlayResult(started, status.IsActive ? status.Message : "It was cancelled.");
+		return (source, episode, server, number);
 	}
 
 	private IAnimeProvider GetProvider(string name)

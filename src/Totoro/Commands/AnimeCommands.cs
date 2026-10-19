@@ -4,6 +4,7 @@ using Totoro.Core;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
+using Totoro.Core.Relations;
 using Totoro.Core.Services;
 using Totoro.Playback;
 using Totoro.UI.Navigation;
@@ -16,7 +17,8 @@ namespace Totoro.Commands;
 /// <see cref="AnimeModel"/> as its parameter. Bind them straight from XAML, no view model needed:
 /// <c>Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"</c>.
 /// </summary>
-public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService tracking, WatchService watch, ILogger<AnimeCommands> logger)
+public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService tracking, WatchService watch, DownloadService downloads,
+						   ILogger<AnimeCommands> logger)
 {
 	/// <summary>The app-wide instance (registered as a singleton), for x:Bind from XAML.</summary>
 	public static AnimeCommands Shared => Locator.GetRequiredService<AnimeCommands>();
@@ -51,6 +53,20 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 		ClosePane();
 		return watch.WatchAsync(episode.Anime, episode.Number);
 	}
+
+	/// <summary>Asks which episodes to download, then downloads them in the background; the Downloads page shows how it goes.</summary>
+	[RelayCommand(AllowConcurrentExecutions = true)]
+	private async Task DownloadAsync(AnimeModel anime)
+	{
+		if (await dialogs.ShowAsync<DownloadEpisodesDialogViewModel, EpisodeRange>(anime) is { } range)
+		{
+			await downloads.DownloadEpisodesAsync(anime, range.First, range.Last ?? range.First);
+		}
+	}
+
+	/// <summary>Downloads an episode in the background; the Downloads page shows how it goes.</summary>
+	[RelayCommand(AllowConcurrentExecutions = true)]
+	private Task DownloadEpisodeAsync(EpisodeToWatch episode) => downloads.DownloadEpisodeAsync(episode.Anime, episode.Number);
 
 	/// <summary>Puts the details pane away when watching starts from it, so the status bar and the list are in view.</summary>
 	private static void ClosePane()

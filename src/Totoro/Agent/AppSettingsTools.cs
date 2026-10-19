@@ -41,7 +41,11 @@ public sealed record AppSettings(
 	bool ShowAiringStatusOnCards,
 	[property: Description("The page the app opens on; one of startupPages.")]
 	string StartupPage,
-	IReadOnlyList<string> StartupPages);
+	IReadOnlyList<string> StartupPages,
+	[property: Description("Where episodes are downloaded to, a folder for each anime named with its AniList and MyAnimeList ids.")]
+	string DownloadFolder,
+	[property: Description("yt-dlp.exe, which downloads HLS streams; empty when it's found on the PATH.")]
+	string YtDlpPath);
 
 [Description("A module (an anime database, provider, media player...) and its settings.")]
 public sealed record ModuleSettingsInfo(string Module, IReadOnlyList<ModuleSettingInfo> Settings);
@@ -72,7 +76,7 @@ public sealed class AppSettingsTools(
 	IEnumerable<IAccount> accounts)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page, download folder.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
@@ -100,7 +104,9 @@ public sealed class AppSettingsTools(
 			preferences.ShowNewEpisodesOnCards,
 			preferences.ShowAiringStatusOnCards,
 			preferences.FindStartupItem(startupPages)?.Label ?? "",
-			[.. startupPages.Select(x => x.Label)]);
+			[.. startupPages.Select(x => x.Label)],
+			preferences.DownloadFolder,
+			preferences.YtDlpPath);
 	}
 
 	[AgentTool("update_app_settings")]
@@ -119,7 +125,9 @@ public sealed class AppSettingsTools(
 		[Description("Whether the cards of anime being watched or planned show how long until their next episode airs.")] bool? showNextEpisodeOnCards = null,
 		[Description("Whether the cards of anime being watched show how many aired episodes the user hasn't watched.")] bool? showNewEpisodesOnCards = null,
 		[Description("Whether anime cards show a dot when the anime is airing (green) or yet to air (amber).")] bool? showAiringStatusOnCards = null,
-		[Description("One of startupPages from get_app_settings.")] string? startupPage = null)
+		[Description("One of startupPages from get_app_settings.")] string? startupPage = null,
+		[Description("A folder to download episodes to; empty for the default (Videos\\Totoro).")] string? downloadFolder = null,
+		[Description("The path of yt-dlp.exe, which downloads HLS streams; empty to find it on the PATH.")] string? ytDlpPath = null)
 	{
 		if (animeDatabase is not null)
 		{
@@ -202,6 +210,22 @@ public sealed class AppSettingsTools(
 		if (showOnDiscord is { } discord)
 		{
 			preferences.ShowOnDiscord = discord;
+		}
+
+		if (downloadFolder is not null)
+		{
+			preferences.DownloadFolder = downloadFolder.Trim();
+		}
+
+		if (ytDlpPath is not null)
+		{
+			ytDlpPath = ytDlpPath.Trim().Trim('"');
+			if (ytDlpPath.Length > 0 && !File.Exists(ytDlpPath))
+			{
+				throw new AgentToolException($"There's no file at {ytDlpPath}.");
+			}
+
+			preferences.YtDlpPath = ytDlpPath;
 		}
 
 		return GetAppSettings();

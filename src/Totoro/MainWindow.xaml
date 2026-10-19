@@ -456,7 +456,11 @@
                         AutomationProperties.Name="{x:Bind Label}"
                         Content="{x:Bind}"
                         Icon="{x:Bind (IconElement)AnimatedIcon}"
-                        Style="{StaticResource MainNavigationViewItemStyle}" />
+                        Style="{StaticResource MainNavigationViewItemStyle}">
+                        <NavigationViewItem.InfoBadge>
+                            <InfoBadge Visibility="{x:Bind local:MainWindow.VisibleIfPositive(BadgeCount), Mode=OneWay}" Value="{x:Bind BadgeCount, Mode=OneWay}" />
+                        </NavigationViewItem.InfoBadge>
+                    </NavigationViewItem>
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
             <SplitView

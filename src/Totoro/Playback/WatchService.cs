@@ -875,7 +875,7 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>The provider's show for the anime: as <see cref="FindShowAsync"/> finds it, or else one the user picks.</summary>
-	private async Task<ProviderShow?> FindOrPickShowAsync(IAnimeProvider provider, AnimeModel anime, CancellationToken ct)
+	internal async Task<ProviderShow?> FindOrPickShowAsync(IAnimeProvider provider, AnimeModel anime, CancellationToken ct)
 	{
 		var (show, candidates) = await FindShowAsync(provider, anime, ct);
 		if (show is not null)

@@ -30,6 +30,7 @@ public sealed record EpisodeChoice(ProviderEpisode Episode)
 public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 {
 	private readonly WatchService _watch;
+	private readonly DownloadService _downloads;
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
 	private readonly IAnimeSettingsStore _animeSettings;
 	private readonly IDialogService _dialogs;
@@ -39,11 +40,12 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	// The show each card is for: a card is the provider's title with the database's cover.
 	private readonly Dictionary<AnimeModel, ProviderShow> _cardShows = [];
 
-	public ProviderWatchViewModel(WatchService watch, IFactory<IAnimeProvider, Guid> providers, IFactory<IAnimeMetadataProvider, Guid> databases,
+	public ProviderWatchViewModel(WatchService watch, DownloadService downloads, IFactory<IAnimeProvider, Guid> providers, IFactory<IAnimeMetadataProvider, Guid> databases,
 								  IAnimeSettingsStore animeSettings, IDialogService dialogs, IEnumerable<IModuleSettings> moduleSettings,
 								  IEnumerable<Descriptor> modules)
 	{
 		_watch = watch;
+		_downloads = downloads;
 		_databases = databases;
 		_animeSettings = animeSettings;
 		_dialogs = dialogs;
@@ -83,7 +85,7 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	[ObservableProperty] public partial IReadOnlyList<VideoServer> Streams { get; private set; } = [];
 
 	[ObservableProperty]
-	[NotifyCanExecuteChangedFor(nameof(PlayCommand))]
+	[NotifyCanExecuteChangedFor(nameof(PlayCommand), nameof(DownloadCommand))]
 	public partial VideoServer? SelectedStream { get; set; }
 
 	/// <summary>Whether an episode is picked: its stream, tracking and Play show then.</summary>
@@ -91,14 +93,14 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 
 	/// <summary>Whether to resume, save progress and mark the episode watched on the list, as <see cref="SelectedAnime"/>.</summary>
 	[ObservableProperty]
-	[NotifyCanExecuteChangedFor(nameof(PlayCommand))]
+	[NotifyCanExecuteChangedFor(nameof(PlayCommand), nameof(DownloadCommand))]
 	public partial bool Track { get; set; }
 
 	/// <summary>The anime in the database the show may be, best match first.</summary>
 	[ObservableProperty] public partial IReadOnlyList<AnimeModel> Matches { get; private set; } = [];
 
 	[ObservableProperty]
-	[NotifyCanExecuteChangedFor(nameof(PlayCommand))]
+	[NotifyCanExecuteChangedFor(nameof(PlayCommand), nameof(DownloadCommand))]
 	public partial AnimeModel? SelectedAnime { get; set; }
 
 	public IReadOnlyList<NumberingChoice> NumberingChoices { get; } =
@@ -333,5 +335,26 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 
 		// Untracked, a match may be the wrong season: its title and skip times would be too, so the show's own title alone.
 		await _watch.WatchFromAsync(new AnimeModel { Title = show.Title }, (int)episode.Episode.Number, provider, episode.Episode, stream, track: false);
+	}
+
+	/// <summary>
+	/// Downloads the stream in the background (the Downloads page shows how it goes): as the tracked anime's episode, in a
+	/// folder named with its ids, or untracked as the show's.
+	/// </summary>
+	[RelayCommand(CanExecute = nameof(CanPlay), AllowConcurrentExecutions = true)]
+	private async Task DownloadAsync()
+	{
+		if (SelectedShow is not { } show || SelectedEpisode is not { } episode || SelectedStream is not { } stream)
+		{
+			return;
+		}
+
+		if (Track && SelectedAnime is { } tracked)
+		{
+			await _downloads.DownloadAsync(tracked, tracked.Title, await AnimeEpisodeAsync(tracked, episode), stream);
+			return;
+		}
+
+		await _downloads.DownloadAsync(null, show.Title, (int)episode.Episode.Number, stream);
 	}
 }

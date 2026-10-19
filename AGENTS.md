@@ -19,7 +19,7 @@ The projects are in `src/`; the solution (`Totoro.slnx`) and the build settings 
 - `Totoro/Modules/<Kind>/<Name>`: a module, e.g. `AnimeDatabase/Anilist`, `TorrentStreamers/Rqbit`. Code generated from a schema goes in a subfolder with its own namespace (`Anilist/GraphQl`). A module's window or pages go with the others in `Views` and `ViewModels`, e.g. the built-in player's (`MediaPlayers/Vlc`) in `Player/`.
 - `Totoro/Agent`: the app's agent tools.
 - `Totoro/ViewModels` and `Totoro/Views`: pages and dialogs, side by side by name (`AnimeSettingsDialogViewModel` and `AnimeSettingsDialog`). A page's parts go in a subfolder (`AnimeDetails/`).
-- `Totoro/Playback`: watching an episode (`WatchService`).
+- `Totoro/Playback`: watching an episode (`WatchService`), and downloading one (`DownloadService`, into folders named by `DownloadNames` with the anime's AniList and MAL ids).
 
 ## Code conventions
 

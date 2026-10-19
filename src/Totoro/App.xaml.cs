@@ -78,6 +78,7 @@ public partial class App : Application
 
 				// Watching: the watch service drives a playback from a card's Play.
 				services.AddSingleton<WatchService>();
+				services.AddSingleton<DownloadService>();
 				services.AddSingleton<DiscordPresence>();
 				// Songs' audio, played in the Music tab.
 				services.AddSingleton<ISongPlayer, SongAudioPlayer>();
@@ -113,6 +114,7 @@ public partial class App : Application
 				services.AddSingleton<ChatViewModel>();
 
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
+				services.AddDialog<DownloadEpisodesDialog, DownloadEpisodesDialogViewModel>();
 				services.AddDialog<AnimeSettingsDialog, AnimeSettingsDialogViewModel>();
 				// Episode numbering: anime-relations (downloaded when first needed) and the user's own rules.
 				services.AddSingleton<IAnimeRelations, AnimeRelations>();
@@ -132,6 +134,11 @@ public partial class App : Application
 				services.AddMainNavigationItem<ProviderWatchPage, ProviderWatchViewModel>("Watch", x =>
 				{
 					x.AnimatedIcon = Icons.PlayAnimated;
+				});
+				services.AddMainNavigationItem<DownloadsPage, DownloadsViewModel>("Downloads", x =>
+				{
+					x.UnselectedIcon = Icons.Download;
+					x.SelectedIcon = Icons.Download;
 				});
 				services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
 				{
@@ -168,6 +175,10 @@ public partial class App : Application
 		_host.Services.GetRequiredService<IAppearanceService>().Apply();
 		// Follows playback from now on.
 		_host.Services.GetRequiredService<DiscordPresence>();
+		// The Downloads item in the navigation shows how many downloads are going.
+		var downloads = _host.Services.GetRequiredService<DownloadService>();
+		var downloadsItem = _host.Services.GetServices<NavigationItemViewModel>().First(x => x.ViewModelType == typeof(DownloadsViewModel));
+		downloads.PropertyChanged += (_, _) => downloadsItem.BadgeCount = downloads.ActiveCount;
 		// The app ends with its main window, the built-in player's window too.
 		_window.Closed += (_, _) => Exit();
 		// E.g. for the installer of a newer version to replace the app (see UpdateService).

@@ -227,15 +227,24 @@
                             Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.TrackedEpisode), Mode=OneWay}" />
                     </StackPanel>
                     </StackPanel>
-                    <Button
-                        HorizontalAlignment="Stretch"
-                        Command="{x:Bind ViewModel.PlayCommand}"
-                        Style="{ThemeResource AccentButtonStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon FontSize="14" Glyph="&#xE768;" />
-                            <TextBlock Text="Play" />
-                        </StackPanel>
-                    </Button>
+                    <StackPanel Spacing="8">
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            Command="{x:Bind ViewModel.PlayCommand}"
+                            Style="{ThemeResource AccentButtonStyle}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE768;" />
+                                <TextBlock Text="Play" />
+                            </StackPanel>
+                        </Button>
+                        <!--  To the download folder; tracked, as the anime's episode in a folder named with its ids  -->
+                        <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.DownloadCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE896;" />
+                                <TextBlock Text="Download" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Grid>

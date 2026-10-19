@@ -31,7 +31,10 @@
                 Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Edit}"
                 Label="Edit" />
-            <overlays:CardAction Icon="{toolkitui:SymbolIconSource Symbol=Download}" Label="Download" />
+            <overlays:CardAction
+                Command="{x:Bind commands:AnimeCommands.Shared.DownloadCommand}"
+                Icon="{toolkitui:SymbolIconSource Symbol=Download}"
+                Label="Download" />
         </overlays:CardActionCollection>
     </Page.Resources>
 

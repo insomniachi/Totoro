@@ -54,6 +54,18 @@
                                 PointerEntered="OnThumbnailPointerEntered"
                                 PointerExited="OnThumbnailPointerExited"
                                 ToolTipService.ToolTip="{x:Bind PlayName}">
+                                <Button.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem
+                                            Command="{x:Bind commands:AnimeCommands.Shared.DownloadEpisodeCommand}"
+                                            CommandParameter="{x:Bind Play}"
+                                            Text="Download">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE896;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </Button.ContextFlyout>
                                 <Grid>
                                     <!--  Shimmers until the image loads over it; only when there is an image to load  -->
                                     <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image)}" />

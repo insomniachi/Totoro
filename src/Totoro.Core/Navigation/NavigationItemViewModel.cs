@@ -1,6 +1,8 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace Totoro.Core.Navigation;
 
-public class NavigationItemViewModel
+public partial class NavigationItemViewModel : ObservableObject
 {
 	public required Type ViewModelType { get; set; }
 	public string Label { get; set; } = "";
@@ -23,4 +25,8 @@ public class NavigationItemViewModel
 
 	public int Order { get; set; }
 	public bool IsFooter { get; set; }
+
+	/// <summary>A number shown on the item, e.g. how many downloads are going; none while it's 0.</summary>
+	[ObservableProperty]
+	public partial int BadgeCount { get; set; }
 }

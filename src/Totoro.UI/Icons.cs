@@ -60,6 +60,7 @@ public static class Icons
 	public static FontIcon Completed => new() { Glyph = "\uE930" };
 	public static FontIcon Pause => new() { Glyph = "\uE769" };
 	public static FontIcon Cancel => new() { Glyph = "\uE711" };
+	public static FontIcon Download => new() { Glyph = "\uE896" };
 
 	/// <summary>
 	/// Resolves an icon key (the name of one of the properties above) coming from UI-agnostic code, such as a filter option.
@@ -78,6 +79,7 @@ public static class Icons
 		nameof(Completed) => Completed,
 		nameof(Pause) => Pause,
 		nameof(Cancel) => Cancel,
+		nameof(Download) => Download,
 		_ => null
 	};
 }
