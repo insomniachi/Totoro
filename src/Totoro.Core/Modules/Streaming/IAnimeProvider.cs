@@ -31,7 +31,11 @@ public interface IAnimeProvider
 }
 
 /// <param name="Score">How well the title matched the search, from 0 to 1; 1 is an exact match.</param>
-public sealed record ProviderShow(string Id, string Title, double Score = 0);
+public sealed record ProviderShow(string Id, string Title, double Score = 0)
+{
+	/// <summary>The show's cover, a URL; "" when the provider has none. A property, not a parameter, so plugins built before it still load.</summary>
+	public string Image { get; init; } = "";
+}
 
 /// <param name="Number">The episode number as the provider numbers it (with absolute numbering, it carries on from a previous season).</param>
 public sealed record ProviderEpisode(string ShowId, string Id, float Number);

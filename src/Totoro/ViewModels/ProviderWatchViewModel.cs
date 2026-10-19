@@ -230,31 +230,23 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 		}
 
 		var query = Query;
-		await LoadAsync(async () =>
-		{
-			// The database's results for the same search give the shows their covers (providers don't have them).
-			var covers = SearchDatabaseAsync(query);
-			return (Shows: await provider.SearchAsync(query, CancellationToken.None), Anime: await covers);
-		}, () => Provider == provider && Query == query, found =>
+		await LoadAsync(() => provider.SearchAsync(query, CancellationToken.None), () => Provider == provider && Query == query, shows =>
 		{
 			List<AnimeModel> cards = [];
-			foreach (var show in found.Shows)
+			foreach (var show in shows)
 			{
-				var match = found.Anime.MaxBy(x => Closeness(show.Title, x)) is { } best && Closeness(show.Title, best) >= MinCloseness ? best : null;
-				var card = new AnimeModel { Title = show.Title, Image = match?.Image ?? "" };
+				// The provider's own cover, if it has one
+				var card = new AnimeModel { Title = show.Title, Image = show.Image };
 				_cardShows[card] = show;
 				cards.Add(card);
 			}
 
 			ShowCards = cards;
-			return found.Shows.Count > 0 ? "" : $"No shows on {provider.Name} match. Try another title.";
+			return shows.Count > 0 ? "" : $"No shows on {provider.Name} match. Try another title.";
 		});
 	}
 
-	// How close a database anime's title has to be to a show's for its cover to be the show's: a sequel or spin-off ("... Mini Anime") contains the title, and scores ~0.8.
-	private const double MinCloseness = 0.9;
-
-	/// <summary>The database's anime for a search; none if it fails (they're only covers and suggestions).</summary>
+	/// <summary>The database's anime for a search; none if it fails (they're only suggestions).</summary>
 	private async Task<List<AnimeModel>> SearchDatabaseAsync(string query)
 	{
 		try

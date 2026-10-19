@@ -93,17 +93,17 @@
                 ItemsSource="{x:Bind ViewModel.ShowCards, Mode=OneWay}"
                 SelectedItem="{x:Bind ViewModel.SelectedCard, Mode=TwoWay}"
                 SelectionMode="Single">
-                <!--  24 apart, as the library's cards are  -->
+                <!--  Covers 24 apart, as the library's cards are; the padding keeps the selection border off the title  -->
                 <GridView.ItemContainerStyle>
                     <Style BasedOn="{StaticResource DefaultGridViewItemStyle}" TargetType="GridViewItem">
-                        <Setter Property="Margin" Value="0,0,24,24" />
+                        <Setter Property="Margin" Value="0,0,8,8" />
+                        <Setter Property="Padding" Value="8" />
                     </Style>
                 </GridView.ItemContainerStyle>
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="anime:AnimeModel">
                         <StackPanel
                             Width="180"
-                            Padding="0,0,0,8"
                             AutomationProperties.Name="{x:Bind Title}"
                             Spacing="8">
                             <Border
@@ -111,7 +111,7 @@
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 CornerRadius="{ThemeResource OverlayCornerRadius}">
                                 <Grid>
-                                    <!--  Shown when the database had no cover for it  -->
+                                    <!--  Shown when the provider had no cover for it  -->
                                     <FontIcon
                                         FontSize="32"
                                         Foreground="{ThemeResource TextFillColorTertiaryBrush}"
