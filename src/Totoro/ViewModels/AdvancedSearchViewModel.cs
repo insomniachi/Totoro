@@ -6,11 +6,13 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using DynamicData;
 using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Services;
 using Totoro.Core.Settings;
 using Totoro.UI.Navigation;
 
@@ -39,7 +41,7 @@ public sealed record SortOption(string Label, SearchSortField Value)
 /// Searches an anime database by title, season, years, score and genres. Searches run by themselves as the filters
 /// change (after a short pause), against the chosen provider; results are sorted by <see cref="SortField"/>.
 /// </summary>
-public partial class AdvancedSearchViewModel : NavigatableViewModel
+public partial class AdvancedSearchViewModel : NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>
 {
 	// How long to wait after the last change before searching: longer for typing, which changes more often.
 	private static readonly TimeSpan s_filterDelay = TimeSpan.FromMilliseconds(500);
@@ -75,6 +77,7 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 								   .Subscribe());
 
 		_subscriptions.Add(SearchWhenFiltersChange(ui));
+		WeakReferenceMessenger.Default.Register(this);
 
 		Providers = [.. providers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))];
 		// The selected anime database, as elsewhere in the app; unset (or unknown) means the first.
@@ -236,6 +239,7 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 	protected override Task OnNavigatedFromInternalAsync()
 	{
 		_subscriptions.Dispose();
+		WeakReferenceMessenger.Default.Unregister<AnimeTrackingChangedMessage>(this);
 		return Task.CompletedTask;
 	}
 
@@ -351,6 +355,15 @@ public partial class AdvancedSearchViewModel : NavigatableViewModel
 				return [];
 			}
 		});
+	}
+
+	/// <summary>An anime's list entry changed through another instance of it (e.g. by an agent tool): its card shows it.</summary>
+	public void Receive(AnimeTrackingChangedMessage message)
+	{
+		foreach (var anime in _results.Items.Where(x => !ReferenceEquals(x, message.Anime) && x.StoreKey == message.Anime.StoreKey))
+		{
+			anime.Tracking = message.Tracking;
+		}
 	}
 
 	private void ShowResults(IReadOnlyList<AnimeModel> anime)

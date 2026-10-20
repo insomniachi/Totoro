@@ -88,8 +88,8 @@
                                     <controls:AnimeCard Anime="{x:Bind}" Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}">
                                         <Interactivity:Interaction.Behaviors>
                                             <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
-                                            <overlays:NextEpisodeOverlay />
-                                            <overlays:NewEpisodesOverlay />
+                                            <overlays:ListStatusOverlay />
+                                            <overlays:MeanScoreOverlay />
                                             <overlays:AiringStatusOverlay />
                                             <overlays:HoverEffectsBehavior />
                                         </Interactivity:Interaction.Behaviors>

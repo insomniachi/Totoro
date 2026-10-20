@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.UI.Controls.AnimeCardOverlays.LabelBadge"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Margin="8"
+    IsHitTestVisible="False">
+
+    <!--  An icon and a short label on the cover, acrylic as the next episode badge is, so it reads on any art  -->
+    <Border
+        Padding="6,2"
+        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="{ThemeResource ControlCornerRadius}">
+        <StackPanel Orientation="Horizontal" Spacing="4">
+            <FontIcon
+                x:Name="Icon"
+                VerticalAlignment="Center"
+                FontSize="12" />
+            <TextBlock
+                x:Name="Label"
+                VerticalAlignment="Center"
+                FontWeight="SemiBold"
+                Style="{ThemeResource CaptionTextBlockStyle}" />
+        </StackPanel>
+    </Border>
+</UserControl>
