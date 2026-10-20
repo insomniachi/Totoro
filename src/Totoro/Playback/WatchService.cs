@@ -11,6 +11,7 @@ using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Services;
 using Totoro.Core.Relations;
 using Totoro.Core.Settings;
+using Totoro.Modules.AnimeProviders.Downloads;
 using Totoro.ViewModels;
 
 namespace Totoro.Playback;
@@ -838,7 +839,11 @@ public sealed partial class WatchService(
 	{
 		if (animeSettings.Get(anime).Shows.TryGetValue(provider.Id, out var known))
 		{
-			return (known, [known]);
+			// A download's folder is renamed when its naming changes: one its ids find now replaces the old match.
+			if (provider.Id != DownloadsModule.Id || await provider.FindShowAsync(anime.ExternalIds, ct) is not { } byId || byId.Id == known.Id)
+			{
+				return (known, [known]);
+			}
 		}
 
 		var results = await SearchShowsAsync(provider, anime, ct);
