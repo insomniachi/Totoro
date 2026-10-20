@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Streaming;
@@ -89,8 +90,9 @@ public sealed class DownloadService(
 	ILogger<DownloadService> logger) : ObservableObject, IDisposable
 {
 	// What players send, and a stream's own headers replace: Cloudflare turns requests without an Accept away at its edge
-	// (AnimePahe's CDN: 403), and some CDNs ones without a browser's User-Agent.
-	private readonly HttpClient _http = new()
+	// (AnimePahe's CDN: 403), and some CDNs ones without a browser's User-Agent. Connecting as the player would, so links
+	// that only work from the address that asked for them (Re:ANIME's) download, without waiting out broken IPv6.
+	private readonly HttpClient _http = new(new SocketsHttpHandler { ConnectCallback = HttpConnect.PreferIPv6Async })
 	{
 		DefaultRequestHeaders =
 		{

@@ -19,6 +19,32 @@ public static class HttpConnect
 		return new NetworkStream(socket, ownsSocket: true);
 	}
 
+	/// <summary>
+	/// A <see cref="SocketsHttpHandler.ConnectCallback"/> that connects as players and browsers do: over IPv6 when it works,
+	/// falling back to IPv4 after a few seconds rather than the OS timeout. For links that only work from the address that
+	/// asked for them (FlixCloud's), fetched by whatever the player connects with.
+	/// </summary>
+	public static async ValueTask<Stream> PreferIPv6Async(SocketsHttpConnectionContext context, CancellationToken ct)
+	{
+		var addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, ct);
+		var ipv4 = addresses.Where(x => x.AddressFamily == AddressFamily.InterNetwork).ToArray();
+		if (ipv4.Length > 0 && addresses.Any(x => x.AddressFamily == AddressFamily.InterNetworkV6) && Socket.OSSupportsIPv6)
+		{
+			using var attempt = CancellationTokenSource.CreateLinkedTokenSource(ct);
+			attempt.CancelAfter(TimeSpan.FromSeconds(3));
+			try
+			{
+				return new NetworkStream(await ConnectAsync(addresses.Where(x => x.AddressFamily == AddressFamily.InterNetworkV6), context.DnsEndPoint.Port, attempt.Token), ownsSocket: true);
+			}
+			catch (Exception ex) when (ex is SocketException || (ex is OperationCanceledException && !ct.IsCancellationRequested))
+			{
+				addresses = ipv4;
+			}
+		}
+
+		return new NetworkStream(await ConnectAsync(addresses, context.DnsEndPoint.Port, ct), ownsSocket: true);
+	}
+
 	// shortcut: IPv4 first rather than Happy Eyeballs (both at once); a network whose IPv4 is broken but IPv6 works
 	// still waits per IPv4 address. Upgrade if that shows up.
 	public static async Task<Socket> ConnectAsync(IEnumerable<IPAddress> addresses, int port, CancellationToken ct)
