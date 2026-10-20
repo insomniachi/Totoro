@@ -3,6 +3,7 @@
     x:Class="Totoro.Views.PluginsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Totoro.UI.Controls"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:vm="using:Totoro.ViewModels">
@@ -26,12 +27,22 @@
                 IsClosable="False"
                 IsOpen="{x:Bind ViewModel.RequiresRestart, Mode=OneWay}"
                 Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.RequiresRestart), Mode=OneWay}"
-                Message="Plugins were installed or uninstalled. They take effect once Totoro restarts."
-                Severity="Informational"
-                Title="Restart to apply changes">
-                <InfoBar.ActionButton>
-                    <Button Command="{x:Bind ViewModel.RestartAppCommand}" Content="Restart now" />
-                </InfoBar.ActionButton>
+                Severity="Informational">
+                <!--  Text and button as content, not Title/Message/ActionButton: those sit in a row sized to them, so the button can't go to the right edge  -->
+                <Grid Margin="0,0,16,0" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" TextWrapping="Wrap">
+                        <Run FontWeight="SemiBold" Text="Restart to apply changes" />
+                        <Run Text="  Plugins were installed or uninstalled. They take effect once Totoro restarts." />
+                    </TextBlock>
+                    <Button
+                        Grid.Column="1"
+                        Command="{x:Bind ViewModel.RestartAppCommand}"
+                        Content="Restart now" />
+                </Grid>
             </InfoBar>
             <InfoBar
                 Margin="0,0,0,20"
@@ -114,26 +125,24 @@
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
                                 Spacing="8">
-                                <ProgressRing
-                                    Width="20"
-                                    Height="20"
-                                    IsActive="True"
-                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsBusy), Mode=OneWay}" />
-                                <Button
+                                <controls:BusyButton
                                     MinWidth="120"
                                     Command="{x:Bind InstallOrUpdateCommand}"
+                                    IsBusy="{x:Bind InstallOrUpdateCommand.IsRunning, Mode=OneWay}"
                                     Content="Update"
                                     IsEnabled="{x:Bind IsCompatible}"
                                     Style="{ThemeResource AccentButtonStyle}"
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUpdate), Mode=OneWay}" />
-                                <Button
+                                <controls:BusyButton
                                     MinWidth="120"
                                     Command="{x:Bind UninstallCommand}"
+                                    IsBusy="{x:Bind UninstallCommand.IsRunning, Mode=OneWay}"
                                     Content="Uninstall"
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUninstall), Mode=OneWay}" />
-                                <Button
+                                <controls:BusyButton
                                     MinWidth="120"
                                     Command="{x:Bind InstallOrUpdateCommand}"
+                                    IsBusy="{x:Bind InstallOrUpdateCommand.IsRunning, Mode=OneWay}"
                                     Content="Install"
                                     IsEnabled="{x:Bind IsCompatible}"
                                     Style="{ThemeResource AccentButtonStyle}"
