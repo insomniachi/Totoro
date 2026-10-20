@@ -7,7 +7,7 @@
 //           LottieGen -GenerateColorBindings -Language CSharp -Namespace Totoro.UI.AnimatedVisuals -Public -WinUIVersion 3.0 -InputFile AnimatedLibraryVisualSource.json
 //       
 //       Input file:
-//           AnimatedLibraryVisualSource.json (6805 bytes created 15:29+05:30 Oct 12 2026)
+//           AnimatedLibraryVisualSource.json (32977 bytes created 15:29+05:30 Oct 12 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -19,10 +19,10 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |    53 |
+// | All CompositionObjects   |    61 |
 // |--------------------------+-------|
 // | Expression animators     |     2 |
-// | KeyFrame animators       |     3 |
+// | KeyFrame animators       |     5 |
 // | Reference parameters     |     2 |
 // | Expression operations    |     4 |
 // |--------------------------+-------|
@@ -34,7 +34,7 @@
 // | ContainerVisuals         |     1 |
 // | ShapeVisuals             |     1 |
 // |--------------------------+-------|
-// | ContainerShapes          |     3 |
+// | ContainerShapes          |     4 |
 // | CompositionSpriteShapes  |     6 |
 // |--------------------------+-------|
 // | Brushes                  |     1 |
@@ -51,26 +51,26 @@ namespace Totoro.UI.AnimatedVisuals
 {
     // Name:        AnimatedLibrary
     // Frame rate:  60 fps
-    // Frame count: 80
-    // Duration:    1333.3 mS
+    // Frame count: 112
+    // Duration:    1866.7 mS
     // _____________________________________________________________________________________________
     // |           Marker           |           Constant           | Frame |   mS   |   Progress   |
     // |____________________________|______________________________|_______|________|______________|
     // | Normal                     | M_Normal                     |     0 |    0.0 | 0F           |
     // | NormalToPointerOver_Start  | M_NormalToPointerOver_Start  |     0 |    0.0 | 0F           |
-    // | PointerOver                | M_PointerOver                |    15 |  250.0 | 0.188124999F |
-    // | NormalToPointerOver_End    | M_NormalToPointerOver_End    |    15 |  250.0 | 0.188124999F |
-    // | PointerOverToNormal_Start  | M_PointerOverToNormal_Start  |    20 |  333.3 | 0.250625014F |
-    // | PointerOverToNormal_End    | M_PointerOverToNormal_End    |    35 |  583.3 | 0.438125014F |
-    // | PointerOverToPressed_Start | M_PointerOverToPressed_Start |    40 |  666.7 | 0.500625014F |
-    // | NormalToPressed_Start      | M_NormalToPressed_Start      |    40 |  666.7 | 0.500625014F |
-    // | Pressed                    | M_Pressed                    |    46 |  766.7 | 0.575625002F |
-    // | PointerOverToPressed_End   | M_PointerOverToPressed_End   |    46 |  766.7 | 0.575625002F |
-    // | NormalToPressed_End        | M_NormalToPressed_End        |    46 |  766.7 | 0.575625002F |
-    // | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    50 |  833.3 | 0.625625014F |
-    // | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    59 |  983.3 | 0.738125026F |
-    // | PressedToNormal_Start      | M_PressedToNormal_Start      |    64 | 1066.7 | 0.800625026F |
-    // | PressedToNormal_End        | M_PressedToNormal_End        |    79 | 1316.7 | 0.988125026F |
+    // | PointerOver                | M_PointerOver                |    15 |  250.0 | 0.134375006F |
+    // | NormalToPointerOver_End    | M_NormalToPointerOver_End    |    15 |  250.0 | 0.134375006F |
+    // | PointerOverToNormal_Start  | M_PointerOverToNormal_Start  |    20 |  333.3 | 0.179017857F |
+    // | PointerOverToNormal_End    | M_PointerOverToNormal_End    |    35 |  583.3 | 0.312946439F |
+    // | PointerOverToPressed_Start | M_PointerOverToPressed_Start |    40 |  666.7 | 0.357589275F |
+    // | NormalToPressed_Start      | M_NormalToPressed_Start      |    40 |  666.7 | 0.357589275F |
+    // | Pressed                    | M_Pressed                    |    46 |  766.7 | 0.411160707F |
+    // | PointerOverToPressed_End   | M_PointerOverToPressed_End   |    46 |  766.7 | 0.411160707F |
+    // | NormalToPressed_End        | M_NormalToPressed_End        |    46 |  766.7 | 0.411160707F |
+    // | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    50 |  833.3 | 0.446875006F |
+    // | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    80 | 1333.3 | 0.71473217F  |
+    // | PressedToNormal_Start      | M_PressedToNormal_Start      |    81 | 1350.0 | 0.723660707F |
+    // | PressedToNormal_End        | M_PressedToNormal_End        |   111 | 1850.0 | 0.991517842F |
     // ---------------------------------------------------------------------------------------------
     // ___________________________________________________________
     // | Theme property |   Accessor   | Type  |  Default value  |
@@ -81,8 +81,8 @@ namespace Totoro.UI.AnimatedVisuals
         : Microsoft.UI.Xaml.Controls.IAnimatedVisualSource
         , Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2
     {
-        // Animation duration: 1.333 seconds.
-        internal const long c_durationTicks = 13333333;
+        // Animation duration: 1.867 seconds.
+        internal const long c_durationTicks = 18666666;
 
         // Marker: Normal.
         internal const float M_Normal = 0F;
@@ -91,43 +91,43 @@ namespace Totoro.UI.AnimatedVisuals
         internal const float M_NormalToPointerOver_Start = 0F;
 
         // Marker: PointerOver.
-        internal const float M_PointerOver = 0.188124999F;
+        internal const float M_PointerOver = 0.134375006F;
 
         // Marker: NormalToPointerOver_End.
-        internal const float M_NormalToPointerOver_End = 0.188124999F;
+        internal const float M_NormalToPointerOver_End = 0.134375006F;
 
         // Marker: PointerOverToNormal_Start.
-        internal const float M_PointerOverToNormal_Start = 0.250625014F;
+        internal const float M_PointerOverToNormal_Start = 0.179017857F;
 
         // Marker: PointerOverToNormal_End.
-        internal const float M_PointerOverToNormal_End = 0.438125014F;
+        internal const float M_PointerOverToNormal_End = 0.312946439F;
 
         // Marker: PointerOverToPressed_Start.
-        internal const float M_PointerOverToPressed_Start = 0.500625014F;
+        internal const float M_PointerOverToPressed_Start = 0.357589275F;
 
         // Marker: NormalToPressed_Start.
-        internal const float M_NormalToPressed_Start = 0.500625014F;
+        internal const float M_NormalToPressed_Start = 0.357589275F;
 
         // Marker: Pressed.
-        internal const float M_Pressed = 0.575625002F;
+        internal const float M_Pressed = 0.411160707F;
 
         // Marker: PointerOverToPressed_End.
-        internal const float M_PointerOverToPressed_End = 0.575625002F;
+        internal const float M_PointerOverToPressed_End = 0.411160707F;
 
         // Marker: NormalToPressed_End.
-        internal const float M_NormalToPressed_End = 0.575625002F;
+        internal const float M_NormalToPressed_End = 0.411160707F;
 
         // Marker: PressedToPointerOver_Start.
-        internal const float M_PressedToPointerOver_Start = 0.625625014F;
+        internal const float M_PressedToPointerOver_Start = 0.446875006F;
 
         // Marker: PressedToPointerOver_End.
-        internal const float M_PressedToPointerOver_End = 0.738125026F;
+        internal const float M_PressedToPointerOver_End = 0.71473217F;
 
         // Marker: PressedToNormal_Start.
-        internal const float M_PressedToNormal_Start = 0.800625026F;
+        internal const float M_PressedToNormal_Start = 0.723660707F;
 
         // Marker: PressedToNormal_End.
-        internal const float M_PressedToNormal_End = 0.988125026F;
+        internal const float M_PressedToNormal_End = 0.991517842F;
 
         // Theme property: Foreground.
         internal static readonly Color c_themeForeground = Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF);
@@ -184,7 +184,7 @@ namespace Totoro.UI.AnimatedVisuals
         /// <summary>
         /// Gets the number of frames in the animation.
         /// </summary>
-        public double FrameCount => 80d;
+        public double FrameCount => 112d;
 
         /// <summary>
         /// Gets the frame rate of the animation.
@@ -194,7 +194,7 @@ namespace Totoro.UI.AnimatedVisuals
         /// <summary>
         /// Gets the duration of the animation.
         /// </summary>
-        public TimeSpan Duration => TimeSpan.FromTicks(13333333);
+        public TimeSpan Duration => TimeSpan.FromTicks(18666666);
 
         /// <summary>
         /// Converts a zero-based frame number to the corresponding progress value denoting the
@@ -202,7 +202,7 @@ namespace Totoro.UI.AnimatedVisuals
         /// </summary>
         public double FrameToProgress(double frameNumber)
         {
-            return frameNumber / 80d;
+            return frameNumber / 112d;
         }
 
         /// <summary>
@@ -213,19 +213,19 @@ namespace Totoro.UI.AnimatedVisuals
             {
                 { "Normal", 0d },
                 { "NormalToPointerOver_Start", 0d },
-                { "PointerOver", 0.188125 },
-                { "NormalToPointerOver_End", 0.188125 },
-                { "PointerOverToNormal_Start", 0.250625 },
-                { "PointerOverToNormal_End", 0.438125 },
-                { "PointerOverToPressed_Start", 0.500625 },
-                { "NormalToPressed_Start", 0.500625 },
-                { "Pressed", 0.575625 },
-                { "PointerOverToPressed_End", 0.575625 },
-                { "NormalToPressed_End", 0.575625 },
-                { "PressedToPointerOver_Start", 0.625625 },
-                { "PressedToPointerOver_End", 0.738125 },
-                { "PressedToNormal_Start", 0.800625 },
-                { "PressedToNormal_End", 0.988125 },
+                { "PointerOver", 0.134375 },
+                { "NormalToPointerOver_End", 0.134375 },
+                { "PointerOverToNormal_Start", 0.179017857142857 },
+                { "PointerOverToNormal_End", 0.312946428571429 },
+                { "PointerOverToPressed_Start", 0.357589285714286 },
+                { "NormalToPressed_Start", 0.357589285714286 },
+                { "Pressed", 0.411160714285714 },
+                { "PointerOverToPressed_End", 0.411160714285714 },
+                { "NormalToPressed_End", 0.411160714285714 },
+                { "PressedToPointerOver_Start", 0.446875 },
+                { "PressedToPointerOver_End", 0.714732142857143 },
+                { "PressedToNormal_Start", 0.723660714285714 },
+                { "PressedToNormal_End", 0.991517857142857 },
             };
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace Totoro.UI.AnimatedVisuals
             : Microsoft.UI.Xaml.Controls.IAnimatedVisual
             , Microsoft.UI.Xaml.Controls.IAnimatedVisual2
         {
-            const long c_durationTicks = 13333333;
+            const long c_durationTicks = 18666666;
             readonly Compositor _c;
             readonly ExpressionAnimation _reusableExpressionAnimation;
             readonly CompositionPropertySet _themeProperties;
@@ -270,8 +270,10 @@ namespace Totoro.UI.AnimatedVisuals
             CompositionContainerShape _containerShape_0;
             CompositionContainerShape _containerShape_1;
             CompositionContainerShape _containerShape_2;
+            CompositionContainerShape _containerShape_3;
             ContainerVisual _root;
             CubicBezierEasingFunction _cubicBezierEasingFunction_0;
+            CubicBezierEasingFunction _cubicBezierEasingFunction_1;
             StepEasingFunction _holdThenStepEasingFunction;
 
             void BindProperty(
@@ -335,9 +337,7 @@ namespace Totoro.UI.AnimatedVisuals
                 // ShapeGroup: Middle book
                 shapes.Add(ContainerShape_2());
                 // ShapeGroup: Left book
-                shapes.Add(SpriteShape_4());
-                // ShapeGroup: Left book
-                shapes.Add(SpriteShape_5());
+                shapes.Add(ContainerShape_3());
                 return result;
             }
 
@@ -372,6 +372,21 @@ namespace Totoro.UI.AnimatedVisuals
                 return result;
             }
 
+            // - Shape tree root for layer: Library
+            // ShapeGroup: Books
+            // ShapeGroup: Left book
+            CompositionContainerShape ContainerShape_3()
+            {
+                if (_containerShape_3 != null) { return _containerShape_3; }
+                var result = _containerShape_3 = _c.CreateContainerShape();
+                var shapes = result.Shapes;
+                // Band
+                shapes.Add(SpriteShape_4());
+                // Cover
+                shapes.Add(SpriteShape_5());
+                return result;
+            }
+
             // - - - Shape tree root for layer: Library
             // - - ShapeGroup: Books
             // - ShapeGroup: Leaning book
@@ -398,9 +413,10 @@ namespace Totoro.UI.AnimatedVisuals
                 return result;
             }
 
-            // - - Shape tree root for layer: Library
-            // - ShapeGroup: Books
-            // ShapeGroup: Left book
+            // - - - Shape tree root for layer: Library
+            // - - ShapeGroup: Books
+            // - ShapeGroup: Left book
+            // Band
             // Band.RectangleGeometry
             CompositionRectangleGeometry Rectangle_3x0_2()
             {
@@ -438,9 +454,10 @@ namespace Totoro.UI.AnimatedVisuals
                 return result;
             }
 
-            // - - Shape tree root for layer: Library
-            // - ShapeGroup: Books
-            // ShapeGroup: Left book
+            // - - - Shape tree root for layer: Library
+            // - - ShapeGroup: Books
+            // - ShapeGroup: Left book
+            // Cover
             // Cover.RectangleGeometry
             CompositionRoundedRectangleGeometry RoundedRectangle_5x30_2()
             {
@@ -511,8 +528,9 @@ namespace Totoro.UI.AnimatedVisuals
                 return result;
             }
 
-            // - Shape tree root for layer: Library
-            // ShapeGroup: Books
+            // - - Shape tree root for layer: Library
+            // - ShapeGroup: Books
+            // ShapeGroup: Left book
             // Band
             CompositionSpriteShape SpriteShape_4()
             {
@@ -525,8 +543,9 @@ namespace Totoro.UI.AnimatedVisuals
                 return result;
             }
 
-            // - Shape tree root for layer: Library
-            // ShapeGroup: Books
+            // - - Shape tree root for layer: Library
+            // - ShapeGroup: Books
+            // ShapeGroup: Left book
             // Cover
             CompositionSpriteShape SpriteShape_5()
             {
@@ -558,6 +577,13 @@ namespace Totoro.UI.AnimatedVisuals
                     : _cubicBezierEasingFunction_0;
             }
 
+            CubicBezierEasingFunction CubicBezierEasingFunction_1()
+            {
+                return (_cubicBezierEasingFunction_1 == null)
+                    ? _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction(new Vector2(0.5F, 0F), new Vector2(0.899999976F, 1F))
+                    : _cubicBezierEasingFunction_1;
+            }
+
             // - - Shape tree root for layer: Library
             // - ShapeGroup: Books
             // ShapeGroup: Leaning book
@@ -567,17 +593,17 @@ namespace Totoro.UI.AnimatedVisuals
                 // Frame 0.
                 var result = CreateScalarKeyFrameAnimation(0F, 22F, HoldThenStepEasingFunction());
                 // Frame 15.
-                result.InsertKeyFrame(0.1875F, 6F, CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.133928567F, 6F, CubicBezierEasingFunction_0());
                 // Frame 20.
-                result.InsertKeyFrame(0.25F, 6F, HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.178571433F, 6F, HoldThenStepEasingFunction());
                 // Frame 35.
-                result.InsertKeyFrame(0.4375F, 22F, CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.3125F, 22F, CubicBezierEasingFunction_0());
                 // Frame 40.
-                result.InsertKeyFrame(0.5F, 6F, HoldThenStepEasingFunction());
-                // Frame 64.
-                result.InsertKeyFrame(0.800000012F, 6F, HoldThenStepEasingFunction());
-                // Frame 79.
-                result.InsertKeyFrame(0.987500012F, 22F, CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.357142866F, 6F, HoldThenStepEasingFunction());
+                // Frame 105.
+                result.InsertKeyFrame(0.9375F, 6F, HoldThenStepEasingFunction());
+                // Frame 111.
+                result.InsertKeyFrame(0.991071403F, 22F, CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -601,28 +627,82 @@ namespace Totoro.UI.AnimatedVisuals
 
             // - - Shape tree root for layer: Library
             // - ShapeGroup: Books
+            // ShapeGroup: Leaning book
+            // Offset
+            Vector2KeyFrameAnimation OffsetVector2Animation_0()
+            {
+                // Frame 0.
+                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 60.
+                result.InsertKeyFrame(0.535714269F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 67.
+                result.InsertKeyFrame(0.598214269F, new Vector2(0F, -9F), CubicBezierEasingFunction_0());
+                // Frame 74.
+                result.InsertKeyFrame(0.660714269F, new Vector2(0F, 0F), CubicBezierEasingFunction_1());
+                // Frame 91.
+                result.InsertKeyFrame(0.8125F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 98.
+                result.InsertKeyFrame(0.875F, new Vector2(0F, -9F), CubicBezierEasingFunction_0());
+                // Frame 105.
+                result.InsertKeyFrame(0.9375F, new Vector2(0F, 0F), CubicBezierEasingFunction_1());
+                return result;
+            }
+
+            // - - Shape tree root for layer: Library
+            // - ShapeGroup: Books
             // ShapeGroup: Middle book
             // Offset
-            Vector2KeyFrameAnimation OffsetVector2Animation()
+            Vector2KeyFrameAnimation OffsetVector2Animation_1()
             {
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
                 // Frame 15.
-                result.InsertKeyFrame(0.1875F, new Vector2(0F, -3F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.133928567F, new Vector2(0F, -3F), CubicBezierEasingFunction_0());
                 // Frame 20.
-                result.InsertKeyFrame(0.25F, new Vector2(0F, -3F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.178571433F, new Vector2(0F, -3F), HoldThenStepEasingFunction());
                 // Frame 35.
-                result.InsertKeyFrame(0.4375F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.3125F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
                 // Frame 40.
-                result.InsertKeyFrame(0.5F, new Vector2(0F, -3F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.357142866F, new Vector2(0F, -3F), HoldThenStepEasingFunction());
                 // Frame 46.
-                result.InsertKeyFrame(0.574999988F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.410714298F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
+                // Frame 55.
+                result.InsertKeyFrame(0.491071433F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 62.
+                result.InsertKeyFrame(0.553571403F, new Vector2(0F, -9F), CubicBezierEasingFunction_0());
+                // Frame 69.
+                result.InsertKeyFrame(0.616071403F, new Vector2(0F, -3F), CubicBezierEasingFunction_1());
+                // Frame 81.
+                result.InsertKeyFrame(0.723214269F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 86.
+                result.InsertKeyFrame(0.767857134F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 93.
+                result.InsertKeyFrame(0.830357134F, new Vector2(0F, -9F), CubicBezierEasingFunction_0());
+                // Frame 100.
+                result.InsertKeyFrame(0.892857134F, new Vector2(0F, 0F), CubicBezierEasingFunction_1());
+                return result;
+            }
+
+            // - - Shape tree root for layer: Library
+            // - ShapeGroup: Books
+            // ShapeGroup: Left book
+            // Offset
+            Vector2KeyFrameAnimation OffsetVector2Animation_2()
+            {
+                // Frame 0.
+                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
                 // Frame 50.
-                result.InsertKeyFrame(0.625F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
-                // Frame 59.
-                result.InsertKeyFrame(0.737500012F, new Vector2(0F, -3F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.446428567F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 57.
+                result.InsertKeyFrame(0.508928597F, new Vector2(0F, -9F), CubicBezierEasingFunction_0());
                 // Frame 64.
-                result.InsertKeyFrame(0.800000012F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.571428597F, new Vector2(0F, 0F), CubicBezierEasingFunction_1());
+                // Frame 81.
+                result.InsertKeyFrame(0.723214269F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
+                // Frame 88.
+                result.InsertKeyFrame(0.785714269F, new Vector2(0F, -9F), CubicBezierEasingFunction_0());
+                // Frame 95.
+                result.InsertKeyFrame(0.848214269F, new Vector2(0F, 0F), CubicBezierEasingFunction_1());
                 return result;
             }
 
@@ -634,17 +714,17 @@ namespace Totoro.UI.AnimatedVisuals
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(1.10000002F, 1.10000002F), HoldThenStepEasingFunction());
                 // Frame 40.
-                result.InsertKeyFrame(0.5F, new Vector2(1.10000002F, 1.10000002F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.357142866F, new Vector2(1.10000002F, 1.10000002F), HoldThenStepEasingFunction());
                 // Frame 46.
-                result.InsertKeyFrame(0.574999988F, new Vector2(1.10000002F, 0.967999995F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.410714298F, new Vector2(1.10000002F, 0.967999995F), CubicBezierEasingFunction_0());
                 // Frame 50.
-                result.InsertKeyFrame(0.625F, new Vector2(1.10000002F, 0.967999995F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.446428567F, new Vector2(1.10000002F, 0.967999995F), HoldThenStepEasingFunction());
                 // Frame 59.
-                result.InsertKeyFrame(0.737500012F, new Vector2(1.10000002F, 1.10000002F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.526785731F, new Vector2(1.10000002F, 1.10000002F), CubicBezierEasingFunction_0());
                 // Frame 64.
-                result.InsertKeyFrame(0.800000012F, new Vector2(1.10000002F, 0.967999995F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.571428597F, new Vector2(1.10000002F, 0.967999995F), HoldThenStepEasingFunction());
                 // Frame 79.
-                result.InsertKeyFrame(0.987500012F, new Vector2(1.10000002F, 1.10000002F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.705357134F, new Vector2(1.10000002F, 1.10000002F), CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -668,14 +748,18 @@ namespace Totoro.UI.AnimatedVisuals
             {
                 _containerShape_0.StartAnimation("Scale", ScaleVector2Animation(), AnimationController_0());
                 _containerShape_1.StartAnimation("RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_22_to_22(), AnimationController_0());
-                _containerShape_2.StartAnimation("Offset", OffsetVector2Animation(), AnimationController_0());
+                _containerShape_1.StartAnimation("Offset", OffsetVector2Animation_0(), AnimationController_0());
+                _containerShape_2.StartAnimation("Offset", OffsetVector2Animation_1(), AnimationController_0());
+                _containerShape_3.StartAnimation("Offset", OffsetVector2Animation_2(), AnimationController_0());
             }
 
             public void DestroyAnimations()
             {
                 _containerShape_0.StopAnimation("Scale");
                 _containerShape_1.StopAnimation("RotationAngleInDegrees");
+                _containerShape_1.StopAnimation("Offset");
                 _containerShape_2.StopAnimation("Offset");
+                _containerShape_3.StopAnimation("Offset");
             }
 
         }

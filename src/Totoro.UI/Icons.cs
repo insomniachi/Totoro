@@ -23,8 +23,8 @@ public static class Icons
 	};
 
 	/// <summary>
-	/// Books on a shelf, the leaning one swinging upright as the pointer comes over (our own, from its Lottie file in
-	/// AnimatedVisuals; see Generate.ps1 there).
+	/// Books on a shelf, the leaning one swinging upright as the pointer comes over, and all of them hopping in a wave
+	/// when clicked (our own, from its Lottie file in AnimatedVisuals; see Generate.ps1 there).
 	/// </summary>
 	public static AnimatedIcon LibraryAnimated => new()
 	{
