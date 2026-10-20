@@ -1,3 +1,6 @@
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace Totoro.Core.Settings;
 
 /// <summary>
@@ -11,4 +14,24 @@ public static class DataContainerEditors
 	public const string NumberBox = "NumberBox";
 	public const string ComboBox = "ComboBox";
 	public const string FileBrowser = "FileBrowser";
+
+	/// <summary>A button for a <see cref="SettingsAction"/> value: something to do, not a value to save.</summary>
+	public const string Button = "Button";
+}
+
+/// <summary>
+/// An action in a settings page, e.g. downloading what a module needs: a button running <see cref="Command"/>. What's
+/// shown follows changes while it's on screen, so the action can say how it went.
+/// </summary>
+public sealed partial class SettingsAction(ICommand command) : ObservableObject
+{
+	public ICommand Command { get; } = command;
+
+	[ObservableProperty] public partial string Label { get; set; } = "";
+
+	/// <summary>The card's description, e.g. the version installed or why it failed; empty for the setting's own.</summary>
+	[ObservableProperty] public partial string Description { get; set; } = "";
+
+	/// <summary>While it runs: the button shows a progress ring instead of its label, and can't be pressed.</summary>
+	[ObservableProperty] public partial bool IsBusy { get; set; }
 }

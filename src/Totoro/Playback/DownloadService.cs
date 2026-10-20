@@ -796,7 +796,7 @@ public sealed class DownloadService(
 		return ".ts";
 	}
 
-	/// <summary>The yt-dlp.exe the user chose; if they haven't, the one on the PATH.</summary>
+	/// <summary>The yt-dlp.exe the user chose; if they haven't, the one on the PATH, or the one downloaded with mpv.</summary>
 	private string? FindYtDlp()
 	{
 		if (preferences.YtDlpPath is { Length: > 0 } chosen)
@@ -808,6 +808,7 @@ public sealed class DownloadService(
 		return new[] { EnvironmentVariableTarget.Process, EnvironmentVariableTarget.User, EnvironmentVariableTarget.Machine }
 			   .SelectMany(x => (Environment.GetEnvironmentVariable("PATH", x) ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
 			   .Select(x => Path.Combine(Environment.ExpandEnvironmentVariables(x), "yt-dlp.exe"))
+			   .Append(Path.Combine(Modules.MediaPlayers.Mpv.MpvInstaller.Folder, "yt-dlp.exe"))
 			   .FirstOrDefault(File.Exists);
 	}
 

@@ -30,15 +30,17 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	public event EventHandler<TimeSpan>? PositionChanged;
 	public event EventHandler? PlaybackStopped;
 
-	public bool IsAvailable()
+	public bool IsAvailable() => GetFileName() is not null;
+
+	/// <summary>The mpv.exe to play in: the user's own, else the one downloaded from the settings, else one that's installed.</summary>
+	private string? GetFileName()
 	{
-		if (!File.Exists(settings.Value.FileName) && FindMpv() is { } found)
+		if (File.Exists(settings.Value.FileName))
 		{
-			settings.Value.FileName = found;
-			settings.Save();
+			return settings.Value.FileName;
 		}
 
-		return File.Exists(settings.Value.FileName);
+		return MpvInstaller.IsInstalled ? MpvInstaller.Exe : FindMpv();
 	}
 
 	public void Play(MediaItem media, TimeSpan startPosition)
@@ -48,7 +50,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		var pipeName = $"totoro-mpv-{Guid.NewGuid():N}";
 		var startInfo = new ProcessStartInfo
 		{
-			FileName = settings.Value.FileName,
+			FileName = GetFileName() ?? throw new FileNotFoundException("mpv isn't there: download it in the MPV module's settings."),
 			ArgumentList =
 			{
 				media.Uri.IsFile ? media.Uri.LocalPath : media.Uri.AbsoluteUri,

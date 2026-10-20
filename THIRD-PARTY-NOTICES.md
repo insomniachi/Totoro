@@ -22,6 +22,7 @@ given. This file is shipped with the app.
 | NAudio (NAudio.Core, NAudio.Wasapi) | MIT | Mark Heath | https://github.com/naudio/NAudio |
 | Newtonsoft.Json | MIT | James Newton-King | https://github.com/JamesNK/Newtonsoft.Json |
 | OllamaSharp | MIT | Andreas Wäscher | https://github.com/awaescher/OllamaSharp |
+| SharpCompress | MIT | Adam Hathcock | https://github.com/adamhathcock/sharpcompress |
 | Reactive Extensions (System.Reactive) | MIT | .NET Foundation and Contributors | https://github.com/dotnet/reactive |
 | Polly, Polly.Extensions.Http | BSD-3-Clause | App vNext | https://github.com/App-vNext/Polly |
 | XAML Behaviors (Microsoft.Xaml.Behaviors.WinUI.Managed) | MIT | Microsoft | https://github.com/microsoft/XamlBehaviors |
@@ -33,6 +34,9 @@ given. This file is shipped with the app.
 libvlc and LibVLCSharp are separate libraries the app loads; you may replace them with your own builds. Their license is
 in `libvlc\win-x64\COPYING.LIB`, with where their source is in `libvlc\win-x64\NOTICE.txt`. rqbit's license is in
 `Tools\rqbit\LICENSE.txt`.
+
+mpv, FFmpeg and yt-dlp aren't shipped: the MPV module's settings download them from their own releases
+(shinchiro/mpv-winbuild-cmake, yt-dlp/yt-dlp) when the user asks, under their own licenses.
 
 ## The MIT License
 

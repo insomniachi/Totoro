@@ -1,12 +1,10 @@
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using Totoro.Core.Helpers;
 using Totoro.Core.Settings;
 
 namespace Totoro.Core.Services;
@@ -49,8 +47,6 @@ public sealed partial class UpdateService(IPreferences preferences, ILogger<Upda
 
 	// After starting, before checking: the app has more to do first.
 	private static readonly TimeSpan s_startupDelay = TimeSpan.FromSeconds(10);
-
-	private static readonly HttpClient s_http = CreateClient();
 
 	/// <summary>The running version, e.g. 2.0.0.</summary>
 	public Version CurrentVersion { get; } = GetCurrentVersion();
@@ -150,43 +146,14 @@ public sealed partial class UpdateService(IPreferences preferences, ILogger<Upda
 	private static async Task<AppRelease?> GetLatestReleaseAsync(CancellationToken ct)
 	{
 		// The latest that isn't a pre-release. Releases without the installer (the old app's) aren't updates.
-		using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/{Repository}/releases/latest");
-		request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-		using var response = await s_http.SendAsync(request, ct);
-		if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+		if (await GitHubReleases.GetLatestAsync(Repository, ct) is not { } release ||
+			!Version.TryParse(release.Tag.TrimStart('v', 'V'), out var version) ||
+			release.Assets.FirstOrDefault(x => x.Name.EndsWith(InstallerSuffix, StringComparison.OrdinalIgnoreCase)) is not { } installer)
 		{
 			return null;
 		}
 
-		response.EnsureSuccessStatusCode();
-		using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
-		var release = json.RootElement;
-		var tag = release.GetProperty("tag_name").GetString() ?? "";
-		if (!Version.TryParse(tag.TrimStart('v', 'V'), out var version))
-		{
-			return null;
-		}
-
-		foreach (var asset in release.GetProperty("assets").EnumerateArray())
-		{
-			var name = asset.GetProperty("name").GetString() ?? "";
-			if (!name.EndsWith(InstallerSuffix, StringComparison.OrdinalIgnoreCase))
-			{
-				continue;
-			}
-
-			var digest = asset.TryGetProperty("digest", out var d) && d.ValueKind == JsonValueKind.String ? d.GetString() : null;
-			return new AppRelease(
-				version,
-				release.GetProperty("name").GetString() is { Length: > 0 } title ? title : tag,
-				new Uri(release.GetProperty("html_url").GetString()!),
-				new Uri(asset.GetProperty("browser_download_url").GetString()!),
-				digest?.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) == true ? digest["sha256:".Length..] : null,
-				asset.GetProperty("size").GetInt64(),
-				release.TryGetProperty("body", out var body) ? body.GetString() ?? "" : "");
-		}
-
-		return null;
+		return new AppRelease(version, release.Name, release.Page, installer.Url, installer.Sha256, installer.Size, release.Notes);
 	}
 
 	/// <summary>Downloads the installer into the temp folder, checking it against GitHub's hash; returns its path.</summary>
@@ -194,51 +161,11 @@ public sealed partial class UpdateService(IPreferences preferences, ILogger<Upda
 	{
 		var folder = Path.Combine(Path.GetTempPath(), "Totoro", "Updates");
 		Directory.CreateDirectory(folder);
-		var path = Path.Combine(folder, Path.GetFileName(release.Installer.LocalPath));
-
-		using (var response = await s_http.GetAsync(release.Installer, HttpCompletionOption.ResponseHeadersRead, ct))
-		{
-			response.EnsureSuccessStatusCode();
-			var length = response.Content.Headers.ContentLength ?? release.Size;
-			await using var source = await response.Content.ReadAsStreamAsync(ct);
-			await using var file = File.Create(path);
-			var buffer = new byte[81920];
-			long read = 0;
-			int count;
-			while ((count = await source.ReadAsync(buffer, ct)) > 0)
-			{
-				await file.WriteAsync(buffer.AsMemory(0, count), ct);
-				read += count;
-				// In steps, not every few kilobytes: it's bound to the UI.
-				var progress = length > 0 ? (double)read / length : 0;
-				if (progress - Progress >= 0.005 || progress >= 1)
-				{
-					Progress = progress;
-				}
-			}
-		}
-
-		if (release.Sha256 is { } expected)
-		{
-			await using var file = File.OpenRead(path);
-			var actual = Convert.ToHexString(await SHA256.HashDataAsync(file, ct));
-			if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
-			{
-				File.Delete(path);
-				throw new InvalidDataException("The download doesn't match the release's installer.");
-			}
-		}
-
+		var name = Path.GetFileName(release.Installer.LocalPath);
+		var path = Path.Combine(folder, name);
+		await GitHubReleases.DownloadAsync(new GitHubAsset(name, release.Installer, release.Size, release.Sha256), path, new Progress<double>(x => Progress = x), ct);
 		return path;
 	}
 
 	private static Version GetCurrentVersion() => AppInfo.Version;
-
-	private static HttpClient CreateClient()
-	{
-		var client = new HttpClient();
-		// GitHub's API refuses requests without one.
-		client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Totoro", GetCurrentVersion().ToString()));
-		return client;
-	}
 }
