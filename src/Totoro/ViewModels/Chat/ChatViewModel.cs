@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Totoro.Core.Settings;
 using Totoro.Core.Services;
 
 namespace Totoro.ViewModels.Chat;
@@ -20,8 +22,11 @@ public sealed partial class ChatViewModel : ObservableObject
 			else if (e.PropertyName is nameof(ChatService.IsAvailable))
 			{
 				OnPropertyChanged(nameof(IsAvailable));
+				IsOpen &= Chat.IsAvailable;
 			}
 		};
+		// e.g. the model turned off or changed in its module's settings
+		WeakReferenceMessenger.Default.Register<ChatViewModel, ModuleSettingsChangedMessage>(this, (r, _) => r.Chat.Refresh());
 	}
 
 	public ChatService Chat { get; }

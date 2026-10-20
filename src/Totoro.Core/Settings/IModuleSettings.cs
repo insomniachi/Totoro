@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using CommunityToolkit.Mvvm.Messaging;
 using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 
@@ -84,5 +85,9 @@ public class ModuleSettings<TData> : IModuleSettings<TData>
 	public void Save()
 	{
 		File.WriteAllText(_filePath, JsonSerializer.Serialize(Value, s_options));
+		WeakReferenceMessenger.Default.Send(new ModuleSettingsChangedMessage(Descriptor.Id));
 	}
 }
+
+/// <summary>Sent (with WeakReferenceMessenger.Default) after a module's settings are saved.</summary>
+public sealed record ModuleSettingsChangedMessage(Guid ModuleId);

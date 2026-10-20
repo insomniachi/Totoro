@@ -20,7 +20,7 @@ internal sealed class OllamaChatModel(IModuleSettings<Settings> settings) : ICha
 	public string Name => $"Ollama ({ModelName})";
 
 	// Nothing to sign in to: whether Ollama is running shows when a message is sent.
-	public bool IsAvailable() => true;
+	public bool IsAvailable() => settings.Value.Enabled;
 
 	public IChatClient CreateClient()
 	{

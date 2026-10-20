@@ -30,6 +30,10 @@ internal class OllamaModule : IModule<Settings>
 
 public sealed class Settings : DataContainerConfig
 {
+	[DisplayName("Enabled")]
+	[Description("Shows the assistant (its button in the title bar).")]
+	public bool Enabled { get; set; }
+
 	[DisplayName("Model")]
 	[Description("The Ollama model the assistant uses, e.g. qwen2.5:14b. It has to support tools.")]
 	public string Model { get; set; } = OllamaChatModel.DefaultModel;

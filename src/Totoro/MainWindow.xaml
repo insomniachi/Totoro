@@ -429,7 +429,8 @@
                         AutomationProperties.Name="Assistant"
                         BorderThickness="0"
                         IsChecked="{x:Bind ViewModel.Chat.IsOpen, Mode=TwoWay}"
-                        ToolTipService.ToolTip="Assistant">
+                        ToolTipService.ToolTip="Assistant"
+                        Visibility="{x:Bind ViewModel.Chat.IsAvailable, Mode=OneWay}">
                         <ToggleButton.Resources>
                             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
                             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
