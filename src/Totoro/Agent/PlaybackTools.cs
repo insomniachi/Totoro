@@ -63,6 +63,20 @@ public sealed record DownloadInfo(
 [Description("Where episodes are downloaded to (a folder for each anime, named with its title), and the downloads.")]
 public sealed record Downloads(string Folder, IReadOnlyList<DownloadInfo> Items);
 
+[Description("An anime's folder in the download folder.")]
+public sealed record DownloadedAnimeInfo(
+	[property: Description("The folder's name: what edit_downloaded_anime and delete_downloaded_anime take.")]
+	string Folder,
+	[property: Description("Its title, as its info says; null when it has no info.")]
+	string? Title,
+	IReadOnlyList<string> OtherTitles,
+	long? AnilistId,
+	long? MalId,
+	[property: Description("How many episodes are downloaded.")]
+	int Episodes,
+	[property: Description("How much space they take, e.g. \"1.3 GB\".")]
+	string Size);
+
 /// <summary>Agent tools for watching and downloading anime (see <see cref="WatchService"/> and <see cref="DownloadService"/>).</summary>
 public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, DownloadService downloads, IPreferences preferences,
 								  IFactory<IAnimeProvider, Guid> providers)
@@ -307,6 +321,64 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 				   ?? throw new AgentToolException($"Nothing called {title} is downloading; get_downloads lists them.");
 		item.Cancel();
 		return $"Cancelled {item.Title}.";
+	}
+
+	[AgentTool("get_downloaded_anime")]
+	[Description("The anime in the download folder, each in its own folder, with what its info says: the titles and AniList and MyAnimeList ids " +
+				 "the Downloads provider finds it by. One without info, or ids, is only found by title.")]
+	public IReadOnlyList<DownloadedAnimeInfo> GetDownloadedAnime()
+	{
+		downloads.RefreshLibrary();
+		return [.. downloads.Library.Select(x => new DownloadedAnimeInfo(x.Name, x.Info?.Title, x.Info?.OtherTitles ?? [], x.Info?.AnilistId, x.Info?.MalId,
+																		  x.Episodes, DownloadService.Size(x.Bytes) ?? ""))];
+	}
+
+	[AgentTool("edit_downloaded_anime")]
+	[Description("Changes (or adds) the info of an anime in the download folder: what the Downloads provider finds it by. " +
+				 "What's left out stays as it is. Get its ids with search_anime or get_anime.")]
+	public string EditDownloadedAnime(
+		[Description("The anime's folder, from get_downloaded_anime.")] string folder,
+		[Description("Its title; required when it has no info yet.")] string? title = null,
+		[Description("Its other titles (romaji, English, synonyms), replacing the ones it has.")] IReadOnlyList<string>? otherTitles = null,
+		[Description("Its AniList id; 0 to remove it.")] long? anilistId = null,
+		[Description("Its MyAnimeList id; 0 to remove it.")] long? malId = null)
+	{
+		downloads.RefreshLibrary();
+		var anime = downloads.Library.FirstOrDefault(x => x.Name.Equals(folder, StringComparison.OrdinalIgnoreCase))
+					?? throw new AgentToolException($"There's no folder called {folder}; get_downloaded_anime lists them.");
+		var info = anime.Info ?? new Core.Modules.Streaming.DownloadInfo(title ?? throw new AgentToolException("It has no info yet: give its title."), []);
+		try
+		{
+			downloads.SaveInfo(anime.Name, info with
+			{
+				Title = title ?? info.Title,
+				OtherTitles = otherTitles ?? info.OtherTitles,
+				AnilistId = anilistId ?? info.AnilistId,
+				MalId = malId ?? info.MalId,
+			});
+		}
+		catch (DownloadException ex)
+		{
+			throw new AgentToolException(ex.Message);
+		}
+
+		return $"Saved {anime.Name}'s info.";
+	}
+
+	[AgentTool("delete_downloaded_anime", RequiresApproval = true)]
+	[Description("Deletes an anime's folder in the download folder, with all its episodes (to the Recycle Bin).")]
+	public string DeleteDownloadedAnime([Description("The anime's folder, from get_downloaded_anime.")] string folder)
+	{
+		try
+		{
+			downloads.Delete(folder);
+		}
+		catch (DownloadException ex)
+		{
+			throw new AgentToolException(ex.Message);
+		}
+
+		return $"Moved {folder} to the Recycle Bin.";
 	}
 
 	private static DownloadInfo ToInfo(DownloadItem item) =>

@@ -115,6 +115,7 @@ public partial class App : Application
 
 				services.AddDialog<TrackingDialog, TrackingDialogViewModel>();
 				services.AddDialog<DownloadEpisodesDialog, DownloadEpisodesDialogViewModel>();
+				services.AddDialog<DownloadInfoDialog, DownloadInfoDialogViewModel>();
 				services.AddDialog<AnimeSettingsDialog, AnimeSettingsDialogViewModel>();
 				// Episode numbering: anime-relations (downloaded when first needed) and the user's own rules.
 				services.AddSingleton<IAnimeRelations, AnimeRelations>();

@@ -77,6 +77,29 @@ public sealed partial class DownloadItem : ObservableObject
 	}
 }
 
+/// <summary>An anime's folder in the download folder (see <see cref="DownloadNames"/>).</summary>
+/// <param name="Name">The folder's name, which the Downloads provider knows the show by.</param>
+/// <param name="Info">Its info file, or null when it has none (or a broken one).</param>
+/// <param name="Episodes">How many episodes are downloaded in it.</param>
+/// <param name="Cover">Its cover image's file URI, or empty.</param>
+public sealed record DownloadedAnime(string Name, string Path, DownloadInfo? Info, int Episodes, long Bytes, string Cover)
+{
+	public string Title => Info?.Title ?? Name;
+
+	/// <summary>e.g. "3 episodes · 1.3 GB · AniList 166794 · MyAnimeList 55866", or that it has no info.</summary>
+	public string Summary => string.Join(" · ", new[]
+	{
+		Episodes == 1 ? "1 episode" : $"{Episodes} episodes",
+		DownloadService.Size(Bytes),
+		Info is null ? "No info: add it so Downloads finds it by its ids" : null,
+		Info?.AnilistId is { } anilist ? $"AniList {anilist}" : null,
+		Info?.MalId is { } mal ? $"MyAnimeList {mal}" : null,
+		Info is not null && Info.AnilistId is null && Info.MalId is null ? "No ids" : null,
+	}.Where(x => x is not null));
+
+	public void ShowInExplorer() => Process.Start("explorer.exe", $"\"{Path}\"");
+}
+
 /// <param name="Fraction">How much is downloaded, from 0 to 1; -1 when the size isn't known.</param>
 /// <param name="BytesPerSecond">How fast it's going: over the last second, or for yt-dlp the last few (see <see cref="SpeedMeter"/>); null when that isn't known.</param>
 /// <param name="DownloadedBytes">How much is downloaded; null when that isn't known.</param>
@@ -230,6 +253,81 @@ public sealed class DownloadService(
 		Process.Start("explorer.exe", $"\"{preferences.DownloadFolder}\"");
 	}
 
+	/// <summary>The anime in the download folder, by title, as <see cref="RefreshLibrary"/> last read them.</summary>
+	public ObservableCollection<DownloadedAnime> Library { get; } = [];
+
+	/// <summary>Reads the anime in the download folder into <see cref="Library"/> again.</summary>
+	public void RefreshLibrary()
+	{
+		var root = new DirectoryInfo(preferences.DownloadFolder);
+		Library.Clear();
+		foreach (var anime in (root.Exists ? root.EnumerateDirectories() : []).Select(ReadAnime).OrderBy(x => x.Title, StringComparer.CurrentCultureIgnoreCase))
+		{
+			Library.Add(anime);
+		}
+	}
+
+	/// <summary>Writes the anime's info file, which the Downloads provider finds it by, replacing any it had.</summary>
+	public void SaveInfo(string name, DownloadInfo info)
+	{
+		if (string.IsNullOrWhiteSpace(info.Title))
+		{
+			throw new DownloadException("It needs a title.");
+		}
+
+		string[] others = [.. info.OtherTitles.Select(x => x.Trim()).Where(x => x.Length > 0 && x != info.Title.Trim()).Distinct(StringComparer.OrdinalIgnoreCase)];
+		DownloadNames.WriteInfo(FindFolder(name).FullName, info with
+		{
+			Title = info.Title.Trim(),
+			OtherTitles = others,
+			AnilistId = info.AnilistId is > 0 ? info.AnilistId : null,
+			MalId = info.MalId is > 0 ? info.MalId : null,
+		});
+		RefreshLibrary();
+	}
+
+	/// <summary>Moves the anime's folder, its episodes and all, to the Recycle Bin.</summary>
+	public void Delete(string name)
+	{
+		var folder = FindFolder(name);
+		if (Downloads.Any(x => x.IsActive && string.Equals(Path.GetFullPath(x.Folder), folder.FullName, StringComparison.OrdinalIgnoreCase)))
+		{
+			throw new DownloadException($"An episode of {name} is downloading: cancel it first.");
+		}
+
+		Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(folder.FullName, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,
+			Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+		RefreshLibrary();
+	}
+
+	/// <summary>The anime's folder, found among the download folder's own so a name can't lead out of it.</summary>
+	private DirectoryInfo FindFolder(string name)
+	{
+		var root = new DirectoryInfo(preferences.DownloadFolder);
+		return (root.Exists ? root.EnumerateDirectories() : []).FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+			   ?? throw new DownloadException($"There's no folder called {name} in the download folder.");
+	}
+
+	private DownloadedAnime ReadAnime(DirectoryInfo folder)
+	{
+		DownloadInfo? info = null;
+		try
+		{
+			info = DownloadNames.ReadInfo(folder.FullName);
+		}
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+		{
+			logger.LogWarning(ex, "Couldn't read {Folder}'s info", folder.FullName);
+		}
+
+		var episodes = folder.EnumerateFiles()
+							 .Where(x => !x.Extension.Equals(".part", StringComparison.OrdinalIgnoreCase) && DownloadNames.ParseEpisode(x.Name) is not null)
+							 .ToList();
+		var cover = folder.EnumerateFiles(DownloadNames.CoverFile + ".*").FirstOrDefault();
+		return new DownloadedAnime(folder.Name, folder.FullName, info, episodes.Count, episodes.Sum(x => x.Length),
+								   cover is null ? "" : new Uri(cover.FullName).AbsoluteUri);
+	}
+
 	public void Dispose() => _http.Dispose();
 
 	private DownloadItem Add(string title, int number, string provider)
@@ -351,6 +449,7 @@ public sealed class DownloadService(
 			item.Progress = 1;
 			item.Message = $"Downloaded · {Size(new FileInfo(path).Length)}";
 			item.State = DownloadState.Completed;
+			RefreshLibrary();
 		}
 		catch (Exception ex)
 		{

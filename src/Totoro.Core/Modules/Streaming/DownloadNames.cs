@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Totoro.Core.Modules.Streaming;
@@ -27,6 +28,18 @@ public static partial class DownloadNames
 		EpisodePattern().Match(Path.GetFileNameWithoutExtension(fileName)) is { Success: true } match
 			? int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture)
 			: null;
+
+	/// <summary>What the anime's folder's info file says; null if it has none, or one without a title. Throws <see cref="JsonException"/> for a broken one.</summary>
+	public static DownloadInfo? ReadInfo(string folder)
+	{
+		var path = Path.Combine(folder, InfoFile);
+		return File.Exists(path) && JsonSerializer.Deserialize<DownloadInfo>(File.ReadAllText(path)) is { Title.Length: > 0 } info
+			? info with { OtherTitles = info.OtherTitles ?? [] }
+			: null;
+	}
+
+	/// <summary>Writes the anime's info file in its folder, replacing any.</summary>
+	public static void WriteInfo(string folder, DownloadInfo info) => File.WriteAllText(Path.Combine(folder, InfoFile), JsonSerializer.Serialize(info));
 
 	/// <summary>Without characters Windows doesn't allow in names.</summary>
 	private static string Clean(string title)

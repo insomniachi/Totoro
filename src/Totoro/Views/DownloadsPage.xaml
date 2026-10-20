@@ -7,12 +7,24 @@
     xmlns:local="using:Totoro.Views"
     xmlns:playback="using:Totoro.Playback">
 
+    <Page.Resources>
+        <Style
+            x:Key="DownloadsListItemStyle"
+            BasedOn="{StaticResource DefaultListViewItemStyle}"
+            TargetType="ListViewItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+    </Page.Resources>
+
     <!--  Spacing per the Windows guidelines: 16 padding, 12 between content areas, 8 between buttons and from a header to its control.  -->
     <Grid
         MaxWidth="1000"
         Margin="16"
         RowSpacing="12">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -22,10 +34,19 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Downloads" />
                 <Button
                     Grid.Column="1"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Refresh"
+                    Click="{x:Bind ViewModel.Refresh}"
+                    ToolTipService.ToolTip="Refresh">
+                    <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                </Button>
+                <Button
+                    Grid.Column="2"
                     VerticalAlignment="Center"
                     Click="{x:Bind ViewModel.OpenFolder}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -38,85 +59,181 @@
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="Episodes go into a folder for each anime, named with its title. Right-click an episode in an anime's details to download it, or download from the Watch page. The download folder is in Settings."
                 TextWrapping="Wrap" />
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{x:Bind helpers:CommonConverters.IsAny(ViewModel.Error), Mode=OneWay}"
+                Message="{x:Bind ViewModel.Error, Mode=OneWay}"
+                Severity="Error" />
         </StackPanel>
 
-        <TextBlock
+        <SelectorBar
+            x:Name="Sections"
             Grid.Row="1"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            Text="Nothing downloaded yet."
-            Visibility="{x:Bind local:DownloadsPage.VisibleIfNone(ViewModel.Downloads.Count), Mode=OneWay}" />
-        <ListView
-            Grid.Row="1"
-            ItemsSource="{x:Bind ViewModel.Downloads}"
-            SelectionMode="None">
-            <ListView.ItemContainerStyle>
-                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="Margin" Value="0,0,0,8" />
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="playback:DownloadItem">
-                    <Grid
-                        Padding="16"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        ColumnSpacing="12"
-                        CornerRadius="{ThemeResource OverlayCornerRadius}"
-                        RowSpacing="8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Spacing="4">
-                            <TextBlock
-                                Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                Text="{x:Bind Title}"
-                                TextTrimming="CharacterEllipsis" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Source, Mode=OneWay}"
-                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Source), Mode=OneWay}" />
-                            <TextBlock
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Text="{x:Bind Message, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                        <StackPanel
-                            Grid.Column="1"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                            <Button
-                                AutomationProperties.Name="Show in folder"
-                                Click="{x:Bind ShowInExplorer}"
-                                ToolTipService.ToolTip="Show in folder">
-                                <FontIcon FontSize="16" Glyph="&#xE838;" />
-                            </Button>
-                            <Button
-                                AutomationProperties.Name="Cancel"
-                                Click="{x:Bind Cancel}"
-                                ToolTipService.ToolTip="Cancel"
-                                Visibility="{x:Bind IsActive, Mode=OneWay}">
-                                <FontIcon FontSize="16" Glyph="&#xE711;" />
-                            </Button>
-                        </StackPanel>
-                        <ProgressBar
-                            Grid.Row="1"
-                            Grid.ColumnSpan="2"
-                            IsIndeterminate="{x:Bind local:DownloadsPage.IsUnknown(Progress), Mode=OneWay}"
-                            Visibility="{x:Bind IsActive, Mode=OneWay}"
-                            Value="{x:Bind local:DownloadsPage.Percent(Progress), Mode=OneWay}" />
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            SelectionChanged="OnSectionChanged">
+            <SelectorBarItem
+                x:Name="LibrarySection"
+                IsSelected="True"
+                Text="Downloaded" />
+            <SelectorBarItem Text="This session" />
+        </SelectorBar>
+
+        <Grid x:Name="LibraryPanel" Grid.Row="2">
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Nothing in the download folder yet."
+                Visibility="{x:Bind local:DownloadsPage.VisibleIfNone(ViewModel.Library.Count), Mode=OneWay}" />
+            <ListView
+                ItemContainerStyle="{StaticResource DownloadsListItemStyle}"
+                ItemsSource="{x:Bind ViewModel.Library}"
+                SelectionMode="None">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="playback:DownloadedAnime">
+                        <Grid
+                            Padding="16"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            ColumnSpacing="12"
+                            CornerRadius="{ThemeResource OverlayCornerRadius}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border
+                                Width="48"
+                                Height="68"
+                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                CornerRadius="{ThemeResource ControlCornerRadius}">
+                                <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Cover)}" Stretch="UniformToFill" />
+                            </Border>
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Spacing="4">
+                                <TextBlock
+                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind Title}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind Summary}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button
+                                    AutomationProperties.Name="Show in folder"
+                                    Click="{x:Bind ShowInExplorer}"
+                                    ToolTipService.ToolTip="Show in folder">
+                                    <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                </Button>
+                                <Button
+                                    AutomationProperties.Name="Edit info"
+                                    Click="OnEditInfoClick"
+                                    Tag="{x:Bind}"
+                                    ToolTipService.ToolTip="Edit info">
+                                    <FontIcon FontSize="16" Glyph="&#xE70F;" />
+                                </Button>
+                                <Button AutomationProperties.Name="Delete" ToolTipService.ToolTip="Delete">
+                                    <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <StackPanel MaxWidth="320" Spacing="12">
+                                                <TextBlock Text="Move this anime's folder, with all its episodes, to the Recycle Bin?" TextWrapping="Wrap" />
+                                                <Button
+                                                    Click="OnDeleteClick"
+                                                    Content="Delete"
+                                                    Style="{ThemeResource AccentButtonStyle}"
+                                                    Tag="{x:Bind}" />
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <Grid
+            x:Name="SessionPanel"
+            Grid.Row="2"
+            Visibility="Collapsed">
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Nothing downloaded yet."
+                Visibility="{x:Bind local:DownloadsPage.VisibleIfNone(ViewModel.Downloads.Count), Mode=OneWay}" />
+            <ListView
+                ItemContainerStyle="{StaticResource DownloadsListItemStyle}"
+                ItemsSource="{x:Bind ViewModel.Downloads}"
+                SelectionMode="None">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="playback:DownloadItem">
+                        <Grid
+                            Padding="16"
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            ColumnSpacing="12"
+                            CornerRadius="{ThemeResource OverlayCornerRadius}"
+                            RowSpacing="8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Spacing="4">
+                                <TextBlock
+                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind Title}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind Source, Mode=OneWay}"
+                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Source), Mode=OneWay}" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind Message, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button
+                                    AutomationProperties.Name="Show in folder"
+                                    Click="{x:Bind ShowInExplorer}"
+                                    ToolTipService.ToolTip="Show in folder">
+                                    <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                </Button>
+                                <Button
+                                    AutomationProperties.Name="Cancel"
+                                    Click="{x:Bind Cancel}"
+                                    ToolTipService.ToolTip="Cancel"
+                                    Visibility="{x:Bind IsActive, Mode=OneWay}">
+                                    <FontIcon FontSize="16" Glyph="&#xE711;" />
+                                </Button>
+                            </StackPanel>
+                            <ProgressBar
+                                Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                IsIndeterminate="{x:Bind local:DownloadsPage.IsUnknown(Progress), Mode=OneWay}"
+                                Visibility="{x:Bind IsActive, Mode=OneWay}"
+                                Value="{x:Bind local:DownloadsPage.Percent(Progress), Mode=OneWay}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </Grid>
 </Page>

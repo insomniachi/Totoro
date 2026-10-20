@@ -94,17 +94,16 @@ internal sealed class DownloadsProvider(IPreferences preferences, ILogger<Downlo
 	/// <summary>What the folder's info file says; for a folder without one (or a broken one), its name as the title.</summary>
 	private DownloadInfo ReadInfo(DirectoryInfo folder)
 	{
-		var path = Path.Combine(folder.FullName, DownloadNames.InfoFile);
 		try
 		{
-			if (File.Exists(path) && JsonSerializer.Deserialize<DownloadInfo>(File.ReadAllText(path)) is { Title.Length: > 0 } info)
+			if (DownloadNames.ReadInfo(folder.FullName) is { } info)
 			{
-				return info with { OtherTitles = info.OtherTitles ?? [] };
+				return info;
 			}
 		}
 		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
 		{
-			logger.LogWarning(ex, "Couldn't read {File}", path);
+			logger.LogWarning(ex, "Couldn't read {Folder}'s info", folder.FullName);
 		}
 
 		return new DownloadInfo(folder.Name, []);
