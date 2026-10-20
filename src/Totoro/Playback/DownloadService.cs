@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules;
@@ -150,7 +151,7 @@ public sealed class DownloadService(
 			items.Add(item);
 			var episodeNumber = number;
 			// The stream is found when its turn comes: a provider's links may not last while others download.
-			_ = RunAsync(item, number, anime.Title, async ct =>
+			_ = RunAsync(item, anime, number, anime.Title, async ct =>
 			{
 				var episode = watch.PickEpisode(episodes, anime, episodeNumber, numbering)
 							  ?? throw new DownloadException($"Episode {episodeNumber} isn't on {provider.Name} yet.");
@@ -169,7 +170,7 @@ public sealed class DownloadService(
 	public async Task<DownloadItem> DownloadAsync(AnimeModel? anime, string title, int number, VideoServer server)
 	{
 		var item = await AddAsync(anime, title, number);
-		_ = RunAsync(item, number, title, _ => Task.FromResult(server));
+		_ = RunAsync(item, anime, number, title, _ => Task.FromResult(server));
 		return item;
 	}
 
@@ -220,7 +221,7 @@ public sealed class DownloadService(
 	/// Downloads the episode into the item's folder once the downloads before it are done, from the stream
 	/// <paramref name="getServer"/> finds then; the item says how it goes.
 	/// </summary>
-	private async Task RunAsync(DownloadItem item, int number, string title, Func<CancellationToken, Task<VideoServer>> getServer)
+	private async Task RunAsync(DownloadItem item, AnimeModel? anime, int number, string title, Func<CancellationToken, Task<VideoServer>> getServer)
 	{
 		var ct = item.Token;
 		var name = DownloadNames.Episode(title, number);
@@ -250,7 +251,13 @@ public sealed class DownloadService(
 
 			item.Message = "Finding the stream…";
 			var server = await getServer(ct);
+			if (server.Url.IsFile)
+			{
+				throw new DownloadException("It's already on this PC: its provider plays your downloads.");
+			}
+
 			Directory.CreateDirectory(item.Folder);
+			await SaveInfoAsync(anime, title, item.Folder, ct);
 			// A torrent is downloaded as it'd be played: from the stream the torrent streamer serves.
 			await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(item, server, ct) : null;
 			var url = stream?.Url ?? server.Url;
@@ -293,6 +300,38 @@ public sealed class DownloadService(
 		finally
 		{
 			_queue.Release();
+		}
+	}
+
+	/// <summary>
+	/// Keeps what the Downloads provider shows of the anime in its folder, unless it's there already: its titles, to find
+	/// it by any of them, and its cover. The episode downloads without them if they can't be had.
+	/// </summary>
+	private async Task SaveInfoAsync(AnimeModel? anime, string title, string folder, CancellationToken ct)
+	{
+		try
+		{
+			var info = Path.Combine(folder, DownloadNames.InfoFile);
+			if (!File.Exists(info))
+			{
+				string[] others = anime is null
+					? []
+					: [.. new[] { anime.RomajiTitle, anime.EngTitle }.Concat(anime.AlternateTitles)
+										 .Where(x => !string.IsNullOrWhiteSpace(x) && x != title)
+										 .Distinct(StringComparer.OrdinalIgnoreCase)];
+				await File.WriteAllTextAsync(info, JsonSerializer.Serialize(new DownloadInfo(title, others)), ct);
+			}
+
+			if (anime is { Image.Length: > 0 } && !Directory.EnumerateFiles(folder, DownloadNames.CoverFile + ".*").Any())
+			{
+				var image = new Uri(anime.Image);
+				var extension = Path.GetExtension(image.AbsolutePath) is { Length: > 0 } ext ? ext : ".jpg";
+				await File.WriteAllBytesAsync(Path.Combine(folder, DownloadNames.CoverFile + extension), await _http.GetByteArrayAsync(image, ct), ct);
+			}
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			logger.LogWarning(ex, "Couldn't save {Anime}'s info for its downloads", title);
 		}
 	}
 

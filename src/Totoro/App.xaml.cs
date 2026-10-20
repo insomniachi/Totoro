@@ -221,6 +221,9 @@ public partial class App : Application
 				plugin.LoadError = $"Failed to set up: {ex.Message}";
 			}
 		}
+
+		// After the plugins: with no provider selected, the first registered is used, and that should be one to stream from.
+		new Modules.AnimeProviders.Downloads.DownloadsModule().ConfigureServices(services);
 	}
 
 	private static List<string> GetDevPluginPaths()

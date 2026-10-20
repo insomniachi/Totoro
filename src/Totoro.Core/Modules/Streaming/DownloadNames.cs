@@ -10,6 +10,12 @@ namespace Totoro.Core.Modules.Streaming;
 /// </summary>
 public static partial class DownloadNames
 {
+	/// <summary>The anime's <see cref="DownloadInfo"/>, as JSON, in its folder.</summary>
+	public const string InfoFile = "info.json";
+
+	/// <summary>The anime's cover in its folder, without the extension (the image's own).</summary>
+	public const string CoverFile = "cover";
+
 	/// <summary>The anime's folder name: its title, then whichever of its ids are known.</summary>
 	public static string Folder(string title, long? anilistId, long? malId) =>
 		Clean(title) + (anilistId is > 0 ? $" [anilist-{anilistId}]" : "") + (malId is > 0 ? $" [mal-{malId}]" : "");
@@ -20,6 +26,9 @@ public static partial class DownloadNames
 	/// <summary>The ids in a folder name made by <see cref="Folder"/>; null where it has none.</summary>
 	public static (long? AnilistId, long? MalId) ParseIds(string folderName) =>
 		(Id(AnilistPattern().Match(folderName)), Id(MalPattern().Match(folderName)));
+
+	/// <summary>The title in a folder name made by <see cref="Folder"/>, without its ids.</summary>
+	public static string ParseTitle(string folderName) => Ids().Replace(folderName, "").Trim();
 
 	/// <summary>The episode number in a file name made by <see cref="Episode"/>, or null.</summary>
 	public static int? ParseEpisode(string fileName) =>
@@ -44,9 +53,16 @@ public static partial class DownloadNames
 	[GeneratedRegex(@"\[mal-(\d+)\]")]
 	private static partial Regex MalPattern();
 
+	[GeneratedRegex(@"\[(anilist|mal)-\d+\]")]
+	private static partial Regex Ids();
+
 	[GeneratedRegex(@" - (\d+)$")]
 	private static partial Regex EpisodePattern();
 
 	[GeneratedRegex(@"\s+")]
 	private static partial Regex Spaces();
 }
+
+/// <summary>What a downloaded anime's folder says about it, for finding it by any of its titles.</summary>
+/// <param name="OtherTitles">Its romaji and English titles and synonyms, besides <paramref name="Title"/>.</param>
+public sealed record DownloadInfo(string Title, IReadOnlyList<string> OtherTitles);

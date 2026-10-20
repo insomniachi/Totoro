@@ -317,7 +317,7 @@ public sealed partial class WatchService(
 		var settings = animeSettings.Get(anime);
 		if (GetProvider(settings) is not { } provider)
 		{
-			// Anime providers come as plugins: on a fresh install there are none.
+			// Downloads is built in, so this is only when it can't be created.
 			Show(PlaybackStatusKind.Error, "There's no anime provider to watch from: install one from the Plugins page.", "Plugins", () =>
 			{
 				if (Totoro.UI.Navigation.Navigators.TryGetNavigator("main", out var main))

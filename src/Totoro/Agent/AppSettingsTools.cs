@@ -20,7 +20,7 @@ public sealed record AppSettings(
 	IReadOnlyList<string> AnimeDatabases,
 	[property: Description("Whether changes to the user's list (in the anime database) are made on their other lists too: the other databases they're signed in to.")]
 	bool SyncOtherLists,
-	[property: Description("Where episodes are found (unless an anime has its own); one of animeProviders. Empty when none is installed: they come as plugins (install_plugin).")]
+	[property: Description("Where episodes are found (unless an anime has its own); one of animeProviders. \"Downloads\" plays downloaded episodes; providers to stream from come as plugins (install_plugin).")]
 	string AnimeProvider,
 	IReadOnlyList<string> AnimeProviders,
 	[property: Description("Where episodes play; one of mediaPlayers. The built-in player offers skipping and the next episode over the video, and can be controlled with the playback tools.")]

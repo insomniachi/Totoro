@@ -120,7 +120,7 @@ public partial class SettingsViewModel : ObservableObject
 
 		OpeningSkip = SkipModes.First(x => x.Value == preferences.OpeningSkipMode);
 		EndingSkip = SkipModes.First(x => x.Value == preferences.EndingSkipMode);
-		// Anime providers come as plugins: on a fresh install there are none (see HasAnimeProviders).
+		// Downloads is built in; providers to stream from come as plugins.
 		AnimeProviders = [.. providers.CreateAll().DistinctBy(x => x.Id).Select(x => new AnimeProviderOption(x.Id, x.Name, IconOf(x.Id)))];
 		AnimeProvider = AnimeProviders.FirstOrDefault(x => x.Id == preferences.SelectedAnimeProvider) ?? AnimeProviders.FirstOrDefault();
 		// Named as their modules are (the built-in player's own name reads "the built-in player").
