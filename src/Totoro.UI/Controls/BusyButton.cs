@@ -35,7 +35,7 @@ public sealed partial class BusyButton : Button
 			Wrap(Content);
 			KeepNormalLook();
 		}
-		else if (Content == _busyContent)
+		else if (ReferenceEquals(Content, _busyContent))
 		{
 			var content = _hiddenContent.Content;
 			_hiddenContent.Content = null; // let the content go back to the button
@@ -53,7 +53,7 @@ public sealed partial class BusyButton : Button
 
 	private void Wrap(object content)
 	{
-		if (content == _busyContent) return;
+		if (ReferenceEquals(content, _busyContent)) return;
 		_hiddenContent.Content = content;
 		Content = _busyContent;
 	}

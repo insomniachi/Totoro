@@ -58,7 +58,7 @@
             <toolkit:Segmented.ItemTemplate>
                 <!--  The item's default style sets its own FontSize, so size the text here rather than on the Segmented  -->
                 <DataTemplate x:DataType="filtering:FilterOption">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
                         <Viewbox
                             Width="18"
                             Height="18"

@@ -20,7 +20,7 @@
                 BorderThickness="0"
                 Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
                 CommandParameter="{x:Bind Anime}">
-                <StackPanel Spacing="6">
+                <StackPanel Spacing="8">
                     <Border
                         Height="150"
                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"

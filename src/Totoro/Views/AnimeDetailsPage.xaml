@@ -45,7 +45,7 @@
                     <Grid
                         Padding="24,0"
                         VerticalAlignment="Bottom"
-                        ColumnSpacing="20">
+                        ColumnSpacing="24">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -135,7 +135,7 @@
                 <Grid
                     Padding="24,0"
                     VerticalAlignment="Bottom"
-                    ColumnSpacing="20">
+                    ColumnSpacing="24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -184,7 +184,7 @@
 
                 <toolkit:Shimmer Height="76" CornerRadius="8" />
 
-                <StackPanel Spacing="10">
+                <StackPanel Spacing="8">
                     <toolkit:Shimmer
                         Width="90"
                         Height="16"

@@ -10,13 +10,19 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
+        <ResourceDictionary x:Key="Dark">
             <StaticResource x:Key="GooeyButtonBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="GooeyButtonForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="GooeyButtonItemBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="GooeyButtonItemForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="GooeyButtonBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="GooeyButtonForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <StaticResource x:Key="GooeyButtonItemBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="GooeyButtonItemForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="GooeyButtonBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
             <StaticResource x:Key="GooeyButtonForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="GooeyButtonItemBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />

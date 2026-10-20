@@ -33,7 +33,7 @@
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="vm:CharacterItem">
-                        <StackPanel Width="110" Spacing="6">
+                        <StackPanel Width="110" Spacing="8">
                             <Border
                                 Height="150"
                                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
