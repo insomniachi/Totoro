@@ -78,7 +78,7 @@ public sealed partial class DownloadItem : ObservableObject
 }
 
 /// <param name="Fraction">How much is downloaded, from 0 to 1; -1 when the size isn't known.</param>
-/// <param name="BytesPerSecond">How fast it's going lately (see <see cref="SpeedMeter"/>); null when that isn't known.</param>
+/// <param name="BytesPerSecond">How fast it's going: over the last second, or for yt-dlp the last few (see <see cref="SpeedMeter"/>); null when that isn't known.</param>
 /// <param name="DownloadedBytes">How much is downloaded; null when that isn't known.</param>
 /// <param name="TotalBytes">The whole size, or an estimate of it; null when that isn't known.</param>
 internal readonly record struct DownloadProgress(double Fraction, double? BytesPerSecond, double? DownloadedBytes = null, double? TotalBytes = null);
@@ -166,17 +166,16 @@ public sealed class DownloadService(
 		?? throw new OperationCanceledException("No show was picked.");
 
 	/// <summary>
-	/// Downloads episodes <paramref name="from"/> to <paramref name="to"/> from the anime's provider, as playing them would
-	/// find them (the show it's matched with, or one the user picks; none, if they don't). Returns once they're queued; each
-	/// item says how it goes, or why it couldn't be downloaded.
+	/// Downloads episodes <paramref name="from"/> to <paramref name="to"/> from <paramref name="provider"/> (by default the
+	/// anime's), as playing them would find them (the show it's matched with, or one the user picks; none, if they don't).
+	/// Returns once they're queued; each item says how it goes, or why it couldn't be downloaded.
 	/// </summary>
-	public async Task<IReadOnlyList<DownloadItem>> DownloadEpisodesAsync(AnimeModel anime, int from, int to)
+	public async Task<IReadOnlyList<DownloadItem>> DownloadEpisodesAsync(AnimeModel anime, int from, int to, IAnimeProvider? provider = null)
 	{
-		IAnimeProvider provider;
 		List<ProviderEpisode> episodes;
 		try
 		{
-			provider = watch.GetProvider(anime) ?? throw new DownloadException("There's no anime provider to download from: install one from the Plugins page.");
+			provider ??= watch.GetProvider(anime) ?? throw new DownloadException("There's no anime provider to download from: install one from the Plugins page.");
 			if (await watch.FindOrPickShowAsync(provider, anime, CancellationToken.None) is not { } show)
 			{
 				return [];
@@ -188,7 +187,7 @@ public sealed class DownloadService(
 		catch (Exception ex)
 		{
 			// Shown as a failed download, where the user is looking for it.
-			var failed = Add(anime.Title, from, watch.GetProvider(anime)?.Name ?? "");
+			var failed = Add(anime.Title, from, provider?.Name ?? "");
 			End(failed, ex);
 			return [failed];
 		}
@@ -303,32 +302,44 @@ public sealed class DownloadService(
 
 			Directory.CreateDirectory(item.Folder);
 			await SaveInfoAsync(anime, title, item.Folder, ct);
-			// A torrent is downloaded as it'd be played: from the stream the torrent streamer serves.
-			await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(item, server, ct) : null;
-			var url = stream?.Url ?? server.Url;
-			var headers = stream?.Headers ?? server.Headers;
-
-			item.Message = "Downloading…";
-			// Created here, on the UI thread, so it reports there; the download itself runs off it.
-			var progress = new Progress<DownloadProgress>(x =>
+			void Show(DownloadProgress x)
 			{
 				if (item.IsActive)
 				{
 					item.Progress = x.Fraction;
 					item.Message = Describe(x);
 				}
-			});
-			// A torrent's downloader is its streamer, already shown, not the HTTP it's read with.
-			var downloader = new Progress<string>(x =>
+			}
+
+			var streamer = server.Kind == VideoServerKind.Torrent ? GetTorrentStreamer(item) : null;
+			string path;
+			if (streamer is not null && await DownloadTorrentAsync(streamer, item, server, part, Show, ct) is { } downloaded)
 			{
-				if (stream is null)
+				path = downloaded;
+			}
+			else
+			{
+				// A torrent its streamer can't download itself is downloaded as it'd be played: from the stream it serves.
+				await using var stream = streamer is null ? null : await StreamTorrentAsync(streamer, item, server, ct);
+				var url = stream?.Url ?? server.Url;
+				var headers = stream?.Headers ?? server.Headers;
+
+				item.Message = "Downloading…";
+				// Created here, on the UI thread, so it reports there; the download itself runs off it.
+				var progress = new Progress<DownloadProgress>(Show);
+				// A torrent's downloader is its streamer, already shown, not the HTTP it's read with.
+				var downloader = new Progress<string>(x =>
 				{
-					item.Downloader = x;
-				}
-			});
-			var extension = await Task.Run(() => DownloadAsync(url, headers, stream?.File.Path, part, progress, downloader, ct), ct);
-			var path = Path.ChangeExtension(part, extension);
-			File.Move(part, path, overwrite: true);
+					if (stream is null)
+					{
+						item.Downloader = x;
+					}
+				});
+				var extension = await Task.Run(() => DownloadAsync(url, headers, stream?.File.Path, part, progress, downloader, ct), ct);
+				path = Path.ChangeExtension(part, extension);
+				File.Move(part, path, overwrite: true);
+			}
+
 			item.FilePath = path;
 			item.Progress = 1;
 			item.Message = $"Downloaded · {Size(new FileInfo(path).Length)}";
@@ -337,12 +348,18 @@ public sealed class DownloadService(
 		catch (Exception ex)
 		{
 			End(item, ex);
-			// Can't be resumed, so of no use: the file so far, and yt-dlp's fragments beside it (episode.part.part-Frag3...).
+			// Can't be resumed, so of no use: the file so far, yt-dlp's fragments beside it (episode.part.part-Frag3...), and
+			// the torrent streamer's folder.
 			try
 			{
 				foreach (var leftover in Directory.EnumerateFiles(item.Folder, Path.GetFileName(part) + "*"))
 				{
 					File.Delete(leftover);
+				}
+
+				if (Directory.Exists(TorrentFolder(part)))
+				{
+					Directory.Delete(TorrentFolder(part), recursive: true);
 				}
 			}
 			catch (Exception deleteEx) when (deleteEx is IOException or UnauthorizedAccessException)
@@ -439,7 +456,8 @@ public sealed class DownloadService(
 		}
 	}
 
-	private async Task<TorrentStream> StreamTorrentAsync(DownloadItem item, VideoServer server, CancellationToken ct)
+	/// <summary>The torrent streamer to download a torrent with, which the item then says it's downloaded by.</summary>
+	private ITorrentStreamer GetTorrentStreamer(DownloadItem item)
 	{
 		if (torrentStreamers.CreateDefault() is not { } streamer || !streamer.IsAvailable())
 		{
@@ -447,8 +465,64 @@ public sealed class DownloadService(
 		}
 
 		item.Downloader = streamer.Name;
+		return streamer;
+	}
+
+	/// <summary>Where the torrent streamer downloads the episode <paramref name="part"/> is for, before it's renamed.</summary>
+	private static string TorrentFolder(string part) => part + "-torrent";
+
+	/// <summary>
+	/// Has the torrent streamer download the episode itself (rqbit: as a torrent client does, faster than reading its
+	/// stream), into <see cref="TorrentFolder"/>, then names it as the episode; null if the streamer can't.
+	/// </summary>
+	private static async Task<string?> DownloadTorrentAsync(ITorrentStreamer streamer, DownloadItem item, VideoServer server, string part,
+															Action<DownloadProgress> show, CancellationToken ct)
+	{
 		item.Message = $"Starting {streamer.Name}…";
-		// shortcut: the stream is read in order, which is slower than a torrent client downloading the whole thing; have rqbit download to the folder itself if that's too slow.
+		var folder = TorrentFolder(part);
+		string file;
+		try
+		{
+			// The speed is the streamer's own, as it reports it.
+			file = await streamer.DownloadAsync(server.Url, TorrentFile.LargestVideo, folder, new Progress<string>(x => item.Message = x),
+				new Progress<TorrentDownloadProgress>(x => show(new DownloadProgress(x.TotalBytes > 0 ? (double)x.DownloadedBytes / x.TotalBytes : -1,
+																					 x.BytesPerSecond, x.DownloadedBytes, x.TotalBytes))), ct);
+		}
+		catch (NotSupportedException)
+		{
+			return null;
+		}
+
+		var path = Path.ChangeExtension(part, Extension(file, ""));
+		for (var attempt = 1; ; attempt++)
+		{
+			try
+			{
+				File.Move(file, path, overwrite: true);
+				break;
+			}
+			catch (IOException) when (attempt < 10)
+			{
+				// The streamer lets go of the file shortly after it's done with the torrent.
+				await Task.Delay(500, ct);
+			}
+		}
+
+		try
+		{
+			Directory.Delete(folder, recursive: true);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			// An empty folder left behind isn't worth failing the download for: the episode itself is there.
+		}
+
+		return path;
+	}
+
+	private static async Task<TorrentStream> StreamTorrentAsync(ITorrentStreamer streamer, DownloadItem item, VideoServer server, CancellationToken ct)
+	{
+		item.Message = $"Starting {streamer.Name}…";
 		return await streamer.StreamAsync(server.Url, TorrentFile.LargestVideo, new Progress<string>(x => item.Message = x), ct);
 	}
 
@@ -483,19 +557,20 @@ public sealed class DownloadService(
 		await using var file = File.Create(output);
 		await using var body = await response.Content.ReadAsStreamAsync(ct);
 		var buffer = new byte[81920];
-		long written = 0;
-		var speed = new SpeedMeter();
-		speed.Next(0);
+		long written = 0, reported = 0;
 		var sinceReport = Stopwatch.StartNew();
 		int read;
 		while ((read = await body.ReadAsync(buffer, ct)) > 0)
 		{
 			await file.WriteAsync(buffer.AsMemory(0, read), ct);
 			written += read;
-			// Once a second, not every read: each report is a trip to the UI thread.
+			// Once a second, not every read: each report is a trip to the UI thread. The speed is that second's, as received:
+			// unlike yt-dlp's fragments, a stream arrives steadily enough not to need smoothing.
 			if (sinceReport.Elapsed >= s_reportInterval)
 			{
-				progress.Report(new DownloadProgress(length > 0 ? (double)written / length.Value : -1, speed.Next(written), written, length));
+				var speed = (written - reported) / sinceReport.Elapsed.TotalSeconds;
+				progress.Report(new DownloadProgress(length > 0 ? (double)written / length.Value : -1, speed, written, length));
+				reported = written;
 				sinceReport.Restart();
 			}
 		}

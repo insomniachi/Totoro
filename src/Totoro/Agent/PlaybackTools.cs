@@ -1,4 +1,8 @@
 using System.ComponentModel;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Totoro.Core.Agent;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
@@ -65,6 +69,9 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 {
 	// Long enough for a torrent to find peers.
 	private static readonly TimeSpan s_startTimeout = TimeSpan.FromSeconds(90);
+
+	// Enums by name, as get_module_settings shows them.
+	private static readonly JsonSerializerOptions s_settingOptions = new() { Converters = { new JsonStringEnumConverter() } };
 
 	[AgentTool("play_episode")]
 	[Description("Plays an episode of an anime in the media player, resuming where the user left off. Playback continues on its own; " +
@@ -153,25 +160,30 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	[Description("The shows on the anime's provider (where its episodes are streamed from) that may be the anime, and the one it's matched with.")]
 	public async Task<ProviderShows> FindProviderShowsAsync(
 		long animeId,
-		[Description("A title to search the provider for instead of the anime's own titles.")] string? query = null)
+		[Description("A title to search the provider for instead of the anime's own titles.")] string? query = null,
+		[Description("Another provider to look on than the anime's, e.g. to download from it.")] string? provider = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
-		var provider = watch.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to watch from.");
+		var source = GetProvider(anime, provider);
 		var candidates = string.IsNullOrWhiteSpace(query)
-			? await WatchService.SearchShowsAsync(provider, anime, CancellationToken.None)
-			: await provider.SearchAsync(query, CancellationToken.None);
-		var (matched, _) = await watch.FindShowAsync(provider, anime, CancellationToken.None);
-		return new ProviderShows(provider.Name, matched is null ? null : ToCandidate(matched), [.. candidates.Select(ToCandidate)]);
+			? await WatchService.SearchShowsAsync(source, anime, CancellationToken.None)
+			: await source.SearchAsync(query, CancellationToken.None);
+		var (matched, _) = await watch.FindShowAsync(source, anime, CancellationToken.None);
+		return new ProviderShows(source.Name, matched is null ? null : ToCandidate(matched), [.. candidates.Select(ToCandidate)]);
 	}
 
 	[AgentTool("set_provider_show")]
-	[Description("Matches an anime with a show on its provider (from find_provider_shows), so its episodes are played from that show.")]
-	public async Task<string> SetProviderShowAsync(long animeId, string showId, string showTitle)
+	[Description("Matches an anime with a show on its provider (from find_provider_shows), so its episodes are played (or downloaded) from that show.")]
+	public async Task<string> SetProviderShowAsync(
+		long animeId,
+		string showId,
+		string showTitle,
+		[Description("The provider the show is on, when it isn't the anime's.")] string? provider = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
-		var provider = watch.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to watch from.");
-		watch.SetShow(anime, provider, new ProviderShow(showId, showTitle, 1));
-		return $"{anime.Title} is now played from \"{showTitle}\" on {provider.Name}.";
+		var source = GetProvider(anime, provider);
+		watch.SetShow(anime, source, new ProviderShow(showId, showTitle, 1));
+		return $"{anime.Title} is \"{showTitle}\" on {source.Name}.";
 	}
 
 	[AgentTool("search_provider")]
@@ -222,12 +234,15 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	}
 
 	[AgentTool("download_episodes")]
-	[Description("Downloads episodes of an anime from its provider to the download folder, one after the other in the background " +
+	[Description("Downloads episodes of an anime from its provider (or another) to the download folder, one after the other in the background " +
 				 "(get_downloads shows how they go). Episodes already in the folder aren't downloaded again.")]
 	public async Task<IReadOnlyList<DownloadInfo>> DownloadEpisodesAsync(
 		long animeId,
 		[Description("The first episode to download.")] int fromEpisode,
-		[Description("The last episode to download; leave it out for just the first.")] int? toEpisode = null)
+		[Description("The last episode to download; leave it out for just the first.")] int? toEpisode = null,
+		[Description("The provider to download from; leave it out for the anime's.")] string? provider = null,
+		[Description("Provider settings for this download only, over the anime's (or the provider's): a JSON object of setting names " +
+					 "(from get_module_settings) to values, e.g. {\"Quality\": \"720p\"}.")] string? providerSettings = null)
 	{
 		if (toEpisode < fromEpisode)
 		{
@@ -235,14 +250,23 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 		}
 
 		var anime = await lookup.GetAsync(animeId);
-		var provider = watch.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to download from.");
-		var (show, _) = await watch.FindShowAsync(provider, anime, CancellationToken.None);
-		if (show is null)
+		var source = GetProvider(anime, provider);
+		if (providerSettings is not null)
 		{
-			throw new AgentToolException($"It isn't clear which {provider.Name} show {anime.Title} is: pick one from find_provider_shows with set_provider_show, then download again.");
+			var settings = watch.CopyProviderSettings(anime, source.Id) ?? throw new AgentToolException($"{source.Name} has no settings.");
+			ApplySettings(settings, providerSettings);
+			source.UseSettings(settings);
 		}
 
-		return [.. (await downloads.DownloadEpisodesAsync(anime, fromEpisode, toEpisode ?? fromEpisode)).Select(ToInfo)];
+		var (show, candidates) = await watch.FindShowAsync(source, anime, CancellationToken.None);
+		if (show is null)
+		{
+			throw new AgentToolException(candidates.Count == 0
+				? $"{source.Name} has nothing called {anime.Title}: download it from another provider, or find it there by another title with find_provider_shows."
+				: $"It isn't clear which {source.Name} show {anime.Title} is: pick one from find_provider_shows with set_provider_show, then download again.");
+		}
+
+		return [.. (await downloads.DownloadEpisodesAsync(anime, fromEpisode, toEpisode ?? fromEpisode, source)).Select(ToInfo)];
 	}
 
 	[AgentTool("download_from_provider")]
@@ -302,6 +326,51 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 		var all = providers.CreateAll().ToList();
 		return all.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
 			   ?? throw new AgentToolException($"There's no provider called {name}; the providers are {string.Join(", ", all.Select(x => x.Name))}.");
+	}
+
+	/// <summary>The provider called <paramref name="name"/>, or (null) the anime's, set to use its own settings for it.</summary>
+	private IAnimeProvider GetProvider(AnimeModel anime, string? name)
+	{
+		if (name is null)
+		{
+			return watch.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to watch from.");
+		}
+
+		var provider = GetProvider(name);
+		if (watch.CopyProviderSettings(anime, provider.Id) is { } settings)
+		{
+			provider.UseSettings(settings);
+		}
+
+		return provider;
+	}
+
+	/// <summary>Sets the settings named in <paramref name="json"/> (an object of names to values) on <paramref name="settings"/>.</summary>
+	private static void ApplySettings(DataContainerConfig settings, string json)
+	{
+		JsonObject changes;
+		try
+		{
+			changes = JsonNode.Parse(json) as JsonObject ?? throw new AgentToolException("providerSettings must be a JSON object.");
+		}
+		catch (JsonException ex)
+		{
+			throw new AgentToolException($"providerSettings isn't JSON: {ex.Message}");
+		}
+
+		foreach (var (name, value) in changes)
+		{
+			var property = settings.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
+						   ?? throw new AgentToolException($"There's no setting called {name}; get_module_settings lists them.");
+			try
+			{
+				property.SetValue(settings, value.Deserialize(property.PropertyType, s_settingOptions));
+			}
+			catch (Exception ex) when (ex is JsonException or NotSupportedException or ArgumentException)
+			{
+				throw new AgentToolException($"{value?.ToJsonString()} isn't a value {name} can have.");
+			}
+		}
 	}
 
 	private static ShowCandidate ToCandidate(ProviderShow show) => new(show.Id, show.Title, Math.Round(show.Score, 2));

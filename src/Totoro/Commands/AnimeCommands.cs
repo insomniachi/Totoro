@@ -58,9 +58,9 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 	[RelayCommand(AllowConcurrentExecutions = true)]
 	private async Task DownloadAsync(AnimeModel anime)
 	{
-		if (await dialogs.ShowAsync<DownloadEpisodesDialogViewModel, EpisodeRange>(anime) is { } range)
+		if (await dialogs.ShowAsync<DownloadEpisodesDialogViewModel, DownloadRequest>(anime) is { Episodes: var range } request)
 		{
-			await downloads.DownloadEpisodesAsync(anime, range.First, range.Last ?? range.First);
+			await downloads.DownloadEpisodesAsync(anime, range.First, range.Last ?? range.First, request.Provider);
 		}
 	}
 

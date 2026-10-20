@@ -14,8 +14,8 @@ namespace Totoro.Modules.TorrentStreamers.Rqbit;
 /// <summary>
 /// Streams torrents with rqbit (https://github.com/ikatson/rqbit), run as a local server for the app's lifetime and
 /// driven over its HTTP API: torrents are added to it, and players read a file from its stream URL, which waits for the
-/// pieces being read and fetches them first. Downloads go to the Torrents folder in the app's data, and are deleted
-/// when a stream ends unless the settings keep them.
+/// pieces being read and fetches them first. What's streamed goes to the Torrents folder in the app's data, and is
+/// deleted when the stream ends unless the settings keep it; an episode downloaded goes to the folder it's for.
 /// </summary>
 internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<RqbitStreamer> logger) : ITorrentStreamer, IDisposable
 {
@@ -62,25 +62,7 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 
 		try
 		{
-			var files = added["details"]!["files"]!.AsArray()
-												  .Select((x, i) => (File: x!, Index: i))
-												  .Where(x => x.File["attributes"]?["padding"]?.GetValue<bool>() != true)
-												  .Select(x => new TorrentFile(x.Index, string.Join('/', x.File["components"]!.AsArray().Select(c => c!.GetValue<string>())),
-																			   x.File["length"]!.GetValue<long>()))
-												  .ToList();
-			if (selectFile(files) is not { } file)
-			{
-				throw new TorrentStreamException("The torrent has no video to play.");
-			}
-
-			await WaitUntilLiveAsync(api, id, progress, ct);
-
-			// Only the file being watched; files can only be chosen once the torrent is live.
-			if (files.Count > 1)
-			{
-				await SendAsync(HttpMethod.Post, new Uri(api, $"torrents/{id}/update_only_files"), JsonContent.Create(new { only_files = new[] { file.Index } }), ct);
-			}
-
+			var file = await SelectFileAsync(api, id, added, selectFile, progress, ct);
 			return new TorrentStream(new Uri(api, $"torrents/{id}/stream/{file.Index}"), file, () => new ValueTask(StopAsync(api, id)));
 		}
 		catch
@@ -88,6 +70,94 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 			await StopAsync(api, id);
 			throw;
 		}
+	}
+
+	public async Task<string> DownloadAsync(Uri torrent, Func<IReadOnlyList<TorrentFile>, TorrentFile?> selectFile, string folder, IProgress<string>? status,
+											IProgress<TorrentDownloadProgress> progress, CancellationToken ct)
+	{
+		var api = await StartAsync(ct);
+
+		status?.Report("Getting the torrent…");
+		var (content, isUrl) = await GetTorrentAsync(torrent, ct);
+		Directory.CreateDirectory(folder);
+		var added = await SendAsync(HttpMethod.Post,
+									new Uri(api, $"torrents?overwrite=true&is_url={(isUrl ? "true" : "false")}&output_folder={Uri.EscapeDataString(folder)}"), content, ct);
+		var id = added["id"]!.GetValue<int>();
+		// shortcut: a torrent rqbit already has (being watched) stays in its own folder, so it isn't downloaded meanwhile; share it if that comes up.
+		if ((added["output_folder"] ?? added["details"]?["output_folder"])?.GetValue<string>() is { } output &&
+			!Path.GetFullPath(output).TrimEnd('\\').Equals(Path.GetFullPath(folder).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase))
+		{
+			throw new TorrentStreamException("It's playing: download it once it's stopped.");
+		}
+
+		lock (_streamsLock)
+		{
+			_streams[id] = _streams.GetValueOrDefault(id) + 1;
+		}
+
+		var keep = false;
+		try
+		{
+			var file = await SelectFileAsync(api, id, added, selectFile, status, ct);
+			while (true)
+			{
+				var stats = await SendAsync(HttpMethod.Get, new Uri(api, $"torrents/{id}/stats/v1"), null, ct);
+				if (stats["state"]?.GetValue<string>() == "error")
+				{
+					throw new TorrentStreamException($"rqbit couldn't download it: {stats["error"]}");
+				}
+
+				var done = stats["file_progress"]?[file.Index]?.GetValue<long>() ?? 0;
+				// rqbit's "mbps" is MiB a second.
+				var speed = stats["live"]?["download_speed"]?["mbps"]?.GetValue<double>() * (1 << 20);
+				progress.Report(new TorrentDownloadProgress(done, file.Length, speed));
+				if (done >= file.Length)
+				{
+					break;
+				}
+
+				await Task.Delay(TimeSpan.FromSeconds(1), ct);
+			}
+
+			keep = true;
+			// Where rqbit put it: in the folder, under the torrent's own folders if it has any.
+			return Directory.EnumerateFiles(folder, Path.GetFileName(file.Path), SearchOption.AllDirectories).FirstOrDefault()
+				   ?? throw new TorrentStreamException("rqbit finished, but the file isn't in the folder it was downloaded to.");
+		}
+		finally
+		{
+			// Forgotten once it's downloaded, so its file is the caller's; otherwise deleted with what was downloaded.
+			await StopAsync(api, id, keep);
+		}
+	}
+
+	/// <summary>
+	/// The file of the torrent rqbit added (its <paramref name="added"/> response) that <paramref name="selectFile"/>
+	/// picks, once the torrent's live and set to download only that file.
+	/// </summary>
+	private async Task<TorrentFile> SelectFileAsync(Uri api, int id, JsonNode added, Func<IReadOnlyList<TorrentFile>, TorrentFile?> selectFile,
+													IProgress<string>? progress, CancellationToken ct)
+	{
+		var files = added["details"]!["files"]!.AsArray()
+											  .Select((x, i) => (File: x!, Index: i))
+											  .Where(x => x.File["attributes"]?["padding"]?.GetValue<bool>() != true)
+											  .Select(x => new TorrentFile(x.Index, string.Join('/', x.File["components"]!.AsArray().Select(c => c!.GetValue<string>())),
+																		   x.File["length"]!.GetValue<long>()))
+											  .ToList();
+		if (selectFile(files) is not { } file)
+		{
+			throw new TorrentStreamException("The torrent has no video to play.");
+		}
+
+		await WaitUntilLiveAsync(api, id, progress, ct);
+
+		// Only the file wanted; files can only be chosen once the torrent is live.
+		if (files.Count > 1)
+		{
+			await SendAsync(HttpMethod.Post, new Uri(api, $"torrents/{id}/update_only_files"), JsonContent.Create(new { only_files = new[] { file.Index } }), ct);
+		}
+
+		return file;
 	}
 
 	public void Dispose()
@@ -146,8 +216,11 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 		}
 	}
 
-	/// <summary>Ends a stream: deletes the torrent (and its download, unless kept) once no stream uses it.</summary>
-	private async Task StopAsync(Uri api, int id)
+	/// <summary>
+	/// Ends a stream (or download): deletes the torrent once no stream uses it, with its files unless
+	/// <paramref name="keepFiles"/> (by default, the settings) keeps them.
+	/// </summary>
+	private async Task StopAsync(Uri api, int id, bool? keepFiles = null)
 	{
 		lock (_streamsLock)
 		{
@@ -164,7 +237,7 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 		try
 		{
 			// "forget" stops it and keeps the files; "delete" removes them too.
-			var action = settings.Value.KeepDownloads ? "forget" : "delete";
+			var action = keepFiles ?? settings.Value.KeepDownloads ? "forget" : "delete";
 			await SendAsync(HttpMethod.Post, new Uri(api, $"torrents/{id}/{action}"), null, CancellationToken.None);
 		}
 		catch (Exception ex)

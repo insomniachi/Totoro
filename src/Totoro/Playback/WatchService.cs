@@ -892,6 +892,13 @@ public sealed partial class WatchService(
 		return picked;
 	}
 
+	/// <summary>
+	/// A copy of the provider's settings for the anime, to change for once (e.g. for a download) and pass to
+	/// <see cref="IAnimeProvider.UseSettings"/>: its own, or else the module's. Null if the provider has none.
+	/// </summary>
+	public DataContainerConfig? CopyProviderSettings(AnimeModel anime, Guid providerId) =>
+		moduleSettings.FirstOrDefault(x => x.Descriptor.Id == providerId)?.CreateCopy(animeSettings.Get(anime).ProviderSettings.GetValueOrDefault(providerId));
+
 	private IAnimeProvider? GetProvider(AnimeSettings settings)
 	{
 		var provider = (settings.ProviderId is { } id ? providers.Create(id) : null) ?? providers.CreateDefault();

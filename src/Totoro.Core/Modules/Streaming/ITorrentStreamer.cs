@@ -23,7 +23,20 @@ public interface ITorrentStreamer
 	/// <exception cref="TorrentStreamException">The torrent couldn't be streamed; the message says why.</exception>
 	Task<TorrentStream> StreamAsync(Uri torrent, Func<IReadOnlyList<TorrentFile>, TorrentFile?> selectFile, IProgress<string>? progress,
 									CancellationToken ct);
+
+	/// <summary>
+	/// Downloads a file of the torrent (the one <paramref name="selectFile"/> picks) into <paramref name="folder"/>, in
+	/// whatever order is quickest, reporting what it's doing until it starts and then how far it's got. Returns the
+	/// file's path once it's all there. Streamers that don't keep a local copy (a debrid service) throw
+	/// <see cref="NotSupportedException"/>, and the file is downloaded from its stream instead.
+	/// </summary>
+	/// <exception cref="TorrentStreamException">The torrent couldn't be downloaded; the message says why.</exception>
+	Task<string> DownloadAsync(Uri torrent, Func<IReadOnlyList<TorrentFile>, TorrentFile?> selectFile, string folder, IProgress<string>? status,
+							   IProgress<TorrentDownloadProgress> progress, CancellationToken ct) => throw new NotSupportedException();
 }
+
+/// <param name="BytesPerSecond">How fast it's downloading, as the streamer measures it; null when that isn't known.</param>
+public readonly record struct TorrentDownloadProgress(long DownloadedBytes, long TotalBytes, double? BytesPerSecond);
 
 /// <param name="Index">Its position in the torrent's file list.</param>
 /// <param name="Path">Its path in the torrent, with / between folders.</param>

@@ -2,7 +2,10 @@
 <UserControl
     x:Class="Totoro.Views.DownloadEpisodesDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Totoro.UI.Controls"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:vm="using:Totoro.ViewModels">
 
     <StackPanel MinWidth="400" Spacing="12">
         <Grid ColumnSpacing="16">
@@ -30,5 +33,40 @@
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Text="{x:Bind ViewModel.Summary, Mode=OneWay}"
             TextWrapping="Wrap" />
+
+        <ComboBox
+            HorizontalAlignment="Stretch"
+            Header="Download from"
+            IsEnabled="{x:Bind ViewModel.HasProviders}"
+            ItemsSource="{x:Bind ViewModel.Providers}"
+            SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ProviderChoice">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Image
+                            Width="16"
+                            Height="16"
+                            Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                        <TextBlock Text="{x:Bind Label}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <!--  Changes here are for this download only: neither the provider's settings nor the anime's own change  -->
+        <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.HasProviderSettings, Mode=OneWay}">
+            <TextBlock>
+                <Run Text="Provider settings" />
+                <Run Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="· for this download only" />
+            </TextBlock>
+            <controls:DataContainerEditor Properties="{x:Bind ViewModel.ProviderSettings, Mode=OneWay}" />
+        </StackPanel>
+
+        <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsChecking, Mode=OneWay}" />
+        <InfoBar
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+            Message="{x:Bind ViewModel.Error, Mode=OneWay}"
+            Severity="Warning" />
     </StackPanel>
 </UserControl>
