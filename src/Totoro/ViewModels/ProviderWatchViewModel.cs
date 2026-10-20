@@ -259,6 +259,21 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 		}
 	}
 
+	/// <summary>The database's anime with the show's id in it (a database's name is its <see cref="AnimeId"/> property's); null if the provider didn't say or it fails.</summary>
+	private async Task<AnimeModel?> GetDatabaseAnimeAsync(ProviderShow show)
+	{
+		try
+		{
+			return _databases.CreateDefault() is { } database && show.Ids?.GetIdForService(database.Name) is long id and > 0
+				? await database.GetAnimeAsync(id)
+				: null;
+		}
+		catch (Exception)
+		{
+			return null;
+		}
+	}
+
 	/// <summary>How close the anime's closest title (of its titles in each language, and others) is to the show's, from 0 to 1.</summary>
 	private static double Closeness(string showTitle, AnimeModel anime)
 	{
@@ -272,8 +287,15 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	/// <summary>Finds the anime in the database the show may be, to track it as; the user can pick another.</summary>
 	private async Task MatchAsync(ProviderShow show)
 	{
+		var byId = GetDatabaseAnimeAsync(show);
 		// The database's own order puts a sequel first as often as not: closest title first, theirs for ties.
 		List<AnimeModel> matches = [.. (await SearchDatabaseAsync(show.Title)).OrderByDescending(x => Closeness(show.Title, x))];
+		// The show's id in the database is the anime for sure, even when its title isn't found.
+		if (await byId is { } known)
+		{
+			matches = [known, .. matches.Where(x => x.Id != known.Id)];
+		}
+
 		if (SelectedShow == show)
 		{
 			Matches = matches;

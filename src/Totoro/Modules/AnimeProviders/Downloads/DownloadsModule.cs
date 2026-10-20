@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
 
@@ -38,25 +39,32 @@ internal sealed class DownloadsProvider(IPreferences preferences, ILogger<Downlo
 	public string Name => "Downloads";
 
 	public Task<List<ProviderShow>> SearchAsync(string query, CancellationToken ct) => Task.Run(() =>
+		Folders().Select(x => ToShow(x.Folder, x.Info, x.Info.OtherTitles.Append(x.Info.Title).Max(title => TitleMatch.Score(query, title))))
+				 .Where(x => x.Score >= 0.4)
+				 .OrderByDescending(x => x.Score)
+				 .ToList(), ct);
+
+	// Folders downloaded before info.json had ids (or whose ids couldn't be had) are only found by SearchAsync.
+	public Task<ProviderShow?> FindShowAsync(AnimeId ids, CancellationToken ct) => Task.Run(() =>
+		Folders().Where(x => (ids.Anilist > 0 && x.Info.AnilistId == ids.Anilist) || (ids.MyAnimeList > 0 && x.Info.MalId == ids.MyAnimeList))
+				 .Select(x => ToShow(x.Folder, x.Info, 1))
+				 .FirstOrDefault(), ct);
+
+	private IEnumerable<(DirectoryInfo Folder, DownloadInfo Info)> Folders()
 	{
 		var root = new DirectoryInfo(preferences.DownloadFolder);
-		if (!root.Exists)
-		{
-			return [];
-		}
+		return root.Exists ? root.EnumerateDirectories().Select(x => (x, ReadInfo(x))) : [];
+	}
 
-		return root.EnumerateDirectories()
-				   .Select(folder =>
-				   {
-					   var info = ReadInfo(folder);
-					   var score = info.OtherTitles.Append(info.Title).Max(x => TitleMatch.Score(query, x));
-					   var cover = folder.EnumerateFiles(DownloadNames.CoverFile + ".*").FirstOrDefault();
-					   return new ProviderShow(folder.Name, info.Title, score) { Image = cover is null ? "" : new Uri(cover.FullName).AbsoluteUri };
-				   })
-				   .Where(x => x.Score >= 0.4)
-				   .OrderByDescending(x => x.Score)
-				   .ToList();
-	}, ct);
+	private static ProviderShow ToShow(DirectoryInfo folder, DownloadInfo info, double score)
+	{
+		var cover = folder.EnumerateFiles(DownloadNames.CoverFile + ".*").FirstOrDefault();
+		return new ProviderShow(folder.Name, info.Title, score)
+		{
+			Image = cover is null ? "" : new Uri(cover.FullName).AbsoluteUri,
+			Ids = info.AnilistId is null && info.MalId is null ? null : new AnimeId { Anilist = info.AnilistId ?? 0, MyAnimeList = info.MalId ?? 0 },
+		};
+	}
 
 	public Task<List<ProviderEpisode>> GetEpisodesAsync(string showId, CancellationToken ct) => Task.Run(() =>
 	{

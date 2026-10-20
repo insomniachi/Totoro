@@ -855,6 +855,12 @@ public sealed partial class WatchService(
 	/// <summary>The provider's shows that may be the anime, best match first; a score of 1 is an exact title match.</summary>
 	public static async Task<List<ProviderShow>> SearchShowsAsync(IAnimeProvider provider, AnimeModel anime, CancellationToken ct)
 	{
+		// A provider that knows the anime by id has the show for sure; else (or for shows it has without ids) search titles.
+		if (await provider.FindShowAsync(anime.ExternalIds, ct) is { } byId)
+		{
+			return [byId with { Score = 1 }];
+		}
+
 		// Any of the anime's titles may be the one the provider uses (SubsPlease uses romaji).
 		string[] titles = [.. new[] { anime.Title, anime.RomajiTitle, anime.EngTitle }.Concat(anime.AlternateTitles)
 																							.Where(x => !string.IsNullOrWhiteSpace(x))
@@ -862,16 +868,41 @@ public sealed partial class WatchService(
 		var matches = new Dictionary<string, ProviderShow>();
 		foreach (var title in titles)
 		{
-			foreach (var show in await provider.SearchAsync(title, ct))
+			foreach (var found in await provider.SearchAsync(title, ct))
 			{
+				var show = found with { Score = IdScore(found, anime.ExternalIds) };
 				if (!matches.TryGetValue(show.Id, out var existing) || existing.Score < show.Score)
 				{
 					matches[show.Id] = show;
 				}
 			}
+
+			// Its ids say it's the anime: the other titles needn't be searched.
+			if (matches.Values.Any(x => x.Score >= 1 && x.Ids is not null))
+			{
+				break;
+			}
 		}
 
 		return [.. matches.Values.OrderByDescending(x => x.Score)];
+	}
+
+	/// <summary>
+	/// The show's score as the anime: 1 when an id both have is the same, never 1 (it's not the anime) when it differs;
+	/// its title's score when they've no id in common.
+	/// </summary>
+	internal static double IdScore(ProviderShow show, AnimeId anime)
+	{
+		bool? same = show.Ids is not { } ids ? null
+			: ids.Anilist > 0 && anime.Anilist > 0 ? ids.Anilist == anime.Anilist
+			: ids.MyAnimeList > 0 && anime.MyAnimeList > 0 ? ids.MyAnimeList == anime.MyAnimeList
+			: null;
+		return same switch
+		{
+			true => 1,
+			false => Math.Min(show.Score, 0.99),
+			null => show.Score,
+		};
 	}
 
 	/// <summary>The provider's show for the anime: as <see cref="FindShowAsync"/> finds it, or else one the user picks.</summary>

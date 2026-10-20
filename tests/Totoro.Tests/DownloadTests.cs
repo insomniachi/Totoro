@@ -1,4 +1,9 @@
+using System.Text.Json;
+using Microsoft.Extensions.Logging.Abstractions;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Streaming;
+using Totoro.Core.Settings;
+using Totoro.Modules.AnimeProviders.Downloads;
 using Totoro.Playback;
 using Xunit;
 
@@ -38,5 +43,37 @@ public class DownloadTests
 		// Started over: nothing to measure from yet.
 		Assert.Null(meter.Next(10));
 		Assert.Null(meter.Next(null));
+	}
+
+	[Fact]
+	public async Task DownloadsProvider_FindsShowById()
+	{
+		var root = Path.Combine(Path.GetTempPath(), "Totoro.Tests", Guid.NewGuid().ToString("N"));
+		var withIds = Directory.CreateDirectory(Path.Combine(root, "Sousou no Frieren")).FullName;
+		File.WriteAllText(Path.Combine(withIds, DownloadNames.InfoFile), JsonSerializer.Serialize(new DownloadInfo("Sousou no Frieren", [], 154587, 52991)));
+		Directory.CreateDirectory(Path.Combine(root, "Old Download"));
+		var preferences = new PluginLoaderTests.FakePreferences();
+		preferences.DownloadFolder = root;
+		IAnimeProvider provider = new DownloadsProvider(preferences, NullLogger<DownloadsProvider>.Instance);
+
+		Assert.Equal("Sousou no Frieren", (await provider.FindShowAsync(new AnimeId { Anilist = 154587 }, default))?.Id);
+		Assert.Equal("Sousou no Frieren", (await provider.FindShowAsync(new AnimeId { MyAnimeList = 52991 }, default))?.Id);
+		Assert.Null(await provider.FindShowAsync(new AnimeId { Anilist = 1 }, default));
+		// A folder without ids is still found by title.
+		var byTitle = await WatchService.SearchShowsAsync(provider, new AnimeModel { Title = "Old Download", ExternalIds = new AnimeId { Anilist = 1 } }, default);
+		Assert.Equal("Old Download", Assert.Single(byTitle).Id);
+	}
+
+	[Fact]
+	public void IdScore_MatchesByIdsTheyShare()
+	{
+		var anime = new AnimeId { Anilist = 154587, MyAnimeList = 52991 };
+		Assert.Equal(1, WatchService.IdScore(new ProviderShow("a", "x", 0.2) { Ids = new AnimeId { Anilist = 154587 } }, anime));
+		Assert.Equal(1, WatchService.IdScore(new ProviderShow("a", "x", 0.2) { Ids = new AnimeId { MyAnimeList = 52991 } }, anime));
+		// Same title, another anime (a remake, a sequel).
+		Assert.True(WatchService.IdScore(new ProviderShow("a", "x", 1) { Ids = new AnimeId { Anilist = 1 } }, anime) < 1);
+		// No id in common: the title decides.
+		Assert.Equal(0.7, WatchService.IdScore(new ProviderShow("a", "x", 0.7), anime));
+		Assert.Equal(0.7, WatchService.IdScore(new ProviderShow("a", "x", 0.7) { Ids = new AnimeId { Kitsu = 5 } }, anime));
 	}
 }
