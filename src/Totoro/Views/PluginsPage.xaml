@@ -125,6 +125,13 @@
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
                                 Spacing="8">
+                                <Button
+                                    AutomationProperties.Name="Settings"
+                                    Command="{x:Bind Settings.EditCommand}"
+                                    ToolTipService.ToolTip="Settings"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsSettings), Mode=OneWay}">
+                                    <FontIcon FontSize="16" Glyph="&#xE713;" />
+                                </Button>
                                 <controls:BusyButton
                                     MinWidth="120"
                                     Command="{x:Bind InstallOrUpdateCommand}"

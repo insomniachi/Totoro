@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Totoro.Core.Dialogs;
 using Totoro.Core.Plugins;
+using Totoro.Core.Settings;
 
 namespace Totoro.ViewModels;
 
@@ -10,14 +12,18 @@ public sealed partial class PluginItemViewModel : ObservableObject
 {
 	private readonly IPluginManager _pluginManager;
 
-	public PluginItemViewModel(PluginCatalogItem item, IPluginManager pluginManager)
+	public PluginItemViewModel(PluginCatalogItem item, IPluginManager pluginManager, ModuleSettingsItem? settings = null)
 	{
 		Item = item;
 		_pluginManager = pluginManager;
+		Settings = settings;
 		Refresh();
 	}
 
 	public PluginCatalogItem Item { get; }
+
+	/// <summary>The loaded plugin's settings, if it has any to edit.</summary>
+	public ModuleSettingsItem? Settings { get; }
 	public Guid Id => Item.Id;
 	public string Name => Item.Name;
 	public string Version => Item.Version;
@@ -58,7 +64,7 @@ public sealed partial class PluginItemViewModel : ObservableObject
 	public bool ShowsStatus => !HasError && StatusText.Length > 0;
 
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled), nameof(ShowsNotInstalled), nameof(ShowsUninstall), nameof(VersionText))]
+	[NotifyPropertyChangedFor(nameof(ShowsUpdate), nameof(ShowsInstalled), nameof(ShowsNotInstalled), nameof(ShowsUninstall), nameof(ShowsSettings), nameof(VersionText))]
 	public partial bool IsInstalled { get; set; }
 
 	[ObservableProperty]
@@ -79,6 +85,8 @@ public sealed partial class PluginItemViewModel : ObservableObject
 
 	/// <summary>Installed, and not a dev plugin: those are loaded from their own folders, and removed there.</summary>
 	public bool ShowsUninstall => IsInstalled && !IsDev;
+
+	public bool ShowsSettings => IsInstalled && Settings is not null;
 
 	[ObservableProperty]
 	public partial double Progress { get; set; }
@@ -157,14 +165,22 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 {
 	private readonly IPluginLoader _pluginLoader;
 	private readonly IPluginManager _pluginManager;
+	private readonly Dictionary<Guid, ModuleSettingsItem> _settings;
 	private readonly List<PluginItemViewModel> _allCatalogItems = [];
 
 	public PluginsViewModel(
 		IPluginLoader pluginLoader,
-		IPluginManager pluginManager)
+		IPluginManager pluginManager,
+		IEnumerable<IModuleSettings> moduleSettings,
+		IDialogService dialogs)
 	{
 		_pluginLoader = pluginLoader;
 		_pluginManager = pluginManager;
+		// A plugin's id is its module's (the loader gives the module's descriptor the manifest's id).
+		_settings = moduleSettings
+			.Select(x => new ModuleSettingsItem(x, dialogs))
+			.Where(x => x.Summary.Length > 0)
+			.ToDictionary(x => x.Id);
 
 		InstalledPlugins = [.. _pluginLoader.Plugins];
 		RequiresRestart = _pluginManager.RequiresRestart;
@@ -213,7 +229,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 			var items = await _pluginManager.GetCatalogAsync();
 			foreach (var item in items)
 			{
-				var vm = new PluginItemViewModel(item, _pluginManager);
+				var vm = new PluginItemViewModel(item, _pluginManager, _settings.GetValueOrDefault(item.Id));
 				_allCatalogItems.Add(vm);
 			}
 			ApplyFilter();

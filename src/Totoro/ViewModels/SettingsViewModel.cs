@@ -50,6 +50,7 @@ public sealed record SkipModeOption(string Label, SkipMode Value)
 /// <summary>A module in Settings, with a command to edit its settings in a dialog.</summary>
 public sealed partial class ModuleSettingsItem(IModuleSettings settings, IDialogService dialogs)
 {
+	public Guid Id => settings.Descriptor.Id;
 	public string Name => settings.Descriptor.Name;
 	public string Icon => settings.Descriptor.Image ?? "";
 
