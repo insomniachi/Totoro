@@ -223,6 +223,13 @@ public sealed class DownloadService(
 		return item;
 	}
 
+	/// <summary>Shows the download folder in File Explorer, making it first if nothing's been downloaded yet.</summary>
+	public void OpenFolder()
+	{
+		Directory.CreateDirectory(preferences.DownloadFolder);
+		Process.Start("explorer.exe", $"\"{preferences.DownloadFolder}\"");
+	}
+
 	public void Dispose() => _http.Dispose();
 
 	private DownloadItem Add(string title, int number, string provider)

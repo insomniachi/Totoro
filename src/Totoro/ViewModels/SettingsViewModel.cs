@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Totoro.Core.Dialogs;
@@ -9,6 +8,7 @@ using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
+using Totoro.Playback;
 using Totoro.UI.Navigation;
 
 namespace Totoro.ViewModels;
@@ -75,6 +75,7 @@ public partial class SettingsViewModel : ObservableObject
 	public const string AboutKey = "Settings.About";
 
 	private readonly IPreferences _preferences;
+	private readonly DownloadService _downloads;
 	private readonly IAppearanceService _appearance;
 
 	public SettingsViewModel(
@@ -88,9 +89,11 @@ public partial class SettingsViewModel : ObservableObject
 		IEnumerable<IModuleSettings> moduleSettings,
 		IDialogService dialogs,
 		IAppearanceService appearance,
-		UpdateService updates)
+		UpdateService updates,
+		DownloadService downloads)
 	{
 		_preferences = preferences;
+		_downloads = downloads;
 		_appearance = appearance;
 		DownloadFolder = preferences.DownloadFolder;
 		YtDlpPath = preferences.YtDlpPath;
@@ -319,11 +322,7 @@ public partial class SettingsViewModel : ObservableObject
 	public void SetDownloadFolder(string folder) => DownloadFolder = _preferences.DownloadFolder = folder;
 
 	[RelayCommand]
-	private void OpenDownloadFolder()
-	{
-		Directory.CreateDirectory(DownloadFolder);
-		Process.Start("explorer.exe", $"\"{DownloadFolder}\"");
-	}
+	private void OpenDownloadFolder() => _downloads.OpenFolder();
 
 	/// <summary>yt-dlp.exe, which downloads HLS streams; empty, it's found on the PATH.</summary>
 	[ObservableProperty]

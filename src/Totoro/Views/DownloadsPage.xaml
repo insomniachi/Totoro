@@ -18,7 +18,22 @@
         </Grid.RowDefinitions>
 
         <StackPanel Spacing="8">
-            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Downloads" />
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Downloads" />
+                <Button
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Click="{x:Bind ViewModel.OpenFolder}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE838;" />
+                        <TextBlock Text="Open folder" />
+                    </StackPanel>
+                </Button>
+            </Grid>
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="Episodes go into a folder for each anime, named with its title. Right-click an episode in an anime's details to download it, or download from the Watch page. The download folder is in Settings."

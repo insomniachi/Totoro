@@ -8,4 +8,6 @@ namespace Totoro.ViewModels;
 public sealed partial class DownloadsViewModel(DownloadService downloads) : NavigatableViewModel
 {
 	public ObservableCollection<DownloadItem> Downloads => downloads.Downloads;
+
+	public void OpenFolder() => downloads.OpenFolder();
 }

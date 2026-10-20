@@ -291,6 +291,14 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	[Description("The episodes downloaded or being downloaded since the app started, in the order they download, and the folder they go to.")]
 	public Downloads GetDownloads() => new(preferences.DownloadFolder, [.. downloads.Downloads.Select(ToInfo)]);
 
+	[AgentTool("open_download_folder")]
+	[Description("Shows the download folder (a folder in it for each anime) to the user in File Explorer.")]
+	public string OpenDownloadFolder()
+	{
+		downloads.OpenFolder();
+		return $"Opened {preferences.DownloadFolder}.";
+	}
+
 	[AgentTool("cancel_download")]
 	[Description("Stops downloading an episode.")]
 	public string CancelDownload([Description("The download's title, from get_downloads.")] string title)
