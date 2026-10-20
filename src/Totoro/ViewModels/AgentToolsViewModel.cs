@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.AI;
 using Totoro.Core.Agent;
 
-namespace Totoro.ViewModels.Test;
+namespace Totoro.ViewModels;
 
 /// <summary>
 /// A playground for the agent tools: every tool an AI agent can call (IAgentTools), with what the agent sees of it

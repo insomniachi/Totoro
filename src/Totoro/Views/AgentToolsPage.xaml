@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Page
-    x:Class="Totoro.Views.Test.AgentToolsPage"
+    x:Class="Totoro.Views.AgentToolsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:vm="using:Totoro.ViewModels.Test">
+    xmlns:vm="using:Totoro.ViewModels">
 
     <!--
         Every tool an AI agent can call, with what the agent sees of it (its description and parameters' schema). Call one
         with JSON arguments to see what the agent would get back.
     -->
-    <Grid ColumnSpacing="24" RowSpacing="12">
+    <Grid
+        Margin="16"
+        ColumnSpacing="24"
+        RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -19,10 +22,13 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <TextBlock
-            Grid.ColumnSpan="2"
-            Style="{ThemeResource SubtitleTextBlockStyle}"
-            Text="Agent tools" />
+        <StackPanel Grid.ColumnSpan="2" Spacing="8">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Agent tools" />
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Every tool the assistant can call, with what it sees of it. Pick one, give it JSON arguments and run it to see what the assistant would get back."
+                TextWrapping="Wrap" />
+        </StackPanel>
 
         <ListView
             Grid.Row="1"

@@ -50,7 +50,7 @@ The app has an assistant: a chat panel (the title bar's Assistant button) whose 
    - **Threading:** tools run on the UI thread, so they can change state the UI is bound to.
 3. **The UI follows changes made elsewhere.** Changes go out as messages (`AnimeTrackingChangedMessage`, `PlaybackProgressChangedMessage`...) that views apply, so a change made by an agent shows straight away.
 
-Try the tools in the app on **Test → Agent tools**. It lists every tool with the schema the agent sees, and calls a tool with JSON arguments.
+Try the tools in the app on the **Agent tools** page. It lists every tool with the schema the agent sees, and calls a tool with JSON arguments.
 
 ## Finding your way around: graphify
 

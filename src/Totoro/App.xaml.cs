@@ -31,11 +31,9 @@ using Totoro.UI.Web;
 using Totoro.ViewModels;
 using Totoro.ViewModels.Chat;
 using Totoro.ViewModels.Relations;
-using Totoro.ViewModels.Test;
 using Totoro.Views;
 using Totoro.Views.Relations;
 using Totoro.Views.Settings;
-using Totoro.Views.Test;
 
 
 namespace Totoro;
@@ -144,14 +142,10 @@ public partial class App : Application
 				{
 					x.AnimatedIcon = Icons.PluginsAnimated;
 				});
-				services.AddMainNavigationItem<TestPage, TestViewModel>("Test", x =>
+				services.AddMainNavigationItem<AgentToolsPage, AgentToolsViewModel>("Agent tools", x =>
 				{
-					x.AnimatedIcon = Icons.TestAnimated;
+					x.AnimatedIcon = Icons.AgentToolsAnimated;
 				});
-				// The Test page's playgrounds, shown by its own navigator.
-				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
-				services.AddKeyedViewMap<AgentToolsPage, AgentToolsViewModel>(TestViewModel.AgentToolsKey);
-				services.AddKeyedViewMap<BuiltInPlayerPage, BuiltInPlayerViewModel>(TestViewModel.BuiltInPlayerKey);
 				services.AddViewMap<PluginTesterPage, PluginTesterViewModel>();
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{

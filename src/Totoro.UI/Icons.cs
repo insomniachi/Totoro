@@ -58,11 +58,14 @@ public static class Icons
 		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
-	/// <summary>A test tube shaking, bubbles rising out of it.</summary>
-	public static AnimatedIcon TestAnimated => new()
+	/// <summary>
+	/// A robot's head, looking up and raising its antenna as the pointer comes over, squinting when pressed, and on release
+	/// popping its antenna up with sparks and blinking.
+	/// </summary>
+	public static AnimatedIcon AgentToolsAnimated => new()
 	{
-		Source = new AnimatedVisuals.AnimatedTestVisualSource(),
-		FallbackIconSource = new FontIconSource { Glyph = "" },
+		Source = new AnimatedVisuals.AnimatedAgentToolsVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
 	/// <summary>The gear turning, as on WinUI's own Settings menu item.</summary>

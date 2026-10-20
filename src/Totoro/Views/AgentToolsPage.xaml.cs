@@ -1,8 +1,8 @@
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml.Controls;
-using Totoro.ViewModels.Test;
+using Totoro.ViewModels;
 
-namespace Totoro.Views.Test;
+namespace Totoro.Views;
 
 public sealed partial class AgentToolsPage : Page
 {
