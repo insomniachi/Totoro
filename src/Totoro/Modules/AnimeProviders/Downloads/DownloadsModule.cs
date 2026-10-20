@@ -83,7 +83,7 @@ internal sealed class DownloadsProvider(IPreferences preferences, ILogger<Downlo
 	// GetFileName: a show id is a folder's name, never a path out of the download folder.
 	private DirectoryInfo Folder(string showId) => new(Path.Combine(preferences.DownloadFolder, Path.GetFileName(showId)));
 
-	/// <summary>What the folder's info file says; for a folder without one (or a broken one), the title in its name.</summary>
+	/// <summary>What the folder's info file says; for a folder without one (or a broken one), its name as the title.</summary>
 	private DownloadInfo ReadInfo(DirectoryInfo folder)
 	{
 		var path = Path.Combine(folder.FullName, DownloadNames.InfoFile);
@@ -99,6 +99,6 @@ internal sealed class DownloadsProvider(IPreferences preferences, ILogger<Downlo
 			logger.LogWarning(ex, "Couldn't read {File}", path);
 		}
 
-		return new DownloadInfo(DownloadNames.ParseTitle(folder.Name), []);
+		return new DownloadInfo(folder.Name, []);
 	}
 }

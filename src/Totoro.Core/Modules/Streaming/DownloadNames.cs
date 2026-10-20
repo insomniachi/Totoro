@@ -5,8 +5,8 @@ namespace Totoro.Core.Modules.Streaming;
 
 /// <summary>
 /// How downloaded episodes are named, for a provider of local files to read back: a folder for each anime in the download
-/// folder, named with its ids, e.g. <c>Sousou no Frieren [anilist-154587] [mal-52991]</c>, and in it each episode as
-/// <c>Sousou no Frieren - 05.mkv</c>.
+/// folder, named with its title, e.g. <c>Sousou no Frieren</c>, and in it each episode as <c>Sousou no Frieren - 05.mkv</c>.
+/// The anime's ids are in its <see cref="InfoFile"/>.
 /// </summary>
 public static partial class DownloadNames
 {
@@ -16,19 +16,11 @@ public static partial class DownloadNames
 	/// <summary>The anime's cover in its folder, without the extension (the image's own).</summary>
 	public const string CoverFile = "cover";
 
-	/// <summary>The anime's folder name: its title, then whichever of its ids are known.</summary>
-	public static string Folder(string title, long? anilistId, long? malId) =>
-		Clean(title) + (anilistId is > 0 ? $" [anilist-{anilistId}]" : "") + (malId is > 0 ? $" [mal-{malId}]" : "");
+	/// <summary>The anime's folder name.</summary>
+	public static string Folder(string title) => Clean(title);
 
 	/// <summary>An episode's file name, without the extension.</summary>
 	public static string Episode(string title, int number) => $"{Clean(title)} - {number:00}";
-
-	/// <summary>The ids in a folder name made by <see cref="Folder"/>; null where it has none.</summary>
-	public static (long? AnilistId, long? MalId) ParseIds(string folderName) =>
-		(Id(AnilistPattern().Match(folderName)), Id(MalPattern().Match(folderName)));
-
-	/// <summary>The title in a folder name made by <see cref="Folder"/>, without its ids.</summary>
-	public static string ParseTitle(string folderName) => Ids().Replace(folderName, "").Trim();
 
 	/// <summary>The episode number in a file name made by <see cref="Episode"/>, or null.</summary>
 	public static int? ParseEpisode(string fileName) =>
@@ -36,25 +28,14 @@ public static partial class DownloadNames
 			? int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture)
 			: null;
 
-	private static long? Id(Match match) => match.Success ? long.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) : null;
-
-	/// <summary>Without characters Windows doesn't allow in names, nor brackets (which hold the ids).</summary>
+	/// <summary>Without characters Windows doesn't allow in names.</summary>
 	private static string Clean(string title)
 	{
 		var invalid = Path.GetInvalidFileNameChars();
-		var clean = new string([.. title.Select(x => invalid.Contains(x) || x is '[' or ']' ? ' ' : x)]);
+		var clean = new string([.. title.Select(x => invalid.Contains(x) ? ' ' : x)]);
 		// Windows trims trailing dots and spaces from names.
 		return Spaces().Replace(clean, " ").Trim().TrimEnd('.');
 	}
-
-	[GeneratedRegex(@"\[anilist-(\d+)\]")]
-	private static partial Regex AnilistPattern();
-
-	[GeneratedRegex(@"\[mal-(\d+)\]")]
-	private static partial Regex MalPattern();
-
-	[GeneratedRegex(@"\[(anilist|mal)-\d+\]")]
-	private static partial Regex Ids();
 
 	[GeneratedRegex(@" - (\d+)$")]
 	private static partial Regex EpisodePattern();
@@ -63,6 +44,8 @@ public static partial class DownloadNames
 	private static partial Regex Spaces();
 }
 
-/// <summary>What a downloaded anime's folder says about it, for finding it by any of its titles.</summary>
+/// <summary>What a downloaded anime's folder says about it, for finding it by any of its titles or its ids.</summary>
 /// <param name="OtherTitles">Its romaji and English titles and synonyms, besides <paramref name="Title"/>.</param>
-public sealed record DownloadInfo(string Title, IReadOnlyList<string> OtherTitles);
+/// <param name="AnilistId">Its AniList id, when known.</param>
+/// <param name="MalId">Its MyAnimeList id, when known.</param>
+public sealed record DownloadInfo(string Title, IReadOnlyList<string> OtherTitles, long? AnilistId = null, long? MalId = null);

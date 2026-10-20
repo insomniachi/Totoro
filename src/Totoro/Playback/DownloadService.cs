@@ -46,6 +46,17 @@ public sealed partial class DownloadItem : ObservableObject
 	/// <summary>The anime's folder (see <see cref="DownloadNames"/>).</summary>
 	public required string Folder { get; init; }
 
+	/// <summary>The anime provider it's from, e.g. "AnimePahe"; empty when that isn't known.</summary>
+	public string Provider { get; init; } = "";
+
+	/// <summary>What downloads it: "HTTP", "yt-dlp" or the torrent streamer, e.g. "rqbit"; empty until it starts.</summary>
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(Source))]
+	public partial string Downloader { get; internal set; } = "";
+
+	/// <summary>Where it's from and what downloads it, e.g. "AnimePahe · yt-dlp".</summary>
+	public string Source => string.Join(" · ", new[] { Provider, Downloader }.Where(x => x.Length > 0));
+
 	public bool IsActive => State == DownloadState.Downloading;
 
 	internal CancellationToken Token => _cancellation.Token;
@@ -67,17 +78,54 @@ public sealed partial class DownloadItem : ObservableObject
 }
 
 /// <param name="Fraction">How much is downloaded, from 0 to 1; -1 when the size isn't known.</param>
-/// <param name="BytesPerSecond">How fast it's going lately; null when that isn't known.</param>
+/// <param name="BytesPerSecond">How fast it's going lately (see <see cref="SpeedMeter"/>); null when that isn't known.</param>
 /// <param name="DownloadedBytes">How much is downloaded; null when that isn't known.</param>
 /// <param name="TotalBytes">The whole size, or an estimate of it; null when that isn't known.</param>
 internal readonly record struct DownloadProgress(double Fraction, double? BytesPerSecond, double? DownloadedBytes = null, double? TotalBytes = null);
+
+/// <summary>
+/// A download's speed over the last few seconds, from how much it had downloaded at each <see cref="Next"/>: steady where a
+/// second's own speed jumps about with the network's bursts.
+/// </summary>
+internal sealed class SpeedMeter
+{
+	private static readonly TimeSpan s_window = TimeSpan.FromSeconds(5);
+	private readonly List<(long Time, double Bytes)> _samples = [];
+
+	/// <summary>The speed in bytes a second, now that <paramref name="bytes"/> are downloaded; null until it's known.</summary>
+	public double? Next(double? bytes)
+	{
+		if (bytes is not { } now)
+		{
+			return null;
+		}
+
+		// Fewer than before: it started over, so the earlier samples say nothing about now.
+		if (_samples.Count > 0 && now < _samples[^1].Bytes)
+		{
+			_samples.Clear();
+		}
+
+		var time = Stopwatch.GetTimestamp();
+		_samples.Add((time, now));
+		// Measured from the latest sample a window ago, so a stall longer than the window still shows as slow.
+		while (_samples.Count > 2 && Stopwatch.GetElapsedTime(_samples[1].Time, time) >= s_window)
+		{
+			_samples.RemoveAt(0);
+		}
+
+		var (since, then) = _samples[0];
+		var seconds = Stopwatch.GetElapsedTime(since, time).TotalSeconds;
+		return seconds > 0 ? (now - then) / seconds : null;
+	}
+}
 
 /// <summary>A download couldn't start or failed; the message says why, in words to show the user.</summary>
 public sealed class DownloadException(string message, Exception? innerException = null) : Exception(message, innerException);
 
 /// <summary>
-/// Downloads episodes to the download folder, in a folder for each anime named with its AniList and MyAnimeList ids
-/// (see <see cref="DownloadNames"/>), so they can be found again by id. A video is downloaded as its stream is: a file
+/// Downloads episodes to the download folder, in a folder for each anime with its AniList and MyAnimeList ids in its info
+/// file (see <see cref="DownloadNames"/>). A video is downloaded as its stream is: a file
 /// as it is, an HLS stream (.m3u8) with yt-dlp, and a torrent through the selected torrent streamer.
 /// Downloads run in the background; <see cref="Downloads"/> lists them, and changes as they go.
 /// </summary>
@@ -101,7 +149,7 @@ public sealed class DownloadService(
 		},
 	};
 
-	private static readonly TimeSpan s_reportInterval = TimeSpan.FromMilliseconds(500);
+	private static readonly TimeSpan s_reportInterval = TimeSpan.FromSeconds(1);
 
 	// One download at a time: CDNs turn many at once away (AnimePahe's: 429), and a provider may not take parallel lookups.
 	private readonly SemaphoreSlim _queue = new(1, 1);
@@ -109,7 +157,7 @@ public sealed class DownloadService(
 	/// <summary>How many downloads are going or waiting their turn.</summary>
 	public int ActiveCount => Downloads.Count(x => x.IsActive);
 
-	/// <summary>This session's downloads, newest first.</summary>
+	/// <summary>This session's downloads, in the order they download.</summary>
 	public ObservableCollection<DownloadItem> Downloads { get; } = [];
 
 	/// <summary>Downloads episode <paramref name="number"/> from the anime's provider; see <see cref="DownloadEpisodesAsync"/>.</summary>
@@ -140,7 +188,7 @@ public sealed class DownloadService(
 		catch (Exception ex)
 		{
 			// Shown as a failed download, where the user is looking for it.
-			var failed = await AddAsync(anime, anime.Title, from);
+			var failed = Add(anime.Title, from, watch.GetProvider(anime)?.Name ?? "");
 			End(failed, ex);
 			return [failed];
 		}
@@ -149,7 +197,7 @@ public sealed class DownloadService(
 		var items = new List<DownloadItem>();
 		for (var number = from; number <= to; number++)
 		{
-			var item = await AddAsync(anime, anime.Title, number);
+			var item = Add(anime.Title, number, provider.Name);
 			items.Add(item);
 			var episodeNumber = number;
 			// The stream is found when its turn comes: a provider's links may not last while others download.
@@ -167,30 +215,24 @@ public sealed class DownloadService(
 
 	/// <summary>
 	/// Downloads a video the user chose on a provider as the anime's episode <paramref name="number"/>; for an anime that
-	/// isn't from the database (no ids), into a folder named after <paramref name="title"/> alone.
+	/// isn't from the database, without ids. <paramref name="provider"/> is the provider's name, to show.
 	/// </summary>
-	public async Task<DownloadItem> DownloadAsync(AnimeModel? anime, string title, int number, VideoServer server)
+	public DownloadItem Download(AnimeModel? anime, string title, int number, VideoServer server, string provider)
 	{
-		var item = await AddAsync(anime, title, number);
+		var item = Add(title, number, provider);
 		_ = RunAsync(item, anime, number, title, _ => Task.FromResult(server));
 		return item;
 	}
 
 	public void Dispose() => _http.Dispose();
 
-	private async Task<DownloadItem> AddAsync(AnimeModel? anime, string title, int number)
+	private DownloadItem Add(string title, int number, string provider)
 	{
-		long? anilist = null, mal = null;
-		if (anime is { Id: > 0 })
-		{
-			anilist = await FindIdAsync(anime, nameof(AnimeId.Anilist));
-			mal = await FindIdAsync(anime, nameof(AnimeId.MyAnimeList));
-		}
-
 		var item = new DownloadItem
 		{
 			Title = $"{title} · Episode {number}",
-			Folder = Path.Combine(preferences.DownloadFolder, DownloadNames.Folder(title, anilist, mal)),
+			Folder = Path.Combine(preferences.DownloadFolder, DownloadNames.Folder(title)),
+			Provider = provider,
 			Message = "Starting…",
 		};
 		item.PropertyChanged += (_, e) =>
@@ -200,7 +242,8 @@ public sealed class DownloadService(
 				OnPropertyChanged(nameof(ActiveCount));
 			}
 		};
-		Downloads.Insert(0, item);
+		// In the order they download: the queue's first at the top.
+		Downloads.Add(item);
 		OnPropertyChanged(nameof(ActiveCount));
 		return item;
 	}
@@ -213,7 +256,7 @@ public sealed class DownloadService(
 		}
 		catch (Exception ex)
 		{
-			// Named without that id, rather than not downloaded.
+			// Kept without that id, rather than not downloaded.
 			logger.LogWarning(ex, "Couldn't find {Service}'s id for {Anime}", service, anime.Title);
 			return null;
 		}
@@ -275,7 +318,15 @@ public sealed class DownloadService(
 					item.Message = Describe(x);
 				}
 			});
-			var extension = await Task.Run(() => DownloadAsync(url, headers, stream?.File.Path, part, progress, ct), ct);
+			// A torrent's downloader is its streamer, already shown, not the HTTP it's read with.
+			var downloader = new Progress<string>(x =>
+			{
+				if (stream is null)
+				{
+					item.Downloader = x;
+				}
+			});
+			var extension = await Task.Run(() => DownloadAsync(url, headers, stream?.File.Path, part, progress, downloader, ct), ct);
 			var path = Path.ChangeExtension(part, extension);
 			File.Move(part, path, overwrite: true);
 			item.FilePath = path;
@@ -307,7 +358,8 @@ public sealed class DownloadService(
 
 	/// <summary>
 	/// Keeps what the Downloads provider shows of the anime in its folder, unless it's there already: its titles, to find
-	/// it by any of them, and its cover. The episode downloads without them if they can't be had.
+	/// it by any of them, its AniList and MyAnimeList ids, and its cover. The episode downloads without them if they can't
+	/// be had.
 	/// </summary>
 	private async Task SaveInfoAsync(AnimeModel? anime, string title, string folder, CancellationToken ct)
 	{
@@ -321,7 +373,14 @@ public sealed class DownloadService(
 					: [.. new[] { anime.RomajiTitle, anime.EngTitle }.Concat(anime.AlternateTitles)
 										 .Where(x => !string.IsNullOrWhiteSpace(x) && x != title)
 										 .Distinct(StringComparer.OrdinalIgnoreCase)];
-				await File.WriteAllTextAsync(info, JsonSerializer.Serialize(new DownloadInfo(title, others)), ct);
+				long? anilist = null, mal = null;
+				if (anime is { Id: > 0 })
+				{
+					anilist = await FindIdAsync(anime, nameof(AnimeId.Anilist));
+					mal = await FindIdAsync(anime, nameof(AnimeId.MyAnimeList));
+				}
+
+				await File.WriteAllTextAsync(info, JsonSerializer.Serialize(new DownloadInfo(title, others, anilist, mal)), ct);
 			}
 
 			if (anime is { Image.Length: > 0 } && !Directory.EnumerateFiles(folder, DownloadNames.CoverFile + ".*").Any())
@@ -387,6 +446,7 @@ public sealed class DownloadService(
 			throw new DownloadException("Downloading a torrent needs a torrent streamer, e.g. rqbit: set one up in Settings.");
 		}
 
+		item.Downloader = streamer.Name;
 		item.Message = $"Starting {streamer.Name}…";
 		// shortcut: the stream is read in order, which is slower than a torrent client downloading the whole thing; have rqbit download to the folder itself if that's too slow.
 		return await streamer.StreamAsync(server.Url, TorrentFile.LargestVideo, new Progress<string>(x => item.Message = x), ct);
@@ -394,11 +454,12 @@ public sealed class DownloadService(
 
 	/// <summary>Writes the video at <paramref name="url"/> to <paramref name="output"/>; returns its extension.</summary>
 	private async Task<string> DownloadAsync(Uri url, IReadOnlyDictionary<string, string> headers, string? fileName, string output,
-											 IProgress<DownloadProgress> progress, CancellationToken ct)
+											 IProgress<DownloadProgress> progress, IProgress<string> downloader, CancellationToken ct)
 	{
 		// Not fetched here first: AnimePahe's CDN turns .NET's requests away (403).
 		if (url.AbsolutePath.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
 		{
+			downloader.Report("yt-dlp");
 			return await DownloadWithYtDlpAsync(url, headers, output, progress, ct);
 		}
 
@@ -406,8 +467,11 @@ public sealed class DownloadService(
 		var type = response.Content.Headers.ContentType?.MediaType ?? "";
 		if (type.Contains("mpegurl", StringComparison.OrdinalIgnoreCase))
 		{
+			downloader.Report("yt-dlp");
 			return await DownloadWithYtDlpAsync(url, headers, output, progress, ct);
 		}
+
+		downloader.Report("HTTP");
 
 		// An error page, not the video.
 		if (type.StartsWith("text/", StringComparison.OrdinalIgnoreCase) || type.EndsWith("json", StringComparison.OrdinalIgnoreCase))
@@ -419,19 +483,19 @@ public sealed class DownloadService(
 		await using var file = File.Create(output);
 		await using var body = await response.Content.ReadAsStreamAsync(ct);
 		var buffer = new byte[81920];
-		long written = 0, writtenAtReport = 0;
+		long written = 0;
+		var speed = new SpeedMeter();
+		speed.Next(0);
 		var sinceReport = Stopwatch.StartNew();
 		int read;
 		while ((read = await body.ReadAsync(buffer, ct)) > 0)
 		{
 			await file.WriteAsync(buffer.AsMemory(0, read), ct);
 			written += read;
-			// Twice a second, not every read: each report is a trip to the UI thread, and the speed is over that time.
+			// Once a second, not every read: each report is a trip to the UI thread.
 			if (sinceReport.Elapsed >= s_reportInterval)
 			{
-				progress.Report(new DownloadProgress(length > 0 ? (double)written / length.Value : -1,
-													 (written - writtenAtReport) / sinceReport.Elapsed.TotalSeconds, written, length));
-				writtenAtReport = written;
+				progress.Report(new DownloadProgress(length > 0 ? (double)written / length.Value : -1, speed.Next(written), written, length));
 				sinceReport.Restart();
 			}
 		}
@@ -473,7 +537,7 @@ public sealed class DownloadService(
 		[
 			"--no-config", "--no-playlist", "--impersonate", "chrome", "--hls-prefer-native", "--fixup", "never", "--newline",
 			"-N", "3", "--fragment-retries", "15", "--retry-sleep", "fragment:exp=2:60", "--abort-on-unavailable-fragments",
-			"--progress-template", "download:[totoro] %(progress.fragment_index)s/%(progress.fragment_count)s %(progress.speed)s %(progress.downloaded_bytes)s %(progress.total_bytes_estimate)s",
+			"--progress-template", "download:[totoro] %(progress.fragment_index)s/%(progress.fragment_count)s %(progress.downloaded_bytes)s %(progress.total_bytes_estimate)s",
 			"-o", output.Replace("%", "%%", StringComparison.Ordinal),
 		];
 		foreach (var arg in args)
@@ -491,6 +555,9 @@ public sealed class DownloadService(
 
 		using var process = new Process { StartInfo = startInfo };
 		var errors = new List<string>();
+		// 0 is long ago, so the first line is reported.
+		long lastReport = 0;
+		var speedMeter = new SpeedMeter();
 		process.ErrorDataReceived += (_, e) =>
 		{
 			if (e.Data is { } line && line.StartsWith("ERROR:", StringComparison.Ordinal))
@@ -503,13 +570,17 @@ public sealed class DownloadService(
 		};
 		process.OutputDataReceived += (_, e) =>
 		{
-			// "[totoro] 12/145 1234567.8 5000000 60000000.0": fragments downloaded, of how many, bytes a second, bytes
-			// downloaded, and the size it expects from the fragments so far; "NA" for what isn't known yet.
-			if (e.Data is { } line && line.StartsWith("[totoro] ", StringComparison.Ordinal) &&
-				line["[totoro] ".Length..].Split(' ', '/') is [var done, var count, var speed, var downloaded, var total] &&
+			// "[totoro] 12/145 5000000 60000000.0": fragments downloaded, of how many, bytes downloaded, and the size it
+			// expects from the fragments so far; "NA" for what isn't known yet. Not its speed: that's the fragment it last
+			// reported on's, one of several at once. It prints many a second; like a download's, one a second is reported.
+			if (Stopwatch.GetElapsedTime(lastReport) >= s_reportInterval &&
+				e.Data is { } line && line.StartsWith("[totoro] ", StringComparison.Ordinal) &&
+				line["[totoro] ".Length..].Split(' ', '/') is [var done, var count, var downloaded, var total] &&
 				int.TryParse(done, out var fragment) && int.TryParse(count, out var fragments) && fragments > 0)
 			{
-				progress.Report(new DownloadProgress(Math.Clamp((double)fragment / fragments, 0, 1), Number(speed), Number(downloaded), Number(total)));
+				lastReport = Stopwatch.GetTimestamp();
+				var bytes = Number(downloaded);
+				progress.Report(new DownloadProgress(Math.Clamp((double)fragment / fragments, 0, 1), speedMeter.Next(bytes), bytes, Number(total)));
 			}
 
 			static double? Number(string text) => double.TryParse(text, CultureInfo.InvariantCulture, out var number) ? number : null;

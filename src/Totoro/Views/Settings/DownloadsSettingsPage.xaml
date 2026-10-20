@@ -16,7 +16,7 @@
             Spacing="4">
             <settings:SettingsHeader Title="Downloads" />
 
-            <toolkit:SettingsCard Description="Episodes go into a folder for each anime, named with its AniList and MyAnimeList ids." Header="Download folder">
+            <toolkit:SettingsCard Description="Episodes go into a folder for each anime, named with its title." Header="Download folder">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE896;" />
                 </toolkit:SettingsCard.HeaderIcon>

@@ -51,10 +51,12 @@ public sealed record DownloadInfo(
 	int? Percent,
 	[property: Description("What it's doing, or why it failed.")]
 	string Message,
+	[property: Description("The provider it's from and what downloads it (HTTP, yt-dlp or the torrent streamer), e.g. \"AnimePahe · yt-dlp\".")]
+	string Source,
 	[property: Description("The episode's file once downloaded; until then the anime's folder.")]
 	string Path);
 
-[Description("Where episodes are downloaded to (a folder for each anime, named with its AniList and MyAnimeList ids), and the downloads.")]
+[Description("Where episodes are downloaded to (a folder for each anime, named with its title), and the downloads.")]
 public sealed record Downloads(string Folder, IReadOnlyList<DownloadInfo> Items);
 
 /// <summary>Agent tools for watching and downloading anime (see <see cref="WatchService"/> and <see cref="DownloadService"/>).</summary>
@@ -245,7 +247,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 
 	[AgentTool("download_from_provider")]
 	[Description("Downloads an episode of a show on any anime provider (from search_provider and get_provider_episodes) to the download folder, in the background. " +
-				 "Give the anime it is (in the database) so its folder is named with its ids and the episode numbered as the anime's.")]
+				 "Give the anime it is (in the database) so its ids are kept with it and the episode numbered as the anime's.")]
 	public async Task<DownloadInfo> DownloadFromProviderAsync(
 		string provider,
 		string showId,
@@ -257,12 +259,12 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 		[Description("How the provider numbers the show's episodes, as for play_from_provider.")] EpisodeNumbering? numbering = null)
 	{
 		var anime = animeId is { } id ? await lookup.GetAsync(id) : null;
-		var (_, _, server, number) = await FindStreamAsync(provider, showId, episodeId, episodeNumber, stream, anime, numbering);
-		return ToInfo(await downloads.DownloadAsync(anime, anime?.Title ?? showTitle, number, server));
+		var (source, _, server, number) = await FindStreamAsync(provider, showId, episodeId, episodeNumber, stream, anime, numbering);
+		return ToInfo(downloads.Download(anime, anime?.Title ?? showTitle, number, server, source.Name));
 	}
 
 	[AgentTool("get_downloads")]
-	[Description("The episodes downloaded or being downloaded since the app started, newest first, and the folder they go to.")]
+	[Description("The episodes downloaded or being downloaded since the app started, in the order they download, and the folder they go to.")]
 	public Downloads GetDownloads() => new(preferences.DownloadFolder, [.. downloads.Downloads.Select(ToInfo)]);
 
 	[AgentTool("cancel_download")]
@@ -276,7 +278,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	}
 
 	private static DownloadInfo ToInfo(DownloadItem item) =>
-		new(item.Title, item.State, item.Progress < 0 ? null : (int)(item.Progress * 100), item.Message, item.FilePath.Length > 0 ? item.FilePath : item.Folder);
+		new(item.Title, item.State, item.Progress < 0 ? null : (int)(item.Progress * 100), item.Message, item.Source, item.FilePath.Length > 0 ? item.FilePath : item.Folder);
 
 	/// <summary>A stream of a provider's episode, and which of the anime's episodes it is (the provider's number without an anime).</summary>
 	private async Task<(IAnimeProvider Provider, ProviderEpisode Episode, VideoServer Server, int Number)> FindStreamAsync(

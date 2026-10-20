@@ -9,10 +9,7 @@ public class DownloadTests
 	[Fact]
 	public void Names_RoundTrip()
 	{
-		var folder = DownloadNames.Folder("Re:Zero [Director's Cut]?", 21355, 31240);
-		Assert.Equal("Re Zero Director's Cut [anilist-21355] [mal-31240]", folder);
-		Assert.Equal((21355L, 31240L), DownloadNames.ParseIds(folder));
-		Assert.Equal((null, 52991L), DownloadNames.ParseIds(DownloadNames.Folder("Frieren", null, 52991)));
+		Assert.Equal("Re Zero [Director's Cut]", DownloadNames.Folder("Re:Zero [Director's Cut]?"));
 
 		Assert.Equal(5, DownloadNames.ParseEpisode(DownloadNames.Episode("Frieren", 5) + ".mkv"));
 		Assert.Equal(112, DownloadNames.ParseEpisode("One Piece - 112.mp4"));
@@ -29,5 +26,17 @@ public class DownloadTests
 					 DownloadService.Describe(new DownloadProgress(0.25, 6.0 * mb, 120.0 * mb, 480.0 * mb)));
 		Assert.Equal($"{3.0:0.0} MB", DownloadService.Describe(new DownloadProgress(-1, null, 3.0 * mb)));
 		Assert.Equal("Downloading…", DownloadService.Describe(new DownloadProgress(-1, null)));
+	}
+
+	[Fact]
+	public async Task SpeedMeter_MeasuresSinceTheFirstSample()
+	{
+		var meter = new SpeedMeter();
+		Assert.Null(meter.Next(0));
+		await Task.Delay(500);
+		Assert.InRange(meter.Next(1000)!.Value, 1000, 2100);
+		// Started over: nothing to measure from yet.
+		Assert.Null(meter.Next(10));
+		Assert.Null(meter.Next(null));
 	}
 }

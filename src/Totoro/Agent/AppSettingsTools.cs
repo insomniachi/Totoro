@@ -36,7 +36,7 @@ public sealed record AppSettings(
 	[property: Description("The page the app opens on; one of startupPages.")]
 	string StartupPage,
 	IReadOnlyList<string> StartupPages,
-	[property: Description("Where episodes are downloaded to, a folder for each anime named with its AniList and MyAnimeList ids.")]
+	[property: Description("Where episodes are downloaded to, a folder for each anime named with its title.")]
 	string DownloadFolder,
 	[property: Description("yt-dlp.exe, which downloads HLS streams; empty when it's found on the PATH.")]
 	string YtDlpPath);

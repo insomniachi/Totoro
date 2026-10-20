@@ -21,7 +21,7 @@
             <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Downloads" />
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Episodes go into a folder for each anime, named with its AniList and MyAnimeList ids. Right-click an episode in an anime's details to download it, or download from the Watch page. The download folder is in Settings."
+                Text="Episodes go into a folder for each anime, named with its title. Right-click an episode in an anime's details to download it, or download from the Watch page. The download folder is in Settings."
                 TextWrapping="Wrap" />
         </StackPanel>
 
@@ -64,6 +64,11 @@
                                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                                 Text="{x:Bind Title}"
                                 TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind Source, Mode=OneWay}"
+                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Source), Mode=OneWay}" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind Message, Mode=OneWay}"

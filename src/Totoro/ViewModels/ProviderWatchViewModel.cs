@@ -330,8 +330,8 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	}
 
 	/// <summary>
-	/// Downloads the stream in the background (the Downloads page shows how it goes): as the tracked anime's episode, in a
-	/// folder named with its ids, or untracked as the show's.
+	/// Downloads the stream in the background (the Downloads page shows how it goes): as the tracked anime's episode, with
+	/// its ids, or untracked as the show's.
 	/// </summary>
 	[RelayCommand(CanExecute = nameof(CanPlay), AllowConcurrentExecutions = true)]
 	private async Task DownloadAsync()
@@ -341,12 +341,13 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 			return;
 		}
 
+		var provider = Provider?.Name ?? "";
 		if (Track && SelectedAnime is { } tracked)
 		{
-			await _downloads.DownloadAsync(tracked, tracked.Title, await AnimeEpisodeAsync(tracked, episode), stream);
+			_downloads.Download(tracked, tracked.Title, await AnimeEpisodeAsync(tracked, episode), stream, provider);
 			return;
 		}
 
-		await _downloads.DownloadAsync(null, show.Title, (int)episode.Episode.Number, stream);
+		_downloads.Download(null, show.Title, (int)episode.Episode.Number, stream, provider);
 	}
 }
