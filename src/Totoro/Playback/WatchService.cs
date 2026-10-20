@@ -1065,7 +1065,7 @@ public sealed partial class WatchService(
 			return player;
 		}
 
-		Show(PlaybackStatusKind.Error, $"{player.Name} wasn't found. Choose where it's installed.");
+		Show(PlaybackStatusKind.Error, $"{player.Name} wasn't found. Download it, or choose where it's installed.");
 		if (moduleSettings.FirstOrDefault(x => x.Descriptor.Id == player.Id) is { } settings && await dialogs.EditSettingsAsync(settings) &&
 			player.IsAvailable())
 		{

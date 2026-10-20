@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
+using Totoro.Core;
 using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Media;
@@ -26,13 +28,27 @@ internal class MpvModule : IModule<Settings>
 		services.AddModuleSettings(this);
 		// One player app-wide: it owns the mpv process, so a second Play replaces what's playing.
 		services.AddKeyedSingleton<IMediaPlayer, MpvMediaPlayer>(Id);
+		services.AddSingleton<MpvInstaller>();
+		services.AddAgentTools<MpvTools>();
 	}
 }
 
 public sealed class Settings : DataContainerConfig
 {
+	// The settings are made by the JSON serializer, not the container: the installer is found when they're shown.
+	// Its description is the build installed, once there is one (see MpvInstaller).
+	[DisplayName("Mpv Build")]
+	[Description("mpv, FFmpeg and yt-dlp")]
+	[Editor(DataContainerEditors.Button, "")]
+	[JsonIgnore]
+	public SettingsAction Download => Locator.GetRequiredService<MpvInstaller>().Action;
+
+	[DisplayName("Add to Open with")]
+	[Description("Offer the mpv downloaded here in Windows' Open with menu for videos.")]
+	public bool AddToOpenWith { get; set; } = true;
+
 	[DisplayName("Executable")]
-	[Description("mpv.exe. Found automatically when mpv is installed; set it here otherwise.")]
+	[Description("Your own mpv.exe. Leave it empty to use the one downloaded here, or else one that's installed.")]
 	[Editor(DataContainerEditors.FileBrowser, "")]
 	public string FileName { get; set; } = "";
 

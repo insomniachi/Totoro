@@ -61,6 +61,11 @@ public sealed partial class DataContainerEditor : UserControl
 			card.HeaderIcon = icon;
 		}
 
+		if (editor is Button button && property.Value is SettingsAction action)
+		{
+			FollowAction(card, button, action, property.Description);
+		}
+
 		return card;
 	}
 
@@ -72,6 +77,7 @@ public sealed partial class DataContainerEditor : UserControl
 			DataContainerEditors.NumberBox => CreateNumberBox(property),
 			DataContainerEditors.ComboBox => CreateComboBox(property),
 			DataContainerEditors.FileBrowser => CreateFileBrowser(property),
+			DataContainerEditors.Button when property.Value is SettingsAction action => new Button { MinWidth = 120, Command = action.Command },
 			_ => CreateTextBox(property),
 		};
 	}
@@ -165,6 +171,35 @@ public sealed partial class DataContainerEditor : UserControl
 		grid.Children.Add(textBox);
 		grid.Children.Add(browse);
 		return grid;
+	}
+
+	/// <summary>Shows the action's label, busy state and description now, and again whenever they change while it's on screen.</summary>
+	private static void FollowAction(SettingsCard card, Button button, SettingsAction action, string? description)
+	{
+		var ring = new ProgressRing { Width = 16, Height = 16, IsActive = true };
+
+		void Show()
+		{
+			button.Content = action.IsBusy ? ring : action.Label;
+			button.IsEnabled = !action.IsBusy;
+			var text = action.Description is { Length: > 0 } own ? own : description;
+			if (!string.IsNullOrEmpty(text))
+			{
+				card.Description = text;
+			}
+		}
+
+		void OnChanged(object? sender, PropertyChangedEventArgs e) => Show();
+
+		Show();
+		// Subscribed only while loaded, so a long-lived action doesn't keep a discarded editor alive.
+		card.Loaded += (_, _) =>
+		{
+			action.PropertyChanged -= OnChanged;
+			action.PropertyChanged += OnChanged;
+			Show();
+		};
+		card.Unloaded += (_, _) => action.PropertyChanged -= OnChanged;
 	}
 
 	/// <summary>Shows the property's value now, and again whenever it changes while the editor is on screen.</summary>

@@ -211,7 +211,7 @@ public sealed class AppSettingsTools(
 		return
 		[
 			.. moduleSettings.Where(x => module is null || x.Descriptor.Name.Equals(module, StringComparison.OrdinalIgnoreCase))
-							 .Select(x => new ModuleSettingsInfo(x.Descriptor.Name, [.. x.Config.ToDataContainer().Select(Describe)]))
+							 .Select(x => new ModuleSettingsInfo(x.Descriptor.Name, [.. Editable(x.Config).Select(Describe)]))
 							 .Where(x => x.Settings.Count > 0)
 		];
 	}
@@ -227,12 +227,15 @@ public sealed class AppSettingsTools(
 			?? throw new AgentToolException($"There's no module called {module}.");
 		var property = settings.Config.GetType().GetProperty(setting, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
 			?? settings.Config.GetType().GetProperties().FirstOrDefault(x => settings.Config.ToDataContainer().GetProperty(x.Name)?.DisplayName?
-																						.Equals(setting, StringComparison.OrdinalIgnoreCase) == true)
-			?? throw new AgentToolException($"{settings.Descriptor.Name} has no setting called {setting}.");
+																						.Equals(setting, StringComparison.OrdinalIgnoreCase) == true);
+		if (property is not { CanWrite: true })
+		{
+			throw new AgentToolException($"{settings.Descriptor.Name} has no setting called {setting}.");
+		}
 
 		property.SetValue(settings.Config, ParseValue(value, property.PropertyType));
 		settings.Save();
-		return new ModuleSettingsInfo(settings.Descriptor.Name, [.. settings.Config.ToDataContainer().Select(Describe)]);
+		return new ModuleSettingsInfo(settings.Descriptor.Name, [.. Editable(settings.Config).Select(Describe)]);
 	}
 
 	[AgentTool("get_accounts")]
@@ -284,6 +287,10 @@ public sealed class AppSettingsTools(
 		return accounts.FirstOrDefault(x => x.Name.Equals(service, StringComparison.OrdinalIgnoreCase))
 			?? throw new AgentToolException($"There's no account for {service}; they're {string.Join(", ", accounts.Select(x => x.Name))}.");
 	}
+
+	/// <summary>The settings that hold a value: not the buttons for actions, which have agent tools of their own.</summary>
+	private static IEnumerable<DataContainerProperty> Editable(DataContainerConfig config) =>
+		config.ToDataContainer().Where(x => x.EditorType != DataContainerEditors.Button);
 
 	private static ModuleSettingInfo Describe(DataContainerProperty property)
 	{
