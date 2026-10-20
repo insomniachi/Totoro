@@ -29,7 +29,7 @@
                 covers the difference.
             -->
             <Border Grid.RowSpan="2" CornerRadius="8,8,12,12">
-                <Image Source="{x:Bind Anime.Image, Mode=OneWay}" Stretch="UniformToFill" />
+                <Image x:Name="PosterImage" Source="{x:Bind Anime.Image, Mode=OneWay}" Stretch="UniformToFill" />
             </Border>
 
             <Border

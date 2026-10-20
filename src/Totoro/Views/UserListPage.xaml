@@ -313,6 +313,7 @@
                                             <overlays:NewEpisodesOverlay />
                                             <overlays:AiringStatusOverlay />
                                             <overlays:HoverEffectsBehavior />
+                                            <overlays:ImageZoomBlurBehavior />
                                         </Interactivity:Interaction.Behaviors>
                                     </controls:AnimeCard>
                                 </DataTemplate>
