@@ -158,7 +158,17 @@ public sealed class AnimeTools(
 	private async Task<List<AnimeModel>> GetListAsync()
 	{
 		var tracker = trackers.CreateDefault() ?? throw new AgentToolException("No anime database is set up.");
+		ThrowIfSignedOut(tracking);
 		return await tracker.GetUserListAsync(CancellationToken.None);
+	}
+
+	/// <summary>Signed out, the list comes back empty: says so, rather than letting the agent think the list is empty.</summary>
+	internal static void ThrowIfSignedOut(AnimeTrackingService tracking)
+	{
+		if (tracking.GetSignedOutListAccount() is { } account)
+		{
+			throw new AgentToolException($"The user isn't signed in to {account.Name}, so their list can't be read. Ask them to sign in under Settings > Accounts.");
+		}
 	}
 
 	private static IEnumerable<AnimeModel> Filter(IEnumerable<AnimeModel> list, ListItemStatus? status, string? genre, AnimeMediaFormat? format, int? fromYear, int? toYear)

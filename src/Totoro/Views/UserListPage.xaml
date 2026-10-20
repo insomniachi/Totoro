@@ -42,6 +42,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -100,8 +101,15 @@
             As on the search page: the filters in a panel right of the cards, on a raised surface, scrolling on their own.
             16 left of it plus the cards' 16 margin: the same 32 gap as between the cards.
         -->
-        <Border
+        <local:ListLoadInfoBars
             Grid.Row="1"
+            Grid.ColumnSpan="2"
+            Margin="16,0,16,8"
+            State="{x:Bind ViewModel.LoadState}"
+            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.LoadState.HasMessage), Mode=OneWay}" />
+
+        <Border
+            Grid.Row="2"
             Grid.Column="1"
             Width="320"
             Margin="16,8,16,0"
@@ -264,7 +272,7 @@
         </Border>
 
         <toolkit:SwitchPresenter
-            Grid.Row="1"
+            Grid.Row="2"
             TargetType="x:Boolean"
             Value="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
             <toolkit:Case Value="True">

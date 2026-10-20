@@ -108,7 +108,8 @@ public partial class App : Application
 						.AddAgentTools<RelationsTools>()
 						.AddAgentTools<UpdateTools>()
 						.AddAgentTools<AnimePluginTools>()
-						.AddAgentTools<PluginTools>();
+						.AddAgentTools<PluginTools>()
+						.AddAgentTools<ReleaseScheduleTools>();
 				// The assistant: a chat that calls those tools (see ChatService).
 				services.AddSingleton<ChatViewModel>();
 
@@ -129,6 +130,10 @@ public partial class App : Application
 				services.AddMainNavigationItem<AdvancedSearchPage, AdvancedSearchViewModel>("Search", x =>
 				{
 					x.AnimatedIcon = Icons.SearchAnimated;
+				});
+				services.AddMainNavigationItem<ReleaseSchedulePage, ReleaseScheduleViewModel>("Schedule", x =>
+				{
+					x.AnimatedIcon = Icons.ScheduleAnimated;
 				});
 				services.AddMainNavigationItem<ProviderWatchPage, ProviderWatchViewModel>("Watch", x =>
 				{

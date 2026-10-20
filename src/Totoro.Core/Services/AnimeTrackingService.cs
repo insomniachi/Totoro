@@ -97,6 +97,15 @@ public sealed class AnimeTrackingService(
 		}
 	}
 
+	/// <summary>
+	/// The account of the selected database if the user isn't signed in to it, so has no list there (its tracker returns an
+	/// empty one); null if they are, or there's no database.
+	/// </summary>
+	public IAccount? GetSignedOutListAccount()
+	{
+		return trackers.CreateDefault() is { } tracker ? accounts.FirstOrDefault(x => x.Id == tracker.Id && !x.IsSignedIn) : null;
+	}
+
 	private bool IsSignedIn(Guid moduleId) => accounts.Any(x => x.Id == moduleId && x.IsSignedIn);
 
 	/// <summary>The tracker of the database the anime came from; its id means nothing to the others.</summary>

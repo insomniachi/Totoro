@@ -42,6 +42,16 @@ public static class Icons
 		FallbackIconSource = new SymbolIconSource { Symbol = Symbol.Play },
 	};
 
+	/// <summary>
+	/// A calendar, its rings lifting as the pointer comes over, and when clicked squashing and springing back as its rings
+	/// bounce and its dates pop back in a wave.
+	/// </summary>
+	public static AnimatedIcon ScheduleAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedScheduleVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "" },
+	};
+
 	// The rest animate when clicked, not on hover (our own, from their Lottie files in AnimatedVisuals).
 
 	/// <summary>A download arrow dropping into its tray, which gives under it, as a new arrow slides in.</summary>

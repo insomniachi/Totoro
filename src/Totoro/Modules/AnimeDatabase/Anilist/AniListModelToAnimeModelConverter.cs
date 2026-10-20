@@ -43,6 +43,10 @@ public static partial class AniListModelToAnimeModelConverter
             Tracking = ConvertTracking(media.MediaListEntry),
             NextEpisodeAt = ConvertToExactTime(media.NextAiringEpisode?.TimeUntilAiring),
             AiredEpisodes = media.NextAiringEpisode?.Episode - 1 ?? 0,
+            AiringSchedule = media.AiringSchedule?.Nodes?.Where(x => x is { Episode: not null, AiringAt: not null })
+                                  .DistinctBy(x => x.Episode)
+                                  .ToDictionary(x => x.Episode!.Value, x => DateTimeOffset.FromUnixTimeSeconds(x.AiringAt!.Value).LocalDateTime)
+                             ?? new Dictionary<int, DateTime>(),
             EndDate = ConvertDate(media.EndDate),
             Season = GetSeason(media.Season, media.SeasonYear),
             ServiceId = AnilistModule.Id,

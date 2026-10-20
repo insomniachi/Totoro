@@ -24,6 +24,8 @@ public partial class AnimeModel : ObservableObject
 	public int Popularity { get; set; }
 	public DateTime? NextEpisodeAt { get; set; }
 	public int AiredEpisodes { get; set; }
+	/// <summary>When each episode airs (or aired), in local time, by number, if the database knows (AniList does); else empty.</summary>
+	public IReadOnlyDictionary<int, DateTime> AiringSchedule { get; set; } = new Dictionary<int, DateTime>();
 	/// <summary>When it finished (or will finish) airing, if known: the day, in its own time zone.</summary>
 	public DateTime? EndDate { get; set; }
 	public Season? Season { get; set; }

@@ -26,9 +26,11 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 	// The database the list is from, once loaded.
 	private Guid _trackerId;
 
-	public UserListViewModel(IFactory<IAnimeTracker, Guid> factory)
+	public UserListViewModel(IFactory<IAnimeTracker, Guid> factory, AnimeTrackingService tracking)
 	{
 		_factory = factory;
+		// Busy while it loads, retries too, for the placeholder cards.
+		LoadState = new ListLoadState(tracking, () => RunBusyAsync(LoadListAsync), "to see your anime list");
 		Sort = SortOptions[0];
 		foreach (var filter in new INotifyPropertyChanged[] { TitleFilter, GenreFilter, SeasonFilter })
 		{
@@ -124,7 +126,12 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 		_comparer.OnNext(UserListQuery.Comparer(Sort?.Value ?? ListSort.LastUpdated, SortDescending, listOrder));
 	}
 
-	protected override async Task OnNavigatedToInternalAsync()
+	/// <summary>Whether the user is signed in, and whether the list loaded; for the page's InfoBars.</summary>
+	public ListLoadState LoadState { get; }
+
+	protected override Task OnNavigatedToInternalAsync() => LoadState.LoadAsync();
+
+	private async Task LoadListAsync()
 	{
 		var tracker = _factory.CreateDefault();
 

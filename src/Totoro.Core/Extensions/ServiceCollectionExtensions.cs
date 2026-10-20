@@ -86,6 +86,7 @@ public static class ServiceCollectionExtensions
 							   .AddSingleton<IAnimeSettingsStore, AnimeSettingsStore>()
 							   .AddSingleton<Services.AnimeTrackingService>()
 							   .AddSingleton<Services.AnimeSongService>()
+							   .AddSingleton<Services.ReleaseScheduleService>()
 							   .AddSingleton<Services.ChatService>()
 							   .AddSingleton<Services.UpdateService>()
 							   .AddSingleton<Plugins.IPluginManager, Plugins.PluginManager>()
