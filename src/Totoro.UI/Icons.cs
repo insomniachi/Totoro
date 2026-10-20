@@ -33,13 +33,36 @@ public static class Icons
 	};
 
 	/// <summary>
-	/// A play triangle nudging forward as the pointer comes over, and pressed in when clicked (our own, from its Lottie file
-	/// in AnimatedVisuals).
+	/// A play triangle nudging forward as the pointer comes over, and when clicked punching forward as a ring bursts out
+	/// from it (our own, from its Lottie file in AnimatedVisuals).
 	/// </summary>
 	public static AnimatedIcon PlayAnimated => new()
 	{
 		Source = new AnimatedVisuals.AnimatedPlayVisualSource(),
 		FallbackIconSource = new SymbolIconSource { Symbol = Symbol.Play },
+	};
+
+	// The rest animate when clicked, not on hover (our own, from their Lottie files in AnimatedVisuals).
+
+	/// <summary>A download arrow dropping into its tray, which gives under it, as a new arrow slides in.</summary>
+	public static AnimatedIcon DownloadAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedDownloadVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "" },
+	};
+
+	/// <summary>A plug jolting up into its socket, with sparks flying from its prongs.</summary>
+	public static AnimatedIcon PluginsAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedPluginsVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "" },
+	};
+
+	/// <summary>A test tube shaking, bubbles rising out of it.</summary>
+	public static AnimatedIcon TestAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedTestVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
 	/// <summary>The gear turning, as on WinUI's own Settings menu item.</summary>

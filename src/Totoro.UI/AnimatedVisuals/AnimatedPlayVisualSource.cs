@@ -7,7 +7,7 @@
 //           LottieGen -GenerateColorBindings -Language CSharp -Namespace Totoro.UI.AnimatedVisuals -Public -WinUIVersion 3.0 -InputFile AnimatedPlayVisualSource.json
 //       
 //       Input file:
-//           AnimatedPlayVisualSource.json (18165 bytes created 23:27+05:30 Oct 18 2026)
+//           AnimatedPlayVisualSource.json (28488 bytes created 23:27+05:30 Oct 18 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -19,25 +19,25 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |    33 |
+// | All CompositionObjects   |    49 |
 // |--------------------------+-------|
-// | Expression animators     |     2 |
-// | KeyFrame animators       |     2 |
-// | Reference parameters     |     2 |
-// | Expression operations    |     4 |
+// | Expression animators     |     3 |
+// | KeyFrame animators       |     5 |
+// | Reference parameters     |     4 |
+// | Expression operations    |     8 |
 // |--------------------------+-------|
-// | Animated brushes         |     1 |
+// | Animated brushes         |     2 |
 // | Animated gradient stops  |     - |
-// | ExpressionAnimations     |     2 |
+// | ExpressionAnimations     |     3 |
 // | PathKeyFrameAnimations   |     - |
 // |--------------------------+-------|
 // | ContainerVisuals         |     1 |
 // | ShapeVisuals             |     1 |
 // |--------------------------+-------|
 // | ContainerShapes          |     1 |
-// | CompositionSpriteShapes  |     3 |
+// | CompositionSpriteShapes  |     4 |
 // |--------------------------+-------|
-// | Brushes                  |     1 |
+// | Brushes                  |     2 |
 // | Gradient stops           |     - |
 // | CompositionVisualSurface |     - |
 // ------------------------------------
@@ -51,26 +51,26 @@ namespace Totoro.UI.AnimatedVisuals
 {
     // Name:        Play
     // Frame rate:  60 fps
-    // Frame count: 80
-    // Duration:    1333.3 mS
+    // Frame count: 112
+    // Duration:    1866.7 mS
     // _____________________________________________________________________________________________
     // |           Marker           |           Constant           | Frame |   mS   |   Progress   |
     // |____________________________|______________________________|_______|________|______________|
     // | Normal                     | M_Normal                     |     0 |    0.0 | 0F           |
     // | NormalToPointerOver_Start  | M_NormalToPointerOver_Start  |     0 |    0.0 | 0F           |
-    // | PointerOver                | M_PointerOver                |    15 |  250.0 | 0.188124999F |
-    // | NormalToPointerOver_End    | M_NormalToPointerOver_End    |    15 |  250.0 | 0.188124999F |
-    // | PointerOverToNormal_Start  | M_PointerOverToNormal_Start  |    20 |  333.3 | 0.250625014F |
-    // | PointerOverToNormal_End    | M_PointerOverToNormal_End    |    35 |  583.3 | 0.438125014F |
-    // | PointerOverToPressed_Start | M_PointerOverToPressed_Start |    40 |  666.7 | 0.500625014F |
-    // | NormalToPressed_Start      | M_NormalToPressed_Start      |    40 |  666.7 | 0.500625014F |
-    // | Pressed                    | M_Pressed                    |    46 |  766.7 | 0.575625002F |
-    // | PointerOverToPressed_End   | M_PointerOverToPressed_End   |    46 |  766.7 | 0.575625002F |
-    // | NormalToPressed_End        | M_NormalToPressed_End        |    46 |  766.7 | 0.575625002F |
-    // | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    50 |  833.3 | 0.625625014F |
-    // | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    59 |  983.3 | 0.738125026F |
-    // | PressedToNormal_Start      | M_PressedToNormal_Start      |    64 | 1066.7 | 0.800625026F |
-    // | PressedToNormal_End        | M_PressedToNormal_End        |    79 | 1316.7 | 0.988125026F |
+    // | PointerOver                | M_PointerOver                |    15 |  250.0 | 0.134375006F |
+    // | NormalToPointerOver_End    | M_NormalToPointerOver_End    |    15 |  250.0 | 0.134375006F |
+    // | PointerOverToNormal_Start  | M_PointerOverToNormal_Start  |    20 |  333.3 | 0.179017857F |
+    // | PointerOverToNormal_End    | M_PointerOverToNormal_End    |    35 |  583.3 | 0.312946439F |
+    // | PointerOverToPressed_Start | M_PointerOverToPressed_Start |    40 |  666.7 | 0.357589275F |
+    // | NormalToPressed_Start      | M_NormalToPressed_Start      |    40 |  666.7 | 0.357589275F |
+    // | Pressed                    | M_Pressed                    |    46 |  766.7 | 0.411160707F |
+    // | PointerOverToPressed_End   | M_PointerOverToPressed_End   |    46 |  766.7 | 0.411160707F |
+    // | NormalToPressed_End        | M_NormalToPressed_End        |    46 |  766.7 | 0.411160707F |
+    // | PressedToPointerOver_Start | M_PressedToPointerOver_Start |    50 |  833.3 | 0.446875006F |
+    // | PressedToPointerOver_End   | M_PressedToPointerOver_End   |    80 | 1333.3 | 0.71473217F  |
+    // | PressedToNormal_Start      | M_PressedToNormal_Start      |    81 | 1350.0 | 0.723660707F |
+    // | PressedToNormal_End        | M_PressedToNormal_End        |   111 | 1850.0 | 0.991517842F |
     // ---------------------------------------------------------------------------------------------
     // ___________________________________________________________
     // | Theme property |   Accessor   | Type  |  Default value  |
@@ -81,8 +81,8 @@ namespace Totoro.UI.AnimatedVisuals
         : Microsoft.UI.Xaml.Controls.IAnimatedVisualSource
         , Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2
     {
-        // Animation duration: 1.333 seconds.
-        internal const long c_durationTicks = 13333333;
+        // Animation duration: 1.867 seconds.
+        internal const long c_durationTicks = 18666666;
 
         // Marker: Normal.
         internal const float M_Normal = 0F;
@@ -91,43 +91,43 @@ namespace Totoro.UI.AnimatedVisuals
         internal const float M_NormalToPointerOver_Start = 0F;
 
         // Marker: PointerOver.
-        internal const float M_PointerOver = 0.188124999F;
+        internal const float M_PointerOver = 0.134375006F;
 
         // Marker: NormalToPointerOver_End.
-        internal const float M_NormalToPointerOver_End = 0.188124999F;
+        internal const float M_NormalToPointerOver_End = 0.134375006F;
 
         // Marker: PointerOverToNormal_Start.
-        internal const float M_PointerOverToNormal_Start = 0.250625014F;
+        internal const float M_PointerOverToNormal_Start = 0.179017857F;
 
         // Marker: PointerOverToNormal_End.
-        internal const float M_PointerOverToNormal_End = 0.438125014F;
+        internal const float M_PointerOverToNormal_End = 0.312946439F;
 
         // Marker: PointerOverToPressed_Start.
-        internal const float M_PointerOverToPressed_Start = 0.500625014F;
+        internal const float M_PointerOverToPressed_Start = 0.357589275F;
 
         // Marker: NormalToPressed_Start.
-        internal const float M_NormalToPressed_Start = 0.500625014F;
+        internal const float M_NormalToPressed_Start = 0.357589275F;
 
         // Marker: Pressed.
-        internal const float M_Pressed = 0.575625002F;
+        internal const float M_Pressed = 0.411160707F;
 
         // Marker: PointerOverToPressed_End.
-        internal const float M_PointerOverToPressed_End = 0.575625002F;
+        internal const float M_PointerOverToPressed_End = 0.411160707F;
 
         // Marker: NormalToPressed_End.
-        internal const float M_NormalToPressed_End = 0.575625002F;
+        internal const float M_NormalToPressed_End = 0.411160707F;
 
         // Marker: PressedToPointerOver_Start.
-        internal const float M_PressedToPointerOver_Start = 0.625625014F;
+        internal const float M_PressedToPointerOver_Start = 0.446875006F;
 
         // Marker: PressedToPointerOver_End.
-        internal const float M_PressedToPointerOver_End = 0.738125026F;
+        internal const float M_PressedToPointerOver_End = 0.71473217F;
 
         // Marker: PressedToNormal_Start.
-        internal const float M_PressedToNormal_Start = 0.800625026F;
+        internal const float M_PressedToNormal_Start = 0.723660707F;
 
         // Marker: PressedToNormal_End.
-        internal const float M_PressedToNormal_End = 0.988125026F;
+        internal const float M_PressedToNormal_End = 0.991517842F;
 
         // Theme property: Foreground.
         internal static readonly Color c_themeForeground = Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF);
@@ -184,7 +184,7 @@ namespace Totoro.UI.AnimatedVisuals
         /// <summary>
         /// Gets the number of frames in the animation.
         /// </summary>
-        public double FrameCount => 80d;
+        public double FrameCount => 112d;
 
         /// <summary>
         /// Gets the frame rate of the animation.
@@ -194,7 +194,7 @@ namespace Totoro.UI.AnimatedVisuals
         /// <summary>
         /// Gets the duration of the animation.
         /// </summary>
-        public TimeSpan Duration => TimeSpan.FromTicks(13333333);
+        public TimeSpan Duration => TimeSpan.FromTicks(18666666);
 
         /// <summary>
         /// Converts a zero-based frame number to the corresponding progress value denoting the
@@ -202,7 +202,7 @@ namespace Totoro.UI.AnimatedVisuals
         /// </summary>
         public double FrameToProgress(double frameNumber)
         {
-            return frameNumber / 80d;
+            return frameNumber / 112d;
         }
 
         /// <summary>
@@ -213,19 +213,19 @@ namespace Totoro.UI.AnimatedVisuals
             {
                 { "Normal", 0d },
                 { "NormalToPointerOver_Start", 0d },
-                { "PointerOver", 0.188125 },
-                { "NormalToPointerOver_End", 0.188125 },
-                { "PointerOverToNormal_Start", 0.250625 },
-                { "PointerOverToNormal_End", 0.438125 },
-                { "PointerOverToPressed_Start", 0.500625 },
-                { "NormalToPressed_Start", 0.500625 },
-                { "Pressed", 0.575625 },
-                { "PointerOverToPressed_End", 0.575625 },
-                { "NormalToPressed_End", 0.575625 },
-                { "PressedToPointerOver_Start", 0.625625 },
-                { "PressedToPointerOver_End", 0.738125 },
-                { "PressedToNormal_Start", 0.800625 },
-                { "PressedToNormal_End", 0.988125 },
+                { "PointerOver", 0.134375 },
+                { "NormalToPointerOver_End", 0.134375 },
+                { "PointerOverToNormal_Start", 0.179017857142857 },
+                { "PointerOverToNormal_End", 0.312946428571429 },
+                { "PointerOverToPressed_Start", 0.357589285714286 },
+                { "NormalToPressed_Start", 0.357589285714286 },
+                { "Pressed", 0.411160714285714 },
+                { "PointerOverToPressed_End", 0.411160714285714 },
+                { "NormalToPressed_End", 0.411160714285714 },
+                { "PressedToPointerOver_Start", 0.446875 },
+                { "PressedToPointerOver_End", 0.714732142857143 },
+                { "PressedToNormal_Start", 0.723660714285714 },
+                { "PressedToNormal_End", 0.991517857142857 },
             };
 
         /// <summary>
@@ -261,16 +261,20 @@ namespace Totoro.UI.AnimatedVisuals
             : Microsoft.UI.Xaml.Controls.IAnimatedVisual
             , Microsoft.UI.Xaml.Controls.IAnimatedVisual2
         {
-            const long c_durationTicks = 13333333;
+            const long c_durationTicks = 18666666;
             readonly Compositor _c;
             readonly ExpressionAnimation _reusableExpressionAnimation;
             readonly CompositionPropertySet _themeProperties;
             AnimationController _animationController_0;
-            CompositionColorBrush _themeColor_Foreground;
+            CompositionColorBrush _themeColor_Foreground_0;
+            CompositionColorBrush _themeColor_Foreground_1;
             CompositionContainerShape _containerShape;
+            CompositionEllipseGeometry _ellipse_0;
             CompositionRoundedRectangleGeometry _roundedRectangle_28p554x3;
+            CompositionSpriteShape _spriteShape_3;
             ContainerVisual _root;
             CubicBezierEasingFunction _cubicBezierEasingFunction_0;
+            CubicBezierEasingFunction _cubicBezierEasingFunction_1;
             StepEasingFunction _holdThenStepEasingFunction;
 
             void BindProperty(
@@ -286,11 +290,42 @@ namespace Totoro.UI.AnimatedVisuals
                 target.StartAnimation(animatedPropertyName, _reusableExpressionAnimation);
             }
 
+            void BindProperty2(
+                CompositionObject target,
+                string animatedPropertyName,
+                string expression,
+                string referenceParameterName0,
+                CompositionObject referencedObject0,
+                string referenceParameterName1,
+                CompositionObject referencedObject1)
+            {
+                _reusableExpressionAnimation.ClearAllParameters();
+                _reusableExpressionAnimation.Expression = expression;
+                _reusableExpressionAnimation.SetReferenceParameter(referenceParameterName0, referencedObject0);
+                _reusableExpressionAnimation.SetReferenceParameter(referenceParameterName1, referencedObject1);
+                target.StartAnimation(animatedPropertyName, _reusableExpressionAnimation);
+            }
+
+            ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation(float initialProgress, float initialValue, CompositionEasingFunction initialEasingFunction)
+            {
+                var result = _c.CreateScalarKeyFrameAnimation();
+                result.Duration = TimeSpan.FromTicks(c_durationTicks);
+                result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
+                return result;
+            }
+
             Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation(float initialProgress, Vector2 initialValue, CompositionEasingFunction initialEasingFunction)
             {
                 var result = _c.CreateVector2KeyFrameAnimation();
                 result.Duration = TimeSpan.FromTicks(c_durationTicks);
                 result.InsertKeyFrame(initialProgress, initialValue, initialEasingFunction);
+                return result;
+            }
+
+            CompositionSpriteShape CreateSpriteShape(CompositionGeometry geometry, Matrix3x2 transformMatrix)
+            {
+                var result = _c.CreateSpriteShape(geometry);
+                result.TransformMatrix = transformMatrix;
                 return result;
             }
 
@@ -312,11 +347,24 @@ namespace Totoro.UI.AnimatedVisuals
             }
 
             // Color bound to theme property value: Foreground
-            CompositionColorBrush ThemeColor_Foreground()
+            CompositionColorBrush ThemeColor_Foreground_0()
             {
-                if (_themeColor_Foreground != null) { return _themeColor_Foreground; }
-                var result = _themeColor_Foreground = _c.CreateColorBrush();
-                BindProperty(_themeColor_Foreground, "Color", "ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", "_theme", _themeProperties);
+                if (_themeColor_Foreground_0 != null) { return _themeColor_Foreground_0; }
+                var result = _themeColor_Foreground_0 = _c.CreateColorBrush();
+                BindProperty(_themeColor_Foreground_0, "Color", "ColorRGB(_theme.Foreground.W,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", "_theme", _themeProperties);
+                return result;
+            }
+
+            // - Shape tree root for layer: Play
+            // ShapeGroup: Ring Offset:<24, 24>
+            // Color bound to theme property value: Foreground
+            CompositionColorBrush ThemeColor_Foreground_1()
+            {
+                if (_themeColor_Foreground_1 != null) { return _themeColor_Foreground_1; }
+                var result = _themeColor_Foreground_1 = _c.CreateColorBrush();
+                var propertySet = result.Properties;
+                propertySet.InsertScalar("Opacity0", 0F);
+                BindProperty2(_themeColor_Foreground_1, "Color", "ColorRGB(_theme.Foreground.W*my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)", "_theme", _themeProperties, "my", propertySet);
                 return result;
             }
 
@@ -334,6 +382,17 @@ namespace Totoro.UI.AnimatedVisuals
                 shapes.Add(SpriteShape_1());
                 // ShapeGroup: Left edge RotationDegrees:90, Offset:<15, 24>
                 shapes.Add(SpriteShape_2());
+                return result;
+            }
+
+            // - Shape tree root for layer: Play
+            // ShapeGroup: Ring Offset:<24, 24>
+            // Ring.EllipseGeometry
+            CompositionEllipseGeometry Ellipse_0()
+            {
+                if (_ellipse_0 != null) { return _ellipse_0; }
+                var result = _ellipse_0 = _c.CreateEllipseGeometry();
+                result.Radius = new Vector2(0F, 0F);
                 return result;
             }
 
@@ -368,7 +427,7 @@ namespace Totoro.UI.AnimatedVisuals
             {
                 // Offset:<26, 30.5>, Rotation:-30.57900080497319 degrees
                 var geometry = RoundedRectangle_28p554x3();
-                var result = CreateSpriteShape(geometry, new Matrix3x2(0.860928535F, -0.508725882F, 0.508725882F, 0.860928535F, 26F, 30.5F), ThemeColor_Foreground());;
+                var result = CreateSpriteShape(geometry, new Matrix3x2(0.860928535F, -0.508725882F, 0.508725882F, 0.860928535F, 26F, 30.5F), ThemeColor_Foreground_0());;
                 return result;
             }
 
@@ -379,7 +438,7 @@ namespace Totoro.UI.AnimatedVisuals
             {
                 // Offset:<26, 17.5>, Rotation:30.57900080497319 degrees
                 var geometry = RoundedRectangle_28p554x3();
-                var result = CreateSpriteShape(geometry, new Matrix3x2(0.860928535F, 0.508725882F, -0.508725882F, 0.860928535F, 26F, 17.5F), ThemeColor_Foreground());;
+                var result = CreateSpriteShape(geometry, new Matrix3x2(0.860928535F, 0.508725882F, -0.508725882F, 0.860928535F, 26F, 17.5F), ThemeColor_Foreground_0());;
                 return result;
             }
 
@@ -390,7 +449,19 @@ namespace Totoro.UI.AnimatedVisuals
             {
                 // Offset:<15, 24>, Rotation:90 degrees
                 var geometry = RoundedRectangle_29x3();
-                var result = CreateSpriteShape(geometry, new Matrix3x2(0F, 1F, -1F, 0F, 15F, 24F), ThemeColor_Foreground());;
+                var result = CreateSpriteShape(geometry, new Matrix3x2(0F, 1F, -1F, 0F, 15F, 24F), ThemeColor_Foreground_0());;
+                return result;
+            }
+
+            // Shape tree root for layer: Play
+            // Ring
+            CompositionSpriteShape SpriteShape_3()
+            {
+                // Offset:<24, 24>
+                if (_spriteShape_3 != null) { return _spriteShape_3; }
+                var result = _spriteShape_3 = CreateSpriteShape(Ellipse_0(), new Matrix3x2(1F, 0F, 0F, 1F, 24F, 24F));;
+                result.StrokeBrush = ThemeColor_Foreground_1();
+                result.StrokeDashCap = CompositionStrokeCap.Round;
                 return result;
             }
 
@@ -413,13 +484,57 @@ namespace Totoro.UI.AnimatedVisuals
                     : _cubicBezierEasingFunction_0;
             }
 
+            CubicBezierEasingFunction CubicBezierEasingFunction_1()
+            {
+                return (_cubicBezierEasingFunction_1 == null)
+                    ? _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction(new Vector2(0F, 0F), new Vector2(1F, 1F))
+                    : _cubicBezierEasingFunction_1;
+            }
+
+            // Opacity0
+            ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_0()
+            {
+                // Frame 0.
+                var result = CreateScalarKeyFrameAnimation(0F, 0F, HoldThenStepEasingFunction());
+                // Frame 50.
+                result.InsertKeyFrame(0.446428567F, 1F, HoldThenStepEasingFunction());
+                // Frame 72.
+                result.InsertKeyFrame(0.642857134F, 0F, CubicBezierEasingFunction_1());
+                // Frame 81.
+                result.InsertKeyFrame(0.723214269F, 1F, HoldThenStepEasingFunction());
+                // Frame 103.
+                result.InsertKeyFrame(0.919642866F, 0F, CubicBezierEasingFunction_1());
+                return result;
+            }
+
+            // - Shape tree root for layer: Play
+            // ShapeGroup: Ring Offset:<24, 24>
+            // StrokeThickness
+            ScalarKeyFrameAnimation StrokeThicknessScalarAnimation_4_to_1()
+            {
+                // Frame 0.
+                var result = CreateScalarKeyFrameAnimation(0F, 4F, HoldThenStepEasingFunction());
+                // Frame 50.
+                result.InsertKeyFrame(0.446428567F, 4F, HoldThenStepEasingFunction());
+                // Frame 72.
+                result.InsertKeyFrame(0.642857134F, 1F, CubicBezierEasingFunction_0());
+                // Frame 81.
+                result.InsertKeyFrame(0.723214269F, 4F, HoldThenStepEasingFunction());
+                // Frame 103.
+                result.InsertKeyFrame(0.919642866F, 1F, CubicBezierEasingFunction_0());
+                return result;
+            }
+
             // Shape tree root for layer: Play
             ShapeVisual ShapeVisual_0()
             {
                 var result = _c.CreateShapeVisual();
                 result.Size = new Vector2(48F, 48F);
+                var shapes = result.Shapes;
                 // ShapeGroup: Triangle
-                result.Shapes.Add(ContainerShape());
+                shapes.Add(ContainerShape());
+                // ShapeGroup: Ring Offset:<24, 24>
+                shapes.Add(SpriteShape_3());
                 return result;
             }
 
@@ -439,23 +554,46 @@ namespace Totoro.UI.AnimatedVisuals
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(0F, 0F), HoldThenStepEasingFunction());
                 // Frame 15.
-                result.InsertKeyFrame(0.1875F, new Vector2(2F, 0F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.133928567F, new Vector2(2F, 0F), CubicBezierEasingFunction_0());
                 // Frame 20.
-                result.InsertKeyFrame(0.25F, new Vector2(2F, 0F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.178571433F, new Vector2(2F, 0F), HoldThenStepEasingFunction());
                 // Frame 35.
-                result.InsertKeyFrame(0.4375F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.3125F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
                 // Frame 40.
-                result.InsertKeyFrame(0.5F, new Vector2(2F, 0F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.357142866F, new Vector2(2F, 0F), HoldThenStepEasingFunction());
                 // Frame 46.
-                result.InsertKeyFrame(0.574999988F, new Vector2(1F, 0F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.410714298F, new Vector2(1F, 0F), CubicBezierEasingFunction_0());
                 // Frame 50.
-                result.InsertKeyFrame(0.625F, new Vector2(1F, 0F), HoldThenStepEasingFunction());
-                // Frame 59.
-                result.InsertKeyFrame(0.737500012F, new Vector2(2F, 0F), CubicBezierEasingFunction_0());
-                // Frame 64.
-                result.InsertKeyFrame(0.800000012F, new Vector2(1F, 0F), HoldThenStepEasingFunction());
-                // Frame 79.
-                result.InsertKeyFrame(0.987500012F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.446428567F, new Vector2(1F, 0F), HoldThenStepEasingFunction());
+                // Frame 56.
+                result.InsertKeyFrame(0.5F, new Vector2(5F, 0F), CubicBezierEasingFunction_0());
+                // Frame 70.
+                result.InsertKeyFrame(0.625F, new Vector2(2F, 0F), CubicBezierEasingFunction_0());
+                // Frame 81.
+                result.InsertKeyFrame(0.723214269F, new Vector2(1F, 0F), HoldThenStepEasingFunction());
+                // Frame 87.
+                result.InsertKeyFrame(0.776785731F, new Vector2(5F, 0F), CubicBezierEasingFunction_0());
+                // Frame 101.
+                result.InsertKeyFrame(0.901785731F, new Vector2(0F, 0F), CubicBezierEasingFunction_0());
+                return result;
+            }
+
+            // - - Shape tree root for layer: Play
+            // - ShapeGroup: Ring Offset:<24, 24>
+            // Ring.EllipseGeometry
+            // Radius
+            Vector2KeyFrameAnimation RadiusVector2Animation()
+            {
+                // Frame 0.
+                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(7F, 7F), HoldThenStepEasingFunction());
+                // Frame 50.
+                result.InsertKeyFrame(0.446428567F, new Vector2(7F, 7F), HoldThenStepEasingFunction());
+                // Frame 72.
+                result.InsertKeyFrame(0.642857134F, new Vector2(23F, 23F), CubicBezierEasingFunction_0());
+                // Frame 81.
+                result.InsertKeyFrame(0.723214269F, new Vector2(7F, 7F), HoldThenStepEasingFunction());
+                // Frame 103.
+                result.InsertKeyFrame(0.919642866F, new Vector2(23F, 23F), CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -467,23 +605,27 @@ namespace Totoro.UI.AnimatedVisuals
                 // Frame 0.
                 var result = CreateVector2KeyFrameAnimation(0F, new Vector2(1F, 1F), HoldThenStepEasingFunction());
                 // Frame 15.
-                result.InsertKeyFrame(0.1875F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.133928567F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
                 // Frame 20.
-                result.InsertKeyFrame(0.25F, new Vector2(1F, 1F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.178571433F, new Vector2(1F, 1F), HoldThenStepEasingFunction());
                 // Frame 35.
-                result.InsertKeyFrame(0.4375F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.3125F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
                 // Frame 40.
-                result.InsertKeyFrame(0.5F, new Vector2(1F, 1F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.357142866F, new Vector2(1F, 1F), HoldThenStepEasingFunction());
                 // Frame 46.
-                result.InsertKeyFrame(0.574999988F, new Vector2(0.879999995F, 0.879999995F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.410714298F, new Vector2(0.879999995F, 0.879999995F), CubicBezierEasingFunction_0());
                 // Frame 50.
-                result.InsertKeyFrame(0.625F, new Vector2(0.879999995F, 0.879999995F), HoldThenStepEasingFunction());
-                // Frame 59.
-                result.InsertKeyFrame(0.737500012F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
-                // Frame 64.
-                result.InsertKeyFrame(0.800000012F, new Vector2(0.879999995F, 0.879999995F), HoldThenStepEasingFunction());
-                // Frame 79.
-                result.InsertKeyFrame(0.987500012F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.446428567F, new Vector2(0.879999995F, 0.879999995F), HoldThenStepEasingFunction());
+                // Frame 56.
+                result.InsertKeyFrame(0.5F, new Vector2(1.17999995F, 1.17999995F), CubicBezierEasingFunction_0());
+                // Frame 70.
+                result.InsertKeyFrame(0.625F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
+                // Frame 81.
+                result.InsertKeyFrame(0.723214269F, new Vector2(0.879999995F, 0.879999995F), HoldThenStepEasingFunction());
+                // Frame 87.
+                result.InsertKeyFrame(0.776785731F, new Vector2(1.17999995F, 1.17999995F), CubicBezierEasingFunction_0());
+                // Frame 101.
+                result.InsertKeyFrame(0.901785731F, new Vector2(1F, 1F), CubicBezierEasingFunction_0());
                 return result;
             }
 
@@ -505,14 +647,20 @@ namespace Totoro.UI.AnimatedVisuals
 
             public void CreateAnimations()
             {
+                _themeColor_Foreground_1.Properties.StartAnimation("Opacity0", Opacity0ScalarAnimation_0_to_0(), AnimationController_0());
                 _containerShape.StartAnimation("Scale", ScaleVector2Animation(), AnimationController_0());
                 _containerShape.StartAnimation("Offset", OffsetVector2Animation(), AnimationController_0());
+                _ellipse_0.StartAnimation("Radius", RadiusVector2Animation(), AnimationController_0());
+                _spriteShape_3.StartAnimation("StrokeThickness", StrokeThicknessScalarAnimation_4_to_1(), AnimationController_0());
             }
 
             public void DestroyAnimations()
             {
+                _themeColor_Foreground_1.Properties.StopAnimation("Opacity0");
                 _containerShape.StopAnimation("Scale");
                 _containerShape.StopAnimation("Offset");
+                _ellipse_0.StopAnimation("Radius");
+                _spriteShape_3.StopAnimation("StrokeThickness");
             }
 
         }

@@ -138,19 +138,15 @@ public partial class App : Application
 				});
 				services.AddMainNavigationItem<DownloadsPage, DownloadsViewModel>("Downloads", x =>
 				{
-					x.UnselectedIcon = Icons.Download;
-					x.SelectedIcon = Icons.Download;
+					x.AnimatedIcon = Icons.DownloadAnimated;
 				});
 				services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
 				{
-					x.UnselectedIcon = Icons.Plugins;
-					x.SelectedIcon = Icons.Plugins;
+					x.AnimatedIcon = Icons.PluginsAnimated;
 				});
 				services.AddMainNavigationItem<TestPage, TestViewModel>("Test", x =>
 				{
-					// No filled beaker in Segoe Fluent Icons, so the same one either way.
-					x.UnselectedIcon = Icons.Test;
-					x.SelectedIcon = Icons.Test;
+					x.AnimatedIcon = Icons.TestAnimated;
 				});
 				// The Test page's playgrounds, shown by its own navigator.
 				services.AddKeyedViewMap<SettingsEditorPage, SettingsEditorViewModel>(TestViewModel.SettingsEditorKey);
