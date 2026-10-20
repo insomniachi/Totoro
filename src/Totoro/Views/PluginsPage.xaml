@@ -138,6 +138,7 @@
                                     Command="{x:Bind UninstallCommand}"
                                     IsBusy="{x:Bind UninstallCommand.IsRunning, Mode=OneWay}"
                                     Content="Uninstall"
+                                    Style="{ThemeResource AccentButtonStyle}"
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUninstall), Mode=OneWay}" />
                                 <controls:BusyButton
                                     MinWidth="120"

@@ -17,6 +17,7 @@ public sealed partial class BusyButton : Button
 
 	public BusyButton()
 	{
+		DefaultStyleKey = typeof(Button); // Button's default style, which a derived class doesn't get
 		_busyContent.Children.Add(_hiddenContent);
 		_busyContent.Children.Add(_ring);
 		// The content's color, e.g. white on an accent button, where the ring's own accent color wouldn't show
