@@ -148,10 +148,13 @@ public partial class App : Application
 				{
 					x.AnimatedIcon = Icons.PluginsAnimated;
 				});
+#if DEBUG
+				// A developer's playground: not for users.
 				services.AddMainNavigationItem<AgentToolsPage, AgentToolsViewModel>("Agent tools", x =>
 				{
 					x.AnimatedIcon = Icons.AgentToolsAnimated;
 				});
+#endif
 				services.AddViewMap<PluginTesterPage, PluginTesterViewModel>();
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
