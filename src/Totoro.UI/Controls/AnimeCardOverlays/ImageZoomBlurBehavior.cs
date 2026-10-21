@@ -70,7 +70,7 @@ public class ImageZoomBlurBehavior : BehaviorBase<AnimeCard>
 
 		if (_blurVisual is null)
 		{
-			var visual = await PipelineBuilder.FromBackdrop().Blur(0, out EffectAnimation<float> blurAnimation).AttachAsync(_image);
+			var visual = await PipelineBuilder.FromBackdrop().Blur(0, out EffectAnimation<float> blurAnimation).AttachAsync(_image, _image); // the second one sizes the visual to the image; without it, it's 0x0
 			if (version != _hoverVersion || _image is null)
 			{
 				visual.Dispose();
