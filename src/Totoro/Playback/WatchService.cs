@@ -727,6 +727,12 @@ public sealed partial class WatchService(
 				}
 			}
 
+			// Other players (mpv) have no check to show, so it's said over the video.
+			if (player is not IInteractiveMediaPlayer)
+			{
+				_ = player.ShowMessageAsync(message, s_playerMessageDuration);
+			}
+
 			return (marked, message);
 		}
 
