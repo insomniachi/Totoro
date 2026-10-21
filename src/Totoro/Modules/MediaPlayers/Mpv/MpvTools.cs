@@ -14,7 +14,7 @@ internal sealed record MpvInstallInfo(
 internal sealed class MpvTools(MpvInstaller installer)
 {
 	[AgentTool("download_mpv", RequiresApproval = true)]
-	[Description("Downloads mpv, with FFmpeg and yt-dlp, for the MPV media player; when they're already there, updates them to the latest builds.")]
+	[Description("Downloads mpv, with FFmpeg and yt-dlp, for the MPV media player; when they're already there, updates them to the latest builds. Also adds Anime4K's upscaling to mpv's config, or takes it out, as the module's InstallAnime4K and Anime4KGpu settings say (in mpv, Ctrl+1 to 6 pick a mode, Ctrl+0 turns it off).")]
 	public async Task<MpvInstallInfo> DownloadMpvAsync()
 	{
 		await installer.InstallAsync();

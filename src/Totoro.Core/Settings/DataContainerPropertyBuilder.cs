@@ -12,6 +12,7 @@ public class DataContainerPropertyBuilder
 	private string _name = "";
 	private object? _value = "";
 	private string? _iconKey = "";
+	private string? _parent;
 
 	public DataContainerPropertyBuilder WithName(string name)
 	{
@@ -60,6 +61,12 @@ public class DataContainerPropertyBuilder
 		return this;
 	}
 
+	public DataContainerPropertyBuilder WithParent(string name)
+	{
+		_parent = name;
+		return this;
+	}
+
 	public DataContainerPropertyBuilder WithIcon(string key)
 	{
 		_iconKey = key;
@@ -89,7 +96,8 @@ public class DataContainerPropertyBuilder
 			Value = _value,
 			EditorType = _editorType,
 			AllowedValues = _allowedValues,
-			IconKey = _iconKey
+			IconKey = _iconKey,
+			Parent = _parent
 		};
 
 		Reset();
@@ -105,6 +113,7 @@ public class DataContainerPropertyBuilder
 		_value = "";
 		_editorType = DataContainerEditors.TextBox;
 		_allowedValues = [];
+		_parent = null;
 	}
 
 	private void SetDefaultsForType(object? value)

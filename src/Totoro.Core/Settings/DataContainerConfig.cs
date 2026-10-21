@@ -84,6 +84,11 @@ public class DataContainerConfig
 				builder.WithIcon(iconAttribute.IconKey);
 			}
 
+			if (propertyInfo.GetCustomAttribute<ParentAttribute>() is { } parentAttribute)
+			{
+				builder.WithParent(parentAttribute.Name);
+			}
+
 			if (propertyInfo.PropertyType == typeof(bool))
 			{
 				builder.WithEditorType(DataContainerEditors.ToggleSwitch);

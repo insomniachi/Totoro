@@ -12,6 +12,9 @@ public partial class DataContainerProperty : ObservableObject
 	public IEnumerable<object>? AllowedValues { get; init; }
 	public string? IconKey { get; init; }
 
+	/// <summary>The name of the property this one is shown under (see <see cref="ParentAttribute"/>); null for none.</summary>
+	public string? Parent { get; init; }
+
 	public T? GetValue<T>(T? defaultValue)
 	{
 		if (Value is T { } typedValue)
@@ -39,6 +42,7 @@ public partial class DataContainerProperty : ObservableObject
 			Value = Value,
 			AllowedValues = AllowedValues,
 			IconKey = IconKey,
+			Parent = Parent,
 		};
 	}
 }

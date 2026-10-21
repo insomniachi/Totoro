@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -13,12 +14,24 @@ namespace Totoro.Modules.MediaPlayers.Mpv;
 /// <summary>
 /// Downloads mpv, with FFmpeg and yt-dlp, into the app's data folder, and updates them: shinchiro's Windows builds from
 /// GitHub (what mpv's own updater.bat gets), checked against GitHub's hashes, and yt-dlp's own release. Downloading again
-/// is updating. Adds mpv to Windows' Open with menu when the settings ask for it. Used on the UI thread.
+/// is updating. Adds Anime4K to mpv's config too, as the settings ask. Adds mpv to Windows' Open with menu when the settings ask for it. Used on the UI thread.
 /// </summary>
 internal sealed partial class MpvInstaller
 {
 	private const string Repository = "shinchiro/mpv-winbuild-cmake";
 	private static readonly Uri s_ytDlp = new("https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe");
+
+	// The templates Anime4K's Windows guide links to: its shaders, with an input.conf and mpv.conf that use them. Pinned,
+	// with their hashes, as their release has none on GitHub.
+	private static readonly Dictionary<Anime4KGpu, (Uri Url, string Hash)> s_anime4K = new()
+	{
+		[Anime4KGpu.LowerEnd] = (new("https://github.com/Tama47/Anime4K/releases/download/v4.0.1/GLSL_Windows_Low-end.zip"), "a38a4e7cc80bfb76f54445bc52c044de550e8a9bf7edc01494342ba98ddc2dfd"),
+		[Anime4KGpu.HigherEnd] = (new("https://github.com/Tama47/Anime4K/releases/download/v4.0.1/GLSL_Windows_High-end.zip"), "f7dc0b1fc6f1f6865ef34ec793d2d7e934bf3fb48c36d5d7a9f88f718d896a6b"),
+	};
+
+	// Around the lines added to the user's input.conf and mpv.conf, so they can be swapped or taken out again.
+	private const string Anime4KStart = "# Added by Totoro: Anime4K";
+	private const string Anime4KEnd = "# End of what Totoro added";
 
 	private readonly IModuleSettings<Settings> _settings;
 	private readonly ILogger<MpvInstaller> _logger;
@@ -54,6 +67,9 @@ internal sealed partial class MpvInstaller
 	public static string InstalledVersion => IsInstalled && File.Exists(VersionFile) ? File.ReadAllText(VersionFile).Trim() : "";
 
 	private static string VersionFile => Path.Combine(Folder, "version.txt");
+
+	/// <summary>mpv's config folder, where Anime4K's guide installs it, so an mpv of the user's own gets it as well.</summary>
+	public static string ConfigFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv");
 
 	/// <summary>The settings' Download/Update button, with how it's going.</summary>
 	public SettingsAction Action { get; }
@@ -102,6 +118,7 @@ internal sealed partial class MpvInstaller
 			}
 
 			await UpdateYtDlpAsync(ct);
+			await ApplyAnime4KAsync(folder, ct);
 			if (_settings.Value.AddToOpenWith)
 			{
 				// Again after an update too: the entry names this mpv.exe.
@@ -171,6 +188,86 @@ internal sealed partial class MpvInstaller
 		}
 
 		File.Move(path, ytDlp, true);
+	}
+
+	/// <summary>
+	/// Adds Anime4K's shaders and the template's lines for the GPU chosen to mpv's config, unless it's there already or
+	/// the config has Anime4K lines of the user's own; takes the lines added out again when it's turned off.
+	/// </summary>
+	private async Task ApplyAnime4KAsync(string folder, CancellationToken ct)
+	{
+		var gpu = _settings.Value.InstallAnime4K ? _settings.Value.Anime4KGpu : (Anime4KGpu?)null;
+		string[] confs = [Path.Combine(ConfigFolder, "input.conf"), Path.Combine(ConfigFolder, "mpv.conf")];
+		var texts = confs.Select(x => File.Exists(x) ? File.ReadAllText(x) : "").ToArray();
+		var shaders = Path.Combine(ConfigFolder, "shaders");
+		var hasShaders = File.Exists(Path.Combine(shaders, "Anime4K_Clamp_Highlights.glsl"));
+		if (gpu is null || (hasShaders && texts.All(x => HasAnime4K(x, gpu.Value))))
+		{
+			for (var i = 0; i < confs.Length; i++)
+			{
+				if (gpu is null && WithoutAddedAnime4K(texts[i]) is var text && text != texts[i])
+				{
+					await File.WriteAllTextAsync(confs[i], text, ct);
+				}
+			}
+
+			return;
+		}
+
+		var (url, hash) = s_anime4K[gpu.Value];
+		var bytes = await GitHubReleases.Http.GetByteArrayAsync(url, ct);
+		if (Convert.ToHexStringLower(SHA256.HashData(bytes)) != hash)
+		{
+			throw new InvalidOperationException("Anime4K's download isn't the one expected.");
+		}
+
+		Directory.CreateDirectory(folder);
+		var zip = Path.Combine(folder, "anime4k.zip");
+		await File.WriteAllBytesAsync(zip, bytes, ct);
+		var template = Path.Combine(folder, "anime4k");
+		await Task.Run(() => ArchiveFactory.WriteToDirectory(zip, template, new ExtractionOptions { ExtractFullPath = true, Overwrite = true }), ct);
+
+		Directory.CreateDirectory(shaders);
+		foreach (var shader in Directory.GetFiles(Path.Combine(template, "shaders"), "*.glsl"))
+		{
+			File.Copy(shader, Path.Combine(shaders, Path.GetFileName(shader)), true);
+		}
+
+		for (var i = 0; i < confs.Length; i++)
+		{
+			if (!HasAnime4K(texts[i], gpu.Value))
+			{
+				var lines = await File.ReadAllTextAsync(Path.Combine(template, Path.GetFileName(confs[i])), ct);
+				await File.WriteAllTextAsync(confs[i], WithAnime4K(texts[i], gpu.Value, lines), ct);
+			}
+		}
+	}
+
+	/// <summary>Whether a config has the lines added for this GPU, or Anime4K lines of the user's own (left alone).</summary>
+	internal static bool HasAnime4K(string conf, Anime4KGpu gpu)
+	{
+		return conf.Contains($"{Anime4KStart} ({gpu})", StringComparison.Ordinal) || (!conf.Contains(Anime4KStart, StringComparison.Ordinal) && conf.Contains("Anime4K", StringComparison.Ordinal));
+	}
+
+	/// <summary>A config with a template's lines in place of any added before; last, so mpv.conf's shaders are the ones played with.</summary>
+	internal static string WithAnime4K(string conf, Anime4KGpu gpu, string lines)
+	{
+		var own = WithoutAddedAnime4K(conf).TrimEnd();
+		var nl = Environment.NewLine;
+		return $"{own}{(own.Length > 0 ? nl + nl : "")}{Anime4KStart} ({gpu}){nl}{lines.Trim()}{nl}{Anime4KEnd}{nl}";
+	}
+
+	internal static string WithoutAddedAnime4K(string conf)
+	{
+		var start = conf.IndexOf(Anime4KStart, StringComparison.Ordinal);
+		var end = start < 0 ? -1 : conf.IndexOf(Anime4KEnd, start, StringComparison.Ordinal);
+		if (end < 0)
+		{
+			return conf;
+		}
+
+		var kept = string.Join(Environment.NewLine, ((string[])[conf[..start].Trim(), conf[(end + Anime4KEnd.Length)..].Trim()]).Where(x => x.Length > 0));
+		return kept.Length == 0 ? "" : kept + Environment.NewLine;
 	}
 
 	/// <summary>Adds mpv to the Open with menu, or takes it off, if that's changed (per user: mpv --register needs no admin).</summary>

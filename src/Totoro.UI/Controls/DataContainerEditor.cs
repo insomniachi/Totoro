@@ -11,7 +11,8 @@ namespace Totoro.UI.Controls;
 
 /// <summary>
 /// Edits a <see cref="DataContainer"/> (e.g. from <see cref="DataContainerConfig.ToDataContainer"/>): a settings card
-/// per property, with the editor its EditorType asks for (see <see cref="DataContainerEditors"/>). Edits go straight
+/// per property, with the editor its EditorType asks for (see <see cref="DataContainerEditors"/>); one with properties
+/// under it (see <see cref="ParentAttribute"/>) is an expander with their cards as its items. Edits go straight
 /// to the properties' values, keeping each value's type (an int stays an int), so
 /// <see cref="DataContainerConfig.UpdateValues"/> can read them back. For edits that can be cancelled, use the dialog
 /// (IDialogService.EditAsync), which edits copies.
@@ -32,41 +33,56 @@ public sealed partial class DataContainerEditor : UserControl
 	partial void OnPropertiesChanged(IEnumerable<DataContainerProperty>? newValue)
 	{
 		_cards.Children.Clear();
-		foreach (var property in newValue ?? [])
+		var byParent = (newValue ?? []).ToLookup(x => x.Parent ?? "");
+		foreach (var property in byParent[""])
 		{
-			_cards.Children.Add(CreateCard(property));
+			_cards.Children.Add(CreateCard(property, byParent));
 		}
 	}
 
-	private static SettingsCard CreateCard(DataContainerProperty property)
+	private static FrameworkElement CreateCard(DataContainerProperty property, ILookup<string, DataContainerProperty> byParent)
 	{
 		var header = string.IsNullOrEmpty(property.DisplayName) ? property.Name : property.DisplayName;
 		var editor = CreateEditor(property);
 		Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(editor, header);
 
-		var card = new SettingsCard
+		if (!byParent[property.Name].Any())
 		{
-			Header = header,
-			Content = editor,
-		};
+			var card = new SettingsCard { Header = header, Content = editor };
+			Describe(card, property, editor, x => card.Description = x, x => card.HeaderIcon = x);
+			return card;
+		}
 
+		var expander = new SettingsExpander { Header = header, Content = editor };
+		// Its chevron takes width the dialog's cards have, which would put the editor under the header (476 by default).
+		expander.Resources["SettingsCardWrapThreshold"] = 400d;
+		foreach (var child in byParent[property.Name])
+		{
+			expander.Items.Add(CreateCard(child, byParent));
+		}
+
+		Describe(expander, property, editor, x => expander.Description = x, x => expander.HeaderIcon = x);
+		return expander;
+	}
+
+	/// <summary>Gives a card or expander the property's description and icon, and an action's state.</summary>
+	private static void Describe(FrameworkElement card, DataContainerProperty property, FrameworkElement editor, Action<string> setDescription, Action<IconElement> setIcon)
+	{
 		// Only when there is one: the card declares these as non-null, and leaving them unset is what shows none.
 		if (!string.IsNullOrEmpty(property.Description))
 		{
-			card.Description = property.Description;
+			setDescription(property.Description);
 		}
 
 		if (Icons.FromKey(property.IconKey) is { } icon)
 		{
-			card.HeaderIcon = icon;
+			setIcon(icon);
 		}
 
 		if (editor is Button button && property.Value is SettingsAction action)
 		{
-			FollowAction(card, button, action, property.Description);
+			FollowAction(card, button, action, property.Description, setDescription);
 		}
-
-		return card;
 	}
 
 	private static FrameworkElement CreateEditor(DataContainerProperty property)
@@ -174,7 +190,7 @@ public sealed partial class DataContainerEditor : UserControl
 	}
 
 	/// <summary>Shows the action's label, busy state and description now, and again whenever they change while it's on screen.</summary>
-	private static void FollowAction(SettingsCard card, Button button, SettingsAction action, string? description)
+	private static void FollowAction(FrameworkElement card, Button button, SettingsAction action, string? description, Action<string> setDescription)
 	{
 		var ring = new ProgressRing { Width = 16, Height = 16, IsActive = true };
 
@@ -185,7 +201,7 @@ public sealed partial class DataContainerEditor : UserControl
 			var text = action.Description is { Length: > 0 } own ? own : description;
 			if (!string.IsNullOrEmpty(text))
 			{
-				card.Description = text;
+				setDescription(text);
 			}
 		}
 

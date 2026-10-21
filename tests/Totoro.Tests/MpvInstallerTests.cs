@@ -30,4 +30,29 @@ public class MpvInstallerTests
 	{
 		Assert.Null(MpvInstaller.PickAssets([Asset("mpv-x86_64-v3-20261020-git-6a262d11f6.7z"), Asset("ffmpeg-x86_64-git-38ac3a923.7z")]));
 	}
+
+	[Fact]
+	public void Anime4K_SwapsAndRemovesOnlyWhatWasAdded()
+	{
+		var own = "volume=50" + Environment.NewLine;
+
+		var low = MpvInstaller.WithAnime4K(own, Anime4KGpu.LowerEnd, "low");
+		Assert.True(MpvInstaller.HasAnime4K(low, Anime4KGpu.LowerEnd));
+		Assert.False(MpvInstaller.HasAnime4K(low, Anime4KGpu.HigherEnd));
+
+		var high = MpvInstaller.WithAnime4K(low, Anime4KGpu.HigherEnd, "high");
+		Assert.DoesNotContain("low", high);
+		Assert.True(MpvInstaller.HasAnime4K(high, Anime4KGpu.HigherEnd));
+
+		Assert.Equal(own, MpvInstaller.WithoutAddedAnime4K(high));
+	}
+
+	[Fact]
+	public void Anime4K_LeavesTheUsersOwnAlone()
+	{
+		var own = "glsl-shaders=\"~~/shaders/Anime4K_Clamp_Highlights.glsl\"";
+		Assert.True(MpvInstaller.HasAnime4K(own, Anime4KGpu.HigherEnd));
+		Assert.False(MpvInstaller.HasAnime4K("", Anime4KGpu.LowerEnd));
+		Assert.Equal(own, MpvInstaller.WithoutAddedAnime4K(own));
+	}
 }
