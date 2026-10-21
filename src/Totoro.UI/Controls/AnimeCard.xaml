@@ -10,8 +10,12 @@
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     mc:Ignorable="d">
 
+    <!--  EdgeLighting centers its content by default, sizing the card to the image: until the image loads, that's just the title.  -->
     <devwinui:EdgeLighting
         x:Name="Lighting"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        VerticalContentAlignment="Stretch"
         FadeOffset="1"
         IsLighting="false"
         MidOffset="0.5"
@@ -40,8 +44,9 @@
                 <TextBlock
                     Style="{StaticResource BodyLargeTextBlockStyle}"
                     Text="{x:Bind Anime.Title, Mode=OneWay}"
+                    IsTextTrimmedChanged="OnTitleTrimmedChanged"
                     TextAlignment="Center"
-                    TextWrapping="WrapWholeWords" />
+                    TextTrimming="CharacterEllipsis" />
             </Border>
 
             <Grid x:Name="OverlayLayer" Background="Transparent" />

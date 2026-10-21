@@ -29,6 +29,11 @@ public sealed partial class AnimeCard : UserControl
 		ProtectedCursor = newValue is null ? null : InputSystemCursor.Create(InputSystemCursorShape.Hand);
 	}
 
+	private void OnTitleTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args)
+	{
+		ToolTipService.SetToolTip(sender, sender.IsTextTrimmed ? sender.Text : null);
+	}
+
 	private void OnTapped(object sender, TappedRoutedEventArgs e)
 	{
 		if (IsFromOverlay(e.OriginalSource) || Command is not { } command || !command.CanExecute(Anime))
