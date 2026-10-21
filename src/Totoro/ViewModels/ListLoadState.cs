@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GraphQL.Client.Http;
 using Totoro.Core.Modules;
 using Totoro.Core.Services;
 
@@ -36,6 +37,10 @@ public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Ta
 		try
 		{
 			await load();
+		}
+		catch (Exception ex) when (ex is HttpRequestException or GraphQLHttpRequestException)
+		{
+			Error = $"Couldn't reach the anime database; it may be down, or you may be offline. Try again in a bit. ({ex.Message})";
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{

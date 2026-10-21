@@ -1,11 +1,12 @@
 ﻿using GraphQL;
 using GraphQL.Client.Http;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Settings;
 using Totoro.Modules.AnimeDatabase.Anilist.GraphQl;
 
 namespace Totoro.Modules.AnimeDatabase.Anilist;
 
-internal class AnilistTracker(GraphQLHttpClient client) : IAnimeTracker
+internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings> settings) : IAnimeTracker
 {
 	public Guid Id => AnilistModule.Id;
 
@@ -13,16 +14,13 @@ internal class AnilistTracker(GraphQLHttpClient client) : IAnimeTracker
 
 	public async Task<List<AnimeModel>> GetUserListAsync(CancellationToken ct)
 	{
-		string? userName;
-		try
-		{
-			userName = await FetchUserNameAsync(ct);
-		}
-		catch
+		if (string.IsNullOrEmpty(settings.Value.Token))
 		{
 			return [];
 		}
 
+		// Failures throw rather than return an empty list, so the page can say AniList is down instead of showing nothing.
+		var userName = await FetchUserNameAsync(ct);
 		if (string.IsNullOrEmpty(userName))
 		{
 			return [];
@@ -32,7 +30,7 @@ internal class AnilistTracker(GraphQLHttpClient client) : IAnimeTracker
 		{
 			Query = new QueryQueryBuilder().WithMediaListCollection(MediaListCollectionBuilder(), userName: userName, type: MediaType.Anime).Build()
 		}, ct);
-
+		ThrowIfFailed(response);
 
 		return
 		[
@@ -132,8 +130,18 @@ internal class AnilistTracker(GraphQLHttpClient client) : IAnimeTracker
 		{
 			Query = new QueryQueryBuilder().WithViewer(new UserQueryBuilder().WithName()).Build()
 		}, ct);
+		ThrowIfFailed(response);
 
 		return response.Data.Viewer?.Name;
+	}
+
+	// AniList reports some failures as errors in a successful response, with no data.
+	private static void ThrowIfFailed(GraphQLResponse<Query> response)
+	{
+		if (response.Data is null || response.Errors is { Length: > 0 })
+		{
+			throw new InvalidOperationException($"AniList didn't return your list: {response.Errors?.FirstOrDefault()?.Message ?? "no data"}.");
+		}
 	}
 
 	private static MediaListCollectionQueryBuilder MediaListCollectionBuilder()
