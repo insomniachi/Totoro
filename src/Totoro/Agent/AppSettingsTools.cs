@@ -306,7 +306,10 @@ public sealed class AppSettingsTools(
 		return new ModuleSettingInfo(
 			property.Name,
 			property.DisplayName ?? property.Name,
-			property.Description,
+			// The settings page shows shortcuts as keycaps; the agent needs to know how they're written.
+			property.EditorType == DataContainerEditors.Shortcut
+				? $"{property.Description} Shortcuts separated by commas, each a key's name (VirtualKey's) after any of Ctrl, Shift, Alt and Win held with it, e.g. Space, Ctrl+Right, Shift+N, F11, Number1.".Trim()
+				: property.Description,
 			Convert.ToString(property.Value, CultureInfo.InvariantCulture) ?? "",
 			property.AllowedValues?.Any() == true ? [.. property.AllowedValues.Select(x => x.ToString() ?? "")] : null);
 	}
