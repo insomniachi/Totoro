@@ -22,20 +22,26 @@
     <Page.Resources>
         <helpers:NullableNumberConverter x:Key="NullableNumber" />
 
-        <!--  Sub-buttons of each card's floating action button; each Command receives the card's AnimeModel  -->
+        <!--  Actions of each card, on hover and in its right-click menu; each Command receives the card's AnimeModel  -->
         <overlays:CardActionCollection x:Key="CardActions">
             <overlays:CardAction
                 Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Play}"
-                Label="Play" />
+                Label="Play"
+                ShowOnHover="True" />
             <overlays:CardAction
                 Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Edit}"
-                Label="Edit" />
+                Label="Edit tracking"
+                ShowOnHover="True" />
             <overlays:CardAction
                 Command="{x:Bind commands:AnimeCommands.Shared.DownloadCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Download}"
                 Label="Download" />
+            <overlays:CardAction
+                Command="{x:Bind commands:AnimeCommands.Shared.EditSettingsCommand}"
+                Icon="{toolkitui:SymbolIconSource Symbol=Setting}"
+                Label="Settings" />
         </overlays:CardActionCollection>
     </Page.Resources>
 

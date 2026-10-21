@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace Totoro.UI.Controls.AnimeCardOverlays;
 
 /// <summary>
-/// An action a card overlay offers, e.g. one of the <see cref="ActionsOverlay"/>'s sub-buttons.
+/// An action a card overlay offers, e.g. one of the <see cref="ActionsOverlay"/>'s buttons or menu items.
 /// <see cref="Command"/> receives <see cref="CommandParameter"/> if set, otherwise the card's <c>AnimeModel</c>.
 /// </summary>
 public sealed partial class CardAction : DependencyObject
@@ -19,9 +19,13 @@ public sealed partial class CardAction : DependencyObject
 	[GeneratedDependencyProperty]
 	public partial IconSource? Icon { get; set; }
 
-	/// <summary>Shown as a tooltip and read by screen readers.</summary>
+	/// <summary>The menu item's text, and the button's tooltip and name for screen readers.</summary>
 	[GeneratedDependencyProperty]
 	public partial string? Label { get; set; }
+
+	/// <summary>Also a button on the card while it's hovered, for actions used often; every action is in the card's menu.</summary>
+	[GeneratedDependencyProperty]
+	public partial bool ShowOnHover { get; set; }
 
 	[GeneratedDependencyProperty]
 	public partial ICommand? Command { get; set; }

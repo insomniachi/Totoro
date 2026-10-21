@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-    Colours for the ActionsOverlay's GooeyButton, by overriding the theme resource keys its default styles use.
-    Being theme resources, they resolve against the card's own theme (e.g. the app theme picked in Settings), not the system's,
-    and update when it changes. Accent fill with on-accent icons stands out on any cover art, unlike the default
-    (BaseHigh fill, AltHigh icon), which is a white blob in dark theme.
+    Look of the ActionsOverlay's hover buttons, by overriding the theme resource keys the default Button style uses.
+    A light translucent fill, so the cover art (blurred on hover by ImageZoomBlurBehavior) shows through and they blend
+    with it; the stroke sets them apart from it. Being theme resources, they follow the card's own theme.
+    High contrast keeps the default style.
 -->
 <ResourceDictionary
     x:Class="Totoro.UI.Controls.AnimeCardOverlays.ActionsOverlayResources"
@@ -11,22 +11,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
-            <StaticResource x:Key="GooeyButtonBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
-            <StaticResource x:Key="GooeyButtonForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
-            <StaticResource x:Key="GooeyButtonItemBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
-            <StaticResource x:Key="GooeyButtonItemForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <SolidColorBrush x:Key="ButtonBackground" Color="#40000000" />
+            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#66000000" />
+            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#26000000" />
+            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="GooeyButtonBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
-            <StaticResource x:Key="GooeyButtonForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
-            <StaticResource x:Key="GooeyButtonItemBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
-            <StaticResource x:Key="GooeyButtonItemForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="GooeyButtonBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
-            <StaticResource x:Key="GooeyButtonForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
-            <StaticResource x:Key="GooeyButtonItemBackgroundBrush" ResourceKey="AccentFillColorDefaultBrush" />
-            <StaticResource x:Key="GooeyButtonItemForegroundBrush" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+            <SolidColorBrush x:Key="ButtonBackground" Color="#59FFFFFF" />
+            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#80FFFFFF" />
+            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#40FFFFFF" />
+            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
+            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="ControlStrongStrokeColorDefaultBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
