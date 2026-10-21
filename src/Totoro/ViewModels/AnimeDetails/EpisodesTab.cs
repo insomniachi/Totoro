@@ -18,6 +18,7 @@ public sealed record EpisodeItem(
 	string? Image,
 	string Overview,
 	bool IsWatched,
+	bool IsFiller,
 	EpisodeToWatch? Play,
 	double Progress)
 {
@@ -67,11 +68,6 @@ public sealed partial class EpisodesTab(
 					?? (episode.IsSpecial ? "Special" : $"Episode {episode.EpisodeNumber}");
 
 		List<string> details = [];
-		if (episode.IsFiller)
-		{
-			details.Add("Filler");
-		}
-
 		if (episode.AirDateUtc is { } aired)
 		{
 			details.Add(aired.ToLocalTime().ToString("d MMM yyyy"));
@@ -89,6 +85,7 @@ public sealed partial class EpisodesTab(
 
 		return new EpisodeItem(number, title, string.Join(" · ", details), resumeText, NullIfEmpty(episode.Image), episode.Overview,
 							   IsWatched: !episode.IsSpecial && episode.EpisodeNumber <= watched,
+							   IsFiller: episode.IsFiller,
 							   Play: episode.IsSpecial ? null : new EpisodeToWatch(anime, episode.EpisodeNumber),
 							   Progress: resume?.Fraction ?? 0);
 	}
