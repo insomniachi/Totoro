@@ -166,10 +166,12 @@ public sealed partial class DataContainerEditor : UserControl
 	private static Grid CreateFileBrowser(DataContainerProperty property)
 	{
 		var textBox = CreateTextBox(property);
-		textBox.MinWidth = 260;
+		textBox.MaxWidth = 250;
 		textBox.PlaceholderText = "No file chosen";
 
-		var browse = new Button { Content = "Browse…", VerticalAlignment = VerticalAlignment.Top };
+		var browse = new Button { Content = new SymbolIcon(Symbol.More), VerticalAlignment = VerticalAlignment.Top };
+		ToolTipService.SetToolTip(browse, "Browse");
+		Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(browse, "Browse");
 		browse.Click += async (_, _) =>
 		{
 			var picker = new FileOpenPicker(browse.XamlRoot.ContentIslandEnvironment.AppWindowId);

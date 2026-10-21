@@ -59,7 +59,7 @@ public sealed class Settings : DataContainerConfig
 	public bool AddToOpenWith { get; set; } = true;
 
 	[DisplayName("Executable")]
-	[Description("Your own mpv.exe. Leave it empty to use the one downloaded here, or else one that's installed.")]
+	[Description("Leave empty to use the downloaded or installed mpv.")]
 	[Editor(DataContainerEditors.FileBrowser, "")]
 	public string FileName { get; set; } = "";
 
