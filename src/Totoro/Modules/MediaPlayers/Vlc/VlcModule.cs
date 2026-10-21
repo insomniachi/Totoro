@@ -42,4 +42,61 @@ public sealed class Settings : DataContainerConfig
 	[DisplayName("Subtitle language")]
 	[Description("The subtitle track to pick when there's a choice: language codes in order of preference, e.g. eng,en.")]
 	public string SubtitleLanguage { get; set; } = "eng,en";
+
+	private const string KeysDescription = "Shortcuts separated by commas, each a key's name after any of Ctrl, Shift, Alt and Win held with it, e.g. Space, Ctrl+Right, Shift+N, F11, Number1.";
+
+	[DisplayName("Play or pause shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string PlayPauseKeys { get; set; } = "Space, K";
+
+	[DisplayName("Back 5 seconds shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string SeekBackKeys { get; set; } = "Left, J";
+
+	[DisplayName("Forward 5 seconds shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string SeekForwardKeys { get; set; } = "Right, L";
+
+	[DisplayName("Volume up shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string VolumeUpKeys { get; set; } = "Up";
+
+	[DisplayName("Volume down shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string VolumeDownKeys { get; set; } = "Down";
+
+	[DisplayName("Mute shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string MuteKeys { get; set; } = "M";
+
+	[DisplayName("Full screen shortcut")]
+	[Description(KeysDescription + " Esc always leaves full screen.")]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string FullScreenKeys { get; set; } = "F, F11";
+
+	[DisplayName("Skip shortcut")]
+	[Description("Skips the opening or ending, or takes what's offered over the video. " + KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string SkipKeys { get; set; } = "PageUp, S";
+
+	[DisplayName("Next episode shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string NextEpisodeKeys { get; set; } = "N";
+
+	[DisplayName("Episodes shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string EpisodesKeys { get; set; } = "E";
+
+	[DisplayName("Aspect ratio shortcut")]
+	[Description(KeysDescription)]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string AspectRatioKeys { get; set; } = "A";
 }

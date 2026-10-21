@@ -4,7 +4,10 @@ using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.Storage.Pickers;
+using Windows.System;
+using Totoro.UI.Input;
 using Totoro.Core.Settings;
 
 namespace Totoro.UI.Controls;
@@ -93,6 +96,7 @@ public sealed partial class DataContainerEditor : UserControl
 			DataContainerEditors.NumberBox => CreateNumberBox(property),
 			DataContainerEditors.ComboBox => CreateComboBox(property),
 			DataContainerEditors.FileBrowser => CreateFileBrowser(property),
+			DataContainerEditors.Shortcut => CreateShortcutEditor(property),
 			DataContainerEditors.Button when property.Value is SettingsAction action => new Button { MinWidth = 120, Command = action.Command },
 			_ => CreateTextBox(property),
 		};
@@ -189,6 +193,115 @@ public sealed partial class DataContainerEditor : UserControl
 		grid.Children.Add(textBox);
 		grid.Children.Add(browse);
 		return grid;
+	}
+
+	/// <summary>
+	/// Keyboard shortcuts as keycaps, as in PowerToys' settings, on a button opening a flyout to change them: a key pressed
+	/// while it's open (with any modifiers held) is added, a shortcut clicked is removed. A flyout, not a dialog: settings
+	/// are often in a dialog already. The text is <see cref="KeyboardShortcuts"/>'.
+	/// </summary>
+	private static Button CreateShortcutEditor(DataContainerProperty property)
+	{
+		// Wrapping, so several shortcuts don't squeeze the card's header.
+		var keycaps = new WrapPanel { HorizontalSpacing = 4, VerticalSpacing = 4, MaxWidth = 180 };
+		var editing = new WrapPanel { HorizontalSpacing = 4, VerticalSpacing = 4, MinHeight = 32 };
+		var clear = new Button { Content = "Clear" };
+		var panel = new StackPanel { Spacing = 12, Width = 280 };
+		panel.Children.Add(new TextBlock { Text = "Press a key, with Ctrl, Shift or Alt if you like, to add it. Click one to remove it.", TextWrapping = TextWrapping.Wrap });
+		panel.Children.Add(editing);
+		panel.Children.Add(clear);
+
+		var flyout = new Flyout { Content = panel, Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.Bottom };
+		var button = new Button { Flyout = flyout, Padding = new Thickness(8, 4, 8, 4) };
+		var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+		content.Children.Add(keycaps);
+		content.Children.Add(new FontIcon { Glyph = "", FontSize = 14 });
+		button.Content = content;
+		ToolTipService.SetToolTip(button, "Change");
+
+		List<string> GetShortcuts() => KeyboardShortcuts.Split(property.Value?.ToString() ?? "").ToList();
+		void SetShortcuts(List<string> shortcuts) => property.Value = string.Join(", ", shortcuts);
+
+		void Show()
+		{
+			keycaps.Children.Clear();
+			editing.Children.Clear();
+			var shortcuts = GetShortcuts();
+			if (shortcuts.Count == 0)
+			{
+				keycaps.Children.Add(new TextBlock { Text = "None", VerticalAlignment = VerticalAlignment.Center });
+			}
+
+			foreach (var shortcut in shortcuts)
+			{
+				// Each shortcut's keys together, "or" between shortcuts.
+				if (keycaps.Children.Count > 0)
+				{
+					keycaps.Children.Add(new TextBlock
+					{
+						Text = "or",
+						VerticalAlignment = VerticalAlignment.Center,
+						Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+					});
+				}
+
+				var keys = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
+				foreach (var key in KeyboardShortcuts.GetKeys(shortcut))
+				{
+					keys.Children.Add(new Border
+					{
+						Background = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"],
+						CornerRadius = new CornerRadius(4),
+						Padding = new Thickness(8, 2, 8, 2),
+						MinWidth = 28,
+						Child = new TextBlock
+						{
+							Text = KeyboardShortcuts.KeyLabel(key),
+							FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+							Foreground = (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"],
+							HorizontalAlignment = HorizontalAlignment.Center,
+						},
+					});
+				}
+
+				keycaps.Children.Add(keys);
+
+				var label = KeyboardShortcuts.Label(shortcut);
+				var remove = new Button { Style = (Style)Application.Current.Resources["AccentButtonStyle"] };
+				var removeContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+				removeContent.Children.Add(new TextBlock { Text = label });
+				removeContent.Children.Add(new FontIcon { Glyph = "", FontSize = 10 });
+				remove.Content = removeContent;
+				Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(remove, $"Remove {label}");
+				remove.Click += (_, _) =>
+				{
+					SetShortcuts(GetShortcuts().Where(x => x != shortcut).ToList());
+					// Its button is gone: keep the focus in the flyout, so the keys still reach it.
+					clear.Focus(FocusState.Programmatic);
+				};
+				editing.Children.Add(remove);
+			}
+		}
+
+		clear.Click += (_, _) => SetShortcuts([]);
+		// Every key but those that move around or close the flyout; a modifier waits for the key it's held with.
+		panel.PreviewKeyDown += (_, e) =>
+		{
+			if (e.Key is VirtualKey.Tab or VirtualKey.Escape || KeyboardShortcuts.IsModifier(e.Key))
+			{
+				return;
+			}
+
+			e.Handled = true;
+			var shortcuts = GetShortcuts();
+			if (KeyboardShortcuts.Format(e.Key) is var shortcut && !shortcuts.Contains(shortcut, StringComparer.OrdinalIgnoreCase))
+			{
+				SetShortcuts([.. shortcuts, shortcut]);
+			}
+		};
+
+		Sync(button, property, Show);
+		return button;
 	}
 
 	/// <summary>Shows the action's label, busy state and description now, and again whenever they change while it's on screen.</summary>

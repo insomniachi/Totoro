@@ -16,6 +16,8 @@ using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
 using Totoro.Core.Modules.Media;
+using VlcSettings = Totoro.Modules.MediaPlayers.Vlc.Settings;
+using Totoro.UI.Input;
 using Totoro.ViewModels.Player;
 
 namespace Totoro.Views.Player;
@@ -47,9 +49,10 @@ public sealed partial class PlayerWindow : Window
 	// How far the title bar and the controls slide as they hide.
 	private const float ChromeSlide = 24;
 
-	public PlayerWindow(PlayerViewModel viewModel)
+	public PlayerWindow(PlayerViewModel viewModel, VlcSettings shortcuts)
 	{
 		ViewModel = viewModel;
+		Shortcuts = shortcuts;
 		TimeConverter = new SecondsConverter(this);
 		InitializeComponent();
 
@@ -99,6 +102,9 @@ public sealed partial class PlayerWindow : Window
 
 	public PlayerViewModel ViewModel { get; }
 
+	/// <summary>The player's settings, read for its keys as they're pressed, so a change applies straight away.</summary>
+	public VlcSettings Shortcuts { get; }
+
 	/// <summary>Shows the seek bar's seconds as a time and the section it's in, e.g. "1:23 · Opening".</summary>
 	public IValueConverter TimeConverter { get; }
 
@@ -108,15 +114,18 @@ public sealed partial class PlayerWindow : Window
 
 	public static bool IsWorking(bool isStatusVisible, bool isError) => isStatusVisible && !isError;
 
-	public static string PlayPauseName(bool isPlaying) => isPlaying ? "Pause (Space)" : "Play (Space)";
+	/// <summary>A button's name with its first shortcut key, e.g. "Mute (M)".</summary>
+	public static string WithKey(string name, string keys) => KeyboardShortcuts.Split(keys).FirstOrDefault() is { } key ? $"{name} ({KeyboardShortcuts.Label(key)})" : name;
+
+	public static string PlayPauseName(bool isPlaying, string keys) => WithKey(isPlaying ? "Pause" : "Play", keys);
 
 	public static string PlayPauseGlyph(bool isPlaying) => isPlaying ? "" : "";
 
-	public static string MuteName(bool isMuted) => isMuted ? "Unmute (M)" : "Mute (M)";
+	public static string MuteName(bool isMuted, string keys) => WithKey(isMuted ? "Unmute" : "Mute", keys);
 
 	public static string VolumeGlyph(bool isMuted, double volume) => isMuted || volume <= 0 ? "" : volume < 34 ? "" : volume < 67 ? "" : "";
 
-	public static string FullScreenName(bool isFullScreen) => isFullScreen ? "Exit full screen (F)" : "Full screen (F)";
+	public static string FullScreenName(bool isFullScreen, string keys) => WithKey(isFullScreen ? "Exit full screen" : "Full screen", keys);
 
 	public static string FullScreenGlyph(bool isFullScreen) => isFullScreen ? "" : "";
 
@@ -200,45 +209,46 @@ public sealed partial class PlayerWindow : Window
 	private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
 	{
 		e.Handled = true;
+		var keys = Shortcuts;
 		switch (e.Key)
 		{
-			case VirtualKey.Space or VirtualKey.K:
-				ViewModel.PlayPauseCommand.Execute(null);
-				break;
-			case VirtualKey.Left or VirtualKey.J:
-				_ = ViewModel.SeekAsync(TimeSpan.FromSeconds(ViewModel.Position) - s_arrowSeek);
-				break;
-			case VirtualKey.Right or VirtualKey.L:
-				_ = ViewModel.SeekAsync(TimeSpan.FromSeconds(ViewModel.Position) + s_arrowSeek);
-				break;
-			case VirtualKey.Up:
-				ViewModel.Volume = Math.Min(100, ViewModel.Volume + 5);
-				break;
-			case VirtualKey.Down:
-				ViewModel.Volume = Math.Max(0, ViewModel.Volume - 5);
-				break;
-			case VirtualKey.M:
-				ViewModel.ToggleMuteCommand.Execute(null);
-				break;
-			case VirtualKey.F or VirtualKey.F11:
-				ViewModel.ToggleFullScreenCommand.Execute(null);
-				break;
-			case VirtualKey.E:
-				ViewModel.ToggleEpisodeListCommand.Execute(null);
-				break;
 			case VirtualKey.Escape when ViewModel.IsFullScreen:
 				ViewModel.IsFullScreen = false;
 				break;
-			case VirtualKey.PageUp or VirtualKey.S when ViewModel.HasOffer:
+			case var key when KeyboardShortcuts.IsPressed(keys.PlayPauseKeys, key):
+				ViewModel.PlayPauseCommand.Execute(null);
+				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.SeekBackKeys, key):
+				_ = ViewModel.SeekAsync(TimeSpan.FromSeconds(ViewModel.Position) - s_arrowSeek);
+				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.SeekForwardKeys, key):
+				_ = ViewModel.SeekAsync(TimeSpan.FromSeconds(ViewModel.Position) + s_arrowSeek);
+				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.VolumeUpKeys, key):
+				ViewModel.Volume = Math.Min(100, ViewModel.Volume + 5);
+				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.VolumeDownKeys, key):
+				ViewModel.Volume = Math.Max(0, ViewModel.Volume - 5);
+				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.MuteKeys, key):
+				ViewModel.ToggleMuteCommand.Execute(null);
+				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.FullScreenKeys, key):
+				ViewModel.ToggleFullScreenCommand.Execute(null);
+				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.EpisodesKeys, key):
+				ViewModel.ToggleEpisodeListCommand.Execute(null);
+				break;
+			case var key when ViewModel.HasOffer && KeyboardShortcuts.IsPressed(keys.SkipKeys, key):
 				ViewModel.AcceptOfferCommand.Execute(null);
 				break;
-			case VirtualKey.PageUp or VirtualKey.S when ViewModel.IsSkipButtonVisible:
+			case var key when ViewModel.IsSkipButtonVisible && KeyboardShortcuts.IsPressed(keys.SkipKeys, key):
 				ViewModel.SkipAheadCommand.Execute(null);
 				break;
-			case VirtualKey.A:
+			case var key when KeyboardShortcuts.IsPressed(keys.AspectRatioKeys, key):
 				ViewModel.CycleAspectRatioCommand.Execute(null);
 				break;
-			case VirtualKey.N:
+			case var key when KeyboardShortcuts.IsPressed(keys.NextEpisodeKeys, key):
 				ViewModel.NextEpisodeCommand.Execute(null);
 				break;
 			default:

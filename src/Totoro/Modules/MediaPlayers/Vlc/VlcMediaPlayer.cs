@@ -129,7 +129,7 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 		viewModel.Ended += (_, _) => PlaybackStopped?.Invoke(this, EventArgs.Empty);
 		viewModel.EpisodeRequested += (_, e) => EpisodeRequested?.Invoke(this, e);
 
-		var window = new PlayerWindow(viewModel);
+		var window = new PlayerWindow(viewModel, settings.Value);
 		window.Closed += async (_, _) =>
 		{
 			_window = null;

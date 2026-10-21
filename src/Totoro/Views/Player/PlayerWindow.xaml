@@ -11,7 +11,7 @@
     <!--
         Laid out like Windows' Media Player: the video fills the window, title bar included, with the title bar and the
         controls over it, see-through. They slide away while it plays and nothing's happening, and come back with the
-        pointer or a key. Always dark, like any video player. Keys: see OnPreviewKeyDown.
+        pointer or a key. Always dark, like any video player. Keys: see OnPreviewKeyDown, and the settings it reads them from.
     -->
     <Grid
         x:Name="Root"
@@ -380,10 +380,10 @@
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Button
                                             Margin="0"
-                                            AutomationProperties.Name="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted), Mode=OneWay}"
+                                            AutomationProperties.Name="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted, Shortcuts.MuteKeys), Mode=OneWay}"
                                             Command="{x:Bind ViewModel.ToggleMuteCommand}"
                                             Style="{StaticResource PlayerButtonStyle}"
-                                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted), Mode=OneWay}">
+                                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted, Shortcuts.MuteKeys), Mode=OneWay}">
                                             <FontIcon FontSize="16" Glyph="{x:Bind local:PlayerWindow.VolumeGlyph(ViewModel.IsMuted, ViewModel.Volume), Mode=OneWay}" />
                                         </Button>
                                         <Slider
@@ -444,13 +444,13 @@
                             Height="40"
                             Margin="2,0"
                             Padding="0"
-                            AutomationProperties.Name="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying), Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying, Shortcuts.PlayPauseKeys), Mode=OneWay}"
                             Background="{ThemeResource ControlFillColorDefaultBrush}"
                             BorderBrush="{StaticResource PlayRingBrush}"
                             BorderThickness="2"
                             Command="{x:Bind ViewModel.PlayPauseCommand}"
                             CornerRadius="20"
-                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying), Mode=OneWay}">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.PlayPauseName(ViewModel.IsPlaying, Shortcuts.PlayPauseKeys), Mode=OneWay}">
                             <Button.Resources>
                                 <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="PlayRingBrush" />
                                 <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="PlayRingBrush" />
@@ -476,7 +476,7 @@
                             Command="{x:Bind ViewModel.NextEpisodeCommand}"
                             IsEnabled="{x:Bind ViewModel.HasNextEpisode, Mode=OneWay}"
                             Style="{StaticResource PlayerButtonStyle}"
-                            ToolTipService.ToolTip="Next episode (N)">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Next episode', Shortcuts.NextEpisodeKeys)}">
                             <FontIcon FontSize="16" Glyph="&#xE893;" />
                         </Button>
                     </AppBarElementContainer>
@@ -508,7 +508,7 @@
                             AutomationProperties.Name="Episodes"
                             Click="OnEpisodesButtonClick"
                             Style="{StaticResource PlayerButtonStyle}"
-                            ToolTipService.ToolTip="Episodes (E)">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Episodes', Shortcuts.EpisodesKeys)}">
                             <FontIcon FontSize="16" Glyph="&#xE8FD;" />
                             <FlyoutBase.AttachedFlyout>
                                 <Flyout
@@ -659,7 +659,7 @@
                         <Button
                             AutomationProperties.Name="Aspect ratio"
                             Style="{StaticResource PlayerButtonStyle}"
-                            ToolTipService.ToolTip="Aspect ratio (A)">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Aspect ratio', Shortcuts.AspectRatioKeys)}">
                             <FontIcon FontSize="16" Glyph="&#xE799;" />
                             <Button.Flyout>
                                 <MenuFlyout Opening="OnAspectRatioMenuOpening" Placement="Top" />
@@ -668,10 +668,10 @@
                     </AppBarElementContainer>
                     <AppBarElementContainer VerticalAlignment="Center">
                         <Button
-                            AutomationProperties.Name="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen), Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen, Shortcuts.FullScreenKeys), Mode=OneWay}"
                             Command="{x:Bind ViewModel.ToggleFullScreenCommand}"
                             Style="{StaticResource PlayerButtonStyle}"
-                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen), Mode=OneWay}">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen, Shortcuts.FullScreenKeys), Mode=OneWay}">
                             <FontIcon FontSize="16" Glyph="{x:Bind local:PlayerWindow.FullScreenGlyph(ViewModel.IsFullScreen), Mode=OneWay}" />
                         </Button>
                     </AppBarElementContainer>

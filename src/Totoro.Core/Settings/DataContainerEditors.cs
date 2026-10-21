@@ -15,6 +15,9 @@ public static class DataContainerEditors
 	public const string ComboBox = "ComboBox";
 	public const string FileBrowser = "FileBrowser";
 
+	/// <summary>Keyboard shortcuts, as keycaps: a string of key names (VirtualKey's) separated by commas, e.g. "Space, K".</summary>
+	public const string Shortcut = "Shortcut";
+
 	/// <summary>A button for a <see cref="SettingsAction"/> value: something to do, not a value to save.</summary>
 	public const string Button = "Button";
 }
