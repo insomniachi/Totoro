@@ -276,6 +276,14 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		return Task.CompletedTask;
 	}
 
+	/// <summary>The chapters in the video file itself (<see cref="Chapters"/> are the ones set from outside).</summary>
+	public IReadOnlyList<MediaChapter> GetFileChapters()
+	{
+		return MediaPlayer?.FullChapterDescriptions() is { } chapters
+			? [.. chapters.Select(x => new MediaChapter(x.Name ?? "", TimeSpan.FromMilliseconds(x.TimeOffset)))]
+			: [];
+	}
+
 	public async Task ShowMessageAsync(string text, TimeSpan duration)
 	{
 		_message?.Cancel();

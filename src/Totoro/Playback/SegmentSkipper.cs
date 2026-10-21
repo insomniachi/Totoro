@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
@@ -12,7 +13,7 @@ namespace Totoro.Playback;
 /// into one doesn't skip it again. Offering to skip is a button over the video in the built-in player (as playback
 /// enters the segment, for a few seconds), and a hint to press the next-chapter key in others (once).
 /// </summary>
-internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, SkipMode endingMode, ILogger logger)
+internal sealed partial class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, SkipMode endingMode, ILogger logger)
 {
 	// How long the "press Page Up to skip" hint stays up, at most.
 	private static readonly TimeSpan s_hintDuration = TimeSpan.FromSeconds(8);
@@ -25,21 +26,21 @@ internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, 
 	private MediaSegment? _offered;
 	private CancellationTokenSource? _offer;
 
-	/// <summary>Gets the episode's segments (they're matched to its length) and marks them in the player.</summary>
+	/// <summary>
+	/// Gets the episode's segments, from the video's own chapters when they mark them, else from the provider (matched
+	/// to its length), and marks them in the player.
+	/// </summary>
 	public async Task LoadAsync(IMediaSegmentsProvider? provider, AnimeModel anime, int episode, TimeSpan duration, CancellationToken ct)
 	{
-		if (provider is null || anime.ExternalIds.MyAnimeList <= 0)
-		{
-			return;
-		}
-
 		try
 		{
-			List<MediaSegment> segments =
-			[
-				.. (await provider.GetSegmentsAsync(anime.ExternalIds.MyAnimeList, episode, duration, ct))
-				   .Where(x => x.End > x.Start && x.Start < duration)
-			];
+			var segments = FromChapters(await player.GetChaptersAsync(), duration);
+			if (segments.Count == 0 && provider is not null && anime.ExternalIds.MyAnimeList > 0)
+			{
+				segments = await provider.GetSegmentsAsync(anime.ExternalIds.MyAnimeList, episode, duration, ct);
+			}
+
+			segments = [.. segments.Where(x => x.End > x.Start && x.Start < duration)];
 			if (segments.Count == 0)
 			{
 				return;
@@ -157,6 +158,60 @@ internal sealed class SegmentSkipper(IMediaPlayer player, SkipMode openingMode, 
 				break;
 		}
 	}
+
+	/// <summary>
+	/// The opening, ending and recap among a video's own chapters: by their titles ("Opening", "OP2", "Credits"...);
+	/// else, among chapters with only a number for a title, by length, as an opening or ending is about a minute and a
+	/// half: the first such chapter in the first half is the opening, the last in the second half the ending.
+	/// </summary>
+	internal static List<MediaSegment> FromChapters(IReadOnlyList<MediaChapter> chapters, TimeSpan duration)
+	{
+		var sorted = chapters.OrderBy(x => x.Start).ToList();
+		List<(MediaChapter Chapter, TimeSpan End)> spans = [.. sorted.Select((x, i) => (x, i + 1 < sorted.Count ? sorted[i + 1].Start : duration))];
+
+		List<MediaSegment> segments = [];
+		foreach (var (chapter, end) in spans)
+		{
+			MediaSegmentType? type = OpeningTitle().IsMatch(chapter.Title) ? MediaSegmentType.Opening
+				: EndingTitle().IsMatch(chapter.Title) ? MediaSegmentType.Ending
+				: RecapTitle().IsMatch(chapter.Title) ? MediaSegmentType.Recap
+				: null;
+			if (type is { } known)
+			{
+				segments.Add(new MediaSegment(known, chapter.Start, end));
+			}
+		}
+
+		bool IsSong((MediaChapter Chapter, TimeSpan End) x) =>
+			UntitledChapter().IsMatch(x.Chapter.Title) && x.End - x.Chapter.Start >= TimeSpan.FromSeconds(75) && x.End - x.Chapter.Start <= TimeSpan.FromSeconds(105);
+
+		if (segments.All(x => x.Type != MediaSegmentType.Opening) &&
+			spans.FirstOrDefault(x => IsSong(x) && x.Chapter.Start < duration / 2) is { Chapter: not null } opening)
+		{
+			segments.Add(new MediaSegment(MediaSegmentType.Opening, opening.Chapter.Start, opening.End));
+		}
+
+		if (segments.All(x => x.Type != MediaSegmentType.Ending) &&
+			spans.LastOrDefault(x => IsSong(x) && x.Chapter.Start >= duration / 2) is { Chapter: not null } ending)
+		{
+			segments.Add(new MediaSegment(MediaSegmentType.Ending, ending.Chapter.Start, ending.End));
+		}
+
+		return [.. segments.OrderBy(x => x.Start)];
+	}
+
+	[GeneratedRegex(@"\b(op\d*|opening|intro)\b", RegexOptions.IgnoreCase)]
+	private static partial Regex OpeningTitle();
+
+	[GeneratedRegex(@"\b(ed\d*|ending|credits|outro)\b", RegexOptions.IgnoreCase)]
+	private static partial Regex EndingTitle();
+
+	[GeneratedRegex(@"\brecap\b", RegexOptions.IgnoreCase)]
+	private static partial Regex RecapTitle();
+
+	// "", "Chapter 3", "05", "00:01:30.000": says nothing about what's in it.
+	[GeneratedRegex(@"^\s*(chapter\s*)?[\d:.\s]*$", RegexOptions.IgnoreCase)]
+	private static partial Regex UntitledChapter();
 
 	/// <summary>
 	/// The segments as chapters, with "Episode" chapters for what's between them, so each segment ends where the

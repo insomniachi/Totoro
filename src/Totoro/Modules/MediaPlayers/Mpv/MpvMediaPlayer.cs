@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipes;
@@ -21,6 +22,10 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 
 	// The IPC pipe to the current mpv, once connected; commands sent before then are dropped.
 	private NamedPipeClientStream? _pipe;
+
+	// Replies mpv hasn't sent yet, by request id.
+	private readonly ConcurrentDictionary<int, TaskCompletionSource<JsonElement>> _requests = new();
+	private int _lastRequest;
 
 	public Guid Id => MpvModule.Id;
 
@@ -105,7 +110,38 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		return SendAsync("set_property", "chapter-list", list);
 	}
 
-	private async Task SendAsync(params object[] command)
+	public async Task<IReadOnlyList<MediaChapter>> GetChaptersAsync()
+	{
+		var id = Interlocked.Increment(ref _lastRequest);
+		var reply = new TaskCompletionSource<JsonElement>(TaskCreationOptions.RunContinuationsAsynchronously);
+		_requests[id] = reply;
+		try
+		{
+			await SendMessageAsync(new { command = new object[] { "get_property", "chapter-list" }, request_id = id });
+			var data = await reply.Task.WaitAsync(TimeSpan.FromSeconds(2));
+			return data.ValueKind != JsonValueKind.Array
+				? []
+				:
+				[
+					.. data.EnumerateArray().Select(x => new MediaChapter(
+						x.TryGetProperty("title", out var title) ? title.GetString() ?? "" : "",
+						TimeSpan.FromSeconds(x.GetProperty("time").GetDouble())))
+				];
+		}
+		catch (TimeoutException)
+		{
+			// Not connected, or mpv was closed meanwhile.
+			return [];
+		}
+		finally
+		{
+			_requests.TryRemove(id, out _);
+		}
+	}
+
+	private Task SendAsync(params object[] command) => SendMessageAsync(new { command });
+
+	private async Task SendMessageAsync(object message)
 	{
 		if (_pipe is not { IsConnected: true } pipe)
 		{
@@ -115,7 +151,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		await _writeLock.WaitAsync();
 		try
 		{
-			await WriteAsync(pipe, command);
+			await WriteAsync(pipe, message);
 		}
 		catch (Exception ex) when (ex is IOException or ObjectDisposedException)
 		{
@@ -177,8 +213,8 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 				}
 			}
 
-			await WriteAsync(pipe, "observe_property", 1, "duration");
-			await WriteAsync(pipe, "observe_property", 2, "time-pos");
+			await WriteAsync(pipe, new { command = new object[] { "observe_property", 1, "duration" } });
+			await WriteAsync(pipe, new { command = new object[] { "observe_property", 2, "time-pos" } });
 			if (ReferenceEquals(process, _process))
 			{
 				_pipe = pipe;
@@ -204,6 +240,12 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	{
 		using var message = JsonDocument.Parse(line);
 		var root = message.RootElement;
+		if (root.TryGetProperty("request_id", out var request) && _requests.TryRemove(request.GetInt32(), out var reply))
+		{
+			reply.TrySetResult(root.TryGetProperty("data", out var result) ? result.Clone() : default);
+			return;
+		}
+
 		if (!root.TryGetProperty("event", out var type) || type.GetString() != "property-change" ||
 			!root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Number)
 		{
@@ -222,9 +264,9 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		}
 	}
 
-	private static async Task WriteAsync(Stream pipe, params object[] command)
+	private static async Task WriteAsync(Stream pipe, object message)
 	{
-		var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { command }) + "\n");
+		var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message) + "\n");
 		await pipe.WriteAsync(bytes);
 		await pipe.FlushAsync();
 	}

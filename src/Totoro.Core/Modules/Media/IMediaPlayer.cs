@@ -32,6 +32,9 @@ public interface IMediaPlayer
 
 	/// <summary>Replaces the chapters of what's playing, e.g. to mark the opening and ending.</summary>
 	Task SetChaptersAsync(IReadOnlyList<MediaChapter> chapters);
+
+	/// <summary>The chapters in the video file itself, once it's loaded (its duration is known); none if it has none.</summary>
+	Task<IReadOnlyList<MediaChapter>> GetChaptersAsync() => Task.FromResult<IReadOnlyList<MediaChapter>>([]);
 }
 
 /// <param name="Title">What the player shows as the title, e.g. "Frieren - Episode 5".</param>

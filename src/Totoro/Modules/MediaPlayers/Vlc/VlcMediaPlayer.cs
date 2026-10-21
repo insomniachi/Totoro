@@ -90,6 +90,8 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 
 	public Task SetChaptersAsync(IReadOnlyList<MediaChapter> chapters) => _window?.ViewModel.SetChaptersAsync(chapters) ?? Task.CompletedTask;
 
+	public Task<IReadOnlyList<MediaChapter>> GetChaptersAsync() => Task.FromResult(_window?.ViewModel.GetFileChapters() ?? []);
+
 	public Task SetPausedAsync(bool paused) => _window?.ViewModel.SetPausedAsync(paused) ?? Task.CompletedTask;
 
 	public IReadOnlyList<MediaTrack> GetTracks() => _window?.ViewModel.GetTracks() ?? [];
