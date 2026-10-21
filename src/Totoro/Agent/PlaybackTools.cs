@@ -92,10 +92,10 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 				 "it's marked watched when they finish it.")]
 	public async Task<PlayResult> PlayEpisodeAsync(
 		long animeId,
-		[Description("The episode's number; leave it out for the next one the user hasn't watched.")] int? episode = null)
+		[Description("The episode's number; leave it out for the next one the user hasn't watched (past fillers, if they skip them).")] int? episode = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
-		var number = episode ?? WatchService.NextEpisode(anime);
+		var number = episode ?? await watch.NextToWatchAsync(anime);
 		if (watch.GetProvider(anime) is not { } provider)
 		{
 			throw new AgentToolException("There's no anime provider to watch from.");

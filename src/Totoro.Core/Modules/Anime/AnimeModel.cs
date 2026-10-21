@@ -163,6 +163,9 @@ public class EpisodeInfo
 
 	[JsonIgnore] public bool IsSpecial { get; set; }
 
+	/// <summary>Whether it's filler (not from the source material), as MyAnimeList says.</summary>
+	[JsonIgnore] public bool IsFiller { get; set; }
+
 	public void UpdateIfNotPresent(EpisodeInfo newInfo)
 	{
 		if (string.IsNullOrEmpty(Titles.Japanese))

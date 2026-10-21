@@ -299,7 +299,27 @@ public sealed partial class WatchService(
 		}
 	}
 
-	public Task WatchNextAsync(AnimeModel anime) => WatchAsync(anime, NextEpisode(anime));
+	public async Task WatchNextAsync(AnimeModel anime) => await WatchAsync(anime, await NextToWatchAsync(anime));
+
+	/// <summary><see cref="NextEpisode"/>, or the first after it that isn't filler if the user skips fillers.</summary>
+	public Task<int> NextToWatchAsync(AnimeModel anime) => SkipFillersAsync(anime, NextEpisode(anime));
+
+	/// <summary><paramref name="number"/>, or the first episode after it that isn't filler if the user skips fillers.</summary>
+	private async Task<int> SkipFillersAsync(AnimeModel anime, int number)
+	{
+		if (!preferences.SkipFillers)
+		{
+			return number;
+		}
+
+		var fillers = await anime.GetFillersAsync();
+		while (fillers.Contains(number))
+		{
+			number++;
+		}
+
+		return number;
+	}
 
 	/// <summary>Plays episode <paramref name="number"/>, from where it was left off if it wasn't finished.</summary>
 	public Task WatchAsync(AnimeModel anime, int number) => RunAsync(anime, number, async ct =>
@@ -651,7 +671,7 @@ public sealed partial class WatchService(
 			return;
 		}
 
-		var next = number + 1;
+		var next = await SkipFillersAsync(anime, number + 1);
 		// Not offered past the last episode, or the last aired one: a provider won't have it yet.
 		if (!offerEpisodes || anime.TotalEpisodes is > 0 and var total && next > total ||
 			EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is > 0 and var aired && next > aired)

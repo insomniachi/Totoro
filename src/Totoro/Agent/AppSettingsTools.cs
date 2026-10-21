@@ -31,6 +31,8 @@ public sealed record AppSettings(
 	SkipMode EndingSkipMode,
 	[property: Description("Whether the next episode plays by itself when one is finished.")]
 	bool PlayNextAutomatically,
+	[property: Description("Whether the next episode (to watch, or offered after one) skips filler episodes; a filler asked for by number still plays.")]
+	bool SkipFillers,
 	[property: Description("Whether the episode playing shows as the user's activity on Discord.")]
 	bool ShowOnDiscord,
 	[property: Description("The page the app opens on; one of startupPages.")]
@@ -93,6 +95,7 @@ public sealed class AppSettingsTools(
 			preferences.OpeningSkipMode,
 			preferences.EndingSkipMode,
 			preferences.PlayNextAutomatically,
+			preferences.SkipFillers,
 			preferences.ShowOnDiscord,
 			preferences.FindStartupItem(startupPages)?.Label ?? "",
 			[.. startupPages.Select(x => x.Label)],
@@ -112,6 +115,7 @@ public sealed class AppSettingsTools(
 		SkipMode? openingSkipMode = null,
 		SkipMode? endingSkipMode = null,
 		bool? playNextAutomatically = null,
+		[Description("Whether the next episode skips filler episodes.")] bool? skipFillers = null,
 		[Description("Whether the episode playing shows as the user's activity on Discord.")] bool? showOnDiscord = null,
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null,
 		[Description("A folder to download episodes to; empty for the default (Videos\\Totoro).")] string? downloadFolder = null,
@@ -178,6 +182,11 @@ public sealed class AppSettingsTools(
 		if (playNextAutomatically is { } playNext)
 		{
 			preferences.PlayNextAutomatically = playNext;
+		}
+
+		if (skipFillers is { } skip)
+		{
+			preferences.SkipFillers = skip;
 		}
 
 		if (showOnDiscord is { } discord)

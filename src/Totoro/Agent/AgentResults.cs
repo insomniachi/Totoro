@@ -115,6 +115,8 @@ public sealed record EpisodeSummary(
 	int Number,
 	string Title,
 	bool IsSpecial,
+	[property: Description("Whether it's filler: not from the source material.")]
+	bool IsFiller,
 	DateOnly? Aired,
 	int? RuntimeMinutes,
 	[property: Description("Whether the user has watched it, going by their list entry.")]
@@ -131,6 +133,7 @@ public sealed record EpisodeSummary(
 			episode.EpisodeNumber,
 			title,
 			episode.IsSpecial,
+			episode.IsFiller,
 			episode.AirDateUtc is { } aired ? DateOnly.FromDateTime(aired.LocalDateTime) : null,
 			episode.Runtime > 0 ? episode.Runtime : null,
 			!episode.IsSpecial && episode.EpisodeNumber <= watched,

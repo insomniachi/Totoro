@@ -129,6 +129,13 @@
                 <ToggleSwitch IsOn="{x:Bind ViewModel.PlayNextAutomatically, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="The next episode skips filler (as MyAnimeList marks it). A filler episode you pick yourself still plays." Header="Skip filler episodes">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE893;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.SkipFillers, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard Description="While an episode plays, show the anime and episode as your activity on Discord (when Discord is running)." Header="Show what you're watching on Discord">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE8BD;" />

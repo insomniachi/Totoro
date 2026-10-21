@@ -131,6 +131,7 @@ public partial class SettingsViewModel : ObservableObject
 		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name, IconOf(x.Id)))];
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
+		SkipFillers = preferences.SkipFillers;
 		ShowOnDiscord = preferences.ShowOnDiscord;
 
 		// Only modules with something to edit.
@@ -217,6 +218,11 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool PlayNextAutomatically { get; set; }
 
 	partial void OnPlayNextAutomaticallyChanged(bool value) => _preferences.PlayNextAutomatically = value;
+
+	[ObservableProperty]
+	public partial bool SkipFillers { get; set; }
+
+	partial void OnSkipFillersChanged(bool value) => _preferences.SkipFillers = value;
 
 	/// <summary>Whether the episode playing shows as the user's activity on Discord.</summary>
 	[ObservableProperty]

@@ -67,6 +67,11 @@ public sealed partial class EpisodesTab(
 					?? (episode.IsSpecial ? "Special" : $"Episode {episode.EpisodeNumber}");
 
 		List<string> details = [];
+		if (episode.IsFiller)
+		{
+			details.Add("Filler");
+		}
+
 		if (episode.AirDateUtc is { } aired)
 		{
 			details.Add(aired.ToLocalTime().ToString("d MMM yyyy"));

@@ -20,6 +20,7 @@ public static class PlaybackPreferences
 	public const string OpeningSkipKey = "OpeningSkipMode";
 	public const string EndingSkipKey = "EndingSkipMode";
 	public const string PlayNextKey = "PlayNextAutomatically";
+	public const string SkipFillersKey = "SkipFillers";
 	public const string ShowOnDiscordKey = "ShowOnDiscord";
 
 	/// <summary>Preference key holding the id of the anime provider episodes are found on (unless an anime has its own).</summary>
@@ -49,6 +50,13 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(PlayNextKey, false);
 			set => preferences.SaveKey(PlayNextKey, value);
+		}
+
+		/// <summary>Whether the next episode (to watch, or offered after one) skips filler; a filler picked by its number still plays.</summary>
+		public bool SkipFillers
+		{
+			get => preferences.ReadKey(SkipFillersKey, false);
+			set => preferences.SaveKey(SkipFillersKey, value);
 		}
 
 		/// <summary>Whether the episode playing shows as the user's activity on Discord.</summary>
