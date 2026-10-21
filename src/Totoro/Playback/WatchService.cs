@@ -652,7 +652,9 @@ public sealed partial class WatchService(
 		}
 
 		var next = number + 1;
-		if (!offerEpisodes || anime.TotalEpisodes is > 0 and var total && next > total)
+		// Not offered past the last episode, or the last aired one: a provider won't have it yet.
+		if (!offerEpisodes || anime.TotalEpisodes is > 0 and var total && next > total ||
+			EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is > 0 and var aired && next > aired)
 		{
 			// Said with the card's colour and the check, not words.
 			Show(PlaybackStatusKind.Success, "");
