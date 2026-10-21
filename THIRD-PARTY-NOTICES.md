@@ -9,7 +9,6 @@ given. This file is shipped with the app.
 |---|---|---|---|
 | libvlc 3.0.24 (VideoLAN.LibVLC.Windows) | LGPL-2.1-or-later | the VideoLAN team and VLC authors | https://code.videolan.org/videolan/vlc |
 | LibVLCSharp 3.10.1 (LibVLCSharp.WinUI) | LGPL-2.1-or-later | VideoLAN | https://code.videolan.org/videolan/LibVLCSharp |
-| rqbit 9.0.1 | Apache-2.0 | Igor Katson | https://github.com/ikatson/rqbit |
 | Windows Community Toolkit (CommunityToolkit.WinUI.\*, CommunityToolkit.Labs.WinUI.\*) | MIT | .NET Foundation and Contributors | https://github.com/CommunityToolkit/Windows |
 | MVVM Toolkit (CommunityToolkit.Mvvm) | MIT | .NET Foundation and Contributors | https://github.com/CommunityToolkit/dotnet |
 | DevWinUI | MIT | Mahdi Hosseini | https://github.com/ghost1372/DevWinUI |
@@ -32,11 +31,11 @@ given. This file is shipped with the app.
 | Windows App SDK, WebView2 | Microsoft Software License Terms | Microsoft Corporation | https://github.com/microsoft/WindowsAppSDK |
 
 libvlc and LibVLCSharp are separate libraries the app loads; you may replace them with your own builds. Their license is
-in `libvlc\win-x64\COPYING.LIB`, with where their source is in `libvlc\win-x64\NOTICE.txt`. rqbit's license is in
-`Tools\rqbit\LICENSE.txt`.
+in `libvlc\win-x64\COPYING.LIB`, with where their source is in `libvlc\win-x64\NOTICE.txt`.
 
 mpv, FFmpeg and yt-dlp aren't shipped: the MPV module's settings download them from their own releases
-(shinchiro/mpv-winbuild-cmake, yt-dlp/yt-dlp) when the user asks, under their own licenses.
+(shinchiro/mpv-winbuild-cmake, yt-dlp/yt-dlp) when the user asks, under their own licenses. Nor is rqbit: the rqbit
+module downloads it from its own releases (ikatson/rqbit) the first time a torrent is played, or when the user asks.
 
 ## The MIT License
 

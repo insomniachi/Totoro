@@ -24,7 +24,7 @@ Then:
 dotnet build src/Totoro/Totoro.csproj -c Release -p:Platform=x64
 ```
 
-Or open `Totoro.slnx` in Visual Studio and run the `Totoro` project. The first build downloads rqbit, checking its SHA-256. libvlc comes from NuGet.
+Or open `Totoro.slnx` in Visual Studio and run the `Totoro` project. libvlc comes from NuGet. rqbit and mpv aren't part of the build: the app downloads them into its data folder.
 
 ### The installer
 

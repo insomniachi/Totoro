@@ -67,6 +67,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; libvlc loads every plugin in its folder: ones an earlier version had and this one leaves out would be left behind
 ; otherwise, and loaded.
 Type: filesandordirs; Name: "{app}\libvlc"
+; rqbit, which came with earlier versions: it's downloaded into the app's data now.
+Type: filesandordirs; Name: "{app}\Tools\rqbit"
+Type: dirifempty; Name: "{app}\Tools"
 
 [Files]
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

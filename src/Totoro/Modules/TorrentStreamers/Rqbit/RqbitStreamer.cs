@@ -17,7 +17,7 @@ namespace Totoro.Modules.TorrentStreamers.Rqbit;
 /// pieces being read and fetches them first. What's streamed goes to the Torrents folder in the app's data, and is
 /// deleted when the stream ends unless the settings keep it; an episode downloaded goes to the folder it's for.
 /// </summary>
-internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<RqbitStreamer> logger) : ITorrentStreamer, IDisposable
+internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, RqbitInstaller installer, ILogger<RqbitStreamer> logger) : ITorrentStreamer, IDisposable
 {
 	private static readonly TimeSpan s_startTimeout = TimeSpan.FromSeconds(15);
 	private static readonly TimeSpan s_pollInterval = TimeSpan.FromMilliseconds(500);
@@ -40,10 +40,8 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 	/// <summary>Where torrents are downloaded to.</summary>
 	public static string DownloadFolder => FileHelper.GetPath("Torrents");
 
-	/// <summary>The rqbit.exe that comes with Totoro.</summary>
-	private static string FileName => Path.Combine(AppContext.BaseDirectory, "Tools", "rqbit", "rqbit.exe");
-
-	public bool IsAvailable() => File.Exists(FileName);
+	// Always: rqbit is downloaded the first time it's needed (see StartAsync).
+	public bool IsAvailable() => true;
 
 	public async Task<TorrentStream> StreamAsync(Uri torrent, Func<IReadOnlyList<TorrentFile>, TorrentFile?> selectFile, IProgress<string>? progress,
 												 CancellationToken ct)
@@ -257,9 +255,13 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 				return _api;
 			}
 
-			if (!IsAvailable())
+			if (!RqbitInstaller.IsInstalled)
 			{
-				throw new TorrentStreamException("rqbit wasn't found: it comes with Totoro, so reinstall Totoro.");
+				await installer.InstallAsync(ct);
+				if (!RqbitInstaller.IsInstalled)
+				{
+					throw new TorrentStreamException(installer.Error is { Length: > 0 } error ? error : "rqbit is downloading: try again in a moment.");
+				}
 			}
 
 			if (!settings.Value.KeepDownloads)
@@ -272,7 +274,7 @@ internal sealed class RqbitStreamer(IModuleSettings<Settings> settings, ILogger<
 			var api = new Uri($"http://127.0.0.1:{GetFreePort()}/");
 			var process = new Process
 			{
-				StartInfo = new ProcessStartInfo(FileName)
+				StartInfo = new ProcessStartInfo(RqbitInstaller.Exe)
 				{
 					ArgumentList =
 					{
