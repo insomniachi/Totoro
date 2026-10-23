@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Modules.Streaming;
@@ -33,6 +34,28 @@ public sealed partial class DownloadsViewModel(DownloadService downloads, IDialo
 	}
 
 	public void Delete(DownloadedAnime anime) => Run(() => downloads.Delete(anime.Name));
+
+	/// <summary>What finding openings and endings is doing, or what it found; empty, never null, when there's nothing to say.</summary>
+	[ObservableProperty] public partial string Status { get; set; } = "";
+
+	/// <summary>Finds the openings and endings of the anime's episodes that don't have them yet.</summary>
+	public async Task FindSegmentsAsync(DownloadedAnime anime)
+	{
+		Status = $"Finding the openings and endings of {anime.Title}'s episodes…";
+		try
+		{
+			var (looked, found) = await downloads.FindMissingSegmentsAsync(anime.Name);
+			Error = "";
+			Status = looked == 0
+				? $"All of {anime.Title}'s episodes have them already."
+				: $"Found the opening and ending of {found} of {looked} episodes of {anime.Title}.";
+		}
+		catch (Exception ex) when (ex is DownloadException or JsonException or IOException or UnauthorizedAccessException)
+		{
+			Status = "";
+			Error = ex.Message;
+		}
+	}
 
 	protected override Task OnNavigatedToInternalAsync()
 	{

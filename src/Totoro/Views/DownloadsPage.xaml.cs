@@ -26,6 +26,8 @@ public sealed partial class DownloadsPage : Page
 
 	private void OnEditInfoClick(object sender, RoutedEventArgs e) => _ = ViewModel?.EditInfoAsync((DownloadedAnime)((FrameworkElement)sender).Tag);
 
+	private void OnFindSegmentsClick(object sender, RoutedEventArgs e) => _ = ViewModel?.FindSegmentsAsync((DownloadedAnime)((FrameworkElement)sender).Tag);
+
 	private void OnDeleteClick(object sender, RoutedEventArgs e)
 	{
 		// The confirmation flyout the button's in: its anime is about to go from the list.

@@ -93,11 +93,12 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISong
 	/// <summary>The anime's openings, then its endings, then its insert songs; none if they aren't known.</summary>
 	public async Task<IReadOnlyList<AnimeSong>> GetSongsAsync(AnimeModel anime, CancellationToken ct = default)
 	{
-		if (await anime.FindIdAsync(nameof(AnimeId.MyAnimeList), ct) is not { } malId)
-		{
-			return [];
-		}
+		return await anime.FindIdAsync(nameof(AnimeId.MyAnimeList), ct) is { } malId ? await GetSongsAsync(malId, ct) : [];
+	}
 
+	/// <summary>The songs of the anime with MyAnimeList id <paramref name="malId"/>, as <see cref="GetSongsAsync(AnimeModel, CancellationToken)"/>.</summary>
+	public async Task<IReadOnlyList<AnimeSong>> GetSongsAsync(long malId, CancellationToken ct = default)
+	{
 		if (_found.TryGetValue(malId, out var known))
 		{
 			return known;

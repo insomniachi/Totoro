@@ -64,6 +64,11 @@
                 IsOpen="{x:Bind helpers:CommonConverters.IsAny(ViewModel.Error), Mode=OneWay}"
                 Message="{x:Bind ViewModel.Error, Mode=OneWay}"
                 Severity="Error" />
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{x:Bind helpers:CommonConverters.IsAny(ViewModel.Status), Mode=OneWay}"
+                Message="{x:Bind ViewModel.Status, Mode=OneWay}"
+                Severity="Informational" />
         </StackPanel>
 
         <SelectorBar
@@ -137,6 +142,13 @@
                                     Tag="{x:Bind}"
                                     ToolTipService.ToolTip="Edit info">
                                     <FontIcon FontSize="16" Glyph="&#xE70F;" />
+                                </Button>
+                                <Button
+                                    AutomationProperties.Name="Find openings and endings"
+                                    Click="OnFindSegmentsClick"
+                                    Tag="{x:Bind}"
+                                    ToolTipService.ToolTip="Find the openings and endings of episodes that don't have them yet">
+                                    <FontIcon FontSize="16" Glyph="&#xE8D6;" />
                                 </Button>
                                 <Button AutomationProperties.Name="Delete" ToolTipService.ToolTip="Delete">
                                     <FontIcon FontSize="16" Glyph="&#xE74D;" />

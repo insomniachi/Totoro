@@ -99,6 +99,7 @@ public sealed record DownloadedAnime(string Name, string Path, DownloadInfo? Inf
 		Info?.AnilistId is { } anilist ? $"AniList {anilist}" : null,
 		Info?.MalId is { } mal ? $"MyAnimeList {mal}" : null,
 		Info is not null && Info.AnilistId is null && Info.MalId is null ? "No ids" : null,
+		Info?.Segments is { Count: > 0 } segments ? $"Opening and ending of {segments.Count} of {Episodes}" : null,
 	}.Where(x => x is not null));
 
 	public void ShowInExplorer() => Process.Start("explorer.exe", $"\"{Path}\"");
@@ -465,10 +466,7 @@ public sealed class DownloadService(
 			item.State = DownloadState.Completed;
 			RefreshLibrary();
 			// After it's done, so the next download doesn't wait for it.
-			if (anime is not null)
-			{
-				_ = DetectSegmentsAsync(anime, number, path, item.Folder);
-			}
+			_ = DetectSegmentsAsync(number, path, item.Folder);
 		}
 		catch (Exception ex)
 		{
@@ -539,27 +537,70 @@ public sealed class DownloadService(
 	}
 
 	/// <summary>
+	/// Finds the openings and endings of the anime's downloaded episodes that don't have them in its info file: ones
+	/// downloaded before they were looked for, put in its folder by hand, or whose songs weren't found then. Returns how
+	/// many episodes were looked at, and how many of them they were found for.
+	/// </summary>
+	public async Task<(int Checked, int Found)> FindMissingSegmentsAsync(string name)
+	{
+		if (!File.Exists(FfmpegPath))
+		{
+			throw new DownloadException("It needs FFmpeg, which comes with mpv: set up the MPV media player first.");
+		}
+
+		var folder = FindFolder(name);
+		var info = DownloadNames.ReadInfo(folder.FullName);
+		if (info?.MalId is null)
+		{
+			throw new DownloadException($"{name}'s songs are found by its MyAnimeList id: add it with Edit info.");
+		}
+
+		var missing = folder.EnumerateFiles()
+							.Where(x => !x.Extension.Equals(".part", StringComparison.OrdinalIgnoreCase))
+							.Select(x => (File: x, Number: DownloadNames.ParseEpisode(x.Name)))
+							.Where(x => x.Number is { } number && info.Segments?.ContainsKey(number) != true)
+							.ToList();
+		var found = 0;
+		foreach (var (file, number) in missing)
+		{
+			found += await DetectSegmentsAsync(number!.Value, file.FullName, folder.FullName) ? 1 : 0;
+		}
+
+		RefreshLibrary();
+		return (missing.Count, found);
+	}
+
+	private static string FfmpegPath => Path.Combine(MpvInstaller.Folder, "ffmpeg.exe");
+
+	/// <summary>
 	/// Finds the episode's opening and ending by the sound of the anime's songs on AnimeThemes (see
 	/// <see cref="AudioFingerprint"/>), and keeps them in the anime's info file, for the Downloads provider to play it with.
-	/// Needs mpv's ffmpeg; without it, or if the songs aren't found, the episode has none (and Aniskip's are used).
+	/// Needs mpv's ffmpeg and the anime's MyAnimeList id in its info file; without them, or if the songs aren't found, the
+	/// episode has none (and Aniskip's are used). Returns whether any were found.
 	/// </summary>
-	private async Task DetectSegmentsAsync(AnimeModel anime, int number, string file, string folder)
+	private async Task<bool> DetectSegmentsAsync(int number, string file, string folder)
 	{
-		var ffmpeg = Path.Combine(MpvInstaller.Folder, "ffmpeg.exe");
+		var ffmpeg = FfmpegPath;
 		if (!File.Exists(ffmpeg))
 		{
-			return;
+			return false;
 		}
 
 		await _detecting.WaitAsync();
+		var title = Path.GetFileName(folder);
 		try
 		{
-			var candidates = (await songs.GetSongsAsync(anime))
+			if (DownloadNames.ReadInfo(folder)?.MalId is not { } malId)
+			{
+				return false;
+			}
+
+			var candidates = (await songs.GetSongsAsync(malId))
 				.Where(x => x.Kind is AnimeSongKind.Opening or AnimeSongKind.Ending && x.Audio is not null && AudioFingerprint.Covers(x.Episodes, number))
 				.ToList();
 			if (candidates.Count == 0)
 			{
-				return;
+				return false;
 			}
 
 			var episode = await Task.Run(async () => AudioFingerprint.Compute(await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None)));
@@ -584,19 +625,24 @@ public sealed class DownloadService(
 				}
 			}
 
-			logger.LogInformation("Found {Count} of {Anime} episode {Number}'s opening and ending", segments.Count, anime.Title, number);
-			if (segments.Count > 0 && DownloadNames.ReadInfo(folder) is { } info)
+			logger.LogInformation("Found {Count} of {Anime} episode {Number}'s opening and ending", segments.Count, title, number);
+			// Read again: the info may have been edited while the songs were looked for.
+			if (segments.Count == 0 || DownloadNames.ReadInfo(folder) is not { } info)
 			{
-				var all = new Dictionary<int, IReadOnlyList<MediaSegment>>(info.Segments ?? new Dictionary<int, IReadOnlyList<MediaSegment>>())
-				{
-					[number] = [.. segments.OrderBy(x => x.Start)],
-				};
-				DownloadNames.WriteInfo(folder, info with { Segments = all });
+				return false;
 			}
+
+			var all = new Dictionary<int, IReadOnlyList<MediaSegment>>(info.Segments ?? new Dictionary<int, IReadOnlyList<MediaSegment>>())
+			{
+				[number] = [.. segments.OrderBy(x => x.Start)],
+			};
+			DownloadNames.WriteInfo(folder, info with { Segments = all });
+			return true;
 		}
 		catch (Exception ex)
 		{
-			logger.LogWarning(ex, "Couldn't find {Anime} episode {Number}'s opening and ending", anime.Title, number);
+			logger.LogWarning(ex, "Couldn't find {Anime} episode {Number}'s opening and ending", title, number);
+			return false;
 		}
 		finally
 		{
