@@ -15,13 +15,33 @@ public sealed record CalendarDay(DateTime Date, bool IsInMonth, IReadOnlyList<Sc
 
 	private const int MaxBands = 3;
 
-	/// <summary>The episodes that get a band of the day, each with its anime's cover: the first few.</summary>
-	public IReadOnlyList<ScheduledEpisode> Bands => Episodes.Count > MaxBands ? [.. Episodes.Take(MaxBands)] : Episodes;
+	/// <summary>The shows airing on the day, each with all its episodes of the day.</summary>
+	public IReadOnlyList<CalendarBand> Shows => field ??= [.. Episodes.GroupBy(x => x.Anime).Select(g => new CalendarBand([.. g]))];
 
-	/// <summary>How many episodes don't get a band; the day lists them all in a flyout.</summary>
-	public int MoreCount => Episodes.Count - Bands.Count;
+	/// <summary>The shows that get a band of the day, each with its anime's cover: the first few.</summary>
+	public IReadOnlyList<CalendarBand> Bands => Shows.Count > MaxBands ? [.. Shows.Take(MaxBands)] : Shows;
+
+	/// <summary>How many shows don't get a band; the day lists them all in a flyout.</summary>
+	public int MoreCount => Shows.Count - Bands.Count;
 
 	public string MoreLabel => $"+{MoreCount} more";
+}
+
+/// <summary>A show's episodes airing on one day, which share a band.</summary>
+public sealed record CalendarBand(IReadOnlyList<ScheduledEpisode> Episodes)
+{
+	public ScheduledEpisode First => Episodes[0];
+
+	public ScheduledEpisode Last => Episodes[^1];
+
+	public AnimeModel Anime => First.Anime;
+
+	public DateTime AiringAt => First.AiringAt;
+
+	// A day that both starts and ends a season (a one-day drop) reads as its premiere.
+	public ReleaseMarker Marker => First.Marker is ReleaseMarker.None ? Last.Marker : First.Marker;
+
+	public bool IsWatched => Last.IsWatched;
 }
 
 /// <summary>

@@ -11,8 +11,8 @@
     xmlns:vm="using:Totoro.ViewModels">
 
     <Page.Resources>
-        <!--  An episode's line: its marker, title and number  -->
-        <DataTemplate x:Key="EpisodeLineTemplate" x:DataType="services:ScheduledEpisode">
+        <!--  A show's line on a day: its marker, title and episode numbers  -->
+        <DataTemplate x:Key="EpisodeLineTemplate" x:DataType="vm:CalendarBand">
             <Grid ColumnSpacing="4" Opacity="{x:Bind local:ReleaseSchedulePage.WatchedOpacity(IsWatched)}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="12" />
@@ -32,24 +32,24 @@
                     Grid.Column="2"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind local:ReleaseSchedulePage.EpisodeLabel(Number)}" />
+                    Text="{x:Bind local:ReleaseSchedulePage.EpisodeLabel(First.Number, Last.Number)}" />
             </Grid>
         </DataTemplate>
 
-        <!--  An episode in a day's list (its +N more flyout); opens the anime's details  -->
-        <DataTemplate x:Key="EpisodeRowTemplate" x:DataType="services:ScheduledEpisode">
+        <!--  A show in a day's list (its +N more flyout); opens the anime's details  -->
+        <DataTemplate x:Key="EpisodeRowTemplate" x:DataType="vm:CalendarBand">
             <Button
                 Padding="4,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
-                AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, Number, AiringAt, Marker)}"
+                AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}"
                 Background="Transparent"
                 BorderThickness="0"
                 Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
                 CommandParameter="{x:Bind Anime}"
                 Content="{x:Bind}"
                 ContentTemplate="{StaticResource EpisodeLineTemplate}"
-                ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, Number, AiringAt, Marker)}" />
+                ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}" />
         </DataTemplate>
     </Page.Resources>
 
@@ -178,20 +178,20 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <!--  The whole band opens the anime's details  -->
-                                    <DataTemplate x:DataType="services:ScheduledEpisode">
+                                    <DataTemplate x:DataType="vm:CalendarBand">
                                         <Button
                                             Padding="0"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"
                                             HorizontalContentAlignment="Stretch"
                                             VerticalContentAlignment="Stretch"
-                                            AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, Number, AiringAt, Marker)}"
+                                            AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}"
                                             Background="Transparent"
                                             BorderThickness="0"
                                             Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
                                             CommandParameter="{x:Bind Anime}"
                                             CornerRadius="0"
-                                            ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, Number, AiringAt, Marker)}">
+                                            ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}">
                                             <Grid>
                                                 <!--  The cover, not the banner: AniList's banners never finish loading in an Image.  -->
                                                 <Border Opacity="0.3">
@@ -244,7 +244,7 @@
                                         <ItemsControl
                                             Width="280"
                                             ItemTemplate="{StaticResource EpisodeRowTemplate}"
-                                            ItemsSource="{x:Bind Episodes}" />
+                                            ItemsSource="{x:Bind Shows}" />
                                     </Flyout>
                                 </Button.Flyout>
                             </Button>

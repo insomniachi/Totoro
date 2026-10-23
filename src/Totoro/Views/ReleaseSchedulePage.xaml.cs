@@ -40,16 +40,17 @@ public sealed partial class ReleaseSchedulePage : Page
 		_ => "",
 	};
 
-	public static string EpisodeLabel(int number) => $"Ep. {number}";
+	public static string EpisodeLabel(int first, int last) => first == last ? $"Ep. {first}" : $"Ep. {first}–{last}";
 
-	public static string Describe(string title, int number, DateTime airingAt, ReleaseMarker marker)
+	public static string Describe(string title, int first, int last, DateTime airingAt, ReleaseMarker marker)
 	{
+		var number = first == last ? $"episode {first}" : $"episodes {first} to {last}";
 		var kind = marker switch
 		{
 			ReleaseMarker.Premiere => ", season premiere",
 			ReleaseMarker.Finale => ", season finale",
 			_ => "",
 		};
-		return $"{title}, episode {number}{kind}, {airingAt:t}";
+		return $"{title}, {number}{kind}, {airingAt:t}";
 	}
 }
