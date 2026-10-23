@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,10 +8,13 @@ using Microsoft.Extensions.Logging;
 using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Relations;
+using Totoro.Core.Services;
 using Totoro.Core.Settings;
 using Totoro.Helpers;
+using Totoro.Modules.MediaPlayers.Mpv;
 
 namespace Totoro.Playback;
 
@@ -158,6 +162,7 @@ public sealed class DownloadService(
 	IAnimeSettingsStore animeSettings,
 	IAnimeRelations relations,
 	IPreferences preferences,
+	AnimeSongService songs,
 	ILogger<DownloadService> logger) : ObservableObject, IDisposable
 {
 	// What players send, and a stream's own headers replace: Cloudflare turns requests without an Accept away at its edge
@@ -176,6 +181,12 @@ public sealed class DownloadService(
 
 	// One download at a time: CDNs turn many at once away (AnimePahe's: 429), and a provider may not take parallel lookups.
 	private readonly SemaphoreSlim _queue = new(1, 1);
+
+	// Finding openings and endings, one episode at a time, so info files are written one at a time.
+	private readonly SemaphoreSlim _detecting = new(1, 1);
+
+	// Songs' fingerprints and lengths, by their audio's URL: a season's episodes share them.
+	private readonly ConcurrentDictionary<Uri, (uint[] Print, TimeSpan Length)> _songPrints = new();
 
 	/// <summary>How many downloads are going or waiting their turn.</summary>
 	public int ActiveCount => Downloads.Count(x => x.IsActive);
@@ -276,12 +287,15 @@ public sealed class DownloadService(
 		}
 
 		string[] others = [.. info.OtherTitles.Select(x => x.Trim()).Where(x => x.Length > 0 && x != info.Title.Trim()).Distinct(StringComparer.OrdinalIgnoreCase)];
-		DownloadNames.WriteInfo(FindFolder(name).FullName, info with
+		var folder = FindFolder(name).FullName;
+		DownloadNames.WriteInfo(folder, info with
 		{
 			Title = info.Title.Trim(),
 			OtherTitles = others,
 			AnilistId = info.AnilistId is > 0 ? info.AnilistId : null,
 			MalId = info.MalId is > 0 ? info.MalId : null,
+			// Editing the titles and ids keeps the openings and endings found.
+			Segments = info.Segments ?? ReadSegments(folder),
 		});
 		RefreshLibrary();
 	}
@@ -450,6 +464,11 @@ public sealed class DownloadService(
 			item.Message = $"Downloaded · {Size(new FileInfo(path).Length)}";
 			item.State = DownloadState.Completed;
 			RefreshLibrary();
+			// After it's done, so the next download doesn't wait for it.
+			if (anime is not null)
+			{
+				_ = DetectSegmentsAsync(anime, number, path, item.Folder);
+			}
 		}
 		catch (Exception ex)
 		{
@@ -516,6 +535,113 @@ public sealed class DownloadService(
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			logger.LogWarning(ex, "Couldn't save {Anime}'s info for its downloads", title);
+		}
+	}
+
+	/// <summary>
+	/// Finds the episode's opening and ending by the sound of the anime's songs on AnimeThemes (see
+	/// <see cref="AudioFingerprint"/>), and keeps them in the anime's info file, for the Downloads provider to play it with.
+	/// Needs mpv's ffmpeg; without it, or if the songs aren't found, the episode has none (and Aniskip's are used).
+	/// </summary>
+	private async Task DetectSegmentsAsync(AnimeModel anime, int number, string file, string folder)
+	{
+		var ffmpeg = Path.Combine(MpvInstaller.Folder, "ffmpeg.exe");
+		if (!File.Exists(ffmpeg))
+		{
+			return;
+		}
+
+		await _detecting.WaitAsync();
+		try
+		{
+			var candidates = (await songs.GetSongsAsync(anime))
+				.Where(x => x.Kind is AnimeSongKind.Opening or AnimeSongKind.Ending && x.Audio is not null && AudioFingerprint.Covers(x.Episodes, number))
+				.ToList();
+			if (candidates.Count == 0)
+			{
+				return;
+			}
+
+			var episode = await Task.Run(async () => AudioFingerprint.Compute(await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None)));
+			List<MediaSegment> segments = [];
+			foreach (var kind in candidates.GroupBy(x => x.Kind))
+			{
+				// Of a kind's songs (when the episodes they're in aren't known), the one that matches best.
+				(MediaSegment Segment, double ErrorRate)? best = null;
+				foreach (var song in kind)
+				{
+					var (print, length) = await GetSongPrintAsync(ffmpeg, song.Audio!);
+					if (await Task.Run(() => AudioFingerprint.Find(print, episode)) is { } found && (best is null || found.ErrorRate < best.Value.ErrorRate))
+					{
+						var type = kind.Key == AnimeSongKind.Opening ? MediaSegmentType.Opening : MediaSegmentType.Ending;
+						best = (new MediaSegment(type, found.Start, found.Start + length), found.ErrorRate);
+					}
+				}
+
+				if (best is { } match)
+				{
+					segments.Add(match.Segment);
+				}
+			}
+
+			logger.LogInformation("Found {Count} of {Anime} episode {Number}'s opening and ending", segments.Count, anime.Title, number);
+			if (segments.Count > 0 && DownloadNames.ReadInfo(folder) is { } info)
+			{
+				var all = new Dictionary<int, IReadOnlyList<MediaSegment>>(info.Segments ?? new Dictionary<int, IReadOnlyList<MediaSegment>>())
+				{
+					[number] = [.. segments.OrderBy(x => x.Start)],
+				};
+				DownloadNames.WriteInfo(folder, info with { Segments = all });
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.LogWarning(ex, "Couldn't find {Anime} episode {Number}'s opening and ending", anime.Title, number);
+		}
+		finally
+		{
+			_detecting.Release();
+		}
+	}
+
+	private async Task<(uint[] Print, TimeSpan Length)> GetSongPrintAsync(string ffmpeg, Uri audio)
+	{
+		if (_songPrints.TryGetValue(audio, out var known))
+		{
+			return known;
+		}
+
+		var file = Path.GetTempFileName();
+		try
+		{
+			using (var request = new HttpRequestMessage(HttpMethod.Get, audio))
+			{
+				// AnimeThemes refuses requests without one of its own.
+				request.Headers.UserAgent.ParseAdd("Totoro/1.0 (anime tracker)");
+				using var response = await _http.SendAsync(request);
+				await File.WriteAllBytesAsync(file, await response.EnsureSuccessStatusCode().Content.ReadAsByteArrayAsync());
+			}
+
+			var samples = await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None);
+			return _songPrints[audio] = await Task.Run(() => (AudioFingerprint.Compute(samples), AudioFingerprint.Duration(samples)));
+		}
+		finally
+		{
+			File.Delete(file);
+		}
+	}
+
+	/// <summary>The openings and endings found for the folder's episodes, from its info file; null if none (or it can't be read).</summary>
+	private IReadOnlyDictionary<int, IReadOnlyList<MediaSegment>>? ReadSegments(string folder)
+	{
+		try
+		{
+			return DownloadNames.ReadInfo(folder)?.Segments;
+		}
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+		{
+			logger.LogWarning(ex, "Couldn't read {Folder}'s info", folder);
+			return null;
 		}
 	}
 

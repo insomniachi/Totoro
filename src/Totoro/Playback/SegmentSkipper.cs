@@ -27,14 +27,14 @@ internal sealed partial class SegmentSkipper(IMediaPlayer player, SkipMode openi
 	private CancellationTokenSource? _offer;
 
 	/// <summary>
-	/// Gets the episode's segments, from the video's own chapters when they mark them, else from the provider (matched
-	/// to its length), and marks them in the player.
+	/// Gets the episode's segments: <paramref name="known"/> ones (e.g. found when it was downloaded), else the video's own
+	/// chapters when they mark them, else from the provider (matched to its length); and marks them in the player.
 	/// </summary>
-	public async Task LoadAsync(IMediaSegmentsProvider? provider, AnimeModel anime, int episode, TimeSpan duration, CancellationToken ct)
+	public async Task LoadAsync(IReadOnlyList<MediaSegment> known, IMediaSegmentsProvider? provider, AnimeModel anime, int episode, TimeSpan duration, CancellationToken ct)
 	{
 		try
 		{
-			var segments = FromChapters(await player.GetChaptersAsync(), duration);
+			var segments = known.Count > 0 ? [.. known] : FromChapters(await player.GetChaptersAsync(), duration);
 			if (segments.Count == 0 && provider is not null && anime.ExternalIds.MyAnimeList > 0)
 			{
 				segments = await provider.GetSegmentsAsync(anime.ExternalIds.MyAnimeList, episode, duration, ct);

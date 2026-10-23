@@ -61,4 +61,6 @@ public static partial class DownloadNames
 /// <param name="OtherTitles">Its romaji and English titles and synonyms, besides <paramref name="Title"/>.</param>
 /// <param name="AnilistId">Its AniList id, when known.</param>
 /// <param name="MalId">Its MyAnimeList id, when known.</param>
-public sealed record DownloadInfo(string Title, IReadOnlyList<string> OtherTitles, long? AnilistId = null, long? MalId = null);
+/// <param name="Segments">Each downloaded episode's opening and ending, by episode number, where they were found.</param>
+public sealed record DownloadInfo(string Title, IReadOnlyList<string> OtherTitles, long? AnilistId = null, long? MalId = null,
+								  IReadOnlyDictionary<int, IReadOnlyList<Media.MediaSegment>>? Segments = null);

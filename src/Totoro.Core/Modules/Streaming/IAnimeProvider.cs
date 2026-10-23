@@ -69,4 +69,7 @@ public sealed record VideoServer(string Name, Uri Url, VideoServerKind Kind = Vi
 {
 	/// <summary>HTTP headers the player has to send with requests for the video.</summary>
 	public IReadOnlyDictionary<string, string> Headers { get; init; } = new Dictionary<string, string>();
+
+	/// <summary>The episode's opening and ending, when the provider knows them (e.g. found when it was downloaded); else none.</summary>
+	public IReadOnlyList<Media.MediaSegment> Segments { get; init; } = [];
 }

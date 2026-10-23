@@ -84,8 +84,16 @@ internal sealed class DownloadsProvider(IPreferences preferences, ILogger<Downlo
 
 	public Task<List<VideoServer>> GetServersAsync(ProviderEpisode episode, CancellationToken ct)
 	{
-		var file = Path.Combine(Folder(episode.ShowId).FullName, Path.GetFileName(episode.Id));
-		return Task.FromResult<List<VideoServer>>(File.Exists(file) ? [new VideoServer("Downloaded", new Uri(file))] : []);
+		var folder = Folder(episode.ShowId);
+		var file = Path.Combine(folder.FullName, Path.GetFileName(episode.Id));
+		if (!File.Exists(file))
+		{
+			return Task.FromResult<List<VideoServer>>([]);
+		}
+
+		// Its opening and ending, if they were found when it was downloaded.
+		var segments = DownloadNames.ParseEpisode(file) is { } number && ReadInfo(folder).Segments?.GetValueOrDefault(number) is { } found ? found : [];
+		return Task.FromResult<List<VideoServer>>([new VideoServer("Downloaded", new Uri(file)) { Segments = segments }]);
 	}
 
 	// GetFileName: a show id is a folder's name, never a path out of the download folder.

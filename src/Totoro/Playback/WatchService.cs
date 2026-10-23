@@ -437,7 +437,7 @@ public sealed partial class WatchService(
 		// A torrent is streamed to the player over HTTP, until playback ends.
 		await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(server, ct) : null;
 		var media = new MediaItem(stream?.Url ?? server.Url, $"{anime.Title} - Episode {number}", stream?.Headers ?? server.Headers);
-		await PlayAsync(player, anime, number, media, settings, track, offerEpisodes, ct);
+		await PlayAsync(player, anime, number, media, server.Segments, settings, track, offerEpisodes, ct);
 	}
 
 	/// <summary>Shows the anime and episode in the status bar, and runs <paramref name="play"/>, saying there how it goes.</summary>
@@ -513,7 +513,8 @@ public sealed partial class WatchService(
 	/// </summary>
 	/// <param name="track">Whether to resume, save progress and mark it watched.</param>
 	/// <param name="offerEpisodes">Whether to offer the next episode, and list them in the built-in player, from the anime's own provider.</param>
-	private async Task PlayAsync(IMediaPlayer player, AnimeModel anime, int number, MediaItem media, AnimeSettings settings, bool track,
+	/// <param name="knownSegments">The opening and ending the provider knows of; none to find them.</param>
+	private async Task PlayAsync(IMediaPlayer player, AnimeModel anime, int number, MediaItem media, IReadOnlyList<MediaSegment> knownSegments, AnimeSettings settings, bool track,
 								 bool offerEpisodes, CancellationToken ct)
 	{
 		var key = anime.StoreKey;
@@ -570,7 +571,7 @@ public sealed partial class WatchService(
 			if (duration == TimeSpan.Zero && value > TimeSpan.Zero)
 			{
 				// Skip times are matched to the episode's length, now known.
-				_ = segments.LoadAsync(segmentProviders.FirstOrDefault(), anime, number, value, ct);
+				_ = segments.LoadAsync(knownSegments, segmentProviders.FirstOrDefault(), anime, number, value, ct);
 			}
 
 			duration = value;
