@@ -824,7 +824,7 @@ public sealed partial class WatchService(
 	/// Marks the anime watched up to the episode. False when it already was: watching an earlier episode again doesn't
 	/// take the list back to it, unless the anime is being rewatched (then it's how far the rewatch has got).
 	/// </summary>
-	private async Task<bool> MarkWatchedAsync(AnimeModel anime, int number)
+	internal async Task<bool> MarkWatchedAsync(AnimeModel anime, int number)
 	{
 		var current = anime.Tracking;
 		if (current is { } tracked && tracked.WatchedEpisodes >= number && tracked.Status != ListItemStatus.Rewatching)

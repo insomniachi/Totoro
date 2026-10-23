@@ -141,6 +141,7 @@ public partial class SettingsViewModel : ObservableObject
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
 		SkipFillers = preferences.SkipFillers;
 		ShowOnDiscord = preferences.ShowOnDiscord;
+		TrackBrowserPlayback = preferences.TrackBrowserPlayback;
 
 		// Only modules with something to edit.
 		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
@@ -251,6 +252,12 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool ShowOnDiscord { get; set; }
 
 	partial void OnShowOnDiscordChanged(bool value) => _preferences.ShowOnDiscord = value;
+
+	/// <summary>Whether anime episodes finished in a browser are marked watched on the user's list.</summary>
+	[ObservableProperty]
+	public partial bool TrackBrowserPlayback { get; set; }
+
+	partial void OnTrackBrowserPlaybackChanged(bool value) => _preferences.TrackBrowserPlayback = value;
 
 	/// <summary>Updating Totoro from its GitHub releases.</summary>
 	public UpdateService Updates { get; }

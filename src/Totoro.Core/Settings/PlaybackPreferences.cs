@@ -22,6 +22,7 @@ public static class PlaybackPreferences
 	public const string PlayNextKey = "PlayNextAutomatically";
 	public const string SkipFillersKey = "SkipFillers";
 	public const string ShowOnDiscordKey = "ShowOnDiscord";
+	public const string TrackBrowserPlaybackKey = "TrackBrowserPlayback";
 
 	/// <summary>Preference key holding the id of the anime provider episodes are found on (unless an anime has its own).</summary>
 	public const string AnimeProviderKey = "SelectedAnimeProvider";
@@ -67,6 +68,13 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(ShowOnDiscordKey, true);
 			set => preferences.SaveKey(ShowOnDiscordKey, value);
+		}
+
+		/// <summary>Whether anime episodes finished in a browser are marked watched on the user's list.</summary>
+		public bool TrackBrowserPlayback
+		{
+			get => preferences.ReadKey(TrackBrowserPlaybackKey, false);
+			set => preferences.SaveKey(TrackBrowserPlaybackKey, value);
 		}
 
 		/// <summary>Id of the anime provider episodes are found on, unless an anime has its own; empty means the first one available.</summary>

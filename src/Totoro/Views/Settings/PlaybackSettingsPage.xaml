@@ -164,6 +164,13 @@
                 </toolkit:SettingsCard.HeaderIcon>
                 <ToggleSwitch IsOn="{x:Bind ViewModel.ShowOnDiscord, Mode=TwoWay}" />
             </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="While Totoro is open, mark an episode of an anime on your list watched when you finish it on a website in Chrome, Edge or Firefox. Works on sites that show the video's title and time in Windows' media controls." Header="Track anime watched in your browser">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE774;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.TrackBrowserPlayback, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
         </StackPanel>
     </ScrollView>
 </Page>
