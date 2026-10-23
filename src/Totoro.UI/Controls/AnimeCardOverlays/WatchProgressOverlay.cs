@@ -1,15 +1,57 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Totoro.Core.Modules.Anime;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
 
 /// <summary>
 /// How many episodes of an anime the user is watching they've watched, out of its total (e.g. "5/12", or "5/?" while the
-/// total isn't known), on its card's bottom right.
+/// total isn't known), on its card's bottom right; hidden while the card is hovered, where its actions show.
 /// </summary>
 public sealed class WatchProgressOverlay : LiveAnimeCardOverlay<LabelBadge>
 {
-	protected override LabelBadge Create() => new(HorizontalAlignment.Right, VerticalAlignment.Bottom);
+	private LabelBadge? _badge;
+
+	protected override LabelBadge Create() => _badge = new(HorizontalAlignment.Right, VerticalAlignment.Bottom);
+
+	protected override void OnAttached()
+	{
+		base.OnAttached();
+		if (Layer is { } layer)
+		{
+			layer.PointerEntered += OnPointerEntered;
+			layer.PointerExited += OnPointerExited;
+		}
+	}
+
+	protected override void OnDetaching()
+	{
+		if (Layer is { } layer)
+		{
+			layer.PointerEntered -= OnPointerEntered;
+			layer.PointerExited -= OnPointerExited;
+		}
+
+		base.OnDetaching();
+		_badge = null;
+	}
+
+	// Opacity, not Visibility: Update owns Visibility.
+	private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+	{
+		if (_badge is not null)
+		{
+			_badge.Opacity = 0;
+		}
+	}
+
+	private void OnPointerExited(object sender, PointerRoutedEventArgs e)
+	{
+		if (_badge is not null)
+		{
+			_badge.Opacity = 1;
+		}
+	}
 
 	protected override void Update(LabelBadge badge, AnimeModel? anime, DateTime now)
 	{
