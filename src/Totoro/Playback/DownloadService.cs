@@ -611,6 +611,14 @@ public sealed class DownloadService(
 			return known;
 		}
 
+		// Kept across restarts: AnimeThemes' files don't change. The folder's version changes with how prints are taken.
+		var saved = FileHelper.GetPath(Path.Combine("Fingerprints", "v1",
+			Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(audio.AbsoluteUri)))[..32] + ".fp"));
+		if (AudioFingerprint.Load(saved) is { } loaded)
+		{
+			return _songPrints[audio] = loaded;
+		}
+
 		var file = Path.GetTempFileName();
 		try
 		{
@@ -623,7 +631,9 @@ public sealed class DownloadService(
 			}
 
 			var samples = await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None);
-			return _songPrints[audio] = await Task.Run(() => (AudioFingerprint.Compute(samples), AudioFingerprint.Duration(samples)));
+			var (print, length) = await Task.Run(() => (AudioFingerprint.Compute(samples), AudioFingerprint.Duration(samples)));
+			AudioFingerprint.Save(saved, print, length);
+			return _songPrints[audio] = (print, length);
 		}
 		finally
 		{

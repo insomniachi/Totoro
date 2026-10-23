@@ -63,6 +63,27 @@ public class AudioFingerprintTests
 		Assert.Null(AudioFingerprint.Find(AudioFingerprint.Compute(Song(20, 1)), AudioFingerprint.Compute(episode)));
 	}
 
+	[Fact]
+	public void SaveAndLoad()
+	{
+		var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}", "song.fp");
+		try
+		{
+			uint[] print = [1, 0xFFFFFFFF, 42];
+			AudioFingerprint.Save(path, print, TimeSpan.FromSeconds(89.85));
+
+			var loaded = AudioFingerprint.Load(path);
+			Assert.NotNull(loaded);
+			Assert.Equal(print, loaded.Value.Print);
+			Assert.Equal(TimeSpan.FromSeconds(89.85), loaded.Value.Length);
+			Assert.Null(AudioFingerprint.Load(path + ".missing"));
+		}
+		finally
+		{
+			Directory.Delete(Path.GetDirectoryName(path)!, recursive: true);
+		}
+	}
+
 	[Theory]
 	[InlineData("1–12", 5, true)]
 	[InlineData("1–12", 13, false)]

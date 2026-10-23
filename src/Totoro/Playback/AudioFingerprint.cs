@@ -147,6 +147,35 @@ internal static class AudioFingerprint
 		return words;
 	}
 
+	/// <summary>Writes a song's fingerprint and length to <paramref name="path"/>, for <see cref="Load"/>.</summary>
+	public static void Save(string path, uint[] print, TimeSpan length)
+	{
+		Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+		// Whole or not at all: a file cut short by the app closing would load as a shorter song.
+		var part = path + ".part";
+		using (var writer = new BinaryWriter(File.Create(part)))
+		{
+			writer.Write(length.Ticks);
+			writer.Write(MemoryMarshal.AsBytes(print.AsSpan()));
+		}
+
+		File.Move(part, path, overwrite: true);
+	}
+
+	/// <summary>A song's fingerprint and length, as <see cref="Save"/> wrote them; null if there's no such file (or a broken one).</summary>
+	public static (uint[] Print, TimeSpan Length)? Load(string path)
+	{
+		if (!File.Exists(path))
+		{
+			return null;
+		}
+
+		var bytes = File.ReadAllBytes(path);
+		return bytes.Length < sizeof(long) || (bytes.Length - sizeof(long)) % sizeof(uint) != 0
+			? null
+			: (MemoryMarshal.Cast<byte, uint>(bytes.AsSpan(sizeof(long))).ToArray(), TimeSpan.FromTicks(BitConverter.ToInt64(bytes)));
+	}
+
 	/// <summary>Where <paramref name="song"/> starts in <paramref name="episode"/> (both from <see cref="Compute"/>), and the share of bits that differ there; null if it isn't in it.</summary>
 	public static (TimeSpan Start, double ErrorRate)? Find(uint[] song, uint[] episode)
 	{
