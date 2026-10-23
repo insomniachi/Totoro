@@ -326,6 +326,7 @@
                                             <overlays:NextEpisodeOverlay />
                                             <overlays:NewEpisodesOverlay />
                                             <overlays:AiringStatusOverlay />
+                                            <overlays:WatchProgressOverlay />
                                             <overlays:HoverEffectsBehavior />
                                             <overlays:ImageZoomBlurBehavior />
                                         </Interactivity:Interaction.Behaviors>
