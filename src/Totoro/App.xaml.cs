@@ -72,7 +72,7 @@ public partial class App : Application
 				services.RegisterFactory<IAnimeMetadataProvider>(AnimeDatabasePreferences.Key);
 				services.RegisterFactory<IAnimeProvider>(PlaybackPreferences.AnimeProviderKey);
 				services.RegisterFactory<IMediaPlayer>(PlaybackPreferences.MediaPlayerKey);
-				services.RegisterFactory<ITorrentStreamer>("SelectedTorrentStreamer");
+				services.RegisterFactory<ITorrentStreamer>(PlaybackPreferences.TorrentStreamerKey);
 				services.RegisterFactory<IChatModel>("SelectedChatModel");
 
 				// Watching: the watch service drives a playback from a card's Play.

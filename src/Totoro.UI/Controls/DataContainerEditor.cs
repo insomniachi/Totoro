@@ -96,6 +96,7 @@ public sealed partial class DataContainerEditor : UserControl
 			DataContainerEditors.NumberBox => CreateNumberBox(property),
 			DataContainerEditors.ComboBox => CreateComboBox(property),
 			DataContainerEditors.FileBrowser => CreateFileBrowser(property),
+			DataContainerEditors.Password => CreatePasswordBox(property),
 			DataContainerEditors.Shortcut => CreateShortcutEditor(property),
 			DataContainerEditors.Button when property.Value is SettingsAction action => new Button { MinWidth = 120, Command = action.Command },
 			_ => CreateTextBox(property),
@@ -108,6 +109,21 @@ public sealed partial class DataContainerEditor : UserControl
 		Sync(textBox, property, () => textBox.Text = property.Value?.ToString() ?? "");
 		textBox.TextChanged += (_, _) => property.Value = textBox.Text;
 		return textBox;
+	}
+
+	private static PasswordBox CreatePasswordBox(DataContainerProperty property)
+	{
+		var passwordBox = new PasswordBox { MinWidth = 200, MaxWidth = 350 };
+		Sync(passwordBox, property, () =>
+		{
+			// Setting it to what's typed would move the caret.
+			if (passwordBox.Password != (property.Value?.ToString() ?? ""))
+			{
+				passwordBox.Password = property.Value?.ToString() ?? "";
+			}
+		});
+		passwordBox.PasswordChanged += (_, _) => property.Value = passwordBox.Password;
+		return passwordBox;
 	}
 
 	private static ToggleSwitch CreateToggleSwitch(DataContainerProperty property)

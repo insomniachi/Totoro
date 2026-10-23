@@ -75,6 +75,28 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="How torrent episodes play: rqbit downloads them on this PC; a debrid service like TorBox downloads them on its servers and streams its copy." Header="Torrent streamer">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE896;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.TorrentStreamers}"
+                    SelectedItem="{x:Bind ViewModel.TorrentStreamer, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TorrentStreamerOption">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Image
+                                    Width="16"
+                                    Height="16"
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                                <TextBlock Text="{x:Bind Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard
                 Command="{x:Bind ViewModel.OpenEpisodeNumberingCommand}"
                 Description="For providers that use absolute numbering, carrying on across seasons (a 2nd season from 13). Rules from anime-relations, and your own."

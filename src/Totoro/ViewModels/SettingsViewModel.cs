@@ -32,6 +32,11 @@ public sealed record MediaPlayerOption(Guid Id, string Name, string Icon)
 	public override string ToString() => Name;
 }
 
+public sealed record TorrentStreamerOption(Guid Id, string Name, string Icon)
+{
+	public override string ToString() => Name;
+}
+
 public sealed record ThemeOption(string Label, AppTheme Value)
 {
 	public override string ToString() => Label;
@@ -85,6 +90,7 @@ public partial class SettingsViewModel : ObservableObject
 		IFactory<IAnimeTracker, Guid> trackers,
 		IFactory<IAnimeProvider, Guid> providers,
 		IFactory<IMediaPlayer, Guid> players,
+		IFactory<ITorrentStreamer, Guid> torrentStreamers,
 		IEnumerable<Descriptor> modules,
 		IEnumerable<IAccount> accounts,
 		IEnumerable<IModuleSettings> moduleSettings,
@@ -130,6 +136,8 @@ public partial class SettingsViewModel : ObservableObject
 		// Named as their modules are (the built-in player's own name reads "the built-in player").
 		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name, IconOf(x.Id)))];
 		MediaPlayer = MediaPlayers.FirstOrDefault(x => x.Id == preferences.SelectedMediaPlayer) ?? MediaPlayers.FirstOrDefault();
+		TorrentStreamers = [.. torrentStreamers.CreateAll().Select(x => new TorrentStreamerOption(x.Id, x.Name, IconOf(x.Id)))];
+		TorrentStreamer = TorrentStreamers.FirstOrDefault(x => x.Id == preferences.SelectedTorrentStreamer) ?? TorrentStreamers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
 		SkipFillers = preferences.SkipFillers;
 		ShowOnDiscord = preferences.ShowOnDiscord;
@@ -192,6 +200,20 @@ public partial class SettingsViewModel : ObservableObject
 		if (value is not null && value.Id != _preferences.SelectedMediaPlayer)
 		{
 			_preferences.SelectedMediaPlayer = value.Id;
+		}
+	}
+
+	public IReadOnlyList<TorrentStreamerOption> TorrentStreamers { get; }
+
+	/// <summary>What plays torrent episodes: on this PC (rqbit), or through a debrid service.</summary>
+	[ObservableProperty]
+	public partial TorrentStreamerOption? TorrentStreamer { get; set; }
+
+	partial void OnTorrentStreamerChanged(TorrentStreamerOption? value)
+	{
+		if (value is not null && value.Id != _preferences.SelectedTorrentStreamer)
+		{
+			_preferences.SelectedTorrentStreamer = value.Id;
 		}
 	}
 

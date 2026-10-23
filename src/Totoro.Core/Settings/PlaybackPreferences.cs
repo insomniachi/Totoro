@@ -28,6 +28,9 @@ public static class PlaybackPreferences
 
 	/// <summary>Preference key holding the id of the module whose media player plays episodes.</summary>
 	public const string MediaPlayerKey = "SelectedMediaPlayer";
+
+	/// <summary>Preference key holding the id of the module whose torrent streamer plays torrent episodes.</summary>
+	public const string TorrentStreamerKey = "SelectedTorrentStreamer";
 	public const string VolumeKey = "PlayerVolume";
 	public const string AspectRatioKey = "PlayerAspectRatio";
 
@@ -78,6 +81,13 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey<Guid>(MediaPlayerKey);
 			set => preferences.SaveKey(MediaPlayerKey, value);
+		}
+
+		/// <summary>Module id of the torrent streamer torrent episodes play with; empty means the first one available.</summary>
+		public Guid SelectedTorrentStreamer
+		{
+			get => preferences.ReadKey<Guid>(TorrentStreamerKey);
+			set => preferences.SaveKey(TorrentStreamerKey, value);
 		}
 
 		/// <summary>The built-in player's volume, from 0 to 100, kept from one episode to the next.</summary>

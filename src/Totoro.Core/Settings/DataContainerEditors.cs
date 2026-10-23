@@ -15,6 +15,9 @@ public static class DataContainerEditors
 	public const string ComboBox = "ComboBox";
 	public const string FileBrowser = "FileBrowser";
 
+	/// <summary>A secret, e.g. an API key: shown as dots, and never shown to the assistant.</summary>
+	public const string Password = "Password";
+
 	/// <summary>Keyboard shortcuts, as keycaps: a string of key names (VirtualKey's) separated by commas, e.g. "Space, K".</summary>
 	public const string Shortcut = "Shortcut";
 

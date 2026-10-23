@@ -310,7 +310,10 @@ public sealed class AppSettingsTools(
 			property.EditorType == DataContainerEditors.Shortcut
 				? $"{property.Description} Shortcuts separated by commas, each a key's name (VirtualKey's) after any of Ctrl, Shift, Alt and Win held with it, e.g. Space, Ctrl+Right, Shift+N, F11, Number1.".Trim()
 				: property.Description,
-			Convert.ToString(property.Value, CultureInfo.InvariantCulture) ?? "",
+			// Secrets stay out of the chat: the model is only told whether one is set.
+			property.EditorType == DataContainerEditors.Password
+				? property.Value is string { Length: > 0 } ? "(set)" : ""
+				: Convert.ToString(property.Value, CultureInfo.InvariantCulture) ?? "",
 			property.AllowedValues?.Any() == true ? [.. property.AllowedValues.Select(x => x.ToString() ?? "")] : null);
 	}
 
