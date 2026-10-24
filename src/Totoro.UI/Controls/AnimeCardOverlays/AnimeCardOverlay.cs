@@ -24,6 +24,9 @@ public abstract class AnimeCardOverlay<TControl> : BehaviorBase<AnimeCard>
 {
 	private TControl? Control { get; set; }
 
+	// One instance, so RemoveHandler finds the one AddHandler added.
+	private Microsoft.UI.Xaml.Input.PointerEventHandler? _onCaptureLost;
+
 	/// <summary>When it's on the card; on hover unless the overlay says otherwise.</summary>
 	protected virtual OverlayMode Mode => OverlayMode.OnHover;
 
@@ -45,6 +48,7 @@ public abstract class AnimeCardOverlay<TControl> : BehaviorBase<AnimeCard>
 
 		layer.PointerEntered += OnPointerEntered;
 		layer.PointerExited += OnPointerExited;
+		HoverPointer.AddCaptureLostHandler(layer, _onCaptureLost = OnPointerCaptureLost);
 	}
 
 	protected override void OnDetaching()
@@ -56,7 +60,21 @@ public abstract class AnimeCardOverlay<TControl> : BehaviorBase<AnimeCard>
 
 		layer.PointerEntered -= OnPointerEntered;
 		layer.PointerExited -= OnPointerExited;
+		if (_onCaptureLost is not null)
+		{
+			HoverPointer.RemoveCaptureLostHandler(layer, _onCaptureLost);
+			_onCaptureLost = null;
+		}
+
 		Hide(layer);
+	}
+
+	private void OnPointerCaptureLost(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+	{
+		if (HoverPointer.IsOutside(sender, e))
+		{
+			OnPointerExited(sender, e);
+		}
 	}
 
 	private void OnPointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -79,6 +97,11 @@ public abstract class AnimeCardOverlay<TControl> : BehaviorBase<AnimeCard>
 
 	private void Show(Grid layer)
 	{
+		if (Control is not null)
+		{
+			return; // a missed exit must not orphan a second copy
+		}
+
 		Control = CreateOverlay();
 		layer.Children.Add(Control);
 	}

@@ -13,6 +13,7 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 {
 	private Grid? _canvas;
 	private EdgeLighting? _lighting;
+	private PointerEventHandler? _onCaptureLost;
 
 	private static readonly AnimationSet s_enterAnimation =
 		[
@@ -57,6 +58,7 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 		CommunityToolkit.WinUI.VisualExtensions.SetNormalizedCenterPoint(AssociatedObject, "0.5, 0.5");
 		_canvas.PointerEntered += OnPointerEntered;
 		_canvas.PointerExited += OnPointerExited;
+		HoverPointer.AddCaptureLostHandler(_canvas, _onCaptureLost = OnPointerCaptureLost);
 	}
 
 	protected override void OnDetaching()
@@ -67,10 +69,23 @@ public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
 		{
 			_canvas.PointerEntered -= OnPointerEntered;
 			_canvas.PointerExited -= OnPointerExited;
+			if (_onCaptureLost is not null)
+			{
+				HoverPointer.RemoveCaptureLostHandler(_canvas, _onCaptureLost);
+			}
 		}
 
+		_onCaptureLost = null;
 		_canvas = null;
 		_lighting = null;
+	}
+
+	private void OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+	{
+		if (HoverPointer.IsOutside(sender, e))
+		{
+			OnPointerExited(sender, e);
+		}
 	}
 
 	private void OnPointerExited(object sender, PointerRoutedEventArgs e)

@@ -11,6 +11,7 @@ namespace Totoro.UI.Controls.AnimeCardOverlays;
 public sealed class WatchProgressOverlay : LiveAnimeCardOverlay<LabelBadge>
 {
 	private LabelBadge? _badge;
+	private PointerEventHandler? _onCaptureLost;
 
 	protected override LabelBadge Create() => _badge = new(HorizontalAlignment.Right, VerticalAlignment.Bottom);
 
@@ -21,6 +22,7 @@ public sealed class WatchProgressOverlay : LiveAnimeCardOverlay<LabelBadge>
 		{
 			layer.PointerEntered += OnPointerEntered;
 			layer.PointerExited += OnPointerExited;
+			HoverPointer.AddCaptureLostHandler(layer, _onCaptureLost = OnPointerCaptureLost);
 		}
 	}
 
@@ -30,10 +32,23 @@ public sealed class WatchProgressOverlay : LiveAnimeCardOverlay<LabelBadge>
 		{
 			layer.PointerEntered -= OnPointerEntered;
 			layer.PointerExited -= OnPointerExited;
+			if (_onCaptureLost is not null)
+			{
+				HoverPointer.RemoveCaptureLostHandler(layer, _onCaptureLost);
+			}
 		}
 
+		_onCaptureLost = null;
 		base.OnDetaching();
 		_badge = null;
+	}
+
+	private void OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+	{
+		if (HoverPointer.IsOutside(sender, e))
+		{
+			OnPointerExited(sender, e);
+		}
 	}
 
 	// Opacity, not Visibility: Update owns Visibility.

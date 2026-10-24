@@ -22,6 +22,7 @@ public class ImageZoomBlurBehavior : BehaviorBase<AnimeCard>
 	private SpriteVisual? _blurVisual;
 	private EffectAnimation<float>? _blurAnimation;
 	private int _hoverVersion;
+	private PointerEventHandler? _onCaptureLost;
 
 	protected override void OnAttached()
 	{
@@ -46,6 +47,7 @@ public class ImageZoomBlurBehavior : BehaviorBase<AnimeCard>
 
 		AssociatedObject.PointerEntered += OnPointerEntered;
 		AssociatedObject.PointerExited += OnPointerExited;
+		HoverPointer.AddCaptureLostHandler(AssociatedObject, _onCaptureLost = OnPointerCaptureLost);
 	}
 
 	protected override void OnDetaching()
@@ -54,8 +56,22 @@ public class ImageZoomBlurBehavior : BehaviorBase<AnimeCard>
 
 		AssociatedObject.PointerEntered -= OnPointerEntered;
 		AssociatedObject.PointerExited -= OnPointerExited;
+		if (_onCaptureLost is not null)
+		{
+			HoverPointer.RemoveCaptureLostHandler(AssociatedObject, _onCaptureLost);
+			_onCaptureLost = null;
+		}
+
 		RemoveBlur();
 		_image = null;
+	}
+
+	private void OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+	{
+		if (HoverPointer.IsOutside(sender, e))
+		{
+			OnPointerExited(sender, e);
+		}
 	}
 
 	private async void OnPointerEntered(object sender, PointerRoutedEventArgs e)
