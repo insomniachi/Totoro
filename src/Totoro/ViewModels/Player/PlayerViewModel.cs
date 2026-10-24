@@ -49,6 +49,8 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 
 	[ObservableProperty] public partial bool IsPlaying { get; private set; }
 
+	private readonly Windows.System.Display.DisplayRequest _displayRequest = new();
+
 	/// <summary>Whether it's waiting for the video (starting, or after seeking).</summary>
 	[ObservableProperty] public partial bool IsBuffering { get; private set; }
 
@@ -399,6 +401,7 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		_offer?.TrySetResult(false);
 		_next?.TrySetResult(false);
 		_message?.Cancel();
+		IsPlaying = false;
 		if (MediaPlayer is not { } player)
 		{
 			return;
@@ -672,6 +675,19 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		if (MediaPlayer is { } player)
 		{
 			player.Mute = value;
+		}
+	}
+
+	// The video renders into a swap chain, so libvlc never stops the display from sleeping itself.
+	partial void OnIsPlayingChanged(bool value)
+	{
+		if (value)
+		{
+			_displayRequest.RequestActive();
+		}
+		else
+		{
+			_displayRequest.RequestRelease();
 		}
 	}
 
