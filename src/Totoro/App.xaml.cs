@@ -169,7 +169,6 @@ public partial class App : Application
 				services.AddKeyedViewMap<AccountsSettingsPage, SettingsViewModel>(SettingsViewModel.AccountsKey);
 				services.AddKeyedViewMap<PlaybackSettingsPage, SettingsViewModel>(SettingsViewModel.PlaybackKey);
 				services.AddKeyedViewMap<DownloadsSettingsPage, SettingsViewModel>(SettingsViewModel.DownloadsKey);
-				services.AddKeyedViewMap<ModulesSettingsPage, SettingsViewModel>(SettingsViewModel.ModulesKey);
 				services.AddKeyedViewMap<AboutSettingsPage, SettingsViewModel>(SettingsViewModel.AboutKey);
 			})
 			.Build();

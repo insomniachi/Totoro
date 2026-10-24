@@ -77,7 +77,6 @@ public partial class SettingsViewModel : ObservableObject
 	public const string AccountsKey = "Settings.Accounts";
 	public const string PlaybackKey = "Settings.Playback";
 	public const string DownloadsKey = "Settings.Downloads";
-	public const string ModulesKey = "Settings.Modules";
 	public const string AboutKey = "Settings.About";
 
 	private readonly IPreferences _preferences;
@@ -93,8 +92,6 @@ public partial class SettingsViewModel : ObservableObject
 		IFactory<ITorrentStreamer, Guid> torrentStreamers,
 		IEnumerable<Descriptor> modules,
 		IEnumerable<IAccount> accounts,
-		IEnumerable<IModuleSettings> moduleSettings,
-		IDialogService dialogs,
 		IAppearanceService appearance,
 		UpdateService updates,
 		DownloadService downloads)
@@ -142,13 +139,7 @@ public partial class SettingsViewModel : ObservableObject
 		SkipFillers = preferences.SkipFillers;
 		ShowOnDiscord = preferences.ShowOnDiscord;
 		TrackBrowserPlayback = preferences.TrackBrowserPlayback;
-
-		// Only modules with something to edit.
-		Modules = [.. moduleSettings.Select(x => new ModuleSettingsItem(x, dialogs)).Where(x => x.Summary.Length > 0)];
 	}
-
-	/// <summary>Modules whose settings can be edited (in a dialog).</summary>
-	public IReadOnlyList<ModuleSettingsItem> Modules { get; }
 
 	/// <summary>The online services the user can sign in to.</summary>
 	public IReadOnlyList<AccountViewModel> Accounts { get; }

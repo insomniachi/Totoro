@@ -62,17 +62,6 @@
 
             <toolkit:SettingsCard
                 Command="{x:Bind ViewModel.OpenCommand}"
-                CommandParameter="Settings.Modules"
-                Description="Plugins, and each module's own settings"
-                Header="Modules &amp; plugins"
-                IsClickEnabled="True">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xEA86;" />
-                </toolkit:SettingsCard.HeaderIcon>
-            </toolkit:SettingsCard>
-
-            <toolkit:SettingsCard
-                Command="{x:Bind ViewModel.OpenCommand}"
                 CommandParameter="Settings.About"
                 Description="{x:Bind ViewModel.UpdateStatus, Mode=OneWay}"
                 Header="About &amp; updates"

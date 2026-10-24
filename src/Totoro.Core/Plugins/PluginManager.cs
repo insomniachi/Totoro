@@ -80,6 +80,7 @@ public sealed class PluginManager : IPluginManager
 					Description = installed.Description,
 					Version = installed.Version,
 					DownloadUrl = "",
+					ModuleTypes = installed.Manifest.ModuleTypes,
 				});
 			}
 		}
