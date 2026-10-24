@@ -258,6 +258,16 @@ public sealed class DownloadService(
 		return item;
 	}
 
+	/// <summary>Whether the anime's episode <paramref name="number"/> is in the download folder (not part-downloaded).</summary>
+	public bool IsDownloaded(string title, int number) =>
+		FindDownloaded(Path.Combine(preferences.DownloadFolder, DownloadNames.Folder(title)), DownloadNames.Episode(title, number)) is not null;
+
+	/// <summary>The episode file called <paramref name="name"/> (any extension) in <paramref name="folder"/>; null if there's none.</summary>
+	private static string? FindDownloaded(string folder, string name) =>
+		Directory.Exists(folder)
+			? Directory.EnumerateFiles(folder, name + ".*").FirstOrDefault(x => !x.EndsWith(".part", StringComparison.OrdinalIgnoreCase))
+			: null;
+
 	/// <summary>Shows the download folder in File Explorer, making it first if nothing's been downloaded yet.</summary>
 	public void OpenFolder()
 	{
@@ -403,8 +413,7 @@ public sealed class DownloadService(
 
 		try
 		{
-			if (Directory.Exists(item.Folder) &&
-				Directory.EnumerateFiles(item.Folder, name + ".*").FirstOrDefault(x => !x.EndsWith(".part", StringComparison.OrdinalIgnoreCase)) is { } existing)
+			if (FindDownloaded(item.Folder, name) is { } existing)
 			{
 				item.FilePath = existing;
 				item.Progress = 1;

@@ -8,6 +8,7 @@ using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
+using Totoro.Modules.AnimeProviders.Downloads;
 using Totoro.Playback;
 using Totoro.UI.Navigation;
 
@@ -101,6 +102,8 @@ public partial class SettingsViewModel : ObservableObject
 		_appearance = appearance;
 		DownloadFolder = preferences.DownloadFolder;
 		YtDlpPath = preferences.YtDlpPath;
+		PlayDownloadsFirst = preferences.PlayDownloadsFirst;
+		AutoDownloadNext = preferences.AutoDownloadNext;
 		Updates = updates;
 		Updates.PropertyChanged += (_, _) =>
 		{
@@ -127,8 +130,8 @@ public partial class SettingsViewModel : ObservableObject
 
 		OpeningSkip = SkipModes.First(x => x.Value == preferences.OpeningSkipMode);
 		EndingSkip = SkipModes.First(x => x.Value == preferences.EndingSkipMode);
-		// Downloads is built in; providers to stream from come as plugins.
-		AnimeProviders = [.. providers.CreateAll().DistinctBy(x => x.Id).Select(x => new AnimeProviderOption(x.Id, x.Name, IconOf(x.Id)))];
+		// Providers to stream from come as plugins; downloads are played first when they're there, not picked as a provider.
+		AnimeProviders = [.. providers.CreateAll().DistinctBy(x => x.Id).Where(x => x.Id != DownloadsModule.Id).Select(x => new AnimeProviderOption(x.Id, x.Name, IconOf(x.Id)))];
 		AnimeProvider = AnimeProviders.FirstOrDefault(x => x.Id == preferences.SelectedAnimeProvider) ?? AnimeProviders.FirstOrDefault();
 		// Named as their modules are (the built-in player's own name reads "the built-in player").
 		MediaPlayers = [.. players.CreateAll().Select(x => new MediaPlayerOption(x.Id, modules.FirstOrDefault(m => m.Id == x.Id)?.Name ?? x.Name, IconOf(x.Id)))];
@@ -356,6 +359,18 @@ public partial class SettingsViewModel : ObservableObject
 	public partial string YtDlpPath { get; set; }
 
 	partial void OnYtDlpPathChanged(string value) => _preferences.YtDlpPath = value.Trim().Trim('"');
+
+	/// <summary>Whether an episode in the download folder is played from there, whatever the anime's provider.</summary>
+	[ObservableProperty]
+	public partial bool PlayDownloadsFirst { get; set; }
+
+	partial void OnPlayDownloadsFirstChanged(bool value) => _preferences.PlayDownloadsFirst = value;
+
+	/// <summary>Whether the next episode of each anime the user is watching is downloaded once it's out.</summary>
+	[ObservableProperty]
+	public partial bool AutoDownloadNext { get; set; }
+
+	partial void OnAutoDownloadNextChanged(bool value) => _preferences.AutoDownloadNext = value;
 
 	public IReadOnlyList<NavigationItemViewModel> StartupPages { get; }
 

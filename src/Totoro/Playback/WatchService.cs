@@ -339,9 +339,13 @@ public sealed partial class WatchService(
 		}
 
 		var settings = animeSettings.Get(anime);
+		if (await TryPlayDownloadedAsync(player, anime, number, settings, ct))
+		{
+			return;
+		}
+
 		if (GetProvider(settings) is not { } provider)
 		{
-			// Downloads is built in, so this is only when it can't be created.
 			Show(PlaybackStatusKind.Error, "There's no anime provider to watch from: install one from the Plugins page.", "Plugins", () =>
 			{
 				if (Totoro.UI.Navigation.Navigators.TryGetNavigator("main", out var main))
@@ -385,6 +389,35 @@ public sealed partial class WatchService(
 
 		await PlayServerAsync(player, anime, number, server, settings, track: true, offerEpisodes: true, ct);
 	});
+
+	/// <summary>
+	/// Plays episode <paramref name="number"/> from the download folder if it's there (and the user plays downloads first),
+	/// whatever the anime's provider; returns whether it did.
+	/// </summary>
+	private async Task<bool> TryPlayDownloadedAsync(IMediaPlayer player, AnimeModel anime, int number, AnimeSettings settings, CancellationToken ct)
+	{
+		if (!preferences.PlayDownloadsFirst || providers.Create(DownloadsModule.Id) is not { } downloads)
+		{
+			return false;
+		}
+
+		// By its ids or exact title only: no show picker for a folder that may not be there.
+		if ((await FindShowAsync(downloads, anime, ct)).Show is not { } show)
+		{
+			return false;
+		}
+
+		// Downloads are named by the anime's own episode number, so the provider's numbering doesn't apply.
+		if ((await downloads.GetEpisodesAsync(show.Id, ct)).FirstOrDefault(x => x.Number == number) is not { } episode ||
+			(await downloads.GetServersAsync(episode, ct)).FirstOrDefault() is not { } server)
+		{
+			return false;
+		}
+
+		ProviderName = downloads.Name;
+		await PlayServerAsync(player, anime, number, server, settings, track: true, offerEpisodes: true, ct);
+		return true;
+	}
 
 	/// <summary>
 	/// Plays a video the user chose on a provider (from <see cref="IAnimeProvider.GetServersAsync"/>) as the anime's episode
@@ -1025,7 +1058,7 @@ public sealed partial class WatchService(
 
 	private IAnimeProvider? GetProvider(AnimeSettings settings)
 	{
-		var provider = (settings.ProviderId is { } id ? providers.Create(id) : null) ?? providers.CreateDefault();
+		var provider = providers.CreateStreaming(settings.ProviderId);
 		if (provider is not null && settings.ProviderSettings.TryGetValue(provider.Id, out var own) &&
 			moduleSettings.FirstOrDefault(x => x.Descriptor.Id == provider.Id) is { } module)
 		{

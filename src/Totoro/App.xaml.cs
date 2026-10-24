@@ -82,6 +82,7 @@ public partial class App : Application
 				services.AddSingleton<DownloadService>();
 				services.AddSingleton<DiscordPresence>();
 				services.AddSingleton<BrowserWatchTracker>();
+				services.AddSingleton<AutoDownloader>();
 				// Songs' audio, played in the Music tab.
 				services.AddSingleton<ISongPlayer, SongAudioPlayer>();
 				services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();
@@ -186,6 +187,8 @@ public partial class App : Application
 		_host.Services.GetRequiredService<DiscordPresence>();
 		// Marks episodes finished in a browser watched, while the app's open.
 		_host.Services.GetRequiredService<BrowserWatchTracker>();
+		// Downloads the next episode of anime being watched, if that's turned on.
+		_host.Services.GetRequiredService<AutoDownloader>();
 		// The Downloads item in the navigation shows how many downloads are going.
 		var downloads = _host.Services.GetRequiredService<DownloadService>();
 		var downloadsItem = _host.Services.GetServices<NavigationItemViewModel>().First(x => x.ViewModelType == typeof(DownloadsViewModel));

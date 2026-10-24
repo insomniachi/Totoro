@@ -8,6 +8,7 @@ using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Settings;
+using Totoro.Modules.AnimeProviders.Downloads;
 
 namespace Totoro.Agent;
 
@@ -281,7 +282,8 @@ public sealed class AppSettingsTools(
 	/// <summary>The media players, named as their modules are.</summary>
 	private List<NamedModule> GetAnimeProviders()
 	{
-		return [.. providers.CreateAll().DistinctBy(x => x.Id).Select(x => new NamedModule(x.Id, x.Name))];
+		// Not Downloads: what's downloaded is played first, whatever the provider.
+		return [.. providers.CreateAll().DistinctBy(x => x.Id).Where(x => x.Id != DownloadsModule.Id).Select(x => new NamedModule(x.Id, x.Name))];
 	}
 
 	private List<NamedModule> GetMediaPlayers()

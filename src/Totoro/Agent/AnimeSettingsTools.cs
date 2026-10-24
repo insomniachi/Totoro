@@ -3,6 +3,7 @@ using Totoro.Core.Agent;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
+using Totoro.Modules.AnimeProviders.Downloads;
 
 namespace Totoro.Agent;
 
@@ -55,7 +56,7 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 		{
 			settings.ProviderId = provider.Equals("default", StringComparison.OrdinalIgnoreCase)
 				? null
-				: providers.CreateAll().FirstOrDefault(x => x.Name.Equals(provider, StringComparison.OrdinalIgnoreCase))?.Id
+				: Selectable().FirstOrDefault(x => x.Name.Equals(provider, StringComparison.OrdinalIgnoreCase))?.Id
 				  ?? throw new AgentToolException($"There's no provider called {provider}; the providers are {string.Join(", ", ProviderNames())}.");
 		}
 
@@ -94,7 +95,7 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 		string NameOf(Guid id) => all.FirstOrDefault(x => x.Id == id)?.Name ?? id.ToString();
 		return new AnimeWatchSettings(
 			settings.ProviderId is { } id ? NameOf(id) : null,
-			[.. all.Select(x => x.Name)],
+			[.. ProviderNames()],
 			settings.OpeningSkipMode,
 			settings.EndingSkipMode,
 			settings.Shows.ToDictionary(x => NameOf(x.Key), x => x.Value.Title),
@@ -103,7 +104,10 @@ public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore s
 			settings.HideFromDiscord);
 	}
 
-	private IEnumerable<string> ProviderNames() => providers.CreateAll().Select(x => x.Name);
+	// Not Downloads: what's downloaded is played first, whatever the provider.
+	private IEnumerable<IAnimeProvider> Selectable() => providers.CreateAll().Where(x => x.Id != DownloadsModule.Id);
+
+	private IEnumerable<string> ProviderNames() => Selectable().Select(x => x.Name);
 
 	private static SkipMode? ToSkipMode(AnimeSkipMode mode) => mode switch
 	{

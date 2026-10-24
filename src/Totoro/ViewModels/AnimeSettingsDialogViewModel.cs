@@ -6,6 +6,7 @@ using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Relations;
 using Totoro.Core.Settings;
+using Totoro.Modules.AnimeProviders.Downloads;
 using Totoro.ViewModels.Relations;
 
 namespace Totoro.ViewModels;
@@ -64,7 +65,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		_store = store;
 		_settings = store.Get(anime);
 		_moduleSettings = [.. moduleSettings];
-		_defaultProvider = providers.CreateDefault();
+		_defaultProvider = providers.CreateStreaming();
 		_relations = relations;
 
 		Title = anime.Title;
@@ -75,7 +76,8 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		Providers =
 		[
 			new(null, _defaultProvider is null ? "Default" : $"Default ({_defaultProvider.Name})", IconOf(_defaultProvider?.Id)),
-			.. providers.CreateAll().Select(x => new ProviderChoice(x.Id, x.Name, IconOf(x.Id))),
+			// Not Downloads: what's downloaded is played first, whatever the provider.
+			.. providers.CreateAll().Where(x => x.Id != DownloadsModule.Id).Select(x => new ProviderChoice(x.Id, x.Name, IconOf(x.Id))),
 		];
 		OpeningSkipModes = CreateSkipModes(preferences.OpeningSkipMode);
 		EndingSkipModes = CreateSkipModes(preferences.EndingSkipMode);

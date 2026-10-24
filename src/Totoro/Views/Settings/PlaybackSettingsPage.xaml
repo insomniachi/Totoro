@@ -21,7 +21,7 @@
                 Style="{ThemeResource BodyStrongTextBlockStyle}"
                 Text="Episodes" />
 
-            <toolkit:SettingsCard Description="Where episodes are found. Downloads plays the episodes you've downloaded; providers to stream from come as plugins. An anime can use another one in its own settings." Header="Anime provider">
+            <toolkit:SettingsCard Description="Where episodes are streamed and downloaded from; providers come as plugins. Downloaded episodes play first (see Downloads). An anime can use another one in its own settings." Header="Anime provider">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xEA86;" />
                 </toolkit:SettingsCard.HeaderIcon>
