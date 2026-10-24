@@ -21,7 +21,7 @@ internal class AnilistModule : IModule<Settings>
 		Name = @"Anilist",
 		Description =
 			"AniList: The next-generation anime platform Track, share, and discover your favorite anime and manga with AniList. Discover your obsessions. ",
-		EntryPoint = "Anlist",
+		DataFolder = "Anlist",
 		Image = @"Assets\Modules\Anilist.png"
 	};
 

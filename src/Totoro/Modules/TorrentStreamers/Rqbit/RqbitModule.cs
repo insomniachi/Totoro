@@ -18,7 +18,7 @@ internal class RqbitModule : IModule<Settings>
 		Id = Id,
 		Name = "rqbit",
 		Description = "Streams torrents on this PC with rqbit, a fast BitTorrent client, so any media player can play them.",
-		EntryPoint = "Rqbit",
+		DataFolder = "Rqbit",
 		Image = @"Assets\Modules\Rqbit.png"
 	};
 

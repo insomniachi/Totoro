@@ -18,7 +18,7 @@ internal class MpvModule : IModule<Settings>
 		Id = Id,
 		Name = "MPV",
 		Description = "Plays videos in mpv, a free and open-source media player.",
-		EntryPoint = "Mpv",
+		DataFolder = "Mpv",
 		Image = @"Assets\Modules\Mpv.png"
 	};
 

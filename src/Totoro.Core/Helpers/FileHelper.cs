@@ -11,7 +11,7 @@ public static class FileHelper
 	{
 		return Path.Combine(Root,
 							"Modules",
-							descriptor.EntryPoint,
+							descriptor.DataFolder,
 							fileName);
 	}
 

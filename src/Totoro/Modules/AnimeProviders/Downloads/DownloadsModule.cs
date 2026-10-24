@@ -17,7 +17,7 @@ internal class DownloadsModule : IModule
 		Id = Id,
 		Name = "Downloads",
 		Description = "Plays the episodes you've downloaded, from the download folder, without going online.",
-		EntryPoint = "Downloads",
+		DataFolder = "Downloads",
 		Image = @"Assets\Modules\Downloads.png"
 	};
 

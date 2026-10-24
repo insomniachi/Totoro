@@ -18,7 +18,7 @@ internal class AniskipModule : IModule
 		Id = Id,
 		Name = "Aniskip",
 		Description = "A community database of where episodes' openings, endings and recaps are.",
-		EntryPoint = "Aniskip",
+		DataFolder = "Aniskip",
 		Image = @"Assets\Modules\Aniskip.png"
 	};
 

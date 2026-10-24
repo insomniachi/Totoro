@@ -19,7 +19,7 @@ internal class MyAnimeListModule : IModule<Settings>
 		Name = "MyAnimeList",
 		Description =
 			"MyAnimeList, often abbreviated as MAL, is an anime and manga social networking and social cataloging application website run by volunteers. The site provides its users with a list-like system to organize and score anime and manga. It facilitates finding users who share similar tastes and provides a large database on anime and manga",
-		EntryPoint = "MyAnimeList",
+		DataFolder = "MyAnimeList",
 		Image = @"Assets\Modules\MyAnimeList.png"
 	};
 
