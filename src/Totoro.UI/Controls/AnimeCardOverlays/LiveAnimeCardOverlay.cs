@@ -61,7 +61,7 @@ public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl
 
 	private void OnAnimeChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		if (e.PropertyName is nameof(AnimeModel.Tracking) or nameof(AnimeModel.AiringStatus))
+		if (e.PropertyName is nameof(AnimeModel.Tracking) or nameof(AnimeModel.AiringStatus) or nameof(AnimeModel.ProviderEpisodes))
 		{
 			Update();
 		}

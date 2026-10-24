@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
@@ -11,9 +12,13 @@ public sealed partial class NewEpisodesBadge : UserControl
 		InitializeComponent();
 	}
 
-	public void Set(int count)
+	/// <param name="onProvider">Whether the provider has them; if not, they've aired but can't be watched yet (grey).</param>
+	public void Set(int count, bool onProvider)
 	{
 		Badge.Value = count;
-		AutomationProperties.SetName(this, count == 1 ? "1 new episode to watch" : $"{count} new episodes to watch");
+		// Null is InfoBadge's own (accent) style.
+		Badge.Style = onProvider ? null : (Style)Application.Current.Resources["InformationalValueInfoBadgeStyle"];
+		var episodes = count == 1 ? "1 new episode" : $"{count} new episodes";
+		AutomationProperties.SetName(this, onProvider ? $"{episodes} to watch" : $"{episodes} aired, not on the provider yet");
 	}
 }

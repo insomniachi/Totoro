@@ -77,6 +77,8 @@ public partial class App : Application
 
 				// Watching: the watch service drives a playback from a card's Play.
 				services.AddSingleton<WatchService>();
+				// What the provider has of an anime's new episodes, for the cards' badges.
+				services.AddSingleton<IProviderEpisodes, ProviderEpisodes>();
 				services.AddSingleton<DownloadService>();
 				services.AddSingleton<DiscordPresence>();
 				services.AddSingleton<BrowserWatchTracker>();
