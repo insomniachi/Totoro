@@ -10,7 +10,7 @@ public static class FileHelper
 	public static string GetModulePath(Descriptor descriptor, string fileName)
 	{
 		return Path.Combine(Root,
-							"Modules",
+							"PluginData",
 							descriptor.DataFolder,
 							fileName);
 	}

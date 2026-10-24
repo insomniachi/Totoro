@@ -23,7 +23,7 @@ public class Descriptor
 	public required Guid Id { get; init; }
 	public required string Name { get; init; }
 	public Version Version { get; } = Assembly.GetCallingAssembly().GetName().Version ?? new Version(1, 0, 0);
-	/// <summary>The folder under %LocalAppData%\Totoro\Modules that keeps this module's settings and data. Keep it stable: changing it orphans that data.</summary>
+	/// <summary>The folder under %LocalAppData%\Totoro\PluginData that keeps this module's settings and data. Keep it stable: changing it orphans that data.</summary>
 	public required string DataFolder { get; init; }
 	public List<string> Components { get; init; } = [];
 	public string? Description { get; init; }
