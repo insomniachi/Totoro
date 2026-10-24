@@ -88,6 +88,9 @@ public sealed partial class WatchService(
 	private Task<(bool Marked, string Message)>? _marked;
 	private Action? _action;
 
+	// Whether the status bar shows an episode playing in a browser (see ShowBrowserPlayback), not one played here.
+	private bool _inBrowser;
+
 	// The player of the episode playing, or of the last one.
 	private IMediaPlayer? _player;
 
@@ -447,6 +450,7 @@ public sealed partial class WatchService(
 		using var cancellation = _cancellation = new CancellationTokenSource();
 		var ct = cancellation.Token;
 
+		_inBrowser = false;
 		Anime = anime;
 		CurrentEpisode = number;
 		IsMarkedWatched = false;
@@ -846,6 +850,61 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>
+	/// Shows an episode playing in a browser (followed by <see cref="BrowserWatchTracker"/>) in the status bar like one
+	/// played here: where it is, where it counts as watched, and once it's marked. Not while one is played here.
+	/// </summary>
+	/// <param name="marked">Whether it's just been marked watched; it stays marked until another episode is shown.</param>
+	internal void ShowBrowserPlayback(AnimeModel anime, int number, string browser, TimeSpan position, TimeSpan duration, TimeSpan countsAt, bool marked)
+	{
+		if (_cancellation is not null || IsActive && !_inBrowser)
+		{
+			return;
+		}
+
+		if (!_inBrowser || Anime?.StoreKey != anime.StoreKey || CurrentEpisode != number)
+		{
+			Anime = anime;
+			CurrentEpisode = number;
+			IsMarkedWatched = false;
+			ImageUrl = anime.Image;
+			BannerUrl = anime.BannerImage ?? "";
+			EpisodeName = "";
+			ProviderName = null;
+			PlayerName = browser;
+			Title = $"{anime.Title} · Episode {number}";
+			// Nothing here can control the browser's video.
+			_player = null;
+			Show(PlaybackStatusKind.Playing, "");
+			_inBrowser = true;
+		}
+
+		IsMarkedWatched |= marked;
+		CountsAsWatchedAt = FormatTime(countsAt, duration);
+		CountsAtFraction = Math.Clamp(countsAt / duration, 0, 1);
+		ShowPosition(position, duration);
+	}
+
+	/// <summary>The browser's episode stopped (see <see cref="ShowBrowserPlayback"/>): says if it was marked watched, as here.</summary>
+	internal void EndBrowserPlayback()
+	{
+		if (!_inBrowser)
+		{
+			return;
+		}
+
+		if (IsMarkedWatched)
+		{
+			// Said with the card's colour and the check, not words.
+			Show(PlaybackStatusKind.Success, "");
+			_inBrowser = false;
+		}
+		else
+		{
+			Hide();
+		}
+	}
+
+	/// <summary>
 	/// The provider to watch the anime from: its own (see <see cref="AnimeSettings"/>), or the selected one; set to use
 	/// the anime's own settings for it, if it has any.
 	/// </summary>
@@ -1111,6 +1170,7 @@ public sealed partial class WatchService(
 	/// <summary>Nothing more to show: closes the status bar.</summary>
 	private void Hide()
 	{
+		_inBrowser = false;
 		IsActive = false;
 		IsOpen = false;
 		Anime = null;
