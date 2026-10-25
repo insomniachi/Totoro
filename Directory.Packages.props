@@ -23,7 +23,7 @@
     <PackageVersion Include="HtmlAgilityPack" Version="1.13.0" />
     <PackageVersion Include="JikanDotNet" Version="2.10.4" />
     <PackageVersion Include="LibVLCSharp.WinUI" Version="3.10.1" />
-    <PackageVersion Include="MalApi.V2" Version="2.0.9" />
+    <PackageVersion Include="MalApi.V2" Version="2.1.0" />
     <PackageVersion Include="NAudio.Wasapi" Version="3.1.0" />
     <PackageVersion Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.1.0" />
     <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="10.0.12" />
