@@ -200,6 +200,9 @@ public sealed partial class WatchService(
 	/// <summary>Raised when the status (what the status bar shows) changes.</summary>
 	public event EventHandler? StatusChanged;
 
+	/// <summary>Raised as an episode starts playing from the download folder (so the one after it can be downloaded).</summary>
+	public event EventHandler<(AnimeModel Anime, int Number)>? PlayingDownloaded;
+
 	/// <summary>What it's up to: the status bar's contents, e.g. for an agent.</summary>
 	public PlaybackStatus Status => new(IsActive, Kind, Title, Message, PlaybackTime.Length > 0 ? PlaybackTime : null,
 		CountsAsWatchedAt.Length > 0 ? CountsAsWatchedAt : null, IsMarkedWatched);
@@ -415,6 +418,7 @@ public sealed partial class WatchService(
 		}
 
 		ProviderName = downloads.Name;
+		PlayingDownloaded?.Invoke(this, (anime, number));
 		await PlayServerAsync(player, anime, number, server, settings, track: true, offerEpisodes: true, ct);
 		return true;
 	}

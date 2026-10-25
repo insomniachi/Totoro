@@ -55,6 +55,14 @@ public sealed class AutoDownloader : IDisposable
 		_check.Start();
 		// Once the window's up, rather than a tick from now.
 		queue.TryEnqueue(DispatcherQueuePriority.Low, async () => await CheckAsync());
+		// Playing a download: the episode after it, before this one's watched (when the tick would get to it).
+		_watch.PlayingDownloaded += async (_, e) =>
+		{
+			if (_preferences.AutoDownloadNext)
+			{
+				await CheckAsync(e.Anime, e.Number + 1, DateTime.Now);
+			}
+		};
 	}
 
 	/// <summary>Whether episode <paramref name="number"/> has aired by <paramref name="now"/>, by the anime's schedule.</summary>
@@ -82,7 +90,7 @@ public sealed class AutoDownloader : IDisposable
 
 			foreach (var anime in _watching)
 			{
-				await CheckAsync(anime, DateTime.Now);
+				await CheckAsync(anime, WatchService.NextEpisode(anime), DateTime.Now);
 			}
 		}
 		catch (Exception ex)
@@ -96,9 +104,8 @@ public sealed class AutoDownloader : IDisposable
 		}
 	}
 
-	private async Task CheckAsync(AnimeModel anime, DateTime now)
+	private async Task CheckAsync(AnimeModel anime, int number, DateTime now)
 	{
-		var number = WatchService.NextEpisode(anime);
 		var key = (anime.Id, number);
 		if (_queued.Contains(key) || anime.TotalEpisodes is > 0 and var total && number > total || !IsDue(anime, number, now) ||
 			_retries.TryGetValue(key, out var retry) && now < retry.NextCheck)
@@ -117,12 +124,13 @@ public sealed class AutoDownloader : IDisposable
 			return;
 		}
 
+		// Claimed while it's checked, so the tick and a download starting to play don't both queue it.
+		_queued.Add(key);
 		try
 		{
 			if (await HasEpisodeAsync(provider, anime, number))
 			{
 				await _downloads.DownloadEpisodesAsync(anime, number, number, provider);
-				_queued.Add(key);
 				_retries.Remove(key);
 				return;
 			}
@@ -132,6 +140,7 @@ public sealed class AutoDownloader : IDisposable
 			_logger.LogWarning(ex, "Couldn't check {Provider} for {Anime} episode {Number}", provider.Name, anime.Title, number);
 		}
 
+		_queued.Remove(key);
 		var misses = retry.Misses + 1;
 		_retries[key] = (misses, now + RetryDelay(misses));
 	}
