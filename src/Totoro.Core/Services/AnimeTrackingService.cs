@@ -43,7 +43,9 @@ public sealed class AnimeTrackingService(
 		anime.Tracking = tracking;
 		WeakReferenceMessenger.Default.Send(new AnimeTrackingChangedMessage(anime, tracking));
 
-		await SyncOtherListsAsync(main, anime, "update", (tracker, id) => tracker.UpdateAsync(id, changes));
+		// Without the fields of the anime's own tracker, which mean nothing to the others.
+		var shared = changes.Clone();
+		await SyncOtherListsAsync(main, anime, "update", (tracker, id) => tracker.UpdateAsync(id, shared));
 		return tracking;
 	}
 
@@ -109,7 +111,7 @@ public sealed class AnimeTrackingService(
 	private bool IsSignedIn(Guid moduleId) => accounts.Any(x => x.Id == moduleId && x.IsSignedIn);
 
 	/// <summary>The tracker of the database the anime came from; its id means nothing to the others.</summary>
-	private IAnimeTracker GetTracker(AnimeModel anime)
+	public IAnimeTracker GetTracker(AnimeModel anime)
 	{
 		return (anime.ServiceId is { } serviceId ? trackers.Create(serviceId) : null) ?? trackers.CreateDefault()
 			?? throw new InvalidOperationException("There's no anime database to save to.");

@@ -56,7 +56,7 @@ public sealed record ListEntry(
 	ListItemStatus? Status,
 	int? WatchedEpisodes,
 	[property: Description("The user's score, out of 10; null or 0 if not scored.")]
-	int? Score,
+	double? Score,
 	DateOnly? StartDate,
 	DateOnly? FinishDate)
 {

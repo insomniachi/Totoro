@@ -372,7 +372,7 @@ internal partial class AnilistMetadataProvider(
 	{
 		// POINT_10 so scores match what AnilistTracker.Update writes (scoreRaw = Score * 10).
 		return new MediaListQueryBuilder()
-			   .WithScore(ScoreFormat.Point10)
+			   .WithScore(ScoreFormat.Point10Decimal)
 			   .WithStatus()
 			   .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
 			   .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())

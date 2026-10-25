@@ -1,4 +1,4 @@
-﻿using GraphQL;
+using GraphQL;
 using GraphQL.Client.Http;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Settings;
@@ -97,7 +97,7 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 
 		if (tracking.Score is not null)
 		{
-			mediaListEntryBuilder.WithScore(ScoreFormat.Point10);
+			mediaListEntryBuilder.WithScore(ScoreFormat.Point10Decimal);
 		}
 
 		if (tracking.WatchedEpisodes is not null)
@@ -105,15 +105,26 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 			mediaListEntryBuilder.WithProgress();
 		}
 
+		// Left out unless edited, so saving progress doesn't overwrite them.
+		var notes = tracking.Changed<TextField>("notes");
+		var repeat = tracking.Changed<NumberField>("repeat");
+		var isPrivate = tracking.Changed<ToggleField>("private");
+		var hidden = tracking.Changed<ToggleField>("hiddenFromStatusLists");
+
 		var query = new MutationQueryBuilder()
 					.WithSaveMediaListEntry(mediaListEntryBuilder,
 											status: AniListModelToAnimeModelConverter.ConvertListStatus(tracking.Status),
 											startedAt: AniListModelToAnimeModelConverter.ConvertDate(tracking.StartDate),
 											completedAt: AniListModelToAnimeModelConverter.ConvertDate(tracking.FinishDate),
-											scoreRaw: tracking.Score * 10,
+											// Out of 100, whatever the user's score format.
+											scoreRaw: tracking.Score is { } score ? (int)Math.Round(score * 10) : null,
 											progress: tracking.WatchedEpisodes,
 											mediaId: (int)id,
-											notes: "#Totoro")
+											// Casts: a null value would still be sent, as null; a null parameter is left out.
+											notes: notes is null ? null : (QueryBuilderParameter<string>)notes.Value,
+											repeat: repeat is null ? null : (QueryBuilderParameter<int?>)(int)repeat.Value,
+											@private: isPrivate is null ? null : (QueryBuilderParameter<bool?>)isPrivate.Value,
+											hiddenFromStatusLists: hidden is null ? null : (QueryBuilderParameter<bool?>)hidden.Value)
 					.Build();
 
 		var response = await client.SendMutationAsync<Mutation>(new GraphQLRequest
@@ -122,6 +133,41 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 		});
 
 		return AniListModelToAnimeModelConverter.ConvertTracking(response.Data.SaveMediaListEntry) ?? tracking;
+	}
+
+	public async Task<TrackingForm> GetFormAsync(long id, CancellationToken ct)
+	{
+		var query = new QueryQueryBuilder()
+					.WithViewer(new UserQueryBuilder().WithMediaListOptions(new MediaListOptionsQueryBuilder().WithScoreFormat()))
+					.WithMedia(new MediaQueryBuilder().WithMediaListEntry(new MediaListQueryBuilder()
+																			  .WithNotes()
+																			  .WithRepeat()
+																			  .WithPrivate()
+																			  .WithHiddenFromStatusLists()),
+							   (int)id,
+							   type: MediaType.Anime)
+					.Build();
+
+		var response = await client.SendQueryAsync<Query>(new GraphQLRequest { Query = query }, ct);
+		ThrowIfFailed(response);
+
+		var entry = response.Data.Media?.MediaListEntry;
+		var (max, step, style) = response.Data.Viewer?.MediaListOptions?.ScoreFormat switch
+		{
+			ScoreFormat.Point100 => (100, 1, ScoreStyle.Number),
+			ScoreFormat.Point10Decimal => (10, 0.1, ScoreStyle.Number),
+			ScoreFormat.Point5 => (5, 1, ScoreStyle.Stars),
+			ScoreFormat.Point3 => (3, 1, ScoreStyle.Smileys),
+			_ => (10d, 1d, ScoreStyle.Number),
+		};
+
+		return new TrackingForm(max, step, ScoreStyle: style, Fields:
+		[
+			new NumberField("repeat", "Total rewatches", entry?.Repeat ?? 0),
+			new TextField("notes", "Notes", entry?.Notes) { IsMultiline = true },
+			new ToggleField("hiddenFromStatusLists", "Hide from status lists", entry?.HiddenFromStatusLists ?? false),
+			new ToggleField("private", "Private", entry?.Private ?? false),
+		]);
 	}
 
 	private async Task<string?> FetchUserNameAsync(CancellationToken ct)
@@ -185,7 +231,7 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 																			  .WithEpisode()
 																			  .WithTimeUntilAiring())
 													   .WithMediaListEntry(new MediaListQueryBuilder()
-																		   .WithScore(ScoreFormat.Point10)
+																		   .WithScore(ScoreFormat.Point10Decimal)
 																		   .WithStatus()
 																		   .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
 																		   .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())

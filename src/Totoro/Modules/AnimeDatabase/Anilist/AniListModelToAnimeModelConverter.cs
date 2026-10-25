@@ -281,7 +281,7 @@ public static partial class AniListModelToAnimeModelConverter
         return new Tracking
         {
             WatchedEpisodes = listEntry.Progress is > 0 ? listEntry.Progress : null,
-            Score = (int?)(listEntry.Score is > 0 ? listEntry.Score : null),
+            Score = listEntry.Score is > 0 and var score ? (double)score : null,
             Status = ConvertListStatus(listEntry.Status),
             StartDate = ConvertDate(listEntry.StartedAt),
             FinishDate = ConvertDate(listEntry.CompletedAt),
