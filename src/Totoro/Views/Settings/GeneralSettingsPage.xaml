@@ -32,6 +32,13 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="Starts Totoro when you sign in to Windows. With Start in the notification area on, it starts there, without a window." Header="Start with Windows">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE7E8;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.StartWithWindows, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard Description="Opens the window maximized when Totoro starts." Header="Start maximized">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE740;" />

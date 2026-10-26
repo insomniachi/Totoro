@@ -120,6 +120,7 @@ public partial class SettingsViewModel : ObservableObject
 		Theme = Themes.First(x => x.Value == appearance.Theme);
 		Backdrop = Backdrops.First(x => x.Value == appearance.Backdrop);
 		CloseAction = CloseActions.FirstOrDefault(x => x.Value == preferences.CloseAction) ?? CloseActions[0];
+		StartWithWindows = Helpers.WindowsStartup.IsEnabled;
 		StartMaximized = preferences.StartMaximized;
 		StartInTray = preferences.StartInTray;
 
@@ -364,6 +365,19 @@ public partial class SettingsViewModel : ObservableObject
 	public partial CloseActionOption CloseAction { get; set; }
 
 	partial void OnCloseActionChanged(CloseActionOption value) => _preferences.CloseAction = value.Value;
+
+	/// <summary>Whether Totoro starts when the user signs in to Windows.</summary>
+	[ObservableProperty]
+	public partial bool StartWithWindows { get; set; }
+
+	partial void OnStartWithWindowsChanged(bool value)
+	{
+		// Only when it changes: reading it in shouldn't point the entry at whichever build is running (e.g. a debug one).
+		if (value != Helpers.WindowsStartup.IsEnabled)
+		{
+			Helpers.WindowsStartup.IsEnabled = value;
+		}
+	}
 
 	[ObservableProperty]
 	public partial bool StartMaximized { get; set; }
