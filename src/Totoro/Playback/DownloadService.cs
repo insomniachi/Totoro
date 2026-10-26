@@ -354,6 +354,21 @@ public sealed class DownloadService(
 								   cover is null ? "" : new Uri(cover.FullName).AbsoluteUri);
 	}
 
+	/// <summary>
+	/// Cancels every download, and returns once the one downloading has deleted what it had so far, or after
+	/// <paramref name="timeout"/> if that takes longer. For when the app closes: the queue stays taken, so nothing downloads after.
+	/// </summary>
+	public async Task CancelAllAsync(TimeSpan timeout)
+	{
+		foreach (var item in Downloads.Where(x => x.IsActive))
+		{
+			item.Cancel();
+		}
+
+		// Released by the download that had its turn once it's cleaned up; the ones waiting gave up their turn when cancelled.
+		await _queue.WaitAsync(timeout);
+	}
+
 	public void Dispose() => _http.Dispose();
 
 	private DownloadItem Add(string title, int number, string provider)

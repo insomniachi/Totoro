@@ -28,6 +28,8 @@ using Totoro.UI.Dialogs;
 using Totoro.UI.Theming;
 using Totoro.UI.Threading;
 using Totoro.UI.Web;
+using WinUIEx;
+using WebAuthenticator = Totoro.UI.Authentication.WebAuthenticator;
 using Totoro.ViewModels;
 using Totoro.ViewModels.Chat;
 using Totoro.ViewModels.Relations;
@@ -193,11 +195,135 @@ public partial class App : Application
 		var downloads = _host.Services.GetRequiredService<DownloadService>();
 		var downloadsItem = _host.Services.GetServices<NavigationItemViewModel>().First(x => x.ViewModelType == typeof(DownloadsViewModel));
 		downloads.PropertyChanged += (_, _) => downloadsItem.BadgeCount = downloads.ActiveCount;
+		var window = _window;
+		var preferences = _host.Services.GetRequiredService<IPreferences>();
+		var manager = WinUIEx.WindowManager.Get(window);
+		var shown = false;
+		var quitting = false;
+
+		void Show()
+		{
+			if (manager.WindowState == WinUIEx.WindowState.Minimized)
+			{
+				window.Restore();
+			}
+			else
+			{
+				window.Show();
+			}
+
+			window.Activate();
+			// Once activated: maximized before its first activation from the tray, the content kept its old size, unpainted.
+			if (!shown && preferences.StartMaximized)
+			{
+				window.Maximize();
+			}
+
+			shown = true;
+			window.SetForegroundWindow();
+		}
+
+		// Its icon is there while the window's hidden in it, and while closing the window doesn't quit, to quit from.
+		void UpdateTray() => manager.IsVisibleInTray = !window.AppWindow.IsVisible || preferences.CloseAction != WindowCloseAction.Quit;
+
+		// Quitting while episodes download asks first, and cancels them (deleting what they had) if the user goes on.
+		async Task QuitAsync()
+		{
+			if (downloads.ActiveCount > 0)
+			{
+				Show();
+				if (window.Content is FrameworkElement { XamlRoot: null } root)
+				{
+					// Never shown before (it started in the tray): the dialog needs its content loaded.
+					var loaded = new TaskCompletionSource();
+					root.Loaded += (_, _) => loaded.TrySetResult();
+					await loaded.Task;
+				}
+
+				var count = downloads.ActiveCount;
+				var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+				{
+					XamlRoot = window.Content.XamlRoot,
+					Style = Resources["DefaultContentDialogStyle"] as Style,
+					Title = count == 1 ? "An episode is downloading" : $"{count} episodes are downloading",
+					Content = "Quitting Totoro cancels them, and deletes what they've downloaded so far.",
+					PrimaryButtonText = "Quit anyway",
+					CloseButtonText = "Keep downloading",
+					DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close,
+				};
+				try
+				{
+					if (await dialog.ShowAsync() != Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+					{
+						return;
+					}
+				}
+				catch (System.Runtime.InteropServices.COMException)
+				{
+					// Another dialog is open (only one shows at a time): Totoro keeps running until that's closed.
+					return;
+				}
+
+				await downloads.CancelAllAsync(TimeSpan.FromSeconds(10));
+			}
+
+			quitting = true;
+			window.Close();
+		}
+
+		window.AppWindow.Closing += (sender, args) =>
+		{
+			if (quitting)
+			{
+				return;
+			}
+
+			args.Cancel = true;
+			switch (preferences.CloseAction)
+			{
+				case WindowCloseAction.Minimize:
+					window.Minimize();
+					break;
+				case WindowCloseAction.Tray:
+					window.Hide();
+					break;
+				default:
+					_ = QuitAsync();
+					break;
+			}
+
+			UpdateTray();
+		};
+		window.Activated += (_, _) => UpdateTray();
+		manager.TrayIconSelected += (_, _) => Show();
+		manager.TrayIconContextMenu += (sender, e) =>
+		{
+			var open = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open Totoro" };
+			open.Click += (_, _) => Show();
+			var quit = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Quit Totoro" };
+			quit.Click += (_, _) => _ = QuitAsync();
+			e.Flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout { Items = { open, quit } };
+		};
 		// The app ends with its main window, the built-in player's window too.
-		_window.Closed += (_, _) => Exit();
+		window.Closed += (_, _) =>
+		{
+			manager.IsVisibleInTray = false;
+			Exit();
+		};
 		// E.g. for the installer of a newer version to replace the app (see UpdateService).
-		WeakReferenceMessenger.Default.Register<App, AppExitRequestedMessage>(this, (app, _) => app._window?.Close());
-		_window.Activate();
+		WeakReferenceMessenger.Default.Register<App, AppExitRequestedMessage>(this, (_, _) =>
+		{
+			quitting = true;
+			window.Close();
+		});
+		if (preferences.StartInTray)
+		{
+			manager.IsVisibleInTray = true;
+		}
+		else
+		{
+			Show();
+		}
 	}
 
 	private void AddModules(IServiceCollection services)

@@ -99,4 +99,51 @@ public class DownloadTests
 		Assert.Equal(0.7, WatchService.IdScore(new ProviderShow("a", "x", 0.7), anime));
 		Assert.Equal(0.7, WatchService.IdScore(new ProviderShow("a", "x", 0.7) { Ids = new AnimeId { Kitsu = 5 } }, anime));
 	}
+
+	[Fact]
+	public async Task CancelAll_DeletesWhatWasDownloadedSoFar()
+	{
+		var folder = Directory.CreateTempSubdirectory().FullName;
+		var free = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+		free.Start();
+		var port = ((System.Net.IPEndPoint)free.LocalEndpoint).Port;
+		free.Stop();
+		using var listener = new System.Net.HttpListener { Prefixes = { $"http://localhost:{port}/" } };
+		listener.Start();
+		// A video that sends a little, then never finishes.
+		_ = Task.Run(async () =>
+		{
+			var context = await listener.GetContextAsync();
+			context.Response.ContentType = "video/mp4";
+			context.Response.ContentLength64 = 1 << 30;
+			await context.Response.OutputStream.WriteAsync(new byte[1 << 16]);
+			await context.Response.OutputStream.FlushAsync();
+			await Task.Delay(Timeout.Infinite);
+		});
+		try
+		{
+			var preferences = new PluginLoaderTests.FakePreferences();
+			preferences.DownloadFolder = folder;
+			using var downloads = new DownloadService(null!, null!, null!, null!, preferences, null!, NullLogger<DownloadService>.Instance);
+			var item = downloads.Download(null, "Frieren", 5, new VideoServer("x", new Uri($"http://localhost:{port}/e.mp4")), "Test");
+			var queued = downloads.Download(null, "Frieren", 6, new VideoServer("x", new Uri($"http://localhost:{port}/e.mp4")), "Test");
+			var part = Path.Combine(item.Folder, DownloadNames.Episode("Frieren", 5) + ".part");
+			for (var i = 0; i < 100 && !(File.Exists(part) && new FileInfo(part).Length > 0); i++)
+			{
+				await Task.Delay(100);
+			}
+
+			Assert.True(File.Exists(part));
+			await downloads.CancelAllAsync(TimeSpan.FromSeconds(10));
+
+			Assert.Equal(DownloadState.Cancelled, item.State);
+			Assert.Equal(DownloadState.Cancelled, queued.State);
+			Assert.Empty(Directory.GetFiles(item.Folder, "*.part*"));
+		}
+		finally
+		{
+			listener.Stop();
+			Directory.Delete(folder, recursive: true);
+		}
+	}
 }

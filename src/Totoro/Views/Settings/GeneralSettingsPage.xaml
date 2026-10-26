@@ -32,6 +32,36 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="Opens the window maximized when Totoro starts." Header="Start maximized">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE740;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.StartMaximized, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="Starts without a window, with Totoro's icon in the notification area: select it to open Totoro." Header="Start in the notification area">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE7E7;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ToggleSwitch IsOn="{x:Bind ViewModel.StartInTray, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="Minimized or in the notification area, Totoro keeps running, downloads and all: quit it from its icon in the notification area." Header="Closing the window">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8BB;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    ItemsSource="{x:Bind ViewModel.CloseActions}"
+                    SelectedItem="{x:Bind ViewModel.CloseAction, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CloseActionOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard Description="Light, dark, or follow your Windows setting." Header="App theme">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE790;" />

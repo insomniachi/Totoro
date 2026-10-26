@@ -48,6 +48,11 @@ public sealed record BackdropOption(string Label, AppBackdrop Value)
 	public override string ToString() => Label;
 }
 
+public sealed record CloseActionOption(string Label, WindowCloseAction Value)
+{
+	public override string ToString() => Label;
+}
+
 public sealed record SkipModeOption(string Label, SkipMode Value)
 {
 	public override string ToString() => Label;
@@ -114,6 +119,9 @@ public partial class SettingsViewModel : ObservableObject
 
 		Theme = Themes.First(x => x.Value == appearance.Theme);
 		Backdrop = Backdrops.First(x => x.Value == appearance.Backdrop);
+		CloseAction = CloseActions.FirstOrDefault(x => x.Value == preferences.CloseAction) ?? CloseActions[0];
+		StartMaximized = preferences.StartMaximized;
+		StartInTray = preferences.StartInTray;
 
 		// Footer items (like Settings itself) aren't offered as a startup page.
 		StartupPages = [.. navigationItems.Where(x => !x.IsFooter)];
@@ -343,6 +351,29 @@ public partial class SettingsViewModel : ObservableObject
 			_appearance.Backdrop = value.Value;
 		}
 	}
+
+	public IReadOnlyList<CloseActionOption> CloseActions { get; } =
+	[
+		new("Quit Totoro", WindowCloseAction.Quit),
+		new("Minimize to the taskbar", WindowCloseAction.Minimize),
+		new("Keep running in the notification area", WindowCloseAction.Tray),
+	];
+
+	/// <summary>What closing the main window does.</summary>
+	[ObservableProperty]
+	public partial CloseActionOption CloseAction { get; set; }
+
+	partial void OnCloseActionChanged(CloseActionOption value) => _preferences.CloseAction = value.Value;
+
+	[ObservableProperty]
+	public partial bool StartMaximized { get; set; }
+
+	partial void OnStartMaximizedChanged(bool value) => _preferences.StartMaximized = value;
+
+	[ObservableProperty]
+	public partial bool StartInTray { get; set; }
+
+	partial void OnStartInTrayChanged(bool value) => _preferences.StartInTray = value;
 
 	/// <summary>Where episodes are downloaded to, a folder for each anime.</summary>
 	[ObservableProperty]

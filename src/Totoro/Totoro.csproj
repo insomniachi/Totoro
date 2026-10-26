@@ -75,6 +75,7 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="SharpCompress" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" />
+    <PackageReference Include="WinUIEx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Core\Totoro.Core.csproj" />
