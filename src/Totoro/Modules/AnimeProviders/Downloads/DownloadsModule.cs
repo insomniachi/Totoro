@@ -105,7 +105,7 @@ internal sealed class DownloadsProvider(IPreferences preferences, ILogger<Downlo
 
 		// Its opening and ending, if they were found when it was downloaded.
 		var segments = DownloadNames.ParseEpisode(file) is { } number && ReadInfo(folder).Segments?.GetValueOrDefault(number) is { } found ? found : [];
-		return Task.FromResult<List<VideoServer>>([new VideoServer("Downloaded", new Uri(file)) { Segments = segments }]);
+		return Task.FromResult<List<VideoServer>>([new VideoServer("Downloaded", new Uri(file)) { Segments = segments, Subtitles = DownloadNames.FindSubtitles(file) }]);
 	}
 
 	// GetFileName: a show id is a folder's name, never a path out of the download folder.

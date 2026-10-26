@@ -476,7 +476,7 @@ public sealed partial class WatchService(
 	{
 		// A torrent is streamed to the player over HTTP, until playback ends.
 		await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(server, ct) : null;
-		var media = new MediaItem(stream?.Url ?? server.Url, $"{anime.Title} - Episode {number}", stream?.Headers ?? server.Headers);
+		var media = new MediaItem(stream?.Url ?? server.Url, $"{anime.Title} - Episode {number}", stream?.Headers ?? server.Headers) { Subtitles = server.Subtitles };
 		await PlayAsync(player, anime, number, media, server.Segments, settings, track, offerEpisodes, ct);
 	}
 

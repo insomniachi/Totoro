@@ -21,6 +21,29 @@ public class DownloadTests
 	}
 
 	[Fact]
+	public void SubtitleNames_RoundTripInOrder()
+	{
+		var folder = Directory.CreateTempSubdirectory().FullName;
+		try
+		{
+			var episode = DownloadNames.Episode("Frieren", 5);
+			var file = Path.Combine(folder, episode + ".mp4");
+			File.WriteAllText(file, "");
+			File.WriteAllText(Path.Combine(folder, DownloadNames.Subtitle(episode, 1, new SubtitleTrack("English", new Uri("https://x/a.vtt"), "en")) + ".vtt"), "");
+			File.WriteAllText(Path.Combine(folder, DownloadNames.Subtitle(episode, 2, new SubtitleTrack("Arabic", new Uri("https://x/b.vtt"))) + ".vtt"), "");
+			File.WriteAllText(Path.Combine(folder, episode + ".nfo"), "");
+
+			Assert.Equal([("English", "en"), ("Arabic", null)], DownloadNames.FindSubtitles(file).Select(x => (x.Name, x.Language)));
+			// Not episodes themselves.
+			Assert.All(Directory.GetFiles(folder, "*.vtt"), x => Assert.Null(DownloadNames.ParseEpisode(x)));
+		}
+		finally
+		{
+			Directory.Delete(folder, recursive: true);
+		}
+	}
+
+	[Fact]
 	public void Describe_ShowsWhatsKnown()
 	{
 		var mb = 1 << 20;

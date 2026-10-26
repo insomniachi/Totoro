@@ -7,6 +7,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
 using Totoro.Helpers;
 
@@ -26,6 +27,9 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	// Replies mpv hasn't sent yet, by request id.
 	private readonly ConcurrentDictionary<int, TaskCompletionSource<JsonElement>> _requests = new();
 	private int _lastRequest;
+
+	// The current video's subtitle files not yet added; added once mpv has loaded it (sub-add needs a file playing).
+	private IReadOnlyList<SubtitleTrack> _subtitles = [];
 
 	public Guid Id => MpvModule.Id;
 
@@ -75,6 +79,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 			startInfo.ArgumentList.Add($"--http-header-fields={string.Join(",", headers.Select(x => $"{x.Key}: {x.Value}"))}");
 		}
 
+		_subtitles = media.Subtitles;
 		var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
 		process.Exited += (_, _) =>
 		{
@@ -215,6 +220,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 1, "duration" } });
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 2, "time-pos" } });
+			await WriteAsync(pipe, new { command = new object[] { "observe_property", 3, "track-list" } });
 			if (ReferenceEquals(process, _process))
 			{
 				_pipe = pipe;
@@ -243,6 +249,21 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		if (root.TryGetProperty("request_id", out var request) && _requests.TryRemove(request.GetInt32(), out var reply))
 		{
 			reply.TrySetResult(root.TryGetProperty("data", out var result) ? result.Clone() : default);
+			return;
+		}
+
+		// The track list has tracks once the video's loaded (observing it reports it as it is, so a video loaded before the
+		// pipe connected counts too): then its subtitle files go in, once.
+		if (root.TryGetProperty("name", out var property) && property.GetString() == "track-list" &&
+			root.TryGetProperty("data", out var tracks) && tracks.ValueKind == JsonValueKind.Array && tracks.GetArrayLength() > 0)
+		{
+			// With their names and languages, which --sub-file can't give; the first is shown.
+			foreach (var (subtitle, i) in Interlocked.Exchange(ref _subtitles, []).Select((x, i) => (x, i)))
+			{
+				var url = subtitle.Url.IsFile ? subtitle.Url.LocalPath : subtitle.Url.AbsoluteUri;
+				_ = SendAsync("sub-add", url, i == 0 ? "select" : "auto", subtitle.Name, subtitle.Language ?? "");
+			}
+
 			return;
 		}
 

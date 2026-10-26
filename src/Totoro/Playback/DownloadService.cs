@@ -265,7 +265,8 @@ public sealed class DownloadService(
 	/// <summary>The episode file called <paramref name="name"/> (any extension) in <paramref name="folder"/>; null if there's none.</summary>
 	private static string? FindDownloaded(string folder, string name) =>
 		Directory.Exists(folder)
-			? Directory.EnumerateFiles(folder, name + ".*").FirstOrDefault(x => !x.EndsWith(".part", StringComparison.OrdinalIgnoreCase))
+			// Not its subtitles (name.English.en.vtt), which the pattern matches too.
+			? Directory.EnumerateFiles(folder, name + ".*").FirstOrDefault(x => Path.GetFileNameWithoutExtension(x) == name && !x.EndsWith(".part", StringComparison.OrdinalIgnoreCase))
 			: null;
 
 	/// <summary>Shows the download folder in File Explorer, making it first if nothing's been downloaded yet.</summary>
@@ -469,6 +470,8 @@ public sealed class DownloadService(
 				File.Move(part, path, overwrite: true);
 			}
 
+			await SaveSubtitlesAsync(server, name, item.Folder, ct);
+
 			item.FilePath = path;
 			item.Progress = 1;
 			item.Message = $"Downloaded · {Size(new FileInfo(path).Length)}";
@@ -502,6 +505,28 @@ public sealed class DownloadService(
 		finally
 		{
 			_queue.Release();
+		}
+	}
+
+	/// <summary>
+	/// Saves the stream's subtitle files beside the episode <paramref name="name"/>, for the Downloads provider to play it
+	/// with. The episode is kept without any that can't be had.
+	/// </summary>
+	private async Task SaveSubtitlesAsync(VideoServer server, string name, string folder, CancellationToken ct)
+	{
+		foreach (var (subtitle, i) in server.Subtitles.Select((x, i) => (x, i)))
+		{
+			try
+			{
+				var extension = Path.GetExtension(subtitle.Url.AbsolutePath).ToLowerInvariant();
+				extension = extension is ".srt" or ".ass" or ".ssa" ? extension : ".vtt";
+				using var response = await GetAsync(subtitle.Url, server.Headers, ct);
+				await File.WriteAllBytesAsync(Path.Combine(folder, DownloadNames.Subtitle(name, i + 1, subtitle) + extension), await response.Content.ReadAsByteArrayAsync(ct), ct);
+			}
+			catch (Exception ex) when (ex is not OperationCanceledException)
+			{
+				logger.LogWarning(ex, "Couldn't save the subtitles {Subtitle} of {Episode}", subtitle.Name, name);
+			}
 		}
 	}
 
@@ -885,7 +910,8 @@ public sealed class DownloadService(
 	};
 
 	/// <summary>
-	/// Downloads an HLS stream (its best video and audio) with yt-dlp, into an MPEG-TS file. It connects as Chrome does:
+	/// Downloads an HLS stream (its best video and audio) with yt-dlp, into an MPEG-TS file, or one ffmpeg merged when its
+	/// audio is apart from its video; returns the file's extension. It connects as Chrome does:
 	/// Cloudflare turns away other clients (AnimePahe's CDN answers .NET, ffmpeg and curl with 403), but not browsers.
 	/// </summary>
 	private async Task<string> DownloadWithYtDlpAsync(Uri url, IReadOnlyDictionary<string, string> headers, string output,
@@ -915,6 +941,14 @@ public sealed class DownloadService(
 		foreach (var arg in args)
 		{
 			startInfo.ArgumentList.Add(arg);
+		}
+
+		// To merge a stream whose audio is apart from its video (KickAssAnime's): mpv's download comes with ffmpeg, else
+		// yt-dlp looks for one on the PATH.
+		if (File.Exists(Path.Combine(Modules.MediaPlayers.Mpv.MpvInstaller.Folder, "ffmpeg.exe")))
+		{
+			startInfo.ArgumentList.Add("--ffmpeg-location");
+			startInfo.ArgumentList.Add(Modules.MediaPlayers.Mpv.MpvInstaller.Folder);
 		}
 
 		foreach (var (name, value) in headers)
@@ -984,7 +1018,23 @@ public sealed class DownloadService(
 			throw new DownloadException($"yt-dlp couldn't download it: {reason}");
 		}
 
-		return ".ts";
+		if (File.Exists(output))
+		{
+			return ".ts";
+		}
+
+		// Merged from separate video and audio, it's the output with the merged format's extension added (episode.part.mp4).
+		foreach (var extension in new[] { ".mp4", ".mkv", ".webm" })
+		{
+			if (File.Exists(output + extension))
+			{
+				File.Move(output + extension, output);
+				return extension;
+			}
+		}
+
+		// Without ffmpeg, yt-dlp leaves the video and audio apart (episode.part.f3102.mp4...) and succeeds.
+		throw new DownloadException("This stream's audio is apart from its video, which takes ffmpeg to put together: download mpv in its settings (it comes with ffmpeg), or install ffmpeg, then download again.");
 	}
 
 	/// <summary>The yt-dlp.exe the user chose; if they haven't, the one on the PATH, or the one downloaded with mpv.</summary>

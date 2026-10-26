@@ -72,4 +72,15 @@ public sealed record VideoServer(string Name, Uri Url, VideoServerKind Kind = Vi
 
 	/// <summary>The episode's opening and ending, when the provider knows them (e.g. found when it was downloaded); else none.</summary>
 	public IReadOnlyList<Media.MediaSegment> Segments { get; init; } = [];
+
+	/// <summary>
+	/// Subtitle files the player loads beside the video (fetched with <see cref="Headers"/>), the provider's preferred one
+	/// first; none when the video has its own, or none at all.
+	/// </summary>
+	public IReadOnlyList<SubtitleTrack> Subtitles { get; init; } = [];
 }
+
+/// <param name="Name">What the player calls it, e.g. "English".</param>
+/// <param name="Url">The file (WebVTT, SRT or ASS), on the web or on this PC.</param>
+/// <param name="Language">Its language code, e.g. "en", when known.</param>
+public sealed record SubtitleTrack(string Name, Uri Url, string? Language = null);

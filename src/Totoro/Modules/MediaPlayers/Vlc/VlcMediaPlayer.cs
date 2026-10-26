@@ -59,16 +59,20 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 		var uri = media.Uri;
 		List<string> options = [];
 		var headers = media.Headers ?? new Dictionary<string, string>();
-		// libvlc fetches it itself when it can send what's asked (Origin aside: only browsers send it, and video hosts
-		// don't need it). Through the proxy, .NET does the fetching, which hosts behind Cloudflare's bot checks may turn
-		// away by how it connects (AnimePahe's, uwucdn, does: 403), where they let libvlc (and mpv) in.
-		if (headers.Keys.Where(x => !x.Equals("Origin", StringComparison.OrdinalIgnoreCase)).All(s_ownHeaders.ContainsKey))
+		var subtitles = media.Subtitles;
+		// libvlc fetches it itself when it can send what's asked (Origin aside when there's a referrer: hosts that want
+		// both, like AnimePahe's, settle for the referrer; KickAssAnime's, wanting Origin alone, don't). Through the proxy,
+		// .NET does the fetching, which hosts behind Cloudflare's bot checks may turn away by how it connects (AnimePahe's,
+		// uwucdn, does: 403), where they let libvlc (and mpv) in.
+		var hasReferrer = headers.ContainsKey("Referer");
+		if (headers.Keys.Where(x => !(hasReferrer && x.Equals("Origin", StringComparison.OrdinalIgnoreCase))).All(s_ownHeaders.ContainsKey))
 		{
 			options.AddRange(headers.Where(x => s_ownHeaders.ContainsKey(x.Key)).Select(x => $"{s_ownHeaders[x.Key]}={x.Value}"));
 		}
 		else
 		{
 			uri = _proxy.Serve(uri, headers);
+			subtitles = [.. subtitles.Select(x => x.Url.IsFile ? x : x with { Url = _proxy.Serve(x.Url, headers) })];
 		}
 
 		if (settings.Value.AudioLanguage.Length > 0)
@@ -81,7 +85,7 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 			options.Add($":sub-language={settings.Value.SubtitleLanguage}");
 		}
 
-		_ = viewModel.PlayAsync(uri, media.Title, options, startPosition, media.IsClip);
+		_ = viewModel.PlayAsync(uri, media.Title, options, startPosition, media.IsClip, subtitles);
 	}
 
 	public Task SeekAsync(TimeSpan position) => _window?.ViewModel.SeekAsync(position) ?? Task.CompletedTask;

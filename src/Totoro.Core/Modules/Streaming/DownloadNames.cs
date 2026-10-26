@@ -29,6 +29,42 @@ public static partial class DownloadNames
 			? int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture)
 			: null;
 
+	/// <summary>
+	/// The name of the episode's <paramref name="index"/>th subtitle file, beside the episode <paramref name="episode"/> (its
+	/// file name without the extension), without its own extension: e.g. <c>Sousou no Frieren - 05.01.English.en</c>, whose
+	/// last part players read as the language.
+	/// </summary>
+	public static string Subtitle(string episode, int index, SubtitleTrack track) =>
+		track.Language is { Length: > 0 } language
+			? $"{episode}.{index:00}.{Clean(track.Name)}.{Clean(language)}"
+			: $"{episode}.{index:00}.{Clean(track.Name)}";
+
+	/// <summary>The subtitle files <see cref="Subtitle"/> named beside the episode file <paramref name="episodeFile"/>, in order.</summary>
+	public static List<SubtitleTrack> FindSubtitles(string episodeFile)
+	{
+		var folder = Path.GetDirectoryName(episodeFile);
+		var prefix = Path.GetFileNameWithoutExtension(episodeFile) + ".";
+		if (folder is null || !Directory.Exists(folder))
+		{
+			return [];
+		}
+
+		return
+		[
+			.. Directory.EnumerateFiles(folder, prefix + "*")
+						.Where(x => s_subtitleExtensions.Contains(Path.GetExtension(x)))
+						// index.name[.language]
+						.Select(x => (File: x, Parts: Path.GetFileNameWithoutExtension(x)[prefix.Length..].Split('.')))
+						.Where(x => x.Parts.Length > 1 && int.TryParse(x.Parts[0], CultureInfo.InvariantCulture, out _))
+						.OrderBy(x => int.Parse(x.Parts[0], CultureInfo.InvariantCulture))
+						.Select(x => x.Parts.Length > 2
+							? new SubtitleTrack(string.Join('.', x.Parts[1..^1]), new Uri(x.File), x.Parts[^1])
+							: new SubtitleTrack(x.Parts[1], new Uri(x.File)))
+		];
+	}
+
+	private static readonly HashSet<string> s_subtitleExtensions = new([".vtt", ".srt", ".ass", ".ssa"], StringComparer.OrdinalIgnoreCase);
+
 	/// <summary>What the anime's folder's info file says; null if it has none, or one without a title. Throws <see cref="JsonException"/> for a broken one.</summary>
 	public static DownloadInfo? ReadInfo(string folder)
 	{

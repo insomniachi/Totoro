@@ -6,6 +6,7 @@ using Microsoft.UI.Dispatching;
 using Totoro.Core.Modules.Media;
 using Totoro.Modules.MediaPlayers.Vlc;
 using MediaTrack = Totoro.Core.Modules.Media.MediaTrack;
+using SubtitleTrack = Totoro.Core.Modules.Streaming.SubtitleTrack;
 
 namespace Totoro.ViewModels.Player;
 
@@ -33,6 +34,9 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	private TaskCompletionSource<bool>? _next;
 	private CancellationTokenSource? _message;
 	private bool _isClosed;
+
+	// The subtitle files given with what's playing, to name their tracks.
+	private IReadOnlyList<SubtitleTrack> _subtitles = [];
 	private bool _isStarting;
 
 	public event EventHandler<TimeSpan>? DurationChanged;
@@ -188,10 +192,12 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	/// <summary>Plays <paramref name="uri"/> from <paramref name="start"/>, replacing what's playing.</summary>
 	/// <param name="options">libvlc media options, e.g. ":http-referrer=...".</param>
 	/// <param name="isClip">A short video (e.g. an opening) rather than an episode: only the simple controls show, and no episodes.</param>
-	public async Task PlayAsync(Uri uri, string title, IEnumerable<string> options, TimeSpan start, bool isClip = false)
+	/// <param name="subtitles">Subtitle files to load beside it, the first one shown.</param>
+	public async Task PlayAsync(Uri uri, string title, IEnumerable<string> options, TimeSpan start, bool isClip = false, IReadOnlyList<SubtitleTrack>? subtitles = null)
 	{
 		Title = title;
 		IsClip = isClip;
+		_subtitles = subtitles ?? [];
 		ResetForNewVideo();
 		if (isClip)
 		{
@@ -210,6 +216,12 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 			}
 
 			using var media = new Media(_libVlc!, uri, [.. options, $":start-time={start.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}"]);
+			foreach (var (subtitle, i) in _subtitles.Select((x, i) => (x, i)))
+			{
+				// The highest priority (4) is selected when it loads; the rest are there to pick.
+				media.AddSlave(MediaSlaveType.Subtitle, i == 0 ? 4u : 0u, subtitle.Url.AbsoluteUri);
+			}
+
 			// Replacing the video stops the last one, which can take a moment (a stream closing): not on the UI thread.
 			await Task.Run(() => player.Play(media));
 		}
@@ -258,10 +270,17 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 
 		var audio = player.AudioTrack;
 		var subtitle = player.Spu;
+		var spus = player.SpuDescription;
+		// libvlc calls the subtitle files it was given "Track N"; they're its last subtitle tracks, in the order given.
+		// shortcut: assumes the video's own subtitle tracks are all listed before them, true of files and HLS once loaded;
+		// match by libvlc's media tracks if a stream ever adds its own later.
+		var firstFile = spus.Count(x => x.Id >= 0) - _subtitles.Count;
 		return
 		[
 			.. player.AudioTrackDescription.Where(x => x.Id >= 0).Select(x => new MediaTrack(MediaTrackKind.Audio, x.Id, x.Name ?? $"Track {x.Id}", x.Id == audio)),
-			.. player.SpuDescription.Select(x => new MediaTrack(MediaTrackKind.Subtitle, x.Id, x.Id < 0 ? "Off" : x.Name ?? $"Track {x.Id}", x.Id == subtitle)),
+			.. spus.Where(x => x.Id < 0).Select(x => new MediaTrack(MediaTrackKind.Subtitle, x.Id, "Off", x.Id == subtitle)),
+			.. spus.Where(x => x.Id >= 0).Select((x, i) => new MediaTrack(MediaTrackKind.Subtitle, x.Id,
+				firstFile >= 0 && i >= firstFile ? _subtitles[i - firstFile].Name : x.Name ?? $"Track {x.Id}", x.Id == subtitle)),
 		];
 	}
 
