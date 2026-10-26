@@ -22,12 +22,7 @@ public static class AnimeEpisodesExtensions
 		{
 			try
 			{
-				var serviceType = anime.ServiceName switch
-				{
-					nameof(AnimeId.Anilist) => "anilist_id",
-					nameof(AnimeId.MyAnimeList) => "mal_id",
-					_ => throw new NotSupportedException($"Service type {anime.ServiceName} is not supported.")
-				};
+				var serviceType = anime.AniZipKey ?? throw new NotSupportedException($"Service type {anime.ServiceName} is not supported.");
 
 				var today = TimeProvider.System.GetUtcNow();
 				var fillers = anime.GetFillersAsync(ct);

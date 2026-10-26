@@ -60,6 +60,8 @@ public sealed class AnimeId
 	public long Simkl { get; set; }
 	public long AnimeNewsNetwork { get; set; }
 	public long Local => Anilist;
+	/// <summary>Shikimori numbers its anime with MyAnimeList's ids.</summary>
+	public long Shikimori => MyAnimeList;
 
 	public long? GetIdForService(string serviceType)
 	{

@@ -8,6 +8,15 @@ public static class AnimeIdMappings
 {
 	extension(AnimeModel anime)
 	{
+		/// <summary>The ani.zip query parameter its own id goes in, e.g. "mal_id"; null for a database ani.zip doesn't map.</summary>
+		internal string? AniZipKey => anime.ServiceName switch
+		{
+			nameof(AnimeId.Anilist) => "anilist_id",
+			nameof(AnimeId.MyAnimeList) or nameof(AnimeId.Shikimori) => "mal_id",
+			nameof(AnimeId.Kitsu) => "kitsu_id",
+			_ => null,
+		};
+
 		/// <summary>
 		/// The anime's id in another database, e.g. its AniList id for one from MyAnimeList: from its external ids, or else
 		/// looked up on ani.zip (which maps them) and kept in them. Null if that database hasn't it.
@@ -20,12 +29,7 @@ public static class AnimeIdMappings
 				return known;
 			}
 
-			var ownId = anime.ServiceName switch
-			{
-				nameof(AnimeId.Anilist) => "anilist_id",
-				nameof(AnimeId.MyAnimeList) => "mal_id",
-				_ => null,
-			};
+			var ownId = anime.AniZipKey;
 			if (ownId is null)
 			{
 				return null;

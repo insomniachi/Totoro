@@ -98,6 +98,12 @@ public static class Icons
 	public static FontIcon Cancel => new() { Glyph = "\uE711" };
 	public static FontIcon Download => new() { Glyph = "\uE896" };
 
+	/// <summary>A person, e.g. for a user name or email.</summary>
+	public static SymbolIcon Person => new(Symbol.Contact);
+
+	/// <summary>A key, for a password.</summary>
+	public static FontIcon Password => new() { Glyph = "\uE8D7" };
+
 	/// <summary>
 	/// Resolves an icon key (the name of one of the properties above) coming from UI-agnostic code, such as a filter option.
 	/// Returns a new element on every call, since an element can only have one parent.
@@ -116,6 +122,8 @@ public static class Icons
 		nameof(Pause) => Pause,
 		nameof(Cancel) => Cancel,
 		nameof(Download) => Download,
+		nameof(Person) => Person,
+		nameof(Password) => Password,
 		_ => null
 	};
 }
