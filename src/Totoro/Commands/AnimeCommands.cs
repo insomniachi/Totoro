@@ -81,6 +81,25 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 	[RelayCommand]
 	private Task EditSettingsAsync(AnimeModel anime) => dialogs.ShowAsync<AnimeSettingsDialogViewModel, bool>(anime);
 
+	/// <summary>Adds the anime to the user's list as planned, e.g. one that hasn't aired yet; one already on it stays as it is.</summary>
+	[RelayCommand]
+	private async Task PlanToWatchAsync(AnimeModel anime)
+	{
+		if (anime.Tracking?.Status is not null)
+		{
+			return;
+		}
+
+		try
+		{
+			await tracking.UpdateAsync(anime, new Tracking { Status = ListItemStatus.PlanToWatch });
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Failed to add {Anime} to plan to watch", anime.Title);
+		}
+	}
+
 	/// <summary>Edits the anime's tracking in a dialog and saves it to its database.</summary>
 	[RelayCommand]
 	private async Task EditTrackingAsync(AnimeModel anime)

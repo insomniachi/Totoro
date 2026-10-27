@@ -23,6 +23,17 @@ public sealed partial class CardAction : DependencyObject
 	[GeneratedDependencyProperty]
 	public partial string? Label { get; set; }
 
+	/// <summary>
+	/// What it's called instead while the card's anime isn't on the user's list, e.g. "Add to list" for "Edit tracking";
+	/// null to keep <see cref="Label"/>.
+	/// </summary>
+	[GeneratedDependencyProperty]
+	public partial string? OffListLabel { get; set; }
+
+	/// <summary>Its icon while the card's anime isn't on the user's list; null to keep <see cref="Icon"/>.</summary>
+	[GeneratedDependencyProperty]
+	public partial IconSource? OffListIcon { get; set; }
+
 	/// <summary>Also a button on the card while it's hovered, for actions used often; every action is in the card's menu.</summary>
 	[GeneratedDependencyProperty]
 	public partial bool ShowOnHover { get; set; }

@@ -75,9 +75,11 @@ public partial class ActionsOverlay : AnimeCardOverlay<StackPanel>
 	private Button CreateButton(CardAction action)
 	{
 		// Colours come from ActionsOverlayResources.
+		// Made each time the card is hovered, so it's labelled for the anime's place on the list as it is now.
+		var (label, icon) = Describe(action);
 		var button = new Button
 		{
-			Content = action.Icon?.CreateIconElement(),
+			Content = icon?.CreateIconElement(),
 			Width = 40,
 			Height = 40,
 			Padding = new Thickness(0),
@@ -85,10 +87,10 @@ public partial class ActionsOverlay : AnimeCardOverlay<StackPanel>
 		};
 		button.Click += (_, _) => Invoke(action);
 
-		if (!string.IsNullOrEmpty(action.Label))
+		if (!string.IsNullOrEmpty(label))
 		{
-			ToolTipService.SetToolTip(button, action.Label);
-			AutomationProperties.SetName(button, action.Label);
+			ToolTipService.SetToolTip(button, label);
+			AutomationProperties.SetName(button, label);
 		}
 
 		return button;
@@ -99,16 +101,30 @@ public partial class ActionsOverlay : AnimeCardOverlay<StackPanel>
 		var menu = new MenuFlyout();
 		foreach (var action in Actions ?? [])
 		{
-			var item = new MenuFlyoutItem
-			{
-				Text = action.Label ?? "",
-				Icon = action.Icon?.CreateIconElement(),
-			};
+			var item = new MenuFlyoutItem();
 			item.Click += (_, _) => Invoke(action);
 			menu.Items.Add(item);
 		}
 
+		// Made once per card, which is reused for other anime and whose anime's place on the list changes: labelled on opening.
+		menu.Opening += (_, _) =>
+		{
+			foreach (var (item, action) in menu.Items.Cast<MenuFlyoutItem>().Zip(Actions ?? []))
+			{
+				var (label, icon) = Describe(action);
+				item.Text = label ?? "";
+				item.Icon = icon?.CreateIconElement();
+			}
+		};
+
 		return menu;
+	}
+
+	/// <summary>The action's label and icon for the card's anime: its off-list ones while the anime isn't on the user's list.</summary>
+	private (string? Label, IconSource? Icon) Describe(CardAction action)
+	{
+		var offList = AssociatedObject?.Anime?.Tracking?.Status is null;
+		return offList ? (action.OffListLabel ?? action.Label, action.OffListIcon ?? action.Icon) : (action.Label, action.Icon);
 	}
 
 	// The card's anime is read when the action is invoked, not when the button or menu is made: cards are recycled.

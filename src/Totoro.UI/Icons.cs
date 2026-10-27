@@ -23,6 +23,16 @@ public static class Icons
 	};
 
 	/// <summary>
+	/// A compass, its needle swinging round as the pointer comes over, and when clicked squashing and springing back as
+	/// the needle spins a whole turn (our own, from its Lottie file in AnimatedVisuals; see Generate.ps1 there).
+	/// </summary>
+	public static AnimatedIcon DiscoverAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedDiscoverVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "\uE909" }, // a globe: Segoe has no compass
+	};
+
+	/// <summary>
 	/// Books on a shelf, the leaning one swinging upright as the pointer comes over, and all of them hopping in a wave
 	/// when clicked (our own, from its Lottie file in AnimatedVisuals; see Generate.ps1 there).
 	/// </summary>

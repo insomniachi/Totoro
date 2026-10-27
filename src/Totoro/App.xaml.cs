@@ -130,6 +130,11 @@ public partial class App : Application
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();
 				services.AddDataViewMap<AnimeDetailsPage, AnimeDetailsViewModel, AnimeModel>();
+				// First, so it's where the app starts until the user picks another startup page (see StartupPagePreferences).
+				services.AddMainNavigationItem<DiscoverPage, DiscoverViewModel>("Discover", x =>
+				{
+					x.AnimatedIcon = Icons.DiscoverAnimated;
+				});
 				services.AddMainNavigationItem<UserListPage, UserListViewModel>("Library", x =>
 				{
 					x.AnimatedIcon = Icons.LibraryAnimated;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
     Look of the ActionsOverlay's hover buttons, by overriding the theme resource keys the default Button style uses.
-    A light translucent fill, so the cover art (blurred on hover by ImageZoomBlurBehavior) shows through and they blend
+    A light translucent fill, so the cover art (blurred on hover by HoverEffectsBehavior) shows through and they blend
     with it; the stroke sets them apart from it. Being theme resources, they follow the card's own theme.
     High contrast keeps the default style.
 -->

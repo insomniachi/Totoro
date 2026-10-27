@@ -48,6 +48,9 @@ public partial class AnimeModel : ObservableObject
 	public IReadOnlyCollection<string> Studios { get; init; } = [];
 	public IReadOnlyCollection<TrailerVideo> Trailers { get; set; } = [];
 	public IReadOnlyCollection<string> AlternateTitles { get; init; } = [];
+
+	// What screen readers announce for it as an item of a list control, e.g. the Discover page's spotlight.
+	public override string ToString() => Title;
 }
 
 

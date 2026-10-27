@@ -33,6 +33,8 @@
                 Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Edit}"
                 Label="Edit tracking"
+                OffListIcon="{toolkitui:SymbolIconSource Symbol=Add}"
+                OffListLabel="Add to list"
                 ShowOnHover="True" />
             <overlays:CardAction
                 Command="{x:Bind commands:AnimeCommands.Shared.DownloadCommand}"
@@ -328,7 +330,6 @@
                                             <overlays:AiringStatusOverlay />
                                             <overlays:WatchProgressOverlay />
                                             <overlays:HoverEffectsBehavior />
-                                            <overlays:ImageZoomBlurBehavior />
                                         </Interactivity:Interaction.Behaviors>
                                     </controls:AnimeCard>
                                 </DataTemplate>
