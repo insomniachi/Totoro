@@ -46,5 +46,8 @@ public abstract partial class DialogViewModel<TResult> : ObservableObject, IDial
 
 	public TResult? Result { get; protected set; }
 
+	/// <summary>Awaited before the dialog opens, so content that changes its size is there from the start.</summary>
+	public virtual Task LoadAsync() => Task.CompletedTask;
+
 	public abstract Task<bool> ConfirmAsync();
 }

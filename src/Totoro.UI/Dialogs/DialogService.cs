@@ -30,6 +30,7 @@ public sealed class DialogService(IViewRegistry viewRegistry, IServiceScopeFacto
 		var viewModel = parameter is null
 			? ActivatorUtilities.CreateInstance<TViewModel>(scope.ServiceProvider)
 			: ActivatorUtilities.CreateInstance<TViewModel>(scope.ServiceProvider, parameter);
+		await viewModel.LoadAsync();
 
 		var view = (FrameworkElement)Activator.CreateInstance(map.View)!;
 		view.DataContext = viewModel;

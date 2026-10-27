@@ -16,10 +16,14 @@ public sealed record StatusOption(string Label, ListItemStatus Value)
 public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 {
 	private readonly ILogger<TrackingDialogViewModel> _logger;
+	private readonly AnimeModel _anime;
+	private readonly AnimeTrackingService _trackingService;
 
 	public TrackingDialogViewModel(AnimeModel anime, AnimeTrackingService trackingService, ILogger<TrackingDialogViewModel> logger)
 	{
 		_logger = logger;
+		_anime = anime;
+		_trackingService = trackingService;
 		Title = anime.Title;
 		PrimaryButtonText = "Save";
 
@@ -32,8 +36,6 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 		Score = tracking?.Score ?? 0;
 		StartDate = tracking?.StartDate;
 		FinishDate = tracking?.FinishDate;
-
-		_ = LoadFormAsync(anime, trackingService);
 	}
 
 	public IReadOnlyList<StatusOption> Statuses { get; } =
@@ -63,7 +65,7 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 
 	/// <summary>The tracker's score scale and own fields; the default (out of 10, no fields) until it has said.</summary>
 	[ObservableProperty]
-	[NotifyPropertyChangedFor(nameof(ScoreHeader), nameof(ScoreFormatter), nameof(StarCount), nameof(IsNumberScore), nameof(IsStarScore), nameof(IsSmileyScore))]
+	[NotifyPropertyChangedFor(nameof(ScoreHeader), nameof(ScoreFormatter), nameof(StarCount))]
 	public partial TrackingForm Form { get; set; }
 
 	public string ScoreHeader => Form.ScoreStep < 1 ? $"Score (0-{Form.ScoreMax:0.0})" : $"Score (0-{Form.ScoreMax:0})";
@@ -83,12 +85,6 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 		get => Score > 0 ? Score : -1;
 		set => Score = value;
 	}
-
-	public bool IsNumberScore => Form.ScoreStyle == ScoreStyle.Number;
-
-	public bool IsStarScore => Form.ScoreStyle == ScoreStyle.Stars;
-
-	public bool IsSmileyScore => Form.ScoreStyle == ScoreStyle.Smileys;
 
 	/// <summary>The selected face, from unhappy (0) to happy (2); -1 for none.</summary>
 	public int SmileyIndex
@@ -139,13 +135,15 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 
 	/// <summary>
 	/// Asks the anime's tracker for its form, putting the score on its scale. If it can't say (e.g. offline), the shared
-	/// fields can still be saved.
+	/// fields can still be saved. Loaded before the dialog opens, so its fields don't grow it once open.
 	/// </summary>
-	private async Task LoadFormAsync(AnimeModel anime, AnimeTrackingService trackingService)
+	public override async Task LoadAsync()
 	{
 		try
 		{
-			var form = await trackingService.GetTracker(anime).GetFormAsync(anime.Id, CancellationToken.None);
+			// Don't hold the dialog back for long on a slow tracker.
+			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+			var form = await _trackingService.GetTracker(_anime).GetFormAsync(_anime.Id, timeout.Token);
 			var score = FromTen(Score, form);
 			// The form first: the score box clamps to its maximum.
 			Form = form;
@@ -153,7 +151,7 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 		}
 		catch (Exception ex)
 		{
-			_logger.LogWarning(ex, "Couldn't get the tracking form for {Anime}", anime.Title);
+			_logger.LogWarning(ex, "Couldn't get the tracking form for {Anime}", _anime.Title);
 		}
 	}
 

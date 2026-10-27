@@ -50,6 +50,57 @@
                 </DataTemplate>
             </local:TrackingFieldTemplateSelector.Choice>
         </local:TrackingFieldTemplateSelector>
+
+        <!--  The score control for the tracker's scale (see ScoreStyle)  -->
+        <local:ScoreTemplateSelector x:Key="ScoreTemplateSelector">
+            <local:ScoreTemplateSelector.Number>
+                <DataTemplate x:DataType="vm:TrackingDialogViewModel">
+                    <NumberBox
+                        Header="{x:Bind ScoreHeader}"
+                        Maximum="{x:Bind Form.ScoreMax}"
+                        Minimum="0"
+                        NumberFormatter="{x:Bind ScoreFormatter}"
+                        SmallChange="{x:Bind Form.ScoreStep}"
+                        SpinButtonPlacementMode="Inline"
+                        Value="{x:Bind Score, Mode=TwoWay}" />
+                </DataTemplate>
+            </local:ScoreTemplateSelector.Number>
+            <local:ScoreTemplateSelector.Stars>
+                <DataTemplate x:DataType="vm:TrackingDialogViewModel">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Score" />
+                        <RatingControl
+                            HorizontalAlignment="Left"
+                            AutomationProperties.Name="Score"
+                            IsClearEnabled="True"
+                            MaxRating="{x:Bind StarCount}"
+                            Value="{x:Bind StarValue, Mode=TwoWay}" />
+                    </StackPanel>
+                </DataTemplate>
+            </local:ScoreTemplateSelector.Stars>
+            <local:ScoreTemplateSelector.Smileys>
+                <DataTemplate x:DataType="vm:TrackingDialogViewModel">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Score" />
+                        <toolkit:Segmented
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.Name="Score"
+                            SelectedIndex="{x:Bind SmileyIndex, Mode=TwoWay}">
+                            <!--  The item's default style sets its own FontSize, so size the faces on their TextBlocks  -->
+                            <toolkit:SegmentedItem AutomationProperties.Name="Disliked">
+                                <TextBlock FontSize="20" Text="🙁" />
+                            </toolkit:SegmentedItem>
+                            <toolkit:SegmentedItem AutomationProperties.Name="Neutral">
+                                <TextBlock FontSize="20" Text="😐" />
+                            </toolkit:SegmentedItem>
+                            <toolkit:SegmentedItem AutomationProperties.Name="Liked">
+                                <TextBlock FontSize="20" Text="🙂" />
+                            </toolkit:SegmentedItem>
+                        </toolkit:Segmented>
+                    </StackPanel>
+                </DataTemplate>
+            </local:ScoreTemplateSelector.Smileys>
+        </local:ScoreTemplateSelector>
     </UserControl.Resources>
 
     <!--  A fixed width: measured without one, the two-column grids size their columns to their content instead of halving it  -->
@@ -78,50 +129,13 @@
                 SmallChange="1"
                 SpinButtonPlacementMode="Inline"
                 Value="{x:Bind ViewModel.WatchedEpisodes, Mode=TwoWay}" />
-            <!--  The score, picked the way the tracker's scale is (see ScoreStyle)  -->
-            <NumberBox
+            <!--  The score, picked the way the tracker's scale is (see ScoreTemplateSelector)  -->
+            <ContentControl
                 Grid.Column="1"
-                Header="{x:Bind ViewModel.ScoreHeader, Mode=OneWay}"
-                Maximum="{x:Bind ViewModel.Form.ScoreMax, Mode=OneWay}"
-                Minimum="0"
-                NumberFormatter="{x:Bind ViewModel.ScoreFormatter, Mode=OneWay}"
-                SmallChange="{x:Bind ViewModel.Form.ScoreStep, Mode=OneWay}"
-                SpinButtonPlacementMode="Inline"
-                Visibility="{x:Bind ViewModel.IsNumberScore, Mode=OneWay}"
-                Value="{x:Bind ViewModel.Score, Mode=TwoWay}" />
-            <StackPanel
-                Grid.Column="1"
-                Spacing="8"
-                Visibility="{x:Bind ViewModel.IsStarScore, Mode=OneWay}">
-                <TextBlock Text="Score" />
-                <RatingControl
-                    HorizontalAlignment="Left"
-                    AutomationProperties.Name="Score"
-                    IsClearEnabled="True"
-                    MaxRating="{x:Bind ViewModel.StarCount, Mode=OneWay}"
-                    Value="{x:Bind ViewModel.StarValue, Mode=TwoWay}" />
-            </StackPanel>
-            <StackPanel
-                Grid.Column="1"
-                Spacing="8"
-                Visibility="{x:Bind ViewModel.IsSmileyScore, Mode=OneWay}">
-                <TextBlock Text="Score" />
-                <toolkit:Segmented
-                    HorizontalAlignment="Stretch"
-                    AutomationProperties.Name="Score"
-                    SelectedIndex="{x:Bind ViewModel.SmileyIndex, Mode=TwoWay}">
-                    <!--  The item's default style sets its own FontSize, so size the faces on their TextBlocks  -->
-                    <toolkit:SegmentedItem AutomationProperties.Name="Disliked">
-                        <TextBlock FontSize="20" Text="🙁" />
-                    </toolkit:SegmentedItem>
-                    <toolkit:SegmentedItem AutomationProperties.Name="Neutral">
-                        <TextBlock FontSize="20" Text="😐" />
-                    </toolkit:SegmentedItem>
-                    <toolkit:SegmentedItem AutomationProperties.Name="Liked">
-                        <TextBlock FontSize="20" Text="🙂" />
-                    </toolkit:SegmentedItem>
-                </toolkit:Segmented>
-            </StackPanel>
+                HorizontalContentAlignment="Stretch"
+                Content="{x:Bind ViewModel}"
+                ContentTemplateSelector="{StaticResource ScoreTemplateSelector}"
+                IsTabStop="False" />
         </Grid>
 
         <Grid ColumnSpacing="16">
