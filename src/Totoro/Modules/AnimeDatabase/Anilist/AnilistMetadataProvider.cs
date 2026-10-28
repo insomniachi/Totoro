@@ -10,6 +10,7 @@ namespace Totoro.Modules.AnimeDatabase.Anilist;
 internal partial class AnilistMetadataProvider(
 	GraphQLHttpClient client,
 	IModuleSettings<Settings> settings,
+	AnilistLocalList local,
 	ILogger<AnilistMetadataProvider> logger) : IAnimeMetadataProvider
 {
 	// AniList allows at most 50 items per page.
@@ -33,7 +34,7 @@ internal partial class AnilistMetadataProvider(
 			throw new InvalidOperationException($"AniList couldn't load anime {id}: {DescribeErrors(response.Errors)}");
 		}
 
-		return AniListModelToAnimeModelConverter.ConvertModel(response.Data.Media);
+		return ToModel(response.Data.Media);
 	}
 
 	public async Task<List<AnimeModel>> SearchAnimeAsync(string term)
@@ -52,7 +53,7 @@ internal partial class AnilistMetadataProvider(
 				return [];
 			}
 
-			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(AniListModelToAnimeModelConverter.ConvertModel)];
+			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(ToModel)];
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
@@ -90,7 +91,7 @@ internal partial class AnilistMetadataProvider(
 				return [];
 			}
 
-			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(AniListModelToAnimeModelConverter.ConvertModel)];
+			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(ToModel)];
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
@@ -196,7 +197,7 @@ internal partial class AnilistMetadataProvider(
 				return [];
 			}
 
-			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(AniListModelToAnimeModelConverter.ConvertModel)];
+			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(ToModel)];
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
@@ -224,7 +225,7 @@ internal partial class AnilistMetadataProvider(
 				return [];
 			}
 
-			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(AniListModelToAnimeModelConverter.ConvertModel)];
+			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(ToModel)];
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
@@ -236,7 +237,7 @@ internal partial class AnilistMetadataProvider(
 	public async Task<List<AnimeModel>> GetSeasonAnimeAsync(Season season, CancellationToken ct)
 	{
 		var media = await FetchSeasonAsync(client, season, logger, ct);
-		return [.. media.Where(FilterNsfw).Select(AniListModelToAnimeModelConverter.ConvertModel)];
+		return [.. media.Where(FilterNsfw).Select(ToModel)];
 	}
 
 	// Pages of a season, at most: the busiest seasons have about 150 anime.
@@ -320,7 +321,7 @@ internal partial class AnilistMetadataProvider(
 						   .Where(x => x is not null)
 						   .DistinctBy(x => x.Id)
 						   .Where(FilterNsfw)
-						   .Select(AniListModelToAnimeModelConverter.ConvertModel)
+						   .Select(ToModel)
 			];
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
@@ -377,6 +378,18 @@ internal partial class AnilistMetadataProvider(
 			   .WithStartedAt(new FuzzyDateQueryBuilder().WithAllFields())
 			   .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
 			   .WithProgress();
+	}
+
+	/// <summary>The anime with the user's entry: AniList's, or while signed out the one kept on this PC.</summary>
+	private AnimeModel ToModel(Media media)
+	{
+		var anime = AniListModelToAnimeModelConverter.ConvertModel(media);
+		if (string.IsNullOrEmpty(settings.Value.Token))
+		{
+			anime.Tracking = local.Get(anime.Id);
+		}
+
+		return anime;
 	}
 
 	private static MediaQueryBuilder MediaQueryBuilder()

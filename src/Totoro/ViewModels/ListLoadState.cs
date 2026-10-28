@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using GraphQL.Client.Http;
 using Totoro.Core.Modules;
 using Totoro.Core.Services;
@@ -12,7 +13,7 @@ namespace Totoro.ViewModels;
 /// </summary>
 /// <param name="load">Loads the page's list; what it throws is shown as <see cref="Error"/>.</param>
 /// <param name="purpose">What the list is for, to finish "Sign in to AniList ...", e.g. "to see your anime list".</param>
-public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Task> load, string purpose) : ObservableObject
+public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Task> load, string purpose) : ObservableObject, IRecipient<AccountChangedMessage>
 {
 	private IAccount? _signedOut;
 
@@ -31,6 +32,12 @@ public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Ta
 
 	public async Task LoadAsync()
 	{
+		// Signing in or out elsewhere (Settings, the title bar) swaps the list for another; the page follows.
+		if (!WeakReferenceMessenger.Default.IsRegistered<AccountChangedMessage>(this))
+		{
+			WeakReferenceMessenger.Default.Register(this);
+		}
+
 		_signedOut = tracking.GetSignedOutListAccount();
 		SignInMessage = _signedOut is { } account ? $"Sign in to {account.Name} {purpose}." : "";
 		Error = "";
@@ -47,6 +54,8 @@ public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Ta
 			Error = $"Couldn't load your list: {ex.Message}";
 		}
 	}
+
+	public void Receive(AccountChangedMessage message) => _ = LoadAsync();
 
 	[RelayCommand]
 	private Task RetryAsync() => LoadAsync();

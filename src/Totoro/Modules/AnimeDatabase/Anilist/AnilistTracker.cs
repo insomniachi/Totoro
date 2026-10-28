@@ -6,17 +6,25 @@ using Totoro.Modules.AnimeDatabase.Anilist.GraphQl;
 
 namespace Totoro.Modules.AnimeDatabase.Anilist;
 
-internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings> settings) : IAnimeTracker
+/// <summary>The user's AniList list; while they aren't signed in, the one kept on this PC (<see cref="AnilistLocalList"/>).</summary>
+internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings> settings, AnilistLocalList local) : IAnimeTracker
 {
+	// AniList gives at most 50 a page.
+	private const int PageSize = 50;
+
 	public Guid Id => AnilistModule.Id;
 
 	public string Name => nameof(AnimeId.Anilist);
 
+	public bool KeepsListWhenSignedOut => true;
+
+	private bool IsSignedOut => string.IsNullOrEmpty(settings.Value.Token);
+
 	public async Task<List<AnimeModel>> GetUserListAsync(CancellationToken ct)
 	{
-		if (string.IsNullOrEmpty(settings.Value.Token))
+		if (IsSignedOut)
 		{
-			return [];
+			return await GetLocalListAsync(ct);
 		}
 
 		// Failures throw rather than return an empty list, so the page can say AniList is down instead of showing nothing.
@@ -38,8 +46,39 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 		];
 	}
 
+	/// <summary>The anime on the list kept on this PC, fetched from AniList a page at a time: 400 of them are 8 requests.</summary>
+	private async Task<List<AnimeModel>> GetLocalListAsync(CancellationToken ct)
+	{
+		var entries = local.GetAll();
+		var anime = new List<AnimeModel>(entries.Count);
+		foreach (var ids in entries.Keys.Chunk(PageSize))
+		{
+			var response = await client.SendQueryAsync<Query>(new GraphQLRequest
+			{
+				Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
+															 .WithMedia(ListMediaBuilder(), idIn: ids.Select(x => (int?)x).ToList(), type: MediaType.Anime),
+														 1, PageSize).Build()
+			}, ct);
+			ThrowIfFailed(response);
+
+			foreach (var media in response.Data.Page.Media)
+			{
+				var model = AniListModelToAnimeModelConverter.ConvertModel(media);
+				model.Tracking = entries[model.Id];
+				anime.Add(model);
+			}
+		}
+
+		return anime;
+	}
+
 	public async Task<bool> RemoveAsync(long id)
 	{
+		if (IsSignedOut)
+		{
+			return local.Remove(id);
+		}
+
 		var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
 														  .WithMediaListEntry(new MediaListQueryBuilder().WithId()),
 													  (int)id,
@@ -76,6 +115,11 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 
 	public async Task<Tracking> UpdateAsync(long id, Tracking tracking)
 	{
+		if (IsSignedOut)
+		{
+			return local.Update(id, tracking);
+		}
+
 		var mediaListEntryBuilder = new MediaListQueryBuilder();
 
 		mediaListEntryBuilder.WithNotes();
@@ -137,6 +181,12 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 
 	public async Task<TrackingForm> GetFormAsync(long id, CancellationToken ct)
 	{
+		// AniList's own fields (notes, rewatches...) need an account.
+		if (IsSignedOut)
+		{
+			return TrackingForm.Default;
+		}
+
 		var query = new QueryQueryBuilder()
 					.WithViewer(new UserQueryBuilder().WithMediaListOptions(new MediaListOptionsQueryBuilder().WithScoreFormat()))
 					.WithMedia(new MediaQueryBuilder().WithMediaListEntry(new MediaListQueryBuilder()
@@ -195,41 +245,7 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 		return new MediaListCollectionQueryBuilder()
 			.WithLists(new MediaListGroupQueryBuilder()
 						   .WithEntries(new MediaListQueryBuilder()
-											.WithMedia(new MediaQueryBuilder()
-													   .WithId()
-													   .WithIdMal()
-													   .WithFormat()
-													   .WithTitle(new MediaTitleQueryBuilder()
-																  .WithEnglish()
-																  .WithNative()
-																  .WithRomaji())
-													   .WithCoverImage(new MediaCoverImageQueryBuilder()
-																		   .WithLarge())
-													   .WithBannerImage()
-													   .WithEpisodes()
-													   .WithStatus()
-													   .WithMeanScore()
-													   .WithPopularity()
-													   .WithDescription(true)
-													   .WithTrailer(new MediaTrailerQueryBuilder()
-																	.WithSite()
-																	.WithThumbnail()
-																	.WithId())
-													   .WithGenres()
-													   .WithStartDate(new FuzzyDateQueryBuilder().WithAllFields())
-													   .WithEndDate(new FuzzyDateQueryBuilder().WithAllFields())
-													   .WithSeason()
-													   .WithSeasonYear()
-													   .WithStreamingEpisodes(new MediaStreamingEpisodeQueryBuilder()
-																			  .WithTitle()
-																			  .WithThumbnail())
-													   .WithAiringSchedule(new AiringScheduleConnectionQueryBuilder()
-																			   .WithNodes(new AiringScheduleQueryBuilder()
-																						  .WithEpisode()
-																						  .WithAiringAt()))
-													   .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
-																			  .WithEpisode()
-																			  .WithTimeUntilAiring())
+											.WithMedia(ListMediaBuilder()
 													   .WithMediaListEntry(new MediaListQueryBuilder()
 																		   .WithScore(ScoreFormat.Point10Decimal)
 																		   .WithStatus()
@@ -237,5 +253,45 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 																		   .WithCompletedAt(new FuzzyDateQueryBuilder().WithAllFields())
 																		   .WithProgress()
 																		   .WithUpdatedAt()))));
+	}
+
+	/// <summary>What the list shows of each anime.</summary>
+	private static MediaQueryBuilder ListMediaBuilder()
+	{
+		return new MediaQueryBuilder()
+			   .WithId()
+			   .WithIdMal()
+			   .WithFormat()
+			   .WithTitle(new MediaTitleQueryBuilder()
+						  .WithEnglish()
+						  .WithNative()
+						  .WithRomaji())
+			   .WithCoverImage(new MediaCoverImageQueryBuilder()
+								   .WithLarge())
+			   .WithBannerImage()
+			   .WithEpisodes()
+			   .WithStatus()
+			   .WithMeanScore()
+			   .WithPopularity()
+			   .WithDescription(true)
+			   .WithTrailer(new MediaTrailerQueryBuilder()
+							.WithSite()
+							.WithThumbnail()
+							.WithId())
+			   .WithGenres()
+			   .WithStartDate(new FuzzyDateQueryBuilder().WithAllFields())
+			   .WithEndDate(new FuzzyDateQueryBuilder().WithAllFields())
+			   .WithSeason()
+			   .WithSeasonYear()
+			   .WithStreamingEpisodes(new MediaStreamingEpisodeQueryBuilder()
+									  .WithTitle()
+									  .WithThumbnail())
+			   .WithAiringSchedule(new AiringScheduleConnectionQueryBuilder()
+									   .WithNodes(new AiringScheduleQueryBuilder()
+												  .WithEpisode()
+												  .WithAiringAt()))
+			   .WithNextAiringEpisode(new AiringScheduleQueryBuilder()
+									  .WithEpisode()
+									  .WithTimeUntilAiring());
 	}
 }

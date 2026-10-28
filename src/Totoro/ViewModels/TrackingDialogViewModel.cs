@@ -30,7 +30,8 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 		MaxEpisodes = anime.TotalEpisodes is > 0 and var total ? total : double.MaxValue;
 
 		var tracking = anime.Tracking;
-		Status = Statuses.FirstOrDefault(x => x.Value == tracking?.Status) ?? Statuses[0];
+		// Not on the list yet: being added, most likely to watch later.
+		Status = Statuses.FirstOrDefault(x => x.Value == tracking?.Status) ?? Statuses.First(x => x.Value == ListItemStatus.PlanToWatch);
 		WatchedEpisodes = tracking?.WatchedEpisodes ?? 0;
 		Form = TrackingForm.Default;
 		Score = tracking?.Score ?? 0;

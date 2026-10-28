@@ -315,6 +315,44 @@
             </toolkit:Case>
             <toolkit:Case IsDefault="True" Value="False">
                 <Grid>
+                    <!--  No cards: why, and what to do about it (see UserListViewModel.Empty)  -->
+                    <StackPanel
+                        MaxWidth="400"
+                        Margin="16,0,16,64"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8"
+                        Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
+                        <FontIcon
+                            Margin="0,0,0,8"
+                            FontSize="48"
+                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                            Glyph="{x:Bind ViewModel.Empty.Glyph, Mode=OneWay}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Empty.Title, Mode=OneWay}"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.Empty.Text, Mode=OneWay}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                        <Button
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            Command="{x:Bind ViewModel.GoToDiscoverCommand}"
+                            Content="Go to Discover"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Visibility="{x:Bind ViewModel.Empty.OffersDiscover, Mode=OneWay}" />
+                        <Button
+                            Margin="0,8,0,0"
+                            HorizontalAlignment="Center"
+                            Command="{x:Bind ViewModel.ClearFiltersCommand}"
+                            Content="Clear filters"
+                            Visibility="{x:Bind ViewModel.Empty.OffersClearFilters, Mode=OneWay}" />
+                    </StackPanel>
                     <ScrollView x:Name="ListScrollView" ViewChanged="OnListViewChanged">
                         <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind ViewModel.Anime, Mode=OneWay}">
                             <ItemsRepeater.ItemTransitionProvider>

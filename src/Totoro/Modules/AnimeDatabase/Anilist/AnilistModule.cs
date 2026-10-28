@@ -31,6 +31,7 @@ internal class AnilistModule : IModule<Settings>
 		services.AddModuleSettings(this);
 
 
+		services.AddSingleton<AnilistLocalList>();
 		services.AddKeyedTransient<IAnimeTracker, AnilistTracker>(Descriptor.Id);
 		services.AddKeyedTransient<IAnimeMetadataProvider, AnilistMetadataProvider>(Descriptor.Id);
 		services.AddTransient<IAccount, AnilistAccount>();

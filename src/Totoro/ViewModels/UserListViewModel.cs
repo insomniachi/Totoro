@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reactive.Subjects;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -52,7 +53,49 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 			   .Filter(Filters.Combine())
 			   .SortAndBind(out _anime, _comparer, new SortAndBindOptions { ResetThreshold = int.MaxValue })
 			   .Subscribe();
+
+		// What the page says when it has no cards follows the cards, the tab, the filters, and whether loading went wrong.
+		((INotifyCollectionChanged)_anime).CollectionChanged += (_, _) => UpdateEmpty();
+		StatusFilter.PropertyChanged += (_, _) => UpdateEmpty();
+		LoadState.PropertyChanged += (_, _) => UpdateEmpty();
+		PropertyChanged += (_, e) =>
+		{
+			if (e.PropertyName is nameof(ListCount) or nameof(HasActiveFilters))
+			{
+				UpdateEmpty();
+			}
+		};
 	}
+
+	/// <summary>Why the page shows no cards, and what to do about it; null while it shows some (or the InfoBars say why).</summary>
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(IsEmpty))]
+	public partial ListEmptyState? Empty { get; private set; }
+
+	public bool IsEmpty => Empty is not null;
+
+	private void UpdateEmpty()
+	{
+		// Null while the tabs load (no tab selected yet).
+		var tab = StatusFilter.Options.ElementAtOrDefault(StatusFilter.SelectedIndex);
+		Empty = _anime.Count > 0 || LoadState.HasMessage ? null
+			: ListCount == 0 ? new("", "Your list is empty",
+								   "Find something to watch on Discover, or search for an anime, and add it to your list.", OffersDiscover: true)
+			: HasActiveFilters ? new("", "No matches", $"Nothing in {tab?.Label ?? "your list"} matches your filters.", OffersClearFilters: true)
+			: tab?.Value switch
+			{
+				null => null,
+				ListItemStatus.Watching => new("", "Not watching anything", "Play an anime, or set one to Watching, and it shows up here."),
+				ListItemStatus.PlanToWatch => new("", "Nothing planned", "Add anime you want to watch later, and they wait here."),
+				ListItemStatus.Completed => new("", "Nothing completed yet", "Anime you finish end up here."),
+				ListItemStatus.OnHold => new("", "Nothing on hold", "Anime you put on hold wait here until you pick them back up."),
+				_ => new("", "Nothing dropped", "Anime you stop watching end up here."),
+			};
+	}
+
+	[RelayCommand]
+	private static Task GoToDiscoverAsync() =>
+		Navigators.TryGetNavigator("main", out var main) ? main.NavigateToViewModelAsync(typeof(DiscoverViewModel)) : Task.CompletedTask;
 
 	public ListStatusFilter StatusFilter { get; } = new();
 
@@ -126,6 +169,10 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 		_comparer.OnNext(UserListQuery.Comparer(Sort?.Value ?? ListSort.LastUpdated, SortDescending, listOrder));
 	}
 
+	/// <summary>How many anime are on the list, whatever the tab and filters; to tell an empty list from an empty tab.</summary>
+	[ObservableProperty]
+	public partial int ListCount { get; private set; }
+
 	/// <summary>Whether the user is signed in, and whether the list loaded; for the page's InfoBars.</summary>
 	public ListLoadState LoadState { get; }
 
@@ -146,7 +193,18 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 			WeakReferenceMessenger.Default.Register(this);
 		}
 
-		var anime = await tracker.GetUserListAsync(CancellationToken.None);
+		List<AnimeModel> anime;
+		try
+		{
+			anime = await tracker.GetUserListAsync(CancellationToken.None);
+		}
+		catch
+		{
+			// The cards shown may be another list's (e.g. from before signing out); the error says why there are none.
+			_source.Clear();
+			ListCount = 0;
+			throw;
+		}
 
 		_order.Clear();
 		foreach (var item in anime)
@@ -162,6 +220,9 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 			cache.Clear();
 			cache.AddOrUpdate(anime);
 		});
+		ListCount = _source.Count;
+		// An empty list changes nothing above (no cards before or after), so nothing else would say so.
+		UpdateEmpty();
 	}
 
 	protected override Task OnNavigatedFromInternalAsync()
@@ -196,5 +257,10 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 		{
 			_source.AddOrUpdate(anime);
 		}
+
+		ListCount = _source.Count;
 	}
 }
+
+/// <summary>What the list page says when it has no cards: a Segoe Fluent icon, a title, a hint, and what it offers to do.</summary>
+public sealed record ListEmptyState(string Glyph, string Title, string Text, bool OffersDiscover = false, bool OffersClearFilters = false);
