@@ -10,6 +10,10 @@ internal static class WindowsStartup
 {
 	private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
 	private const string ValueName = "Totoro";
+	public const string Argument = "--startup";
+
+	/// <summary>Whether Windows started this instance (from the Run key), rather than the user.</summary>
+	public static bool Launched { get; } = Environment.GetCommandLineArgs().Contains(Argument, StringComparer.OrdinalIgnoreCase);
 
 	/// <summary>Read from the registry each time, so it's what Windows will do, whoever changed it.</summary>
 	public static bool IsEnabled
@@ -25,7 +29,7 @@ internal static class WindowsStartup
 			if (value)
 			{
 				// This exe, as it's running now: quoted, for a path with spaces.
-				key.SetValue(ValueName, $"\"{Environment.ProcessPath}\"");
+				key.SetValue(ValueName, $"\"{Environment.ProcessPath}\" {Argument}");
 			}
 			else
 			{

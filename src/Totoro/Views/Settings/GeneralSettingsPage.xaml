@@ -46,7 +46,7 @@
                 <ToggleSwitch IsOn="{x:Bind ViewModel.StartMaximized, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
-            <toolkit:SettingsCard Description="Starts without a window, with Totoro's icon in the notification area: select it to open Totoro." Header="Start in the notification area">
+            <toolkit:SettingsCard Description="When Totoro starts with Windows, it starts without a window, with its icon in the notification area: select it to open Totoro." Header="Start in the notification area">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE7E7;" />
                 </toolkit:SettingsCard.HeaderIcon>

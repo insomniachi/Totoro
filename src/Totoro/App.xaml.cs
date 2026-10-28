@@ -57,7 +57,10 @@ public partial class App : Application
 	/// </summary>
 	public static void Restart()
 	{
-		var args = Environment.GetCommandLineArgs().Skip(1).Select(x => x.Contains(' ') ? $"\"{x}\"" : x);
+		// Not --startup: the user asked for the restart, so it opens the window.
+		var args = Environment.GetCommandLineArgs().Skip(1)
+			.Where(x => !x.Equals(Helpers.WindowsStartup.Argument, StringComparison.OrdinalIgnoreCase))
+			.Select(x => x.Contains(' ') ? $"\"{x}\"" : x);
 		Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Join(' ', args));
 	}
 
@@ -321,7 +324,13 @@ public partial class App : Application
 			quitting = true;
 			window.Close();
 		});
-		if (preferences.StartInTray)
+		// Rewritten so an entry from before --startup existed gets it (and follows the exe if it moved).
+		if (Helpers.WindowsStartup.IsEnabled)
+		{
+			Helpers.WindowsStartup.IsEnabled = true;
+		}
+		// Only when Windows starts it: started by the user, it always opens the window.
+		if (preferences.StartInTray && Helpers.WindowsStartup.Launched)
 		{
 			manager.IsVisibleInTray = true;
 		}
