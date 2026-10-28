@@ -883,7 +883,30 @@ public sealed partial class WatchService(
 			StartDate = current?.StartDate ?? DateTime.Today,
 			FinishDate = completed ? DateTime.Today : current?.FinishDate,
 		});
+		if (completed && current?.Score is not > 0)
+		{
+			// Not awaited: it waits on the user, and playback (or the browser tracker) carries on meanwhile.
+			_ = AskScoreAsync(anime);
+		}
+
 		return true;
+	}
+
+	/// <summary>Asks for a score for an anime just finished without one, in the tracking dialog; saved if given.</summary>
+	private async Task AskScoreAsync(AnimeModel anime)
+	{
+		try
+		{
+			if (await dialogs.ShowAsync<TrackingDialogViewModel, Tracking>(anime) is { } changes)
+			{
+				await tracking.UpdateAsync(anime, changes);
+			}
+		}
+		catch (Exception ex)
+		{
+			// E.g. another dialog was open: only one shows at a time.
+			logger.LogWarning(ex, "Couldn't ask for a score for {Anime}", anime.Title);
+		}
 	}
 
 	/// <summary>
