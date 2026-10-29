@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace Totoro.Core.Modules.Anime;
 
 [DebuggerDisplay("{Title}")]
-public partial class AnimeModel : ObservableObject
+public partial class AnimeModel : ObservableObject, IMediaModel
 {
 	public long Id { get; init; }
 	public AnimeId ExternalIds { get; init; } = new();
@@ -53,6 +53,15 @@ public partial class AnimeModel : ObservableObject
 
 	// What screen readers announce for it as an item of a list control, e.g. the Discover page's spotlight.
 	public override string ToString() => Title;
+
+	Navigation.MediaMode IMediaModel.Kind => Navigation.MediaMode.Anime;
+	ListItemStatus? IMediaModel.ListStatus => Tracking?.Status;
+	double? IMediaModel.UserScore => Tracking?.Score;
+	int? IMediaModel.Progress => Tracking?.WatchedEpisodes;
+	int? IMediaModel.Total => TotalEpisodes;
+	DateTime? IMediaModel.StartDate => Tracking?.StartDate;
+	DateTime? IMediaModel.FinishDate => Tracking?.FinishDate;
+	DateTime? IMediaModel.UpdatedAt => Tracking?.UpdatedAt;
 }
 
 

@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.Manga.ReaderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:local="using:Totoro.Views.Manga"
+    xmlns:vm="using:Totoro.ViewModels.Manga"
+    PreviewKeyDown="OnPreviewKeyDown">
+
+    <Page.Resources>
+        <!--  A page: as big as fits, whole, in the height there is; a spinner while it loads, or Retry if it didn't  -->
+        <DataTemplate x:Key="FitPageTemplate" x:DataType="vm:ReaderPageItem">
+            <Grid AutomationProperties.Name="{x:Bind Name}">
+                <ProgressRing IsActive="{x:Bind IsLoading, Mode=OneWay}" />
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    Visibility="{x:Bind IsFailed, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind local:ReaderPage.FailedText(Number)}" />
+                    <Button
+                        HorizontalAlignment="Center"
+                        Click="OnRetryClick"
+                        Content="Retry"
+                        Tag="{x:Bind}" />
+                </StackPanel>
+                <Image
+                    AutomationProperties.Name="{x:Bind Name}"
+                    Source="{x:Bind Image, Mode=OneWay}"
+                    Stretch="Uniform" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  The bar: where you are, and going about the chapters  -->
+        <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="{x:Bind ViewModel.MangaTitle}"
+                    TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind local:ReaderPage.Where(ViewModel.ChapterTitle, ViewModel.PageText), Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <Slider
+                Grid.Column="1"
+                Width="200"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="Page"
+                IsDirectionReversed="{x:Bind ViewModel.IsRightToLeft, Mode=OneWay}"
+                Maximum="{x:Bind ViewModel.PageCount, Mode=OneWay}"
+                Minimum="1"
+                Value="{x:Bind ViewModel.PageNumber, Mode=TwoWay}" />
+            <Button
+                Grid.Column="2"
+                AutomationProperties.Name="Previous chapter"
+                Command="{x:Bind ViewModel.PreviousChapterCommand}"
+                IsEnabled="{x:Bind ViewModel.HasPrevious, Mode=OneWay}"
+                ToolTipService.ToolTip="Previous chapter">
+                <FontIcon FontSize="16" Glyph="&#xE892;" />
+            </Button>
+            <Button
+                Grid.Column="3"
+                AutomationProperties.Name="Next chapter"
+                Command="{x:Bind ViewModel.NextChapterCommand}"
+                IsEnabled="{x:Bind ViewModel.HasNext, Mode=OneWay}"
+                ToolTipService.ToolTip="Next chapter">
+                <FontIcon FontSize="16" Glyph="&#xE893;" />
+            </Button>
+            <!--  Two pages side by side, a page at a time  -->
+            <ToggleButton
+                Grid.Column="4"
+                AutomationProperties.Name="Two pages"
+                IsChecked="{x:Bind ViewModel.TwoPages, Mode=TwoWay}"
+                ToolTipService.ToolTip="Two pages side by side">
+                <FontIcon FontSize="16" Glyph="&#xE89A;" />
+            </ToggleButton>
+            <!--  Right to left, as most manga read; the arrow keys follow  -->
+            <ToggleButton
+                Grid.Column="5"
+                AutomationProperties.Name="Right to left"
+                IsChecked="{x:Bind ViewModel.IsRightToLeft, Mode=TwoWay}"
+                ToolTipService.ToolTip="Read right to left, as most manga">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="16" Glyph="&#xE72B;" />
+                    <TextBlock Text="Right to left" />
+                </StackPanel>
+            </ToggleButton>
+        </Grid>
+
+        <InfoBar
+            Grid.Row="1"
+            VerticalAlignment="Top"
+            Canvas.ZIndex="1"
+            IsClosable="False"
+            IsOpen="{x:Bind helpers:CommonConverters.IsAny(ViewModel.Error), Mode=OneWay}"
+            Message="{x:Bind ViewModel.Error, Mode=OneWay}"
+            Severity="Error">
+            <InfoBar.ActionButton>
+                <Button Command="{x:Bind ViewModel.LoadChapterCommand}" Content="Try again" />
+            </InfoBar.ActionButton>
+        </InfoBar>
+
+        <!--
+            A page (or two, side by side) at a time, fitted to the height; right to left for manga. Turned by the keys or
+            buttons, the page turns over as a book's does (see Turn) rather than sliding, which only swipes still do.
+        -->
+        <FlipView
+            x:Name="PagedView"
+            Grid.Row="1"
+            Background="Transparent"
+            FlowDirection="{x:Bind local:ReaderPage.Direction(ViewModel.IsRightToLeft), Mode=OneWay}"
+            ItemsSource="{x:Bind ViewModel.Spreads, Mode=OneWay}"
+            SelectedIndex="{x:Bind ViewModel.SpreadIndex, Mode=TwoWay}"
+            SelectionChanged="OnSpreadChanged"
+            UseTouchAnimationsForAllNavigation="False">
+            <FlipView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ReaderSpread">
+                    <!--
+                        Pages read the same way whatever the flip direction (ReaderSpread puts them in order). The content is
+                        the view's size, so a page fits without scrolling; Ctrl+wheel still zooms in, and then it scrolls.
+                    -->
+                    <ScrollView
+                        ContentOrientation="None"
+                        FlowDirection="LeftToRight"
+                        ZoomMode="Enabled">
+                        <!--  A narrow gap between two pages, as between a book's facing pages  -->
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <!--  One page in the middle, or two meeting at it  -->
+                            <ContentControl
+                                Grid.ColumnSpan="{x:Bind local:ReaderPage.LeftSpan(IsSingle)}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="{x:Bind local:ReaderPage.LeftAlignment(IsSingle)}"
+                                VerticalContentAlignment="Stretch"
+                                Content="{x:Bind Left}"
+                                ContentTemplate="{StaticResource FitPageTemplate}"
+                                IsTabStop="False" />
+                            <ContentControl
+                                Grid.Column="1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Stretch"
+                                Content="{x:Bind Right}"
+                                ContentTemplate="{StaticResource FitPageTemplate}"
+                                IsTabStop="False"
+                                Visibility="{x:Bind local:ReaderPage.VisibleIfTwo(IsSingle)}" />
+                        </Grid>
+                    </ScrollView>
+                </DataTemplate>
+            </FlipView.ItemTemplate>
+        </FlipView>
+
+        <!--  Over the pages while one turns: copies of the pages that move and the shadows they cast (see Turn)  -->
+        <Canvas
+            x:Name="TurnLayer"
+            Grid.Row="1"
+            IsHitTestVisible="False" />
+    </Grid>
+</Page>

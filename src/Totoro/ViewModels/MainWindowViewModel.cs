@@ -14,11 +14,16 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
+	private readonly IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> _mangaDatabases;
+	private readonly IPreferences _preferences;
+	private readonly IReadOnlyList<NavigationItemViewModel> _allItems;
 	private CancellationTokenSource? _search;
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases)
 	{
 		_databases = databases;
+		_mangaDatabases = mangaDatabases;
+		_preferences = preferences;
 		Playback = playback;
 		Chat = chat;
 		Updates = updates;
@@ -32,10 +37,22 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 			}
 		};
 		_ = Updates.CheckOnStartupAsync();
-		NavigationItems = [.. navigationItems.Where(x => !x.IsFooter)];
-		FooterNavigationItems = [.. navigationItems.Where(x => x.IsFooter)];
+		_allItems = [.. navigationItems];
+		// The app opens in the mode it was left in, on that mode's page named as the startup page (Library for Library);
+		// a startup page only one mode has (e.g. Schedule) opens in its mode.
+		Mode = preferences.MediaMode;
+		var startup = _allItems.FirstOrDefault(x => x.Key == preferences.StartupPage);
+		if (startup is { Mode: { } startupMode } && startupMode != Mode && !_allItems.Any(x => x.Mode == Mode && x.Label == startup.Label))
+		{
+			Mode = startupMode;
+		}
 
-		StartupItem = preferences.FindStartupItem([.. NavigationItems, .. FooterNavigationItems]);
+		NavigationItems = ItemsFor(Mode, footer: false);
+		FooterNavigationItems = ItemsFor(Mode, footer: true);
+
+		StartupItem = startup is not null && NavigationItems.Contains(startup) ? startup
+			: NavigationItems.FirstOrDefault(x => x.Label == startup?.Label) ?? NavigationItems.FirstOrDefault();
+		CurrentItem = StartupItem;
 
 		_accounts = [.. accounts.Select(x => new AccountViewModel(x))];
 		ShowAccount(preferences.SelectedAnimeDatabase);
@@ -44,6 +61,49 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	[ObservableProperty]
 	public partial List<NavigationItemViewModel> NavigationItems { get; set; }
+
+	/// <summary>Anime or manga: which of the menu's pages show, and which kind the title bar's search lists first.</summary>
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(ModeIndex))]
+	public partial MediaMode Mode { get; private set; }
+
+	/// <summary><see cref="Mode"/> as the title bar's Anime | Manga switch's index.</summary>
+	public int ModeIndex
+	{
+		get => (int)Mode;
+		set => SwitchMode((MediaMode)Math.Clamp(value, 0, 1));
+	}
+
+	/// <summary>
+	/// The page to show after switching mode (the new mode's page of the same name, e.g. Library for Library, else its
+	/// first); null until the mode is switched.
+	/// </summary>
+	[ObservableProperty]
+	public partial NavigationItemViewModel? ModeSwitchItem { get; private set; }
+
+	// The menu gets new lists rather than hiding items: an ItemsRepeater whose first item is collapsed shows nothing.
+	private List<NavigationItemViewModel> ItemsFor(MediaMode mode, bool footer) =>
+		[.. _allItems.Where(x => x.IsFooter == footer && (x.Mode is null || x.Mode == mode))];
+
+	/// <param name="current">The page showing, whose counterpart is shown in the new mode.</param>
+	public void SwitchMode(MediaMode mode, NavigationItemViewModel? current = null)
+	{
+		if (mode == Mode)
+		{
+			return;
+		}
+
+		current ??= CurrentItem;
+		Mode = mode;
+		_preferences.MediaMode = mode;
+		NavigationItems = ItemsFor(mode, footer: false);
+		FooterNavigationItems = ItemsFor(mode, footer: true);
+		ModeSwitchItem = current is { Mode: null } ? current
+			: NavigationItems.FirstOrDefault(x => x.Label == current?.Label) ?? NavigationItems.FirstOrDefault();
+	}
+
+	/// <summary>The menu item selected, as the window last said.</summary>
+	public NavigationItemViewModel? CurrentItem { get; set; }
 
 	[ObservableProperty]
 	public partial List<NavigationItemViewModel> FooterNavigationItems { get; set; }
@@ -85,16 +145,20 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		IsSyncWarningOpen = true;
 	}
 
-	/// <summary>The title bar's search: anime in the selected database matching what's typed.</summary>
+	/// <summary>The title bar's search: anime and manga matching what's typed, whatever the mode (its own kind first).</summary>
 	[ObservableProperty]
-	public partial List<ChatAnimeItem> SearchResults { get; set; } = [];
+	public partial List<MediaSuggestion> SearchResults { get; set; } = [];
 
-	/// <summary>Searches the selected anime database, as the user types in the title bar.</summary>
+	// Of each kind, at most.
+	private const int SuggestionsPerKind = 6;
+
+	/// <summary>Searches the selected anime and manga databases, as the user types in the title bar.</summary>
 	public async Task SearchAsync(string query)
 	{
 		_search?.Cancel();
 		var search = _search = new CancellationTokenSource();
-		if (query.Trim().Length < 2 || _databases.CreateDefault() is not { } database)
+		query = query.Trim();
+		if (query.Length < 2)
 		{
 			SearchResults = [];
 			return;
@@ -104,19 +168,33 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		{
 			// Searches after typing pauses.
 			await Task.Delay(300, search.Token);
-			var anime = await database.SearchAnimeAsync(query.Trim());
+			var anime = SearchOrNoneAsync(async () => _databases.CreateDefault() is { } database ? [.. await database.SearchAnimeAsync(query)] : []);
+			var manga = SearchOrNoneAsync(async () => _mangaDatabases.CreateDefault() is { } database ? [.. await database.SearchMangaAsync(query, search.Token)] : []);
+			List<IMediaModel>[] kinds = Mode == MediaMode.Manga ? [await manga, await anime] : [await anime, await manga];
 			if (!search.IsCancellationRequested)
 			{
-				SearchResults = [.. anime.Take(10).Select(x => new ChatAnimeItem(x))];
+				// Taking turns, the mode's kind first, so both are in sight before the list has to scroll.
+				SearchResults = [.. Enumerable.Range(0, SuggestionsPerKind)
+											  .SelectMany(i => kinds.Select(x => x.ElementAtOrDefault(i)))
+											  .OfType<IMediaModel>()
+											  .Select(x => new MediaSuggestion(x))];
 			}
 		}
 		catch (OperationCanceledException)
 		{
 		}
-		catch (Exception) when (!search.IsCancellationRequested)
+	}
+
+	// Offline, or a database is down: none of its kind rather than a crash from the title bar.
+	private static async Task<List<IMediaModel>> SearchOrNoneAsync(Func<Task<List<IMediaModel>>> search)
+	{
+		try
 		{
-			// Offline, or the database is down: no suggestions rather than a crash from the title bar.
-			SearchResults = [];
+			return await search();
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			return [];
 		}
 	}
 

@@ -123,14 +123,14 @@ public partial class ActionsOverlay : AnimeCardOverlay<StackPanel>
 	/// <summary>The action's label and icon for the card's anime: its off-list ones while the anime isn't on the user's list.</summary>
 	private (string? Label, IconSource? Icon) Describe(CardAction action)
 	{
-		var offList = AssociatedObject?.Anime?.Tracking?.Status is null;
+		var offList = AssociatedObject?.Media?.ListStatus is null;
 		return offList ? (action.OffListLabel ?? action.Label, action.OffListIcon ?? action.Icon) : (action.Label, action.Icon);
 	}
 
 	// The card's anime is read when the action is invoked, not when the button or menu is made: cards are recycled.
 	private void Invoke(CardAction action)
 	{
-		var parameter = action.CommandParameter ?? AssociatedObject?.Anime;
+		var parameter = action.CommandParameter ?? AssociatedObject?.Media;
 		if (action.Command?.CanExecute(parameter) == true)
 		{
 			action.Command.Execute(parameter);

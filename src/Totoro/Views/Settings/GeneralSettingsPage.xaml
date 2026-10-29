@@ -26,7 +26,7 @@
                     SelectedItem="{x:Bind ViewModel.StartupPage, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="navigation:NavigationItemViewModel">
-                            <TextBlock Text="{x:Bind Label}" />
+                            <TextBlock Text="{x:Bind Name}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Manga;
 using Totoro.Core.Settings;
 
 namespace Totoro.Modules.AnimeDatabase.MyAnimeList;
@@ -32,6 +33,8 @@ internal class MyAnimeListModule : IModule<Settings>
 
 		services.AddKeyedTransient<IAnimeTracker, MyAnimeListTracker>(Descriptor.Id);
 		services.AddKeyedTransient<IAnimeMetadataProvider, MyAnimeListMetadataProvider>(Descriptor.Id);
+		services.AddKeyedTransient<IMangaTracker, MyAnimeListMangaTracker>(Descriptor.Id);
+		services.AddKeyedTransient<IMangaMetadataProvider, MyAnimeListMangaMetadataProvider>(Descriptor.Id);
 		services.AddTransient<IAccount, MyAnimeListAccount>();
 	}
 }

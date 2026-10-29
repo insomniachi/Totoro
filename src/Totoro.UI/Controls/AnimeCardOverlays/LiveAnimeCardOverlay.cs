@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
@@ -14,7 +15,7 @@ public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl
 	where TControl : UIElement
 {
 	private TControl? _control;
-	private AnimeModel? _anime;
+	private IMediaModel? _anime;
 	private long _animeToken;
 
 	protected sealed override OverlayMode Mode => OverlayMode.Always;
@@ -23,27 +24,35 @@ public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl
 
 	protected abstract TControl Create();
 
-	/// <summary>Shows what there is to show for the anime (null when the card has none) at <paramref name="now"/>.</summary>
-	protected abstract void Update(TControl control, AnimeModel? anime, DateTime now);
+	/// <summary>
+	/// Shows what there is to show for the card's anime or manga (null when it has none) at <paramref name="now"/>. By
+	/// default the anime's: overlays for both override this one.
+	/// </summary>
+	protected virtual void Update(TControl control, IMediaModel? item, DateTime now) => Update(control, item as AnimeModel, now);
+
+	/// <summary>Shows what there is to show for the anime (null when the card has none, or has a manga) at <paramref name="now"/>.</summary>
+	protected virtual void Update(TControl control, AnimeModel? anime, DateTime now)
+	{
+	}
 
 	protected override void OnAttached()
 	{
 		base.OnAttached();
-		_animeToken = AssociatedObject.RegisterPropertyChangedCallback(AnimeCard.AnimeProperty, (_, _) => Follow(AssociatedObject.Anime));
+		_animeToken = AssociatedObject.RegisterPropertyChangedCallback(AnimeCard.MediaProperty, (_, _) => Follow(AssociatedObject.Media));
 		MinuteTimer.Tick += Update;
-		Follow(AssociatedObject.Anime);
+		Follow(AssociatedObject.Media);
 	}
 
 	protected override void OnDetaching()
 	{
-		AssociatedObject.UnregisterPropertyChangedCallback(AnimeCard.AnimeProperty, _animeToken);
+		AssociatedObject.UnregisterPropertyChangedCallback(AnimeCard.MediaProperty, _animeToken);
 		MinuteTimer.Tick -= Update;
 		Follow(null);
 		base.OnDetaching();
 		_control = null;
 	}
 
-	private void Follow(AnimeModel? anime)
+	private void Follow(IMediaModel? anime)
 	{
 		if (_anime is not null)
 		{

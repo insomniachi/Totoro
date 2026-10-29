@@ -98,8 +98,8 @@ public sealed class AppSettingsTools(
 			preferences.PlayNextAutomatically,
 			preferences.SkipFillers,
 			preferences.ShowOnDiscord,
-			preferences.FindStartupItem(startupPages)?.Label ?? "",
-			[.. startupPages.Select(x => x.Label)],
+			preferences.FindStartupItem(startupPages)?.Name ?? "",
+			[.. startupPages.Select(x => x.Name)],
 			preferences.DownloadFolder,
 			preferences.YtDlpPath);
 	}
@@ -150,9 +150,9 @@ public sealed class AppSettingsTools(
 
 		if (startupPage is not null)
 		{
-			var page = pages.Where(x => !x.IsFooter).FirstOrDefault(x => x.Label.Equals(startupPage, StringComparison.OrdinalIgnoreCase))
+			var page = pages.Where(x => !x.IsFooter).FirstOrDefault(x => x.Name.Equals(startupPage, StringComparison.OrdinalIgnoreCase))
 				?? throw new AgentToolException($"There's no page called {startupPage}.");
-			preferences.StartupPage = page.Label;
+			preferences.StartupPage = page.Key;
 		}
 
 		if (theme is { } newTheme)

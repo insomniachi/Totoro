@@ -1,29 +1,21 @@
 using Microsoft.UI.Xaml;
-using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
 
-/// <summary>Where an anime is on the user's list (e.g. "Watching"), on its card's top left; none when it isn't on it.</summary>
+/// <summary>Where an anime or manga is on the user's list (e.g. "Watching"), on its card's top left; none when it isn't on it.</summary>
 public sealed class ListStatusOverlay : LiveAnimeCardOverlay<LabelBadge>
 {
 	protected override LabelBadge Create() => new(HorizontalAlignment.Left, VerticalAlignment.Top);
 
-	protected override void Update(LabelBadge badge, AnimeModel? anime, DateTime now)
+	protected override void Update(LabelBadge badge, IMediaModel? item, DateTime now)
 	{
-		var status = anime?.Tracking?.Status;
+		var status = item?.ListStatus;
 		badge.Visibility = status is null ? Visibility.Collapsed : Visibility.Visible;
-		if (status is { } value)
+		if (status is not null)
 		{
-			var text = value switch
-			{
-				ListItemStatus.Watching => "Watching",
-				ListItemStatus.PlanToWatch => "Plan to watch",
-				ListItemStatus.Completed => "Completed",
-				ListItemStatus.OnHold => "On hold",
-				ListItemStatus.Dropped => "Dropped",
-				ListItemStatus.Rewatching => "Rewatching",
-				_ => value.ToString(),
-			};
+			// "Watching" for anime, "Reading" for manga.
+			var text = MediaText.Status(status, item!.Kind);
 			badge.Set("", text, $"On your list: {text}");
 		}
 	}

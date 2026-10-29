@@ -328,68 +328,95 @@
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False"
             Subtitle="{x:Bind local:MainWindow.Version}">
+            <TitleBar.Resources>
+                <!--  The content spans the bar (TitleBar centres it), so the mode switch sits left and the search in the middle  -->
+                <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Stretch</HorizontalAlignment>
+            </TitleBar.Resources>
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="/Assets/Totoro.png" />
             </TitleBar.IconSource>
             <TitleBar.Content>
-                <!--  Finds anime in the selected database; choosing one opens its details in the side pane  -->
-                <AutoSuggestBox
-                    Width="360"
-                    VerticalAlignment="Center"
-                    AutomationProperties.Name="Search anime"
-                    ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
-                    PlaceholderText="Search anime"
-                    QueryIcon="Find"
-                    QuerySubmitted="OnSearchSubmitted"
-                    TextChanged="OnSearchTextChanged"
-                    UpdateTextOnSelect="False">
-                    <AutoSuggestBox.Resources>
-                        <!--  The suggestions list's padding: room under the last cover, which otherwise touches the edge  -->
-                        <Thickness x:Key="AutoSuggestListMargin">0,4,0,8</Thickness>
-                    </AutoSuggestBox.Resources>
-                    <!--  Each as the chat's anime cards are: cover, title, facts, and where it is on the user's list  -->
-                    <AutoSuggestBox.ItemTemplate>
-                        <DataTemplate x:DataType="services:ChatAnimeItem">
-                            <Grid
-                                Padding="0,4"
-                                AutomationProperties.Name="{x:Bind Anime.Title}"
-                                ColumnSpacing="12"
-                                ToolTipService.ToolTip="{x:Bind FullTitle}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Border
-                                    Width="40"
-                                    Height="56"
-                                    Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                    CornerRadius="4">
-                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Anime.Image)}" Stretch="UniformToFill" />
-                                </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock
-                                        Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                        Text="{x:Bind Anime.Title}"
-                                        TextTrimming="CharacterEllipsis"
-                                        TextWrapping="NoWrap" />
-                                    <TextBlock
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                        Text="{x:Bind Facts}"
-                                        TextTrimming="CharacterEllipsis"
-                                        TextWrapping="NoWrap" />
-                                    <TextBlock
-                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                        Style="{ThemeResource CaptionTextBlockStyle}"
-                                        Text="{x:Bind ListStatus}"
-                                        TextTrimming="CharacterEllipsis"
-                                        TextWrapping="NoWrap"
-                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ListStatus)}" />
-                                </StackPanel>
-                            </Grid>
-                        </DataTemplate>
-                    </AutoSuggestBox.ItemTemplate>
-                </AutoSuggestBox>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!--  Anime or manga, at the title bar's left: switches the menu's pages (see MainWindowViewModel.Mode)  -->
+                    <toolkit:Segmented
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Anime or manga"
+                        SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}">
+                        <toolkit:SegmentedItem
+                            Content="Anime"
+                            Icon="{ui:FontIcon Glyph=&#xE7F4;}"
+                            ToolTipService.ToolTip="Track and watch anime" />
+                        <toolkit:SegmentedItem
+                            Content="Manga"
+                            Icon="{ui:FontIcon Glyph=&#xE736;}"
+                            ToolTipService.ToolTip="Track and read manga" />
+                    </toolkit:Segmented>
+                    <!--  Finds anime and manga in the selected databases, whatever the mode; choosing one opens its details in the side pane  -->
+                    <AutoSuggestBox
+                        Grid.Column="1"
+                        Width="360"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Search anime and manga"
+                        ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
+                        PlaceholderText="Search anime and manga"
+                        QueryIcon="Find"
+                        QuerySubmitted="OnSearchSubmitted"
+                        TextChanged="OnSearchTextChanged"
+                        UpdateTextOnSelect="False">
+                        <AutoSuggestBox.Resources>
+                            <!--  The suggestions list's padding: room under the last cover, which otherwise touches the edge  -->
+                            <Thickness x:Key="AutoSuggestListMargin">0,4,0,8</Thickness>
+                        </AutoSuggestBox.Resources>
+                        <!--  Each as the chat's anime cards are: cover, title, what it is and facts, and where it is on the user's list  -->
+                        <AutoSuggestBox.ItemTemplate>
+                            <DataTemplate x:DataType="services:MediaSuggestion">
+                                <Grid
+                                    Padding="0,4"
+                                    AutomationProperties.Name="{x:Bind Media.Title}"
+                                    ColumnSpacing="12"
+                                    ToolTipService.ToolTip="{x:Bind FullTitle}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border
+                                        Width="40"
+                                        Height="56"
+                                        Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                        CornerRadius="4">
+                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Media.Image)}" Stretch="UniformToFill" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock
+                                            Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                            Text="{x:Bind Media.Title}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Facts}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap" />
+                                        <TextBlock
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind ListStatus}"
+                                            TextTrimming="CharacterEllipsis"
+                                            TextWrapping="NoWrap"
+                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ListStatus)}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </AutoSuggestBox.ItemTemplate>
+                    </AutoSuggestBox>
+                </Grid>
             </TitleBar.Content>
             <TitleBar.RightHeader>
                 <!--  8 between the buttons, per the Windows guidelines  -->
@@ -496,10 +523,11 @@
         <NavigationView
             x:Name="NavView"
             Grid.Row="1"
-            FooterMenuItemsSource="{x:Bind ViewModel.FooterNavigationItems}"
+            FooterMenuItemsSource="{x:Bind ViewModel.FooterNavigationItems, Mode=OneWay}"
             IsBackButtonVisible="Collapsed"
             IsPaneToggleButtonVisible="False"
-            MenuItemsSource="{x:Bind ViewModel.NavigationItems}"
+            MenuItemsSource="{x:Bind ViewModel.NavigationItems, Mode=OneWay}"
+            SelectionChanged="OnNavigationSelectionChanged"
             Style="{StaticResource MainNavigationViewStyle}">
             <Interactivity:Interaction.Behaviors>
                 <uiNavigation:RegisterForNavigationBehavior NavigatorKey="main" />
@@ -510,7 +538,7 @@
                     <NavigationViewItem
                         AutomationProperties.Name="{x:Bind Label}"
                         Content="{x:Bind}"
-                        Icon="{x:Bind (IconElement)AnimatedIcon}"
+                        Icon="{x:Bind local:MainWindow.CreateIcon(AnimatedIcon)}"
                         Style="{StaticResource MainNavigationViewItemStyle}">
                         <NavigationViewItem.InfoBadge>
                             <InfoBadge Visibility="{x:Bind local:MainWindow.VisibleIfPositive(BadgeCount), Mode=OneWay}" Value="{x:Bind BadgeCount, Mode=OneWay}" />

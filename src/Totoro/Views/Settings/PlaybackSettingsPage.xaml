@@ -171,6 +171,60 @@
                 </toolkit:SettingsCard.HeaderIcon>
                 <ToggleSwitch IsOn="{x:Bind ViewModel.TrackBrowserPlayback, Mode=TwoWay}" />
             </toolkit:SettingsCard>
+
+            <TextBlock
+                Margin="0,16,0,4"
+                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                Text="Manga" />
+
+            <toolkit:SettingsCard Description="Where chapters are read from; sources come as plugins." Header="Manga source">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE736;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <Grid>
+                    <ComboBox
+                        MinWidth="200"
+                        AutomationProperties.Name="Manga source"
+                        ItemsSource="{x:Bind ViewModel.MangaProviders}"
+                        SelectedItem="{x:Bind ViewModel.MangaProvider, Mode=TwoWay}"
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasMangaProviders)}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AnimeProviderOption">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Image
+                                        Width="16"
+                                        Height="16"
+                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                                    <TextBlock Text="{x:Bind Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button
+                        MinWidth="120"
+                        Command="{x:Bind ViewModel.OpenPluginsCommand}"
+                        Content="Get one from Plugins"
+                        Style="{ThemeResource AccentButtonStyle}"
+                        Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasMangaProviders)}" />
+                </Grid>
+            </toolkit:SettingsCard>
+
+            <toolkit:SettingsCard Description="Which way the reader turns pages. Most manga read right to left." Header="Reading direction">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8A1;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    AutomationProperties.Name="Reading direction"
+                    ItemsSource="{x:Bind ViewModel.ReaderModes}"
+                    SelectedItem="{x:Bind ViewModel.ReaderMode, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ReaderModeOption">
+                            <TextBlock Text="{x:Bind Label}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
         </StackPanel>
     </ScrollView>
 </Page>

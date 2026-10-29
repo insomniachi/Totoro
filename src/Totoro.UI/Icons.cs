@@ -62,6 +62,12 @@ public static class Icons
 		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
+	/// <summary>An open book, for reading manga; still (there's no animation for it yet).</summary>
+	public static AnimatedIcon ReadAnimated => new()
+	{
+		FallbackIconSource = new FontIconSource { Glyph = "" },
+	};
+
 	// The rest animate when clicked, not on hover (our own, from their Lottie files in AnimatedVisuals).
 
 	/// <summary>A download arrow dropping into its tray, which gives under it, as a new arrow slides in.</summary>
@@ -102,6 +108,7 @@ public static class Icons
 	public static FontIcon Plugins => new() { Glyph = "\uEA86" };
 
 	public static FontIcon Play => new() { Glyph = "\uE768" };
+	public static FontIcon Read => new() { Glyph = "\uE736" };
 	public static FontIcon Clock => new() { Glyph = "\uE823" };
 	public static FontIcon Completed => new() { Glyph = "\uE930" };
 	public static FontIcon Pause => new() { Glyph = "\uE769" };
@@ -127,6 +134,7 @@ public static class Icons
 		nameof(Plugins) => Plugins,
 		nameof(Search) => Search,
 		nameof(Play) => Play,
+		nameof(Read) => Read,
 		nameof(Clock) => Clock,
 		nameof(Completed) => Completed,
 		nameof(Pause) => Pause,

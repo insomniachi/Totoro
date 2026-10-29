@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Manga;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
@@ -21,6 +22,11 @@ namespace Totoro.ViewModels;
 public sealed record AnimeDatabaseOption(Guid Id, string Name, string Icon)
 {
 	public override string ToString() => Name;
+}
+
+public sealed record ReaderModeOption(string Label, ReaderMode Value)
+{
+	public override string ToString() => Label;
 }
 
 public sealed record AnimeProviderOption(Guid Id, string Name, string Icon)
@@ -96,6 +102,8 @@ public partial class SettingsViewModel : ObservableObject
 		IFactory<IAnimeProvider, Guid> providers,
 		IFactory<IMediaPlayer, Guid> players,
 		IFactory<ITorrentStreamer, Guid> torrentStreamers,
+		IFactory<IMangaTracker, Guid> mangaTrackers,
+		IFactory<IMangaProvider, Guid> mangaProviders,
 		IEnumerable<Descriptor> modules,
 		IEnumerable<IAccount> accounts,
 		IAppearanceService appearance,
@@ -133,6 +141,13 @@ public partial class SettingsViewModel : ObservableObject
 		// Trackers and metadata providers come in pairs per module, so listing the trackers lists the databases.
 		AnimeDatabases = [.. trackers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, IconOf(x.Id)))];
 		AnimeDatabase = AnimeDatabases.FirstOrDefault(x => x.Id == preferences.SelectedAnimeDatabase) ?? AnimeDatabases.FirstOrDefault();
+
+		// Chosen apart from the anime database: some databases have only one of the two.
+		MangaDatabases = [.. mangaTrackers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, IconOf(x.Id)))];
+		MangaDatabase = MangaDatabases.FirstOrDefault(x => x.Id == preferences.SelectedMangaDatabase) ?? MangaDatabases.FirstOrDefault();
+		MangaProviders = [.. mangaProviders.CreateAll().DistinctBy(x => x.Id).Select(x => new AnimeProviderOption(x.Id, x.Name, IconOf(x.Id)))];
+		MangaProvider = MangaProviders.FirstOrDefault(x => x.Id == preferences.SelectedMangaProvider) ?? MangaProviders.FirstOrDefault();
+		ReaderMode = ReaderModes.First(x => x.Value == preferences.ReaderMode);
 
 		Accounts = [.. accounts.Select(x => new AccountViewModel(x) { Icon = IconOf(x.Id) })];
 		SyncOtherLists = preferences.SyncOtherLists;
@@ -175,6 +190,49 @@ public partial class SettingsViewModel : ObservableObject
 			_preferences.SelectedAnimeDatabase = value.Id;
 		}
 	}
+
+	public IReadOnlyList<AnimeDatabaseOption> MangaDatabases { get; }
+
+	/// <summary>The module whose manga list and manga details the app uses.</summary>
+	[ObservableProperty]
+	public partial AnimeDatabaseOption? MangaDatabase { get; set; }
+
+	partial void OnMangaDatabaseChanged(AnimeDatabaseOption? value)
+	{
+		if (value is not null && value.Id != _preferences.SelectedMangaDatabase)
+		{
+			_preferences.SelectedMangaDatabase = value.Id;
+		}
+	}
+
+	public IReadOnlyList<AnimeProviderOption> MangaProviders { get; }
+
+	/// <summary>Whether any manga source is installed: they come as plugins.</summary>
+	public bool HasMangaProviders => MangaProviders.Count > 0;
+
+	/// <summary>The source chapters are read from.</summary>
+	[ObservableProperty]
+	public partial AnimeProviderOption? MangaProvider { get; set; }
+
+	partial void OnMangaProviderChanged(AnimeProviderOption? value)
+	{
+		if (value is not null && value.Id != _preferences.SelectedMangaProvider)
+		{
+			_preferences.SelectedMangaProvider = value.Id;
+		}
+	}
+
+	public IReadOnlyList<ReaderModeOption> ReaderModes { get; } =
+	[
+		new("Left to right", Core.Modules.Manga.ReaderMode.PagedLeftToRight),
+		new("Right to left (manga)", Core.Modules.Manga.ReaderMode.PagedRightToLeft),
+	];
+
+	/// <summary>How the reader lays out a chapter's pages.</summary>
+	[ObservableProperty]
+	public partial ReaderModeOption ReaderMode { get; set; }
+
+	partial void OnReaderModeChanged(ReaderModeOption value) => _preferences.ReaderMode = value.Value;
 
 	public IReadOnlyList<AnimeProviderOption> AnimeProviders { get; }
 
@@ -424,9 +482,9 @@ public partial class SettingsViewModel : ObservableObject
 
 	partial void OnStartupPageChanged(NavigationItemViewModel? value)
 	{
-		if (value is not null && value.Label != _preferences.StartupPage)
+		if (value is not null && value.Key != _preferences.StartupPage)
 		{
-			_preferences.StartupPage = value.Label;
+			_preferences.StartupPage = value.Key;
 		}
 	}
 }

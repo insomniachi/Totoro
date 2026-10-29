@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Manga;
 using Totoro.Core.Settings;
 
 namespace Totoro.Modules.AnimeDatabase.Anilist;
@@ -34,6 +35,8 @@ internal class AnilistModule : IModule<Settings>
 		services.AddSingleton<AnilistLocalList>();
 		services.AddKeyedTransient<IAnimeTracker, AnilistTracker>(Descriptor.Id);
 		services.AddKeyedTransient<IAnimeMetadataProvider, AnilistMetadataProvider>(Descriptor.Id);
+		services.AddKeyedTransient<IMangaTracker, AnilistMangaTracker>(Descriptor.Id);
+		services.AddKeyedTransient<IMangaMetadataProvider, AnilistMangaMetadataProvider>(Descriptor.Id);
 		services.AddTransient<IAccount, AnilistAccount>();
 
 		// The token is read each time a client is created, so clients created after signing in (or out) pick it up.

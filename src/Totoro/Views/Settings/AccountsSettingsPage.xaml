@@ -38,6 +38,29 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="Where your manga list and manga details come from; it can be another database than the anime one." Header="Manga database">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE736;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    AutomationProperties.Name="Manga database"
+                    ItemsSource="{x:Bind ViewModel.MangaDatabases, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.MangaDatabase, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AnimeDatabaseOption">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Image
+                                    Width="16"
+                                    Height="16"
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                                <TextBlock Text="{x:Bind Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
             <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Accounts}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

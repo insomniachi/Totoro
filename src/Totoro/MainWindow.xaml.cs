@@ -50,6 +50,25 @@ public sealed partial class MainWindow : Window
 
 		// Selecting the item makes the navigator navigate to it, and keeps the menu highlight in sync.
 		NavView.SelectedItem = ViewModel?.StartupItem;
+		if (ViewModel is { } viewModel)
+		{
+			viewModel.PropertyChanged += (_, e) =>
+			{
+				// After the menu has its new mode's items: selecting one that isn't in it yet does nothing.
+				if (e.PropertyName == nameof(MainWindowViewModel.ModeSwitchItem) && viewModel.ModeSwitchItem is { } item)
+				{
+					DispatcherQueue.TryEnqueue(() => NavView.SelectedItem = item);
+				}
+			};
+		}
+	}
+
+	private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+	{
+		if (ViewModel is not null && args.SelectedItem is Core.Navigation.NavigationItemViewModel item)
+		{
+			ViewModel.CurrentItem = item;
+		}
 	}
 
 	public MainWindowViewModel? ViewModel { get; set; }
@@ -65,12 +84,12 @@ public sealed partial class MainWindow : Window
 	private async void OnSearchSubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
 	{
 		// A suggestion picked, or Enter with suggestions showing: the first one.
-		var anime = (args.ChosenSuggestion as ChatAnimeItem ?? ViewModel?.SearchResults.FirstOrDefault())?.Anime;
-		if (anime is not null && Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
+		var media = (args.ChosenSuggestion as MediaSuggestion ?? ViewModel?.SearchResults.FirstOrDefault())?.Media;
+		if (media is not null && Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
 		{
 			sender.Text = "";
 			ViewModel!.SearchResults = [];
-			await pane.NavigateToDataAsync(anime);
+			await pane.NavigateToDataAsync(media);
 		}
 	}
 
@@ -96,6 +115,8 @@ public sealed partial class MainWindow : Window
 		UpdateState.Failed => error,
 		_ => "Update to install it: Totoro closes, and starts again once it's done.",
 	};
+
+	public static IconElement? CreateIcon(Func<object>? icon) => icon?.Invoke() as IconElement;
 
 	public static Visibility VisibleIfPositive(int count) => count > 0 ? Visibility.Visible : Visibility.Collapsed;
 

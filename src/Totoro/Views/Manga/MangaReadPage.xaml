@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.Manga.MangaReadPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:local="using:Totoro.Views.Manga"
+    xmlns:manga="using:Totoro.Core.Modules.Manga"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <!--  As the Watch page (ProviderWatchPage.xaml): the manga found (cards), and beside them the picked one's chapters and Read  -->
+    <Grid
+        MaxWidth="1400"
+        Margin="16"
+        RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="8">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Read" />
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Read from any manga source, just this once: your list stays as it is."
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ComboBox
+                MinWidth="180"
+                AutomationProperties.Name="Manga source"
+                ItemsSource="{x:Bind ViewModel.Sources}"
+                PlaceholderText="Manga source"
+                SelectedItem="{x:Bind ViewModel.SelectedSource, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ProviderChoice">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Image
+                                Width="16"
+                                Height="16"
+                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                            <TextBlock Text="{x:Bind Label}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button
+                Grid.Column="1"
+                VerticalAlignment="Stretch"
+                AutomationProperties.Name="Source settings"
+                Command="{x:Bind ViewModel.EditSourceSettingsCommand}"
+                ToolTipService.ToolTip="Source settings (as in Settings)">
+                <FontIcon FontSize="16" Glyph="&#xE713;" />
+            </Button>
+            <AutoSuggestBox
+                Grid.Column="2"
+                AutomationProperties.Name="Search the manga source"
+                PlaceholderText="Search by title"
+                QueryIcon="Find"
+                QuerySubmitted="OnSearchSubmitted"
+                Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
+        </Grid>
+
+        <StackPanel Grid.Row="2" Spacing="8">
+            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind ViewModel.Message, Mode=OneWay}"
+                TextWrapping="Wrap"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{x:Bind ViewModel.HasNoSources}"
+                Message="Manga sources come as plugins. Get one from the Plugins page."
+                Severity="Informational" />
+        </StackPanel>
+
+        <Grid Grid.Row="3" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <!--  Auto: the cards take the whole width until a manga is picked  -->
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <GridView
+                AutomationProperties.Name="Results"
+                ItemsSource="{x:Bind ViewModel.Results, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}"
+                SelectionMode="Single">
+                <GridView.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource DefaultGridViewItemStyle}" TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="0,0,8,8" />
+                        <Setter Property="Padding" Value="8" />
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="manga:ProviderManga">
+                        <StackPanel
+                            Width="180"
+                            AutomationProperties.Name="{x:Bind Title}"
+                            Spacing="8">
+                            <Border
+                                Height="256"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                <Grid>
+                                    <!--  Shown when the source had no cover for it  -->
+                                    <FontIcon
+                                        FontSize="32"
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        Glyph="&#xE736;" />
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                </Grid>
+                            </Border>
+                            <TextBlock
+                                Height="60"
+                                MaxLines="3"
+                                Text="{x:Bind Title}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+
+            <!--  The picked manga's chapters, and Read  -->
+            <Grid
+                Grid.Column="1"
+                Width="400"
+                Padding="16"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource OverlayCornerRadius}"
+                RowSpacing="12"
+                Visibility="{x:Bind ViewModel.HasManga, Mode=OneWay}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="{x:Bind ViewModel.Selected.Title, Mode=OneWay, FallbackValue=''}"
+                    TextWrapping="Wrap" />
+
+                <GridView
+                    Grid.Row="1"
+                    AutomationProperties.Name="Chapters"
+                    DoubleTapped="OnChapterDoubleTapped"
+                    ItemsSource="{x:Bind ViewModel.Chapters, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedChapter, Mode=TwoWay}"
+                    SelectionMode="Single">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="manga:ProviderChapter">
+                            <Border
+                                Width="56"
+                                Height="44"
+                                AutomationProperties.Name="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title)}"
+                                Background="{ThemeResource ControlFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{ThemeResource ControlCornerRadius}"
+                                ToolTipService.ToolTip="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title)}">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind local:MangaReadPage.ChapterNumber(Number)}" />
+                            </Border>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+
+                <StackPanel
+                    Grid.Row="2"
+                    Spacing="12"
+                    Visibility="{x:Bind ViewModel.HasChapter, Mode=OneWay}">
+                    <TextBlock
+                        Style="{ThemeResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind local:MangaDetailsPage.ChapterText(ViewModel.SelectedChapter.Number, ViewModel.SelectedChapter.Title), Mode=OneWay, FallbackValue=''}"
+                        TextWrapping="Wrap" />
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.Name="Read"
+                        Command="{x:Bind ViewModel.ReadCommand}"
+                        Style="{ThemeResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="14" Glyph="&#xE736;" />
+                            <TextBlock Text="Read" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

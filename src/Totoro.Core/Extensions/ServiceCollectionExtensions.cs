@@ -59,15 +59,17 @@ public static class ServiceCollectionExtensions
 			return services.AddTransient<ViewMap>(_ => new ViewMap<TView, TViewModel>());
 		}
 
-		public IServiceCollection AddMainNavigationItem<TView, TViewModel>(string label, Action<NavigationItemViewModel>? configure = default)
+		/// <param name="key">What it's navigated to by, when another item has the same label (e.g. the manga Library); else the label.</param>
+		public IServiceCollection AddMainNavigationItem<TView, TViewModel>(string label, Action<NavigationItemViewModel>? configure = default, string? key = null)
 			 where TView : class, new()
 			 where TViewModel : class
 		{
-			services.AddKeyedViewMap<TView, TViewModel>(label);
+			services.AddKeyedViewMap<TView, TViewModel>(key ?? label);
 
 			var item = new NavigationItemViewModel
 			{
 				Label = label,
+				Key = key ?? label,
 				ViewModelType = typeof(TViewModel),
 			};
 
@@ -85,6 +87,8 @@ public static class ServiceCollectionExtensions
 						   .AddSingleton<Modules.Media.IPlaybackProgressStore, Modules.Media.PlaybackProgressStore>()
 							   .AddSingleton<IAnimeSettingsStore, AnimeSettingsStore>()
 							   .AddSingleton<Services.AnimeTrackingService>()
+								   .AddSingleton<Services.MangaTrackingService>()
+								   .AddSingleton<Services.MangaReadingService>()
 							   .AddSingleton<Services.AnimeSongService>()
 							   .AddSingleton<Services.ReleaseScheduleService>()
 							   .AddSingleton<Services.ChatService>()

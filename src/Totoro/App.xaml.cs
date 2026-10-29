@@ -13,6 +13,7 @@ using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Chat;
+using Totoro.Core.Modules.Manga;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
@@ -33,7 +34,9 @@ using WebAuthenticator = Totoro.UI.Authentication.WebAuthenticator;
 using Totoro.ViewModels;
 using Totoro.ViewModels.Chat;
 using Totoro.ViewModels.Relations;
+using Totoro.ViewModels.Manga;
 using Totoro.Views;
+using Totoro.Views.Manga;
 using Totoro.Views.Relations;
 using Totoro.Views.Settings;
 
@@ -90,6 +93,10 @@ public partial class App : Application
 				services.RegisterFactory<IMediaPlayer>(PlaybackPreferences.MediaPlayerKey);
 				services.RegisterFactory<ITorrentStreamer>(PlaybackPreferences.TorrentStreamerKey);
 				services.RegisterFactory<IChatModel>("SelectedChatModel");
+				// Manga: a database (chosen apart from the anime one) and a source to read from.
+				services.RegisterFactory<IMangaTracker>(MangaPreferences.DatabaseKey);
+				services.RegisterFactory<IMangaMetadataProvider>(MangaPreferences.DatabaseKey);
+				services.RegisterFactory<IMangaProvider>(MangaPreferences.ProviderKey);
 
 				// Watching: the watch service drives a playback from a card's Play.
 				services.AddSingleton<WatchService>();
@@ -129,7 +136,8 @@ public partial class App : Application
 						.AddAgentTools<UpdateTools>()
 						.AddAgentTools<AnimePluginTools>()
 						.AddAgentTools<PluginTools>()
-						.AddAgentTools<ReleaseScheduleTools>();
+						.AddAgentTools<ReleaseScheduleTools>()
+						.AddAgentTools<MangaTools>();
 				// The assistant: a chat that calls those tools (see ChatService).
 				services.AddSingleton<ChatViewModel>();
 
@@ -144,46 +152,77 @@ public partial class App : Application
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();
 				services.AddDataViewMap<AnimeDetailsPage, AnimeDetailsViewModel, AnimeModel>();
+				services.AddSingleton<MangaCommands>();
+				services.AddDataViewMap<MangaDetailsPage, MangaDetailsViewModel, MangaModel>();
+				services.AddDialog<MangaTrackingDialog, MangaTrackingDialogViewModel>();
+				services.AddViewMap<ReaderPage, ReaderViewModel>();
 				// First, so it's where the app starts until the user picks another startup page (see StartupPagePreferences).
 				services.AddMainNavigationItem<DiscoverPage, DiscoverViewModel>("Discover", x =>
 				{
-					x.AnimatedIcon = Icons.DiscoverAnimated;
+					x.Mode = MediaMode.Anime;
+					x.AnimatedIcon = () => Icons.DiscoverAnimated;
 				});
 				services.AddMainNavigationItem<UserListPage, UserListViewModel>("Library", x =>
 				{
-					x.AnimatedIcon = Icons.LibraryAnimated;
+					x.Mode = MediaMode.Anime;
+					x.AnimatedIcon = () => Icons.LibraryAnimated;
 				});
 				services.AddMainNavigationItem<AdvancedSearchPage, AdvancedSearchViewModel>("Search", x =>
 				{
-					x.AnimatedIcon = Icons.SearchAnimated;
+					x.Mode = MediaMode.Anime;
+					x.AnimatedIcon = () => Icons.SearchAnimated;
+				});
+				// Manga mode's pages: the same names as anime's where they do the same, so switching mode keeps the user's place.
+				services.AddMainNavigationItem<MangaDiscoverPage, MangaDiscoverViewModel>("Discover", x =>
+				{
+					x.Mode = MediaMode.Manga;
+					x.AnimatedIcon = () => Icons.DiscoverAnimated;
+				}, key: "MangaDiscover");
+				services.AddMainNavigationItem<MangaLibraryPage, MangaLibraryViewModel>("Library", x =>
+				{
+					x.Mode = MediaMode.Manga;
+					x.AnimatedIcon = () => Icons.LibraryAnimated;
+				}, key: "MangaLibrary");
+				services.AddMainNavigationItem<MangaSearchPage, MangaSearchViewModel>("Search", x =>
+				{
+					x.Mode = MediaMode.Manga;
+					x.AnimatedIcon = () => Icons.SearchAnimated;
+				}, key: "MangaSearch");
+				services.AddMainNavigationItem<MangaReadPage, MangaReadViewModel>("Read", x =>
+				{
+					x.Mode = MediaMode.Manga;
+					x.AnimatedIcon = () => Icons.ReadAnimated;
 				});
 				services.AddMainNavigationItem<ReleaseSchedulePage, ReleaseScheduleViewModel>("Schedule", x =>
 				{
-					x.AnimatedIcon = Icons.ScheduleAnimated;
+					x.Mode = MediaMode.Anime;
+					x.AnimatedIcon = () => Icons.ScheduleAnimated;
 				});
 				services.AddMainNavigationItem<ProviderWatchPage, ProviderWatchViewModel>("Watch", x =>
 				{
-					x.AnimatedIcon = Icons.PlayAnimated;
+					x.Mode = MediaMode.Anime;
+					x.AnimatedIcon = () => Icons.PlayAnimated;
 				});
 				services.AddMainNavigationItem<DownloadsPage, DownloadsViewModel>("Downloads", x =>
 				{
-					x.AnimatedIcon = Icons.DownloadAnimated;
+					x.Mode = MediaMode.Anime;
+					x.AnimatedIcon = () => Icons.DownloadAnimated;
 				});
 				services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
 				{
-					x.AnimatedIcon = Icons.PluginsAnimated;
+					x.AnimatedIcon = () => Icons.PluginsAnimated;
 				});
 #if DEBUG
 				// A developer's playground: not for users.
 				services.AddMainNavigationItem<AgentToolsPage, AgentToolsViewModel>("Agent tools", x =>
 				{
-					x.AnimatedIcon = Icons.AgentToolsAnimated;
+					x.AnimatedIcon = () => Icons.AgentToolsAnimated;
 				});
 #endif
 				services.AddViewMap<PluginTesterPage, PluginTesterViewModel>();
 				services.AddMainNavigationItem<SettingsPage, SettingsViewModel>("Settings", x =>
 				{
-					x.AnimatedIcon = Icons.SettingsAnimated;
+					x.AnimatedIcon = () => Icons.SettingsAnimated;
 					x.IsFooter = true;
 				});
 				// Settings' categories, after it: the navigator finds the first page registered for SettingsViewModel.
@@ -317,13 +356,12 @@ public partial class App : Application
 		manager.TrayIconSelected += (_, _) => Show();
 		// Another launch of Totoro, redirected here (see the constructor).
 		Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().Activated += (_, _) => window.DispatcherQueue.TryEnqueue(() => Show());
+		// Clicking the icon opens the window, so the menu only quits.
 		manager.TrayIconContextMenu += (sender, e) =>
 		{
-			var open = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open Totoro" };
-			open.Click += (_, _) => Show();
 			var quit = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Quit Totoro" };
 			quit.Click += (_, _) => _ = QuitAsync();
-			e.Flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout { Items = { open, quit } };
+			e.Flyout = new Microsoft.UI.Xaml.Controls.MenuFlyout { Items = { quit } };
 		};
 		// The app ends with its main window, the built-in player's window too.
 		window.Closed += (_, _) =>

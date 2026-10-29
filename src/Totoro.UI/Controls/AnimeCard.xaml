@@ -51,7 +51,7 @@
                     <Image
                         x:Name="PosterImage"
                         ImageOpened="OnPosterOpened"
-                        Source="{x:Bind Anime.Image, Mode=OneWay}"
+                        Source="{x:Bind Media.Image, Mode=OneWay}"
                         Stretch="UniformToFill" />
                 </Border>
             </Border>
@@ -63,7 +63,7 @@
                 Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
                 <TextBlock
                     Style="{StaticResource BodyLargeTextBlockStyle}"
-                    Text="{x:Bind Anime.Title, Mode=OneWay}"
+                    Text="{x:Bind Media.Title, Mode=OneWay}"
                     IsTextTrimmedChanged="OnTitleTrimmedChanged"
                     TextAlignment="Center"
                     TextTrimming="CharacterEllipsis" />

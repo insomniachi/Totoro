@@ -11,9 +11,10 @@ namespace Totoro.ViewModels;
 /// Why a page showing the user's list has nothing to show: they aren't signed in to the selected database, or loading
 /// failed. Shown by <c>ListLoadInfoBars</c>, which offer to sign in and to retry.
 /// </summary>
+/// <param name="signedOutAccount">The account the user has to sign in to for a list; null while they needn't.</param>
 /// <param name="load">Loads the page's list; what it throws is shown as <see cref="Error"/>.</param>
 /// <param name="purpose">What the list is for, to finish "Sign in to AniList ...", e.g. "to see your anime list".</param>
-public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Task> load, string purpose) : ObservableObject, IRecipient<AccountChangedMessage>
+public sealed partial class ListLoadState(Func<IAccount?> signedOutAccount, Func<Task> load, string purpose) : ObservableObject, IRecipient<AccountChangedMessage>
 {
 	private IAccount? _signedOut;
 
@@ -38,7 +39,7 @@ public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Ta
 			WeakReferenceMessenger.Default.Register(this);
 		}
 
-		_signedOut = tracking.GetSignedOutListAccount();
+		_signedOut = signedOutAccount();
 		SignInMessage = _signedOut is { } account ? $"Sign in to {account.Name} {purpose}." : "";
 		Error = "";
 		try
@@ -47,7 +48,7 @@ public sealed partial class ListLoadState(AnimeTrackingService tracking, Func<Ta
 		}
 		catch (Exception ex) when (ex is HttpRequestException or GraphQLHttpRequestException)
 		{
-			Error = $"Couldn't reach the anime database; it may be down, or you may be offline. Try again in a bit. ({ex.Message})";
+			Error = $"Couldn't reach the database; it may be down, or you may be offline. Try again in a bit. ({ex.Message})";
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{

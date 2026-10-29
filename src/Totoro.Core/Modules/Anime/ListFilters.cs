@@ -8,17 +8,17 @@ using Totoro.Core.Filtering;
 namespace Totoro.Core.Modules.Anime;
 
 /// <summary>Anime whose title (any of them) contains the text typed.</summary>
-public sealed partial class TitleFilter : ObservableObject, IFilter<AnimeModel>
+public sealed partial class TitleFilter : ObservableObject, IFilter<IMediaModel>
 {
 	public TitleFilter()
 	{
-		Predicate = this.WhenValueChanged(x => x.Text).Select(text => (Func<AnimeModel, bool>)(anime => UserListQuery.MatchesTitle(anime, text)));
+		Predicate = this.WhenValueChanged(x => x.Text).Select(text => (Func<IMediaModel, bool>)(anime => UserListQuery.MatchesTitle(anime, text)));
 	}
 
 	[ObservableProperty]
 	public partial string Text { get; set; } = "";
 
-	public IObservable<Func<AnimeModel, bool>> Predicate { get; }
+	public IObservable<Func<IMediaModel, bool>> Predicate { get; }
 
 	public bool IsActive => !string.IsNullOrWhiteSpace(Text);
 
@@ -35,13 +35,13 @@ public sealed partial class GenreOption(string name) : ObservableObject
 }
 
 /// <summary>Anime with every genre ticked; the genres offered are those of the list's anime.</summary>
-public sealed partial class GenreFilter : ObservableObject, IFilter<AnimeModel>
+public sealed partial class GenreFilter : ObservableObject, IFilter<IMediaModel>
 {
-	private readonly BehaviorSubject<Func<AnimeModel, bool>> _predicate = new(_ => true);
+	private readonly BehaviorSubject<Func<IMediaModel, bool>> _predicate = new(_ => true);
 
 	public ObservableCollection<GenreOption> Options { get; } = [];
 
-	public IObservable<Func<AnimeModel, bool>> Predicate => _predicate;
+	public IObservable<Func<IMediaModel, bool>> Predicate => _predicate;
 
 	public bool IsActive => SelectedCount > 0;
 
@@ -51,7 +51,7 @@ public sealed partial class GenreFilter : ObservableObject, IFilter<AnimeModel>
 	public string Label => SelectedCount > 0 ? $"Genres ({SelectedCount})" : "Genres";
 
 	/// <summary>Offers the genres of these anime, alphabetically; ticked ones stay ticked.</summary>
-	public void SetGenres(IEnumerable<AnimeModel> anime)
+	public void SetGenres(IEnumerable<IMediaModel> anime)
 	{
 		var selected = Options.Where(x => x.IsSelected).Select(x => x.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
 		foreach (var option in Options)
@@ -105,9 +105,9 @@ public enum YearFilterMode
 }
 
 /// <summary>Anime that aired in a season, in a year or a range of years, or both.</summary>
-public sealed partial class SeasonFilter : ObservableObject, IFilter<AnimeModel>
+public sealed partial class SeasonFilter : ObservableObject, IFilter<IMediaModel>
 {
-	private readonly BehaviorSubject<Func<AnimeModel, bool>> _predicate = new(_ => true);
+	private readonly BehaviorSubject<Func<IMediaModel, bool>> _predicate = new(_ => true);
 
 	public SeasonFilter()
 	{
@@ -156,7 +156,7 @@ public sealed partial class SeasonFilter : ObservableObject, IFilter<AnimeModel>
 		set => MinimumYear = MaximumYear = value;
 	}
 
-	public IObservable<Func<AnimeModel, bool>> Predicate => _predicate;
+	public IObservable<Func<IMediaModel, bool>> Predicate => _predicate;
 
 	public bool IsActive => Season?.Value is not null || MinimumYear is not null || MaximumYear is not null;
 
@@ -194,7 +194,8 @@ public sealed partial class SeasonFilter : ObservableObject, IFilter<AnimeModel>
 	private void Update()
 	{
 		var (season, from, to) = (Season?.Value, MinimumYear, MaximumYear);
-		_predicate.OnNext(anime => UserListQuery.MatchesSeason(anime, season, from, to));
+		// Manga have no seasons: the filter, which only the anime list offers, leaves them be.
+		_predicate.OnNext(item => item is not AnimeModel anime || UserListQuery.MatchesSeason(anime, season, from, to));
 		OnPropertyChanged(nameof(IsActive));
 	}
 }

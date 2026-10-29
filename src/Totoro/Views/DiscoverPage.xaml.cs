@@ -40,7 +40,7 @@ public sealed partial class DiscoverPage : Page
 
 	private void OnNextPage(object sender, RoutedEventArgs e) => ScrollRow(sender, 1);
 
-	private static void ScrollRow(object button, int direction)
+	internal static void ScrollRow(object button, int direction)
 	{
 		var row = (ScrollView)((Button)button).Tag;
 		var cards = Math.Max(1, Math.Floor((row.ViewportWidth + 16) / CardStride));
@@ -52,7 +52,9 @@ public sealed partial class DiscoverPage : Page
 	// and slides just the last part in, quickly. Its animation is changed rather than replaced, which the ScrollView ignores.
 	private const float SlideFraction = 0.15f;
 
-	private void OnRowScrollAnimationStarting(ScrollView sender, ScrollingScrollAnimationStartingEventArgs args)
+	private void OnRowScrollAnimationStarting(ScrollView sender, ScrollingScrollAnimationStartingEventArgs args) => SlideRow(args);
+
+	internal static void SlideRow(ScrollingScrollAnimationStartingEventArgs args)
 	{
 		if (args.Animation is not Vector3KeyFrameAnimation animation)
 		{
@@ -77,7 +79,11 @@ public sealed partial class DiscoverPage : Page
 			(NextSeasonRow, NextSeasonPrevious, NextSeasonNext),
 		];
 		var (row, previous, next) = rows.First(x => x.Row == sender);
+		UpdateRowButtons(row, previous, next);
+	}
 
+	internal static void UpdateRowButtons(ScrollView row, Button previous, Button next)
+	{
 		// A pixel of slack: offsets are fractional at some scales.
 		previous.IsEnabled = row.HorizontalOffset > 1;
 		next.IsEnabled = row.HorizontalOffset < row.ScrollableWidth - 1;

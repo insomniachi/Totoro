@@ -225,6 +225,8 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 			: services.IsKeyedService(typeof(ITorrentStreamer), id) ? "TorrentStreamer"
 			: services.IsKeyedService(typeof(IMediaPlayer), id) ? "MediaPlayer"
 			: services.IsKeyedService(typeof(IAnimeTracker), id) ? "AnimeDatabase"
+			: services.IsKeyedService(typeof(Core.Modules.Manga.IMangaProvider), id) ? "MangaProvider"
+			: services.IsKeyedService(typeof(Core.Modules.Manga.IMangaTracker), id) ? "MangaDatabase"
 			: services.IsKeyedService(typeof(IChatModel), id) ? "ChatModel"
 			: "";
 		var pluginIds = _pluginLoader.Plugins.Select(x => x.Id).ToHashSet();

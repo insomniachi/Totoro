@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.Manga.MangaTrackingDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <StackPanel MinWidth="320" Spacing="12">
+        <ComboBox
+            HorizontalAlignment="Stretch"
+            Header="Status"
+            ItemsSource="{x:Bind ViewModel.Statuses}"
+            SelectedItem="{x:Bind ViewModel.Status, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:StatusOption">
+                    <TextBlock Text="{x:Bind Label}" />
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <NumberBox
+                Header="Chapters read"
+                Maximum="{x:Bind ViewModel.MaxChapters}"
+                Minimum="0"
+                SmallChange="1"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.ChaptersRead, Mode=TwoWay}" />
+            <NumberBox
+                Grid.Column="1"
+                Header="Volumes read"
+                Maximum="{x:Bind ViewModel.MaxVolumes}"
+                Minimum="0"
+                SmallChange="1"
+                SpinButtonPlacementMode="Inline"
+                Value="{x:Bind ViewModel.VolumesRead, Mode=TwoWay}" />
+        </Grid>
+        <NumberBox
+            Header="Score (out of 10)"
+            Maximum="10"
+            Minimum="0"
+            SmallChange="1"
+            SpinButtonPlacementMode="Inline"
+            Value="{x:Bind ViewModel.Score, Mode=TwoWay}" />
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <CalendarDatePicker
+                HorizontalAlignment="Stretch"
+                Date="{x:Bind ViewModel.StartDate, Mode=TwoWay}"
+                Header="Started" />
+            <CalendarDatePicker
+                Grid.Column="1"
+                HorizontalAlignment="Stretch"
+                Date="{x:Bind ViewModel.FinishDate, Mode=TwoWay}"
+                Header="Finished" />
+        </Grid>
+    </StackPanel>
+</UserControl>

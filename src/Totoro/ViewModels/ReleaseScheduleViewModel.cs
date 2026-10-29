@@ -72,7 +72,7 @@ public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService sche
 	private const DayOfWeek FirstDayOfWeek = DayOfWeek.Monday;
 
 	/// <summary>Whether the user is signed in, and whether the list loaded; for the page's InfoBars.</summary>
-	public ListLoadState LoadState => field ??= new(tracking, LoadWatchingAsync, "to see when the shows you're watching air");
+	public ListLoadState LoadState => field ??= new(tracking.GetSignedOutListAccount, LoadWatchingAsync, "to see when the shows you're watching air");
 
 	protected override Task OnNavigatedToInternalAsync()
 	{

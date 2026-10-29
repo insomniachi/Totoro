@@ -9,7 +9,7 @@ public static class StartupPagePreferences
 	extension(IPreferences preferences)
 	{
 		/// <summary>
-		/// Navigation key of the page shown at startup, i.e. the label it was registered with in
+		/// Navigation key of the page shown at startup, i.e. the key (by default the label) it was registered with in
 		/// <c>AddMainNavigationItem</c>. Null (or a key that no longer exists) means the first menu item.
 		/// </summary>
 		public string? StartupPage
@@ -22,7 +22,7 @@ public static class StartupPagePreferences
 		public NavigationItemViewModel? FindStartupItem(IEnumerable<NavigationItemViewModel> items)
 		{
 			var startupPage = preferences.StartupPage;
-			return items.FirstOrDefault(x => x.Label == startupPage) ?? items.FirstOrDefault(x => !x.IsFooter);
+			return items.FirstOrDefault(x => x.Key == startupPage) ?? items.FirstOrDefault(x => !x.IsFooter);
 		}
 	}
 }

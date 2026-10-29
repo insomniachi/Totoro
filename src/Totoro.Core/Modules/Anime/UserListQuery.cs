@@ -25,7 +25,7 @@ public enum ListSort
 public static class UserListQuery
 {
 	/// <summary>Whether any of the anime's titles (its own, English, romaji or another) contains <paramref name="query"/>, ignoring case and accents.</summary>
-	public static bool MatchesTitle(AnimeModel anime, string? query)
+	public static bool MatchesTitle(IMediaModel anime, string? query)
 	{
 		if (string.IsNullOrWhiteSpace(query))
 		{
@@ -50,9 +50,9 @@ public static class UserListQuery
 	/// Orders anime by <paramref name="sort"/>, anime without the value (e.g. no score) last either way; ties keep the order
 	/// <paramref name="then"/> gives (e.g. the list's own).
 	/// </summary>
-	public static IComparer<AnimeModel> Comparer(ListSort sort, bool descending, IComparer<AnimeModel>? then = null)
+	public static IComparer<T> Comparer<T>(ListSort sort, bool descending, IComparer<T>? then = null) where T : IMediaModel
 	{
-		return Comparer<AnimeModel>.Create((a, b) =>
+		return System.Collections.Generic.Comparer<T>.Create((a, b) =>
 		{
 			var result = sort == ListSort.Title ? CompareTitles(a, b, descending) : CompareKeys(Key(a, sort), Key(b, sort), descending);
 			return result != 0 || then is null ? result : then.Compare(a, b);
@@ -60,14 +60,14 @@ public static class UserListQuery
 	}
 
 	/// <summary>The anime in <paramref name="sort"/>'s order.</summary>
-	public static List<AnimeModel> Sort(IEnumerable<AnimeModel> list, ListSort sort, bool descending)
+	public static List<T> Sort<T>(IEnumerable<T> list, ListSort sort, bool descending) where T : IMediaModel
 	{
 		var sorted = list.ToList();
-		sorted.Sort(Comparer(sort, descending));
+		sorted.Sort(Comparer<T>(sort, descending));
 		return sorted;
 	}
 
-	private static int CompareTitles(AnimeModel a, AnimeModel b, bool descending)
+	private static int CompareTitles(IMediaModel a, IMediaModel b, bool descending)
 	{
 		var result = string.Compare(a.Title, b.Title, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase);
 		return descending ? -result : result;
@@ -84,17 +84,17 @@ public static class UserListQuery
 		};
 	}
 
-	/// <summary>The value sorted by; null when the anime hasn't one.</summary>
-	private static double? Key(AnimeModel anime, ListSort sort) => sort switch
+	/// <summary>The value sorted by; null when the item hasn't one (manga have no airing season).</summary>
+	private static double? Key(IMediaModel item, ListSort sort) => sort switch
 	{
-		ListSort.Episodes => anime.TotalEpisodes is > 0 ? anime.TotalEpisodes : null,
-		ListSort.WatchedEpisodes => anime.Tracking?.WatchedEpisodes,
-		ListSort.UserScore => anime.Tracking?.Score is > 0 ? anime.Tracking.Score : null,
-		ListSort.AverageScore => anime.MeanScore is > 0 ? anime.MeanScore : null,
-		ListSort.Year => anime.Season is { Year: > 1900 } season ? season.Year * 10 + (int)season.SeasonName : null,
-		ListSort.Popularity => anime.Popularity,
-		ListSort.StartDate => anime.Tracking?.StartDate?.Ticks,
-		ListSort.FinishDate => anime.Tracking?.FinishDate?.Ticks,
-		_ => anime.Tracking?.UpdatedAt?.Ticks,
+		ListSort.Episodes => item.Total is > 0 ? item.Total : null,
+		ListSort.WatchedEpisodes => item.Progress,
+		ListSort.UserScore => item.UserScore is > 0 ? item.UserScore : null,
+		ListSort.AverageScore => item.MeanScore is > 0 ? item.MeanScore : null,
+		ListSort.Year => item is AnimeModel { Season: { Year: > 1900 } season } ? season.Year * 10 + (int)season.SeasonName : null,
+		ListSort.Popularity => item.Popularity,
+		ListSort.StartDate => item.StartDate?.Ticks,
+		ListSort.FinishDate => item.FinishDate?.Ticks,
+		_ => item.UpdatedAt?.Ticks,
 	};
 }
