@@ -66,6 +66,17 @@ public partial class App : Application
 
 	public App()
 	{
+		// One Totoro at a time: launched again, it shows the running one and exits, before loading plugins (which moves
+		// their folders about, under the running one).
+		var instance = Microsoft.Windows.AppLifecycle.AppInstance.FindOrRegisterForKey("Totoro");
+		if (!instance.IsCurrent)
+		{
+			var activation = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+			// Off the UI thread: waiting for it there could deadlock.
+			Task.Run(() => instance.RedirectActivationToAsync(activation).AsTask()).Wait();
+			Environment.Exit(0);
+		}
+
 		InitializeComponent();
 		_host = Host.CreateDefaultBuilder()
 			.ConfigureServices((context, services) =>
@@ -304,6 +315,8 @@ public partial class App : Application
 		};
 		window.Activated += (_, _) => UpdateTray();
 		manager.TrayIconSelected += (_, _) => Show();
+		// Another launch of Totoro, redirected here (see the constructor).
+		Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().Activated += (_, _) => window.DispatcherQueue.TryEnqueue(() => Show());
 		manager.TrayIconContextMenu += (sender, e) =>
 		{
 			var open = new Microsoft.UI.Xaml.Controls.MenuFlyoutItem { Text = "Open Totoro" };
