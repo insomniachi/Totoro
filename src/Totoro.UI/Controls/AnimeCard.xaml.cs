@@ -24,6 +24,11 @@ public sealed partial class AnimeCard : UserControl
 	[GeneratedDependencyProperty]
 	public partial ICommand? Command { get; set; }
 
+	// Recycled cards get a new anime: hide the old poster until the new one has loaded.
+	partial void OnAnimeChanged(AnimeModel? newValue) => PosterFade.Opacity = 0;
+
+	private void OnPosterOpened(object sender, RoutedEventArgs e) => PosterFade.Opacity = 1;
+
 	partial void OnCommandChanged(ICommand? newValue)
 	{
 		ProtectedCursor = newValue is null ? null : InputSystemCursor.Create(InputSystemCursorShape.Hand);

@@ -26,6 +26,16 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
+            <!--  The background and icon are the placeholder while the poster loads; the poster then fades in over them.  -->
+            <Border
+                Grid.RowSpan="2"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8,8,12,12" />
+            <FontIcon
+                FontSize="48"
+                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                Glyph="&#xE91B;" />
+
             <!--
                 EdgeLighting clips the card to an 8px radius. At the bottom corners both the image and the title bar sit on
                 that curve, and the clip's antialiased edge pixels let the image show through the title bar as a 1px fringe.
@@ -33,7 +43,17 @@
                 covers the difference.
             -->
             <Border Grid.RowSpan="2" CornerRadius="8,8,12,12">
-                <Image x:Name="PosterImage" Source="{x:Bind Anime.Image, Mode=OneWay}" Stretch="UniformToFill" />
+                <!--  The fade is on a wrapper: HoverEffectsBehavior animates the image's composition visual, which rules out an OpacityTransition on it.  -->
+                <Border x:Name="PosterFade" Opacity="0">
+                    <Border.OpacityTransition>
+                        <ScalarTransition />
+                    </Border.OpacityTransition>
+                    <Image
+                        x:Name="PosterImage"
+                        ImageOpened="OnPosterOpened"
+                        Source="{x:Bind Anime.Image, Mode=OneWay}"
+                        Stretch="UniformToFill" />
+                </Border>
             </Border>
 
             <Border
