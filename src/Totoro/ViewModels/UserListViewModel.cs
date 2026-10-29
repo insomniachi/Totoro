@@ -11,13 +11,18 @@ using Totoro.Core.Filtering;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Services;
+using Totoro.Core.Settings;
 using Totoro.UI.Navigation;
 
 namespace Totoro.ViewModels;
 
 public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>
 {
+	private const string SortKey = "UserListSort";
+	private const string SortDescendingKey = "UserListSortDescending";
+
 	private readonly IFactory<IAnimeTracker, Guid> _factory;
+	private readonly IPreferences _preferences;
 	private readonly SourceCache<AnimeModel, long> _source = new(x => x.Id);
 	private readonly ReadOnlyObservableCollection<AnimeModel> _anime;
 
@@ -27,12 +32,17 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 	// The database the list is from, once loaded.
 	private Guid _trackerId;
 
-	public UserListViewModel(IFactory<IAnimeTracker, Guid> factory, AnimeTrackingService tracking)
+	public UserListViewModel(IFactory<IAnimeTracker, Guid> factory, AnimeTrackingService tracking, IPreferences preferences)
 	{
 		_factory = factory;
+		_preferences = preferences;
 		// Busy while it loads, retries too, for the placeholder cards.
 		LoadState = new ListLoadState(tracking, () => RunBusyAsync(LoadListAsync), "to see your anime list");
-		Sort = SortOptions[0];
+		// The sort last picked; both are read first, as setting Sort resets (and saves) the direction.
+		var sort = preferences.ReadKey(SortKey, ListSort.LastUpdated);
+		var descending = preferences.ReadKey(SortDescendingKey, true);
+		Sort = SortOptions.FirstOrDefault(x => x.Value == sort) ?? SortOptions[0];
+		SortDescending = descending;
 		foreach (var filter in new INotifyPropertyChanged[] { TitleFilter, GenreFilter, SeasonFilter })
 		{
 			filter.PropertyChanged += (_, e) =>
@@ -144,10 +154,15 @@ public partial class UserListViewModel : NavigatableViewModel, IRecipient<AnimeT
 	{
 		// A title reads A to Z; the rest, highest (or latest) first.
 		SortDescending = value?.Value != ListSort.Title;
+		_preferences.SaveKey(SortKey, value?.Value ?? ListSort.LastUpdated);
 		UpdateSort();
 	}
 
-	partial void OnSortDescendingChanged(bool value) => UpdateSort();
+	partial void OnSortDescendingChanged(bool value)
+	{
+		_preferences.SaveKey(SortDescendingKey, value);
+		UpdateSort();
+	}
 
 	[RelayCommand]
 	private void ToggleSortDirection() => SortDescending = !SortDescending;
