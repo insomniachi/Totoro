@@ -15,7 +15,7 @@ public sealed class NextEpisodeOverlay : LiveAnimeCardOverlay<NextEpisodeBadge>
 	protected override void Update(NextEpisodeBadge badge, AnimeModel? anime, DateTime now)
 	{
 		var left = anime?.NextEpisodeAt - now;
-		var shown = anime?.Tracking?.Status is ListItemStatus.Watching or ListItemStatus.PlanToWatch && left > TimeSpan.Zero;
+		var shown = IsShown(anime, now);
 		badge.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
 		if (shown && anime is { NextEpisodeAt: { } at })
 		{
@@ -24,6 +24,10 @@ public sealed class NextEpisodeOverlay : LiveAnimeCardOverlay<NextEpisodeBadge>
 			badge.Set(episode, Format(left!.Value), $"Episode {episode} airs {at.ToString("ddd d MMM, HH:mm", CultureInfo.CurrentCulture)}");
 		}
 	}
+
+	/// <summary>Whether the countdown is up for the anime (AiringStatusOverlay steps aside then: a countdown already says it's airing).</summary>
+	internal static bool IsShown(AnimeModel? anime, DateTime now) =>
+		anime?.Tracking?.Status is ListItemStatus.Watching or ListItemStatus.PlanToWatch && anime.NextEpisodeAt - now > TimeSpan.Zero;
 
 	/// <summary>e.g. "2d 4h", "5h 20m", "40m".</summary>
 	internal static string Format(TimeSpan left)
