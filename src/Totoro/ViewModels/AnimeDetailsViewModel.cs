@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,8 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
 	private readonly ILogger<AnimeDetailsViewModel> _logger;
 	private readonly IPlaybackProgressStore _progress;
+	// The anime databases installed, and their icons (see Links).
+	private readonly List<Descriptor> _modules;
 
 	// The provider the anime came from, and its full details; set once loaded, used by the tabs.
 	private IAnimeMetadataProvider? _provider;
@@ -33,9 +36,11 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		IPlaybackProgressStore progress,
 		AnimeSongService songs,
 		ISongPlayer songPlayer,
+		IEnumerable<Descriptor> modules,
 		ILogger<AnimeDetailsViewModel> logger)
 	{
 		_providers = providers;
+		_modules = [.. modules];
 		_logger = logger;
 		_progress = progress;
 		Anime = anime;
@@ -112,8 +117,8 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	[ObservableProperty] public partial string Studios { get; set; } = "";
 	/// <summary>Its videos: trailers and PVs (AniList has one, MyAnimeList often several), each opening in the browser.</summary>
 	[ObservableProperty] public partial IReadOnlyList<TrailerItem> Trailers { get; set; } = [];
-	[ObservableProperty] public partial Uri? Link { get; set; }
-	[ObservableProperty] public partial string LinkText { get; set; } = "";
+	/// <summary>Its pages on the anime databases, then the official sites streaming it (AniList only); each opens in the browser.</summary>
+	[ObservableProperty] public partial IReadOnlyList<LinkItem> Links { get; set; } = [];
 
 	[ObservableProperty] public partial string TrackingStatus { get; set; } = "";
 	[ObservableProperty] public partial string TrackingSummary { get; set; } = "";
@@ -153,6 +158,54 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		_details = details;
 		ShowDetails(details);
 		IsLoaded = true;
+		await FindDatabaseIdsAsync(details);
+	}
+
+	/// <summary>
+	/// The anime databases it has a page on, by <see cref="AnimeId"/> property (and module) name, and the page's address
+	/// for its id there. Shikimori numbers its anime with MyAnimeList's ids.
+	/// </summary>
+	private static readonly (string Name, string Url)[] s_databases =
+	[
+		(nameof(AnimeId.Anilist), "https://anilist.co/anime/{0}/"),
+		(nameof(AnimeId.MyAnimeList), "https://myanimelist.net/anime/{0}"),
+		(nameof(AnimeId.Kitsu), "https://kitsu.app/anime/{0}"),
+		(nameof(AnimeId.Shikimori), "https://shikimori.io/animes/{0}"),
+	];
+
+	private Descriptor? FindModule(string name) => _modules.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+	/// <summary>Its ids in the installed databases it didn't come with (e.g. Kitsu's), looked up together on ani.zip, for their links.</summary>
+	private async Task FindDatabaseIdsAsync(AnimeModel details)
+	{
+		if (s_databases.FirstOrDefault(x => FindModule(x.Name) is not null && details.ExternalIds.GetIdForService(x.Name) is not > 0) is not { Name: { } missing })
+		{
+			return;
+		}
+
+		try
+		{
+			await details.FindIdAsync(missing);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Failed to find the database ids of {Anime}", details.Title);
+			return;
+		}
+
+		ShowLinks(details);
+	}
+
+	/// <summary>Its page on the database it came from (as that gave it), then on each other one installed, then where it streams.</summary>
+	private void ShowLinks(AnimeModel details)
+	{
+		var own = LinkItem.Create(string.IsNullOrEmpty(details.ServiceName) ? "Open in browser" : $"Open on {details.ServiceName}",
+								  details.Url, _modules.FirstOrDefault(x => x.Id == details.ServiceId)?.Image, null);
+		var others = s_databases.Where(x => !x.Name.Equals(details.ServiceName, StringComparison.OrdinalIgnoreCase))
+								.Select(x => (Module: FindModule(x.Name), Id: details.ExternalIds.GetIdForService(x.Name), x.Url))
+								.Where(x => x is { Module: not null, Id: > 0 })
+								.Select(x => LinkItem.Create($"Open on {x.Module!.Name}", string.Format(CultureInfo.InvariantCulture, x.Url, x.Id), x.Module.Image, null));
+		Links = [.. others.Prepend(own).Concat(details.StreamingLinks.Select(LinkItem.From)).OfType<LinkItem>()];
 	}
 
 	protected override Task OnNavigatedFromInternalAsync()
@@ -217,8 +270,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Description = details.Description;
 		Studios = string.Join(", ", details.Studios);
 		Trailers = [.. details.Trailers.Select(TrailerItem.From).OfType<TrailerItem>()];
-		Link = Uri.TryCreate(details.Url, UriKind.Absolute, out var uri) ? uri : null;
-		LinkText = string.IsNullOrEmpty(details.ServiceName) ? "Open in browser" : $"Open on {details.ServiceName}";
+		ShowLinks(details);
 		Related.Show(details);
 	}
 
@@ -300,6 +352,28 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		}
 
 		return facts;
+	}
+}
+
+/// <summary>
+/// A link the overview shows as an icon button, e.g. "Watch on Netflix (Japanese)": opening <see cref="Url"/> in the browser.
+/// </summary>
+/// <param name="Name">Its tooltip and accessible name.</param>
+/// <param name="Icon">Its icon's file or URL; empty (never null, for x:Bind) when there's none.</param>
+/// <param name="Color">The icon's background, e.g. "#F88C00"; null for the card's own.</param>
+public sealed record LinkItem(string Name, Uri Url, string Icon, string? Color)
+{
+	/// <summary>A glyph on a color sits inside its tile; a logo of its own (the database's) fills it.</summary>
+	public double IconSize => Color is null ? 40 : 24;
+
+	public static LinkItem? From(StreamingLink link) =>
+		Create($"Watch on {(link.Language is null ? link.Site : $"{link.Site} ({link.Language})")}", link.Url, link.Icon, link.Color);
+
+	public static LinkItem? Create(string name, string url, string? icon, string? color)
+	{
+		return Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "https" or "http"
+			? new LinkItem(name, uri, icon ?? "", color)
+			: null;
 	}
 }
 

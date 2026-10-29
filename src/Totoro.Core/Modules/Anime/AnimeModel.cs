@@ -47,6 +47,8 @@ public partial class AnimeModel : ObservableObject
 	public IReadOnlyCollection<string> Genres { get; init; } = [];
 	public IReadOnlyCollection<string> Studios { get; init; } = [];
 	public IReadOnlyCollection<TrailerVideo> Trailers { get; set; } = [];
+	/// <summary>Where it streams legally (e.g. Crunchyroll, Netflix); only AniList gives these.</summary>
+	public IReadOnlyCollection<StreamingLink> StreamingLinks { get; init; } = [];
 	public IReadOnlyCollection<string> AlternateTitles { get; init; } = [];
 
 	// What screen readers announce for it as an item of a list control, e.g. the Discover page's spotlight.
@@ -143,6 +145,13 @@ public class TrailerVideo
 	public string Title { get; set; } = "";
 	public string Thumbnail { get; set; } = "";
 }
+
+/// <summary>
+/// An official site streaming an anime, and its page there. <paramref name="Icon"/> is the site's icon's URL (a white
+/// glyph, for a background of <paramref name="Color"/>, e.g. "#F88C00"); those and <paramref name="Language"/> are null
+/// when not given.
+/// </summary>
+public sealed record StreamingLink(string Site, string Url, string? Language, string? Icon = null, string? Color = null);
 
 
 public class EpisodeInfo

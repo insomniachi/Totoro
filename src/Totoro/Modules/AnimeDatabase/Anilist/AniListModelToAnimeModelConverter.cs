@@ -62,9 +62,14 @@ public static partial class AniListModelToAnimeModelConverter
             Genres = [..media.Genres],
             Studios = [.. media.Studios?.Nodes.Where(x => x.IsAnimationStudio == true).Select(x => x.Name).Distinct() ?? []],
             Trailers = ConvertTrailers(media.Trailer),
+            StreamingLinks = [.. media.ExternalLinks?.Where(x => x is { Type: ExternalLinkType.Streaming } && !string.IsNullOrEmpty(x.Url) && !string.IsNullOrEmpty(x.Site))
+                                                     .DistinctBy(x => x.Url)
+                                                     .Select(x => new StreamingLink(x.Site, x.Url, NullIfEmpty(x.Language), NullIfEmpty(x.Icon), NullIfEmpty(x.Color))) ?? []],
             AlternateTitles = GetAlternateTitles(media)
         };
     }
+
+    private static string? NullIfEmpty(string? value) => string.IsNullOrEmpty(value) ? null : value;
 
     private static HashSet<string> GetAlternateTitles(Media? media)
     {

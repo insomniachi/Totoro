@@ -112,14 +112,8 @@
             <TextBlock Text="{x:Bind ViewModel.Studios, Mode=OneWay}" TextWrapping="Wrap" />
         </StackPanel>
 
-        <HyperlinkButton
-            Padding="0"
-            Content="{x:Bind ViewModel.LinkText, Mode=OneWay}"
-            NavigateUri="{x:Bind ViewModel.Link, Mode=OneWay}"
-            Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(ViewModel.Link), Mode=OneWay}" />
-
         <!--
-            Videos (trailers and PVs: one from AniList, often several from MyAnimeList), last: a thumbnail each, its title
+            Videos (trailers and PVs: one from AniList, often several from MyAnimeList): a thumbnail each, its title
             over it, in a row that scrolls sideways; each opens on YouTube, in the browser
         -->
         <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Trailers), Mode=OneWay}">
@@ -178,6 +172,49 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollView>
+        </StackPanel>
+
+        <!--
+            Links, as one strip of icon buttons named by their tooltips: its pages on the anime databases (their logos), then
+            the official sites streaming it (AniList only: each site's white icon on its brand color); last
+        -->
+        <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Links), Mode=OneWay}">
+            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="External links" />
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Links, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <toolkit:WrapPanel HorizontalSpacing="8" VerticalSpacing="8" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LinkItem">
+                        <HyperlinkButton
+                            Padding="0"
+                            AutomationProperties.Name="{x:Bind Name}"
+                            NavigateUri="{x:Bind Url}"
+                            ToolTipService.ToolTip="{x:Bind Name}">
+                            <Grid
+                                Width="40"
+                                Height="40"
+                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                                <Border Background="{x:Bind helpers:CommonConverters.ToBrush(Color)}" />
+                                <Image
+                                    Width="{x:Bind IconSize}"
+                                    Height="{x:Bind IconSize}"
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
+                                <!--  No icon: a globe  -->
+                                <FontIcon
+                                    FontSize="16"
+                                    Glyph="&#xE774;"
+                                    Visibility="{x:Bind helpers:CommonConverters.CollapsedIfAny(Icon)}" />
+                            </Grid>
+                        </HyperlinkButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
     </StackPanel>
 </UserControl>

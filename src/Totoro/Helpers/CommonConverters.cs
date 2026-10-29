@@ -8,6 +8,7 @@ public static class CommonConverters
 	public static Visibility InvertedBooleanToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
 
 	public static Visibility VisibleIfAny(string? text) => string.IsNullOrWhiteSpace(text) ? Visibility.Collapsed : Visibility.Visible;
+	public static Visibility CollapsedIfAny(string? text) => string.IsNullOrWhiteSpace(text) ? Visibility.Visible : Visibility.Collapsed;
 	public static bool IsAny(string? text) => !string.IsNullOrWhiteSpace(text);
 	public static Visibility VisibleIfNotNull(object? value) => value is null ? Visibility.Collapsed : Visibility.Visible;
 	public static Visibility VisibleIfNotEmpty(System.Collections.IEnumerable? items) => items?.GetEnumerator().MoveNext() == true ? Visibility.Visible : Visibility.Collapsed;
@@ -18,6 +19,12 @@ public static class CommonConverters
 	/// </summary>
 	public static Microsoft.UI.Xaml.Media.ImageSource? ToImageSource(string? url) =>
 		Uri.TryCreate(url, UriKind.Absolute, out var uri) ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri) : null;
+
+	/// <summary>A "#RRGGBB" color as a brush; null (no background) for anything else.</summary>
+	public static Microsoft.UI.Xaml.Media.Brush? ToBrush(string? color) =>
+		color is ['#', .. { Length: 6 } hex] && uint.TryParse(hex, System.Globalization.NumberStyles.HexNumber, null, out var rgb)
+			? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb))
+			: null;
 
 	/// <summary>A module's icon (its file or URL), or the glyph when it has none: for a settings card's HeaderIcon.</summary>
 	public static Microsoft.UI.Xaml.Controls.IconElement ToIcon(string image, string glyph) =>
