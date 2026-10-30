@@ -54,6 +54,22 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 		return watch.WatchAsync(episode.Anime, episode.Number);
 	}
 
+	/// <summary>Plays the next episode to watch, and the ones after it one after another (see <see cref="WatchService.WatchAsync"/>).</summary>
+	[RelayCommand(AllowConcurrentExecutions = true)]
+	private Task BingeAsync(AnimeModel anime)
+	{
+		ClosePane();
+		return watch.WatchNextAsync(anime, binge: true);
+	}
+
+	/// <summary>Plays a particular episode, and the ones after it one after another.</summary>
+	[RelayCommand(AllowConcurrentExecutions = true)]
+	private Task BingeEpisodeAsync(EpisodeToWatch episode)
+	{
+		ClosePane();
+		return watch.WatchAsync(episode.Anime, episode.Number, binge: true);
+	}
+
 	/// <summary>Asks which episodes to download, then downloads them in the background; the Downloads page shows how it goes.</summary>
 	[RelayCommand(AllowConcurrentExecutions = true)]
 	private async Task DownloadAsync(AnimeModel anime)

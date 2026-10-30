@@ -57,6 +57,15 @@
                                 <Button.ContextFlyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem
+                                            Command="{x:Bind commands:AnimeCommands.Shared.BingeEpisodeCommand}"
+                                            CommandParameter="{x:Bind Play}"
+                                            IsEnabled="{x:Bind CanPlay}"
+                                            Text="Play from here">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE8EE;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem
                                             Command="{x:Bind commands:AnimeCommands.Shared.DownloadEpisodeCommand}"
                                             CommandParameter="{x:Bind Play}"
                                             Text="Download">

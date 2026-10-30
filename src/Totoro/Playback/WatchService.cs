@@ -84,6 +84,10 @@ public sealed partial class WatchService(
 
 	private CancellationTokenSource? _cancellation;
 
+	// Whether the episode playing was started with "Play from here": then the next one plays after a countdown, whatever
+	// the setting, and so on until the countdown's cancelled or another episode is started.
+	private bool _binge;
+
 	// Marking the episode playing watched (see MarkWatchedWhilePlayingAsync), once it's started: whether it was, and the message.
 	private Task<(bool Marked, string Message)>? _marked;
 	private Action? _action;
@@ -305,7 +309,7 @@ public sealed partial class WatchService(
 		}
 	}
 
-	public async Task WatchNextAsync(AnimeModel anime) => await WatchAsync(anime, await NextToWatchAsync(anime));
+	public async Task WatchNextAsync(AnimeModel anime, bool binge = false) => await WatchAsync(anime, await NextToWatchAsync(anime), binge);
 
 	/// <summary><see cref="NextEpisode"/>, or the first after it that isn't filler if the user skips fillers.</summary>
 	public Task<int> NextToWatchAsync(AnimeModel anime) => SkipFillersAsync(anime, NextEpisode(anime));
@@ -327,8 +331,11 @@ public sealed partial class WatchService(
 		return number;
 	}
 
-	/// <summary>Plays episode <paramref name="number"/>, from where it was left off if it wasn't finished.</summary>
-	public Task WatchAsync(AnimeModel anime, int number) => RunAsync(anime, number, async ct =>
+	/// <summary>
+	/// Plays episode <paramref name="number"/>, from where it was left off if it wasn't finished. With
+	/// <paramref name="binge"/>, the episodes after it play on their own (see <see cref="_binge"/>).
+	/// </summary>
+	public Task WatchAsync(AnimeModel anime, int number, bool binge = false) => RunAsync(anime, number, binge, async ct =>
 	{
 		if (anime.TotalEpisodes is > 0 and var total && number > total)
 		{
@@ -431,7 +438,7 @@ public sealed partial class WatchService(
 	/// </summary>
 	public Task WatchFromAsync(AnimeModel anime, int number, IAnimeProvider provider, ProviderEpisode episode, VideoServer server, bool track)
 	{
-		return RunAsync(anime, number, async ct =>
+		return RunAsync(anime, number, binge: false, async ct =>
 		{
 			if (await GetPlayerAsync() is not { } player)
 			{
@@ -481,12 +488,13 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>Shows the anime and episode in the status bar, and runs <paramref name="play"/>, saying there how it goes.</summary>
-	private async Task RunAsync(AnimeModel anime, int number, Func<CancellationToken, Task> play)
+	private async Task RunAsync(AnimeModel anime, int number, bool binge, Func<CancellationToken, Task> play)
 	{
 		_cancellation?.Cancel();
 		using var cancellation = _cancellation = new CancellationTokenSource();
 		var ct = cancellation.Token;
 
+		_binge = binge;
 		_inBrowser = false;
 		Anime = anime;
 		CurrentEpisode = number;
@@ -804,22 +812,25 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>
-	/// Offers the next episode: plays it after a countdown if that's the setting, otherwise on request. In the built-in
-	/// player it's offered over the video, where the user is, rather than in the status bar.
+	/// Offers the next episode: plays it after a countdown if that's the setting or it's a binge, otherwise on request. In
+	/// the built-in player it's offered over the video, where the user is, rather than in the status bar. Asking for it
+	/// after cancelling the countdown ends the binge.
 	/// </summary>
 	private async Task OfferNextAsync(AnimeModel anime, int next)
 	{
 		void Offer() => Show(PlaybackStatusKind.Success, "", $"Play episode {next}",
 							 () => _ = WatchAsync(anime, next));
 
+		var binge = _binge;
+		var automatically = preferences.PlayNextAutomatically || binge;
 		if (_player is IInteractiveMediaPlayer { IsOpen: true } interactive)
 		{
 			Show(PlaybackStatusKind.Success, "");
 			// Cancelled by Cancel, or the next WatchAsync.
 			var offer = _cancellation = new CancellationTokenSource();
-			if (await interactive.OfferNextAsync($"Episode {next}", preferences.PlayNextAutomatically ? s_nextEpisodeCountdown : null, offer.Token))
+			if (await interactive.OfferNextAsync($"Episode {next}", automatically ? s_nextEpisodeCountdown : null, offer.Token))
 			{
-				_ = WatchAsync(anime, next);
+				_ = WatchAsync(anime, next, binge);
 			}
 			else if (!interactive.IsOpen && ReferenceEquals(_cancellation, offer))
 			{
@@ -830,7 +841,7 @@ public sealed partial class WatchService(
 			return;
 		}
 
-		if (!preferences.PlayNextAutomatically)
+		if (!automatically)
 		{
 			Offer();
 			return;
@@ -858,7 +869,7 @@ public sealed partial class WatchService(
 			return;
 		}
 
-		_ = WatchAsync(anime, next);
+		_ = WatchAsync(anime, next, binge);
 	}
 
 	/// <summary>

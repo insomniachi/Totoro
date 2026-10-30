@@ -26,6 +26,10 @@
                 Label="Play"
                 ShowOnHover="True" />
             <overlays:CardAction
+                Command="{x:Bind commands:AnimeCommands.Shared.BingeCommand}"
+                Icon="{toolkitui:FontIconSource Glyph=&#xE8EE;}"
+                Label="Play from here" />
+            <overlays:CardAction
                 Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Edit}"
                 Label="Edit tracking"
