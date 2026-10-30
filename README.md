@@ -1,14 +1,32 @@
 # Totoro
 
-A Windows app for tracking and watching anime, built with WinUI 3 and .NET 10.
+A Windows app for tracking and watching anime, and tracking and reading manga, built with WinUI 3 and .NET 10.
 
-- **Your list, from AniList or MyAnimeList.** Browse and search anime, and track what you watch. When you're signed in to both, changes are made on both.
-- **Watch episodes.** Episodes are found on an anime provider: SubsPlease, streamed from torrents with rqbit, or AnimePahe, streamed from Kwik (its site is behind Cloudflare, so the app asks you to do its check now and then). They play in the built-in player (libvlc), or in mpv.
-- **Skips openings and endings.** Using Aniskip's times, it offers to skip them or skips them for you. It offers the next episode, and marks episodes watched when you finish them.
-- **Episode numbering.** For providers that number episodes across seasons, it uses anime-relations, plus rules of your own.
+![Discover: a spotlight of what's trending, then rows of trending anime and the sequels you missed](docs/screenshots/discover.jpg)
+
+- **Your lists, from AniList or MyAnimeList.** Browse and search anime and manga, and track what you watch and read. When you're signed in to both, changes are made on both; signed out, your AniList list is kept on your PC.
+- **Discover.** What's trending, what airs today, what starts next season, and the sequels, prequels, side stories and spin-offs of what you've watched that aren't on your list.
+- **Plugins.** Where episodes and chapters come from is up to plugins, which anyone can write; install them from the Plugins page. Plugins can also add anime databases, debrid services and more.
+- **Watch episodes.** They play in the built-in player (libvlc) or in mpv, streamed or downloaded, with torrents streamed through rqbit. It can download the next episode while you watch, and tracks episodes you watch in your browser too.
+- **Skips openings and endings.** Using Aniskip's times, or found by their sound in downloaded episodes, it offers to skip them or skips them for you. It offers the next episode, and marks episodes watched when you finish them.
+- **Read manga.** Chapters open in the in-app reader, which tracks your progress.
+- **Schedule.** A calendar of when the episodes of what you're watching air.
+- **Episode numbering.** For sources that number episodes across seasons, it uses anime-relations, plus rules of your own.
 - **Music.** Each anime's openings and endings, from AnimeThemes, to listen to or watch.
-- **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "play the opening of Frieren"); it answers with the app's own cards. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (Settings > Modules).
+- **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "play the opening of Frieren"); it answers with the app's own cards. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (its settings are on the Plugins page).
 - **AI-agent friendly.** Everything the app does is also an agent tool (see [AGENTS.md](AGENTS.md)).
+- **Stays out of the way.** It can start with Windows, sit in the notification area, and update itself from GitHub releases.
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Library: the anime being watched, with countdowns to their next episodes and progress](docs/screenshots/library.jpg) | ![An anime's details: its facts, synopsis and videos, with tabs for episodes, characters, music and related anime](docs/screenshots/details.jpg) |
+| **Library**: your list, with countdowns to the next episodes | **Details**: an anime's episodes, characters, music and related anime |
+| ![Sequels and spin-offs missed: a grid of related anime not on the list, with filters and sorting](docs/screenshots/missed.jpg) | ![Release schedule: a month's calendar of when watched anime air](docs/screenshots/schedule.jpg) |
+| **Missed sequels and spin-offs**, filtered and sorted | **Schedule**: when what you're watching airs |
+| ![Manga Discover: trending and all-time popular manga](docs/screenshots/manga-discover.jpg) | |
+| **Manga**: discover, track and read | |
 
 ## Building
 
@@ -45,6 +63,8 @@ Installed copies update themselves from those releases: Totoro looks for a newer
 │   ├── Totoro/          The app: pages, view models, modules, playback, agent tools
 │   ├── Totoro.Core/     What doesn't depend on WinUI: contracts, settings, services
 │   └── Totoro.UI/       Reusable WinUI pieces: controls, dialogs, navigation, theming
+├── tests/Totoro.Tests/  Tests
+├── installer/           The installer's script (Inno Setup) and build script
 ├── Totoro.slnx          The solution
 ├── Directory.Build.props, Directory.Packages.props   Build settings and package versions
 └── AGENTS.md            How the code is organised, and its conventions
