@@ -197,6 +197,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 	private static readonly (string Type, string Title)[] s_groups =
 	[
 		("AnimeProvider", "Anime providers"),
+		("MangaProvider", "Manga providers"),
 		("TorrentStreamer", "Torrent streamers"),
 		("MediaPlayer", "Media players"),
 		("AnimeDatabase", "Anime databases"),
@@ -260,8 +261,13 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 	/// <summary>The catalog's plugins and the built-in modules that match the search and type filter, by module type.</summary>
 	public ObservableCollection<PluginItemViewModel> Plugins { get; } = [];
 
-	/// <summary>The pills above the list: All, then a module type each.</summary>
-	public IReadOnlyList<string> TypeFilters { get; } = ["All", .. s_groups.Select(x => x.Title), "Other"];
+	/// <summary>The pills above the list: All, the modules that ship with Totoro, then a module type each.</summary>
+	public IReadOnlyList<string> TypeFilters { get; } = ["All", "Built in", .. s_groups.Select(x => x.Title), "Other"];
+
+	private const int BuiltInIndex = 1;
+
+	// The pill of the first module type.
+	private const int FirstTypeIndex = 2;
 
 	/// <summary>The selected pill; 0 is All.</summary>
 	[ObservableProperty]
@@ -269,7 +275,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 	public partial int SelectedTypeIndex { get; set; }
 
 	/// <summary>The plugin tester only tests anime providers, so it's offered on their pill.</summary>
-	public bool ShowsTestPlugins => SelectedTypeIndex == 1;
+	public bool ShowsTestPlugins => SelectedTypeIndex == FirstTypeIndex;
 
 	partial void OnSelectedTypeIndexChanged(int value) => ApplyFilter();
 
@@ -368,7 +374,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 		Plugins.Clear();
 		var filter = SearchFilter.Trim();
 		var matches = _allCatalogItems.Concat(_builtInItems).Where(item =>
-			(SelectedTypeIndex <= 0 || TypeIndex(item) == SelectedTypeIndex - 1) &&
+			(SelectedTypeIndex <= 0 || (SelectedTypeIndex == BuiltInIndex ? item.IsBuiltIn : TypeIndex(item) == SelectedTypeIndex - FirstTypeIndex)) &&
 			(string.IsNullOrWhiteSpace(filter) ||
 			 item.Name.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
 			 item.Author.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
