@@ -66,6 +66,8 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 				$"--force-media-title={media.Title}",
 				$@"--input-ipc-server=\\.\pipe\{pipeName}",
 				$"--start={startPosition.TotalSeconds.ToString(CultureInfo.InvariantCulture)}",
+				// Close at the end even when an mpv.conf says keep-open: the exit is what tells the app playback's done.
+				"--keep-open=no",
 			}
 		};
 
