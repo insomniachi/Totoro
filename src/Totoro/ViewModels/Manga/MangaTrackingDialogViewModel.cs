@@ -1,18 +1,28 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
+using Totoro.Core.Services;
 
 namespace Totoro.ViewModels.Manga;
 
 /// <summary>Edits a manga's list entry. Returns the edited <see cref="MangaTracking"/>; saving it is up to the caller.</summary>
 public partial class MangaTrackingDialogViewModel : DialogViewModel<MangaTracking>
 {
-	public MangaTrackingDialogViewModel(MangaModel manga)
+	private readonly MangaModel _manga;
+	private readonly MangaTrackingService _tracking;
+	private readonly ILogger<MangaTrackingDialogViewModel> _logger;
+
+	public MangaTrackingDialogViewModel(MangaModel manga, MangaTrackingService trackingService, ILogger<MangaTrackingDialogViewModel> logger)
 	{
+		_manga = manga;
+		_tracking = trackingService;
+		_logger = logger;
 		Title = manga.Title;
 		PrimaryButtonText = "Save";
+		SecondaryButtonText = manga.Tracking?.Status is null ? "" : "Remove from list";
 		MaxChapters = manga.TotalChapters is > 0 and var chapters ? chapters : double.MaxValue;
 		MaxVolumes = manga.TotalVolumes is > 0 and var volumes ? volumes : double.MaxValue;
 
@@ -78,5 +88,20 @@ public partial class MangaTrackingDialogViewModel : DialogViewModel<MangaTrackin
 			FinishDate = FinishDate?.Date,
 		};
 		return Task.FromResult(true);
+	}
+
+	/// <summary>Removes it from the list; on failure the dialog stays open.</summary>
+	public override async Task<bool> SecondaryAsync()
+	{
+		try
+		{
+			await _tracking.RemoveAsync(_manga);
+			return true;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to remove {Manga} from the list", _manga.Title);
+			return false;
+		}
 	}
 }

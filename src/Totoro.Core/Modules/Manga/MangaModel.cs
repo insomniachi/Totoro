@@ -20,6 +20,8 @@ public partial class MangaModel : ObservableObject, IMediaModel
 	public int? TotalVolumes { get; set; }
 	/// <summary>Whether it's still being published; reuses the anime one (Currently Airing is "Publishing").</summary>
 	public AiringStatus Status { get; set; }
+	/// <summary>When it started coming out, to the month (its day is the 1st when the source didn't say); null if not known.</summary>
+	public DateTime? StartDate { get; set; }
 	/// <summary>The average score, out of 100.</summary>
 	public float? MeanScore { get; set; }
 	public int Popularity { get; set; }

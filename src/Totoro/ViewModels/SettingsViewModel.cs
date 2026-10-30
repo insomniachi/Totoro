@@ -135,6 +135,7 @@ public partial class SettingsViewModel : ObservableObject
 		// Footer items (like Settings itself) aren't offered as a startup page.
 		StartupPages = [.. navigationItems.Where(x => !x.IsFooter)];
 		StartupPage = preferences.FindStartupItem(StartupPages);
+		StartupMode = preferences.StartupMode;
 
 		string IconOf(Guid id) => modules.FirstOrDefault(m => m.Id == id)?.Image ?? "";
 
@@ -476,6 +477,14 @@ public partial class SettingsViewModel : ObservableObject
 	partial void OnAutoDownloadNextChanged(bool value) => _preferences.AutoDownloadNext = value;
 
 	public IReadOnlyList<NavigationItemViewModel> StartupPages { get; }
+
+	public IReadOnlyList<MediaMode> StartupModes { get; } = [MediaMode.Anime, MediaMode.Manga];
+
+	/// <summary>Anime or manga: which the app opens in.</summary>
+	[ObservableProperty]
+	public partial MediaMode StartupMode { get; set; }
+
+	partial void OnStartupModeChanged(MediaMode value) => _preferences.StartupMode = value;
 
 	[ObservableProperty]
 	public partial NavigationItemViewModel? StartupPage { get; set; }

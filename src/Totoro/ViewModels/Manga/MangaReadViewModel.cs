@@ -4,6 +4,7 @@ using Totoro.Commands;
 using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Manga;
+using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
 using Totoro.UI.Navigation;
@@ -12,8 +13,8 @@ namespace Totoro.ViewModels.Manga;
 
 /// <summary>
 /// Manga mode's Read, as anime's Watch (<see cref="ProviderWatchViewModel"/>): search a manga source directly, pick a
-/// manga (cards), then beside them a chapter, and read it. For manga that aren't in the database (or without one);
-/// reading here doesn't change the user's list.
+/// manga (cards), then beside them a chapter, and read it. For manga that aren't in the database (or without one). With
+/// tracking on, chapters read are marked read on the list as the database's manga the user picks (closest title first).
 /// </summary>
 public partial class MangaReadViewModel : NavigatableViewModel
 {
@@ -23,11 +24,14 @@ public partial class MangaReadViewModel : NavigatableViewModel
 	private readonly Dictionary<Guid, IMangaProvider> _sources;
 	private readonly IDialogService _dialogs;
 	private readonly List<IModuleSettings> _moduleSettings;
+	private readonly IFactory<IMangaMetadataProvider, Guid> _databases;
 	private CancellationTokenSource? _search;
 
-	public MangaReadViewModel(MangaReadingService reading, IDialogService dialogs, IEnumerable<IModuleSettings> moduleSettings, IEnumerable<Descriptor> modules)
+	public MangaReadViewModel(MangaReadingService reading, IDialogService dialogs, IEnumerable<IModuleSettings> moduleSettings, IEnumerable<Descriptor> modules,
+		IFactory<IMangaMetadataProvider, Guid> databases)
 	{
 		_dialogs = dialogs;
+		_databases = databases;
 		_moduleSettings = [.. moduleSettings];
 		_sources = reading.Sources.ToDictionary(x => x.Id);
 		Sources = [.. _sources.Values.Select(x => new ProviderChoice(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))];
@@ -141,7 +145,52 @@ public partial class MangaReadViewModel : NavigatableViewModel
 		}
 	}
 
-	partial void OnSelectedChanged(ProviderManga? value) => _ = LoadChaptersAsync(value);
+	partial void OnSelectedChanged(ProviderManga? value)
+	{
+		_ = LoadChaptersAsync(value);
+		_ = MatchAsync(value);
+	}
+
+	/// <summary>Whether reading marks chapters read on the list, as <see cref="SelectedManga"/>.</summary>
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(ReadCommand))]
+	public partial bool Track { get; set; }
+
+	/// <summary>The database's manga the picked one may be, closest title first.</summary>
+	[ObservableProperty]
+	public partial IReadOnlyList<MangaModel> Matches { get; private set; } = [];
+
+	[ObservableProperty]
+	[NotifyCanExecuteChangedFor(nameof(ReadCommand))]
+	public partial MangaModel? SelectedManga { get; set; }
+
+	/// <summary>Finds the database's manga the source's may be, to track it as; the user can pick another.</summary>
+	private async Task MatchAsync(ProviderManga? manga)
+	{
+		Matches = [];
+		SelectedManga = null;
+		if (manga is null || _databases.CreateDefault() is not { } database)
+		{
+			return;
+		}
+
+		List<MangaModel> matches;
+		try
+		{
+			matches = await database.SearchMangaAsync(manga.Title, CancellationToken.None);
+		}
+		catch (Exception)
+		{
+			// Only suggestions: none, and tracking waits for a match.
+			return;
+		}
+
+		if (Selected == manga)
+		{
+			Matches = [.. matches.OrderByDescending(x => x.AllTitles.Select(t => TitleMatch.Score(manga.Title, t)).DefaultIfEmpty(0).Max())];
+			SelectedManga = Matches.FirstOrDefault();
+		}
+	}
 
 	private async Task LoadChaptersAsync(ProviderManga? manga)
 	{
@@ -174,11 +223,13 @@ public partial class MangaReadViewModel : NavigatableViewModel
 		}
 	}
 
-	[RelayCommand(CanExecute = nameof(HasChapter))]
+	private bool CanRead() => HasChapter && (!Track || SelectedManga is not null);
+
+	[RelayCommand(CanExecute = nameof(CanRead))]
 	private Task ReadAsync()
 	{
 		return Source is { } source && SelectedChapter is { } chapter
-			? MangaCommands.OpenReaderAsync(new ReaderRequest(null, source.Id, Chapters, Chapters.IndexOf(chapter)))
+			? MangaCommands.OpenReaderAsync(new ReaderRequest(Track ? SelectedManga : null, source.Id, Chapters, Chapters.IndexOf(chapter)))
 			: Task.CompletedTask;
 	}
 }

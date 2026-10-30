@@ -15,7 +15,6 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
 	private readonly IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> _mangaDatabases;
-	private readonly IPreferences _preferences;
 	private readonly IReadOnlyList<NavigationItemViewModel> _allItems;
 	private CancellationTokenSource? _search;
 
@@ -23,7 +22,6 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	{
 		_databases = databases;
 		_mangaDatabases = mangaDatabases;
-		_preferences = preferences;
 		Playback = playback;
 		Chat = chat;
 		Updates = updates;
@@ -38,9 +36,9 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		};
 		_ = Updates.CheckOnStartupAsync();
 		_allItems = [.. navigationItems];
-		// The app opens in the mode it was left in, on that mode's page named as the startup page (Library for Library);
-		// a startup page only one mode has (e.g. Schedule) opens in its mode.
-		Mode = preferences.MediaMode;
+		// The app opens in the startup mode, on that mode's page named as the startup page (Library for Library); a
+		// startup page only one mode has (e.g. Schedule) opens in its mode.
+		Mode = preferences.StartupMode;
 		var startup = _allItems.FirstOrDefault(x => x.Key == preferences.StartupPage);
 		if (startup is { Mode: { } startupMode } && startupMode != Mode && !_allItems.Any(x => x.Mode == Mode && x.Label == startup.Label))
 		{
@@ -95,7 +93,6 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 		current ??= CurrentItem;
 		Mode = mode;
-		_preferences.MediaMode = mode;
 		NavigationItems = ItemsFor(mode, footer: false);
 		FooterNavigationItems = ItemsFor(mode, footer: true);
 		ModeSwitchItem = current is { Mode: null } ? current

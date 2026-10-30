@@ -181,6 +181,7 @@ internal static class AnilistMangaConverter
 		.WithChapters()
 		.WithVolumes()
 		.WithStatus()
+		.WithStartDate(new FuzzyDateQueryBuilder().WithAllFields())
 		.WithMeanScore()
 		.WithPopularity()
 		.WithDescription(true)
@@ -204,6 +205,7 @@ internal static class AnilistMangaConverter
 			TotalChapters = media.Chapters,
 			TotalVolumes = media.Volumes,
 			Status = AniListModelToAnimeModelConverter.ConvertStatus(media.Status),
+			StartDate = media.StartDate is { Year: { } year, Month: { } month } date ? new DateTime(year, month, date.Day ?? 1) : null,
 			MeanScore = media.MeanScore,
 			Popularity = media.Popularity ?? 0,
 			Description = media.Description ?? "",

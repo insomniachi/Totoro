@@ -7,65 +7,140 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views.Manga"
     xmlns:manga="using:Totoro.Core.Modules.Manga"
-    xmlns:text="using:Totoro.UI.Text">
+    xmlns:text="using:Totoro.UI.Text"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
 
-    <ScrollView>
-        <StackPanel Padding="16" Spacing="12">
-            <!--  Cover, title, facts and the main actions  -->
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="140" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border
-                    Height="200"
-                    VerticalAlignment="Top"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    CornerRadius="8">
-                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Manga.Image)}" Stretch="UniformToFill" />
-                </Border>
-                <StackPanel Grid.Column="1" Spacing="8">
-                    <TextBlock
-                        IsTextSelectionEnabled="True"
-                        Style="{StaticResource SubtitleTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Manga.Title}"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind ViewModel.Facts}"
-                        TextWrapping="Wrap" />
-                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind local:MangaDetailsPage.ListText(ViewModel.Manga.Tracking), Mode=OneWay}" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button
-                            Command="{x:Bind ViewModel.ReadNextCommand}"
-                            IsEnabled="{x:Bind ViewModel.CanRead, Mode=OneWay}"
-                            Style="{ThemeResource AccentButtonStyle}">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <FontIcon FontSize="16" Glyph="&#xE736;" />
-                                <TextBlock Text="{x:Bind ViewModel.ReadText, Mode=OneWay}" />
-                            </StackPanel>
-                        </Button>
-                        <Button
-                            Command="{x:Bind commands:MangaCommands.Shared.EditTrackingCommand}"
-                            CommandParameter="{x:Bind ViewModel.Manga}"
-                            Content="{x:Bind local:MangaDetailsPage.TrackingButtonText(ViewModel.Manga.Tracking), Mode=OneWay}"
-                            />
-                    </StackPanel>
+    <Page.Resources>
+        <!--  The chips of the anime details page's Overview (AnimeDetails/OverviewTabView.xaml)  -->
+        <DataTemplate x:Key="ChipTemplate" x:DataType="x:String">
+            <Border
+                Padding="12,4"
+                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="12">
+                <TextBlock Style="{ThemeResource CaptionTextBlockStyle}" Text="{x:Bind}" />
+            </Border>
+        </DataTemplate>
+        <ItemsPanelTemplate x:Key="ChipPanel">
+            <toolkit:WrapPanel HorizontalSpacing="8" VerticalSpacing="8" />
+        </ItemsPanelTemplate>
+    </Page.Resources>
+
+    <!--  The header stays put; below it, tabs as on the anime details page, each scrolling on its own  -->
+    <Grid Padding="16" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Cover, title, facts and the main actions  -->
+        <Grid ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border
+                Height="200"
+                VerticalAlignment="Top"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8">
+                <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Manga.Image)}" Stretch="UniformToFill" />
+            </Border>
+            <StackPanel Grid.Column="1" Spacing="8">
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    Text="{x:Bind ViewModel.Manga.Title}"
+                    TextWrapping="Wrap" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ViewModel.Subtitle}"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Subtitle)}" />
+                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind ViewModel.ListText, Mode=OneWay}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button
+                        Command="{x:Bind ViewModel.ReadNextCommand}"
+                        IsEnabled="{x:Bind ViewModel.CanRead, Mode=OneWay}"
+                        Style="{ThemeResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE736;" />
+                            <TextBlock Text="{x:Bind ViewModel.ReadText, Mode=OneWay}" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Command="{x:Bind commands:MangaCommands.Shared.EditTrackingCommand}"
+                        CommandParameter="{x:Bind ViewModel.Manga}"
+                        Content="{x:Bind ViewModel.TrackingButtonText, Mode=OneWay}" />
                 </StackPanel>
-            </Grid>
+            </StackPanel>
+        </Grid>
 
-            <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Manga.Description}" />
+        <!--  Tabs as the anime details page's  -->
+        <SelectorBar
+            Grid.Row="1"
+            Margin="0,-8,0,0"
+            SelectionChanged="OnTabSelectionChanged">
+            <SelectorBarItem
+                IsSelected="True"
+                Tag="Overview"
+                Text="Overview" />
+            <SelectorBarItem Tag="Chapters" Text="Chapters" />
+        </SelectorBar>
 
-            <!--  Chapters on the manga source  -->
+        <!--  As the anime details page's Overview: facts and genres as chips, then the synopsis  -->
+        <ScrollView x:Name="OverviewTab" Grid.Row="2">
+            <StackPanel Spacing="24">
+                <StackPanel Spacing="8">
+                    <ItemsControl
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource ChipTemplate}"
+                        ItemsPanel="{StaticResource ChipPanel}"
+                        ItemsSource="{x:Bind ViewModel.Facts}" />
+                    <ItemsControl
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource ChipTemplate}"
+                        ItemsPanel="{StaticResource ChipPanel}"
+                        ItemsSource="{x:Bind ViewModel.Manga.Genres}" />
+                </StackPanel>
+                <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Manga.Description)}">
+                    <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Synopsis" />
+                    <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Manga.Description}" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollView>
+
+        <!--  Chapters on the manga source: only the tiles scroll  -->
+        <Grid
+            x:Name="ChaptersTab"
+            Grid.Row="2"
+            RowSpacing="12"
+            Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  The source, and its manga matched to this one  -->
             <Grid ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
-                    Text="Chapters" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.MatchText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <HyperlinkButton
+                        Command="{x:Bind ViewModel.StartPickingCommand}"
+                        Content="Wrong match?"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(ViewModel.Match), Mode=OneWay}" />
+                </StackPanel>
                 <ComboBox
                     Grid.Column="1"
                     MinWidth="160"
@@ -75,66 +150,77 @@
                     SelectedItem="{x:Bind ViewModel.Source, Mode=TwoWay}"
                     Visibility="{x:Bind ViewModel.HasSources}" />
             </Grid>
-            <StackPanel Orientation="Horizontal" Spacing="8">
+
+            <StackPanel Grid.Row="1" Spacing="8">
+                <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
                 <TextBlock
-                    VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind ViewModel.MatchText, Mode=OneWay}" />
-                <HyperlinkButton
-                    Command="{x:Bind ViewModel.StartPickingCommand}"
-                    Content="Wrong match?"
-                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(ViewModel.Match), Mode=OneWay}" />
-            </StackPanel>
-            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-            <TextBlock
-                Text="{x:Bind ViewModel.ChaptersMessage, Mode=OneWay}"
-                TextWrapping="Wrap"
-                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.ChaptersMessage), Mode=OneWay}" />
+                    Text="{x:Bind ViewModel.ChaptersMessage, Mode=OneWay}"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.ChaptersMessage), Mode=OneWay}" />
 
-            <!--  Picking the source's manga by hand  -->
-            <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsPicking, Mode=OneWay}">
-                <AutoSuggestBox
-                    AutomationProperties.Name="Search the manga source"
-                    PlaceholderText="Search the source"
-                    QueryIcon="Find"
-                    QuerySubmitted="OnSourceSearchSubmitted"
-                    Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}" />
-                <ListView
-                    IsItemClickEnabled="True"
-                    ItemClick="OnMatchClick"
-                    ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
-                    SelectionMode="None">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="manga:ProviderManga">
-                            <StackPanel
-                                Padding="0,4"
-                                Orientation="Horizontal"
-                                Spacing="12">
-                                <Border
-                                    Width="40"
-                                    Height="56"
-                                    Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                    CornerRadius="4">
-                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
-                                </Border>
-                                <TextBlock VerticalAlignment="Center" Text="{x:Bind Title}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                <!--  Picking the source's manga by hand  -->
+                <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsPicking, Mode=OneWay}">
+                    <AutoSuggestBox
+                        AutomationProperties.Name="Search the manga source"
+                        PlaceholderText="Search the source"
+                        QueryIcon="Find"
+                        QuerySubmitted="OnSourceSearchSubmitted"
+                        Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}" />
+                    <ListView
+                        MaxHeight="300"
+                        IsItemClickEnabled="True"
+                        ItemClick="OnMatchClick"
+                        ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
+                        SelectionMode="None">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="manga:ProviderManga">
+                                <StackPanel
+                                    Padding="0,4"
+                                    Orientation="Horizontal"
+                                    Spacing="12">
+                                    <Border
+                                        Width="40"
+                                        Height="56"
+                                        Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                        CornerRadius="4">
+                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                    </Border>
+                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind Title}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
             </StackPanel>
 
-            <ListView
+            <!--  Numbered tiles, as on the Read page; clicking one reads it  -->
+            <GridView
+                Grid.Row="2"
+                AutomationProperties.Name="Chapters"
                 IsItemClickEnabled="True"
                 ItemClick="OnChapterClick"
                 ItemsSource="{x:Bind ViewModel.Chapters, Mode=OneWay}"
                 SelectionMode="None">
-                <ListView.ItemTemplate>
+                <GridView.ItemTemplate>
                     <DataTemplate x:DataType="manga:ProviderChapter">
-                        <TextBlock Padding="0,8" Text="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title)}" />
+                        <Border
+                            Width="56"
+                            Height="44"
+                            AutomationProperties.Name="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title)}"
+                            Background="{ThemeResource ControlFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                            ToolTipService.ToolTip="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title)}">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind local:MangaDetailsPage.ChapterNumber(Number)}" />
+                        </Border>
                     </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </StackPanel>
-    </ScrollView>
+                </GridView.ItemTemplate>
+            </GridView>
+        </Grid>
+    </Grid>
 </Page>

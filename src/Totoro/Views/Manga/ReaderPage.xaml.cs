@@ -116,9 +116,10 @@ public sealed partial class ReaderPage : Page
 	/// pages, or another wide page, a leaf turns over the same way.
 	/// </para>
 	/// <para>
-	/// Otherwise (one page at a time, or the first and last pages, which are alone): going on, the page lifts on its
-	/// spine edge and turns away, uncovering the next beneath; going back, the one before turns back in over it. Between a
-	/// wide page and a lone one there's no page to turn as a book's: they cross-fade.
+	/// Otherwise (one page at a time, or the first and last pages, which are alone): the page turns over its spine the
+	/// same way, uncovering the next beneath, and its back (blank paper) lands on the other side and fades; going back,
+	/// that paper turns back in as the page before. Between a wide page and a lone one there's no page to turn as a
+	/// book's: they cross-fade.
 	/// </para>
 	/// </summary>
 	private void Turn(int from, int to, bool rightToLeft)
@@ -151,21 +152,28 @@ public sealed partial class ReaderPage : Page
 		}
 		else
 		{
-			// The spine is left of a page read left to right.
+			// A leaf turn too: the page's back is blank paper, on the other side of its spine (left of a page read left to
+			// right), which fades away there going on, and fades in to turn back over going back.
 			var hingeLeft = !rightToLeft;
-			var moving = Bounds(forward ? old : next);
-			SeeFromSpine(hingeLeft ? moving.Left : moving.Right);
-			var away = hingeLeft ? QuarterTurn : -QuarterTurn;
+			var page = Bounds(forward ? old : next);
+			var spine = hingeLeft ? page.Left : page.Right;
+			SeeFromSpine(spine);
+			var back = Paper(new Rect(hingeLeft ? spine - page.Width : spine, page.Y, page.Width, page.Height));
 			if (forward)
 			{
-				CastShadow(Bounds(next), ShadowOpacity, 0, TimeSpan.Zero, 2);
-				Rotate(Copy(old), hingeLeft, 0, away, TimeSpan.Zero, s_halfTurn * 2, landing: false);
+				CastShadow(Bounds(next), ShadowOpacity, 0, TimeSpan.Zero);
+				Rotate(Copy(old), hingeLeft, 0, hingeLeft ? QuarterTurn : -QuarterTurn, TimeSpan.Zero, s_halfTurn, landing: false);
+				Rotate(back, !hingeLeft, hingeLeft ? -QuarterTurn : QuarterTurn, 0, s_halfTurn, s_halfTurn, landing: true);
+				// Paper while it turns; gone once it's down.
+				Fade(back.Children[0], 1, 0, s_halfTurn * 1.6, s_halfTurn * 0.4);
 			}
 			else
 			{
 				Copy(old);
-				CastShadow(Bounds(old), 0, ShadowOpacity, TimeSpan.Zero, 2);
-				Rotate(Copy(next), hingeLeft, away, 0, TimeSpan.Zero, s_halfTurn * 2, landing: true);
+				CastShadow(Bounds(old), 0, ShadowOpacity, s_halfTurn);
+				Fade(back.Children[0], 0, 1, TimeSpan.Zero, s_halfTurn * 0.4);
+				Rotate(back, !hingeLeft, 0, hingeLeft ? -QuarterTurn : QuarterTurn, TimeSpan.Zero, s_halfTurn, landing: false);
+				Rotate(Copy(next), hingeLeft, hingeLeft ? QuarterTurn : -QuarterTurn, 0, s_halfTurn, s_halfTurn, landing: true);
 			}
 		}
 
@@ -275,14 +283,31 @@ public sealed partial class ReaderPage : Page
 		return copy;
 	}
 
-	/// <summary>Fades a copy out over a turn's time, uncovering what the flip view shows now.</summary>
-	private static void Fade(UIElement copy)
+	/// <summary>A lone page's back, blank paper, on the turn layer at <paramref name="bounds"/>.</summary>
+	private Canvas Paper(Rect bounds)
 	{
-		var visual = ElementCompositionPreview.GetElementVisual(copy);
+		// The sheet is a child, so it can fade while Rotate shows and hides the whole.
+		var paper = new Canvas { Width = bounds.Width, Height = bounds.Height };
+		paper.Children.Add(new Rectangle { Width = bounds.Width, Height = bounds.Height, Fill = new SolidColorBrush(Colors.WhiteSmoke) });
+		Canvas.SetLeft(paper, bounds.X);
+		Canvas.SetTop(paper, bounds.Y);
+		TurnLayer.Children.Add(paper);
+		return paper;
+	}
+
+	/// <summary>Fades a copy out over a turn's time, uncovering what the flip view shows now.</summary>
+	private static void Fade(UIElement copy) => Fade(copy, 1, 0, TimeSpan.Zero, s_halfTurn * 2);
+
+	private static void Fade(UIElement element, float from, float to, TimeSpan delay, TimeSpan duration)
+	{
+		var visual = ElementCompositionPreview.GetElementVisual(element);
+		visual.Opacity = from;
 		var fade = visual.Compositor.CreateScalarKeyFrameAnimation();
-		fade.InsertKeyFrame(0, 1);
-		fade.InsertKeyFrame(1, 0);
-		fade.Duration = s_halfTurn * 2;
+		fade.InsertKeyFrame(0, from);
+		fade.InsertKeyFrame(1, to);
+		fade.Duration = duration;
+		fade.DelayTime = delay;
+		fade.DelayBehavior = AnimationDelayBehavior.SetInitialValueBeforeDelay;
 		visual.StartAnimation(nameof(visual.Opacity), fade);
 	}
 

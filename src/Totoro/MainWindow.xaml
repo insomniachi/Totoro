@@ -550,6 +550,7 @@
                 DisplayMode="Overlay"
                 LightDismissOverlayMode="On"
                 OpenPaneLength="700"
+                PaneOpened="OnPaneOpened"
                 PanePlacement="Right">
                 <Interactivity:Interaction.Behaviors>
                     <uiNavigation:RegisterForNavigationBehavior NavigatorKey="pane" />

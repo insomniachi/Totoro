@@ -26,6 +26,7 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 		_trackingService = trackingService;
 		Title = anime.Title;
 		PrimaryButtonText = "Save";
+		SecondaryButtonText = anime.Tracking?.Status is null ? "" : "Remove from list";
 
 		MaxEpisodes = anime.TotalEpisodes is > 0 and var total ? total : double.MaxValue;
 
@@ -192,5 +193,20 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 		};
 
 		return Task.FromResult(true);
+	}
+
+	/// <summary>Removes it from the list (and the others kept in sync); on failure the dialog stays open.</summary>
+	public override async Task<bool> SecondaryAsync()
+	{
+		try
+		{
+			await _trackingService.RemoveAsync(_anime);
+			return true;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Failed to remove {Anime} from the list", _anime.Title);
+			return false;
+		}
 	}
 }

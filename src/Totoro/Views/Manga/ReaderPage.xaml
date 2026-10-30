@@ -58,6 +58,13 @@
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="{x:Bind local:ReaderPage.Where(ViewModel.ChapterTitle, ViewModel.PageText), Mode=OneWay}"
                     TextTrimming="CharacterEllipsis" />
+                <!--  What finishing a chapter saved to the user's list  -->
+                <TextBlock
+                    AutomationProperties.LiveSetting="Polite"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ViewModel.TrackingText, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.TrackingText), Mode=OneWay}" />
             </StackPanel>
             <Slider
                 Grid.Column="1"

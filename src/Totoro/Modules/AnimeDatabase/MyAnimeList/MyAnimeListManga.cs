@@ -5,6 +5,7 @@ using JikanDotNet;
 using MalApi;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
+using AiringStatus = Totoro.Core.Modules.Anime.AiringStatus;
 using Manga = MalApi.Manga;
 
 namespace Totoro.Modules.AnimeDatabase.MyAnimeList;
@@ -202,6 +203,7 @@ internal static class MalMangaConverter
 	public static readonly string[] Fields =
 	[
 		"synopsis", "mean", "popularity", "alternative_titles", "genres", "media_type", "num_volumes", "num_chapters", "my_list_status",
+		"start_date", "end_date",
 	];
 
 	public static MangaModel ToModel(Manga manga) => new()
@@ -215,6 +217,11 @@ internal static class MalMangaConverter
 		BannerImage = manga.MainPicture?.Large ?? "",
 		TotalChapters = manga.TotalChapters > 0 ? manga.TotalChapters : null,
 		TotalVolumes = manga.TotalVolumes > 0 ? manga.TotalVolumes : null,
+		// Its publishing status can't be read (see Fields): one that has ended has an end date.
+		Status = !string.IsNullOrEmpty(manga.EndDate) ? AiringStatus.FinishedAiring
+			: !string.IsNullOrEmpty(manga.StartDate) ? AiringStatus.CurrentlyAiring
+			: AiringStatus.NotYetAired,
+		StartDate = ParseDate(manga.StartDate),
 		MeanScore = manga.Mean > 0 ? manga.Mean * 10 : null,
 		Popularity = manga.Populartiy,
 		// Plain text; kept in paragraphs, as for anime.
@@ -246,6 +253,10 @@ internal static class MalMangaConverter
 		BannerImage = manga.Images?.JPG?.LargeImageUrl ?? "",
 		TotalChapters = manga.Chapters is > 0 ? manga.Chapters : null,
 		TotalVolumes = manga.Volumes is > 0 ? manga.Volumes : null,
+		Status = manga.Publishing ? AiringStatus.CurrentlyAiring
+			: manga.Status == "Not yet published" ? AiringStatus.NotYetAired
+			: AiringStatus.FinishedAiring,
+		StartDate = manga.Published?.From?.Date,
 		MeanScore = manga.Score is > 0 and var score ? (float)score * 10 : null,
 		Popularity = manga.Members ?? 0,
 		Description = string.IsNullOrEmpty(manga.Synopsis) ? "" : WebUtility.HtmlEncode(manga.Synopsis.Trim()).ReplaceLineEndings("<br>"),
@@ -262,6 +273,12 @@ internal static class MalMangaConverter
 		ServiceId = MyAnimeListModule.Id,
 		ServiceName = nameof(MangaId.MyAnimeList),
 	};
+
+	/// <summary>MAL's "2018-12-03", or "2018-12"; null for a year alone ("2018"), or nothing.</summary>
+	public static DateTime? ParseDate(string? date) =>
+		date?.Split('-') is [var year, var month, ..] && int.TryParse(year, out var y) && int.TryParse(month, out var m)
+			? new DateTime(y, m, date.Split('-') is [_, _, var day] && int.TryParse(day, out var d) ? d : 1)
+			: null;
 
 	private static string JikanTitle(JikanDotNet.Manga manga, string type) => manga.Titles?.FirstOrDefault(x => x.Type == type)?.Title ?? "";
 

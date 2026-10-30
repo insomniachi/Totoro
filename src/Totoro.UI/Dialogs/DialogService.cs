@@ -64,6 +64,7 @@ public sealed class DialogService(IViewRegistry viewRegistry, IServiceScopeFacto
 		{
 			dialog.Title = viewModel.Title;
 			dialog.PrimaryButtonText = viewModel.PrimaryButtonText;
+			dialog.SecondaryButtonText = viewModel.SecondaryButtonText;
 			dialog.CloseButtonText = viewModel.CloseButtonText;
 			dialog.IsPrimaryButtonEnabled = viewModel.CanConfirm;
 		}
@@ -77,6 +78,19 @@ public sealed class DialogService(IViewRegistry viewRegistry, IServiceScopeFacto
 			try
 			{
 				args.Cancel = !await viewModel.ConfirmAsync();
+			}
+			finally
+			{
+				deferral.Complete();
+			}
+		};
+
+		dialog.SecondaryButtonClick += async (_, args) =>
+		{
+			var deferral = args.GetDeferral();
+			try
+			{
+				args.Cancel = !await viewModel.SecondaryAsync();
 			}
 			finally
 			{

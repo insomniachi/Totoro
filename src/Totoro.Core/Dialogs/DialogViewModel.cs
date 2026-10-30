@@ -10,11 +10,16 @@ public interface IDialogViewModel
 {
 	string Title { get; }
 	string PrimaryButtonText { get; }
+	/// <summary>A second action beside the primary one, e.g. "Remove from list"; "" for none.</summary>
+	string SecondaryButtonText { get; }
 	string CloseButtonText { get; }
 	bool CanConfirm { get; }
 
 	/// <summary>Called when the primary button is pressed. Return false to keep the dialog open (e.g. on a validation error).</summary>
 	Task<bool> ConfirmAsync();
+
+	/// <summary>Called when the secondary button is pressed, to do its action. Return false to keep the dialog open.</summary>
+	Task<bool> SecondaryAsync();
 }
 
 /// <summary>
@@ -27,6 +32,7 @@ public abstract partial class DialogViewModel<TResult> : ObservableObject, IDial
 	{
 		Title = "";
 		PrimaryButtonText = "OK";
+		SecondaryButtonText = "";
 		CloseButtonText = "Cancel";
 		CanConfirm = true;
 	}
@@ -36,6 +42,9 @@ public abstract partial class DialogViewModel<TResult> : ObservableObject, IDial
 
 	[ObservableProperty]
 	public partial string PrimaryButtonText { get; set; }
+
+	[ObservableProperty]
+	public partial string SecondaryButtonText { get; set; }
 
 	[ObservableProperty]
 	public partial string CloseButtonText { get; set; }
@@ -50,4 +59,7 @@ public abstract partial class DialogViewModel<TResult> : ObservableObject, IDial
 	public virtual Task LoadAsync() => Task.CompletedTask;
 
 	public abstract Task<bool> ConfirmAsync();
+
+	/// <summary>Does the secondary button's action itself: the dialog then returns no <see cref="Result"/>.</summary>
+	public virtual Task<bool> SecondaryAsync() => Task.FromResult(true);
 }

@@ -45,6 +45,31 @@ public class MangaTests
 	}
 
 	[Fact]
+	public void VolumesRead_CountsAVolumeAtItsLastChapter()
+	{
+		List<ProviderChapter> chapters =
+		[
+			new("m", "1", 1) { Volume = "1" }, new("m", "2", 2) { Volume = "1" },
+			new("m", "3", 3) { Volume = "2" }, new("m", "4", 4) { Volume = "2" },
+		];
+		var publishing = new MangaModel { Status = Core.Modules.Anime.AiringStatus.CurrentlyAiring };
+		var finished = new MangaModel { Status = Core.Modules.Anime.AiringStatus.FinishedAiring };
+
+		Assert.Equal(0, MangaTrackingService.VolumesRead(publishing, chapters, 0));
+		Assert.Equal(1, MangaTrackingService.VolumesRead(publishing, chapters, 1));
+		Assert.Equal(1, MangaTrackingService.VolumesRead(publishing, chapters, 2));
+		// The last chapter so far: its volume is done only once the manga is.
+		Assert.Equal(1, MangaTrackingService.VolumesRead(publishing, chapters, 3));
+		Assert.Equal(2, MangaTrackingService.VolumesRead(finished, chapters, 3));
+		Assert.Null(MangaTrackingService.VolumesRead(publishing, [new("m", "1", 1)], 0));
+
+		// Saved only when more than before.
+		var tracked = new MangaModel { Tracking = new MangaTracking { ChaptersRead = 2, VolumesRead = 1 } };
+		Assert.Null(MangaTrackingService.ChangesForChapterRead(tracked, 3, 1)?.VolumesRead);
+		Assert.Equal(2, MangaTrackingService.ChangesForChapterRead(tracked, 4, 2)?.VolumesRead);
+	}
+
+	[Fact]
 	public void ChapterRead_KeepsRereading()
 	{
 		var manga = new MangaModel { TotalChapters = 100, Tracking = new MangaTracking { Status = ListItemStatus.Rewatching, ChaptersRead = 4 } };
@@ -121,6 +146,7 @@ public class MangaTests
 			TotalVolumes = 11,
 			Mean = 8.6f,
 			MediaType = MangaMediaType.Manhwa,
+			StartDate = "2018-12",
 			UserStatus = new UserMangaStatus { Status = MangaStatus.Completed, IsReReading = true, ChaptersRead = 5 },
 		});
 
@@ -130,6 +156,11 @@ public class MangaTests
 		Assert.Equal(11, manga.TotalVolumes);
 		Assert.Equal(86, manga.MeanScore!.Value, 0.01);
 		Assert.Equal(MangaFormat.Manhwa, manga.Format);
+		// Started, with no end date: still coming out.
+		Assert.Equal(Core.Modules.Anime.AiringStatus.CurrentlyAiring, manga.Status);
+		Assert.Equal(new DateTime(2018, 12, 1), manga.StartDate);
+		Assert.Null(MalMangaConverter.ParseDate("2018"));
+		Assert.Equal(new DateTime(2018, 12, 3), MalMangaConverter.ParseDate("2018-12-03"));
 		Assert.Equal(ListItemStatus.Rewatching, manga.Tracking?.Status);
 		Assert.Equal(MangaStatus.PlanToRead, MalMangaConverter.ConvertStatus(ListItemStatus.PlanToWatch));
 	}
@@ -238,6 +269,7 @@ public class MangaTests
 		Assert.Equal(1, reader.PageIndex);
 		await Task.Delay(50);
 		Assert.Equal(1, tracker.Saved?.ChaptersRead);
+		Assert.Equal("Marked chapter 1 read on Fake", reader.TrackingText);
 
 		reader.NextPageCommand.Execute(null);
 		await Task.Delay(50);

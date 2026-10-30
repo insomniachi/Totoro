@@ -1,4 +1,5 @@
 using System.Reflection;
+using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.Core.Services;
@@ -72,6 +73,16 @@ public sealed partial class MainWindow : Window
 	}
 
 	public MainWindowViewModel? ViewModel { get; set; }
+
+	// The pane slides in without laying anything out, so a page laid out as it opened thinks it's off screen: its
+	// virtualizing controls (a SelectorBar's tabs) show only their first item. Laid out again now it's in place, they see it.
+	private void OnPaneOpened(SplitView sender, object args)
+	{
+		foreach (var element in Pane.FindDescendants().OfType<FrameworkElement>())
+		{
+			element.InvalidateMeasure();
+		}
+	}
 
 	private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 	{

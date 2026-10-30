@@ -24,7 +24,7 @@
             <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Read" />
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Read from any manga source, just this once: your list stays as it is."
+                Text="Read from any manga source, just this once: your list changes only with Track it on."
                 TextWrapping="Wrap" />
         </StackPanel>
 
@@ -175,7 +175,7 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                    Text="{x:Bind local:MangaReadPage.ChapterNumber(Number)}" />
+                                    Text="{x:Bind local:MangaDetailsPage.ChapterNumber(Number)}" />
                             </Border>
                         </DataTemplate>
                     </GridView.ItemTemplate>
@@ -189,6 +189,24 @@
                         Style="{ThemeResource BodyStrongTextBlockStyle}"
                         Text="{x:Bind local:MangaDetailsPage.ChapterText(ViewModel.SelectedChapter.Number, ViewModel.SelectedChapter.Title), Mode=OneWay, FallbackValue=''}"
                         TextWrapping="Wrap" />
+                    <ToggleSwitch
+                        Header="Track it"
+                        IsOn="{x:Bind ViewModel.Track, Mode=TwoWay}"
+                        OffContent="Leave my list as it is"
+                        OnContent="Mark chapters read on my list" />
+                    <ComboBox
+                        HorizontalAlignment="Stretch"
+                        Header="Track as"
+                        ItemsSource="{x:Bind ViewModel.Matches, Mode=OneWay}"
+                        PlaceholderText="No manga found for this one"
+                        SelectedItem="{x:Bind ViewModel.SelectedManga, Mode=TwoWay}"
+                        Visibility="{x:Bind ViewModel.Track, Mode=OneWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="manga:MangaModel">
+                                <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <Button
                         HorizontalAlignment="Stretch"
                         AutomationProperties.Name="Read"

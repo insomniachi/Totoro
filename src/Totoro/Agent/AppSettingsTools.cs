@@ -39,6 +39,8 @@ public sealed record AppSettings(
 	[property: Description("The page the app opens on; one of startupPages.")]
 	string StartupPage,
 	IReadOnlyList<string> StartupPages,
+	[property: Description("Whether the app opens on anime or manga (its Anime | Manga switch).")]
+	MediaMode StartupMode,
 	[property: Description("Where episodes are downloaded to, a folder for each anime named with its title.")]
 	string DownloadFolder,
 	[property: Description("yt-dlp.exe, which downloads HLS streams; empty when it's found on the PATH.")]
@@ -73,7 +75,7 @@ public sealed class AppSettingsTools(
 	IEnumerable<IAccount> accounts)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page, download folder.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page and mode (anime or manga), download folder.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
@@ -100,6 +102,7 @@ public sealed class AppSettingsTools(
 			preferences.ShowOnDiscord,
 			preferences.FindStartupItem(startupPages)?.Name ?? "",
 			[.. startupPages.Select(x => x.Name)],
+			preferences.StartupMode,
 			preferences.DownloadFolder,
 			preferences.YtDlpPath);
 	}
@@ -119,6 +122,7 @@ public sealed class AppSettingsTools(
 		[Description("Whether the next episode skips filler episodes.")] bool? skipFillers = null,
 		[Description("Whether the episode playing shows as the user's activity on Discord.")] bool? showOnDiscord = null,
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null,
+		[Description("Whether the app opens on anime or manga.")] MediaMode? startupMode = null,
 		[Description("A folder to download episodes to; empty for the default (Videos\\Totoro).")] string? downloadFolder = null,
 		[Description("The path of yt-dlp.exe, which downloads HLS streams; empty to find it on the PATH.")] string? ytDlpPath = null)
 	{
@@ -153,6 +157,11 @@ public sealed class AppSettingsTools(
 			var page = pages.Where(x => !x.IsFooter).FirstOrDefault(x => x.Name.Equals(startupPage, StringComparison.OrdinalIgnoreCase))
 				?? throw new AgentToolException($"There's no page called {startupPage}.");
 			preferences.StartupPage = page.Key;
+		}
+
+		if (startupMode is { } mode)
+		{
+			preferences.StartupMode = mode;
 		}
 
 		if (theme is { } newTheme)

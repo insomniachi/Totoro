@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.Messaging;
 using Totoro.Core.Settings;
 
 namespace Totoro.Core.Navigation;
@@ -12,22 +11,15 @@ public enum MediaMode
 
 public static class MediaModePreferences
 {
-	private const string Key = "MediaMode";
+	private const string Key = "StartupMode";
 
 	extension(IPreferences preferences)
 	{
-		/// <summary>The mode the app is in, kept for next time; changing it sends a <see cref="MediaModeChangedMessage"/>.</summary>
-		public MediaMode MediaMode
+		/// <summary>The mode the app starts in (a setting; switching mode doesn't change it).</summary>
+		public MediaMode StartupMode
 		{
 			get => preferences.ReadKey(Key, MediaMode.Anime);
-			set
-			{
-				preferences.SaveKey(Key, value);
-				WeakReferenceMessenger.Default.Send(new MediaModeChangedMessage(value));
-			}
+			set => preferences.SaveKey(Key, value);
 		}
 	}
 }
-
-/// <summary>Sent (with WeakReferenceMessenger.Default) after the app switches between anime and manga.</summary>
-public sealed record MediaModeChangedMessage(MediaMode Mode);

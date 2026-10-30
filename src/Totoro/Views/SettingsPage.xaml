@@ -19,7 +19,7 @@
             <toolkit:SettingsCard
                 Command="{x:Bind ViewModel.OpenCommand}"
                 CommandParameter="Settings.General"
-                Description="Startup page, theme and backdrop"
+                Description="Startup page and mode, theme and backdrop"
                 Header="General"
                 IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>

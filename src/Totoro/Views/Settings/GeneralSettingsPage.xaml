@@ -32,6 +32,17 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="Whether Totoro opens on anime or manga. A startup page only one has (like Schedule) opens in that one." Header="Start in">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8AB;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    AutomationProperties.Name="Start in"
+                    ItemsSource="{x:Bind ViewModel.StartupModes}"
+                    SelectedItem="{x:Bind ViewModel.StartupMode, Mode=TwoWay}" />
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard Description="Starts Totoro when you sign in to Windows. With Start in the notification area on, it starts there, without a window." Header="Start with Windows">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE7E8;" />

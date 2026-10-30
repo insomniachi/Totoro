@@ -49,6 +49,10 @@ public partial class ReaderViewModel : NavigatableViewModel
 
 	public string MangaTitle => _request.Manga?.Title ?? "";
 
+	/// <summary>What finishing a chapter saved to the user's list, or why it couldn't; "" until then.</summary>
+	[ObservableProperty]
+	public partial string TrackingText { get; private set; } = "";
+
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(Chapter), nameof(ChapterTitle), nameof(HasPrevious), nameof(HasNext))]
 	public partial int ChapterIndex { get; set; }
@@ -339,11 +343,16 @@ public partial class ReaderViewModel : NavigatableViewModel
 		_markedRead = true;
 		try
 		{
-			await _tracking.MarkChapterReadAsync(manga, Chapter.Number);
+			if (await _tracking.MarkChapterReadAsync(manga, _request.Chapters, ChapterIndex) is { } saved)
+			{
+				var volume = saved.VolumesRead is { } volumes ? $" and volume {volumes}" : "";
+				TrackingText = $"Marked chapter {saved.ChaptersRead}{volume} read on {_tracking.GetTracker(manga).Name}";
+			}
 		}
 		catch (Exception ex)
 		{
 			_logger.LogWarning(ex, "Couldn't mark {Chapter} of {Manga} read", ChapterTitle, manga.Title);
+			TrackingText = $"Couldn't update your list: {ex.Message}";
 		}
 	}
 
