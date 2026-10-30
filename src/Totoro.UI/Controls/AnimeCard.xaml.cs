@@ -58,6 +58,13 @@ public sealed partial class AnimeCard : UserControl
 		{
 			Anime = newValue as AnimeModel;
 		}
+
+		// A recycled card whose old and new titles are both trimmed gets no IsTextTrimmedChanged: the tooltip would keep
+		// the old title. (If the new one fits, IsTextTrimmedChanged then clears it.)
+		if (TitleText is { IsTextTrimmed: true })
+		{
+			ToolTipService.SetToolTip(TitleText, newValue?.Title);
+		}
 	}
 
 	private void OnPosterOpened(object sender, RoutedEventArgs e) => PosterFade.Opacity = 1;

@@ -56,4 +56,16 @@ public static class MediaText
 		(ListItemStatus.Rewatching, _) => "Rewatching",
 		_ => "Not on list",
 	};
+
+	/// <summary>An anime's format as shown, e.g. "TV" or "Movie"; null when unknown.</summary>
+	public static string? Format(Anime.AnimeMediaFormat format) => format switch
+	{
+		Anime.AnimeMediaFormat.Tv => "TV",
+		Anime.AnimeMediaFormat.Ova => "OVA",
+		Anime.AnimeMediaFormat.Ona => "ONA",
+		Anime.AnimeMediaFormat.Movie => "Movie",
+		Anime.AnimeMediaFormat.Special => "Special",
+		Anime.AnimeMediaFormat.Music => "Music",
+		_ => null,
+	};
 }

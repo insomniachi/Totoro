@@ -313,16 +313,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	{
 		List<string> facts = [];
 
-		var format = anime.MediaFormat switch
-		{
-			AnimeMediaFormat.Tv => "TV",
-			AnimeMediaFormat.Ova => "OVA",
-			AnimeMediaFormat.Ona => "ONA",
-			AnimeMediaFormat.Movie => "Movie",
-			AnimeMediaFormat.Special => "Special",
-			AnimeMediaFormat.Music => "Music",
-			_ => null,
-		};
+		var format = MediaText.Format(anime.MediaFormat);
 		if (format is not null)
 		{
 			facts.Add(format);

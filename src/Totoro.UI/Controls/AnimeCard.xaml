@@ -62,6 +62,7 @@
                 Padding="16"
                 Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}">
                 <TextBlock
+                    x:Name="TitleText"
                     Style="{StaticResource BodyLargeTextBlockStyle}"
                     Text="{x:Bind Media.Title, Mode=OneWay}"
                     IsTextTrimmedChanged="OnTitleTrimmedChanged"

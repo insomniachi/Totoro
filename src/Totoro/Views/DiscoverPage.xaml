@@ -243,6 +243,55 @@
                     </ScrollView>
                 </StackPanel>
 
+                <!--  Sequels and spin-offs of what the user watched, not on their list: the first few; See all has the rest  -->
+                <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Missed), Mode=OneWay}">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Style="{StaticResource RowHeaderStyle}" Text="Sequels &amp; spin-offs you missed" />
+                        <HyperlinkButton
+                            Grid.Column="1"
+                            AutomationProperties.Name="See all missed sequels and spin-offs"
+                            Command="{x:Bind ViewModel.SeeAllMissedCommand}"
+                            Content="See all" />
+                        <Button
+                            Grid.Column="2"
+                            AutomationProperties.Name="Previous missed anime"
+                            x:Name="MissedPrevious"
+                            Click="OnPreviousPage"
+                            Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
+                            Style="{StaticResource RowPageButtonStyle}"
+                            Tag="{x:Bind MissedRow}"
+                            ToolTipService.ToolTip="Previous" />
+                        <Button
+                            Grid.Column="3"
+                            AutomationProperties.Name="Next missed anime"
+                            x:Name="MissedNext"
+                            Click="OnNextPage"
+                            Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
+                            Style="{StaticResource RowPageButtonStyle}"
+                            Tag="{x:Bind MissedRow}"
+                            ToolTipService.ToolTip="Next" />
+                    </Grid>
+                    <ScrollView
+                        x:Name="MissedRow"
+                        ExtentChanged="OnRowChanged"
+                        ScrollAnimationStarting="OnRowScrollAnimationStarting"
+                        SizeChanged="OnRowChanged"
+                        Style="{StaticResource RowScrollViewStyle}"
+                        ViewChanged="OnRowChanged">
+                        <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.Missed, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Horizontal" Spacing="16" />
+                            </ItemsRepeater.Layout>
+                        </ItemsRepeater>
+                    </ScrollView>
+                </StackPanel>
+
                 <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.AiringToday), Mode=OneWay}">
                     <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>

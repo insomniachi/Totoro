@@ -148,6 +148,7 @@ public partial class App : Application
 				// Episode numbering: anime-relations (downloaded when first needed) and the user's own rules.
 				services.AddSingleton<IAnimeRelations, AnimeRelations>();
 				services.AddViewMap<AnimeRelationsPage, AnimeRelationsViewModel>();
+				services.AddViewMap<MissedRelationsPage, MissedRelationsViewModel>();
 				services.AddDialog<RelationRuleDialog, RelationRuleDialogViewModel>();
 				services.AddDialog<DataContainerDialog, DataContainerDialogViewModel>();
 				services.AddSingleton<AnimeCommands>();

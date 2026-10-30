@@ -258,11 +258,7 @@ internal partial class AnilistMetadataProvider(
 				{
 					Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
 																 .WithPageInfo(new PageInfoQueryBuilder().WithHasNextPage())
-																 .WithMedia(MediaQueryBuilder()
-																				.WithRelations(new MediaConnectionQueryBuilder()
-																								   .WithEdges(new MediaEdgeQueryBuilder()
-																												  .WithRelationType()
-																												  .WithNode(MediaQueryBuilderSimple()))),
+																 .WithMedia(MediaWithRelations(),
 																			season: AniListModelToAnimeModelConverter.ConvertSeason(season.SeasonName),
 																			seasonYear: season.Year,
 																			sort: new List<MediaSort?> { MediaSort.PopularityDesc },
@@ -287,6 +283,59 @@ internal partial class AnilistMetadataProvider(
 		}
 
 		return media;
+	}
+
+	public async Task<List<AnimeModel>> GetRelationsAsync(IReadOnlyCollection<long> ids, CancellationToken ct)
+	{
+		var media = await FetchWithRelationsAsync(client, ids, byMalId: false, logger, ct);
+		return [.. media.Where(FilterNsfw).Select(ToModel)];
+	}
+
+	/// <summary>
+	/// The anime with these AniList ids (or MyAnimeList ids, <paramref name="byMalId"/>), with their relations, a page at
+	/// a time: 400 of them are 8 requests. Also used by the MyAnimeList provider. What came before a failure is kept.
+	/// </summary>
+	internal static async Task<List<Media>> FetchWithRelationsAsync(GraphQLHttpClient client, IReadOnlyCollection<long> ids, bool byMalId, ILogger logger, CancellationToken ct)
+	{
+		List<Media> media = [];
+		try
+		{
+			foreach (var chunk in ids.Chunk(MaxPageSize))
+			{
+				var idList = chunk.Select(x => (int?)x).ToList();
+				var response = await client.SendQueryAsync<Query>(new GraphQLRequest
+				{
+					Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
+																 .WithMedia(MediaWithRelations(),
+																			idIn: byMalId ? null : idList,
+																			idMalIn: byMalId ? idList : null,
+																			type: MediaType.Anime), 1, MaxPageSize).Build()
+				}, ct);
+
+				if (response.Errors?.Length > 0)
+				{
+					logger.LogWarning("AniList relations request failed: {Errors}", DescribeErrors(response.Errors));
+					break;
+				}
+
+				media.AddRange(response.Data.Page.Media);
+			}
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			logger.LogWarning(ex, "AniList relations request failed");
+		}
+
+		return media;
+	}
+
+	/// <summary>An anime with its relations, as edges: how each relates.</summary>
+	private static MediaQueryBuilder MediaWithRelations()
+	{
+		return MediaQueryBuilder().WithRelations(new MediaConnectionQueryBuilder()
+													 .WithEdges(new MediaEdgeQueryBuilder()
+																	.WithRelationType()
+																	.WithNode(MediaQueryBuilderSimple())));
 	}
 
 	public async Task<List<AnimeModel>> GetAiringTodayAsync(CancellationToken ct)
@@ -502,6 +551,8 @@ internal partial class AnilistMetadataProvider(
 			   .WithSeason()
 			   .WithSeasonYear()
 			   .WithMediaListEntry(MediaListEntryQueryBuilder())
-			   .WithStatus();
+			   .WithStatus()
+			   .WithPopularity()
+			   .WithMeanScore();
 	}
 }

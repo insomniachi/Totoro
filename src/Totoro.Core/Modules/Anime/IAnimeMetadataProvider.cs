@@ -23,4 +23,10 @@ public interface IAnimeMetadataProvider
 	/// (<see cref="AnimeModel.Related"/>, with how each relates), e.g. to find which are sequels.
 	/// </summary>
 	Task<List<AnimeModel>> GetSeasonAnimeAsync(Season season, CancellationToken ct);
+
+	/// <summary>
+	/// The anime with these ids, each with its related anime (<see cref="AnimeModel.Related"/>), e.g. to find sequels the
+	/// user hasn't watched. Empty from a database that can't fetch them in bulk.
+	/// </summary>
+	Task<List<AnimeModel>> GetRelationsAsync(IReadOnlyCollection<long> ids, CancellationToken ct) => Task.FromResult(new List<AnimeModel>());
 }

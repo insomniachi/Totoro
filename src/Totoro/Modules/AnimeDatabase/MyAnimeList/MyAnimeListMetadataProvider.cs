@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules.Anime;
 using Totoro.Modules.AnimeDatabase.Anilist;
 using AdvancedSearchRequest = Totoro.Core.Modules.Anime.AdvancedSearchRequest;
+using AnilistMedia = Totoro.Modules.AnimeDatabase.Anilist.GraphQl.Media;
 using Genre = JikanDotNet.Genre;
 
 namespace Totoro.Modules.AnimeDatabase.MyAnimeList;
@@ -158,7 +159,18 @@ internal class MyAnimeListMetadataProvider(
 	{
 		// MyAnimeList's API has no relations in its lists, so AniList's, by their MyAnimeList ids: those are the ids the
 		// user's list and the rest of the app use. AniList doesn't know the user's MyAnimeList entries.
-		var media = await AnilistMetadataProvider.FetchSeasonAsync(anilistClient, season, logger, ct);
+		return ToMalModels(await AnilistMetadataProvider.FetchSeasonAsync(anilistClient, season, logger, ct));
+	}
+
+	public async Task<List<AnimeModel>> GetRelationsAsync(IReadOnlyCollection<long> ids, CancellationToken ct)
+	{
+		// The same: AniList's relations, looked up by MyAnimeList ids.
+		return ToMalModels(await AnilistMetadataProvider.FetchWithRelationsAsync(anilistClient, ids, byMalId: true, logger, ct));
+	}
+
+	/// <summary>AniList's anime (and their relations) numbered with their MyAnimeList ids; those AniList has none for are dropped.</summary>
+	private List<AnimeModel> ToMalModels(List<AnilistMedia> media)
+	{
 		foreach (var anime in media)
 		{
 			anime.Id = anime.IdMal;

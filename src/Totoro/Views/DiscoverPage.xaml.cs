@@ -75,6 +75,7 @@ public sealed partial class DiscoverPage : Page
 		(ScrollView Row, Button Previous, Button Next)[] rows =
 		[
 			(TrendingRow, TrendingPrevious, TrendingNext),
+			(MissedRow, MissedPrevious, MissedNext),
 			(AiringTodayRow, AiringTodayPrevious, AiringTodayNext),
 			(NextSeasonRow, NextSeasonPrevious, NextSeasonNext),
 		];

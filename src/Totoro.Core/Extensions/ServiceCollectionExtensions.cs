@@ -91,6 +91,7 @@ public static class ServiceCollectionExtensions
 								   .AddSingleton<Services.MangaReadingService>()
 							   .AddSingleton<Services.AnimeSongService>()
 							   .AddSingleton<Services.ReleaseScheduleService>()
+							   .AddSingleton<Services.MissedRelationsService>()
 							   .AddSingleton<Services.ChatService>()
 							   .AddSingleton<Services.UpdateService>()
 							   .AddSingleton<Plugins.IPluginManager, Plugins.PluginManager>()

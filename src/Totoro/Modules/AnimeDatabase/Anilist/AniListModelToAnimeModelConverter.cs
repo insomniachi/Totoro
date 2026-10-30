@@ -243,6 +243,8 @@ public static partial class AniListModelToAnimeModelConverter
                         Image = x.CoverImage.Large,
                         Tracking = ConvertTracking(x.MediaListEntry),
                         AiringStatus = ConvertStatus(x.Status),
+                        Popularity = x.Popularity ?? 0,
+                        MeanScore = x.MeanScore,
                         ServiceId = AnilistModule.Id,
                         ServiceName = nameof(AnimeId.Anilist),
                         MediaFormat = ConvertMediaFormat(x.Format)
