@@ -23,7 +23,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	// Samples the spectrum is taken over: about 43 ms.
 	private const int FftSize = 2048;
 
-	private readonly IPreferences _preferences;
+	private readonly IModuleSettings<Modules.MediaPlayers.Vlc.Settings> _vlcSettings;
 	private readonly ILogger<SongAudioPlayer> _logger;
 	private readonly DispatcherQueue _ui = DispatcherQueue.GetForCurrentThread();
 	private readonly Lock _tapLock = new();
@@ -46,9 +46,9 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	// libvlc reports the time about once a second; read more often, for the progress bar.
 	private DispatcherQueueTimer? _positionTimer;
 
-	public SongAudioPlayer(IPreferences preferences, ILogger<SongAudioPlayer> logger)
+	public SongAudioPlayer(IModuleSettings<Modules.MediaPlayers.Vlc.Settings> vlcSettings, ILogger<SongAudioPlayer> logger)
 	{
-		_preferences = preferences;
+		_vlcSettings = vlcSettings;
 		_logger = logger;
 		_onPlay = OnSamples;
 		_onPause = (_, _) => _output?.Pause();
@@ -89,7 +89,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 		_buffer!.ClearBuffer();
 		ClearTap();
-		_output!.Volume = Math.Clamp(_preferences.PlayerVolume / 100f, 0, 1);
+		_output!.Volume = Math.Clamp(_vlcSettings.Value.Volume / 100f, 0, 1);
 		using var media = new Media(_libVlc!, audio);
 		// Replacing what's playing stops it, which can take a moment: not on the UI thread.
 		await Task.Run(() => player.Play(media));

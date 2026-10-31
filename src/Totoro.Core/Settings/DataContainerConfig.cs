@@ -79,6 +79,11 @@ public class DataContainerConfig
 				builder.WithAllowedValues(allowedValuesAttribute.Values.OfType<object>());
 			}
 
+			if (propertyInfo.GetCustomAttribute<RangeAttribute>() is { } rangeAttribute)
+			{
+				builder.WithRange(Convert.ToDouble(rangeAttribute.Minimum), Convert.ToDouble(rangeAttribute.Maximum));
+			}
+
 			if (propertyInfo.GetCustomAttribute<IconAttribute>() is { } iconAttribute)
 			{
 				builder.WithIcon(iconAttribute.IconKey);

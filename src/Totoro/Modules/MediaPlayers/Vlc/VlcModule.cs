@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
@@ -88,4 +89,9 @@ public sealed class Settings : DataContainerConfig
 	[DisplayName("Aspect ratio shortcut")]
 	[Editor(DataContainerEditors.Shortcut, "")]
 	public string AspectRatioKeys { get; set; } = "A";
+
+	[DisplayName("Volume")]
+	[Description("Songs play at it too; changing it in the player changes it here too.")]
+	[Range(0, 100)]
+	public int Volume { get; set; } = 100;
 }

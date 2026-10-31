@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core;
@@ -65,6 +66,11 @@ public sealed class Settings : DataContainerConfig
 
 	[DisplayName("Start in full screen")]
 	public bool LaunchFullScreen { get; set; } = true;
+
+	[DisplayName("Volume")]
+	[Description("mpv's volume (up to 130); changing it in mpv changes it here too.")]
+	[Range(0, 130)]
+	public int Volume { get; set; } = 100;
 }
 
 /// <summary>Which of Anime4K's templates to install: its fast shaders, or its high-quality ones.</summary>

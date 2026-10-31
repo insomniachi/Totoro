@@ -124,7 +124,7 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 			return open.ViewModel;
 		}
 
-		var viewModel = new PlayerViewModel(preferences.PlayerVolume, preferences.PlayerAspectRatio, logger)
+		var viewModel = new PlayerViewModel(settings.Value.Volume, preferences.PlayerAspectRatio, logger)
 		{
 			IsFullScreen = settings.Value.LaunchFullScreen,
 		};
@@ -138,7 +138,8 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 		{
 			_window = null;
 			_proxy.Clear();
-			preferences.PlayerVolume = (int)viewModel.Volume;
+			settings.Value.Volume = (int)viewModel.Volume;
+			settings.Save();
 			preferences.PlayerAspectRatio = viewModel.AspectRatio;
 			PlaybackStopped?.Invoke(this, EventArgs.Empty);
 			await viewModel.CloseAsync();

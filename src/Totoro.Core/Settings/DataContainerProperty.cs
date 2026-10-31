@@ -15,6 +15,10 @@ public partial class DataContainerProperty : ObservableObject
 	/// <summary>The name of the property this one is shown under (see <see cref="ParentAttribute"/>); null for none.</summary>
 	public string? Parent { get; init; }
 
+	/// <summary>The lowest and highest a number may be (see RangeAttribute); unbounded by default.</summary>
+	public double Minimum { get; init; } = double.MinValue;
+	public double Maximum { get; init; } = double.MaxValue;
+
 	public T? GetValue<T>(T? defaultValue)
 	{
 		if (Value is T { } typedValue)
@@ -43,6 +47,8 @@ public partial class DataContainerProperty : ObservableObject
 			AllowedValues = AllowedValues,
 			IconKey = IconKey,
 			Parent = Parent,
+			Minimum = Minimum,
+			Maximum = Maximum,
 		};
 	}
 }

@@ -13,6 +13,8 @@ public class DataContainerPropertyBuilder
 	private object? _value = "";
 	private string? _iconKey = "";
 	private string? _parent;
+	private double _minimum = double.MinValue;
+	private double _maximum = double.MaxValue;
 
 	public DataContainerPropertyBuilder WithName(string name)
 	{
@@ -67,6 +69,13 @@ public class DataContainerPropertyBuilder
 		return this;
 	}
 
+	public DataContainerPropertyBuilder WithRange(double minimum, double maximum)
+	{
+		_minimum = minimum;
+		_maximum = maximum;
+		return this;
+	}
+
 	public DataContainerPropertyBuilder WithIcon(string key)
 	{
 		_iconKey = key;
@@ -97,7 +106,9 @@ public class DataContainerPropertyBuilder
 			EditorType = _editorType,
 			AllowedValues = _allowedValues,
 			IconKey = _iconKey,
-			Parent = _parent
+			Parent = _parent,
+			Minimum = _minimum,
+			Maximum = _maximum,
 		};
 
 		Reset();
@@ -114,6 +125,8 @@ public class DataContainerPropertyBuilder
 		_editorType = DataContainerEditors.TextBox;
 		_allowedValues = [];
 		_parent = null;
+		_minimum = double.MinValue;
+		_maximum = double.MaxValue;
 	}
 
 	private void SetDefaultsForType(object? value)

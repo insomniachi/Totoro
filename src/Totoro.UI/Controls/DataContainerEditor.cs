@@ -147,6 +147,8 @@ public sealed partial class DataContainerEditor : UserControl
 			SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact,
 			SmallChange = 1,
 			LargeChange = 10,
+			Minimum = property.Minimum,
+			Maximum = property.Maximum,
 		};
 		Sync(numberBox, property, () => numberBox.Value = property.Value is null ? double.NaN : Convert.ToDouble(property.Value));
 		numberBox.ValueChanged += (_, args) =>

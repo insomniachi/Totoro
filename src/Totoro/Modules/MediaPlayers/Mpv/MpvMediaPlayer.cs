@@ -31,6 +31,12 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	// The current video's subtitle files not yet added; added once mpv has loaded it (sub-add needs a file playing).
 	private IReadOnlyList<SubtitleTrack> _subtitles = [];
 
+	// mpv's volume as last reported, kept for the next video once it closes.
+	private int? _volume;
+
+	// Play's thread (the UI's): saving settings notifies views, which mpv's pipe thread mustn't do.
+	private SynchronizationContext? _ui;
+
 	public Guid Id => MpvModule.Id;
 
 	public string Name => "MPV";
@@ -55,6 +61,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	public void Play(MediaItem media, TimeSpan startPosition)
 	{
 		Stop();
+		_ui = SynchronizationContext.Current;
 
 		var pipeName = $"totoro-mpv-{Guid.NewGuid():N}";
 		var startInfo = new ProcessStartInfo
@@ -68,6 +75,9 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 				$"--start={startPosition.TotalSeconds.ToString(CultureInfo.InvariantCulture)}",
 				// Close at the end even when an mpv.conf says keep-open: the exit is what tells the app playback's done.
 				"--keep-open=no",
+				// Started without a console, mpv's pseudo-gui mode turns idle on, which keeps it open after the video too.
+				"--idle=no",
+				$"--volume={settings.Value.Volume}",
 			}
 		};
 
@@ -223,6 +233,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 1, "duration" } });
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 2, "time-pos" } });
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 3, "track-list" } });
+			await WriteAsync(pipe, new { command = new object[] { "observe_property", 4, "volume" } });
 			if (ReferenceEquals(process, _process))
 			{
 				_pipe = pipe;
@@ -241,6 +252,21 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		catch (Exception ex)
 		{
 			logger.LogWarning(ex, "Lost track of mpv");
+		}
+		finally
+		{
+			if (_volume is { } volume && volume != settings.Value.Volume)
+			{
+				settings.Value.Volume = volume;
+				if (_ui is { } ui)
+				{
+					ui.Post(_ => settings.Save(), null);
+				}
+				else
+				{
+					settings.Save();
+				}
+			}
 		}
 	}
 
@@ -278,6 +304,9 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		var value = TimeSpan.FromSeconds(data.GetDouble());
 		switch (root.GetProperty("name").GetString())
 		{
+			case "volume":
+				_volume = (int)Math.Round(data.GetDouble());
+				break;
 			case "duration":
 				DurationChanged?.Invoke(this, value);
 				break;
