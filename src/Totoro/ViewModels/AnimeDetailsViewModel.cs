@@ -262,7 +262,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	{
 		Title = details.Title;
 		// The English title, when it differs from the main (romaji) one.
-		Subtitle = string.Equals(details.EngTitle, details.Title, StringComparison.OrdinalIgnoreCase) ? "" : details.EngTitle;
+		Subtitle = details.OtherTitle;
 		CoverImage = NullIfEmpty(details.Image);
 		BannerImage = NullIfEmpty(details.BannerImage) ?? CoverImage;
 		Facts = GetFacts(details);

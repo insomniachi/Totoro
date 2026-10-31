@@ -77,10 +77,3 @@ public sealed class Settings : DataContainerConfig
 	[DisplayName("Title Language")]
 	public TitleLanguage TitleLanguage { get; set; } = TitleLanguage.Romaji;
 }
-
-
-public enum TitleLanguage
-{
-	English,
-	Romaji
-}

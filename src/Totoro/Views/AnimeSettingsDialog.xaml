@@ -147,6 +147,27 @@
         <TextBlock
             Margin="0,24,0,4"
             Style="{ThemeResource BodyStrongTextBlockStyle}"
+            Text="Title" />
+
+        <toolkit:SettingsCard Description="The language its title shows in, in the app and on Discord." Header="Title language">
+            <toolkit:SettingsCard.HeaderIcon>
+                <FontIcon Glyph="&#xF2B7;" />
+            </toolkit:SettingsCard.HeaderIcon>
+            <ComboBox
+                MinWidth="200"
+                ItemsSource="{x:Bind ViewModel.TitleLanguages}"
+                SelectedItem="{x:Bind ViewModel.TitleLanguageChoice, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TitleLanguageChoice">
+                        <TextBlock Text="{x:Bind Label}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </toolkit:SettingsCard>
+
+        <TextBlock
+            Margin="0,24,0,4"
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
             Text="Privacy" />
 
         <toolkit:SettingsCard Description="Don't show this anime as your activity on Discord while you watch it." Header="Hide from Discord">

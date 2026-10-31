@@ -38,10 +38,19 @@ public sealed class AnimeSettings
 	/// <summary>Whether watching it is kept off Discord, where the episode playing otherwise shows as the user's activity.</summary>
 	public bool HideFromDiscord { get; set; }
 
+	/// <summary>The language its title shows in, in the app and on Discord; null for the anime database's (see <see cref="AnimeModel.Title"/>).</summary>
+	public TitleLanguage? TitleLanguage { get; set; }
+
 	/// <summary>Nothing set: the app-wide settings apply throughout.</summary>
 	[JsonIgnore]
 	public bool IsEmpty => ProviderId is null && ProviderSettings.Count == 0 && Shows.Count == 0 && OpeningSkipMode is null && EndingSkipMode is null &&
-						   EpisodeNumbering is null && !HideFromDiscord;
+						   EpisodeNumbering is null && !HideFromDiscord && TitleLanguage is null;
+}
+
+public enum TitleLanguage
+{
+	English,
+	Romaji
 }
 
 /// <summary>How a provider numbers an anime's episodes.</summary>
@@ -95,6 +104,15 @@ internal sealed class AnimeSettingsStore : IAnimeSettingsStore
 		}
 
 		MoveLegacyShows(preferences);
+		AnimeModel.TitleLanguageOf = GetTitleLanguage;
+	}
+
+	private TitleLanguage? GetTitleLanguage(AnimeModel anime)
+	{
+		lock (_lock)
+		{
+			return _settings.GetValueOrDefault(anime.StoreKey)?.TitleLanguage;
+		}
 	}
 
 	/// <summary>

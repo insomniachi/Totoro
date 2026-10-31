@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Totoro.Core.Settings;
 
 namespace Totoro.Core.Modules.Anime;
 
@@ -12,9 +13,32 @@ public partial class AnimeModel : ObservableObject, IMediaModel
 	public AnimeId ExternalIds { get; init; } = new();
 	public string Image { get; set; } = "";
 	public string BannerImage { get; set; } = "";
-	public string Title { get; init; } = "";
+	private readonly string _title = "";
+
+	/// <summary>The anime database's title, or the one in the language the user picked for this anime (see <see cref="AnimeSettings.TitleLanguage"/>).</summary>
+	public string Title
+	{
+		get => TitleLanguageOf?.Invoke(this) switch
+		{
+			TitleLanguage.English when EngTitle.Length > 0 => EngTitle,
+			TitleLanguage.Romaji when RomajiTitle.Length > 0 => RomajiTitle,
+			_ => _title,
+		};
+		init => _title = value;
+	}
+
 	public string EngTitle { get; set; } = "";
 	public string RomajiTitle { get; set; } = "";
+
+	/// <summary>Its English or romaji title, whichever isn't <see cref="Title"/>, to show beside it; "" if it has just the one.</summary>
+	[JsonIgnore]
+	public string OtherTitle => new[] { EngTitle, RomajiTitle }.FirstOrDefault(x => x.Length > 0 && !x.Equals(Title, StringComparison.OrdinalIgnoreCase)) ?? "";
+
+	/// <summary>The title language the user picked for an anime, if any; set by the anime settings store.</summary>
+	public static Func<AnimeModel, TitleLanguage?>? TitleLanguageOf { get; set; }
+
+	/// <summary>Tells bindings its <see cref="Title"/> changed, after its title language did.</summary>
+	public void RefreshTitle() => OnPropertyChanged(nameof(Title));
 	[ObservableProperty] public partial Tracking? Tracking { get; set; }
 	public int? TotalEpisodes { get; set; }
 	[ObservableProperty] public partial AiringStatus AiringStatus { get; set; }

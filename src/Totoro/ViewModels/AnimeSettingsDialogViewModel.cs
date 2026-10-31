@@ -26,6 +26,12 @@ public sealed record NumberingChoice(string Label, EpisodeNumbering? Value)
 	public override string ToString() => Label;
 }
 
+/// <param name="Value">Null for the anime database's title.</param>
+public sealed record TitleLanguageChoice(string Label, TitleLanguage? Value)
+{
+	public override string ToString() => Label;
+}
+
 /// <param name="Value">Null to follow the app-wide setting.</param>
 public sealed record SkipModeChoice(string Label, SkipMode? Value)
 {
@@ -88,6 +94,13 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 
 		Numbering = NumberingChoices.First(x => x.Value == _settings.EpisodeNumbering);
 		HideFromDiscord = _settings.HideFromDiscord;
+		TitleLanguages =
+		[
+			new("Default", null),
+			new($"English ({anime.EngTitle})", TitleLanguage.English),
+			new($"Romaji ({anime.RomajiTitle})", TitleLanguage.Romaji),
+		];
+		TitleLanguageChoice = TitleLanguages.First(x => x.Value == _settings.TitleLanguage);
 		NewRule = new RelationRuleEditorViewModel(databases.CreateDefault(), anime);
 		_ = ShowRuleAsync(anime);
 	}
@@ -112,6 +125,11 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 
 	/// <summary>Whether watching it is kept off Discord (see <see cref="AnimeSettings.HideFromDiscord"/>).</summary>
 	[ObservableProperty] public partial bool HideFromDiscord { get; set; }
+
+	public IReadOnlyList<TitleLanguageChoice> TitleLanguages { get; }
+
+	/// <summary>The language its title shows in (see <see cref="AnimeSettings.TitleLanguage"/>).</summary>
+	[ObservableProperty] public partial TitleLanguageChoice TitleLanguageChoice { get; set; }
 
 	/// <summary>The rule that says where its episodes are in absolute numbering, or that there's none.</summary>
 	[ObservableProperty] public partial string RuleSummary { get; private set; } = "Looking for a rule…";
@@ -220,6 +238,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		_settings.EndingSkipMode = EndingSkip.Value;
 		_settings.EpisodeNumbering = Numbering.Value;
 		_settings.HideFromDiscord = HideFromDiscord;
+		_settings.TitleLanguage = TitleLanguageChoice.Value;
 		if (NewRule.ToRule() is { } rule)
 		{
 			_relations.AddUserRule(rule);
@@ -244,6 +263,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		}
 
 		_store.Save(_anime, _settings);
+		_anime.RefreshTitle();
 		Result = true;
 		return Task.FromResult(true);
 	}

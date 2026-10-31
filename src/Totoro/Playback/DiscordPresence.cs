@@ -25,7 +25,7 @@ public sealed class DiscordPresence : IDisposable
 	private readonly IPreferences _preferences;
 	private readonly IAnimeSettingsStore _animeSettings;
 	private DiscordRpcClient? _client;
-	private (string Key, int Episode)? _shown;
+	private (string Key, int Episode, string Title)? _shown;
 	private DateTime _shownEnd;
 	private bool _shownPaused;
 	private TimeSpan _lastPosition;
@@ -62,7 +62,7 @@ public sealed class DiscordPresence : IDisposable
 		}
 
 		var now = DateTime.UtcNow;
-		if (_watch.PlaybackPosition != _lastPosition || _shown != (anime.StoreKey, _watch.CurrentEpisode))
+		if (_watch.PlaybackPosition != _lastPosition || _shown != (anime.StoreKey, _watch.CurrentEpisode, anime.Title))
 		{
 			_lastPosition = _watch.PlaybackPosition;
 			_lastMoved = now;
@@ -71,7 +71,7 @@ public sealed class DiscordPresence : IDisposable
 		var end = now + (_watch.PlaybackDuration - _watch.PlaybackPosition);
 		var known = _watch.PlaybackDuration > TimeSpan.Zero;
 		var paused = known && now - _lastMoved > s_pausedAfter;
-		if (_shown == (anime.StoreKey, _watch.CurrentEpisode) && paused == _shownPaused && (!known || paused || (end - _shownEnd).Duration() < s_drift))
+		if (_shown == (anime.StoreKey, _watch.CurrentEpisode, anime.Title) && paused == _shownPaused && (!known || paused || (end - _shownEnd).Duration() < s_drift))
 		{
 			return;
 		}
@@ -83,7 +83,7 @@ public sealed class DiscordPresence : IDisposable
 			_client.Initialize();
 		}
 
-		_shown = (anime.StoreKey, _watch.CurrentEpisode);
+		_shown = (anime.StoreKey, _watch.CurrentEpisode, anime.Title);
 		_shownEnd = end;
 		_shownPaused = paused;
 		_pauseCheck.Start();
@@ -93,7 +93,7 @@ public sealed class DiscordPresence : IDisposable
 			Type = ActivityType.Watching,
 			Details = Fit(anime.Title),
 			State = Fit(paused ? episode.Length > 0 ? $"{episode} (paused)" : "Paused" : episode),
-			Assets = new Assets { LargeImageKey = anime.Image, LargeImageText = Fit(anime.EngTitle) },
+			Assets = new Assets { LargeImageKey = anime.Image, LargeImageText = Fit(anime.OtherTitle) },
 			Timestamps = known && !paused ? new Timestamps(end - _watch.PlaybackDuration, end) : null,
 		});
 	}
