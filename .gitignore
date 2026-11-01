@@ -367,3 +367,5 @@ installer/output/
 
 # Graphify knowledge graph & cache
 graphify-out/
+
+ui-test-artifacts/

@@ -722,12 +722,28 @@ public sealed partial class WatchService(
 		}
 
 		var next = await SkipFillersAsync(anime, number + 1);
-		// Not offered past the last episode, or the last aired one: a provider won't have it yet.
-		if (!offerEpisodes || anime.TotalEpisodes is > 0 and var total && next > total ||
-			EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is > 0 and var aired && next > aired)
+		if (!offerEpisodes)
 		{
 			// Said with the card's colour and the check, not words.
 			Show(PlaybackStatusKind.Success, "");
+			return;
+		}
+
+		// Not offered past the last episode, or the last aired one: a provider won't have it yet, so nothing's left to show
+		// once the player is closed (other players have closed by now; the built-in one stays open at the end).
+		if (anime.TotalEpisodes is > 0 and var total && next > total ||
+			EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is > 0 and var aired && next > aired)
+		{
+			if (player is IInteractiveMediaPlayer { IsOpen: true })
+			{
+				Show(PlaybackStatusKind.Success, "");
+				HideWhenClosed(player);
+			}
+			else
+			{
+				Hide();
+			}
+
 			return;
 		}
 
@@ -1258,6 +1274,23 @@ public sealed partial class WatchService(
 		PlaybackPercent = "";
 		HasDetails = false;
 		(_player as IInteractiveMediaPlayer)?.ShowStatus(null);
+	}
+
+	/// <summary>Closes the status bar when the player's window is closed, unless another episode has been started meanwhile.</summary>
+	private void HideWhenClosed(IMediaPlayer player)
+	{
+		void OnStopped(object? sender, EventArgs e)
+		{
+			// Once: a later stop belongs to whatever plays next.
+			player.PlaybackStopped -= OnStopped;
+			if (player is IInteractiveMediaPlayer { IsOpen: false } && ReferenceEquals(_player, player) &&
+				Kind == PlaybackStatusKind.Success)
+			{
+				Hide();
+			}
+		}
+
+		player.PlaybackStopped += OnStopped;
 	}
 
 	/// <summary>Shows where playback is (while an episode is playing).</summary>
