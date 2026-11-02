@@ -156,7 +156,7 @@ public partial class App : Application
 				services.AddSingleton<MangaCommands>();
 				services.AddDataViewMap<MangaDetailsPage, MangaDetailsViewModel, MangaModel>();
 				services.AddDialog<MangaTrackingDialog, MangaTrackingDialogViewModel>();
-				services.AddViewMap<ReaderPage, ReaderViewModel>();
+				services.AddDataViewMap<ReaderPage, ReaderViewModel, ReaderRequest>();
 				// First, so it's where the app starts until the user picks another startup page (see StartupPagePreferences).
 				services.AddMainNavigationItem<DiscoverPage, DiscoverViewModel>("Discover", x =>
 				{
