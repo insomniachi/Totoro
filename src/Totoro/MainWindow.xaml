@@ -516,6 +516,29 @@
                             </Flyout>
                         </Button.Flyout>
                     </Button>
+
+                    <!--  Full screen and back, beside the caption buttons (which full screen hides, so this is the way out)  -->
+                    <Button
+                        x:Name="FullScreenButton"
+                        Height="32"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="Full screen"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="OnFullScreenClick"
+                        KeyboardAcceleratorPlacementMode="Hidden"
+                        ToolTipService.ToolTip="Full screen (F11)">
+                        <!--  Window-wide: F11 toggles  -->
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F11" />
+                        </Button.KeyboardAccelerators>
+                        <!--  Esc only leaves full screen. On the icon, not the button: an unhandled accelerator on a button clicks it  -->
+                        <FontIcon x:Name="FullScreenIcon" FontSize="16" Glyph="&#xE740;">
+                            <FontIcon.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
+                            </FontIcon.KeyboardAccelerators>
+                        </FontIcon>
+                    </Button>
                 </StackPanel>
             </TitleBar.RightHeader>
         </TitleBar>
