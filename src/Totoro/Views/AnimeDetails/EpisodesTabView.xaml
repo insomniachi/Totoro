@@ -60,9 +60,9 @@
                                             Command="{x:Bind commands:AnimeCommands.Shared.BingeEpisodeCommand}"
                                             CommandParameter="{x:Bind Play}"
                                             IsEnabled="{x:Bind CanPlay}"
-                                            Text="Play from here">
+                                            Text="Binge">
                                             <MenuFlyoutItem.Icon>
-                                                <FontIcon Glyph="&#xE8EE;" />
+                                                <FontIcon Glyph="&#xE8B2;" />
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
                                         <MenuFlyoutItem

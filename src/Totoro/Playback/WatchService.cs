@@ -84,7 +84,7 @@ public sealed partial class WatchService(
 
 	private CancellationTokenSource? _cancellation;
 
-	// Whether the episode playing was started with "Play from here": then the next one plays after a countdown, whatever
+	// Whether the episode playing was started with "Binge": then the next one plays after a countdown, whatever
 	// the setting, and so on until the countdown's cancelled or another episode is started.
 	private bool _binge;
 
