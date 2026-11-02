@@ -1,9 +1,13 @@
+using System.ComponentModel;
 using System.Numerics;
 using CommunityToolkit.WinUI;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -26,18 +30,131 @@ public sealed partial class ReaderPage : Page
 	// The spread showing, to tell which way a turn went.
 	private int _shownSpread = -1;
 
+	// Hides the bar once it's been left alone a while.
+	private readonly Microsoft.UI.Dispatching.DispatcherQueueTimer _barTimer;
+
+	private bool _pointerOverBar;
+
 	public ReaderPage()
 	{
 		InitializeComponent();
+		_barTimer = DispatcherQueue.CreateTimer();
+		_barTimer.Interval = TimeSpan.FromSeconds(3);
+		_barTimer.IsRepeating = false;
+		_barTimer.Tick += (_, _) => HideBar();
+		// Handled ones too: the flip view takes the pointer and taps for itself.
+		Root.AddHandler(PointerMovedEvent, new PointerEventHandler(OnPointerMoved), true);
+		PagedView.AddHandler(TappedEvent, new TappedEventHandler(OnPagesTapped), true);
 		Loaded += (_, _) =>
 		{
-			Focus(FocusState.Programmatic);
+			// The pages, not the page: it can't take focus, and passes it to the bar's slider.
+			PagedView.Focus(FocusState.Programmatic);
+			// A moment on opening, so it's known to be there.
+			ShowBar();
 		};
-		Unloaded += (_, _) => TurnLayer.Children.Clear();
+		Unloaded += (_, _) =>
+		{
+			_barTimer.Stop();
+			TurnLayer.Children.Clear();
+		};
 	}
 
 	[GeneratedDependencyProperty]
 	public partial ReaderViewModel? ViewModel { get; set; }
+
+	// The view model listened to, to stop when another replaces it.
+	private ReaderViewModel? _listened;
+
+	partial void OnViewModelChanged(ReaderViewModel? newValue)
+	{
+		if (_listened is not null)
+		{
+			_listened.PropertyChanged -= OnViewModelPropertyChanged;
+		}
+
+		_listened = newValue;
+		if (newValue is not null)
+		{
+			newValue.PropertyChanged += OnViewModelPropertyChanged;
+		}
+	}
+
+	// What finishing a chapter saved to the user's list is in the bar: worth a glance.
+	private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == nameof(ReaderViewModel.TrackingText) && ViewModel is { TrackingText.Length: > 0 })
+		{
+			ShowBar();
+		}
+	}
+
+	/// <summary>
+	/// Shows the bar until it's been left alone a while. Reading is the pages alone: the bar shows on opening, on a click
+	/// or tap on the pages, with the mouse at the top, and on tabbing into it; it goes on turning a page with the keys.
+	/// </summary>
+	private void ShowBar()
+	{
+		Bar.Opacity = 1;
+		Bar.IsHitTestVisible = true;
+		_barTimer.Start();
+	}
+
+	private void HideBar()
+	{
+		// Not from under the pointer, or while in use from the keyboard.
+		if (_pointerOverBar || BarHasFocus())
+		{
+			_barTimer.Start();
+			return;
+		}
+
+		_barTimer.Stop();
+		Bar.Opacity = 0;
+		Bar.IsHitTestVisible = false;
+	}
+
+	// From the keyboard only: a button clicked keeps focus, but the mouse has moved on.
+	private bool BarHasFocus() =>
+		XamlRoot is { } root && FocusManager.GetFocusedElement(root) is Control { FocusState: FocusState.Keyboard } focused && focused.FindAscendant<CommandBar>() == Bar;
+
+	private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+	{
+		if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse && e.GetCurrentPoint(Root).Position.Y < Bar.ActualHeight)
+		{
+			ShowBar();
+		}
+	}
+
+	private void OnPagesTapped(object sender, TappedRoutedEventArgs e)
+	{
+		// Not the flip view's own arrows, or Retry.
+		if (e.OriginalSource is DependencyObject source && source.FindAscendantOrSelf<ButtonBase>() is not null)
+		{
+			return;
+		}
+
+		if (Bar.IsHitTestVisible)
+		{
+			_pointerOverBar = false;
+			HideBar();
+		}
+		else
+		{
+			ShowBar();
+		}
+	}
+
+	private void OnBarGotFocus(object sender, RoutedEventArgs e)
+	{
+		if (e.OriginalSource is Control { FocusState: FocusState.Keyboard })
+		{
+			ShowBar();
+		}
+	}
+
+	private void OnBarPointerEntered(object sender, PointerRoutedEventArgs e) => _pointerOverBar = true;
+
+	private void OnBarPointerExited(object sender, PointerRoutedEventArgs e) => _pointerOverBar = false;
 
 	// Before the controls see them: the flip view and the page slider take the arrow keys for themselves otherwise.
 	private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -52,6 +169,11 @@ public sealed partial class ReaderPage : Page
 		var back = vm.IsRightToLeft ? VirtualKey.Right : VirtualKey.Left;
 		switch (e.Key)
 		{
+			// Out of the bar first, back to the pages.
+			case VirtualKey.Escape when BarHasFocus():
+				PagedView.Focus(FocusState.Programmatic);
+				HideBar();
+				break;
 			case VirtualKey.Escape:
 				if (Navigators.TryGetNavigator("main", out var main))
 				{
@@ -61,9 +183,11 @@ public sealed partial class ReaderPage : Page
 				break;
 			case var key when key == forward || key is VirtualKey.Space or VirtualKey.PageDown:
 				vm.NextPageCommand.Execute(null);
+				HideBar();
 				break;
 			case var key when key == back || key is VirtualKey.PageUp:
 				vm.PreviousPageCommand.Execute(null);
+				HideBar();
 				break;
 			default:
 				return;

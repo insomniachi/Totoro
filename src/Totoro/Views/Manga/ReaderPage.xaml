@@ -33,87 +33,8 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid RowSpacing="8">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!--  The bar: where you are, and going about the chapters  -->
-        <Grid ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock
-                    Style="{StaticResource BodyStrongTextBlockStyle}"
-                    Text="{x:Bind ViewModel.MangaTitle}"
-                    TextTrimming="CharacterEllipsis" />
-                <TextBlock
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind local:ReaderPage.Where(ViewModel.ChapterTitle, ViewModel.PageText), Mode=OneWay}"
-                    TextTrimming="CharacterEllipsis" />
-                <!--  What finishing a chapter saved to the user's list  -->
-                <TextBlock
-                    AutomationProperties.LiveSetting="Polite"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind ViewModel.TrackingText, Mode=OneWay}"
-                    TextTrimming="CharacterEllipsis"
-                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.TrackingText), Mode=OneWay}" />
-            </StackPanel>
-            <Slider
-                Grid.Column="1"
-                Width="200"
-                VerticalAlignment="Center"
-                AutomationProperties.Name="Page"
-                IsDirectionReversed="{x:Bind ViewModel.IsRightToLeft, Mode=OneWay}"
-                Maximum="{x:Bind ViewModel.PageCount, Mode=OneWay}"
-                Minimum="1"
-                Value="{x:Bind ViewModel.PageNumber, Mode=TwoWay}" />
-            <Button
-                Grid.Column="2"
-                AutomationProperties.Name="Previous chapter"
-                Command="{x:Bind ViewModel.PreviousChapterCommand}"
-                IsEnabled="{x:Bind ViewModel.HasPrevious, Mode=OneWay}"
-                ToolTipService.ToolTip="Previous chapter">
-                <FontIcon FontSize="16" Glyph="&#xE892;" />
-            </Button>
-            <Button
-                Grid.Column="3"
-                AutomationProperties.Name="Next chapter"
-                Command="{x:Bind ViewModel.NextChapterCommand}"
-                IsEnabled="{x:Bind ViewModel.HasNext, Mode=OneWay}"
-                ToolTipService.ToolTip="Next chapter">
-                <FontIcon FontSize="16" Glyph="&#xE893;" />
-            </Button>
-            <!--  Two pages side by side, a page at a time  -->
-            <ToggleButton
-                Grid.Column="4"
-                AutomationProperties.Name="Two pages"
-                IsChecked="{x:Bind ViewModel.TwoPages, Mode=TwoWay}"
-                ToolTipService.ToolTip="Two pages side by side">
-                <FontIcon FontSize="16" Glyph="&#xE89A;" />
-            </ToggleButton>
-            <!--  Right to left, as most manga read; the arrow keys follow  -->
-            <ToggleButton
-                Grid.Column="5"
-                AutomationProperties.Name="Right to left"
-                IsChecked="{x:Bind ViewModel.IsRightToLeft, Mode=TwoWay}"
-                ToolTipService.ToolTip="Read right to left, as most manga">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon FontSize="16" Glyph="&#xE72B;" />
-                    <TextBlock Text="Right to left" />
-                </StackPanel>
-            </ToggleButton>
-        </Grid>
-
+    <Grid x:Name="Root">
         <InfoBar
-            Grid.Row="1"
             VerticalAlignment="Top"
             Canvas.ZIndex="1"
             IsClosable="False"
@@ -131,7 +52,6 @@
         -->
         <FlipView
             x:Name="PagedView"
-            Grid.Row="1"
             Background="Transparent"
             FlowDirection="{x:Bind local:ReaderPage.Direction(ViewModel.IsRightToLeft), Mode=OneWay}"
             ItemsSource="{x:Bind ViewModel.Spreads, Mode=OneWay}"
@@ -181,9 +101,95 @@
         </FlipView>
 
         <!--  Over the pages while one turns: copies of the pages that move and the shadows they cast (see Turn)  -->
-        <Canvas
-            x:Name="TurnLayer"
-            Grid.Row="1"
-            IsHitTestVisible="False" />
+        <Canvas x:Name="TurnLayer" IsHitTestVisible="False" />
+
+        <!--
+            The bar: where you are, and going about the chapters. Over the pages, and only while wanted (see ShowBar):
+            reading is the pages alone. Faded rather than collapsed, so Tab still reaches it.
+        -->
+        <CommandBar
+            x:Name="Bar"
+            VerticalAlignment="Top"
+            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+            Canvas.ZIndex="2"
+            DefaultLabelPosition="Collapsed"
+            GotFocus="OnBarGotFocus"
+            IsHitTestVisible="False"
+            Opacity="0"
+            OverflowButtonVisibility="Collapsed"
+            VerticalContentAlignment="Center"
+            PointerEntered="OnBarPointerEntered"
+            PointerExited="OnBarPointerExited">
+            <CommandBar.OpacityTransition>
+                <ScalarTransition />
+            </CommandBar.OpacityTransition>
+            <CommandBar.Content>
+                <StackPanel Margin="12,4" VerticalAlignment="Center">
+                    <TextBlock
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind ViewModel.MangaTitle}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.MangaTitle)}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind local:ReaderPage.Where(ViewModel.ChapterTitle, ViewModel.PageText), Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <!--  What finishing a chapter saved to the user's list  -->
+                    <TextBlock
+                        AutomationProperties.LiveSetting="Polite"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.TrackingText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.TrackingText), Mode=OneWay}" />
+                </StackPanel>
+            </CommandBar.Content>
+            <AppBarElementContainer VerticalContentAlignment="Center">
+                <Slider
+                    Width="200"
+                    Margin="8,0"
+                    AutomationProperties.Name="Page"
+                    IsDirectionReversed="{x:Bind ViewModel.IsRightToLeft, Mode=OneWay}"
+                    Maximum="{x:Bind ViewModel.PageCount, Mode=OneWay}"
+                    Minimum="1"
+                    Value="{x:Bind ViewModel.PageNumber, Mode=TwoWay}" />
+            </AppBarElementContainer>
+            <AppBarButton
+                Command="{x:Bind ViewModel.PreviousChapterCommand}"
+                IsEnabled="{x:Bind ViewModel.HasPrevious, Mode=OneWay}"
+                Label="Previous chapter"
+                ToolTipService.ToolTip="Previous chapter">
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE892;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton
+                Command="{x:Bind ViewModel.NextChapterCommand}"
+                IsEnabled="{x:Bind ViewModel.HasNext, Mode=OneWay}"
+                Label="Next chapter"
+                ToolTipService.ToolTip="Next chapter">
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE893;" />
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarSeparator />
+            <!--  Two pages side by side, a page at a time  -->
+            <AppBarToggleButton
+                IsChecked="{x:Bind ViewModel.TwoPages, Mode=TwoWay}"
+                Label="Two pages"
+                ToolTipService.ToolTip="Two pages side by side">
+                <AppBarToggleButton.Icon>
+                    <FontIcon Glyph="&#xE89A;" />
+                </AppBarToggleButton.Icon>
+            </AppBarToggleButton>
+            <!--  Right to left, as most manga read; the arrow keys follow  -->
+            <AppBarToggleButton
+                IsChecked="{x:Bind ViewModel.IsRightToLeft, Mode=TwoWay}"
+                Label="Right to left"
+                ToolTipService.ToolTip="Read right to left, as most manga">
+                <AppBarToggleButton.Icon>
+                    <FontIcon Glyph="&#xE72B;" />
+                </AppBarToggleButton.Icon>
+            </AppBarToggleButton>
+        </CommandBar>
     </Grid>
 </Page>
