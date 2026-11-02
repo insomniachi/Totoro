@@ -1,4 +1,3 @@
-using Microsoft.Xaml.Interactivity;
 using Totoro.Core.Modules;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
@@ -11,23 +10,26 @@ namespace Totoro.UI.Controls.AnimeCardOverlays;
 /// </summary>
 public abstract class CardOverlaySelector
 {
-	/// <summary>The overlays a card needs for <paramref name="item"/> at <paramref name="now"/>; new instances, at most one of each type.</summary>
-	public abstract IEnumerable<Behavior> Select(IMediaModel item, DateTime now);
+	/// <summary>
+	/// The overlays a card needs for <paramref name="item"/> at <paramref name="now"/>, as their types (Behaviors with a
+	/// parameterless constructor): the card creates only those it lacks, since a recycled card asks again on every item.
+	/// </summary>
+	public abstract IEnumerable<Type> Select(IMediaModel item, DateTime now);
 }
 
 /// <summary>Discover's cards: where each is on the list, and its score.</summary>
 public sealed class BrowseOverlays : CardOverlaySelector
 {
-	public override IEnumerable<Behavior> Select(IMediaModel item, DateTime now)
+	public override IEnumerable<Type> Select(IMediaModel item, DateTime now)
 	{
 		if (ListStatusOverlay.IsShown(item))
 		{
-			yield return new ListStatusOverlay();
+			yield return typeof(ListStatusOverlay);
 		}
 
 		if (MeanScoreOverlay.IsShown(item))
 		{
-			yield return new MeanScoreOverlay();
+			yield return typeof(MeanScoreOverlay);
 		}
 	}
 }
@@ -35,11 +37,11 @@ public sealed class BrowseOverlays : CardOverlaySelector
 /// <summary>Next season's cards: no score yet, so just where each is on the list.</summary>
 public sealed class UpcomingOverlays : CardOverlaySelector
 {
-	public override IEnumerable<Behavior> Select(IMediaModel item, DateTime now)
+	public override IEnumerable<Type> Select(IMediaModel item, DateTime now)
 	{
 		if (ListStatusOverlay.IsShown(item))
 		{
-			yield return new ListStatusOverlay();
+			yield return typeof(ListStatusOverlay);
 		}
 	}
 }
@@ -47,27 +49,27 @@ public sealed class UpcomingOverlays : CardOverlaySelector
 /// <summary>The user's list: what's coming, what's new, and how far they are.</summary>
 public sealed class MediaListOverlays : CardOverlaySelector
 {
-	public override IEnumerable<Behavior> Select(IMediaModel item, DateTime now)
+	public override IEnumerable<Type> Select(IMediaModel item, DateTime now)
 	{
 		// Anime only: manga have no schedule or provider episodes.
 		if (NextEpisodeOverlay.IsShown(item, now))
 		{
-			yield return new NextEpisodeOverlay();
+			yield return typeof(NextEpisodeOverlay);
 		}
 
 		if (NewEpisodesOverlay.IsShown(item, now))
 		{
-			yield return new NewEpisodesOverlay();
+			yield return typeof(NewEpisodesOverlay);
 		}
 
 		if (AiringStatusOverlay.IsShown(item))
 		{
-			yield return new AiringStatusOverlay();
+			yield return typeof(AiringStatusOverlay);
 		}
 
 		if (WatchProgressOverlay.IsShown(item))
 		{
-			yield return new WatchProgressOverlay();
+			yield return typeof(WatchProgressOverlay);
 		}
 	}
 }
@@ -77,7 +79,7 @@ public sealed class MediaSearchOverlays : CardOverlaySelector
 {
 	private readonly BrowseOverlays _browse = new();
 
-	public override IEnumerable<Behavior> Select(IMediaModel item, DateTime now)
+	public override IEnumerable<Type> Select(IMediaModel item, DateTime now)
 	{
 		foreach (var overlay in _browse.Select(item, now))
 		{
@@ -86,7 +88,7 @@ public sealed class MediaSearchOverlays : CardOverlaySelector
 
 		if (AiringStatusOverlay.IsShown(item))
 		{
-			yield return new AiringStatusOverlay();
+			yield return typeof(AiringStatusOverlay);
 		}
 	}
 }
@@ -96,7 +98,7 @@ public sealed class MissedRelationsOverlays : CardOverlaySelector
 {
 	private readonly BrowseOverlays _browse = new();
 
-	public override IEnumerable<Behavior> Select(IMediaModel item, DateTime now)
+	public override IEnumerable<Type> Select(IMediaModel item, DateTime now)
 	{
 		foreach (var overlay in _browse.Select(item, now))
 		{
@@ -105,7 +107,7 @@ public sealed class MissedRelationsOverlays : CardOverlaySelector
 
 		if (FormatSeasonOverlay.IsShown(item))
 		{
-			yield return new FormatSeasonOverlay();
+			yield return typeof(FormatSeasonOverlay);
 		}
 	}
 }

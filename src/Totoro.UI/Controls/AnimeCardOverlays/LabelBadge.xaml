@@ -6,10 +6,10 @@
     Margin="8"
     IsHitTestVisible="False">
 
-    <!--  An icon and a short label on the cover, acrylic as the next episode badge is, so it reads on any art  -->
+    <!--  An icon and a short label on the cover, on a solid fill so it reads on any art: not acrylic, whose blur redraws every frame a list scrolls  -->
     <Border
         Padding="6,2"
-        Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+        Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
         BorderThickness="1"
         CornerRadius="{ThemeResource ControlCornerRadius}">

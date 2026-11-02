@@ -89,23 +89,24 @@ public sealed partial class AnimeCard : UserControl
 		var behaviors = Interaction.GetBehaviors(this);
 		for (var i = _selected.Count - 1; i >= 0; i--)
 		{
-			if (!wanted.Exists(x => x.GetType() == _selected[i].GetType()))
+			if (!wanted.Contains(_selected[i].GetType()))
 			{
 				behaviors.Remove(_selected[i]);
 				_selected.RemoveAt(i);
 			}
 		}
 
-		foreach (var overlay in wanted)
+		foreach (var type in wanted)
 		{
-			if (!_selected.Exists(x => x.GetType() == overlay.GetType()))
+			if (_selected.Find(x => x.GetType() == type) is { } kept)
 			{
-				_selected.Add(overlay);
-				behaviors.Add(overlay); // attaching fills it in
+				(kept as ILiveOverlay)?.Update(Media, now);
 			}
 			else
 			{
-				(_selected.Find(x => x.GetType() == overlay.GetType()) as ILiveOverlay)?.Update(Media, now);
+				var overlay = (Behavior)Activator.CreateInstance(type)!;
+				_selected.Add(overlay);
+				behaviors.Add(overlay); // attaching fills it in
 			}
 		}
 	}
@@ -169,9 +170,13 @@ public sealed partial class AnimeCard : UserControl
 
 	private void OnPosterOpened(object sender, RoutedEventArgs e) => PosterFade.Opacity = 1;
 
+	// One for every card: x:Bind sets Command again each time a card is recycled, and a new cursor each time is a new
+	// WinRT object, which (with the others) forces full garbage collections while scrolling.
+	private static InputSystemCursor? s_handCursor;
+
 	partial void OnCommandChanged(ICommand? newValue)
 	{
-		ProtectedCursor = newValue is null ? null : InputSystemCursor.Create(InputSystemCursorShape.Hand);
+		ProtectedCursor = newValue is null ? null : s_handCursor ??= InputSystemCursor.Create(InputSystemCursorShape.Hand);
 	}
 
 	private void OnTitleTrimmedChanged(TextBlock sender, IsTextTrimmedChangedEventArgs args)

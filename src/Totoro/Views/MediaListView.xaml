@@ -69,10 +69,11 @@
         <!--  A card as the list's kind wants it: the same card, with each kind's actions and overlays  -->
         <overlays:MediaListOverlays x:Key="CardOverlays" />
 
+        <!--  Cards have a fixed height, the grid's MinItemHeight: otherwise each takes its poster's aspect, and resizes as it's recycled while scrolling  -->
         <local:MediaTemplateSelector x:Key="CardTemplate">
             <local:MediaTemplateSelector.Anime>
                 <DataTemplate x:DataType="anime:AnimeModel">
-                    <controls:AnimeCard Anime="{x:Bind}" Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
+                    <controls:AnimeCard Height="400" Anime="{x:Bind}" Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
                         <Interactivity:Interaction.Behaviors>
                             <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
                             <overlays:HoverEffectsBehavior />
@@ -82,7 +83,7 @@
             </local:MediaTemplateSelector.Anime>
             <local:MediaTemplateSelector.Manga>
                 <DataTemplate x:DataType="manga:MangaModel">
-                    <controls:AnimeCard Media="{x:Bind}" Command="{x:Bind commands:MangaCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
+                    <controls:AnimeCard Height="400" Media="{x:Bind}" Command="{x:Bind commands:MangaCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
                         <Interactivity:Interaction.Behaviors>
                             <overlays:ActionsOverlay Actions="{StaticResource MangaCardActions}" />
                             <overlays:HoverEffectsBehavior />
