@@ -232,7 +232,7 @@ public static partial class AniListModelToAnimeModelConverter
             .. media.Where(x => x.Type == MediaType.Anime)
                     .Select(x => new AnimeModel
                     {
-                        Title = x.Title.Romaji ?? x.Title.English ?? string.Empty,
+                        Title = GetTitle(x) ?? string.Empty,
                         EngTitle = x.Title.English ?? x.Title.Romaji ?? string.Empty,
                         RomajiTitle = x.Title.Romaji ?? x.Title.English ?? string.Empty,
                         Description = x.Description,
