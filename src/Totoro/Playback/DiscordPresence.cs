@@ -93,7 +93,8 @@ public sealed class DiscordPresence : IDisposable
 			Type = ActivityType.Watching,
 			Details = Fit(anime.Title),
 			State = Fit(paused ? episode.Length > 0 ? $"{episode} (paused)" : "Paused" : episode),
-			Assets = new Assets { LargeImageKey = anime.Image, LargeImageText = Fit(anime.OtherTitle) },
+			// No image text: Discord shows it on Watching activities, where the other title would read as the anime's name.
+			Assets = new Assets { LargeImageKey = anime.Image },
 			Timestamps = known && !paused ? new Timestamps(end - _watch.PlaybackDuration, end) : null,
 		});
 	}
