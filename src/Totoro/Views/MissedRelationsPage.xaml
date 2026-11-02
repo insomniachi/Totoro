@@ -75,6 +75,7 @@
                         SelectedItem="{x:Bind ViewModel.Sort, Mode=TwoWay}" />
                     <Button
                         Grid.Column="2"
+                        MinHeight="{ThemeResource ComboBoxMinHeight}"
                         VerticalAlignment="Bottom"
                         AutomationProperties.Name="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}"
                         Command="{x:Bind ViewModel.ToggleSortDirectionCommand}"
