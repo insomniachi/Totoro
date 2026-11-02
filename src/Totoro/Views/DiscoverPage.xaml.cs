@@ -32,6 +32,8 @@ public sealed partial class DiscoverPage : Page
 	[GeneratedDependencyProperty]
 	public partial DiscoverViewModel? ViewModel { get; set; }
 
+	public static IReadOnlyList<int> PlaceholderCards { get; } = [.. Enumerable.Range(0, 8)];
+
 	// A card and the gap after it, as in the XAML's CardTemplate (Width) and rows' StackLayout (Spacing).
 	private const double CardStride = 190 + 16;
 

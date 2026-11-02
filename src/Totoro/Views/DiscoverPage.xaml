@@ -107,286 +107,339 @@
             <Setter Property="Height" Value="36" />
             <Setter Property="Padding" Value="0" />
         </Style>
+
+        <!--  A row still loading: its header (the content) over shimmering cards the size of CardTemplate's  -->
+        <DataTemplate x:Key="PlaceholderRowTemplate" x:DataType="x:String">
+            <StackPanel Spacing="12">
+                <TextBlock
+                    Height="36"
+                    Style="{StaticResource RowHeaderStyle}"
+                    Text="{x:Bind}" />
+                <ScrollView IsHitTestVisible="False" Style="{StaticResource RowScrollViewStyle}">
+                    <!--  The page's implicit ItemsRepeater style doesn't reach into this template  -->
+                    <ItemsRepeater Margin="8" ItemsSource="{x:Bind local:DiscoverPage.PlaceholderCards}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="x:Int32">
+                                <toolkit:Shimmer
+                                    Width="190"
+                                    Height="320"
+                                    CornerRadius="8" />
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="16" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </ScrollView>
+            </StackPanel>
+        </DataTemplate>
+
+        <Style x:Key="PlaceholderRowStyle" TargetType="ContentControl">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="ContentTemplate" Value="{StaticResource PlaceholderRowTemplate}" />
+        </Style>
     </Page.Resources>
 
-    <Grid>
-        <ScrollView>
-            <StackPanel Padding="16" Spacing="12">
+    <ScrollView>
+        <StackPanel Padding="16" Spacing="12">
 
-                <!--  Spotlight: trending anime with their banners, turning over by themselves (see the code-behind)  -->
-                <FlipView
-                    x:Name="Spotlight"
-                    Height="380"
-                    AutomationProperties.Name="Spotlight"
-                    CornerRadius="8"
-                    ItemsSource="{x:Bind ViewModel.Spotlight, Mode=OneWay}"
-                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Spotlight), Mode=OneWay}">
-                    <FlipView.ItemTemplate>
-                        <DataTemplate x:DataType="anime:AnimeModel">
-                            <!--  Dark whatever the app's theme: light text over the darkened banner  -->
-                            <Grid RequestedTheme="Dark">
-                                <Image Source="{x:Bind BannerImage}" Stretch="UniformToFill" />
-                                <Rectangle>
-                                    <Rectangle.Fill>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Offset="0" Color="#F2000000" />
-                                            <GradientStop Offset="0.5" Color="#B3000000" />
-                                            <GradientStop Offset="1" Color="#1A000000" />
-                                        </LinearGradientBrush>
-                                    </Rectangle.Fill>
-                                </Rectangle>
+            <!--  Placeholders (the toolkit:Shimmer ones) stand in for each part of the page while it loads, in its place  -->
+            <toolkit:Shimmer
+                Height="380"
+                AutomationProperties.Name="Loading"
+                CornerRadius="8"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
 
-                                <Grid
-                                    MaxWidth="900"
-                                    Padding="48,32"
-                                    HorizontalAlignment="Left"
+            <!--  Spotlight: trending anime with their banners, turning over by themselves (see the code-behind)  -->
+            <FlipView
+                x:Name="Spotlight"
+                Height="380"
+                AutomationProperties.Name="Spotlight"
+                CornerRadius="8"
+                ItemsSource="{x:Bind ViewModel.Spotlight, Mode=OneWay}"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Spotlight), Mode=OneWay}">
+                <FlipView.ItemTemplate>
+                    <DataTemplate x:DataType="anime:AnimeModel">
+                        <!--  Dark whatever the app's theme: light text over the darkened banner  -->
+                        <Grid RequestedTheme="Dark">
+                            <Image Source="{x:Bind BannerImage}" Stretch="UniformToFill" />
+                            <Rectangle>
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Offset="0" Color="#F2000000" />
+                                        <GradientStop Offset="0.5" Color="#B3000000" />
+                                        <GradientStop Offset="1" Color="#1A000000" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+
+                            <Grid
+                                MaxWidth="900"
+                                Padding="48,32"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                ColumnSpacing="24">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Width="190"
+                                    Height="270"
                                     VerticalAlignment="Center"
-                                    ColumnSpacing="24">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                                    CornerRadius="8">
+                                    <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
+                                </Border>
 
-                                    <Border
-                                        Width="190"
-                                        Height="270"
-                                        VerticalAlignment="Center"
-                                        CornerRadius="8">
-                                        <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
-                                    </Border>
-
+                                <StackPanel
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Spacing="8">
+                                    <TextBlock
+                                        MaxLines="2"
+                                        Style="{StaticResource TitleTextBlockStyle}"
+                                        Text="{x:Bind Title}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind local:DiscoverPage.Details(Genres, MeanScore, TotalEpisodes, Season)}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <RichTextBlock
+                                        MaxLines="4"
+                                        text:HtmlText.Html="{x:Bind Description}"
+                                        TextTrimming="WordEllipsis" />
                                     <StackPanel
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center"
+                                        Margin="0,8,0,0"
+                                        Orientation="Horizontal"
                                         Spacing="8">
-                                        <TextBlock
-                                            MaxLines="2"
-                                            Style="{StaticResource TitleTextBlockStyle}"
-                                            Text="{x:Bind Title}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="Wrap" />
-                                        <TextBlock
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind local:DiscoverPage.Details(Genres, MeanScore, TotalEpisodes, Season)}"
-                                            TextTrimming="CharacterEllipsis" />
-                                        <RichTextBlock
-                                            MaxLines="4"
-                                            text:HtmlText.Html="{x:Bind Description}"
-                                            TextTrimming="WordEllipsis" />
-                                        <StackPanel
-                                            Margin="0,8,0,0"
-                                            Orientation="Horizontal"
-                                            Spacing="8">
-                                            <Button
-                                                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
-                                                CommandParameter="{x:Bind}"
-                                                Content="Details"
-                                                Style="{StaticResource AccentButtonStyle}" />
-                                            <Button
-                                                Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
-                                                CommandParameter="{x:Bind}"
-                                                Content="Play" />
-                                            <Button
-                                                Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
-                                                CommandParameter="{x:Bind}"
-                                                Content="{x:Bind local:DiscoverPage.TrackingButtonText(Tracking), Mode=OneWay}" />
-                                        </StackPanel>
+                                        <Button
+                                            Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
+                                            CommandParameter="{x:Bind}"
+                                            Content="Details"
+                                            Style="{StaticResource AccentButtonStyle}" />
+                                        <Button
+                                            Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
+                                            CommandParameter="{x:Bind}"
+                                            Content="Play" />
+                                        <Button
+                                            Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
+                                            CommandParameter="{x:Bind}"
+                                            Content="{x:Bind local:DiscoverPage.TrackingButtonText(Tracking), Mode=OneWay}" />
                                     </StackPanel>
-                                </Grid>
+                                </StackPanel>
                             </Grid>
-                        </DataTemplate>
-                    </FlipView.ItemTemplate>
-                </FlipView>
-                <PipsPager
-                    HorizontalAlignment="Center"
-                    NumberOfPages="{x:Bind ViewModel.Spotlight.Count, Mode=OneWay}"
-                    SelectedPageIndex="{x:Bind Spotlight.SelectedIndex, Mode=TwoWay}"
-                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Spotlight), Mode=OneWay}" />
+                        </Grid>
+                    </DataTemplate>
+                </FlipView.ItemTemplate>
+            </FlipView>
+            <PipsPager
+                HorizontalAlignment="Center"
+                NumberOfPages="{x:Bind ViewModel.Spotlight.Count, Mode=OneWay}"
+                SelectedPageIndex="{x:Bind Spotlight.SelectedIndex, Mode=TwoWay}"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Spotlight), Mode=OneWay}" />
 
-                <!--  Each row: a header with buttons paging it a screenful at a time (OnPreviousPage/OnNextPage take the row as Tag)  -->
-                <StackPanel
-                    Margin="0,12,0,0"
-                    Spacing="12"
-                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Trending), Mode=OneWay}">
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource RowHeaderStyle}" Text="Trending now" />
-                        <Button
-                            Grid.Column="1"
-                            AutomationProperties.Name="Previous trending anime"
-                            x:Name="TrendingPrevious"
-                            Click="OnPreviousPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind TrendingRow}"
-                            ToolTipService.ToolTip="Previous" />
-                        <Button
-                            Grid.Column="2"
-                            AutomationProperties.Name="Next trending anime"
-                            x:Name="TrendingNext"
-                            Click="OnNextPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind TrendingRow}"
-                            ToolTipService.ToolTip="Next" />
-                    </Grid>
-                    <ScrollView
-                        x:Name="TrendingRow"
-                        ExtentChanged="OnRowChanged"
-                        ScrollAnimationStarting="OnRowScrollAnimationStarting"
-                        SizeChanged="OnRowChanged"
-                        Style="{StaticResource RowScrollViewStyle}"
-                        ViewChanged="OnRowChanged">
-                        <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.Trending, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Horizontal" Spacing="16" />
-                            </ItemsRepeater.Layout>
-                        </ItemsRepeater>
-                    </ScrollView>
-                </StackPanel>
+            <ContentControl
+                Margin="0,12,0,0"
+                Content="Trending now"
+                Style="{StaticResource PlaceholderRowStyle}"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
 
-                <!--  Sequels and spin-offs of what the user watched, not on their list: the first few; See all has the rest  -->
-                <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Missed), Mode=OneWay}">
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource RowHeaderStyle}" Text="Sequels &amp; spin-offs you missed" />
-                        <HyperlinkButton
-                            Grid.Column="1"
-                            AutomationProperties.Name="See all missed sequels and spin-offs"
-                            Command="{x:Bind ViewModel.SeeAllMissedCommand}"
-                            Content="See all" />
-                        <Button
-                            Grid.Column="2"
-                            AutomationProperties.Name="Previous missed anime"
-                            x:Name="MissedPrevious"
-                            Click="OnPreviousPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind MissedRow}"
-                            ToolTipService.ToolTip="Previous" />
-                        <Button
-                            Grid.Column="3"
-                            AutomationProperties.Name="Next missed anime"
-                            x:Name="MissedNext"
-                            Click="OnNextPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind MissedRow}"
-                            ToolTipService.ToolTip="Next" />
-                    </Grid>
-                    <ScrollView
-                        x:Name="MissedRow"
-                        ExtentChanged="OnRowChanged"
-                        ScrollAnimationStarting="OnRowScrollAnimationStarting"
-                        SizeChanged="OnRowChanged"
-                        Style="{StaticResource RowScrollViewStyle}"
-                        ViewChanged="OnRowChanged">
-                        <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.Missed, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Horizontal" Spacing="16" />
-                            </ItemsRepeater.Layout>
-                        </ItemsRepeater>
-                    </ScrollView>
-                </StackPanel>
-
-                <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.AiringToday), Mode=OneWay}">
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource RowHeaderStyle}" Text="Airing today" />
-                        <Button
-                            Grid.Column="1"
-                            AutomationProperties.Name="Previous anime airing today"
-                            x:Name="AiringTodayPrevious"
-                            Click="OnPreviousPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind AiringTodayRow}"
-                            ToolTipService.ToolTip="Previous" />
-                        <Button
-                            Grid.Column="2"
-                            AutomationProperties.Name="Next anime airing today"
-                            x:Name="AiringTodayNext"
-                            Click="OnNextPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind AiringTodayRow}"
-                            ToolTipService.ToolTip="Next" />
-                    </Grid>
-                    <ScrollView
-                        x:Name="AiringTodayRow"
-                        ExtentChanged="OnRowChanged"
-                        ScrollAnimationStarting="OnRowScrollAnimationStarting"
-                        SizeChanged="OnRowChanged"
-                        Style="{StaticResource RowScrollViewStyle}"
-                        ViewChanged="OnRowChanged">
-                        <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.AiringToday, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Horizontal" Spacing="16" />
-                            </ItemsRepeater.Layout>
-                        </ItemsRepeater>
-                    </ScrollView>
-                </StackPanel>
-
-                <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.NextSeason), Mode=OneWay}">
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Style="{StaticResource RowHeaderStyle}" Text="{x:Bind ViewModel.NextSeasonTitle, Mode=OneWay}" />
-                        <Button
-                            Grid.Column="1"
-                            AutomationProperties.Name="Previous anime of next season"
-                            x:Name="NextSeasonPrevious"
-                            Click="OnPreviousPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind NextSeasonRow}"
-                            ToolTipService.ToolTip="Previous" />
-                        <Button
-                            Grid.Column="2"
-                            AutomationProperties.Name="Next anime of next season"
-                            x:Name="NextSeasonNext"
-                            Click="OnNextPage"
-                            Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
-                            Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind NextSeasonRow}"
-                            ToolTipService.ToolTip="Next" />
-                    </Grid>
-                    <ScrollView
-                        x:Name="NextSeasonRow"
-                        ExtentChanged="OnRowChanged"
-                        ScrollAnimationStarting="OnRowScrollAnimationStarting"
-                        SizeChanged="OnRowChanged"
-                        Style="{StaticResource RowScrollViewStyle}"
-                        ViewChanged="OnRowChanged">
-                        <ItemsRepeater ItemTemplate="{StaticResource UpcomingCardTemplate}" ItemsSource="{x:Bind ViewModel.NextSeason, Mode=OneWay}">
-                            <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Horizontal" Spacing="16" />
-                            </ItemsRepeater.Layout>
-                        </ItemsRepeater>
-                    </ScrollView>
-                </StackPanel>
+            <!--  Each row: a header with buttons paging it a screenful at a time (OnPreviousPage/OnNextPage take the row as Tag)  -->
+            <StackPanel
+                Margin="0,12,0,0"
+                Spacing="12"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Trending), Mode=OneWay}">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource RowHeaderStyle}" Text="Trending now" />
+                    <Button
+                        Grid.Column="1"
+                        AutomationProperties.Name="Previous trending anime"
+                        x:Name="TrendingPrevious"
+                        Click="OnPreviousPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind TrendingRow}"
+                        ToolTipService.ToolTip="Previous" />
+                    <Button
+                        Grid.Column="2"
+                        AutomationProperties.Name="Next trending anime"
+                        x:Name="TrendingNext"
+                        Click="OnNextPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind TrendingRow}"
+                        ToolTipService.ToolTip="Next" />
+                </Grid>
+                <ScrollView
+                    x:Name="TrendingRow"
+                    ExtentChanged="OnRowChanged"
+                    ScrollAnimationStarting="OnRowScrollAnimationStarting"
+                    SizeChanged="OnRowChanged"
+                    Style="{StaticResource RowScrollViewStyle}"
+                    ViewChanged="OnRowChanged">
+                    <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.Trending, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="16" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </ScrollView>
             </StackPanel>
-        </ScrollView>
 
-        <ProgressRing
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
-    </Grid>
+            <ContentControl
+                Content="Airing today"
+                Style="{StaticResource PlaceholderRowStyle}"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
+            <ContentControl
+                Content="{x:Bind ViewModel.NextSeasonTitle}"
+                Style="{StaticResource PlaceholderRowStyle}"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
+
+            <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.AiringToday), Mode=OneWay}">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource RowHeaderStyle}" Text="Airing today" />
+                    <Button
+                        Grid.Column="1"
+                        AutomationProperties.Name="Previous anime airing today"
+                        x:Name="AiringTodayPrevious"
+                        Click="OnPreviousPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind AiringTodayRow}"
+                        ToolTipService.ToolTip="Previous" />
+                    <Button
+                        Grid.Column="2"
+                        AutomationProperties.Name="Next anime airing today"
+                        x:Name="AiringTodayNext"
+                        Click="OnNextPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind AiringTodayRow}"
+                        ToolTipService.ToolTip="Next" />
+                </Grid>
+                <ScrollView
+                    x:Name="AiringTodayRow"
+                    ExtentChanged="OnRowChanged"
+                    ScrollAnimationStarting="OnRowScrollAnimationStarting"
+                    SizeChanged="OnRowChanged"
+                    Style="{StaticResource RowScrollViewStyle}"
+                    ViewChanged="OnRowChanged">
+                    <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.AiringToday, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="16" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </ScrollView>
+            </StackPanel>
+
+            <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.NextSeason), Mode=OneWay}">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource RowHeaderStyle}" Text="{x:Bind ViewModel.NextSeasonTitle, Mode=OneWay}" />
+                    <Button
+                        Grid.Column="1"
+                        AutomationProperties.Name="Previous anime of next season"
+                        x:Name="NextSeasonPrevious"
+                        Click="OnPreviousPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind NextSeasonRow}"
+                        ToolTipService.ToolTip="Previous" />
+                    <Button
+                        Grid.Column="2"
+                        AutomationProperties.Name="Next anime of next season"
+                        x:Name="NextSeasonNext"
+                        Click="OnNextPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind NextSeasonRow}"
+                        ToolTipService.ToolTip="Next" />
+                </Grid>
+                <ScrollView
+                    x:Name="NextSeasonRow"
+                    ExtentChanged="OnRowChanged"
+                    ScrollAnimationStarting="OnRowScrollAnimationStarting"
+                    SizeChanged="OnRowChanged"
+                    Style="{StaticResource RowScrollViewStyle}"
+                    ViewChanged="OnRowChanged">
+                    <ItemsRepeater ItemTemplate="{StaticResource UpcomingCardTemplate}" ItemsSource="{x:Bind ViewModel.NextSeason, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="16" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </ScrollView>
+            </StackPanel>
+
+            <!--  Missed takes far longer than the rest, so it shows it's coming rather than popping in later  -->
+            <ContentControl
+                Content="Sequels &amp; spin-offs you missed"
+                Style="{StaticResource PlaceholderRowStyle}"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoadingMissed), Mode=OneWay}" />
+
+            <!--  Sequels and spin-offs of what the user watched, not on their list: the first few; See all has the rest  -->
+            <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Missed), Mode=OneWay}">
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Style="{StaticResource RowHeaderStyle}" Text="Sequels &amp; spin-offs you missed" />
+                    <HyperlinkButton
+                        Grid.Column="1"
+                        AutomationProperties.Name="See all missed sequels and spin-offs"
+                        Command="{x:Bind ViewModel.SeeAllMissedCommand}"
+                        Content="See all" />
+                    <Button
+                        Grid.Column="2"
+                        AutomationProperties.Name="Previous missed anime"
+                        x:Name="MissedPrevious"
+                        Click="OnPreviousPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind MissedRow}"
+                        ToolTipService.ToolTip="Previous" />
+                    <Button
+                        Grid.Column="3"
+                        AutomationProperties.Name="Next missed anime"
+                        x:Name="MissedNext"
+                        Click="OnNextPage"
+                        Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
+                        Style="{StaticResource RowPageButtonStyle}"
+                        Tag="{x:Bind MissedRow}"
+                        ToolTipService.ToolTip="Next" />
+                </Grid>
+                <ScrollView
+                    x:Name="MissedRow"
+                    ExtentChanged="OnRowChanged"
+                    ScrollAnimationStarting="OnRowScrollAnimationStarting"
+                    SizeChanged="OnRowChanged"
+                    Style="{StaticResource RowScrollViewStyle}"
+                    ViewChanged="OnRowChanged">
+                    <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.Missed, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="16" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </ScrollView>
+            </StackPanel>
+        </StackPanel>
+    </ScrollView>
 </Page>

@@ -28,6 +28,8 @@ public sealed partial class DiscoverViewModel(
 	[ObservableProperty] public partial IReadOnlyList<AnimeModel> AiringToday { get; private set; } = [];
 	[ObservableProperty] public partial IReadOnlyList<AnimeModel> NextSeason { get; private set; } = [];
 	[ObservableProperty] public partial IReadOnlyList<AnimeModel> Missed { get; private set; } = [];
+	// Missed comes in well after the rest of the page, so it has its own placeholder row.
+	[ObservableProperty] public partial bool IsLoadingMissed { get; private set; }
 
 	private static Season Next => Season.Of(DateTime.Now.AddMonths(3));
 
@@ -68,6 +70,7 @@ public sealed partial class DiscoverViewModel(
 
 	private async Task LoadMissedAsync()
 	{
+		IsLoadingMissed = true;
 		try
 		{
 			Missed = [.. (await missedRelations.GetAsync()).Take(MissedCount)];
@@ -75,6 +78,10 @@ public sealed partial class DiscoverViewModel(
 		catch (Exception ex)
 		{
 			logger.LogWarning(ex, "Couldn't load missed sequels and spin-offs");
+		}
+		finally
+		{
+			IsLoadingMissed = false;
 		}
 	}
 
