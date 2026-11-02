@@ -53,7 +53,8 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 
 	[ObservableProperty] public partial bool IsPlaying { get; private set; }
 
-	private readonly Windows.System.Display.DisplayRequest _displayRequest = new();
+	// Made when playback first starts, on the UI thread: it can't be activated off one (as in tests), and isn't needed before.
+	private Windows.System.Display.DisplayRequest? _displayRequest;
 
 	/// <summary>Whether it's waiting for the video (starting, or after seeking).</summary>
 	[ObservableProperty] public partial bool IsBuffering { get; private set; }
@@ -702,11 +703,11 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	{
 		if (value)
 		{
-			_displayRequest.RequestActive();
+			(_displayRequest ??= new()).RequestActive();
 		}
 		else
 		{
-			_displayRequest.RequestRelease();
+			_displayRequest?.RequestRelease();
 		}
 	}
 
