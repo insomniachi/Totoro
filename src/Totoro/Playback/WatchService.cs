@@ -122,6 +122,9 @@ public sealed partial class WatchService(
 	/// <summary>How far through the episode playback is, from 0 to 1; -1 when nothing's playing or its length isn't known yet.</summary>
 	[ObservableProperty] public partial double PlaybackFraction { get; private set; } = -1;
 
+	/// <summary>How far the countdown to the next episode has run, from 0 to 1; -1 when there's no countdown.</summary>
+	[ObservableProperty] public partial double CountdownFraction { get; private set; } = -1;
+
 	/// <summary>Where playback is, e.g. "12:34 / 24:01"; empty (never null) when nothing's playing.</summary>
 	[ObservableProperty] public partial string PlaybackTime { get; private set; } = "";
 
@@ -867,11 +870,20 @@ public sealed partial class WatchService(
 		var countdown = _cancellation = new CancellationTokenSource();
 		try
 		{
-			for (var left = s_nextEpisodeCountdown; left > TimeSpan.Zero; left -= TimeSpan.FromSeconds(1))
+			// Ticks often so the bar fills smoothly; the message changes once a second.
+			var start = System.Diagnostics.Stopwatch.GetTimestamp();
+			var shown = -1.0;
+			for (var elapsed = TimeSpan.Zero; elapsed < s_nextEpisodeCountdown; elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start))
 			{
-				Show(PlaybackStatusKind.Progress, $"Playing episode {next} in {left.TotalSeconds:0}…",
-					 "Cancel", Cancel);
-				await Task.Delay(TimeSpan.FromSeconds(1), countdown.Token);
+				var seconds = Math.Ceiling((s_nextEpisodeCountdown - elapsed).TotalSeconds);
+				if (seconds != shown)
+				{
+					Show(PlaybackStatusKind.Progress, $"Playing episode {next} in {seconds:0}…", "Cancel", Cancel);
+					shown = seconds;
+				}
+
+				CountdownFraction = elapsed / s_nextEpisodeCountdown;
+				await Task.Delay(TimeSpan.FromMilliseconds(50), countdown.Token);
 			}
 		}
 		catch (OperationCanceledException)
@@ -1315,6 +1327,7 @@ public sealed partial class WatchService(
 
 	private void Show(PlaybackStatusKind kind, string message, string actionText = "", Action? action = null)
 	{
+		CountdownFraction = -1;
 		if (kind != PlaybackStatusKind.Playing)
 		{
 			PlaybackFraction = -1;

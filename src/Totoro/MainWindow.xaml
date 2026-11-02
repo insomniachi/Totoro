@@ -751,10 +751,12 @@
                         TextWrapping="NoWrap"
                         Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.SourceInfo), Mode=OneWay}" />
 
-                    <!--  Indeterminate progress while getting ready  -->
+                    <!--  Indeterminate progress while getting ready; filling during the countdown to the next episode  -->
                     <ProgressBar
                         Margin="0,4,0,0"
-                        IsIndeterminate="True"
+                        IsIndeterminate="{x:Bind local:MainWindow.IsIndeterminate(ViewModel.Playback.CountdownFraction), Mode=OneWay}"
+                        Maximum="1"
+                        Value="{x:Bind ViewModel.Playback.CountdownFraction, Mode=OneWay}"
                         Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
 
                     <!--  Playback progress and times while playing  -->

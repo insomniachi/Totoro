@@ -176,6 +176,9 @@ public sealed partial class MainWindow : Window
 	/// <summary>The progress bar and Cancel, while getting an episode ready.</summary>
 	public static Visibility VisibleWhileWorking(PlaybackStatusKind kind) => kind == PlaybackStatusKind.Progress ? Visibility.Visible : Visibility.Collapsed;
 
+	/// <summary>The progress bar fills during the countdown to the next episode; otherwise it can't say how long.</summary>
+	public static bool IsIndeterminate(double countdownFraction) => countdownFraction < 0;
+
 	// For the title bar's now-playing button.
 
 	public static bool IsWorking(PlaybackStatusKind kind) => kind == PlaybackStatusKind.Progress;
