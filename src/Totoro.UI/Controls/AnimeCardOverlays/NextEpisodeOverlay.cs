@@ -1,5 +1,5 @@
 using System.Globalization;
-using Microsoft.UI.Xaml;
+using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
@@ -14,20 +14,18 @@ public sealed class NextEpisodeOverlay : LiveAnimeCardOverlay<NextEpisodeBadge>
 
 	protected override void Update(NextEpisodeBadge badge, AnimeModel? anime, DateTime now)
 	{
-		var left = anime?.NextEpisodeAt - now;
-		var shown = IsShown(anime, now);
-		badge.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
-		if (shown && anime is { NextEpisodeAt: { } at })
+		// Still ahead: the card re-selects its overlays each minute, but an update can come first.
+		if (anime is { NextEpisodeAt: { } at } && at - now > TimeSpan.Zero)
 		{
 			// The one after those aired (both databases count them: AniList from its schedule, MyAnimeList from the weekly slot).
 			var episode = anime.AiredEpisodes + 1;
-			badge.Set(episode, Format(left!.Value), $"Episode {episode} airs {at.ToString("ddd d MMM, HH:mm", CultureInfo.CurrentCulture)}");
+			badge.Set(episode, Format(at - now), $"Episode {episode} airs {at.ToString("ddd d MMM, HH:mm", CultureInfo.CurrentCulture)}");
 		}
 	}
 
-	/// <summary>Whether the countdown is up for the anime (AiringStatusOverlay steps aside then: a countdown already says it's airing).</summary>
-	internal static bool IsShown(AnimeModel? anime, DateTime now) =>
-		anime?.Tracking?.Status is ListItemStatus.Watching or ListItemStatus.PlanToWatch && anime.NextEpisodeAt - now > TimeSpan.Zero;
+	/// <summary>Whether the countdown is up: for an anime being watched or planned whose next episode is still to air.</summary>
+	internal static bool IsShown(IMediaModel item, DateTime now) =>
+		item is AnimeModel { Tracking.Status: ListItemStatus.Watching or ListItemStatus.PlanToWatch } anime && anime.NextEpisodeAt - now > TimeSpan.Zero;
 
 	/// <summary>e.g. "2d 4h", "5h 20m", "40m".</summary>
 	internal static string Format(TimeSpan left)

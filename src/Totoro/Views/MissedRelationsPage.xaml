@@ -32,15 +32,15 @@
         </overlays:CardActionCollection>
 
         <!--  Sized by the grid, as on the Library page  -->
+        <overlays:MissedRelationsOverlays x:Key="CardOverlays" />
+
         <DataTemplate x:Key="CardTemplate" x:DataType="anime:AnimeModel">
             <controls:AnimeCard
                 Anime="{x:Bind}"
-                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}">
+                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
+                Overlays="{StaticResource CardOverlays}">
                 <Interactivity:Interaction.Behaviors>
                     <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
-                    <overlays:ListStatusOverlay />
-                    <overlays:MeanScoreOverlay />
-                    <overlays:FormatSeasonOverlay />
                     <overlays:HoverEffectsBehavior />
                 </Interactivity:Interaction.Behaviors>
             </controls:AnimeCard>

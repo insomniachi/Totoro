@@ -1,23 +1,34 @@
-using Microsoft.UI.Xaml;
+using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Modules.Manga;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
 
 /// <summary>
-/// Whether an anime is airing or yet to air, as a coloured dot on its card's bottom left.
-/// Finished anime, most of them, get none, nor do those showing a next episode countdown (NextEpisodeOverlay), which says as much.
+/// Whether an anime is airing or yet to air (a manga publishing or yet to be), as a coloured dot on its card's bottom left.
+/// Finished ones, most of them, get none, nor do those being watched or read: an airing anime being watched has its next
+/// episode countdown (NextEpisodeOverlay), which says as much.
 /// </summary>
 public sealed class AiringStatusOverlay : LiveAnimeCardOverlay<AiringStatusBadge>
 {
+	internal static bool IsShown(IMediaModel item) =>
+		Status(item) is AiringStatus.CurrentlyAiring or AiringStatus.NotYetAired && item.ListStatus is not ListItemStatus.Watching;
+
+	// Manga reuse the anime status (Currently Airing is "Publishing").
+	private static AiringStatus? Status(IMediaModel? item) => item switch
+	{
+		AnimeModel anime => anime.AiringStatus,
+		MangaModel manga => manga.Status,
+		_ => null,
+	};
+
 	protected override AiringStatusBadge Create() => new();
 
-	protected override void Update(AiringStatusBadge badge, AnimeModel? anime, DateTime now)
+	protected override void Update(AiringStatusBadge badge, IMediaModel? item, DateTime now)
 	{
-		var shown = anime is { AiringStatus: not AiringStatus.FinishedAiring } && !NextEpisodeOverlay.IsShown(anime, now);
-		badge.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
-		if (shown)
+		if (Status(item) is { } status)
 		{
-			badge.Set(anime!.AiringStatus);
+			badge.Set(status, item!.Kind);
 		}
 	}
 }

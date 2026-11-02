@@ -28,16 +28,17 @@
                 ShowOnHover="True" />
         </overlays:CardActionCollection>
 
+        <overlays:BrowseOverlays x:Key="CardOverlays" />
+
         <DataTemplate x:Key="CardTemplate" x:DataType="manga:MangaModel">
             <controls:AnimeCard
                 Width="190"
                 Height="320"
                 Command="{x:Bind commands:MangaCommands.Shared.ShowDetailsCommand}"
-                Media="{x:Bind}">
+                Media="{x:Bind}"
+                Overlays="{StaticResource CardOverlays}">
                 <Interactivity:Interaction.Behaviors>
                     <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
-                    <overlays:ListStatusOverlay />
-                    <overlays:MeanScoreOverlay />
                     <overlays:HoverEffectsBehavior />
                 </Interactivity:Interaction.Behaviors>
             </controls:AnimeCard>

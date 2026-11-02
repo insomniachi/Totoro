@@ -1,5 +1,5 @@
-using Microsoft.UI.Xaml;
 using Totoro.Core;
+using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
@@ -12,12 +12,13 @@ namespace Totoro.UI.Controls.AnimeCardOverlays;
 /// </summary>
 public sealed class NewEpisodesOverlay : LiveAnimeCardOverlay<NewEpisodesBadge>
 {
+	internal static bool IsShown(IMediaModel item, DateTime now) => item is AnimeModel anime && EpisodeAvailability.NewEpisodes(anime, now) > 0;
+
 	protected override NewEpisodesBadge Create() => new();
 
 	protected override void Update(NewEpisodesBadge badge, AnimeModel? anime, DateTime now)
 	{
 		var count = anime is not null ? EpisodeAvailability.NewEpisodes(anime, now) : 0;
-		badge.Visibility = count > 0 ? Visibility.Visible : Visibility.Collapsed;
 		if (count > 0)
 		{
 			// Only an airing anime gets new episodes on its provider; this card's shown, so it's worth asking.

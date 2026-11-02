@@ -68,4 +68,9 @@ public static class MediaText
 		Anime.AnimeMediaFormat.Music => "Music",
 		_ => null,
 	};
+
+	/// <summary>A manga's format as shown, e.g. "Manhwa" or "Light novel"; null when unknown.</summary>
+	public static string? Format(Manga.MangaFormat format) => format == Manga.MangaFormat.Unknown ? null
+		: typeof(Manga.MangaFormat).GetField(format.ToString())?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
+			.OfType<System.ComponentModel.DescriptionAttribute>().FirstOrDefault()?.Description ?? format.ToString();
 }

@@ -22,7 +22,7 @@ public sealed class MediaSuggestion(IMediaModel media)
 		MangaModel manga => Join("Manga",
 			manga.MeanScore is > 0 and var score ? $"★ {Math.Round(score / 10, 1):0.0}" : null,
 			// "Manga · Manga" says nothing; "Manga · Manhwa" does.
-			manga.Format is MangaFormat.Unknown or MangaFormat.Manga ? null : FormatName(manga.Format),
+			manga.Format is MangaFormat.Unknown or MangaFormat.Manga ? null : MediaText.Format(manga.Format),
 			manga.TotalChapters is > 0 and var chapters ? $"{chapters} chapters" : null),
 		_ => "",
 	};
@@ -31,10 +31,6 @@ public sealed class MediaSuggestion(IMediaModel media)
 	public string ListStatus => Media.ListStatus is null ? ""
 		: Media.Progress is > 0 and var done ? $"{MediaText.Status(Media.ListStatus, Media.Kind)}, {done} of {Media.Total?.ToString() ?? "?"}"
 		: MediaText.Status(Media.ListStatus, Media.Kind);
-
-	private static string FormatName(MangaFormat format) =>
-		typeof(MangaFormat).GetField(format.ToString())?.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false)
-			.OfType<System.ComponentModel.DescriptionAttribute>().FirstOrDefault()?.Description ?? format.ToString();
 
 	private static string Join(params string?[] parts) => string.Join(" · ", parts.Where(x => !string.IsNullOrEmpty(x)));
 }

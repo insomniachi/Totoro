@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Input;
@@ -5,8 +6,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Xaml.Interactivity;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.UI.Controls.AnimeCardOverlays;
 
 namespace Totoro.UI.Controls;
 
@@ -16,6 +19,95 @@ public sealed partial class AnimeCard : UserControl
 	{
 		InitializeComponent();
 		Tapped += OnTapped;
+		Loaded += OnLoaded;
+		Unloaded += OnUnloaded;
+	}
+
+	/// <summary>Picks the overlays this card's item needs (see <see cref="CardOverlaySelector"/>).</summary>
+	[GeneratedDependencyProperty]
+	public partial CardOverlaySelector? Overlays { get; set; }
+
+	// The overlays Overlays picked, in Interaction.Behaviors beside the template's own (which are left alone).
+	private readonly List<Behavior> _selected = [];
+
+	// The item whose changes are followed while loaded (an unloaded card mustn't be kept alive by its long-lived item).
+	private IMediaModel? _followed;
+	private bool _isLoaded;
+
+	partial void OnOverlaysChanged(CardOverlaySelector? newValue) => SyncOverlays();
+
+	private void OnLoaded(object sender, RoutedEventArgs e)
+	{
+		if (_isLoaded)
+		{
+			return;
+		}
+
+		_isLoaded = true;
+		MinuteTimer.Tick += SyncOverlays;
+		Follow(Media);
+		SyncOverlays();
+	}
+
+	private void OnUnloaded(object sender, RoutedEventArgs e)
+	{
+		_isLoaded = false;
+		MinuteTimer.Tick -= SyncOverlays;
+		Follow(null);
+	}
+
+	private void Follow(IMediaModel? item)
+	{
+		if (_followed is not null)
+		{
+			_followed.PropertyChanged -= OnItemChanged;
+		}
+
+		_followed = item;
+		if (_followed is not null)
+		{
+			_followed.PropertyChanged += OnItemChanged;
+		}
+	}
+
+	private void OnItemChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName is nameof(AnimeModel.Tracking) or nameof(AnimeModel.AiringStatus) or nameof(AnimeModel.ProviderEpisodes))
+		{
+			SyncOverlays();
+		}
+	}
+
+	/// <summary>
+	/// Gives the card the overlays its item needs now: adds those it lacks, removes those it no longer needs, and keeps
+	/// the rest (by type, so a recycled card showing an item like its last one keeps its badges), then refreshes them.
+	/// </summary>
+	private void SyncOverlays()
+	{
+		var now = DateTime.Now;
+		var wanted = Media is { } item && Overlays is { } selector ? selector.Select(item, now).ToList() : [];
+		var behaviors = Interaction.GetBehaviors(this);
+		for (var i = _selected.Count - 1; i >= 0; i--)
+		{
+			if (!wanted.Exists(x => x.GetType() == _selected[i].GetType()))
+			{
+				behaviors.Remove(_selected[i]);
+				_selected.RemoveAt(i);
+			}
+		}
+
+		foreach (var overlay in wanted)
+		{
+			if (!_selected.Exists(x => x.GetType() == overlay.GetType()))
+			{
+				_selected.Add(overlay);
+				behaviors.Add(overlay); // attaching fills it in
+			}
+			else
+			{
+				(_selected.Find(x => x.GetType() == overlay.GetType()) as ILiveOverlay)?.Update(Media, now);
+			}
+		}
 	}
 
 	/// <summary>The anime shown, for overlays only anime have (e.g. the next episode); null on a manga's card.</summary>
@@ -65,6 +157,14 @@ public sealed partial class AnimeCard : UserControl
 		{
 			ToolTipService.SetToolTip(TitleText, newValue?.Title);
 		}
+
+		// A recycled card's new item needs its own overlays.
+		if (_isLoaded)
+		{
+			Follow(newValue);
+		}
+
+		SyncOverlays();
 	}
 
 	private void OnPosterOpened(object sender, RoutedEventArgs e) => PosterFade.Opacity = 1;

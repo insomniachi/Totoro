@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Totoro.Core.Modules;
@@ -6,17 +5,22 @@ using Totoro.Core.Modules.Anime;
 
 namespace Totoro.UI.Controls.AnimeCardOverlays;
 
+/// <summary>An overlay the card refreshes when its item changes or a minute passes (see <see cref="AnimeCard.Overlays"/>).</summary>
+internal interface ILiveOverlay
+{
+	void Update(IMediaModel? item, DateTime now);
+}
+
 /// <summary>
 /// An overlay always on its card that shows something about the card's anime that changes with time and with the
-/// user's list (e.g. when its next episode airs): it's updated when the card shows another anime (cards are reused for
-/// others as a list scrolls), when the anime's place on the list changes, and each minute (one timer for every card).
+/// user's list (e.g. when its next episode airs). The card's <see cref="CardOverlaySelector"/> attaches it only while
+/// it has something to show; the card then updates it when it shows another item (cards are reused for others as a
+/// list scrolls), when the item's place on the list changes, and each minute (one timer for every card).
 /// </summary>
-public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl>
+public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl>, ILiveOverlay
 	where TControl : UIElement
 {
 	private TControl? _control;
-	private IMediaModel? _anime;
-	private long _animeToken;
 
 	protected sealed override OverlayMode Mode => OverlayMode.Always;
 
@@ -25,67 +29,39 @@ public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl
 	protected abstract TControl Create();
 
 	/// <summary>
-	/// Shows what there is to show for the card's anime or manga (null when it has none) at <paramref name="now"/>. By
-	/// default the anime's: overlays for both override this one.
+	/// Shows the card's anime or manga (null when it has none) at <paramref name="now"/>. By default the anime's:
+	/// overlays for both override this one.
 	/// </summary>
 	protected virtual void Update(TControl control, IMediaModel? item, DateTime now) => Update(control, item as AnimeModel, now);
 
-	/// <summary>Shows what there is to show for the anime (null when the card has none, or has a manga) at <paramref name="now"/>.</summary>
+	/// <summary>Shows the anime (null when the card has none, or has a manga) at <paramref name="now"/>.</summary>
 	protected virtual void Update(TControl control, AnimeModel? anime, DateTime now)
 	{
 	}
 
+	// Filled in here, not by the card: Interaction re-attaches behaviors (recreating the control) after the card's Loaded.
 	protected override void OnAttached()
 	{
 		base.OnAttached();
-		_animeToken = AssociatedObject.RegisterPropertyChangedCallback(AnimeCard.MediaProperty, (_, _) => Follow(AssociatedObject.Media));
-		MinuteTimer.Tick += Update;
-		Follow(AssociatedObject.Media);
+		((ILiveOverlay)this).Update(AssociatedObject.Media, DateTime.Now);
 	}
 
 	protected override void OnDetaching()
 	{
-		AssociatedObject.UnregisterPropertyChangedCallback(AnimeCard.MediaProperty, _animeToken);
-		MinuteTimer.Tick -= Update;
-		Follow(null);
 		base.OnDetaching();
 		_control = null;
 	}
 
-	private void Follow(IMediaModel? anime)
-	{
-		if (_anime is not null)
-		{
-			_anime.PropertyChanged -= OnAnimeChanged;
-		}
-
-		_anime = anime;
-		if (_anime is not null)
-		{
-			_anime.PropertyChanged += OnAnimeChanged;
-		}
-
-		Update();
-	}
-
-	private void OnAnimeChanged(object? sender, PropertyChangedEventArgs e)
-	{
-		if (e.PropertyName is nameof(AnimeModel.Tracking) or nameof(AnimeModel.AiringStatus) or nameof(AnimeModel.ProviderEpisodes))
-		{
-			Update();
-		}
-	}
-
-	private void Update()
+	void ILiveOverlay.Update(IMediaModel? item, DateTime now)
 	{
 		if (_control is not null)
 		{
-			Update(_control, _anime, DateTime.Now);
+			Update(_control, item, now);
 		}
 	}
 }
 
-/// <summary>One timer for every live overlay of every card (see LiveAnimeCardOverlay), ticking each minute while any follows it.</summary>
+/// <summary>One timer for every live overlay of every card (see AnimeCard.Overlays), ticking each minute while any follows it.</summary>
 internal static class MinuteTimer
 {
 	private static DispatcherQueueTimer? s_timer;

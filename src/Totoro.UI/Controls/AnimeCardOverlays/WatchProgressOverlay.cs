@@ -53,7 +53,6 @@ public sealed class WatchProgressOverlay : LiveAnimeCardOverlay<LabelBadge>
 		}
 	}
 
-	// Opacity, not Visibility: Update owns Visibility.
 	private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
 	{
 		if (_badge is not null)
@@ -70,13 +69,13 @@ public sealed class WatchProgressOverlay : LiveAnimeCardOverlay<LabelBadge>
 		}
 	}
 
+	internal static bool IsShown(IMediaModel item) => item.ListStatus is ListItemStatus.Watching or ListItemStatus.Rewatching;
+
 	protected override void Update(LabelBadge badge, IMediaModel? item, DateTime now)
 	{
-		var shown = item?.ListStatus is ListItemStatus.Watching or ListItemStatus.Rewatching;
-		badge.Visibility = shown ? Visibility.Visible : Visibility.Collapsed;
-		if (shown)
+		if (item is not null)
 		{
-			var done = item!.Progress ?? 0;
+			var done = item.Progress ?? 0;
 			var total = item.Total is > 0 ? item.Total.ToString() : "?";
 			badge.Set("", $"{done}/{total}", item.Kind == MediaMode.Manga ? $"Read {done} of {total} chapters" : $"Watched {done} of {total} episodes");
 		}
