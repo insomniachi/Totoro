@@ -281,10 +281,10 @@ public sealed class AppSettingsTools(
 
 	[AgentTool("sign_out", RequiresApproval = true)]
 	[Description("Signs out of an account.")]
-	public string SignOut(string service)
+	public async Task<string> SignOutAsync(string service)
 	{
 		var account = FindAccount(service);
-		account.SignOut();
+		await account.SignOutAsync();
 		return $"Signed out of {account.Name}.";
 	}
 

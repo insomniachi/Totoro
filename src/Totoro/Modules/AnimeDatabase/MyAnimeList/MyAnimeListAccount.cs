@@ -69,8 +69,5 @@ internal sealed class MyAnimeListAccount(
 		}
 	}
 
-	public void SignOut()
-	{
-		session.SignOut();
-	}
+	public Task SignOutAsync() => session.SignOutAsync();
 }

@@ -59,7 +59,7 @@ public sealed partial class AccountViewModel : ObservableObject, IRecipient<Acco
 	{
 		if (_account.IsSignedIn)
 		{
-			_account.SignOut();
+			await _account.SignOutAsync();
 		}
 		else
 		{

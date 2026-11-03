@@ -70,9 +70,10 @@ internal sealed class AnilistAccount(
 		return true;
 	}
 
-	public void SignOut()
+	public Task SignOutAsync()
 	{
 		settings.Value.Token = null;
 		settings.Save();
+		return Task.CompletedTask;
 	}
 }

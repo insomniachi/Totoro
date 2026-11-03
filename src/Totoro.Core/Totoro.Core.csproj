@@ -4,7 +4,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <IsPackable>true</IsPackable>
     <PackageId>Totoro.Core</PackageId>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Description>Core contracts, interfaces, and plugin infrastructure for Totoro.</Description>
     <Authors>Totoro</Authors>
     <PackageOutputPath>$(SolutionDir)artifacts\packages</PackageOutputPath>

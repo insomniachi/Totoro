@@ -234,6 +234,19 @@ public partial class App : Application
 				services.AddKeyedViewMap<AboutSettingsPage, SettingsViewModel>(SettingsViewModel.AboutKey);
 			})
 			.Build();
+
+		// A throw in an event handler (async void ones included) would otherwise close the app without a trace.
+		var logger = _host.Services.GetRequiredService<ILogger<App>>();
+		UnhandledException += (_, e) =>
+		{
+			logger.LogError(e.Exception, "Unhandled exception");
+			e.Handled = true;
+		};
+		TaskScheduler.UnobservedTaskException += (_, e) =>
+		{
+			logger.LogError(e.Exception, "Unobserved task exception");
+			e.SetObserved();
+		};
 	}
 
 	protected override void OnLaunched(LaunchActivatedEventArgs args)

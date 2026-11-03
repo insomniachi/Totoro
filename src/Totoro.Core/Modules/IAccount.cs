@@ -19,7 +19,7 @@ public interface IAccount
 	/// <summary>Asks the user to sign in; returns false if they cancelled or it failed.</summary>
 	Task<bool> SignInAsync();
 
-	void SignOut();
+	Task SignOutAsync();
 }
 
 /// <param name="Avatar">URL of the user's picture, if they have one.</param>
