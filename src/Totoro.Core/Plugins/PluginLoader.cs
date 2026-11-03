@@ -12,6 +12,9 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 	/// <summary>The suffix of a plugin's folder holding its update, staged while the plugin was loaded.</summary>
 	public const string PendingSuffix = ".pending";
 
+	/// <summary>The suffix of a plugin's old folder, moved aside while its update is swapped in, then deleted.</summary>
+	public const string OldSuffix = ".old";
+
 	/// <summary>A file marking a plugin's folder for deletion at the next start, when it couldn't be deleted at once.</summary>
 	public const string DeleteMarker = ".delete";
 
@@ -65,7 +68,8 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 				{
 					foreach (var subDir in Directory.GetDirectories(dir))
 					{
-						if (subDir.EndsWith(PendingSuffix, StringComparison.OrdinalIgnoreCase))
+						if (subDir.EndsWith(PendingSuffix, StringComparison.OrdinalIgnoreCase)
+							|| subDir.EndsWith(OldSuffix, StringComparison.OrdinalIgnoreCase))
 						{
 							continue;
 						}
@@ -124,21 +128,63 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 	/// </summary>
 	private void ApplyPendingInstalls(string pluginsDir)
 	{
+		DeleteOldFolders(pluginsDir);
+
 		foreach (var pending in Directory.GetDirectories(pluginsDir, "*" + PendingSuffix))
 		{
 			var target = pending[..^PendingSuffix.Length];
 			try
 			{
+				// Moved aside whole, not deleted file by file: while a file is still locked (by the instance a restart
+				// replaces, still exiting) the move fails and the old version stays as it was, not half deleted.
 				if (Directory.Exists(target))
 				{
-					Directory.Delete(target, recursive: true);
+					MoveWithRetry(target, target + OldSuffix);
 				}
 
 				Directory.Move(pending, target);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogWarning(ex, "Failed to apply the staged plugin update {Directory}", pending);
+				_logger.LogWarning(ex, "Failed to apply the staged plugin update {Directory}; trying again at the next start.", pending);
+			}
+		}
+
+		DeleteOldFolders(pluginsDir);
+	}
+
+	private static void MoveWithRetry(string source, string destination)
+	{
+		for (var attempt = 1; ; attempt++)
+		{
+			try
+			{
+				Directory.Move(source, destination);
+				return;
+			}
+			catch (IOException) when (attempt < 10)
+			{
+				Thread.Sleep(300);
+			}
+			catch (UnauthorizedAccessException) when (attempt < 10)
+			{
+				Thread.Sleep(300);
+			}
+		}
+	}
+
+	private void DeleteOldFolders(string pluginsDir)
+	{
+		foreach (var old in Directory.GetDirectories(pluginsDir, "*" + OldSuffix))
+		{
+			try
+			{
+				Directory.Delete(old, recursive: true);
+			}
+			catch (Exception ex)
+			{
+				// Not loaded (it's skipped), and tried again at the next start.
+				_logger.LogWarning(ex, "Failed to delete the replaced plugin folder {Directory}", old);
 			}
 		}
 	}

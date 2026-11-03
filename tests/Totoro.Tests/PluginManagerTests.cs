@@ -128,6 +128,44 @@ public class PluginManagerTests
 	}
 
 	[Fact]
+	public void LoadPlugins_KeepsOldVersionWhole_WhileAFileOfItIsLocked()
+	{
+		var target = Path.Combine(PluginsDir, "Locked" + Guid.NewGuid().ToString("N")[..8]);
+		var pending = target + PluginLoader.PendingSuffix;
+		Directory.CreateDirectory(target);
+		File.WriteAllText(Path.Combine(target, "plugin.json"), "{}");
+		File.WriteAllText(Path.Combine(target, "old.dll"), "old");
+		Directory.CreateDirectory(pending);
+		File.WriteAllText(Path.Combine(pending, "new.txt"), "new");
+		try
+		{
+			// As a still-exiting instance holds a loaded plugin's assembly.
+			using (File.Open(Path.Combine(target, "old.dll"), FileMode.Open, FileAccess.Read, FileShare.Read))
+			{
+				new PluginLoader().LoadPlugins();
+			}
+
+			Assert.True(File.Exists(Path.Combine(target, "plugin.json")));
+			Assert.True(File.Exists(Path.Combine(pending, "new.txt")));
+
+			// Once nothing holds it, the next start applies the update.
+			new PluginLoader().LoadPlugins();
+
+			Assert.True(File.Exists(Path.Combine(target, "new.txt")));
+			Assert.False(File.Exists(Path.Combine(target, "old.dll")));
+			Assert.False(Directory.Exists(pending));
+			Assert.False(Directory.Exists(target + PluginLoader.OldSuffix));
+		}
+		finally
+		{
+			foreach (var dir in new[] { target, pending, target + PluginLoader.OldSuffix }.Where(Directory.Exists))
+			{
+				Directory.Delete(dir, recursive: true);
+			}
+		}
+	}
+
+	[Fact]
 	public void LoadPlugins_SkipsPluginMarkedForDeletion()
 	{
 		var senshiBin = PluginLoaderTests.FindPluginBin("Totoro.Plugins.Senshi");

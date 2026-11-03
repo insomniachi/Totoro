@@ -358,6 +358,7 @@ public sealed class PluginManager : IPluginManager
 		var isPlainName = name.Length > 0
 			&& name is not ("." or "..")
 			&& !name.EndsWith(PluginLoader.PendingSuffix, StringComparison.OrdinalIgnoreCase)
+			&& !name.EndsWith(PluginLoader.OldSuffix, StringComparison.OrdinalIgnoreCase)
 			&& name.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
 		if (!isPlainName)
 		{
