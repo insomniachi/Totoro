@@ -168,7 +168,7 @@
                         PlaceholderText="Search the source"
                         QueryIcon="Find"
                         QuerySubmitted="OnSourceSearchSubmitted"
-                        Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay}" />
+                        Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <ListView
                         AutomationProperties.Name="Matching manga"
                         MaxHeight="300"

@@ -270,6 +270,9 @@ public partial class App : Application
 		var window = _window;
 		var preferences = _host.Services.GetRequiredService<IPreferences>();
 		var manager = WinUIEx.WindowManager.Get(window);
+		// The pages reflow down to this, no further.
+		manager.MinWidth = 900;
+		manager.MinHeight = 600;
 		var shown = false;
 		var quitting = false;
 

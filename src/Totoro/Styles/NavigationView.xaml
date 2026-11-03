@@ -409,10 +409,11 @@
                                         Grid.Row="6"
                                         Margin="0,-7,0,8">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" MinHeight="{ThemeResource RailNavigationViewItemOnLeftMinHeight}" />
+                                            <!--  The menu items take the room (scrolling when it's short), as in WinUI's current template; Auto, they ran under the footer items in a short window  -->
+                                            <RowDefinition Height="*" MinHeight="{ThemeResource RailNavigationViewItemOnLeftMinHeight}" />
                                             <!--  MenuItems  -->
-                                            <RowDefinition Height="*" MinHeight="21" />
-                                            <!--  Fill spacing  -->
+                                            <RowDefinition Height="Auto" MinHeight="21" />
+                                            <!--  Gap above the footer items  -->
                                             <RowDefinition Height="Auto" MinHeight="{ThemeResource RailNavigationViewItemOnLeftMinHeight}" />
                                             <!--  FooterItems  -->
                                             <RowDefinition Height="Auto" />
@@ -423,7 +424,7 @@
                                         <ItemsRepeaterScrollHost
                                             Margin="0,12,0,0"
                                             HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Center">
+                                            VerticalAlignment="Stretch">
                                             <ScrollViewer
                                                 x:Name="MenuItemsScrollViewer"
                                                 TabNavigation="Local"

@@ -92,9 +92,29 @@
                 </DataTemplate>
             </local:MediaTemplateSelector.Manga>
         </local:MediaTemplateSelector>
+
     </UserControl.Resources>
 
     <Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Wide">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1200" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <!--  Centered over the whole width, the tabs would run under Filters: they keep left of it, scrolling if they don't fit  -->
+                <VisualState x:Name="Narrow">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="StatusTabsScroller.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="StatusTabsScroller.HorizontalAlignment" Value="Left" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -104,54 +124,66 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <toolkit:Segmented
+        <Grid
             Grid.Row="0"
             Grid.ColumnSpan="2"
-            AutomationProperties.Name="Status"
             Margin="16,0,16,16"
-            HorizontalAlignment="Center"
-            ItemsSource="{x:Bind ViewModel.StatusFilter.Options, Mode=OneWay}"
-            SelectedIndex="{x:Bind ViewModel.StatusFilter.SelectedIndex, Mode=TwoWay}">
-            <toolkit:Segmented.ItemTemplate>
-                <!--  The item's default style sets its own FontSize, so size the text here rather than on the Segmented  -->
-                <DataTemplate x:DataType="filtering:FilterOption">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Viewbox
-                            Width="18"
-                            Height="18"
-                            VerticalAlignment="Center">
-                            <ContentPresenter Content="{x:Bind ui:Icons.FromKey(IconKey), Mode=OneTime}" />
-                        </Viewbox>
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Style="{ThemeResource BodyLargeStrongTextBlockStyle}"
-                            Text="{x:Bind Label, Mode=OneTime}" />
-                    </StackPanel>
-                </DataTemplate>
-            </toolkit:Segmented.ItemTemplate>
-            <toolkit:Segmented.ItemContainerStyle>
-                <!--  No BasedOn needed: the control's theme style (and its template) still applies underneath  -->
-                <Style TargetType="toolkit:SegmentedItem">
-                    <Setter Property="MinWidth" Value="160" />
-                    <Setter Property="Padding" Value="24,12" />
-                </Style>
-            </toolkit:Segmented.ItemContainerStyle>
+            ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ScrollView
+                x:Name="StatusTabsScroller"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Center"
+                ContentOrientation="Horizontal"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollMode="Disabled">
+                <toolkit:Segmented
+                    x:Name="StatusTabs"
+                    AutomationProperties.Name="Status"
+                    ItemsSource="{x:Bind ViewModel.StatusFilter.Options, Mode=OneWay}"
+                    SelectedIndex="{x:Bind ViewModel.StatusFilter.SelectedIndex, Mode=TwoWay}">
+                    <toolkit:Segmented.ItemTemplate>
+                        <!--  The item's default style sets its own FontSize, so size the text here rather than on the Segmented  -->
+                        <DataTemplate x:DataType="filtering:FilterOption">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Viewbox
+                                    Width="18"
+                                    Height="18"
+                                    VerticalAlignment="Center">
+                                    <ContentPresenter Content="{x:Bind ui:Icons.FromKey(IconKey), Mode=OneTime}" />
+                                </Viewbox>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Style="{ThemeResource BodyLargeStrongTextBlockStyle}"
+                                    Text="{x:Bind Label, Mode=OneTime}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </toolkit:Segmented.ItemTemplate>
+                    <toolkit:Segmented.ItemContainerStyle>
+                        <!--  No BasedOn needed: the control's theme style (and its template) still applies underneath  -->
+                        <Style TargetType="toolkit:SegmentedItem">
+                            <Setter Property="MinWidth" Value="160" />
+                            <Setter Property="Padding" Value="24,12" />
+                        </Style>
+                    </toolkit:Segmented.ItemContainerStyle>
+                </toolkit:Segmented>
+            </ScrollView>
 
-        </toolkit:Segmented>
-
-        <!--  The filters (title, genres, season, year) and sorting show only while Filters is on; it's right of the tabs  -->
-        <ToggleButton
-            Grid.ColumnSpan="2"
-            Margin="16,0,16,16"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Stretch"
-            AutomationProperties.Name="Filters"
-            IsChecked="{x:Bind ViewModel.ShowFilters, Mode=TwoWay}">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <FontIcon FontSize="16" Glyph="&#xE71C;" />
-                <TextBlock Text="Filters" />
-            </StackPanel>
-        </ToggleButton>
+            <!--  The filters (title, genres, season, year) and sorting show only while Filters is on; it's right of the tabs  -->
+            <ToggleButton
+                Grid.Column="1"
+                VerticalAlignment="Stretch"
+                AutomationProperties.Name="Filters"
+                IsChecked="{x:Bind ViewModel.ShowFilters, Mode=TwoWay}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="16" Glyph="&#xE71C;" />
+                    <TextBlock Text="Filters" />
+                </StackPanel>
+            </ToggleButton>
+        </Grid>
 
         <!--
             As on the search page: the filters in a panel right of the cards, on a raised surface, scrolling on their own.

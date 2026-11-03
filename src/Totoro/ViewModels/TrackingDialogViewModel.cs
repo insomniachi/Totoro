@@ -195,9 +195,18 @@ public partial class TrackingDialogViewModel : DialogViewModel<Tracking>
 		return Task.FromResult(true);
 	}
 
-	/// <summary>Removes it from the list (and the others kept in sync); on failure the dialog stays open.</summary>
+	private bool _confirmingRemove;
+
+	/// <summary>Removes it from the list (and the others kept in sync), on a second press: the first asks for it (its progress and score go too); on failure the dialog stays open.</summary>
 	public override async Task<bool> SecondaryAsync()
 	{
+		if (!_confirmingRemove)
+		{
+			_confirmingRemove = true;
+			SecondaryButtonText = "Confirm removal";
+			return false;
+		}
+
 		try
 		{
 			await _trackingService.RemoveAsync(_anime);

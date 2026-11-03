@@ -14,7 +14,7 @@
             Height="96"
             AcceptsReturn="True"
             Header="Other titles (one a line)"
-            Text="{x:Bind ViewModel.OtherTitles, Mode=TwoWay}"
+            Text="{x:Bind ViewModel.OtherTitles, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             TextWrapping="Wrap" />
         <Grid ColumnSpacing="12">
             <Grid.ColumnDefinitions>

@@ -68,7 +68,7 @@
                 PlaceholderText="Search by title"
                 QueryIcon="Find"
                 QuerySubmitted="OnQuerySubmitted"
-                Text="{x:Bind ViewModel.Query, Mode=TwoWay}" />
+                Text="{x:Bind ViewModel.Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         </Grid>
 
         <StackPanel Grid.Row="2" Spacing="8">

@@ -90,9 +90,18 @@ public partial class MangaTrackingDialogViewModel : DialogViewModel<MangaTrackin
 		return Task.FromResult(true);
 	}
 
-	/// <summary>Removes it from the list; on failure the dialog stays open.</summary>
+	private bool _confirmingRemove;
+
+	/// <summary>Removes it from the list, on a second press: the first asks for it (its progress and score go too); on failure the dialog stays open.</summary>
 	public override async Task<bool> SecondaryAsync()
 	{
+		if (!_confirmingRemove)
+		{
+			_confirmingRemove = true;
+			SecondaryButtonText = "Confirm removal";
+			return false;
+		}
+
 		try
 		{
 			await _tracking.RemoveAsync(_manga);

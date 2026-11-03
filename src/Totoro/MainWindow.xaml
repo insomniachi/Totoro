@@ -337,14 +337,13 @@
             </TitleBar.IconSource>
             <TitleBar.Content>
                 <Grid>
+                    <!--  The search gets what's left beside the switch (up to its 360), so in a narrow window it narrows rather than covering it  -->
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <!--  Anime or manga, at the title bar's left: switches the menu's pages (see MainWindowViewModel.Mode)  -->
                     <toolkit:Segmented
-                        HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Anime or manga"
                         SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}">
@@ -360,7 +359,8 @@
                     <!--  Finds anime and manga in the selected databases, whatever the mode; choosing one opens its details in the side pane  -->
                     <AutoSuggestBox
                         Grid.Column="1"
-                        Width="360"
+                        MaxWidth="360"
+                        Margin="12,0"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Search anime and manga"
                         ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"

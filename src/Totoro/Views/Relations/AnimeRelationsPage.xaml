@@ -85,12 +85,20 @@
                                     ToolTipService.ToolTip="Edit">
                                     <FontIcon FontSize="16" Glyph="&#xE70F;" />
                                 </Button>
-                                <Button
-                                    AutomationProperties.Name="Delete rule"
-                                    Click="OnRemoveClick"
-                                    Tag="{x:Bind}"
-                                    ToolTipService.ToolTip="Delete">
+                                <Button AutomationProperties.Name="Delete rule" ToolTipService.ToolTip="Delete">
                                     <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <StackPanel MaxWidth="320" Spacing="12">
+                                                <TextBlock Text="Delete this numbering rule?" TextWrapping="Wrap" />
+                                                <Button
+                                                    Click="OnRemoveClick"
+                                                    Content="Delete"
+                                                    Style="{ThemeResource AccentButtonStyle}"
+                                                    Tag="{x:Bind}" />
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
                                 </Button>
                             </StackPanel>
                         </toolkit:SettingsCard>

@@ -195,11 +195,25 @@
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUpdate), Mode=OneWay}" />
                                 <controls:BusyButton
                                     MinWidth="120"
-                                    Command="{x:Bind UninstallCommand}"
                                     IsBusy="{x:Bind UninstallCommand.IsRunning, Mode=OneWay}"
                                     Content="Uninstall"
-                                    Style="{ThemeResource AccentButtonStyle}"
-                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUninstall), Mode=OneWay}" />
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUninstall), Mode=OneWay}">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <StackPanel MaxWidth="320" Spacing="12">
+                                                <TextBlock TextWrapping="Wrap">
+                                                    <Run Text="Uninstall" />
+                                                    <Run Text="{x:Bind Name, Mode=OneTime}" /><Run Text="? It's gone once Totoro restarts." />
+                                                </TextBlock>
+                                                <Button
+                                                    Click="OnUninstallClick"
+                                                    Command="{x:Bind UninstallCommand}"
+                                                    Content="Uninstall"
+                                                    Style="{ThemeResource AccentButtonStyle}" />
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </controls:BusyButton>
                                 <controls:BusyButton
                                     MinWidth="120"
                                     Command="{x:Bind InstallOrUpdateCommand, Mode=OneTime}"

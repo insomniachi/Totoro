@@ -1,6 +1,7 @@
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Totoro.ViewModels.Relations;
 
 namespace Totoro.Views.Relations;
@@ -29,6 +30,12 @@ public sealed partial class AnimeRelationsPage : Page
 	{
 		if (sender is FrameworkElement { Tag: UserRuleItem item })
 		{
+			// The confirmation flyout the button's in: its rule is about to go from the list.
+			foreach (var popup in VisualTreeHelper.GetOpenPopupsForXamlRoot(XamlRoot))
+			{
+				popup.IsOpen = false;
+			}
+
 			ViewModel?.RemoveCommand.Execute(item);
 		}
 	}

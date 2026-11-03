@@ -20,7 +20,7 @@
                     <TextBox
                         AcceptsReturn="{x:Bind IsMultiline, Mode=OneTime}"
                         Header="{x:Bind Label, Mode=OneTime}"
-                        Text="{x:Bind Value, Mode=TwoWay}"
+                        Text="{x:Bind Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         TextWrapping="Wrap" />
                 </DataTemplate>
             </local:TrackingFieldTemplateSelector.Text>
