@@ -162,6 +162,7 @@
                 <Button
                     Padding="0"
                     HorizontalAlignment="Right"
+                    AutomationProperties.AutomationId="OfferButton"
                     AutomationProperties.Name="{x:Bind ViewModel.OfferText, Mode=OneWay}"
                     Background="{StaticResource OverlayBackgroundBrush}"
                     BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
@@ -312,7 +313,7 @@
                 <Slider
                     x:Name="SeekBar"
                     AutomationProperties.Name="Seek"
-                    ThumbToolTipValueConverter="{x:Bind TimeConverter}"
+                    ThumbToolTipValueConverter="{x:Bind TimeConverter, Mode=OneTime}"
                     ValueChanged="OnSeekBarValueChanged">
                     <!--  Its own track is hidden: the sections under it are the track  -->
                     <Slider.Resources>
@@ -380,6 +381,7 @@
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Button
                                             Margin="0"
+                                            AutomationProperties.AutomationId="MuteButton"
                                             AutomationProperties.Name="{x:Bind local:PlayerWindow.MuteName(ViewModel.IsMuted, Shortcuts.MuteKeys), Mode=OneWay}"
                                             Command="{x:Bind ViewModel.ToggleMuteCommand}"
                                             Style="{StaticResource PlayerButtonStyle}"
@@ -473,10 +475,10 @@
                     <AppBarElementContainer VerticalAlignment="Center" Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
                         <Button
                             AutomationProperties.Name="Next episode"
-                            Command="{x:Bind ViewModel.NextEpisodeCommand}"
+                            Command="{x:Bind ViewModel.NextEpisodeCommand, Mode=OneTime}"
                             IsEnabled="{x:Bind ViewModel.HasNextEpisode, Mode=OneWay}"
                             Style="{StaticResource PlayerButtonStyle}"
-                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Next episode', Shortcuts.NextEpisodeKeys)}">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Next episode', Shortcuts.NextEpisodeKeys), Mode=OneTime}">
                             <FontIcon FontSize="16" Glyph="&#xE893;" />
                         </Button>
                     </AppBarElementContainer>
@@ -494,6 +496,7 @@
                     <AppBarElementContainer VerticalAlignment="Center" Visibility="{x:Bind local:PlayerWindow.SkipButtonVisibility(ViewModel.IsClip, ViewModel.IsSkipButtonVisible), Mode=OneWay}">
                         <!--  An opening's length, or skipping the OP/ED while it plays  -->
                         <Button
+                            AutomationProperties.AutomationId="SkipButton"
                             AutomationProperties.Name="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}"
                             Command="{x:Bind ViewModel.SkipAheadCommand}"
                             Style="{StaticResource PlayerButtonStyle}"
@@ -508,7 +511,7 @@
                             AutomationProperties.Name="Episodes"
                             Click="OnEpisodesButtonClick"
                             Style="{StaticResource PlayerButtonStyle}"
-                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Episodes', Shortcuts.EpisodesKeys)}">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Episodes', Shortcuts.EpisodesKeys), Mode=OneTime}">
                             <FontIcon FontSize="16" Glyph="&#xE8FD;" />
                             <FlyoutBase.AttachedFlyout>
                                 <Flyout
@@ -559,7 +562,7 @@
                                                 <DataTemplate x:DataType="player:EpisodeListItem">
                                                     <Grid
                                                         Padding="0,8"
-                                                        AutomationProperties.Name="{x:Bind Name}"
+                                                        AutomationProperties.Name="{x:Bind Name, Mode=OneTime}"
                                                         ColumnSpacing="12">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto" />
@@ -572,7 +575,7 @@
                                                             VerticalAlignment="Top"
                                                             Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                                                             CornerRadius="4">
-                                                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
                                                             <Border
                                                                 Margin="4"
                                                                 Padding="6,2"
@@ -580,7 +583,7 @@
                                                                 VerticalAlignment="Top"
                                                                 Background="{ThemeResource AccentFillColorDefaultBrush}"
                                                                 CornerRadius="2"
-                                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsCurrent)}">
+                                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsCurrent), Mode=OneTime}">
                                                                 <TextBlock
                                                                     Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
                                                                     Style="{ThemeResource CaptionTextBlockStyle}"
@@ -592,9 +595,9 @@
                                                                 VerticalAlignment="Bottom"
                                                                 Background="#66FFFFFF"
                                                                 CornerRadius="1.5"
-                                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasProgress)}">
+                                                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasProgress), Mode=OneTime}">
                                                                 <Rectangle
-                                                                    Width="{x:Bind local:PlayerWindow.EpisodeProgressWidth(Progress)}"
+                                                                    Width="{x:Bind local:PlayerWindow.EpisodeProgressWidth(Progress), Mode=OneTime}"
                                                                     HorizontalAlignment="Left"
                                                                     Fill="{ThemeResource AccentFillColorDefaultBrush}" />
                                                             </Grid>
@@ -609,29 +612,29 @@
                                                                 <TextBlock
                                                                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                                    Text="{x:Bind NumberText}" />
+                                                                    Text="{x:Bind NumberText, Mode=OneTime}" />
                                                                 <TextBlock
                                                                     Grid.Column="1"
                                                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                                    Text="{x:Bind Title}"
+                                                                    Text="{x:Bind Title, Mode=OneTime}"
                                                                     TextTrimming="CharacterEllipsis" />
                                                                 <FontIcon
                                                                     Grid.Column="2"
                                                                     FontSize="12"
                                                                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                                                     Glyph="&#xE930;"
-                                                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsWatched)}" />
+                                                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsWatched), Mode=OneTime}" />
                                                             </Grid>
                                                             <TextBlock
                                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                                 Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                Text="{x:Bind Details}"
-                                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Details)}" />
+                                                                Text="{x:Bind Details, Mode=OneTime}"
+                                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Details), Mode=OneTime}" />
                                                             <TextBlock
                                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                                 MaxLines="2"
                                                                 Style="{ThemeResource CaptionTextBlockStyle}"
-                                                                Text="{x:Bind Overview}"
+                                                                Text="{x:Bind Overview, Mode=OneTime}"
                                                                 TextTrimming="CharacterEllipsis"
                                                                 TextWrapping="Wrap" />
                                                         </StackPanel>
@@ -659,7 +662,7 @@
                         <Button
                             AutomationProperties.Name="Aspect ratio"
                             Style="{StaticResource PlayerButtonStyle}"
-                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Aspect ratio', Shortcuts.AspectRatioKeys)}">
+                            ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Aspect ratio', Shortcuts.AspectRatioKeys), Mode=OneTime}">
                             <FontIcon FontSize="16" Glyph="&#xE799;" />
                             <Button.Flyout>
                                 <MenuFlyout Opening="OnAspectRatioMenuOpening" Placement="Top" />
@@ -668,6 +671,7 @@
                     </AppBarElementContainer>
                     <AppBarElementContainer VerticalAlignment="Center">
                         <Button
+                            AutomationProperties.AutomationId="FullScreenButton"
                             AutomationProperties.Name="{x:Bind local:PlayerWindow.FullScreenName(ViewModel.IsFullScreen, Shortcuts.FullScreenKeys), Mode=OneWay}"
                             Command="{x:Bind ViewModel.ToggleFullScreenCommand}"
                             Style="{StaticResource PlayerButtonStyle}"

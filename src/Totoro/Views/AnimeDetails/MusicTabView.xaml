@@ -31,8 +31,8 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:SongGroup">
                         <StackPanel Spacing="8">
-                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Header}" />
-                            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Songs}">
+                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Header, Mode=OneTime}" />
+                            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Songs, Mode=OneTime}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Spacing="8" />

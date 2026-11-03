@@ -117,7 +117,7 @@
                     Text="{x:Bind}" />
                 <ScrollView IsHitTestVisible="False" Style="{StaticResource RowScrollViewStyle}">
                     <!--  The page's implicit ItemsRepeater style doesn't reach into this template  -->
-                    <ItemsRepeater Margin="8" ItemsSource="{x:Bind local:DiscoverPage.PlaceholderCards}">
+                    <ItemsRepeater Margin="8" ItemsSource="{x:Bind local:DiscoverPage.PlaceholderCards, Mode=OneTime}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="x:Int32">
                                 <toolkit:Shimmer
@@ -163,7 +163,7 @@
                     <DataTemplate x:DataType="anime:AnimeModel">
                         <!--  Dark whatever the app's theme: light text over the darkened banner  -->
                         <Grid RequestedTheme="Dark">
-                            <Image Source="{x:Bind BannerImage}" Stretch="UniformToFill" />
+                            <Image Source="{x:Bind BannerImage, Mode=OneTime}" Stretch="UniformToFill" />
                             <Rectangle>
                                 <Rectangle.Fill>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -190,7 +190,7 @@
                                     Height="270"
                                     VerticalAlignment="Center"
                                     CornerRadius="8">
-                                    <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
+                                    <Image Source="{x:Bind Image, Mode=OneTime}" Stretch="UniformToFill" />
                                 </Border>
 
                                 <StackPanel
@@ -200,16 +200,16 @@
                                     <TextBlock
                                         MaxLines="2"
                                         Style="{StaticResource TitleTextBlockStyle}"
-                                        Text="{x:Bind Title}"
+                                        Text="{x:Bind Title, Mode=OneWay}"
                                         TextTrimming="CharacterEllipsis"
                                         TextWrapping="Wrap" />
                                     <TextBlock
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind local:DiscoverPage.Details(Genres, MeanScore, TotalEpisodes, Season)}"
+                                        Text="{x:Bind local:DiscoverPage.Details(Genres, MeanScore, TotalEpisodes, Season), Mode=OneTime}"
                                         TextTrimming="CharacterEllipsis" />
                                     <RichTextBlock
                                         MaxLines="4"
-                                        text:HtmlText.Html="{x:Bind Description}"
+                                        text:HtmlText.Html="{x:Bind Description, Mode=OneTime}"
                                         TextTrimming="WordEllipsis" />
                                     <StackPanel
                                         Margin="0,8,0,0"
@@ -266,7 +266,7 @@
                         Click="OnPreviousPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind TrendingRow}"
+                        Tag="{x:Bind TrendingRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Previous" />
                     <Button
                         Grid.Column="2"
@@ -275,7 +275,7 @@
                         Click="OnNextPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind TrendingRow}"
+                        Tag="{x:Bind TrendingRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Next" />
                 </Grid>
                 <ScrollView
@@ -298,7 +298,7 @@
                 Style="{StaticResource PlaceholderRowStyle}"
                 Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
             <ContentControl
-                Content="{x:Bind ViewModel.NextSeasonTitle}"
+                Content="{x:Bind ViewModel.NextSeasonTitle, Mode=OneTime}"
                 Style="{StaticResource PlaceholderRowStyle}"
                 Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
 
@@ -317,7 +317,7 @@
                         Click="OnPreviousPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind AiringTodayRow}"
+                        Tag="{x:Bind AiringTodayRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Previous" />
                     <Button
                         Grid.Column="2"
@@ -326,7 +326,7 @@
                         Click="OnNextPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind AiringTodayRow}"
+                        Tag="{x:Bind AiringTodayRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Next" />
                 </Grid>
                 <ScrollView
@@ -359,7 +359,7 @@
                         Click="OnPreviousPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind NextSeasonRow}"
+                        Tag="{x:Bind NextSeasonRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Previous" />
                     <Button
                         Grid.Column="2"
@@ -368,7 +368,7 @@
                         Click="OnNextPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind NextSeasonRow}"
+                        Tag="{x:Bind NextSeasonRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Next" />
                 </Grid>
                 <ScrollView
@@ -414,7 +414,7 @@
                         Click="OnPreviousPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind MissedRow}"
+                        Tag="{x:Bind MissedRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Previous" />
                     <Button
                         Grid.Column="3"
@@ -423,7 +423,7 @@
                         Click="OnNextPage"
                         Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
                         Style="{StaticResource RowPageButtonStyle}"
-                        Tag="{x:Bind MissedRow}"
+                        Tag="{x:Bind MissedRow, Mode=OneTime}"
                         ToolTipService.ToolTip="Next" />
                 </Grid>
                 <ScrollView

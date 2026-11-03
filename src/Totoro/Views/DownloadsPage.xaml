@@ -88,8 +88,9 @@
                 Text="Nothing in the download folder yet."
                 Visibility="{x:Bind local:DownloadsPage.VisibleIfNone(ViewModel.Library.Count), Mode=OneWay}" />
             <ListView
+                AutomationProperties.Name="Download folder"
                 ItemContainerStyle="{StaticResource DownloadsListItemStyle}"
-                ItemsSource="{x:Bind ViewModel.Library}"
+                ItemsSource="{x:Bind ViewModel.Library, Mode=OneTime}"
                 SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="playback:DownloadedAnime">
@@ -110,7 +111,7 @@
                                 Height="68"
                                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                                 CornerRadius="{ThemeResource ControlCornerRadius}">
-                                <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Cover)}" Stretch="UniformToFill" />
+                                <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Cover), Mode=OneTime}" Stretch="UniformToFill" />
                             </Border>
                             <StackPanel
                                 Grid.Column="1"
@@ -118,11 +119,11 @@
                                 Spacing="4">
                                 <TextBlock
                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                    Text="{x:Bind Title}"
+                                    Text="{x:Bind Title, Mode=OneTime}"
                                     TextTrimming="CharacterEllipsis" />
                                 <TextBlock
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{x:Bind Summary}"
+                                    Text="{x:Bind Summary, Mode=OneTime}"
                                     TextWrapping="Wrap" />
                             </StackPanel>
                             <StackPanel
@@ -181,8 +182,9 @@
                 Text="Nothing downloaded yet."
                 Visibility="{x:Bind local:DownloadsPage.VisibleIfNone(ViewModel.Downloads.Count), Mode=OneWay}" />
             <ListView
+                AutomationProperties.Name="Downloads"
                 ItemContainerStyle="{StaticResource DownloadsListItemStyle}"
-                ItemsSource="{x:Bind ViewModel.Downloads}"
+                ItemsSource="{x:Bind ViewModel.Downloads, Mode=OneTime}"
                 SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="playback:DownloadItem">
@@ -205,7 +207,7 @@
                             <StackPanel Spacing="4">
                                 <TextBlock
                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                    Text="{x:Bind Title}"
+                                    Text="{x:Bind Title, Mode=OneTime}"
                                     TextTrimming="CharacterEllipsis" />
                                 <TextBlock
                                     Foreground="{ThemeResource TextFillColorTertiaryBrush}"

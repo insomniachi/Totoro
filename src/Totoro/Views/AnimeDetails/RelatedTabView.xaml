@@ -15,11 +15,11 @@
                 Width="110"
                 Padding="0"
                 HorizontalContentAlignment="Stretch"
-                AutomationProperties.Name="{x:Bind Title}"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
                 Background="Transparent"
                 BorderThickness="0"
-                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
-                CommandParameter="{x:Bind Anime}">
+                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
+                CommandParameter="{x:Bind Anime, Mode=OneTime}">
                 <StackPanel Spacing="8">
                     <Border
                         Height="150"
@@ -27,14 +27,14 @@
                         CornerRadius="8">
                         <Grid>
                             <!--  Shimmers until the image loads over it; only when there is an image to load  -->
-                            <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image)}" />
-                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                            <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image), Mode=OneTime}" />
+                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
                         </Grid>
                     </Border>
                     <TextBlock
                         MaxLines="2"
                         Style="{ThemeResource CaptionTextBlockStyle}"
-                        Text="{x:Bind Title}"
+                        Text="{x:Bind Title, Mode=OneTime}"
                         TextAlignment="Center"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap" />

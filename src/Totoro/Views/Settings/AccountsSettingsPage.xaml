@@ -30,8 +30,8 @@
                                 <Image
                                     Width="16"
                                     Height="16"
-                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                <TextBlock Text="{x:Bind Name}" />
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -53,15 +53,15 @@
                                 <Image
                                     Width="16"
                                     Height="16"
-                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                <TextBlock Text="{x:Bind Name}" />
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
             </toolkit:SettingsCard>
 
-            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Accounts}">
+            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Accounts, Mode=OneTime}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Spacing="4" />
@@ -71,8 +71,8 @@
                     <DataTemplate x:DataType="vm:AccountViewModel">
                         <toolkit:SettingsCard
                             Description="{x:Bind Status, Mode=OneWay}"
-                            Header="{x:Bind Name}"
-                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE77B;')}">
+                            Header="{x:Bind Name, Mode=OneTime}"
+                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE77B;'), Mode=OneTime}">
                             <Button
                                 MinWidth="120"
                                 AutomationProperties.Name="{x:Bind ActionName, Mode=OneWay}"

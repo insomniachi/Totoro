@@ -148,16 +148,16 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:PluginTestItemViewModel">
                         <toolkit:SettingsExpander
-                            Header="{x:Bind Name}"
-                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xEA86;')}"
+                            Header="{x:Bind Name, Mode=OneTime}"
+                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xEA86;'), Mode=OneTime}"
                             IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}">
                             <toolkit:SettingsExpander.Description>
                                 <StackPanel Spacing="4">
                                     <TextBlock
-                                        Text="{x:Bind Description}"
+                                        Text="{x:Bind Description, Mode=OneTime}"
                                         TextWrapping="Wrap"
-                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Description)}" />
-                                    <TextBlock Text="{x:Bind VersionText}" />
+                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Description), Mode=OneTime}" />
+                                    <TextBlock Text="{x:Bind VersionText, Mode=OneTime}" />
                                 </StackPanel>
                             </toolkit:SettingsExpander.Description>
 
@@ -183,7 +183,7 @@
                             </StackPanel>
 
                             <toolkit:SettingsExpander.Items>
-                                <toolkit:SettingsCard Description="{x:Bind SearchStage.Message, Mode=OneWay}" Header="{x:Bind SearchStage.Name}">
+                                <toolkit:SettingsCard Description="{x:Bind SearchStage.Message, Mode=OneWay}" Header="{x:Bind SearchStage.Name, Mode=OneTime}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock
                                             VerticalAlignment="Center"
@@ -192,7 +192,7 @@
                                         <tester:TestStatusIcon VerticalAlignment="Center" Status="{x:Bind SearchStage.Status, Mode=OneWay}" />
                                     </StackPanel>
                                 </toolkit:SettingsCard>
-                                <toolkit:SettingsCard Description="{x:Bind EpisodesStage.Message, Mode=OneWay}" Header="{x:Bind EpisodesStage.Name}">
+                                <toolkit:SettingsCard Description="{x:Bind EpisodesStage.Message, Mode=OneWay}" Header="{x:Bind EpisodesStage.Name, Mode=OneTime}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock
                                             VerticalAlignment="Center"
@@ -201,7 +201,7 @@
                                         <tester:TestStatusIcon VerticalAlignment="Center" Status="{x:Bind EpisodesStage.Status, Mode=OneWay}" />
                                     </StackPanel>
                                 </toolkit:SettingsCard>
-                                <toolkit:SettingsCard Description="{x:Bind ServersStage.Message, Mode=OneWay}" Header="{x:Bind ServersStage.Name}">
+                                <toolkit:SettingsCard Description="{x:Bind ServersStage.Message, Mode=OneWay}" Header="{x:Bind ServersStage.Name, Mode=OneTime}">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <TextBlock
                                             VerticalAlignment="Center"

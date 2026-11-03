@@ -19,6 +19,7 @@
 	<PackageReference Include="CommunityToolkit.WinUI.Media" />
 	<PackageReference Include="DevWinUI" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinUIAnalyzer" PrivateAssets="all" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
   </ItemGroup>

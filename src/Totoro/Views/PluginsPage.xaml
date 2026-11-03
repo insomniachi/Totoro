@@ -93,7 +93,7 @@
                 Margin="0,8,0,12"
                 AutomationProperties.Name="Plugin type"
                 IsWrapped="True"
-                ItemsSource="{x:Bind ViewModel.TypeFilters}"
+                ItemsSource="{x:Bind ViewModel.TypeFilters, Mode=OneTime}"
                 SelectedIndex="{x:Bind ViewModel.SelectedTypeIndex, Mode=TwoWay}"
                 SelectionMode="Single" />
 
@@ -132,11 +132,11 @@
                                 <Viewbox
                                     Width="32"
                                     Height="32"
-                                    Child="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xEA86;')}" />
+                                    Child="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xEA86;'), Mode=OneTime}" />
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock
                                         Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                        Text="{x:Bind Name}"
+                                        Text="{x:Bind Name, Mode=OneTime}"
                                         TextTrimming="CharacterEllipsis" />
                                     <TextBlock
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -152,10 +152,10 @@
                                 <TextBlock
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     MaxLines="2"
-                                    Text="{x:Bind Description}"
+                                    Text="{x:Bind Description, Mode=OneTime}"
                                     TextTrimming="CharacterEllipsis"
                                     TextWrapping="Wrap"
-                                    ToolTipService.ToolTip="{x:Bind Description}" />
+                                    ToolTipService.ToolTip="{x:Bind Description, Mode=OneTime}" />
                                 <TextBlock
                                     MaxLines="1"
                                     Text="{x:Bind StatusText, Mode=OneWay}"
@@ -187,10 +187,10 @@
                                 </Button>
                                 <controls:BusyButton
                                     MinWidth="120"
-                                    Command="{x:Bind InstallOrUpdateCommand}"
+                                    Command="{x:Bind InstallOrUpdateCommand, Mode=OneTime}"
                                     IsBusy="{x:Bind InstallOrUpdateCommand.IsRunning, Mode=OneWay}"
                                     Content="Update"
-                                    IsEnabled="{x:Bind IsCompatible}"
+                                    IsEnabled="{x:Bind IsCompatible, Mode=OneTime}"
                                     Style="{ThemeResource AccentButtonStyle}"
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUpdate), Mode=OneWay}" />
                                 <controls:BusyButton
@@ -202,10 +202,10 @@
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsUninstall), Mode=OneWay}" />
                                 <controls:BusyButton
                                     MinWidth="120"
-                                    Command="{x:Bind InstallOrUpdateCommand}"
+                                    Command="{x:Bind InstallOrUpdateCommand, Mode=OneTime}"
                                     IsBusy="{x:Bind InstallOrUpdateCommand.IsRunning, Mode=OneWay}"
                                     Content="Install"
-                                    IsEnabled="{x:Bind IsCompatible}"
+                                    IsEnabled="{x:Bind IsCompatible, Mode=OneTime}"
                                     Style="{ThemeResource AccentButtonStyle}"
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ShowsNotInstalled), Mode=OneWay}" />
                             </StackPanel>

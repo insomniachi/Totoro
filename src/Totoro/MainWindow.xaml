@@ -327,7 +327,7 @@
             Grid.ColumnSpan="2"
             IsBackButtonVisible="False"
             IsPaneToggleButtonVisible="False"
-            Subtitle="{x:Bind local:MainWindow.Version}">
+            Subtitle="{x:Bind local:MainWindow.Version, Mode=OneTime}">
             <TitleBar.Resources>
                 <!--  The content spans the bar (TitleBar centres it), so the mode switch sits left and the search in the middle  -->
                 <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Stretch</HorizontalAlignment>
@@ -378,9 +378,9 @@
                             <DataTemplate x:DataType="services:MediaSuggestion">
                                 <Grid
                                     Padding="0,4"
-                                    AutomationProperties.Name="{x:Bind Media.Title}"
+                                    AutomationProperties.Name="{x:Bind Media.Title, Mode=OneTime}"
                                     ColumnSpacing="12"
-                                    ToolTipService.ToolTip="{x:Bind FullTitle}">
+                                    ToolTipService.ToolTip="{x:Bind FullTitle, Mode=OneTime}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
@@ -390,27 +390,27 @@
                                         Height="56"
                                         Background="{ThemeResource ControlFillColorSecondaryBrush}"
                                         CornerRadius="4">
-                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Media.Image)}" Stretch="UniformToFill" />
+                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Media.Image), Mode=OneTime}" Stretch="UniformToFill" />
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock
                                             Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                            Text="{x:Bind Media.Title}"
+                                            Text="{x:Bind Media.Title, Mode=OneTime}"
                                             TextTrimming="CharacterEllipsis"
                                             TextWrapping="NoWrap" />
                                         <TextBlock
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind Facts}"
+                                            Text="{x:Bind Facts, Mode=OneTime}"
                                             TextTrimming="CharacterEllipsis"
                                             TextWrapping="NoWrap" />
                                         <TextBlock
                                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                             Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind ListStatus}"
+                                            Text="{x:Bind ListStatus, Mode=OneTime}"
                                             TextTrimming="CharacterEllipsis"
                                             TextWrapping="NoWrap"
-                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ListStatus)}" />
+                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ListStatus), Mode=OneTime}" />
                                     </StackPanel>
                                 </Grid>
                             </DataTemplate>
@@ -428,6 +428,7 @@
                     <Button
                         Height="32"
                         VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="NowPlayingButton"
                         AutomationProperties.Name="{x:Bind local:MainWindow.NowPlayingName(ViewModel.Playback.Title), Mode=OneWay}"
                         Command="{x:Bind ViewModel.Playback.ShowStatusCommand}"
                         ToolTipService.ToolTip="{x:Bind local:MainWindow.NowPlayingName(ViewModel.Playback.Title), Mode=OneWay}"
@@ -478,6 +479,7 @@
                     <!--  The account of the selected anime database; click to sign in or out  -->
                     <Button
                         Padding="0"
+                        AutomationProperties.AutomationId="AccountButton"
                         AutomationProperties.Name="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
                         Background="Transparent"
                         BorderThickness="0"
@@ -509,6 +511,7 @@
                                     </StackPanel>
                                     <Button
                                         HorizontalAlignment="Stretch"
+                                        AutomationProperties.AutomationId="AccountActionButton"
                                         AutomationProperties.Name="{x:Bind ViewModel.Account.ActionName, Mode=OneWay}"
                                         Command="{x:Bind ViewModel.Account.SignInOrOutCommand, Mode=OneWay}"
                                         Content="{x:Bind ViewModel.Account.ActionText, Mode=OneWay}" />
@@ -559,9 +562,9 @@
                 <!--  Explicit container so screen readers announce the label instead of the view model's type name  -->
                 <DataTemplate x:DataType="navigation:NavigationItemViewModel">
                     <NavigationViewItem
-                        AutomationProperties.Name="{x:Bind Label}"
-                        Content="{x:Bind}"
-                        Icon="{x:Bind local:MainWindow.CreateIcon(AnimatedIcon)}"
+                        AutomationProperties.Name="{x:Bind Label, Mode=OneTime}"
+                        Content="{x:Bind Mode=OneTime}"
+                        Icon="{x:Bind local:MainWindow.CreateIcon(AnimatedIcon), Mode=OneTime}"
                         Style="{StaticResource MainNavigationViewItemStyle}">
                         <NavigationViewItem.InfoBadge>
                             <InfoBadge Visibility="{x:Bind local:MainWindow.VisibleIfPositive(BadgeCount), Mode=OneWay}" Value="{x:Bind BadgeCount, Mode=OneWay}" />
@@ -599,7 +602,7 @@
             BorderThickness="1,1,0,0"
             CornerRadius="8,0,0,0"
             Visibility="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}">
-            <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat}" />
+            <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat, Mode=OneTime}" />
         </Border>
 
         <!--  Notices over the top-right corner of the content, raised like the status bar below  -->
@@ -709,6 +712,7 @@
                 <InfoBar.ActionButton>
                     <!--  Cancel while getting ready, "Play episode 6" once one's watched...  -->
                     <Button
+                        AutomationProperties.AutomationId="PlaybackActionButton"
                         Command="{x:Bind ViewModel.Playback.ActionCommand}"
                         Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
                         Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />

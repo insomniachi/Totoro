@@ -40,14 +40,14 @@
                                 CornerRadius="8">
                                 <Grid>
                                     <!--  Shimmers until the image loads over it; only when there is an image to load  -->
-                                    <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image)}" />
-                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                    <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image), Mode=OneTime}" />
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
                                 </Grid>
                             </Border>
                             <TextBlock
                                 MaxLines="2"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Name}"
+                                Text="{x:Bind Name, Mode=OneTime}"
                                 TextAlignment="Center"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="Wrap" />

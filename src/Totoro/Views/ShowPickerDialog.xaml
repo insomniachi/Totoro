@@ -8,7 +8,7 @@
 
     <!--  Spacing per the Windows guidelines: 12 between content areas  -->
     <StackPanel MinWidth="440" Spacing="12">
-        <TextBlock Text="{x:Bind ViewModel.Prompt}" TextWrapping="Wrap" />
+        <TextBlock Text="{x:Bind ViewModel.Prompt, Mode=OneTime}" TextWrapping="Wrap" />
         <AutoSuggestBox
             AutomationProperties.Name="Search for the show"
             PlaceholderText="Search by title"
@@ -23,7 +23,7 @@
             SelectionMode="Single">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="streaming:ProviderShow">
-                    <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind Title, Mode=OneTime}" TextWrapping="Wrap" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

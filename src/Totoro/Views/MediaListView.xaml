@@ -107,6 +107,7 @@
         <toolkit:Segmented
             Grid.Row="0"
             Grid.ColumnSpan="2"
+            AutomationProperties.Name="Status"
             Margin="16,0,16,16"
             HorizontalAlignment="Center"
             ItemsSource="{x:Bind ViewModel.StatusFilter.Options, Mode=OneWay}"
@@ -119,12 +120,12 @@
                             Width="18"
                             Height="18"
                             VerticalAlignment="Center">
-                            <ContentPresenter Content="{x:Bind ui:Icons.FromKey(IconKey)}" />
+                            <ContentPresenter Content="{x:Bind ui:Icons.FromKey(IconKey), Mode=OneTime}" />
                         </Viewbox>
                         <TextBlock
                             VerticalAlignment="Center"
                             Style="{ThemeResource BodyLargeStrongTextBlockStyle}"
-                            Text="{x:Bind Label}" />
+                            Text="{x:Bind Label, Mode=OneTime}" />
                     </StackPanel>
                 </DataTemplate>
             </toolkit:Segmented.ItemTemplate>
@@ -160,7 +161,7 @@
             Grid.Row="1"
             Grid.ColumnSpan="2"
             Margin="16,0,16,8"
-            State="{x:Bind ViewModel.LoadState}"
+            State="{x:Bind ViewModel.LoadState, Mode=OneTime}"
             Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.LoadState.HasMessage), Mode=OneWay}" />
 
         <Border
@@ -226,10 +227,10 @@
                             <DropDownButton.Flyout>
                                 <Flyout Placement="BottomEdgeAlignedLeft">
                                     <ScrollViewer MaxHeight="360">
-                                        <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.GenreFilter.Options}">
+                                        <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.GenreFilter.Options, Mode=OneTime}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate x:DataType="anime:GenreOption">
-                                                    <CheckBox Content="{x:Bind Name}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
+                                                    <CheckBox Content="{x:Bind Name, Mode=OneTime}" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
@@ -244,7 +245,7 @@
                         <ComboBox
                             HorizontalAlignment="Stretch"
                             Header="Season"
-                            ItemsSource="{x:Bind ViewModel.SeasonFilter.Seasons}"
+                            ItemsSource="{x:Bind ViewModel.SeasonFilter.Seasons, Mode=OneTime}"
                             SelectedItem="{x:Bind ViewModel.SeasonFilter.Season, Mode=TwoWay}" />
 
                         <!--  As on the search page: any, one year, or a range; a range may be open at either end  -->
@@ -263,7 +264,7 @@
                                 <toolkit:Case Value="Year">
                                     <NumberBox
                                         AutomationProperties.Name="Year"
-                                        Maximum="{x:Bind ViewModel.SeasonFilter.LatestYear}"
+                                        Maximum="{x:Bind ViewModel.SeasonFilter.LatestYear, Mode=OneTime}"
                                         Minimum="1940"
                                         PlaceholderText="e.g. 2016"
                                         SpinButtonPlacementMode="Compact"
@@ -278,7 +279,7 @@
                                         </Grid.ColumnDefinitions>
                                         <NumberBox
                                             AutomationProperties.Name="From year"
-                                            Maximum="{x:Bind ViewModel.SeasonFilter.LatestYear}"
+                                            Maximum="{x:Bind ViewModel.SeasonFilter.LatestYear, Mode=OneTime}"
                                             Minimum="1940"
                                             PlaceholderText="Any"
                                             SpinButtonPlacementMode="Compact"
@@ -290,7 +291,7 @@
                                         <NumberBox
                                             Grid.Column="2"
                                             AutomationProperties.Name="To year"
-                                            Maximum="{x:Bind ViewModel.SeasonFilter.LatestYear}"
+                                            Maximum="{x:Bind ViewModel.SeasonFilter.LatestYear, Mode=OneTime}"
                                             Minimum="1940"
                                             PlaceholderText="Any"
                                             SpinButtonPlacementMode="Compact"
@@ -312,12 +313,13 @@
                             <ComboBox
                                 HorizontalAlignment="Stretch"
                                 AutomationProperties.Name="Sort by"
-                                ItemsSource="{x:Bind ViewModel.SortOptions}"
+                                ItemsSource="{x:Bind ViewModel.SortOptions, Mode=OneTime}"
                                 SelectedItem="{x:Bind ViewModel.Sort, Mode=TwoWay}" />
                             <!--  Shows the current order; clicking reverses it  -->
                             <Button
                                 Grid.Column="1"
                                 VerticalAlignment="Stretch"
+                                AutomationProperties.AutomationId="SortDirectionButton"
                                 AutomationProperties.Name="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}"
                                 Command="{x:Bind ViewModel.ToggleSortDirectionCommand}"
                                 ToolTipService.ToolTip="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}">
@@ -335,7 +337,7 @@
             Value="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
             <toolkit:Case Value="True">
                 <!--  Placeholder cards laid out like the real grid, so the page doesn't jump when the list arrives  -->
-                <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind PlaceholderCards}">
+                <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind PlaceholderCards, Mode=OneTime}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="x:Int32">
                             <Grid RowSpacing="12">

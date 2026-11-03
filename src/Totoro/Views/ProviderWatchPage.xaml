@@ -40,7 +40,7 @@
             <ComboBox
                 MinWidth="180"
                 AutomationProperties.Name="Anime provider"
-                ItemsSource="{x:Bind ViewModel.Providers}"
+                ItemsSource="{x:Bind ViewModel.Providers, Mode=OneTime}"
                 SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ProviderChoice">
@@ -48,8 +48,8 @@
                             <Image
                                 Width="16"
                                 Height="16"
-                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                            <TextBlock Text="{x:Bind Label}" />
+                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                            <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
@@ -104,7 +104,7 @@
                     <DataTemplate x:DataType="anime:AnimeModel">
                         <StackPanel
                             Width="180"
-                            AutomationProperties.Name="{x:Bind Title}"
+                            AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                             Spacing="8">
                             <Border
                                 Height="256"
@@ -116,14 +116,14 @@
                                         FontSize="32"
                                         Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                         Glyph="&#xE714;" />
-                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
                                 </Grid>
                             </Border>
                             <!--  Three lines' height whatever the title: the grid sizes every card as its first  -->
                             <TextBlock
                                 Height="60"
                                 MaxLines="3"
-                                Text="{x:Bind Title}"
+                                Text="{x:Bind Title, Mode=OneWay}"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="Wrap" />
                         </StackPanel>
@@ -164,7 +164,7 @@
                             <Border
                                 Width="56"
                                 Height="44"
-                                AutomationProperties.Name="{x:Bind Label}"
+                                AutomationProperties.Name="{x:Bind Label, Mode=OneTime}"
                                 Background="{ThemeResource ControlFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
@@ -173,7 +173,7 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                    Text="{x:Bind Number}" />
+                                    Text="{x:Bind Number, Mode=OneTime}" />
                             </Border>
                         </DataTemplate>
                     </GridView.ItemTemplate>
@@ -192,7 +192,7 @@
                         SelectedItem="{x:Bind ViewModel.SelectedStream, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="streaming:VideoServer">
-                                <TextBlock Text="{x:Bind Name}" />
+                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -210,7 +210,7 @@
                         SelectedItem="{x:Bind ViewModel.SelectedAnime, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="anime:AnimeModel">
-                                <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind Title, Mode=OneWay}" TextWrapping="Wrap" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -219,7 +219,7 @@
                         <ComboBox
                             HorizontalAlignment="Stretch"
                             Header="Episode numbering"
-                            ItemsSource="{x:Bind ViewModel.NumberingChoices}"
+                            ItemsSource="{x:Bind ViewModel.NumberingChoices, Mode=OneTime}"
                             SelectedItem="{x:Bind ViewModel.Numbering, Mode=TwoWay}" />
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"

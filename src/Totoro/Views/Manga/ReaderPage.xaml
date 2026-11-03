@@ -11,14 +11,14 @@
     <Page.Resources>
         <!--  A page: as big as fits, whole, in the height there is; a spinner while it loads, or Retry if it didn't  -->
         <DataTemplate x:Key="FitPageTemplate" x:DataType="vm:ReaderPageItem">
-            <Grid AutomationProperties.Name="{x:Bind Name}">
+            <Grid AutomationProperties.Name="{x:Bind Name, Mode=OneTime}">
                 <ProgressRing IsActive="{x:Bind IsLoading, Mode=OneWay}" />
                 <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Spacing="8"
                     Visibility="{x:Bind IsFailed, Mode=OneWay}">
-                    <TextBlock Text="{x:Bind local:ReaderPage.FailedText(Number)}" />
+                    <TextBlock Text="{x:Bind local:ReaderPage.FailedText(Number), Mode=OneTime}" />
                     <Button
                         HorizontalAlignment="Center"
                         Click="OnRetryClick"
@@ -26,7 +26,7 @@
                         Tag="{x:Bind}" />
                 </StackPanel>
                 <Image
-                    AutomationProperties.Name="{x:Bind Name}"
+                    AutomationProperties.Name="{x:Bind Name, Mode=OneTime}"
                     Source="{x:Bind Image, Mode=OneWay}"
                     Stretch="Uniform" />
             </Grid>
@@ -76,12 +76,12 @@
                             </Grid.ColumnDefinitions>
                             <!--  One page in the middle, or two meeting at it  -->
                             <ContentControl
-                                Grid.ColumnSpan="{x:Bind local:ReaderPage.LeftSpan(IsSingle)}"
+                                Grid.ColumnSpan="{x:Bind local:ReaderPage.LeftSpan(IsSingle), Mode=OneTime}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch"
-                                HorizontalContentAlignment="{x:Bind local:ReaderPage.LeftAlignment(IsSingle)}"
+                                HorizontalContentAlignment="{x:Bind local:ReaderPage.LeftAlignment(IsSingle), Mode=OneTime}"
                                 VerticalContentAlignment="Stretch"
-                                Content="{x:Bind Left}"
+                                Content="{x:Bind Left, Mode=OneTime}"
                                 ContentTemplate="{StaticResource FitPageTemplate}"
                                 IsTabStop="False" />
                             <ContentControl
@@ -90,10 +90,10 @@
                                 VerticalAlignment="Stretch"
                                 HorizontalContentAlignment="Left"
                                 VerticalContentAlignment="Stretch"
-                                Content="{x:Bind Right}"
+                                Content="{x:Bind Right, Mode=OneTime}"
                                 ContentTemplate="{StaticResource FitPageTemplate}"
                                 IsTabStop="False"
-                                Visibility="{x:Bind local:ReaderPage.VisibleIfTwo(IsSingle)}" />
+                                Visibility="{x:Bind local:ReaderPage.VisibleIfTwo(IsSingle), Mode=OneTime}" />
                         </Grid>
                     </ScrollView>
                 </DataTemplate>
@@ -127,9 +127,9 @@
                 <StackPanel Margin="12,4" VerticalAlignment="Center">
                     <TextBlock
                         Style="{StaticResource BodyStrongTextBlockStyle}"
-                        Text="{x:Bind ViewModel.MangaTitle}"
+                        Text="{x:Bind ViewModel.MangaTitle, Mode=OneTime}"
                         TextTrimming="CharacterEllipsis"
-                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.MangaTitle)}" />
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.MangaTitle), Mode=OneTime}" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="{x:Bind local:ReaderPage.Where(ViewModel.ChapterTitle, ViewModel.PageText), Mode=OneWay}"

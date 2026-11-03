@@ -23,7 +23,7 @@
                         <TextBlock
                             Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
                             IsTextSelectionEnabled="True"
-                            Text="{x:Bind Text}"
+                            Text="{x:Bind Text, Mode=OneTime}"
                             TextWrapping="Wrap" />
                     </Border>
                 </DataTemplate>
@@ -70,17 +70,17 @@
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Title}" />
+                                Text="{x:Bind Title, Mode=OneTime}" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                 IsTextSelectionEnabled="True"
                                 MaxLines="2"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Arguments}"
+                                Text="{x:Bind Arguments, Mode=OneTime}"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="Wrap"
-                                ToolTipService.ToolTip="{x:Bind Arguments}"
-                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Arguments)}" />
+                                ToolTipService.ToolTip="{x:Bind Arguments, Mode=OneTime}"
+                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Arguments), Mode=OneTime}" />
                             <TextBlock
                                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                 IsTextSelectionEnabled="True"
@@ -105,15 +105,15 @@
                         <StackPanel Spacing="8">
                             <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" TextWrapping="Wrap">
                                 <Run Text="Allow" />
-                                <Run Text="{x:Bind Title}" /><Run Text="?" />
+                                <Run Text="{x:Bind Title, Mode=OneTime}" /><Run Text="?" />
                             </TextBlock>
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTextSelectionEnabled="True"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Arguments}"
+                                Text="{x:Bind Arguments, Mode=OneTime}"
                                 TextWrapping="Wrap"
-                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Arguments)}" />
+                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Arguments), Mode=OneTime}" />
                             <StackPanel
                                 Orientation="Horizontal"
                                 Spacing="8"
@@ -139,7 +139,7 @@
                     <TextBlock
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                         IsTextSelectionEnabled="True"
-                        Text="{x:Bind Message}"
+                        Text="{x:Bind Message, Mode=OneTime}"
                         TextWrapping="Wrap" />
                 </DataTemplate>
             </chat:ChatEntryTemplateSelector.Error>
@@ -147,7 +147,7 @@
             <chat:ChatEntryTemplateSelector.Anime>
                 <DataTemplate x:DataType="services:ChatAnimeEntry">
                     <StackPanel Spacing="8">
-                        <ItemsControl ItemsSource="{x:Bind Anime}">
+                        <ItemsControl ItemsSource="{x:Bind Anime, Mode=OneTime}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Spacing="8" />
@@ -163,7 +163,7 @@
                                         BorderThickness="1"
                                         ColumnSpacing="12"
                                         CornerRadius="{ThemeResource OverlayCornerRadius}"
-                                        ToolTipService.ToolTip="{x:Bind FullTitle}">
+                                        ToolTipService.ToolTip="{x:Bind FullTitle, Mode=OneTime}">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
@@ -174,7 +174,7 @@
                                             Height="56"
                                             Background="{ThemeResource ControlFillColorSecondaryBrush}"
                                             CornerRadius="4">
-                                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Anime.Image)}" Stretch="UniformToFill" />
+                                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Anime.Image), Mode=OneTime}" Stretch="UniformToFill" />
                                         </Border>
                                         <StackPanel
                                             Grid.Column="1"
@@ -182,7 +182,7 @@
                                             Spacing="0">
                                             <TextBlock
                                                 Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                                Text="{x:Bind Anime.Title}"
+                                                Text="{x:Bind Anime.Title, Mode=OneWay}"
                                                 TextTrimming="CharacterEllipsis"
                                                 TextWrapping="NoWrap" />
                                             <TextBlock
@@ -190,7 +190,7 @@
                                                 Style="{ThemeResource CaptionTextBlockStyle}"
                                                 TextTrimming="CharacterEllipsis"
                                                 TextWrapping="NoWrap"
-                                                Text="{x:Bind Facts}" />
+                                                Text="{x:Bind Facts, Mode=OneTime}" />
                                             <TextBlock
                                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                                 Style="{ThemeResource CaptionTextBlockStyle}"
@@ -206,24 +206,24 @@
                                             Spacing="4">
                                             <Button
                                                 AutomationProperties.Name="Details"
-                                                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
-                                                CommandParameter="{x:Bind Anime}"
+                                                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
+                                                CommandParameter="{x:Bind Anime, Mode=OneTime}"
                                                 Style="{ThemeResource SubtleButtonStyle}"
                                                 ToolTipService.ToolTip="Details">
                                                 <FontIcon FontSize="14" Glyph="&#xE946;" />
                                             </Button>
                                             <Button
                                                 AutomationProperties.Name="{x:Bind ListAction, Mode=OneWay}"
-                                                Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
-                                                CommandParameter="{x:Bind Anime}"
+                                                Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand, Mode=OneTime}"
+                                                CommandParameter="{x:Bind Anime, Mode=OneTime}"
                                                 Style="{ThemeResource SubtleButtonStyle}"
                                                 ToolTipService.ToolTip="{x:Bind ListAction, Mode=OneWay}">
                                                 <FontIcon FontSize="14" Glyph="{x:Bind ListGlyph, Mode=OneWay}" />
                                             </Button>
                                             <Button
                                                 AutomationProperties.Name="Play"
-                                                Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
-                                                CommandParameter="{x:Bind Anime}"
+                                                Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand, Mode=OneTime}"
+                                                CommandParameter="{x:Bind Anime, Mode=OneTime}"
                                                 Style="{ThemeResource SubtleButtonStyle}"
                                                 ToolTipService.ToolTip="Play the next episode">
                                                 <FontIcon
@@ -239,15 +239,15 @@
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{ThemeResource CaptionTextBlockStyle}"
-                            Text="{x:Bind More}"
-                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(More)}" />
+                            Text="{x:Bind More, Mode=OneTime}"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(More), Mode=OneTime}" />
                     </StackPanel>
                 </DataTemplate>
             </chat:ChatEntryTemplateSelector.Anime>
             <!--  An anime's songs (one playing, or all of them): the Music tab's cards, which play them  -->
             <chat:ChatEntryTemplateSelector.Songs>
                 <DataTemplate x:DataType="services:ChatSongEntry">
-                    <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Songs}">
+                    <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Songs, Mode=OneTime}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Spacing="8" />
@@ -306,6 +306,7 @@
         <!--  The conversation; keeps the latest in view as the reply streams in  -->
         <ListView
             Grid.Row="1"
+            AutomationProperties.Name="Conversation"
             Padding="16,0"
             IsItemClickEnabled="False"
             ItemTemplateSelector="{StaticResource EntryTemplateSelector}"

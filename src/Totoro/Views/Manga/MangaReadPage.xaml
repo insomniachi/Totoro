@@ -37,7 +37,7 @@
             <ComboBox
                 MinWidth="180"
                 AutomationProperties.Name="Manga source"
-                ItemsSource="{x:Bind ViewModel.Sources}"
+                ItemsSource="{x:Bind ViewModel.Sources, Mode=OneTime}"
                 PlaceholderText="Manga source"
                 SelectedItem="{x:Bind ViewModel.SelectedSource, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
@@ -46,8 +46,8 @@
                             <Image
                                 Width="16"
                                 Height="16"
-                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                            <TextBlock Text="{x:Bind Label}" />
+                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                            <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
@@ -78,7 +78,7 @@
                 Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
             <InfoBar
                 IsClosable="False"
-                IsOpen="{x:Bind ViewModel.HasNoSources}"
+                IsOpen="{x:Bind ViewModel.HasNoSources, Mode=OneTime}"
                 Message="Manga sources come as plugins. Get one from the Plugins page."
                 Severity="Informational" />
         </StackPanel>
@@ -105,7 +105,7 @@
                     <DataTemplate x:DataType="manga:ProviderManga">
                         <StackPanel
                             Width="180"
-                            AutomationProperties.Name="{x:Bind Title}"
+                            AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
                             Spacing="8">
                             <Border
                                 Height="256"
@@ -117,13 +117,13 @@
                                         FontSize="32"
                                         Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                         Glyph="&#xE736;" />
-                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
                                 </Grid>
                             </Border>
                             <TextBlock
                                 Height="60"
                                 MaxLines="3"
-                                Text="{x:Bind Title}"
+                                Text="{x:Bind Title, Mode=OneTime}"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="Wrap" />
                         </StackPanel>
@@ -165,17 +165,17 @@
                             <Border
                                 Width="56"
                                 Height="44"
-                                AutomationProperties.Name="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title)}"
+                                AutomationProperties.Name="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title), Mode=OneTime}"
                                 Background="{ThemeResource ControlFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
                                 CornerRadius="{ThemeResource ControlCornerRadius}"
-                                ToolTipService.ToolTip="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title)}">
+                                ToolTipService.ToolTip="{x:Bind local:MangaDetailsPage.ChapterText(Number, Title), Mode=OneTime}">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                    Text="{x:Bind local:MangaDetailsPage.ChapterNumber(Number)}" />
+                                    Text="{x:Bind local:MangaDetailsPage.ChapterNumber(Number), Mode=OneTime}" />
                             </Border>
                         </DataTemplate>
                     </GridView.ItemTemplate>
@@ -203,7 +203,7 @@
                         Visibility="{x:Bind ViewModel.Track, Mode=OneWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="manga:MangaModel">
-                                <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind Title, Mode=OneTime}" TextWrapping="Wrap" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>

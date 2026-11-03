@@ -13,7 +13,7 @@
     <Page.Resources>
         <!--  A show's line on a day: its marker, title and episode numbers  -->
         <DataTemplate x:Key="EpisodeLineTemplate" x:DataType="vm:CalendarBand">
-            <Grid ColumnSpacing="4" Opacity="{x:Bind local:ReleaseSchedulePage.WatchedOpacity(IsWatched)}">
+            <Grid ColumnSpacing="4" Opacity="{x:Bind local:ReleaseSchedulePage.WatchedOpacity(IsWatched), Mode=OneTime}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="12" />
                     <ColumnDefinition Width="*" />
@@ -22,17 +22,17 @@
                 <FontIcon
                     FontSize="12"
                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                    Glyph="{x:Bind local:ReleaseSchedulePage.MarkerGlyph(Marker, IsWatched)}" />
+                    Glyph="{x:Bind local:ReleaseSchedulePage.MarkerGlyph(Marker, IsWatched), Mode=OneTime}" />
                 <TextBlock
                     Grid.Column="1"
                     Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Anime.Title}"
+                    Text="{x:Bind Anime.Title, Mode=OneWay}"
                     TextTrimming="CharacterEllipsis" />
                 <TextBlock
                     Grid.Column="2"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind local:ReleaseSchedulePage.EpisodeLabel(First.Number, Last.Number)}" />
+                    Text="{x:Bind local:ReleaseSchedulePage.EpisodeLabel(First.Number, Last.Number), Mode=OneTime}" />
             </Grid>
         </DataTemplate>
 
@@ -42,14 +42,14 @@
                 Padding="4,2"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
-                AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}"
+                AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker), Mode=OneTime}"
                 Background="Transparent"
                 BorderThickness="0"
-                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
-                CommandParameter="{x:Bind Anime}"
-                Content="{x:Bind}"
+                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
+                CommandParameter="{x:Bind Anime, Mode=OneTime}"
+                Content="{x:Bind Mode=OneTime}"
                 ContentTemplate="{StaticResource EpisodeLineTemplate}"
-                ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}" />
+                ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker), Mode=OneTime}" />
         </DataTemplate>
     </Page.Resources>
 
@@ -135,7 +135,7 @@
                 </StackPanel>
             </Grid>
 
-            <ItemsControl Grid.Row="1" ItemsSource="{x:Bind ViewModel.DayNames}">
+            <ItemsControl Grid.Row="1" ItemsSource="{x:Bind ViewModel.DayNames, Mode=OneTime}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <toolkit:UniformGrid ColumnSpacing="8" Columns="7" />
@@ -165,12 +165,12 @@
                     <DataTemplate x:DataType="vm:CalendarDay">
                         <Grid
                             Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                            BorderBrush="{x:Bind local:ReleaseSchedulePage.DayBorder(IsToday)}"
+                            BorderBrush="{x:Bind local:ReleaseSchedulePage.DayBorder(IsToday), Mode=OneTime}"
                             BorderThickness="1"
                             CornerRadius="{ThemeResource ControlCornerRadius}"
-                            Opacity="{x:Bind local:ReleaseSchedulePage.DayOpacity(IsInMonth)}">
+                            Opacity="{x:Bind local:ReleaseSchedulePage.DayOpacity(IsInMonth), Mode=OneTime}">
                             <!--  A band for each show, with its cover behind its row  -->
-                            <ItemsControl ItemsSource="{x:Bind Bands}">
+                            <ItemsControl ItemsSource="{x:Bind Bands, Mode=OneTime}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <toolkit:UniformGrid Columns="1" />
@@ -185,18 +185,18 @@
                                             VerticalAlignment="Stretch"
                                             HorizontalContentAlignment="Stretch"
                                             VerticalContentAlignment="Stretch"
-                                            AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}"
+                                            AutomationProperties.Name="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker), Mode=OneTime}"
                                             Background="Transparent"
                                             BorderThickness="0"
-                                            Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
-                                            CommandParameter="{x:Bind Anime}"
+                                            Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
+                                            CommandParameter="{x:Bind Anime, Mode=OneTime}"
                                             CornerRadius="0"
-                                            ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker)}">
+                                            ToolTipService.ToolTip="{x:Bind local:ReleaseSchedulePage.Describe(Anime.Title, First.Number, Last.Number, AiringAt, Marker), Mode=OneTime}">
                                             <Grid>
                                                 <!--  The cover, not the banner: AniList's banners never finish loading in an Image.  -->
                                                 <Border Opacity="0.3">
                                                     <Border.Background>
-                                                        <ImageBrush ImageSource="{x:Bind helpers:CommonConverters.ToImageSource(Anime.Image)}" Stretch="UniformToFill" />
+                                                        <ImageBrush ImageSource="{x:Bind helpers:CommonConverters.ToImageSource(Anime.Image), Mode=OneTime}" Stretch="UniformToFill" />
                                                     </Border.Background>
                                                 </Border>
                                                 <ContentPresenter
@@ -210,7 +210,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <toolkit:Shimmer CornerRadius="0" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsLoading)}" />
+                            <toolkit:Shimmer CornerRadius="0" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsLoading), Mode=OneTime}" />
 
                             <!--  The day; today's on an accent circle  -->
                             <Grid
@@ -219,15 +219,15 @@
                                 Margin="8,8,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
-                                Background="{x:Bind local:ReleaseSchedulePage.TodayBackground(IsToday)}"
+                                Background="{x:Bind local:ReleaseSchedulePage.TodayBackground(IsToday), Mode=OneTime}"
                                 CornerRadius="12"
                                 IsHitTestVisible="False">
                                 <TextBlock
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Foreground="{x:Bind local:ReleaseSchedulePage.TodayForeground(IsToday)}"
+                                    Foreground="{x:Bind local:ReleaseSchedulePage.TodayForeground(IsToday), Mode=OneTime}"
                                     Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                    Text="{x:Bind Date.Day}" />
+                                    Text="{x:Bind Date.Day, Mode=OneTime}" />
                             </Grid>
 
                             <!--  The shows that don't get a band  -->
@@ -236,15 +236,15 @@
                                 Padding="8,2"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
-                                Content="{x:Bind MoreLabel}"
+                                Content="{x:Bind MoreLabel, Mode=OneTime}"
                                 FontSize="12"
-                                Visibility="{x:Bind local:ReleaseSchedulePage.VisibleIfAny(MoreCount)}">
+                                Visibility="{x:Bind local:ReleaseSchedulePage.VisibleIfAny(MoreCount), Mode=OneTime}">
                                 <Button.Flyout>
                                     <Flyout>
                                         <ItemsControl
                                             Width="280"
                                             ItemTemplate="{StaticResource EpisodeRowTemplate}"
-                                            ItemsSource="{x:Bind Shows}" />
+                                            ItemsSource="{x:Bind Shows, Mode=OneTime}" />
                                     </Flyout>
                                 </Button.Flyout>
                             </Button>

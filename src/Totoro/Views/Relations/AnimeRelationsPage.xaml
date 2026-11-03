@@ -73,7 +73,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="relations:UserRuleItem">
-                        <toolkit:SettingsCard Description="{x:Bind Effect}" Header="{x:Bind Title}">
+                        <toolkit:SettingsCard Description="{x:Bind Effect, Mode=OneTime}" Header="{x:Bind Title, Mode=OneTime}">
                             <toolkit:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE8AB;" />
                             </toolkit:SettingsCard.HeaderIcon>

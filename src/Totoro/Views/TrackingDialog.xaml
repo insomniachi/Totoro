@@ -18,8 +18,8 @@
             <local:TrackingFieldTemplateSelector.Text>
                 <DataTemplate x:DataType="anime:TextField">
                     <TextBox
-                        AcceptsReturn="{x:Bind IsMultiline}"
-                        Header="{x:Bind Label}"
+                        AcceptsReturn="{x:Bind IsMultiline, Mode=OneTime}"
+                        Header="{x:Bind Label, Mode=OneTime}"
                         Text="{x:Bind Value, Mode=TwoWay}"
                         TextWrapping="Wrap" />
                 </DataTemplate>
@@ -27,8 +27,8 @@
             <local:TrackingFieldTemplateSelector.Number>
                 <DataTemplate x:DataType="anime:NumberField">
                     <NumberBox
-                        Header="{x:Bind Label}"
-                        Maximum="{x:Bind Maximum}"
+                        Header="{x:Bind Label, Mode=OneTime}"
+                        Maximum="{x:Bind Maximum, Mode=OneTime}"
                         Minimum="0"
                         SmallChange="1"
                         SpinButtonPlacementMode="Inline"
@@ -37,15 +37,15 @@
             </local:TrackingFieldTemplateSelector.Number>
             <local:TrackingFieldTemplateSelector.Toggle>
                 <DataTemplate x:DataType="anime:ToggleField">
-                    <CheckBox Content="{x:Bind Label}" IsChecked="{x:Bind Value, Mode=TwoWay}" />
+                    <CheckBox Content="{x:Bind Label, Mode=OneTime}" IsChecked="{x:Bind Value, Mode=TwoWay}" />
                 </DataTemplate>
             </local:TrackingFieldTemplateSelector.Toggle>
             <local:TrackingFieldTemplateSelector.Choice>
                 <DataTemplate x:DataType="anime:ChoiceField">
                     <ComboBox
                         HorizontalAlignment="Stretch"
-                        Header="{x:Bind Label}"
-                        ItemsSource="{x:Bind Choices}"
+                        Header="{x:Bind Label, Mode=OneTime}"
+                        ItemsSource="{x:Bind Choices, Mode=OneTime}"
                         SelectedItem="{x:Bind Value, Mode=TwoWay}" />
                 </DataTemplate>
             </local:TrackingFieldTemplateSelector.Choice>
@@ -56,11 +56,11 @@
             <local:ScoreTemplateSelector.Number>
                 <DataTemplate x:DataType="vm:TrackingDialogViewModel">
                     <NumberBox
-                        Header="{x:Bind ScoreHeader}"
-                        Maximum="{x:Bind Form.ScoreMax}"
+                        Header="{x:Bind ScoreHeader, Mode=OneTime}"
+                        Maximum="{x:Bind Form.ScoreMax, Mode=OneTime}"
                         Minimum="0"
-                        NumberFormatter="{x:Bind ScoreFormatter}"
-                        SmallChange="{x:Bind Form.ScoreStep}"
+                        NumberFormatter="{x:Bind ScoreFormatter, Mode=OneTime}"
+                        SmallChange="{x:Bind Form.ScoreStep, Mode=OneTime}"
                         SpinButtonPlacementMode="Inline"
                         Value="{x:Bind Score, Mode=TwoWay}" />
                 </DataTemplate>
@@ -73,7 +73,7 @@
                             HorizontalAlignment="Left"
                             AutomationProperties.Name="Score"
                             IsClearEnabled="True"
-                            MaxRating="{x:Bind StarCount}"
+                            MaxRating="{x:Bind StarCount, Mode=OneTime}"
                             Value="{x:Bind StarValue, Mode=TwoWay}" />
                     </StackPanel>
                 </DataTemplate>
@@ -108,11 +108,11 @@
         <ComboBox
             HorizontalAlignment="Stretch"
             Header="Status"
-            ItemsSource="{x:Bind ViewModel.Statuses}"
+            ItemsSource="{x:Bind ViewModel.Statuses, Mode=OneTime}"
             SelectedItem="{x:Bind ViewModel.Status, Mode=TwoWay}">
             <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:StatusOption">
-                    <TextBlock Text="{x:Bind Label}" />
+                    <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
@@ -124,7 +124,7 @@
             </Grid.ColumnDefinitions>
             <NumberBox
                 Header="Episodes watched"
-                Maximum="{x:Bind ViewModel.MaxEpisodes}"
+                Maximum="{x:Bind ViewModel.MaxEpisodes, Mode=OneTime}"
                 Minimum="0"
                 SmallChange="1"
                 SpinButtonPlacementMode="Inline"
@@ -133,7 +133,7 @@
             <ContentControl
                 Grid.Column="1"
                 HorizontalContentAlignment="Stretch"
-                Content="{x:Bind ViewModel}"
+                Content="{x:Bind ViewModel, Mode=OneTime}"
                 ContentTemplateSelector="{StaticResource ScoreTemplateSelector}"
                 IsTabStop="False" />
         </Grid>

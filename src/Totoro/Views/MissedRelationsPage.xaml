@@ -60,7 +60,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <!--  Tags are AnimeRelationType names, comma-separated; none for all  -->
-                    <SelectorBar VerticalAlignment="Center" SelectionChanged="OnFilterChanged">
+                    <SelectorBar AutomationProperties.Name="Relation type" VerticalAlignment="Center" SelectionChanged="OnFilterChanged">
                         <SelectorBarItem IsSelected="True" Text="All" />
                         <SelectorBarItem Tag="Sequel,Prequel" Text="Sequels &amp; prequels" />
                         <SelectorBarItem Tag="SideStory" Text="Side stories" />
@@ -73,12 +73,13 @@
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Sort by"
                         Header="Sort by"
-                        ItemsSource="{x:Bind ViewModel.SortOptions}"
+                        ItemsSource="{x:Bind ViewModel.SortOptions, Mode=OneTime}"
                         SelectedItem="{x:Bind ViewModel.Sort, Mode=TwoWay}" />
                     <Button
                         Grid.Column="2"
                         MinHeight="{ThemeResource ComboBoxMinHeight}"
                         VerticalAlignment="Bottom"
+                        AutomationProperties.AutomationId="SortDirectionButton"
                         AutomationProperties.Name="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}"
                         Command="{x:Bind ViewModel.ToggleSortDirectionCommand}"
                         ToolTipService.ToolTip="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}">

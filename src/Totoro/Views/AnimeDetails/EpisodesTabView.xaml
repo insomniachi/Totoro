@@ -44,30 +44,30 @@
                                 Height="90"
                                 Padding="0"
                                 VerticalAlignment="Top"
-                                AutomationProperties.Name="{x:Bind PlayName}"
+                                AutomationProperties.Name="{x:Bind PlayName, Mode=OneTime}"
                                 Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                                 BorderThickness="0"
-                                Command="{x:Bind commands:AnimeCommands.Shared.WatchEpisodeCommand}"
-                                CommandParameter="{x:Bind Play}"
+                                Command="{x:Bind commands:AnimeCommands.Shared.WatchEpisodeCommand, Mode=OneTime}"
+                                CommandParameter="{x:Bind Play, Mode=OneTime}"
                                 CornerRadius="8"
-                                IsEnabled="{x:Bind CanPlay}"
+                                IsEnabled="{x:Bind CanPlay, Mode=OneTime}"
                                 PointerEntered="OnThumbnailPointerEntered"
                                 PointerExited="OnThumbnailPointerExited"
-                                ToolTipService.ToolTip="{x:Bind PlayName}">
+                                ToolTipService.ToolTip="{x:Bind PlayName, Mode=OneTime}">
                                 <Button.ContextFlyout>
                                     <MenuFlyout>
                                         <MenuFlyoutItem
-                                            Command="{x:Bind commands:AnimeCommands.Shared.BingeEpisodeCommand}"
-                                            CommandParameter="{x:Bind Play}"
-                                            IsEnabled="{x:Bind CanPlay}"
+                                            Command="{x:Bind commands:AnimeCommands.Shared.BingeEpisodeCommand, Mode=OneTime}"
+                                            CommandParameter="{x:Bind Play, Mode=OneTime}"
+                                            IsEnabled="{x:Bind CanPlay, Mode=OneTime}"
                                             Text="Binge">
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE8B2;" />
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
                                         <MenuFlyoutItem
-                                            Command="{x:Bind commands:AnimeCommands.Shared.DownloadEpisodeCommand}"
-                                            CommandParameter="{x:Bind Play}"
+                                            Command="{x:Bind commands:AnimeCommands.Shared.DownloadEpisodeCommand, Mode=OneTime}"
+                                            CommandParameter="{x:Bind Play, Mode=OneTime}"
                                             Text="Download">
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE896;" />
@@ -77,8 +77,8 @@
                                 </Button.ContextFlyout>
                                 <Grid>
                                     <!--  Shimmers until the image loads over it; only when there is an image to load  -->
-                                    <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image)}" />
-                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                                    <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image), Mode=OneTime}" />
+                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
                                     <!--  Grows and fills with the accent colour on hover (see the code-behind)  -->
                                     <Grid
                                         x:Name="PlayBadge"
@@ -86,7 +86,7 @@
                                         Height="36"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
-                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(CanPlay)}">
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(CanPlay), Mode=OneTime}">
                                         <Ellipse Fill="{ThemeResource SmokeFillColorDefaultBrush}" />
                                         <Ellipse
                                             x:Name="PlayHighlight"
@@ -108,14 +108,14 @@
                                         VerticalAlignment="Bottom"
                                         Background="#66FFFFFF"
                                         CornerRadius="2"
-                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasProgress)}">
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(HasProgress), Mode=OneTime}">
                                         <Rectangle
-                                            Width="{x:Bind local:EpisodesTabView.ProgressWidth(Progress)}"
+                                            Width="{x:Bind local:EpisodesTabView.ProgressWidth(Progress), Mode=OneTime}"
                                             HorizontalAlignment="Left"
                                             Fill="{ThemeResource AccentFillColorDefaultBrush}" />
                                     </Grid>
                                     <!--  A ribbon across the top-left corner in the caution colour, so a filler stands out in the list; clipped to the thumbnail  -->
-                                    <Canvas IsHitTestVisible="False" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsFiller)}">
+                                    <Canvas IsHitTestVisible="False" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsFiller), Mode=OneTime}">
                                         <Canvas.Clip>
                                             <RectangleGeometry Rect="0,0,160,90" />
                                         </Canvas.Clip>
@@ -150,11 +150,11 @@
                                     <TextBlock
                                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                         Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                        Text="{x:Bind Number}" />
+                                        Text="{x:Bind Number, Mode=OneTime}" />
                                     <TextBlock
                                         Grid.Column="1"
                                         Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                        Text="{x:Bind Title}"
+                                        Text="{x:Bind Title, Mode=OneTime}"
                                         TextTrimming="CharacterEllipsis" />
                                     <!--  Watched  -->
                                     <FontIcon
@@ -163,15 +163,15 @@
                                         FontSize="14"
                                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                         Glyph="&#xE930;"
-                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsWatched)}" />
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsWatched), Mode=OneTime}" />
                                 </Grid>
                                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{ThemeResource CaptionTextBlockStyle}">
-                                    <Run Text="{x:Bind Details}" /><Run Text="{x:Bind ResumeSeparator}" /><Run Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Text="{x:Bind ResumeText}" />
+                                    <Run Text="{x:Bind Details, Mode=OneTime}" /><Run Text="{x:Bind ResumeSeparator, Mode=OneTime}" /><Run Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Text="{x:Bind ResumeText, Mode=OneTime}" />
                                 </TextBlock>
                                 <TextBlock
                                     Margin="0,4,0,0"
                                     MaxLines="3"
-                                    Text="{x:Bind Overview}"
+                                    Text="{x:Bind Overview, Mode=OneTime}"
                                     TextTrimming="CharacterEllipsis"
                                     TextWrapping="Wrap" />
                             </StackPanel>

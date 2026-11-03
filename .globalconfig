@@ -1,0 +1,6 @@
+is_global = true
+
+# WinUI analyzer: a nested x:Bind path without a FallbackValue. Pages' ViewModel is set before their bindings run, and
+# x:Bind's handling of a null along the path is relied on (see AGENTS.md); where a step can be null, the UI showing it
+# is hidden then. (Here rather than .editorconfig: severities there don't reach diagnostics on XAML files.)
+dotnet_diagnostic.WUI2010.severity = none

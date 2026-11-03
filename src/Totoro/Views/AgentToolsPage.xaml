@@ -33,7 +33,7 @@
         <ListView
             Grid.Row="1"
             AutomationProperties.Name="Tools"
-            ItemsSource="{x:Bind ViewModel.Tools}"
+            ItemsSource="{x:Bind ViewModel.Tools, Mode=OneTime}"
             SelectedItem="{x:Bind ViewModel.SelectedTool, Mode=TwoWay}"
             SelectionMode="Single">
             <ListView.ItemTemplate>
@@ -41,7 +41,7 @@
                     <TextBlock
                         Padding="0,8"
                         FontFamily="Consolas"
-                        Text="{x:Bind Name}" />
+                        Text="{x:Bind Name, Mode=OneTime}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

@@ -10,11 +10,11 @@
     <UserControl.Resources>
         <DataTemplate x:Key="AnimeTemplate" x:DataType="relations:RelationAnime">
             <StackPanel Padding="0,4">
-                <TextBlock Text="{x:Bind Title}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{x:Bind Title, Mode=OneTime}" TextTrimming="CharacterEllipsis" />
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{ThemeResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Details}" />
+                    Text="{x:Bind Details, Mode=OneTime}" />
             </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
@@ -32,7 +32,7 @@
             SuggestionChosen="OnSeasonChosen"
             TextChanged="OnSeasonTextChanged"
             TextMemberPath="Title"
-            Visibility="{x:Bind ViewModel.CanChangeSeason}" />
+            Visibility="{x:Bind ViewModel.CanChangeSeason, Mode=OneTime}" />
 
         <!--  The series' seasons, found from the season's prequels and sequels: what the rest is filled in from  -->
         <StackPanel Spacing="4">
@@ -46,9 +46,9 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="relations:SeasonMapEntry">
                         <TextBlock
-                            Foreground="{x:Bind local:RelationRuleEditor.SeasonForeground(IsChosen)}"
+                            Foreground="{x:Bind local:RelationRuleEditor.SeasonForeground(IsChosen), Mode=OneTime}"
                             Style="{ThemeResource CaptionTextBlockStyle}"
-                            Text="{x:Bind Text}"
+                            Text="{x:Bind Text, Mode=OneTime}"
                             TextTrimming="CharacterEllipsis" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

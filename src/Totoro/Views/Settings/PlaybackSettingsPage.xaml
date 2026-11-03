@@ -28,17 +28,17 @@
                 <Grid>
                     <ComboBox
                         MinWidth="200"
-                        ItemsSource="{x:Bind ViewModel.AnimeProviders}"
+                        ItemsSource="{x:Bind ViewModel.AnimeProviders, Mode=OneTime}"
                         SelectedItem="{x:Bind ViewModel.AnimeProvider, Mode=TwoWay}"
-                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasAnimeProviders)}">
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasAnimeProviders), Mode=OneTime}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:AnimeProviderOption">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Image
                                         Width="16"
                                         Height="16"
-                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                    <TextBlock Text="{x:Bind Name}" />
+                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                    <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -46,10 +46,10 @@
                     <!--  None installed yet (a fresh install): where to get one  -->
                     <Button
                         MinWidth="120"
-                        Command="{x:Bind ViewModel.OpenPluginsCommand}"
+                        Command="{x:Bind ViewModel.OpenPluginsCommand, Mode=OneTime}"
                         Content="Get one from Plugins"
                         Style="{ThemeResource AccentButtonStyle}"
-                        Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasAnimeProviders)}" />
+                        Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasAnimeProviders), Mode=OneTime}" />
                 </Grid>
             </toolkit:SettingsCard>
 
@@ -59,7 +59,7 @@
                 </toolkit:SettingsCard.HeaderIcon>
                 <ComboBox
                     MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.MediaPlayers}"
+                    ItemsSource="{x:Bind ViewModel.MediaPlayers, Mode=OneTime}"
                     SelectedItem="{x:Bind ViewModel.MediaPlayer, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:MediaPlayerOption">
@@ -67,8 +67,8 @@
                                 <Image
                                     Width="16"
                                     Height="16"
-                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                <TextBlock Text="{x:Bind Name}" />
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -81,7 +81,7 @@
                 </toolkit:SettingsCard.HeaderIcon>
                 <ComboBox
                     MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.TorrentStreamers}"
+                    ItemsSource="{x:Bind ViewModel.TorrentStreamers, Mode=OneTime}"
                     SelectedItem="{x:Bind ViewModel.TorrentStreamer, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:TorrentStreamerOption">
@@ -89,8 +89,8 @@
                                 <Image
                                     Width="16"
                                     Height="16"
-                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                <TextBlock Text="{x:Bind Name}" />
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                             </StackPanel>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
@@ -118,11 +118,11 @@
                 </toolkit:SettingsCard.HeaderIcon>
                 <ComboBox
                     MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.SkipModes}"
+                    ItemsSource="{x:Bind ViewModel.SkipModes, Mode=OneTime}"
                     SelectedItem="{x:Bind ViewModel.OpeningSkip, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:SkipModeOption">
-                            <TextBlock Text="{x:Bind Label}" />
+                            <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -134,11 +134,11 @@
                 </toolkit:SettingsCard.HeaderIcon>
                 <ComboBox
                     MinWidth="200"
-                    ItemsSource="{x:Bind ViewModel.SkipModes}"
+                    ItemsSource="{x:Bind ViewModel.SkipModes, Mode=OneTime}"
                     SelectedItem="{x:Bind ViewModel.EndingSkip, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:SkipModeOption">
-                            <TextBlock Text="{x:Bind Label}" />
+                            <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -185,27 +185,27 @@
                     <ComboBox
                         MinWidth="200"
                         AutomationProperties.Name="Manga source"
-                        ItemsSource="{x:Bind ViewModel.MangaProviders}"
+                        ItemsSource="{x:Bind ViewModel.MangaProviders, Mode=OneTime}"
                         SelectedItem="{x:Bind ViewModel.MangaProvider, Mode=TwoWay}"
-                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasMangaProviders)}">
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasMangaProviders), Mode=OneTime}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:AnimeProviderOption">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Image
                                         Width="16"
                                         Height="16"
-                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                    <TextBlock Text="{x:Bind Name}" />
+                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                    <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <Button
                         MinWidth="120"
-                        Command="{x:Bind ViewModel.OpenPluginsCommand}"
+                        Command="{x:Bind ViewModel.OpenPluginsCommand, Mode=OneTime}"
                         Content="Get one from Plugins"
                         Style="{ThemeResource AccentButtonStyle}"
-                        Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasMangaProviders)}" />
+                        Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.HasMangaProviders), Mode=OneTime}" />
                 </Grid>
             </toolkit:SettingsCard>
 
@@ -216,11 +216,11 @@
                 <ComboBox
                     MinWidth="200"
                     AutomationProperties.Name="Reading direction"
-                    ItemsSource="{x:Bind ViewModel.ReaderModes}"
+                    ItemsSource="{x:Bind ViewModel.ReaderModes, Mode=OneTime}"
                     SelectedItem="{x:Bind ViewModel.ReaderMode, Mode=TwoWay}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="vm:ReaderModeOption">
-                            <TextBlock Text="{x:Bind Label}" />
+                            <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>

@@ -15,7 +15,7 @@
             </Grid.ColumnDefinitions>
             <NumberBox
                 Header="From episode"
-                Maximum="{x:Bind ViewModel.MaxEpisode}"
+                Maximum="{x:Bind ViewModel.MaxEpisode, Mode=OneTime}"
                 Minimum="1"
                 SmallChange="1"
                 SpinButtonPlacementMode="Inline"
@@ -23,7 +23,7 @@
             <NumberBox
                 Grid.Column="1"
                 Header="To episode"
-                Maximum="{x:Bind ViewModel.MaxEpisode}"
+                Maximum="{x:Bind ViewModel.MaxEpisode, Mode=OneTime}"
                 Minimum="1"
                 SmallChange="1"
                 SpinButtonPlacementMode="Inline"
@@ -37,8 +37,8 @@
         <ComboBox
             HorizontalAlignment="Stretch"
             Header="Download from"
-            IsEnabled="{x:Bind ViewModel.HasProviders}"
-            ItemsSource="{x:Bind ViewModel.Providers}"
+            IsEnabled="{x:Bind ViewModel.HasProviders, Mode=OneTime}"
+            ItemsSource="{x:Bind ViewModel.Providers, Mode=OneTime}"
             SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
             <ComboBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:ProviderChoice">
@@ -46,8 +46,8 @@
                         <Image
                             Width="16"
                             Height="16"
-                            Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                        <TextBlock Text="{x:Bind Label}" />
+                            Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                        <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>

@@ -101,7 +101,7 @@
                             Click="OnPreviousPage"
                             Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
                             Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind TrendingRow}"
+                            Tag="{x:Bind TrendingRow, Mode=OneTime}"
                             ToolTipService.ToolTip="Previous" />
                         <Button
                             Grid.Column="2"
@@ -110,7 +110,7 @@
                             Click="OnNextPage"
                             Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
                             Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind TrendingRow}"
+                            Tag="{x:Bind TrendingRow, Mode=OneTime}"
                             ToolTipService.ToolTip="Next" />
                     </Grid>
                     <ScrollView
@@ -143,7 +143,7 @@
                             Click="OnPreviousPage"
                             Content="{toolkitui:FontIcon Glyph=&#xE76B;, FontSize=14}"
                             Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind PopularRow}"
+                            Tag="{x:Bind PopularRow, Mode=OneTime}"
                             ToolTipService.ToolTip="Previous" />
                         <Button
                             Grid.Column="2"
@@ -152,7 +152,7 @@
                             Click="OnNextPage"
                             Content="{toolkitui:FontIcon Glyph=&#xE76C;, FontSize=14}"
                             Style="{StaticResource RowPageButtonStyle}"
-                            Tag="{x:Bind PopularRow}"
+                            Tag="{x:Bind PopularRow, Mode=OneTime}"
                             ToolTipService.ToolTip="Next" />
                     </Grid>
                     <ScrollView

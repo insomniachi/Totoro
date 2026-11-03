@@ -31,7 +31,7 @@
             </toolkit:SettingsCard.HeaderIcon>
             <ComboBox
                 MinWidth="200"
-                ItemsSource="{x:Bind ViewModel.Providers}"
+                ItemsSource="{x:Bind ViewModel.Providers, Mode=OneTime}"
                 SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:ProviderChoice">
@@ -39,8 +39,8 @@
                             <Image
                                 Width="16"
                                 Height="16"
-                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                            <TextBlock Text="{x:Bind Label}" />
+                                Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                            <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                         </StackPanel>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
@@ -85,11 +85,11 @@
             </toolkit:SettingsCard.HeaderIcon>
             <ComboBox
                 MinWidth="200"
-                ItemsSource="{x:Bind ViewModel.NumberingChoices}"
+                ItemsSource="{x:Bind ViewModel.NumberingChoices, Mode=OneTime}"
                 SelectedItem="{x:Bind ViewModel.Numbering, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:NumberingChoice">
-                        <TextBlock Text="{x:Bind Label}" />
+                        <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
@@ -102,7 +102,7 @@
             </toolkit:SettingsExpander.HeaderIcon>
             <toolkit:SettingsExpander.Items>
                 <toolkit:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
-                    <relations:RelationRuleEditor ViewModel="{x:Bind ViewModel.NewRule}" />
+                    <relations:RelationRuleEditor ViewModel="{x:Bind ViewModel.NewRule, Mode=OneTime}" />
                 </toolkit:SettingsCard>
             </toolkit:SettingsExpander.Items>
         </toolkit:SettingsExpander>
@@ -118,11 +118,11 @@
             </toolkit:SettingsCard.HeaderIcon>
             <ComboBox
                 MinWidth="200"
-                ItemsSource="{x:Bind ViewModel.OpeningSkipModes}"
+                ItemsSource="{x:Bind ViewModel.OpeningSkipModes, Mode=OneTime}"
                 SelectedItem="{x:Bind ViewModel.OpeningSkip, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:SkipModeChoice">
-                        <TextBlock Text="{x:Bind Label}" />
+                        <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
@@ -134,11 +134,11 @@
             </toolkit:SettingsCard.HeaderIcon>
             <ComboBox
                 MinWidth="200"
-                ItemsSource="{x:Bind ViewModel.EndingSkipModes}"
+                ItemsSource="{x:Bind ViewModel.EndingSkipModes, Mode=OneTime}"
                 SelectedItem="{x:Bind ViewModel.EndingSkip, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:SkipModeChoice">
-                        <TextBlock Text="{x:Bind Label}" />
+                        <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
@@ -155,11 +155,11 @@
             </toolkit:SettingsCard.HeaderIcon>
             <ComboBox
                 MinWidth="200"
-                ItemsSource="{x:Bind ViewModel.TitleLanguages}"
+                ItemsSource="{x:Bind ViewModel.TitleLanguages, Mode=OneTime}"
                 SelectedItem="{x:Bind ViewModel.TitleLanguageChoice, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:TitleLanguageChoice">
-                        <TextBlock Text="{x:Bind Label}" />
+                        <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>

@@ -103,7 +103,7 @@
         <!--  Results: placeholders while searching, then the cards, or why there are none  -->
         <toolkit:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
             <toolkit:Case Value="True">
-                <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind PlaceholderCards}">
+                <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind PlaceholderCards, Mode=OneTime}">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="x:Int32">
                             <Grid RowSpacing="12">
@@ -137,7 +137,7 @@
                         <ItemsRepeater
                             Margin="16,8,16,16"
                             ItemTemplate="{StaticResource CardTemplate}"
-                            ItemsSource="{x:Bind ViewModel.Items}">
+                            ItemsSource="{x:Bind ViewModel.Items, Mode=OneTime}">
                             <ItemsRepeater.ItemTransitionProvider>
                                 <controls:CardCollectionTransitionProvider />
                             </ItemsRepeater.ItemTransitionProvider>
@@ -203,7 +203,7 @@
                     <ComboBox
                         HorizontalAlignment="Stretch"
                         Header="Database"
-                        ItemsSource="{x:Bind ViewModel.Providers}"
+                        ItemsSource="{x:Bind ViewModel.Providers, Mode=OneTime}"
                         SelectedItem="{x:Bind ViewModel.Provider, Mode=TwoWay}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="vm:AnimeDatabaseOption">
@@ -211,8 +211,8 @@
                                     <Image
                                         Width="16"
                                         Height="16"
-                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon)}" />
-                                    <TextBlock Text="{x:Bind Name}" />
+                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                    <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
@@ -224,7 +224,7 @@
                         Text="{x:Bind ViewModel.Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                     <!--  As with Sort by: the label is outside the row, so the dropdown and the button line up  -->
-                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsAnime}">
+                    <StackPanel Spacing="8" Visibility="{x:Bind ViewModel.IsAnime, Mode=OneTime}">
                         <TextBlock Text="Season" />
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
@@ -234,11 +234,11 @@
                             <ComboBox
                                 HorizontalAlignment="Stretch"
                                 AutomationProperties.Name="Season"
-                                ItemsSource="{x:Bind ViewModel.Seasons}"
+                                ItemsSource="{x:Bind ViewModel.Seasons, Mode=OneTime}"
                                 SelectedItem="{x:Bind ViewModel.SelectedSeason, Mode=TwoWay}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vm:SeasonOption">
-                                        <TextBlock Text="{x:Bind Label}" />
+                                        <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
@@ -246,9 +246,10 @@
                             <Button
                                 Grid.Column="1"
                                 VerticalAlignment="Stretch"
-                                AutomationProperties.Name="{x:Bind ViewModel.CurrentSeasonName}"
-                                Command="{x:Bind ViewModel.CurrentSeasonCommand}"
-                                ToolTipService.ToolTip="{x:Bind ViewModel.CurrentSeasonName}">
+                                AutomationProperties.AutomationId="CurrentSeasonButton"
+                                AutomationProperties.Name="{x:Bind ViewModel.CurrentSeasonName, Mode=OneTime}"
+                                Command="{x:Bind ViewModel.CurrentSeasonCommand, Mode=OneTime}"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.CurrentSeasonName, Mode=OneTime}">
                                 <FontIcon FontSize="14" Glyph="&#xE787;" />
                             </Button>
                         </Grid>
@@ -270,7 +271,7 @@
                             <toolkit:Case Value="Year">
                                 <NumberBox
                                     AutomationProperties.Name="Year"
-                                    Maximum="{x:Bind ViewModel.CurrentYear}"
+                                    Maximum="{x:Bind ViewModel.CurrentYear, Mode=OneTime}"
                                     Minimum="1940"
                                     PlaceholderText="e.g. 2016"
                                     SpinButtonPlacementMode="Compact"
@@ -285,7 +286,7 @@
                                     </Grid.ColumnDefinitions>
                                     <NumberBox
                                         AutomationProperties.Name="From year"
-                                        Maximum="{x:Bind ViewModel.CurrentYear}"
+                                        Maximum="{x:Bind ViewModel.CurrentYear, Mode=OneTime}"
                                         Minimum="1940"
                                         PlaceholderText="Any"
                                         SpinButtonPlacementMode="Compact"
@@ -297,7 +298,7 @@
                                     <NumberBox
                                         Grid.Column="2"
                                         AutomationProperties.Name="To year"
-                                        Maximum="{x:Bind ViewModel.CurrentYear}"
+                                        Maximum="{x:Bind ViewModel.CurrentYear, Mode=OneTime}"
                                         Minimum="1940"
                                         PlaceholderText="Any"
                                         SpinButtonPlacementMode="Compact"
@@ -329,7 +330,7 @@
                     <toolkit:TokenizingTextBox
                         x:Name="IncludedGenresBox"
                         Header="With genres"
-                        ItemsSource="{x:Bind ViewModel.IncludedGenres}"
+                        ItemsSource="{x:Bind ViewModel.IncludedGenres, Mode=OneTime}"
                         PlaceholderText="Add a genre"
                         QueryIcon="{toolkitui:SymbolIconSource Symbol=Add}"
                         TextChanged="OnGenreTextChanged"
@@ -337,7 +338,7 @@
                     <toolkit:TokenizingTextBox
                         x:Name="ExcludedGenresBox"
                         Header="Without genres"
-                        ItemsSource="{x:Bind ViewModel.ExcludedGenres}"
+                        ItemsSource="{x:Bind ViewModel.ExcludedGenres, Mode=OneTime}"
                         PlaceholderText="Add a genre"
                         QueryIcon="{toolkitui:SymbolIconSource Symbol=Add}"
                         TextChanged="OnGenreTextChanged"
@@ -354,11 +355,11 @@
                             <ComboBox
                                 HorizontalAlignment="Stretch"
                                 AutomationProperties.Name="Sort by"
-                                ItemsSource="{x:Bind ViewModel.SortOptions}"
+                                ItemsSource="{x:Bind ViewModel.SortOptions, Mode=OneTime}"
                                 SelectedItem="{x:Bind ViewModel.SelectedSort, Mode=TwoWay}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vm:SortOption">
-                                        <TextBlock Text="{x:Bind Label}" />
+                                        <TextBlock Text="{x:Bind Label, Mode=OneTime}" />
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
@@ -366,6 +367,7 @@
                             <Button
                                 Grid.Column="1"
                                 VerticalAlignment="Stretch"
+                                AutomationProperties.AutomationId="SortDirectionButton"
                                 AutomationProperties.Name="{x:Bind local:MediaSearchView.SortOrderName(ViewModel.SortOrderText), Mode=OneWay}"
                                 Command="{x:Bind ViewModel.ToggleSortOrderCommand}"
                                 ToolTipService.ToolTip="{x:Bind local:MediaSearchView.SortOrderName(ViewModel.SortOrderText), Mode=OneWay}">
