@@ -4,7 +4,7 @@ using Totoro.ViewModels.AnimeDetails;
 
 namespace Totoro.Views.AnimeDetails;
 
-/// <summary>The Related tab: related and recommended anime.</summary>
+/// <summary>The Related tab: the whole series, other related anime, and recommended ones.</summary>
 public sealed partial class RelatedTabView : UserControl
 {
 	public RelatedTabView()

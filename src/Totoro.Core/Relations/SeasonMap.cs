@@ -11,6 +11,7 @@ public static class SeasonMap
 {
 	// Enough for long series, and a stop for loops in the data.
 	private const int MaxSeasons = 20;
+	private const int MaxSeries = 40;
 
 	/// <summary>
 	/// The seasons of the series <paramref name="anime"/> belongs to, first to last, including it (with each one's full
@@ -38,6 +39,37 @@ public static class SeasonMap
 		}
 
 		return [.. before, anime, .. after];
+	}
+
+	/// <summary>
+	/// Every entry of the series <paramref name="anime"/> (full details, with <see cref="AnimeModel.Related"/>) belongs to,
+	/// movies and OVAs included: all reachable through prequels and sequels, in the order they aired (those without a
+	/// known season last). Includes the anime itself.
+	/// </summary>
+	public static async Task<IReadOnlyList<AnimeModel>> GetSeriesAsync(IAnimeMetadataProvider database, AnimeModel anime, CancellationToken ct)
+	{
+		List<AnimeModel> series = [anime];
+		var seen = new HashSet<long> { anime.Id };
+		var queue = new Queue<AnimeModel>([anime]);
+
+		while (queue.TryDequeue(out var current))
+		{
+			foreach (var next in current.Related.Where(x => x.Relation is AnimeRelationType.Prequel or AnimeRelationType.Sequel))
+			{
+				// Several sequels (a movie and the next season) are common, so this walks every branch, up to a cap.
+				if (series.Count >= MaxSeries || !seen.Add(next.Id))
+				{
+					continue;
+				}
+
+				ct.ThrowIfCancellationRequested();
+				var details = await database.GetAnimeAsync(next.Id);
+				series.Add(details);
+				queue.Enqueue(details);
+			}
+		}
+
+		return [.. series.OrderBy(x => x.Season is null).ThenBy(x => x.Season?.Year).ThenBy(x => x.Season?.SeasonName)];
 	}
 
 	/// <summary>

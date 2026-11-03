@@ -31,7 +31,9 @@
                             <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
                         </Grid>
                     </Border>
+                    <!--  Always two lines tall: UniformGridLayout sizes every item like the first, which would clip others' second line  -->
                     <TextBlock
+                        Height="32"
                         MaxLines="2"
                         Style="{ThemeResource CaptionTextBlockStyle}"
                         Text="{x:Bind Title, Mode=OneTime}"
@@ -43,13 +45,35 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <!--  Part of the details, so there's nothing to wait for  -->
+    <!--  Related and recommended come with the details; the series is fetched, so it shimmers until then  -->
     <StackPanel Padding="24,0" Spacing="12">
         <TextBlock
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Text="{x:Bind ViewModel.Message, Mode=OneWay}"
             Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
+        <toolkit:WrapPanel
+            HorizontalSpacing="16"
+            VerticalSpacing="16"
+            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
+        </toolkit:WrapPanel>
         <TextBlock
+            Style="{ThemeResource BodyStrongTextBlockStyle}"
+            Text="Series"
+            Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Series), Mode=OneWay}" />
+        <ItemsRepeater ItemTemplate="{StaticResource RelatedAnimeTemplate}" ItemsSource="{x:Bind ViewModel.Series, Mode=OneWay}">
+            <ItemsRepeater.Layout>
+                <UniformGridLayout
+                    ItemsJustification="Start"
+                    MinColumnSpacing="16"
+                    MinItemWidth="110"
+                    MinRowSpacing="16" />
+            </ItemsRepeater.Layout>
+        </ItemsRepeater>
+        <TextBlock
+            Margin="0,12,0,0"
             Style="{ThemeResource BodyStrongTextBlockStyle}"
             Text="Related"
             Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Related), Mode=OneWay}" />

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Relations;
 using Totoro.Core.Services;
 using Totoro.Playback;
 using Totoro.UI.Navigation;
@@ -55,7 +56,10 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 			() => _provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>()),
 			logger);
 		Music = new MusicTab(() => songs.GetSongsAsync(_details), song => new SongItem(_details, song, songs, songPlayer), songPlayer, logger);
-		Related = new RelatedTab();
+		Related = new RelatedTab(
+			() => _details,
+			details => _provider is null ? Task.FromResult<IReadOnlyList<AnimeModel>>([details]) : SeasonMap.GetSeriesAsync(_provider, details, CancellationToken.None),
+			logger);
 
 		UpdateTracking();
 		Anime.PropertyChanged += OnAnimePropertyChanged;
@@ -271,7 +275,6 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Studios = string.Join(", ", details.Studios);
 		Trailers = [.. details.Trailers.Select(TrailerItem.From).OfType<TrailerItem>()];
 		ShowLinks(details);
-		Related.Show(details);
 	}
 
 	private static string? NullIfEmpty(string? value) => string.IsNullOrEmpty(value) ? null : value;
