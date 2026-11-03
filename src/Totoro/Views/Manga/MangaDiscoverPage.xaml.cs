@@ -24,7 +24,7 @@ public sealed partial class MangaDiscoverPage : Page
 
 	private void OnRowChanged(object sender, object e)
 	{
-		if (sender == TrendingRow)
+		if (ReferenceEquals(sender, TrendingRow))
 		{
 			DiscoverPage.UpdateRowButtons(TrendingRow, TrendingPrevious, TrendingNext);
 		}

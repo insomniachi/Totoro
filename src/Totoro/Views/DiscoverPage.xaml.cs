@@ -81,7 +81,7 @@ public sealed partial class DiscoverPage : Page
 			(AiringTodayRow, AiringTodayPrevious, AiringTodayNext),
 			(NextSeasonRow, NextSeasonPrevious, NextSeasonNext),
 		];
-		var (row, previous, next) = rows.First(x => x.Row == sender);
+		var (row, previous, next) = rows.First(x => ReferenceEquals(x.Row, sender));
 		UpdateRowButtons(row, previous, next);
 	}
 
