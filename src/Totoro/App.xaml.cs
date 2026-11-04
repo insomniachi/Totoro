@@ -104,6 +104,7 @@ public partial class App : Application
 				services.AddSingleton<IProviderEpisodes, ProviderEpisodes>();
 				services.AddSingleton<DownloadService>();
 				services.AddSingleton<DiscordPresence>();
+				services.AddSingleton<SyncplayClient>();
 				services.AddSingleton<BrowserWatchTracker>();
 				services.AddSingleton<AutoDownloader>();
 				// Songs' audio, played in the Music tab.
@@ -129,6 +130,7 @@ public partial class App : Application
 				services.AddTransient<AnimeLookup>();
 				services.AddAgentTools<AnimeTools>()
 						.AddAgentTools<PlaybackTools>()
+						.AddAgentTools<WatchTogetherTools>()
 						.AddAgentTools<AnimeSettingsTools>()
 						.AddAgentTools<AppSettingsTools>()
 						.AddAgentTools<NavigationTools>()

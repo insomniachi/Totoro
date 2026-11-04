@@ -172,6 +172,48 @@
                 <ToggleSwitch IsOn="{x:Bind ViewModel.TrackBrowserPlayback, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsExpander Description="Watch with friends over Syncplay: when anyone in the room starts an episode in Totoro, it starts for everyone, and pausing, playing and seeking are shared (with Syncplay's own app too). Everyone joins the same room on the same server." Header="Watch together">
+                <toolkit:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE716;" />
+                </toolkit:SettingsExpander.HeaderIcon>
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <TextBlock
+                        MaxWidth="320"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.Syncplay.Status, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <ToggleSwitch
+                        AutomationProperties.Name="Join the room"
+                        IsOn="{x:Bind ViewModel.Syncplay.IsOn, Mode=TwoWay}"
+                        OffContent="Off"
+                        OnContent="In the room" />
+                </StackPanel>
+                <toolkit:SettingsExpander.Items>
+                    <toolkit:SettingsCard Description="host:port, e.g. syncplay.pl:8999 (public) or your own." Header="Server">
+                        <TextBox
+                            MinWidth="240"
+                            AutomationProperties.Name="Syncplay server"
+                            Text="{x:Bind ViewModel.SyncplayServer, Mode=TwoWay}" />
+                    </toolkit:SettingsCard>
+                    <toolkit:SettingsCard Description="Pick a name only your friends would guess." Header="Room">
+                        <TextBox
+                            MinWidth="240"
+                            AutomationProperties.Name="Syncplay room"
+                            Text="{x:Bind ViewModel.SyncplayRoom, Mode=TwoWay}" />
+                    </toolkit:SettingsCard>
+                    <toolkit:SettingsCard Description="What the others see." Header="Your name">
+                        <TextBox
+                            MinWidth="240"
+                            AutomationProperties.Name="Your Syncplay name"
+                            Text="{x:Bind ViewModel.SyncplayName, Mode=TwoWay}" />
+                    </toolkit:SettingsCard>
+                </toolkit:SettingsExpander.Items>
+            </toolkit:SettingsExpander>
+
             <TextBlock
                 Margin="0,16,0,4"
                 Style="{ThemeResource BodyStrongTextBlockStyle}"

@@ -1479,8 +1479,8 @@ public sealed partial class WatchService(
 		return PlayingPlayer?.SeekAsync(position) ?? throw new InvalidOperationException("Nothing's playing.");
 	}
 
-	/// <summary>Pauses or resumes the episode playing (in the built-in player).</summary>
-	public Task SetPausedAsync(bool paused) => GetInteractivePlayer().SetPausedAsync(paused);
+	/// <summary>Pauses or resumes the episode playing.</summary>
+	public Task SetPausedAsync(bool paused) => PlayingPlayer?.SetPausedAsync(paused) ?? throw new InvalidOperationException("Nothing's playing.");
 
 	/// <summary>The audio and subtitle tracks of the episode playing (in the built-in player).</summary>
 	public IReadOnlyList<MediaTrack> GetTracks() => GetInteractivePlayer().GetTracks();

@@ -243,8 +243,9 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		{
 			var time = Math.Clamp((long)position.TotalMilliseconds, 0, Math.Max(0, player.Length - 1000));
 			player.Time = time;
-			// Shown straight away rather than when libvlc next reports it.
-			OnTime(TimeSpan.FromMilliseconds(time), report: false);
+			// Shown and reported straight away rather than when libvlc next reports it, which it doesn't while paused (watching
+			// together would tell the room the old position).
+			OnTime(TimeSpan.FromMilliseconds(time));
 		}
 		else if (MediaPlayer is null)
 		{

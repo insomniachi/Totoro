@@ -10,10 +10,6 @@ public interface IInteractiveMediaPlayer : IMediaPlayer
 	/// <summary>Whether its window is open: from <see cref="IMediaPlayer.Play"/> until the user closes it.</summary>
 	bool IsOpen { get; }
 
-	bool IsPaused { get; }
-
-	Task SetPausedAsync(bool paused);
-
 	/// <summary>The audio and subtitle tracks of what's playing.</summary>
 	IReadOnlyList<MediaTrack> GetTracks();
 

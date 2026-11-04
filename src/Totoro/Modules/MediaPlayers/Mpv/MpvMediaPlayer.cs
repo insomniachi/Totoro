@@ -18,6 +18,9 @@ namespace Totoro.Modules.MediaPlayers.Mpv;
 /// </summary>
 internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger<MpvMediaPlayer> logger) : IMediaPlayer
 {
+	// mpv's pause as last reported (or set).
+	private volatile bool _paused;
+
 	private readonly SemaphoreSlim _writeLock = new(1, 1);
 	private Process? _process;
 
@@ -45,6 +48,8 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	public event EventHandler<TimeSpan>? PositionChanged;
 	public event EventHandler? PlaybackStopped;
 
+	public bool IsPaused => _paused;
+
 	public bool IsAvailable() => GetFileName() is not null;
 
 	/// <summary>The mpv.exe to play in: the user's own, else the one downloaded from the settings, else one that's installed.</summary>
@@ -61,6 +66,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	public void Play(MediaItem media, TimeSpan startPosition)
 	{
 		Stop();
+		_paused = false;
 		_ui = SynchronizationContext.Current;
 
 		var pipeName = $"totoro-mpv-{Guid.NewGuid():N}";
@@ -112,6 +118,13 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	public Task SeekAsync(TimeSpan position)
 	{
 		return SendAsync("seek", position.TotalSeconds, "absolute+exact");
+	}
+
+	public Task SetPausedAsync(bool paused)
+	{
+		// Said straight away, as mpv will once it's done: whoever asked sees the change.
+		_paused = paused;
+		return SendAsync("set_property", "pause", paused);
 	}
 
 	public Task ShowMessageAsync(string text, TimeSpan duration)
@@ -234,6 +247,7 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 2, "time-pos" } });
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 3, "track-list" } });
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 4, "volume" } });
+			await WriteAsync(pipe, new { command = new object[] { "observe_property", 5, "pause" } });
 			if (ReferenceEquals(process, _process))
 			{
 				_pipe = pipe;
@@ -292,6 +306,13 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 				_ = SendAsync("sub-add", url, i == 0 ? "select" : "auto", subtitle.Name, subtitle.Language ?? "");
 			}
 
+			return;
+		}
+
+		if (root.TryGetProperty("name", out property) && property.GetString() == "pause" &&
+			root.TryGetProperty("data", out var paused) && paused.ValueKind is JsonValueKind.True or JsonValueKind.False)
+		{
+			_paused = paused.GetBoolean();
 			return;
 		}
 

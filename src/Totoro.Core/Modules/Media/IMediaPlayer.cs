@@ -27,6 +27,10 @@ public interface IMediaPlayer
 	/// <summary>Jumps to <paramref name="position"/> in what's playing.</summary>
 	Task SeekAsync(TimeSpan position);
 
+	bool IsPaused { get; }
+
+	Task SetPausedAsync(bool paused);
+
 	/// <summary>Shows <paramref name="text"/> over the video for a while.</summary>
 	Task ShowMessageAsync(string text, TimeSpan duration);
 

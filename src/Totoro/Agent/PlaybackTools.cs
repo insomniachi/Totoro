@@ -118,7 +118,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	public PlaybackStatus GetPlaybackStatus() => watch.Status;
 
 	[AgentTool("set_playback_paused")]
-	[Description("Pauses or resumes the episode playing. Only in the built-in player.")]
+	[Description("Pauses or resumes the episode playing.")]
 	public async Task<string> SetPlaybackPausedAsync(bool paused)
 	{
 		await Control(() => watch.SetPausedAsync(paused));

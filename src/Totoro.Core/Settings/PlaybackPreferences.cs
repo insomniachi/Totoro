@@ -33,6 +33,9 @@ public static class PlaybackPreferences
 	/// <summary>Preference key holding the id of the module whose torrent streamer plays torrent episodes.</summary>
 	public const string TorrentStreamerKey = "SelectedTorrentStreamer";
 	public const string AspectRatioKey = "PlayerAspectRatio";
+	public const string SyncplayServerKey = "SyncplayServer";
+	public const string SyncplayRoomKey = "SyncplayRoom";
+	public const string SyncplayNameKey = "SyncplayName";
 
 	extension(IPreferences preferences)
 	{
@@ -95,6 +98,27 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey<Guid>(TorrentStreamerKey);
 			set => preferences.SaveKey(TorrentStreamerKey, value);
+		}
+
+		/// <summary>The Syncplay server to watch together on, as host:port.</summary>
+		public string SyncplayServer
+		{
+			get => preferences.ReadKey(SyncplayServerKey, "syncplay.pl:8999")!;
+			set => preferences.SaveKey(SyncplayServerKey, value);
+		}
+
+		/// <summary>The Syncplay room to watch together in: everyone in it plays in step.</summary>
+		public string SyncplayRoom
+		{
+			get => preferences.ReadKey(SyncplayRoomKey, "")!;
+			set => preferences.SaveKey(SyncplayRoomKey, value);
+		}
+
+		/// <summary>The name the others in the Syncplay room see.</summary>
+		public string SyncplayName
+		{
+			get => preferences.ReadKey(SyncplayNameKey, Environment.UserName)!;
+			set => preferences.SaveKey(SyncplayNameKey, value);
 		}
 
 		/// <summary>How video is scaled or stretched in the built-in player.</summary>

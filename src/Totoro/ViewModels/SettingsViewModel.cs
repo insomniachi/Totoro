@@ -108,9 +108,14 @@ public partial class SettingsViewModel : ObservableObject
 		IEnumerable<IAccount> accounts,
 		IAppearanceService appearance,
 		UpdateService updates,
-		DownloadService downloads)
+		DownloadService downloads,
+		SyncplayClient syncplay)
 	{
 		_preferences = preferences;
+		Syncplay = syncplay;
+		SyncplayServer = preferences.SyncplayServer;
+		SyncplayRoom = preferences.SyncplayRoom;
+		SyncplayName = preferences.SyncplayName;
 		_downloads = downloads;
 		_appearance = appearance;
 		DownloadFolder = preferences.DownloadFolder;
@@ -320,6 +325,24 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool TrackBrowserPlayback { get; set; }
 
 	partial void OnTrackBrowserPlaybackChanged(bool value) => _preferences.TrackBrowserPlayback = value;
+
+	/// <summary>Watching together in a Syncplay room; changes to the server, room and name take effect when it's next turned on.</summary>
+	public SyncplayClient Syncplay { get; }
+
+	[ObservableProperty]
+	public partial string SyncplayServer { get; set; }
+
+	partial void OnSyncplayServerChanged(string value) => _preferences.SyncplayServer = value;
+
+	[ObservableProperty]
+	public partial string SyncplayRoom { get; set; }
+
+	partial void OnSyncplayRoomChanged(string value) => _preferences.SyncplayRoom = value;
+
+	[ObservableProperty]
+	public partial string SyncplayName { get; set; }
+
+	partial void OnSyncplayNameChanged(string value) => _preferences.SyncplayName = value;
 
 	/// <summary>Updating Totoro from its GitHub releases.</summary>
 	public UpdateService Updates { get; }
