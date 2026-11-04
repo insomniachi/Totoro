@@ -75,6 +75,9 @@ public sealed partial class SyncplayClient : ObservableObject
 	private int _serverIgnoring;
 	private double _rtt;
 
+	// The room as the server last said it is, to say back while nothing's playing here (see SendStateAsync).
+	private (double Position, bool Paused, double At)? _roomState;
+
 	public SyncplayClient(WatchService watch, IPreferences preferences, IFactory<IAnimeMetadataProvider, Guid> databases, ILogger<SyncplayClient> logger)
 	{
 		_watch = watch;
@@ -228,9 +231,10 @@ public sealed partial class SyncplayClient : ObservableObject
 		if (_player is not null)
 		{
 			_player.PositionChanged -= OnPosition;
+			(_player as IInteractiveMediaPlayer)?.SetRoomPeople(null);
 		}
 
-		(_player, _file, _fileSent) = (null, null, null);
+		(_player, _file, _fileSent, _roomState) = (null, null, null, null);
 		(_clientIgnoring, _serverIgnoring) = (0, 0);
 		// Comes back here with no status when it was on: the one given is said after.
 		IsOn = false;
@@ -276,9 +280,9 @@ public sealed partial class SyncplayClient : ObservableObject
 				_ = PlayAsync(by, (string?)episode["service"], (long?)episode["id"] ?? 0, (int?)episode["episode"] ?? 0);
 			}
 		}
-		else if (message?["Chat"] is JsonObject chat)
+		else if (message?["Chat"] is JsonObject chat && (string?)chat["username"] is { } from && from != _name && (string?)chat["message"] is { } said)
 		{
-			Say($"{(string?)chat["username"]}: {(string?)chat["message"]}");
+			Notice(from, said.StartsWith(CouldNotPlay, StringComparison.Ordinal) ? said : $"says “{said}”");
 		}
 		else if (message?["Error"] is JsonObject error)
 		{
@@ -313,20 +317,28 @@ public sealed partial class SyncplayClient : ObservableObject
 			if (happened.ContainsKey("left"))
 			{
 				_people.Remove(name);
-				Say($"{name} left");
+				Notice(name, "left the room");
 			}
 			else if (happened.ContainsKey("joined"))
 			{
 				_people[name] = "";
-				Say($"{name} joined");
+				Notice(name, "joined the room");
 			}
 
 			ShowPeople();
 		}
 
-		if ((string?)person?["file"]?["name"] is { Length: > 0 } file && _people.GetValueOrDefault(name) != file)
+		if ((string?)person?["file"]?["name"] is { } file && _people.GetValueOrDefault(name) != file)
 		{
 			_people[name] = file;
+			ShowPeople();
+			if (file.Length == 0)
+			{
+				// Closed their player, still in the room (see Tick).
+				Notice(name, "stopped watching");
+				return;
+			}
+
 			Say($"{name} is playing {file}");
 			if (person?["file"]?["totoro"] is JsonObject episode)
 			{
@@ -356,17 +368,40 @@ public sealed partial class SyncplayClient : ObservableObject
 			if (ownId is not > 0)
 			{
 				Status = $"Couldn't find what {by} is playing on {database.Name}.";
+				_ = TellAsync($"{CouldNotPlay}episode {episode}: it isn't on {database.Name}");
 				return;
 			}
 
-			await _watch.WatchAsync(await database.GetAnimeAsync(ownId.Value), episode);
+			var anime = await database.GetAnimeAsync(ownId.Value);
+			await _watch.WatchAsync(anime, episode);
+			// It's left in the status bar when it couldn't play (no provider, not on it...): the others are told why.
+			if (_watch.Kind == PlaybackStatusKind.Error && ReferenceEquals(_watch.Anime, anime) && _watch.CurrentEpisode == episode)
+			{
+				_ = TellAsync($"{CouldNotPlay}{_watch.Title}: {FirstSentence(_watch.Message)}");
+			}
 		}
 		catch (Exception ex)
 		{
 			_logger.LogWarning(ex, "Couldn't play what {Person} started", by);
 			Status = $"Couldn't play what {by} started: {ex.Message}";
+			_ = TellAsync($"{CouldNotPlay}episode {episode}: {ex.Message}");
 		}
 	}
+
+	// What a chat message starts with when Totoro couldn't play an episode someone started; shown as it is, after the name.
+	private const string CouldNotPlay = "couldn't play ";
+
+	/// <summary>Says something to the room, in Syncplay's chat (which Syncplay's own app shows too).</summary>
+	private Task TellAsync(string text) => SendAsync(new JsonObject { ["Chat"] = FitChat(text) });
+
+	// Syncplay's server cuts chat messages at this many characters.
+	private const int MaxChatLength = 150;
+
+	/// <summary>Up to the end of the first sentence, e.g. of a status's reason (the rest is how to fix it, for the user here).</summary>
+	internal static string FirstSentence(string text) => text.IndexOf(". ", StringComparison.Ordinal) is > 0 and var end ? text[..(end + 1)] : text;
+
+	/// <summary>Short enough for Syncplay's chat, ending in "…" where it's cut.</summary>
+	internal static string FitChat(string text) => text.Length <= MaxChatLength ? text : text[..(MaxChatLength - 1)].TrimEnd() + "…";
 
 	private void OnState(JsonObject state)
 	{
@@ -392,6 +427,11 @@ public sealed partial class SyncplayClient : ObservableObject
 		// Not while a change of ours is on its way, nor while the player's still getting where it was sent, nor when this
 		// episode's just started and nobody else was on it (the room follows it instead). Nor the room as we set it: the
 		// player may not say it's paused yet, and following it would hold off the user's next change.
+		if (state["playstate"] is JsonObject roomPlay)
+		{
+			_roomState = (Math.Max(0, (double?)roomPlay["position"] ?? 0), (bool?)roomPlay["paused"] ?? true, Now);
+		}
+
 		if (state["playstate"] is JsonObject play && (string?)play["setBy"] is var by && by != _name &&
 			_clientIgnoring == 0 && _player is { } player && Now >= _settleUntil && !_announce)
 		{
@@ -434,6 +474,12 @@ public sealed partial class SyncplayClient : ObservableObject
 			if (_player is not null)
 			{
 				_player.PositionChanged -= OnPosition;
+				if (player is null)
+				{
+					// Closed (or finished) while in the room: no longer watching, which the others see.
+					_fileSent = null;
+					_ = SendAsync(new JsonObject { ["Set"] = new JsonObject { ["file"] = new JsonObject { ["name"] = "", ["duration"] = 0, ["size"] = 0 } } });
+				}
 			}
 
 			(_player, _file) = (player, file);
@@ -444,6 +490,8 @@ public sealed partial class SyncplayClient : ObservableObject
 				_announce = !OthersOnFile;
 				_followEpisodesAfter = Now + FollowEpisodesAfterSeconds;
 			}
+
+			ShowPeople();
 		}
 
 		if (player is null)
@@ -510,6 +558,12 @@ public sealed partial class SyncplayClient : ObservableObject
 
 			state["playstate"] = play;
 		}
+		else if (_player is null && _roomState is var (position, paused, at) && _clientIgnoring == 0)
+		{
+			// Nothing playing here: the room as it is, so this doesn't hold it back where playback stopped (the server keeps
+			// the room with whoever's furthest behind, by where each last said they were).
+			state["playstate"] = new JsonObject { ["position"] = paused ? position : position + (Now - at), ["paused"] = paused };
+		}
 
 		var ping = new JsonObject { ["clientLatencyCalculation"] = Now, ["clientRtt"] = _rtt };
 		if (latency is { } echoed)
@@ -570,6 +624,21 @@ public sealed partial class SyncplayClient : ObservableObject
 	private void ShowPeople()
 	{
 		Status = _people.Count == 0 ? $"In {_room} as {_name}, waiting for the others" : $"Watching with {string.Join(", ", _people.Keys)} in {_room}";
+		// And in the built-in player's list of who's in the room.
+		(_player as IInteractiveMediaPlayer)?.SetRoomPeople([new RoomPerson(_name, true, _file ?? ""), .. _people.Select(x => new RoomPerson(x.Key, false, x.Value))]);
+	}
+
+	/// <summary>Says something about someone in the room: as a notice over the video in the built-in player, or as a message.</summary>
+	private void Notice(string person, string text)
+	{
+		if (_player is IInteractiveMediaPlayer interactive)
+		{
+			interactive.ShowRoomNotice(person, text);
+		}
+		else
+		{
+			Say($"{person} {text}");
+		}
 	}
 
 	private void Say(string text) => _ = _player?.ShowMessageAsync(text, s_messageDuration);

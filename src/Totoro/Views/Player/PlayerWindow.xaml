@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views.Player"
+    xmlns:media="using:Totoro.Core.Modules.Media"
     xmlns:player="using:Totoro.ViewModels.Player"
     xmlns:vlc="using:LibVLCSharp.Platforms.Windows">
 
@@ -147,6 +148,51 @@
                 Visibility="{x:Bind ViewModel.IsMessageVisible, Mode=OneWay}">
                 <TextBlock Text="{x:Bind ViewModel.Message, Mode=OneWay}" TextWrapping="Wrap" />
             </Border>
+
+            <!--  Watching together: someone joining or leaving the room, at the top in the middle, below the title bar  -->
+            <ItemsControl
+                Margin="0,56,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                IsHitTestVisible="False"
+                ItemsSource="{x:Bind ViewModel.RoomNotices}">
+                <ItemsControl.ItemContainerTransitions>
+                    <TransitionCollection>
+                        <EntranceThemeTransition FromVerticalOffset="-24" />
+                        <RepositionThemeTransition />
+                    </TransitionCollection>
+                </ItemsControl.ItemContainerTransitions>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="player:RoomNotice">
+                        <Border
+                            Margin="0,0,0,8"
+                            Padding="16,12,28,12"
+                            HorizontalAlignment="Center"
+                            AutomationProperties.LiveSetting="Polite"
+                            AutomationProperties.Name="{x:Bind local:PlayerWindow.NoticeText(Person, Text), Mode=OneTime}"
+                            Background="{StaticResource OverlayBackgroundBrush}"
+                            BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                            BorderThickness="2"
+                            CornerRadius="{ThemeResource OverlayCornerRadius}">
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <PersonPicture
+                                    Width="48"
+                                    Height="48"
+                                    DisplayName="{x:Bind Person, Mode=OneTime}" />
+                                <TextBlock
+                                    MaxWidth="560"
+                                    VerticalAlignment="Center"
+                                    FontSize="20"
+                                    Style="{ThemeResource BodyTextBlockStyle}"
+                                    TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold" Text="{x:Bind Person, Mode=OneTime}" />
+                                    <Run Text="{x:Bind Text, Mode=OneTime}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
             <!--  Skipping the opening (or ending), offered at the top right, below the title bar, for a few seconds  -->
             <StackPanel
@@ -503,6 +549,68 @@
                             ToolTipService.ToolTip="{x:Bind ViewModel.SkipButtonToolTip, Mode=OneWay}">
                             <FontIcon FontSize="16" Glyph="&#xEB9D;" />
                         </Button>
+                    </AppBarElementContainer>
+                    <!--  Watching together: who's in the room (with a badge of how many others), and what each is playing  -->
+                    <AppBarElementContainer VerticalAlignment="Center" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsInRoom), Mode=OneWay}">
+                        <!--  The badge sits on the button's corner, outside it: the button clips its content  -->
+                        <Grid>
+                            <Button
+                                x:Name="RoomButton"
+                                AutomationProperties.AutomationId="RoomButton"
+                                AutomationProperties.Name="{x:Bind local:PlayerWindow.RoomButtonName(ViewModel.RoomPeople), Mode=OneWay}"
+                                Click="OnRoomButtonClick"
+                                Style="{StaticResource PlayerButtonStyle}"
+                                ToolTipService.ToolTip="{x:Bind local:PlayerWindow.RoomButtonName(ViewModel.RoomPeople), Mode=OneWay}">
+                                <FontIcon FontSize="16" Glyph="&#xE716;" />
+                                <!--  Above the controls, clear of the seek bar, like the episode list (see OnRoomButtonClick)  -->
+                                <FlyoutBase.AttachedFlyout>
+                                    <Flyout x:Name="RoomFlyout" Placement="Top">
+                                        <Flyout.FlyoutPresenterStyle>
+                                            <Style BasedOn="{StaticResource DefaultFlyoutPresenterStyle}" TargetType="FlyoutPresenter">
+                                                <Setter Property="Background" Value="{StaticResource FlyoutBackgroundBrush}" />
+                                            </Style>
+                                        </Flyout.FlyoutPresenterStyle>
+                                        <StackPanel
+                                            MinWidth="240"
+                                            MaxWidth="360"
+                                            RequestedTheme="Dark"
+                                            Spacing="12">
+                                            <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Watching together" />
+                                            <ItemsControl ItemsSource="{x:Bind ViewModel.RoomPeople, Mode=OneWay}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="media:RoomPerson">
+                                                        <StackPanel
+                                                            Margin="0,0,0,12"
+                                                            Orientation="Horizontal"
+                                                            Spacing="12">
+                                                            <PersonPicture
+                                                                Width="32"
+                                                                Height="32"
+                                                                DisplayName="{x:Bind Name, Mode=OneTime}" />
+                                                            <StackPanel VerticalAlignment="Center">
+                                                                <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind local:PlayerWindow.PersonName(Name, IsYou), Mode=OneTime}" />
+                                                                <TextBlock
+                                                                    MaxWidth="300"
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind local:PlayerWindow.PersonPlaying(Playing), Mode=OneTime}"
+                                                                    TextTrimming="CharacterEllipsis" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Flyout>
+                                </FlyoutBase.AttachedFlyout>
+                            </Button>
+                            <InfoBadge
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                IsHitTestVisible="False"
+                                Value="{x:Bind local:PlayerWindow.OthersInRoom(ViewModel.RoomPeople), Mode=OneWay}"
+                                Visibility="{x:Bind local:PlayerWindow.BadgeVisibility(ViewModel.RoomPeople), Mode=OneWay}" />
+                        </Grid>
                     </AppBarElementContainer>
                     <!--  The episode list pops up above the controls, over this button: each episode's thumbnail and details; picking one plays it  -->
                     <AppBarElementContainer VerticalAlignment="Center" Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">

@@ -65,6 +65,23 @@ public class SyncplayTests
 		Assert.True(SyncplayClient.IsSeek(S(10), true, S(0.25), S(20)));
 	}
 
+	[Fact]
+	public void FirstSentence_KeepsTheReason_DropsTheAdvice()
+	{
+		Assert.Equal("Episode 5 isn't on Re:ANIME yet.",
+			SyncplayClient.FirstSentence("Episode 5 isn't on Re:ANIME yet. If Re:ANIME uses absolute numbering, set that in its episode numbering."));
+		Assert.Equal("Couldn't play it: timeout", SyncplayClient.FirstSentence("Couldn't play it: timeout"));
+	}
+
+	[Fact]
+	public void FitChat_CutsToSyncplaysLimit()
+	{
+		Assert.Equal("short", SyncplayClient.FitChat("short"));
+		var cut = SyncplayClient.FitChat(new string('a', 200));
+		Assert.Equal(150, cut.Length);
+		Assert.EndsWith("…", cut);
+	}
+
 	[Theory]
 	[InlineData("syncplay.pl:8995", "syncplay.pl", 8995)]
 	[InlineData(" example.org ", "example.org", 8999)]

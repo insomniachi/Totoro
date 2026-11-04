@@ -130,6 +130,25 @@ public sealed partial class PlayerWindow : Window
 	public static string FullScreenGlyph(bool isFullScreen) => isFullScreen ? "" : "";
 
 	public static string VolumeText(double volume) => $"{volume:0}";
+
+	/// <summary>How many others are in the watch-together room, for the people button's badge.</summary>
+	public static int OthersInRoom(IReadOnlyList<RoomPerson> people) => people.Count(x => !x.IsYou);
+
+	public static Visibility BadgeVisibility(IReadOnlyList<RoomPerson> people) => OthersInRoom(people) > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+	public static string RoomButtonName(IReadOnlyList<RoomPerson> people) => OthersInRoom(people) switch
+	{
+		0 => "Watching together: nobody else is in the room yet",
+		1 => "Watching together with 1 other",
+		var others => $"Watching together with {others} others",
+	};
+
+	public static string NoticeText(string person, string text) => $"{person} {text}";
+
+	public static string PersonName(string name, bool isYou) => isYou ? $"{name} (you)" : name;
+
+	public static string PersonPlaying(string playing) => playing.Length > 0 ? playing : "Not playing anything";
+
 	public static string WindowTitle(string title) => title.Length > 0 ? $"{title} - Totoro" : "Totoro";
 
 	/// <summary>The width of an episode's progress bar on its 128-wide thumbnail (inset 6 either side).</summary>
@@ -274,6 +293,13 @@ public sealed partial class PlayerWindow : Window
 		ShowControls();
 		var button = EpisodesButton.TransformToVisual(Controls).TransformPoint(new Point(EpisodesButton.ActualWidth / 2, 0));
 		EpisodeFlyout.ShowAt(Controls, new FlyoutShowOptions { Placement = FlyoutPlacementMode.Top, Position = new Point(button.X, -8) });
+	}
+
+	/// <summary>Opens who's in the room above the controls (clear of the seek bar), centred over the people button.</summary>
+	private void OnRoomButtonClick(object sender, RoutedEventArgs e)
+	{
+		var button = RoomButton.TransformToVisual(Controls).TransformPoint(new Point(RoomButton.ActualWidth / 2, 0));
+		RoomFlyout.ShowAt(Controls, new FlyoutShowOptions { Placement = FlyoutPlacementMode.Top, Position = new Point(button.X, -8) });
 	}
 
 	private void OnEpisodeListOpened(object? sender, object e)

@@ -45,7 +45,18 @@ public interface IInteractiveMediaPlayer : IMediaPlayer
 
 	/// <summary>Raised when the user picks an episode (from <see cref="SetEpisodes"/>) to play, by its number.</summary>
 	event EventHandler<int>? EpisodeRequested;
+
+	/// <summary>Who's watching together with the user (in a watch-together room), the user first; null when not in a room.</summary>
+	void SetRoomPeople(IReadOnlyList<RoomPerson>? people);
+
+	/// <summary>Shows a notice about someone in the room over the video for a few seconds, e.g. that they joined.</summary>
+	void ShowRoomNotice(string person, string text);
 }
+
+/// <summary>Someone in a watch-together room.</summary>
+/// <param name="IsYou">Whether it's the user.</param>
+/// <param name="Playing">What they're playing; empty for nothing.</param>
+public sealed record RoomPerson(string Name, bool IsYou, string Playing);
 
 /// <summary>An episode in the player's episode list.</summary>
 /// <param name="Details">e.g. "3 Oct 2025 · 24 min".</param>

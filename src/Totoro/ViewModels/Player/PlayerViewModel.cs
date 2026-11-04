@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LibVLCSharp.Shared;
@@ -623,6 +624,32 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	/// <summary>Raised when the user picks an episode to play, by its number: from the list, or previous or next.</summary>
 	public event EventHandler<int>? EpisodeRequested;
 
+	private static readonly TimeSpan s_roomNoticeDuration = TimeSpan.FromSeconds(5);
+
+	/// <summary>Who's watching together (in a watch-together room), the user first; empty when not in a room.</summary>
+	[ObservableProperty] public partial IReadOnlyList<RoomPerson> RoomPeople { get; private set; } = [];
+
+	[ObservableProperty] public partial bool IsInRoom { get; private set; }
+
+	/// <summary>Notices about the people in the room shown over the video, e.g. someone joining; each goes after a few seconds.</summary>
+	public ObservableCollection<RoomNotice> RoomNotices { get; } = [];
+
+	/// <inheritdoc cref="IInteractiveMediaPlayer.SetRoomPeople"/>
+	public void SetRoomPeople(IReadOnlyList<RoomPerson>? people)
+	{
+		RoomPeople = people ?? [];
+		IsInRoom = people is not null;
+	}
+
+	/// <inheritdoc cref="IInteractiveMediaPlayer.ShowRoomNotice"/>
+	public async Task ShowRoomNoticeAsync(string person, string text)
+	{
+		var notice = new RoomNotice(person, text);
+		RoomNotices.Add(notice);
+		await Task.Delay(s_roomNoticeDuration);
+		RoomNotices.Remove(notice);
+	}
+
 	/// <summary>The anime's episodes, for the episode list.</summary>
 	[ObservableProperty] public partial IReadOnlyList<EpisodeListItem> Episodes { get; private set; } = [];
 
@@ -889,3 +916,6 @@ public sealed record EpisodeListItem(PlayerEpisode Episode)
 	/// <summary>Its accessible name, e.g. "Episode 5, Title, playing".</summary>
 	public string Name => $"Episode {Number}, {Title}{(IsCurrent ? ", playing" : IsWatched ? ", watched" : "")}";
 }
+
+/// <summary>A notice about someone in the watch-together room, e.g. "joined the room".</summary>
+public sealed record RoomNotice(string Person, string Text);
