@@ -1,5 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
@@ -13,16 +15,19 @@ namespace Totoro.ViewModels;
 public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDatabaseChangedMessage>, IRecipient<OtherListSyncFailedMessage>
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
+	private readonly IDialogService _dialogs;
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
 	private readonly IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> _mangaDatabases;
 	private readonly IReadOnlyList<NavigationItemViewModel> _allItems;
 	private CancellationTokenSource? _search;
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs)
 	{
+		_dialogs = dialogs;
 		_databases = databases;
 		_mangaDatabases = mangaDatabases;
 		Playback = playback;
+		Syncplay = syncplay;
 		Chat = chat;
 		Updates = updates;
 		Updates.PropertyChanged += (_, e) =>
@@ -123,6 +128,36 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	/// <summary>The account of the selected anime database, shown in the title bar.</summary>
 	[ObservableProperty]
 	public partial AccountViewModel? Account { get; private set; }
+
+	/// <summary>Watching together in a Syncplay room, joined from the account flyout.</summary>
+	public SyncplayClient Syncplay { get; }
+
+	/// <summary>The account flyout's watch-together command: what it does now.</summary>
+	public static string WatchTogetherAction(bool isOn) => isOn ? "Leave the room" : "Watch together…";
+
+	/// <summary>Asks for the room (with the name and server) and joins it; leaves it when in one.</summary>
+	[RelayCommand]
+	private async Task WatchTogether()
+	{
+		if (Syncplay.IsOn)
+		{
+			Syncplay.IsOn = false;
+			return;
+		}
+
+		DataContainerProperty room = new() { Name = "Room", Description = "Everyone in the same room plays together: pick a name only your friends would guess.", Value = Syncplay.Room };
+		DataContainerProperty name = new() { Name = "Name", DisplayName = "Your name", Description = "What the others see.", Value = Syncplay.Name };
+		DataContainerProperty server = new() { Name = "Server", DisplayName = "Syncplay server", Description = "host:port; syncplay.pl:8999 is a free public one.", Value = Syncplay.Server };
+		if (!await _dialogs.EditAsync("Watch together", [room, name, server], "Join"))
+		{
+			return;
+		}
+
+		Syncplay.Room = room.Value as string ?? "";
+		Syncplay.Name = name.Value as string ?? "";
+		Syncplay.Server = server.Value as string ?? "";
+		await Syncplay.JoinAsync();
+	}
 
 	public void Receive(AnimeDatabaseChangedMessage message)
 	{

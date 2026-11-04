@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using Totoro.Core.Agent;
-using Totoro.Core.Settings;
 using Totoro.Playback;
 
 namespace Totoro.Agent;
@@ -20,15 +19,15 @@ public sealed record WatchTogetherStatus(
 	IReadOnlyList<string> People);
 
 /// <summary>Agent tools for watching together (see <see cref="SyncplayClient"/>).</summary>
-public sealed class WatchTogetherTools(SyncplayClient syncplay, IPreferences preferences)
+public sealed class WatchTogetherTools(SyncplayClient syncplay)
 {
 	[AgentTool("get_watch_together")]
 	[Description("Whether the app is in a watch-together room, with whom, and the room it joins.")]
 	public WatchTogetherStatus GetWatchTogether() =>
-		new(syncplay.IsOn, syncplay.Status, preferences.SyncplayServer, preferences.SyncplayRoom, preferences.SyncplayName, [.. syncplay.People]);
+		new(syncplay.IsOn, syncplay.Status, syncplay.Server, syncplay.Room, syncplay.Name, [.. syncplay.People]);
 
 	[AgentTool("join_watch_together")]
-	[Description("Joins a watch-together room (leaving any it's in), so episodes stay in step with everyone in it: an episode anyone starts in Totoro starts for everyone, and pausing and seeking are shared.")]
+	[Description("Joins a watch-together room (leaving any it's in), so episodes stay in step with everyone in it: an episode anyone starts in Totoro starts for everyone (and one already playing when joining starts here, where they are), and pausing and seeking are shared.")]
 	public async Task<WatchTogetherStatus> JoinWatchTogetherAsync(
 		[Description("The room; the one last used when not given.")] string? room = null,
 		[Description("The name the others see; the one last used when not given.")] string? name = null,
@@ -36,17 +35,17 @@ public sealed class WatchTogetherTools(SyncplayClient syncplay, IPreferences pre
 	{
 		if (!string.IsNullOrWhiteSpace(room))
 		{
-			preferences.SyncplayRoom = room.Trim();
+			syncplay.Room = room.Trim();
 		}
 
 		if (!string.IsNullOrWhiteSpace(name))
 		{
-			preferences.SyncplayName = name.Trim();
+			syncplay.Name = name.Trim();
 		}
 
 		if (!string.IsNullOrWhiteSpace(server))
 		{
-			preferences.SyncplayServer = server.Trim();
+			syncplay.Server = server.Trim();
 		}
 
 		await syncplay.JoinAsync();

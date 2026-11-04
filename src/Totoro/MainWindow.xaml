@@ -15,6 +15,7 @@
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:uiNavigation="using:Totoro.UI.Navigation"
+    xmlns:vm="using:Totoro.ViewModels"
     Title="Totoro"
     mc:Ignorable="d">
 
@@ -491,7 +492,7 @@
                             DisplayName="{x:Bind ViewModel.Account.UserName, Mode=OneWay}"
                             ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Account.Avatar), Mode=OneWay}" />
                         <Button.Flyout>
-                            <Flyout Placement="BottomEdgeAlignedRight">
+                            <Flyout x:Name="AccountFlyout" Placement="BottomEdgeAlignedRight">
                                 <StackPanel MinWidth="240" Spacing="12">
                                     <StackPanel Orientation="Horizontal" Spacing="12">
                                         <PersonPicture
@@ -515,6 +516,23 @@
                                         AutomationProperties.Name="{x:Bind ViewModel.Account.ActionName, Mode=OneWay}"
                                         Command="{x:Bind ViewModel.Account.SignInOrOutCommand, Mode=OneWay}"
                                         Content="{x:Bind ViewModel.Account.ActionText, Mode=OneWay}" />
+
+                                    <!--  Watching together over Syncplay: everyone in the same room plays in step  -->
+                                    <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                                    <TextBlock
+                                        MaxWidth="240"
+                                        HorizontalAlignment="Left"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind ViewModel.Syncplay.Status, Mode=OneWay}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Syncplay.Status), Mode=OneWay}" />
+                                    <Button
+                                        HorizontalAlignment="Stretch"
+                                        AutomationProperties.AutomationId="WatchTogetherButton"
+                                        Click="OnWatchTogetherClick"
+                                        Command="{x:Bind ViewModel.WatchTogetherCommand}"
+                                        Content="{x:Bind vm:MainWindowViewModel.WatchTogetherAction(ViewModel.Syncplay.IsOn), Mode=OneWay}" />
                                 </StackPanel>
                             </Flyout>
                         </Button.Flyout>

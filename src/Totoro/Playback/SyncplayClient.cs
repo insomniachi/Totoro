@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -86,7 +87,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		_timer.Tick += (_, _) => Tick();
 	}
 
-	/// <summary>Whether it's in a room (or joining one): turning it on joins the room in the settings, off leaves it.</summary>
+	/// <summary>Whether it's in a room (or joining one): turning it on joins <see cref="Room"/>, off leaves it.</summary>
 	[ObservableProperty]
 	public partial bool IsOn { get; set; }
 
@@ -94,13 +95,43 @@ public sealed partial class SyncplayClient : ObservableObject
 	[ObservableProperty]
 	public partial string Status { get; private set; } = "";
 
+	/// <summary>The room it joins: everyone in it plays in step. Changing it applies when it next joins.</summary>
+	public string Room
+	{
+		get => _preferences.SyncplayRoom;
+		set => Save(Room, value, x => _preferences.SyncplayRoom = x);
+	}
+
+	/// <summary>The name the others in the room see.</summary>
+	public string Name
+	{
+		get => _preferences.SyncplayName;
+		set => Save(Name, value, x => _preferences.SyncplayName = x);
+	}
+
+	/// <summary>The Syncplay server, as host:port.</summary>
+	public string Server
+	{
+		get => _preferences.SyncplayServer;
+		set => Save(Server, value, x => _preferences.SyncplayServer = x);
+	}
+
+	private void Save(string old, string value, Action<string> save, [CallerMemberName] string property = "")
+	{
+		if (old != value)
+		{
+			save(value);
+			OnPropertyChanged(property);
+		}
+	}
+
 	/// <summary>The others in the room.</summary>
 	public IReadOnlyCollection<string> People => _people.Keys;
 
 	// Set while JoinAsync waits: done once in the room, or it couldn't get in.
 	private TaskCompletionSource? _joining;
 
-	/// <summary>(Re)joins the room in the settings, once it's in or couldn't get in; says how it went, as <see cref="Status"/>.</summary>
+	/// <summary>(Re)joins <see cref="Room"/>, once it's in or couldn't get in; says how it went, as <see cref="Status"/>.</summary>
 	public async Task<string> JoinAsync()
 	{
 		IsOn = false;
@@ -137,9 +168,9 @@ public sealed partial class SyncplayClient : ObservableObject
 
 	private async Task ConnectAsync()
 	{
-		_name = _preferences.SyncplayName.Trim();
-		_room = _preferences.SyncplayRoom.Trim();
-		if (!TryParseServer(_preferences.SyncplayServer, out var host, out var port) || _name.Length == 0 || _room.Length == 0)
+		_name = Name.Trim();
+		_room = Room.Trim();
+		if (!TryParseServer(Server, out var host, out var port) || _name.Length == 0 || _room.Length == 0)
 		{
 			Disconnect("Fill in the server (host:port), the room and your name first.");
 			return;
@@ -235,6 +266,15 @@ public sealed partial class SyncplayClient : ObservableObject
 			ShowPeople();
 			// In, knowing who else is.
 			_joining?.TrySetResult();
+
+			// (Asked for once, on joining.) Someone's already watching an episode in Totoro: it starts here too, and
+			// catches up with them, unless something's playing here.
+			if (!_watch.IsActive &&
+				list.Where(x => x.Key != _name).FirstOrDefault(x => x.Value?["file"]?["totoro"] is JsonObject) is { Key: { } by, Value: { } person })
+			{
+				var episode = person["file"]!["totoro"]!;
+				_ = PlayAsync(by, (string?)episode["service"], (long?)episode["id"] ?? 0, (int?)episode["episode"] ?? 0);
+			}
 		}
 		else if (message?["Chat"] is JsonObject chat)
 		{

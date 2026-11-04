@@ -4,7 +4,8 @@ namespace Totoro.Core.Dialogs;
 
 /// <param name="Title">The dialog's title.</param>
 /// <param name="Container">The properties to edit; updated only if the dialog is confirmed.</param>
-public sealed record DataContainerDialogRequest(string Title, IReadOnlyList<DataContainerProperty> Container);
+/// <param name="PrimaryButtonText">What confirming does, e.g. "Join".</param>
+public sealed record DataContainerDialogRequest(string Title, IReadOnlyList<DataContainerProperty> Container, string PrimaryButtonText = "Save");
 
 /// <summary>
 /// Edits a <see cref="DataContainer"/> in a dialog. The dialog edits copies of the properties and writes them back
@@ -19,7 +20,7 @@ public sealed class DataContainerDialogViewModel : DialogViewModel<bool>
 	{
 		_original = request.Container;
 		Title = request.Title;
-		PrimaryButtonText = "Save";
+		PrimaryButtonText = request.PrimaryButtonText;
 		Properties = new DataContainer(_original.Select(x => x.Clone()));
 	}
 
@@ -42,10 +43,10 @@ public static class DataContainerDialogExtensions
 {
 	extension(IDialogService dialogs)
 	{
-		/// <summary>Edits <paramref name="container"/> in a dialog; returns true if the user saved.</summary>
-		public async Task<bool> EditAsync(string title, IReadOnlyList<DataContainerProperty> container)
+		/// <summary>Edits <paramref name="container"/> in a dialog; returns true if the user confirmed (with <paramref name="primaryButtonText"/>).</summary>
+		public async Task<bool> EditAsync(string title, IReadOnlyList<DataContainerProperty> container, string primaryButtonText = "Save")
 		{
-			return await dialogs.ShowAsync<DataContainerDialogViewModel, bool>(new DataContainerDialogRequest(title, container));
+			return await dialogs.ShowAsync<DataContainerDialogViewModel, bool>(new DataContainerDialogRequest(title, container, primaryButtonText));
 		}
 
 		/// <summary>Edits a module's settings in a dialog and saves them if the user saved; returns whether they did.</summary>
