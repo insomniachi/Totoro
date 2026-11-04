@@ -100,4 +100,19 @@ public class SyncplayTests
 	{
 		Assert.False(SyncplayClient.TryParseServer(server, out _, out _));
 	}
+
+	[Fact]
+	public void ReconnectDelay_NeverInTheRoom_GivesUp()
+	{
+		Assert.Null(SyncplayClient.ReconnectDelay(false, 1));
+	}
+
+	[Fact]
+	public void ReconnectDelay_LostAfterJoining_RetriesSoonerFirst_ThenGivesUp()
+	{
+		Assert.Equal(S(1), SyncplayClient.ReconnectDelay(true, 0));
+		Assert.Equal(S(2), SyncplayClient.ReconnectDelay(true, 1));
+		Assert.Equal(S(30), SyncplayClient.ReconnectDelay(true, 4));
+		Assert.Null(SyncplayClient.ReconnectDelay(true, 5));
+	}
 }

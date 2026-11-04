@@ -37,6 +37,13 @@ public sealed partial class SyncplayClient : ObservableObject
 
 	private static readonly TimeSpan s_messageDuration = TimeSpan.FromSeconds(3);
 
+	// The server says where the room is about once a second: this long without a word, the connection's dead even if the
+	// socket hasn't said so (Wi-Fi changed, the PC slept, a router dropped it).
+	private const double SilenceSeconds = 10;
+
+	// Lost after being in the room, it tries again after each of these in turn, then gives up.
+	private static readonly TimeSpan[] s_reconnectDelays = [TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(30)];
+
 	private readonly WatchService _watch;
 	private readonly IPreferences _preferences;
 	private readonly ILogger<SyncplayClient> _logger;
@@ -49,6 +56,9 @@ public sealed partial class SyncplayClient : ObservableObject
 	private readonly SemaphoreSlim _writeLock = new(1, 1);
 	private TcpClient? _tcp;
 	private CancellationTokenSource? _cts;
+	// The current connection's, cancelled when the server's gone quiet (see Tick); and when it last heard from it.
+	private CancellationTokenSource? _connection;
+	private double _lastHeard;
 	private string _name = "";
 	private string _room = "";
 
@@ -185,10 +195,55 @@ public sealed partial class SyncplayClient : ObservableObject
 
 		var cts = _cts = new CancellationTokenSource();
 		Status = $"Joining {_room}…";
+		var (everJoined, failures) = (false, 0);
+		while (true)
+		{
+			var (joined, error) = await ConnectOnceAsync(host, port, cts.Token);
+			if (cts.IsCancellationRequested)
+			{
+				// Left the room, or the server turned it down (which says why).
+				return;
+			}
+
+			everJoined |= joined;
+			failures = joined ? 0 : failures + 1;
+			if (ReconnectDelay(everJoined, failures) is not { } delay)
+			{
+				Disconnect(error);
+				return;
+			}
+
+			TearDown();
+			Status = $"{error.TrimEnd('.')}. Reconnecting…";
+			try
+			{
+				await Task.Delay(delay, cts.Token);
+			}
+			catch (OperationCanceledException)
+			{
+				return;
+			}
+
+			Status = $"Rejoining {_room}…";
+		}
+	}
+
+	/// <summary>
+	/// How long to wait before trying again, after a connection's <paramref name="failures"/>th failure in a row (0: it was
+	/// in the room, then lost it); null to give up. Never in the room, it's the server, name or room that's wrong: not retried.
+	/// </summary>
+	internal static TimeSpan? ReconnectDelay(bool everJoined, int failures) =>
+		everJoined && failures < s_reconnectDelays.Length ? s_reconnectDelays[failures] : null;
+
+	/// <summary>Joins over a new connection and follows the room until it's lost: whether it got in, and why it was lost.</summary>
+	private async Task<(bool Joined, string Error)> ConnectOnceAsync(string host, int port, CancellationToken ct)
+	{
+		using var connection = _connection = CancellationTokenSource.CreateLinkedTokenSource(ct);
+		var joined = false;
 		try
 		{
 			var tcp = _tcp = new TcpClient();
-			await tcp.ConnectAsync(host, port, cts.Token);
+			await tcp.ConnectAsync(host, port, connection.Token);
 			await SendAsync(new JsonObject
 			{
 				["Hello"] = new JsonObject
@@ -201,26 +256,40 @@ public sealed partial class SyncplayClient : ObservableObject
 				},
 			});
 
+			_lastHeard = Now;
 			using var reader = new StreamReader(tcp.GetStream(), Encoding.UTF8);
-			while (await reader.ReadLineAsync(cts.Token) is { } line)
+			while (await reader.ReadLineAsync(connection.Token) is { } line)
 			{
-				Handle(JsonNode.Parse(line));
+				_lastHeard = Now;
+				var message = JsonNode.Parse(line);
+				joined |= message?["Hello"] is not null;
+				Handle(message);
 			}
 
-			if (!cts.IsCancellationRequested)
-			{
-				Disconnect("The server closed the connection.");
-			}
+			return (joined, "The server closed the connection.");
 		}
-		catch (Exception) when (cts.IsCancellationRequested)
+		catch (Exception) when (ct.IsCancellationRequested)
 		{
 			// Left the room.
+			return (joined, "");
+		}
+		catch (Exception ex) when (connection.IsCancellationRequested)
+		{
+			_logger.LogWarning(ex, "Heard nothing from the Syncplay server");
+			return (joined, $"Heard nothing from {host} for {SilenceSeconds:0} seconds.");
 		}
 		catch (Exception ex)
 		{
-			// shortcut: doesn't reconnect by itself; turning it back on does.
 			_logger.LogWarning(ex, "Lost the Syncplay server");
-			Disconnect($"Lost {host}: {ex.Message}");
+			return (joined, $"Lost {host}: {ex.Message}");
+		}
+		finally
+		{
+			// Unless rejoining (JoinAsync) has made another meanwhile.
+			if (ReferenceEquals(_connection, connection))
+			{
+				_connection = null;
+			}
 		}
 	}
 
@@ -228,6 +297,17 @@ public sealed partial class SyncplayClient : ObservableObject
 	{
 		_cts?.Cancel();
 		_cts = null;
+		TearDown();
+		// Comes back here with no status when it was on: the one given is said after.
+		IsOn = false;
+		Status = status;
+		UpdateCatchUp();
+		_joining?.TrySetResult();
+	}
+
+	/// <summary>Drops the connection and everything that came with it: on leaving the room, or before rejoining it.</summary>
+	private void TearDown()
+	{
 		_tcp?.Dispose();
 		_tcp = null;
 		_timer.Stop();
@@ -241,11 +321,6 @@ public sealed partial class SyncplayClient : ObservableObject
 
 		(_player, _file, _fileSent, _roomState) = (null, null, null, null);
 		(_clientIgnoring, _serverIgnoring) = (0, 0);
-		// Comes back here with no status when it was on: the one given is said after.
-		IsOn = false;
-		Status = status;
-		UpdateCatchUp();
-		_joining?.TrySetResult();
 	}
 
 	private void Handle(JsonNode? message)
@@ -511,6 +586,13 @@ public sealed partial class SyncplayClient : ObservableObject
 	/// <summary>Follows the player playing (a new episode starts over), and says what the user did in it.</summary>
 	private void Tick()
 	{
+		if (Now - _lastHeard > SilenceSeconds)
+		{
+			// Gone quiet: lost, though the socket hasn't said so (see ConnectOnceAsync).
+			_connection?.Cancel();
+			return;
+		}
+
 		UpdateCatchUp();
 		var player = _watch.PlayingPlayer;
 		var file = player is null ? null : _watch.Title;
