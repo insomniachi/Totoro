@@ -37,7 +37,7 @@ public static class AppearancePreferences
 	{
 		public AppTheme Theme
 		{
-			get => preferences.ReadKey(ThemeKey, AppTheme.System);
+			get => preferences.ReadKey(ThemeKey, AppTheme.Dark);
 			set => preferences.SaveKey(ThemeKey, value);
 		}
 
