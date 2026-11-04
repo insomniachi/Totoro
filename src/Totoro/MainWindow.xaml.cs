@@ -113,7 +113,7 @@ public sealed partial class MainWindow : Window
 
 	private void OnFullScreenClick(object sender, RoutedEventArgs e) => SetFullScreen(!IsFullScreen);
 
-	// Out of the way of the dialog it opens.
+	// Watch together, Leave and Catch up: out of the way of what they open (the dialog, the player).
 	private void OnWatchTogetherClick(object sender, RoutedEventArgs e) => AccountFlyout.Hide();
 
 	private void OnEscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)

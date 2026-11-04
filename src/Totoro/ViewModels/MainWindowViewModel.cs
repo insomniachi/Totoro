@@ -135,6 +135,10 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	/// <summary>The account flyout's watch-together command: what it does now.</summary>
 	public static string WatchTogetherAction(bool isOn) => isOn ? "Leave the room" : "Watch together…";
 
+	/// <summary>Plays the episode the others are watching, from where they are (see <see cref="SyncplayClient.CatchUpText"/>).</summary>
+	[RelayCommand]
+	private void CatchUp() => _ = Syncplay.CatchUpAsync(); // not waited on: it lasts as long as the episode
+
 	/// <summary>Asks for the room (with the name and server) and joins it; leaves it when in one.</summary>
 	[RelayCommand]
 	private async Task WatchTogether()

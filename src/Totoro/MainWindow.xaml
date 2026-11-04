@@ -527,6 +527,23 @@
                                         Text="{x:Bind ViewModel.Syncplay.Status, Mode=OneWay}"
                                         TextWrapping="Wrap"
                                         Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Syncplay.Status), Mode=OneWay}" />
+                                    <!--  Only while someone else is watching an episode in Totoro and nothing's playing here: start it, where they are  -->
+                                    <StackPanel Spacing="4" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Syncplay.CatchUpText), Mode=OneWay}">
+                                        <TextBlock
+                                            MaxWidth="240"
+                                            HorizontalAlignment="Left"
+                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind ViewModel.Syncplay.CatchUpText, Mode=OneWay}"
+                                            TextWrapping="Wrap" />
+                                        <Button
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.AutomationId="CatchUpButton"
+                                            AutomationProperties.HelpText="{x:Bind ViewModel.Syncplay.CatchUpText, Mode=OneWay}"
+                                            Click="OnWatchTogetherClick"
+                                            Command="{x:Bind ViewModel.CatchUpCommand}"
+                                            Content="Catch up"
+                                            Style="{ThemeResource AccentButtonStyle}" />
+                                    </StackPanel>
                                     <Button
                                         HorizontalAlignment="Stretch"
                                         AutomationProperties.AutomationId="WatchTogetherButton"

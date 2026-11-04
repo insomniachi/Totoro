@@ -55,6 +55,10 @@ public sealed partial class SyncplayClient : ObservableObject
 	// The others in the room, with the episode each is playing ("" for none).
 	private readonly Dictionary<string, string> _people = [];
 
+	// The episodes the others are playing in Totoro (what playing it here takes), and in what order they started them.
+	private readonly Dictionary<string, (JsonObject Episode, string File, int Order)> _episodes = [];
+	private int _episodeOrder;
+
 	private IMediaPlayer? _player;
 	private string? _file;
 	private long _positionTicks;
@@ -228,6 +232,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		_tcp = null;
 		_timer.Stop();
 		_people.Clear();
+		_episodes.Clear();
 		if (_player is not null)
 		{
 			_player.PositionChanged -= OnPosition;
@@ -239,6 +244,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		// Comes back here with no status when it was on: the one given is said after.
 		IsOn = false;
 		Status = status;
+		UpdateCatchUp();
 		_joining?.TrySetResult();
 	}
 
@@ -262,9 +268,11 @@ public sealed partial class SyncplayClient : ObservableObject
 		else if (message?["List"]?[_room] is JsonObject list)
 		{
 			_people.Clear();
+			_episodes.Clear();
 			foreach (var (name, user) in list.Where(x => x.Key != _name))
 			{
 				_people[name] = (string?)user?["file"]?["name"] ?? "";
+				RememberEpisode(name, user?["file"]);
 			}
 
 			ShowPeople();
@@ -273,11 +281,9 @@ public sealed partial class SyncplayClient : ObservableObject
 
 			// (Asked for once, on joining.) Someone's already watching an episode in Totoro: it starts here too, and
 			// catches up with them, unless something's playing here.
-			if (!_watch.IsActive &&
-				list.Where(x => x.Key != _name).FirstOrDefault(x => x.Value?["file"]?["totoro"] is JsonObject) is { Key: { } by, Value: { } person })
+			if (!_watch.IsActive)
 			{
-				var episode = person["file"]!["totoro"]!;
-				_ = PlayAsync(by, (string?)episode["service"], (long?)episode["id"] ?? 0, (int?)episode["episode"] ?? 0);
+				_ = CatchUpAsync();
 			}
 		}
 		else if (message?["Chat"] is JsonObject chat && (string?)chat["username"] is { } from && from != _name && (string?)chat["message"] is { } said)
@@ -304,6 +310,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		if ((string?)person?["room"]?["name"] is { } room && room != _room)
 		{
 			// Moved to another room (or is in one): not watching with us.
+			_episodes.Remove(name);
 			if (_people.Remove(name))
 			{
 				ShowPeople();
@@ -317,6 +324,7 @@ public sealed partial class SyncplayClient : ObservableObject
 			if (happened.ContainsKey("left"))
 			{
 				_people.Remove(name);
+				_episodes.Remove(name);
 				Notice(name, "left the room");
 			}
 			else if (happened.ContainsKey("joined"))
@@ -331,6 +339,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		if ((string?)person?["file"]?["name"] is { } file && _people.GetValueOrDefault(name) != file)
 		{
 			_people[name] = file;
+			RememberEpisode(name, person?["file"]);
 			ShowPeople();
 			if (file.Length == 0)
 			{
@@ -347,10 +356,45 @@ public sealed partial class SyncplayClient : ObservableObject
 		}
 	}
 
-	/// <summary>Plays the episode someone in the room started (by its id in their anime database), unless it's playing already.</summary>
-	private async Task PlayAsync(string by, string? service, long id, int episode)
+	/// <summary>Keeps (or forgets) the episode someone's playing in Totoro, from the file they said they're playing.</summary>
+	private void RememberEpisode(string name, JsonNode? file)
 	{
-		if (service is null || id <= 0 || episode <= 0 || Now < _followEpisodesAfter ||
+		if (file?["totoro"] is JsonObject episode && (string?)file["name"] is { Length: > 0 } title)
+		{
+			_episodes[name] = ((JsonObject)episode.DeepClone(), title, ++_episodeOrder);
+		}
+		else
+		{
+			_episodes.Remove(name);
+		}
+	}
+
+	/// <summary>The episode the last of the others to start one is playing, if any of them is playing one in Totoro.</summary>
+	private (string By, JsonObject Episode, string File)? Latest =>
+		_episodes.Count == 0 ? null : _episodes.MaxBy(x => x.Value.Order) is var (by, (episode, file, _)) ? (by, episode, file) : null;
+
+	/// <summary>
+	/// What <see cref="CatchUpAsync"/> would play, e.g. "alice is watching Frieren · Episode 5"; empty when there's nothing
+	/// to catch up with (nobody else is watching anything in Totoro) or something's playing here.
+	/// </summary>
+	[ObservableProperty]
+	public partial string CatchUpText { get; private set; } = "";
+
+	private void UpdateCatchUp() => CatchUpText = IsOn && !_watch.IsActive && Latest is { } latest ? $"{latest.By} is watching {latest.File}" : "";
+
+	/// <summary>Plays the episode the last of the others to start one is watching, from where they are (see <see cref="CatchUpText"/>).</summary>
+	public Task CatchUpAsync()
+	{
+		return Latest is ({ } by, { } episode, _)
+			? PlayAsync(by, (string?)episode["service"], (long?)episode["id"] ?? 0, (int?)episode["episode"] ?? 0, asked: true)
+			: Task.CompletedTask;
+	}
+
+	/// <summary>Plays the episode someone in the room started (by its id in their anime database), unless it's playing already.</summary>
+	/// <param name="asked">Whether the user asked for it, rather than following someone (which waits after an episode starts here).</param>
+	private async Task PlayAsync(string by, string? service, long id, int episode, bool asked = false)
+	{
+		if (service is null || id <= 0 || episode <= 0 || !asked && Now < _followEpisodesAfter ||
 			_watch.IsActive && _watch.Anime is { } playing && playing.ServiceName == service && playing.Id == id && _watch.CurrentEpisode == episode)
 		{
 			return;
@@ -467,6 +511,7 @@ public sealed partial class SyncplayClient : ObservableObject
 	/// <summary>Follows the player playing (a new episode starts over), and says what the user did in it.</summary>
 	private void Tick()
 	{
+		UpdateCatchUp();
 		var player = _watch.PlayingPlayer;
 		var file = player is null ? null : _watch.Title;
 		if (!ReferenceEquals(player, _player) || file != _file)

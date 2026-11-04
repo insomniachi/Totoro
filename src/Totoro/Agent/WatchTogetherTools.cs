@@ -16,7 +16,9 @@ public sealed record WatchTogetherStatus(
 	[property: Description("The name the others see.")]
 	string Name,
 	[property: Description("The others in the room.")]
-	IReadOnlyList<string> People);
+	IReadOnlyList<string> People,
+	[property: Description("What catch_up_watch_together would play, e.g. \"alice is watching Frieren · Episode 5\"; empty when there's nothing to catch up with (nobody else is watching an episode, or one's playing here).")]
+	string CatchUp);
 
 /// <summary>Agent tools for watching together (see <see cref="SyncplayClient"/>).</summary>
 public sealed class WatchTogetherTools(SyncplayClient syncplay)
@@ -24,7 +26,7 @@ public sealed class WatchTogetherTools(SyncplayClient syncplay)
 	[AgentTool("get_watch_together")]
 	[Description("Whether the app is in a watch-together room, with whom, and the room it joins.")]
 	public WatchTogetherStatus GetWatchTogether() =>
-		new(syncplay.IsOn, syncplay.Status, syncplay.Server, syncplay.Room, syncplay.Name, [.. syncplay.People]);
+		new(syncplay.IsOn, syncplay.Status, syncplay.Server, syncplay.Room, syncplay.Name, [.. syncplay.People], syncplay.CatchUpText);
 
 	[AgentTool("join_watch_together")]
 	[Description("Joins a watch-together room (leaving any it's in), so episodes stay in step with everyone in it: an episode anyone starts in Totoro starts for everyone (and one already playing when joining starts here, where they are), and pausing and seeking are shared.")]
@@ -55,6 +57,20 @@ public sealed class WatchTogetherTools(SyncplayClient syncplay)
 		}
 
 		return GetWatchTogether();
+	}
+
+	[AgentTool("catch_up_watch_together")]
+	[Description("In a watch-together room with nothing playing (e.g. after closing the player), plays the episode the others are watching, from where they are.")]
+	public string CatchUpWatchTogether()
+	{
+		if (syncplay.CatchUpText is not { Length: > 0 } what)
+		{
+			throw new AgentToolException(syncplay.IsOn ? "There's nothing to catch up with: nobody else is watching an episode, or one's playing here." : "Not in a watch-together room: join one first.");
+		}
+
+		// Not waited on: it lasts as long as the episode.
+		_ = syncplay.CatchUpAsync();
+		return $"Catching up: {what}.";
 	}
 
 	[AgentTool("leave_watch_together")]
