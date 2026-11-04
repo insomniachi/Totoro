@@ -532,10 +532,12 @@ public partial class App : Application
 	{
 		return
 		[
+			// The first of each kind is what a fresh install uses: AniList, and the built-in player (it comes with the app; mpv
+			// has to be downloaded).
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
-			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.MediaPlayers.Vlc.VlcModule(),
+			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
 			new Modules.MediaSegments.Aniskip.AniskipModule(),
 			new Modules.ChatModels.Ollama.OllamaModule()
