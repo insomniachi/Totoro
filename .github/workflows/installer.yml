@@ -80,6 +80,8 @@ jobs:
         id: bump
         shell: pwsh
         run: |
+          # A failed git push must stop the run, or the release tags a commit GitHub never received.
+          $PSNativeCommandUseErrorActionPreference = $true
           $csproj = 'src/Totoro/Totoro.csproj'
           (Get-Content $csproj -Raw) -replace '<Version>[^<]*</Version>', '<Version>${{ steps.version.outputs.version }}</Version>' |
             Set-Content $csproj -NoNewline
