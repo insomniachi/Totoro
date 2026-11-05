@@ -36,6 +36,8 @@ public static class PlaybackPreferences
 	public const string SyncplayServerKey = "SyncplayServer";
 	public const string SyncplayRoomKey = "SyncplayRoom";
 	public const string SyncplayNameKey = "SyncplayName";
+	public const string SyncplayPasswordKey = "SyncplayPassword";
+	public const string SyncplayRejoinKey = "SyncplayRejoin";
 
 	extension(IPreferences preferences)
 	{
@@ -119,6 +121,20 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(SyncplayNameKey, Environment.UserName)!;
 			set => preferences.SaveKey(SyncplayNameKey, value);
+		}
+
+		/// <summary>The Syncplay server's password, for a private one; empty for none (the public ones have none).</summary>
+		public string SyncplayPassword
+		{
+			get => preferences.ReadKey(SyncplayPasswordKey, "")!;
+			set => preferences.SaveKey(SyncplayPasswordKey, value);
+		}
+
+		/// <summary>Whether the user was in a Syncplay room when the app last closed: it joins it again as it starts.</summary>
+		public bool SyncplayRejoin
+		{
+			get => preferences.ReadKey(SyncplayRejoinKey, false);
+			set => preferences.SaveKey(SyncplayRejoinKey, value);
 		}
 
 		/// <summary>How video is scaled or stretched in the built-in player.</summary>

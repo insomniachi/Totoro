@@ -527,6 +527,29 @@
                                         Text="{x:Bind ViewModel.Syncplay.Status, Mode=OneWay}"
                                         TextWrapping="Wrap"
                                         Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Syncplay.Status), Mode=OneWay}" />
+                                    <!--  In a room: the latest it's said (and who came and went), and a box to say something, sent on Enter  -->
+                                    <StackPanel Spacing="4" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Syncplay.IsOn), Mode=OneWay}">
+                                        <ScrollViewer MaxHeight="120">
+                                            <ItemsControl ItemsSource="{x:Bind ViewModel.Syncplay.Messages, Mode=OneWay}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="x:String">
+                                                        <TextBlock
+                                                            MaxWidth="240"
+                                                            Style="{ThemeResource CaptionTextBlockStyle}"
+                                                            Text="{x:Bind}"
+                                                            TextWrapping="Wrap" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                        <TextBox
+                                            AutomationProperties.AutomationId="RoomChatBox"
+                                            AutomationProperties.Name="Say something to the room"
+                                            KeyDown="OnRoomChatKeyDown"
+                                            MaxLength="150"
+                                            PlaceholderText="Say something to the room"
+                                            Text="{x:Bind ViewModel.RoomChat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
                                     <!--  Only while someone else is watching an episode in Totoro and nothing's playing here: start it, where they are  -->
                                     <StackPanel Spacing="4" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Syncplay.CatchUpText), Mode=OneWay}">
                                         <TextBlock
@@ -712,6 +735,30 @@
                         IsOpen="{x:Bind ViewModel.IsSyncWarningOpen, Mode=TwoWay}"
                         Message="{x:Bind ViewModel.SyncWarning, Mode=OneWay}"
                         Severity="Warning" />
+                </Border>
+            </Grid>
+
+            <!--  Watching together with nothing playing here: the latest from the room (chat, someone joining), which the player would show  -->
+            <Grid Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Syncplay.IsRoomMessageOpen), Mode=OneWay}">
+                <ui:Effects.Shadow>
+                    <media:AttachedCardShadow
+                        BlurRadius="24"
+                        CornerRadius="4"
+                        Opacity="0.6"
+                        Offset="0,8"
+                        Color="Black" />
+                </ui:Effects.Shadow>
+                <Border
+                    Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                    <InfoBar
+                        Title="Watching together"
+                        AutomationProperties.AutomationId="RoomMessageInfoBar"
+                        IsOpen="{x:Bind ViewModel.Syncplay.IsRoomMessageOpen, Mode=TwoWay}"
+                        Message="{x:Bind ViewModel.Syncplay.RoomMessage, Mode=OneWay}"
+                        Severity="Informational" />
                 </Border>
             </Grid>
         </StackPanel>

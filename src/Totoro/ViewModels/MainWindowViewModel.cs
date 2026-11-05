@@ -145,14 +145,15 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	{
 		if (Syncplay.IsOn)
 		{
-			Syncplay.IsOn = false;
+			Syncplay.Leave();
 			return;
 		}
 
 		DataContainerProperty room = new() { Name = "Room", Description = "Everyone in the same room plays together: pick a name only your friends would guess.", Value = Syncplay.Room };
 		DataContainerProperty name = new() { Name = "Name", DisplayName = "Your name", Description = "What the others see.", Value = Syncplay.Name };
 		DataContainerProperty server = new() { Name = "Server", DisplayName = "Syncplay server", Description = "host:port; syncplay.pl:8999 is a free public one.", Value = Syncplay.Server };
-		if (!await _dialogs.EditAsync("Watch together", [room, name, server], "Join"))
+		DataContainerProperty password = new() { Name = "Password", DisplayName = "Server password", Description = "Only for a private server that has one.", Value = Syncplay.Password, EditorType = DataContainerEditors.Password };
+		if (!await _dialogs.EditAsync("Watch together", [room, name, server, password], "Join"))
 		{
 			return;
 		}
@@ -160,7 +161,22 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		Syncplay.Room = room.Value as string ?? "";
 		Syncplay.Name = name.Value as string ?? "";
 		Syncplay.Server = server.Value as string ?? "";
+		Syncplay.Password = password.Value as string ?? "";
 		await Syncplay.JoinAsync();
+	}
+
+	/// <summary>What the user's typing to say to the room, from the account flyout.</summary>
+	[ObservableProperty]
+	public partial string RoomChat { get; set; } = "";
+
+	/// <summary>Says <see cref="RoomChat"/> to the room, and clears it once said.</summary>
+	[RelayCommand]
+	private void SendRoomChat()
+	{
+		if (Syncplay.SendChat(RoomChat))
+		{
+			RoomChat = "";
+		}
 	}
 
 	public void Receive(AnimeDatabaseChangedMessage message)

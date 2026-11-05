@@ -31,6 +31,7 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 	public event EventHandler<TimeSpan>? PositionChanged;
 	public event EventHandler? PlaybackStopped;
 	public event EventHandler<int>? EpisodeRequested;
+	public event EventHandler<string>? RoomChatSent;
 
 	public bool IsOpen => _window is not null;
 
@@ -98,6 +99,8 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 
 	public Task SetPausedAsync(bool paused) => _window?.ViewModel.SetPausedAsync(paused) ?? Task.CompletedTask;
 
+	public Task SetSpeedAsync(double speed) => _window?.ViewModel.SetSpeedAsync(speed) ?? Task.CompletedTask;
+
 	public IReadOnlyList<MediaTrack> GetTracks() => _window?.ViewModel.GetTracks() ?? [];
 
 	public Task SelectTrackAsync(MediaTrackKind kind, int id) => _window?.ViewModel.SelectTrackAsync(kind, id) ?? Task.CompletedTask;
@@ -136,6 +139,7 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 		viewModel.PositionChanged += (_, e) => PositionChanged?.Invoke(this, e);
 		viewModel.Ended += (_, _) => PlaybackStopped?.Invoke(this, EventArgs.Empty);
 		viewModel.EpisodeRequested += (_, e) => EpisodeRequested?.Invoke(this, e);
+		viewModel.RoomChatSent += (_, e) => RoomChatSent?.Invoke(this, e);
 
 		var window = new PlayerWindow(viewModel, settings.Value);
 		window.Closed += async (_, _) =>

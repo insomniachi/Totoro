@@ -31,6 +31,9 @@ public interface IMediaPlayer
 
 	Task SetPausedAsync(bool paused);
 
+	/// <summary>Plays at <paramref name="speed"/> times the normal speed (1 for normal), e.g. a little slower to let others catch up.</summary>
+	Task SetSpeedAsync(double speed) => Task.CompletedTask;
+
 	/// <summary>Shows <paramref name="text"/> over the video for a while.</summary>
 	Task ShowMessageAsync(string text, TimeSpan duration);
 

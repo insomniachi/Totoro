@@ -102,6 +102,46 @@ public class SyncplayTests
 	}
 
 	[Fact]
+	public void StartedAfter_TwoStartedAtOnce_ExactlyOneFollows()
+	{
+		// Each side asks about the other's start: one yes, one no, so they end up on one episode.
+		Assert.True(SyncplayClient.StartedAfter(2000, "bob", 1000, "alice"));
+		Assert.False(SyncplayClient.StartedAfter(1000, "alice", 2000, "bob"));
+
+		// The same moment: the name settles it, the same way on both sides.
+		Assert.True(SyncplayClient.StartedAfter(1000, "alice", 1000, "bob"));
+		Assert.False(SyncplayClient.StartedAfter(1000, "bob", 1000, "alice"));
+	}
+
+	[Fact]
+	public void IsStalled_PlayingButStuck_Is_ButNotPausedOrAtTheEnd()
+	{
+		Assert.True(SyncplayClient.IsStalled(false, 3, S(600), S(1440)));
+		// A moment's hiccup, the user's pause, and the end (where a player sits before it's done) aren't.
+		Assert.False(SyncplayClient.IsStalled(false, 1, S(600), S(1440)));
+		Assert.False(SyncplayClient.IsStalled(true, 30, S(600), S(1440)));
+		Assert.False(SyncplayClient.IsStalled(false, 3, S(1438), S(1440)));
+	}
+
+	[Fact]
+	public void Slowdown_SlowsWhenALittleAhead_AndStopsOnceLevel()
+	{
+		Assert.Null(SyncplayClient.Slowdown(1, false));
+		Assert.Equal(0.95, SyncplayClient.Slowdown(2, false));
+		// Kept slow till nearly level (or behind), then normal.
+		Assert.Null(SyncplayClient.Slowdown(1, true));
+		Assert.Equal(1, SyncplayClient.Slowdown(0.05, true));
+		Assert.Equal(1, SyncplayClient.Slowdown(-0.5, true));
+	}
+
+	[Fact]
+	public void StartedAfter_UnknownStart_IsNot()
+	{
+		// An older Totoro doesn't say when: not followed within the moment after starting here, as before.
+		Assert.False(SyncplayClient.StartedAfter(0, "alice", 1000, "bob"));
+	}
+
+	[Fact]
 	public void ReconnectDelay_NeverInTheRoom_GivesUp()
 	{
 		Assert.Null(SyncplayClient.ReconnectDelay(false, 1));

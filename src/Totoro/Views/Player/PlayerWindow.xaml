@@ -600,6 +600,14 @@
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
+                                            <!--  Said to the room on Enter; the others see it over their video, or in Syncplay's chat  -->
+                                            <TextBox
+                                                AutomationProperties.AutomationId="RoomChatBox"
+                                                AutomationProperties.Name="Say something to the room"
+                                                KeyDown="OnRoomChatKeyDown"
+                                                MaxLength="150"
+                                                PlaceholderText="Say something to the room"
+                                                Text="{x:Bind ViewModel.RoomChat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                         </StackPanel>
                                     </Flyout>
                                 </FlyoutBase.AttachedFlyout>

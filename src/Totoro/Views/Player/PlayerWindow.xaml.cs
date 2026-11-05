@@ -227,6 +227,12 @@ public sealed partial class PlayerWindow : Window
 
 	private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
 	{
+		// Typing (to the room): the keys are the text's, not the player's.
+		if (e.OriginalSource is TextBox)
+		{
+			return;
+		}
+
 		e.Handled = true;
 		var keys = Shortcuts;
 		switch (e.Key)
@@ -300,6 +306,15 @@ public sealed partial class PlayerWindow : Window
 	{
 		var button = RoomButton.TransformToVisual(Controls).TransformPoint(new Point(RoomButton.ActualWidth / 2, 0));
 		RoomFlyout.ShowAt(Controls, new FlyoutShowOptions { Placement = FlyoutPlacementMode.Top, Position = new Point(button.X, -8) });
+	}
+
+	private void OnRoomChatKeyDown(object sender, KeyRoutedEventArgs e)
+	{
+		if (e.Key == VirtualKey.Enter)
+		{
+			e.Handled = true;
+			ViewModel.SendRoomChat();
+		}
 	}
 
 	private void OnEpisodeListOpened(object? sender, object e)

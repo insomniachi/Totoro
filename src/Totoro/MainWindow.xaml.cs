@@ -116,6 +116,15 @@ public sealed partial class MainWindow : Window
 	// Watch together, Leave and Catch up: out of the way of what they open (the dialog, the player).
 	private void OnWatchTogetherClick(object sender, RoutedEventArgs e) => AccountFlyout.Hide();
 
+	private void OnRoomChatKeyDown(object sender, KeyRoutedEventArgs e)
+	{
+		if (e.Key == Windows.System.VirtualKey.Enter)
+		{
+			e.Handled = true;
+			ViewModel.SendRoomChatCommand.Execute(null);
+		}
+	}
+
 	private void OnEscapeInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
 	{
 		args.Handled = IsFullScreen;

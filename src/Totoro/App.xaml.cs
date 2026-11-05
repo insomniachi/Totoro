@@ -261,6 +261,8 @@ public partial class App : Application
 		_host.Services.GetRequiredService<IAppearanceService>().Apply();
 		// Follows playback from now on.
 		_host.Services.GetRequiredService<DiscordPresence>();
+		// Back in the watch-together room the user was in when the app last closed.
+		_host.Services.GetRequiredService<SyncplayClient>().Rejoin();
 		// Marks episodes finished in a browser watched, while the app's open.
 		_host.Services.GetRequiredService<BrowserWatchTracker>();
 		// Downloads the next episode of anime being watched, if that's turned on.

@@ -127,6 +127,8 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		return SendAsync("set_property", "pause", paused);
 	}
 
+	public Task SetSpeedAsync(double speed) => SendAsync("set_property", "speed", speed);
+
 	public Task ShowMessageAsync(string text, TimeSpan duration)
 	{
 		return SendAsync("show-text", text, (int)duration.TotalMilliseconds);

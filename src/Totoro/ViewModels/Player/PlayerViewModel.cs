@@ -264,6 +264,12 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		return Task.CompletedTask;
 	}
 
+	public Task SetSpeedAsync(double speed)
+	{
+		MediaPlayer?.SetRate((float)speed);
+		return Task.CompletedTask;
+	}
+
 	public IReadOnlyList<MediaTrack> GetTracks()
 	{
 		if (MediaPlayer is not { } player)
@@ -639,6 +645,22 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	{
 		RoomPeople = people ?? [];
 		IsInRoom = people is not null;
+	}
+
+	/// <inheritdoc cref="IInteractiveMediaPlayer.RoomChatSent"/>
+	public event EventHandler<string>? RoomChatSent;
+
+	/// <summary>What the user's typing to say to the room.</summary>
+	[ObservableProperty] public partial string RoomChat { get; set; } = "";
+
+	/// <summary>Says <see cref="RoomChat"/> to the room, and clears it.</summary>
+	public void SendRoomChat()
+	{
+		if (RoomChat.Trim() is { Length: > 0 } text)
+		{
+			RoomChatSent?.Invoke(this, text);
+			RoomChat = "";
+		}
 	}
 
 	/// <inheritdoc cref="IInteractiveMediaPlayer.ShowRoomNotice"/>

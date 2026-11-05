@@ -1,6 +1,9 @@
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Collections.ObjectModel;
+using System.Net.Security;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -55,6 +58,9 @@ public sealed partial class SyncplayClient : ObservableObject
 	private double _followEpisodesAfter;
 	private readonly SemaphoreSlim _writeLock = new(1, 1);
 	private TcpClient? _tcp;
+	// What's said and heard over it: the TCP stream, or the encryption over it.
+	private Stream? _stream;
+	private string _password = "";
 	private CancellationTokenSource? _cts;
 	// The current connection's, cancelled when the server's gone quiet (see Tick); and when it last heard from it.
 	private CancellationTokenSource? _connection;
@@ -77,6 +83,29 @@ public sealed partial class SyncplayClient : ObservableObject
 	// An episode just started that nobody else was on: once it settles, the room goes to where it is. Decided as it starts,
 	// since others following it start it too (and would otherwise make it follow the room, paused where it was).
 	private bool _announce;
+
+	// Whether the episode playing here has caught up with the room since it started (see OnState); always when leading it.
+	private bool _caughtUp;
+
+	// The episode last started following someone (see PlayAsync), which never sets the room going (see Tick).
+	private (AnimeModel Anime, int Episode)? _following;
+
+	// When the episode playing here started (Unix ms, sent with it): of two started at once, the later is followed.
+	private long _startedAt;
+
+	// Couldn't follow the episode someone started: what plays here is another, kept out of the room's pauses and seeks.
+	private bool _offRoom;
+
+	// Whether the server has said who's in the room (asked for on joining): till then, what plays here is left alone,
+	// or it would seem nobody else is on it and set the room going (see Tick).
+	private bool _listed;
+
+	// Whether the player's stuck loading, which the room's told is a pause (see Tick); and when it last moved on.
+	private bool _stalled;
+	private double _advancedAt;
+
+	// Playing and not moving this long is loading, not the user's doing.
+	private const double StallSeconds = 2;
 
 	// The player as of the last check, to tell the user's own pauses and seeks from playing on.
 	private TimeSpan _lastPosition;
@@ -133,6 +162,13 @@ public sealed partial class SyncplayClient : ObservableObject
 		set => Save(Server, value, x => _preferences.SyncplayServer = x);
 	}
 
+	/// <summary>The server's password, for a private one; empty for none.</summary>
+	public string Password
+	{
+		get => _preferences.SyncplayPassword;
+		set => Save(Password, value, x => _preferences.SyncplayPassword = x);
+	}
+
 	private void Save(string old, string value, Action<string> save, [CallerMemberName] string property = "")
 	{
 		if (old != value)
@@ -151,6 +187,8 @@ public sealed partial class SyncplayClient : ObservableObject
 	/// <summary>(Re)joins <see cref="Room"/>, once it's in or couldn't get in; says how it went, as <see cref="Status"/>.</summary>
 	public async Task<string> JoinAsync()
 	{
+		// And again when the app next starts, until the user leaves (see Leave).
+		_preferences.SyncplayRejoin = true;
 		IsOn = false;
 		var joining = _joining = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		IsOn = true;
@@ -164,6 +202,53 @@ public sealed partial class SyncplayClient : ObservableObject
 		}
 
 		return Status;
+	}
+
+	/// <summary>Leaves the room, for good: the app doesn't join it again as it next starts.</summary>
+	public void Leave()
+	{
+		_preferences.SyncplayRejoin = false;
+		IsOn = false;
+	}
+
+	/// <summary>Joins the room again if the user was in it when the app last closed.</summary>
+	public void Rejoin()
+	{
+		if (_preferences.SyncplayRejoin)
+		{
+			_ = JoinAsync();
+		}
+	}
+
+	/// <summary>Says <paramref name="text"/> to the room (cut to Syncplay's length); false when not in one.</summary>
+	public bool SendChat(string text)
+	{
+		if (!_listed || text.Trim() is not { Length: > 0 } said)
+		{
+			return false;
+		}
+
+		_ = TellAsync(said);
+		// The server sends it back to everyone, this app too, which ignores its own (see Handle): kept here instead.
+		Remember($"{_name} (you): {FitChat(said)}");
+		return true;
+	}
+
+	private void OnRoomChat(object? sender, string text) => SendChat(text);
+
+	// How much of what the room said is kept to show.
+	private const int MessagesKept = 30;
+
+	/// <summary>What's been said in the room and who came and went, the latest last; for while nothing's playing (the player shows it over the video).</summary>
+	public ObservableCollection<string> Messages { get; } = [];
+
+	private void Remember(string message)
+	{
+		Messages.Add(message);
+		while (Messages.Count > MessagesKept)
+		{
+			Messages.RemoveAt(0);
+		}
 	}
 
 	partial void OnIsOnChanged(bool value)
@@ -187,6 +272,7 @@ public sealed partial class SyncplayClient : ObservableObject
 	{
 		_name = Name.Trim();
 		_room = Room.Trim();
+		_password = Password;
 		if (!TryParseServer(Server, out var host, out var port) || _name.Length == 0 || _room.Length == 0)
 		{
 			Disconnect("Fill in the server (host:port), the room and your name first.");
@@ -242,22 +328,26 @@ public sealed partial class SyncplayClient : ObservableObject
 		var joined = false;
 		try
 		{
-			var tcp = _tcp = new TcpClient();
-			await tcp.ConnectAsync(host, port, connection.Token);
-			await SendAsync(new JsonObject
-			{
-				["Hello"] = new JsonObject
-				{
-					["username"] = _name,
-					["room"] = new JsonObject { ["name"] = _room },
-					["version"] = ProtocolVersion,
-					["realversion"] = ReleaseVersion,
-					["features"] = new JsonObject { ["sharedPlaylists"] = false, ["chat"] = true, ["readiness"] = true, ["managedRooms"] = false },
-				},
-			});
-
+			// Ticking from here: a server that never answers is let go after a while (see Tick), not waited on for ever.
 			_lastHeard = Now;
-			using var reader = new StreamReader(tcp.GetStream(), Encoding.UTF8);
+			_timer.Start();
+			var stream = await OpenAsync(host, port, connection.Token);
+			var hello = new JsonObject
+			{
+				["username"] = _name,
+				["room"] = new JsonObject { ["name"] = _room },
+				["version"] = ProtocolVersion,
+				["realversion"] = ReleaseVersion,
+				["features"] = new JsonObject { ["sharedPlaylists"] = false, ["chat"] = true, ["readiness"] = true, ["managedRooms"] = false },
+			};
+			if (_password.Length > 0)
+			{
+				// As Syncplay's app sends it: the server keeps its password hashed so.
+				hello["password"] = Convert.ToHexStringLower(MD5.HashData(Encoding.UTF8.GetBytes(_password)));
+			}
+
+			await SendAsync(new JsonObject { ["Hello"] = hello });
+			using var reader = new StreamReader(stream, Encoding.UTF8);
 			while (await reader.ReadLineAsync(connection.Token) is { } line)
 			{
 				_lastHeard = Now;
@@ -293,6 +383,65 @@ public sealed partial class SyncplayClient : ObservableObject
 		}
 	}
 
+	/// <summary>
+	/// Connects, encrypted where the server can be (syncplay.pl's can): it's asked first, and turns it on or says it can't.
+	/// A server from before Syncplay had encryption turns the question down and closes: then it's asked again without it.
+	/// </summary>
+	private async Task<Stream> OpenAsync(string host, int port, CancellationToken ct)
+	{
+		var tcp = _tcp = new TcpClient();
+		await tcp.ConnectAsync(host, port, ct);
+		Stream stream = tcp.GetStream();
+		await WriteLineAsync(stream, new JsonObject { ["TLS"] = new JsonObject { ["startTLS"] = "send" } }, ct);
+		var reply = await ReadLineAsync(stream, ct);
+		var answer = reply is null ? null : (string?)JsonNode.Parse(reply)?["TLS"]?["startTLS"];
+		if (answer == "true")
+		{
+			var tls = new SslStream(stream);
+			// Checked as any HTTPS site's is: a server whose certificate isn't valid isn't joined.
+			await tls.AuthenticateAsClientAsync(new SslClientAuthenticationOptions { TargetHost = host }, ct);
+			IsEncrypted = true;
+			return _stream = tls;
+		}
+
+		if (answer is null)
+		{
+			tcp.Dispose();
+			tcp = _tcp = new TcpClient();
+			await tcp.ConnectAsync(host, port, ct);
+			stream = tcp.GetStream();
+		}
+
+		IsEncrypted = false;
+		return _stream = stream;
+	}
+
+	/// <summary>Whether the connection to the server is encrypted, so the room, chat and what's watched aren't sent in the open.</summary>
+	[ObservableProperty]
+	public partial bool IsEncrypted { get; private set; }
+
+	/// <summary>A line from <paramref name="stream"/> a byte at a time: before encryption starts, nothing after it may be read.</summary>
+	private static async Task<string?> ReadLineAsync(Stream stream, CancellationToken ct)
+	{
+		var line = new List<byte>();
+		var b = new byte[1];
+		while (await stream.ReadAsync(b, ct) == 1)
+		{
+			if (b[0] == '\n')
+			{
+				return Encoding.UTF8.GetString([.. line]).TrimEnd('\r');
+			}
+
+			line.Add(b[0]);
+		}
+
+		return null;
+	}
+
+	// Syncplay's server reads lines ending in CRLF.
+	private static Task WriteLineAsync(Stream stream, JsonObject message, CancellationToken ct = default) =>
+		stream.WriteAsync(Encoding.UTF8.GetBytes(message.ToJsonString() + "\r\n"), ct).AsTask();
+
 	private void Disconnect(string status)
 	{
 		_cts?.Cancel();
@@ -301,6 +450,9 @@ public sealed partial class SyncplayClient : ObservableObject
 		// Comes back here with no status when it was on: the one given is said after.
 		IsOn = false;
 		Status = status;
+		IsRoomMessageOpen = false;
+		IsEncrypted = false;
+		Messages.Clear();
 		UpdateCatchUp();
 		_joining?.TrySetResult();
 	}
@@ -308,8 +460,21 @@ public sealed partial class SyncplayClient : ObservableObject
 	/// <summary>Drops the connection and everything that came with it: on leaving the room, or before rejoining it.</summary>
 	private void TearDown()
 	{
+		_stream?.Dispose();
 		_tcp?.Dispose();
-		_tcp = null;
+		(_stream, _tcp) = (null, null);
+		if (_slowed)
+		{
+			// Back to normal speed, out of the room.
+			_ = _player?.SetSpeedAsync(1);
+			_slowed = false;
+		}
+
+		if (_player is IInteractiveMediaPlayer chatting)
+		{
+			chatting.RoomChatSent -= OnRoomChat;
+		}
+
 		_timer.Stop();
 		_people.Clear();
 		_episodes.Clear();
@@ -320,7 +485,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		}
 
 		(_player, _file, _fileSent, _roomState) = (null, null, null, null);
-		(_clientIgnoring, _serverIgnoring) = (0, 0);
+		(_clientIgnoring, _serverIgnoring, _offRoom, _listed, _stalled, _rtt) = (0, 0, false, false, false, 0);
 	}
 
 	private void Handle(JsonNode? message)
@@ -329,6 +494,8 @@ public sealed partial class SyncplayClient : ObservableObject
 		{
 			// The server changes the name if someone in the room has it already.
 			_name = (string?)hello["username"] ?? _name;
+			// And cuts a long room name (to 35 characters): the room is the one it says.
+			_room = (string?)hello["room"]?["name"] ?? _room;
 			_timer.Start();
 			_ = SendAsync(new JsonObject { ["List"] = null });
 			ShowPeople();
@@ -352,6 +519,7 @@ public sealed partial class SyncplayClient : ObservableObject
 
 			ShowPeople();
 			// In, knowing who else is.
+			_listed = true;
 			_joining?.TrySetResult();
 
 			// (Asked for once, on joining.) Someone's already watching an episode in Totoro: it starts here too, and
@@ -363,7 +531,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		}
 		else if (message?["Chat"] is JsonObject chat && (string?)chat["username"] is { } from && from != _name && (string?)chat["message"] is { } said)
 		{
-			Notice(from, said.StartsWith(CouldNotPlay, StringComparison.Ordinal) ? said : $"says “{said}”");
+			Notice(from, said.StartsWith(CouldNotPlay, StringComparison.Ordinal) || said == Loading ? said : $"says “{said}”");
 		}
 		else if (message?["Error"] is JsonObject error)
 		{
@@ -426,7 +594,7 @@ public sealed partial class SyncplayClient : ObservableObject
 			Say($"{name} is playing {file}");
 			if (person?["file"]?["totoro"] is JsonObject episode)
 			{
-				_ = PlayAsync(name, (string?)episode["service"], (long?)episode["id"] ?? 0, (int?)episode["episode"] ?? 0);
+				_ = PlayAsync(name, (string?)episode["service"], (long?)episode["id"] ?? 0, (int?)episode["episode"] ?? 0, (long?)episode["startedAt"] ?? 0);
 			}
 		}
 	}
@@ -466,12 +634,24 @@ public sealed partial class SyncplayClient : ObservableObject
 	}
 
 	/// <summary>Plays the episode someone in the room started (by its id in their anime database), unless it's playing already.</summary>
-	/// <param name="asked">Whether the user asked for it, rather than following someone (which waits after an episode starts here).</param>
-	private async Task PlayAsync(string by, string? service, long id, int episode, bool asked = false)
+	/// <param name="startedAt">When they started it (Unix ms; 0 from a Totoro that doesn't say).</param>
+	/// <param name="asked">Whether the user asked for it, rather than following someone (see <see cref="ShouldFollow"/>).</param>
+	private async Task PlayAsync(string by, string? service, long id, int episode, long startedAt = 0, bool asked = false)
 	{
-		if (service is null || id <= 0 || episode <= 0 || !asked && Now < _followEpisodesAfter ||
-			_watch.IsActive && _watch.Anime is { } playing && playing.ServiceName == service && playing.Id == id && _watch.CurrentEpisode == episode)
+		if (service is null || id <= 0 || episode <= 0 || !asked && !ShouldFollow(by, startedAt))
 		{
+			return;
+		}
+
+		if (_watch.IsActive && _watch.Anime is { } playing && playing.ServiceName == service && playing.Id == id && _watch.CurrentEpisode == episode)
+		{
+			if (_offRoom)
+			{
+				// Out of step since a follow failed, and the room's back on what plays here: in step again, catching up first.
+				(_offRoom, _caughtUp) = (false, false);
+				Say($"{by} is back on this episode: in step with the room");
+			}
+
 			return;
 		}
 
@@ -487,11 +667,13 @@ public sealed partial class SyncplayClient : ObservableObject
 			if (ownId is not > 0)
 			{
 				Status = $"Couldn't find what {by} is playing on {database.Name}.";
+				LeaveStep();
 				_ = TellAsync($"{CouldNotPlay}episode {episode}: it isn't on {database.Name}");
 				return;
 			}
 
 			var anime = await database.GetAnimeAsync(ownId.Value);
+			_following = (anime, episode);
 			await _watch.WatchAsync(anime, episode);
 			// It's left in the status bar when it couldn't play (no provider, not on it...): the others are told why.
 			if (_watch.Kind == PlaybackStatusKind.Error && ReferenceEquals(_watch.Anime, anime) && _watch.CurrentEpisode == episode)
@@ -503,12 +685,47 @@ public sealed partial class SyncplayClient : ObservableObject
 		{
 			_logger.LogWarning(ex, "Couldn't play what {Person} started", by);
 			Status = $"Couldn't play what {by} started: {ex.Message}";
+			LeaveStep();
 			_ = TellAsync($"{CouldNotPlay}episode {episode}: {ex.Message}");
+		}
+	}
+
+	/// <summary>
+	/// Whether to follow an episode someone started (see <see cref="PlayAsync"/>): always, unless one started here a moment
+	/// ago; then only the later of the two (see <see cref="StartedAfter"/>), so two started at once end up one, not swapped.
+	/// </summary>
+	private bool ShouldFollow(string by, long startedAt) =>
+		_player is null || Now >= _followEpisodesAfter || StartedAfter(startedAt, by, _startedAt, _name);
+
+	/// <summary>
+	/// Whether their start (<paramref name="theirs"/>, by <paramref name="by"/>) came after ours, the name settling a tie: each
+	/// side compares the same two, so exactly one follows the other, however far apart their clocks. Unknown (0) never is.
+	/// </summary>
+	internal static bool StartedAfter(long theirs, string by, long ours, string me) =>
+		theirs > 0 && (theirs > ours || theirs == ours && string.CompareOrdinal(by, me) < 0);
+
+	/// <summary>What's playing here isn't what someone started: it's kept out of the room until another episode plays.</summary>
+	private void LeaveStep()
+	{
+		if (_player is not null)
+		{
+			_offRoom = true;
+			Say($"{Status} Not in step with the room.");
 		}
 	}
 
 	// What a chat message starts with when Totoro couldn't play an episode someone started; shown as it is, after the name.
 	private const string CouldNotPlay = "couldn't play ";
+
+	// The chat message saying the room's paused for someone's player loading (see Tick); shown as it is too.
+	private const string Loading = "is loading: the room waits";
+
+	/// <summary>
+	/// Whether the player's stuck loading: playing, yet not moved on for <paramref name="stillFor"/> seconds. Not near
+	/// the end, where a player can sit before it says it's done.
+	/// </summary>
+	internal static bool IsStalled(bool paused, double stillFor, TimeSpan position, TimeSpan duration) =>
+		!paused && stillFor > StallSeconds && duration - position > TimeSpan.FromSeconds(5);
 
 	/// <summary>Says something to the room, in Syncplay's chat (which Syncplay's own app shows too).</summary>
 	private Task TellAsync(string text) => SendAsync(new JsonObject { ["Chat"] = FitChat(text) });
@@ -551,14 +768,23 @@ public sealed partial class SyncplayClient : ObservableObject
 			_roomState = (Math.Max(0, (double?)roomPlay["position"] ?? 0), (bool?)roomPlay["paused"] ?? true, Now);
 		}
 
-		if (state["playstate"] is JsonObject play && (string?)play["setBy"] is var by && by != _name &&
-			_clientIgnoring == 0 && _player is { } player && Now >= _settleUntil && !_announce)
+		// Till an episode that started here catches up, the room is followed even as set by this app: the server says so of
+		// whoever's furthest behind, which may be this app as it was (saying the room back) before the episode opened.
+		if (state["playstate"] is JsonObject play && (string?)play["setBy"] is var by && (by != _name || !_caughtUp) &&
+			_clientIgnoring == 0 && _player is { } player && Now >= _settleUntil && !_announce && !_offRoom)
 		{
 			var paused = (bool?)play["paused"] ?? true;
 			var doSeek = (bool?)play["doSeek"] ?? false;
 			// shortcut: takes half the round trip as how old the message is, where Syncplay averages; fine on a steady connection.
 			var room = TimeSpan.FromSeconds(Math.Max(0, ((double?)play["position"] ?? 0) + (paused ? 0 : _rtt / 2)));
 			var (pause, seekTo) = Follow(Position, player.IsPaused, room, paused, doSeek);
+			_caughtUp = true;
+			if (_stalled && pause == true)
+			{
+				// The room's paused for this player loading: pausing it too would leave it paused once loaded.
+				pause = null;
+			}
+
 			if (pause is { } p)
 			{
 				_ = player.SetPausedAsync(p);
@@ -573,11 +799,27 @@ public sealed partial class SyncplayClient : ObservableObject
 			{
 				_settleUntil = Now + SettleSeconds;
 				_announce = false;
-				if (by is { Length: > 0 })
+				if (by is { Length: > 0 } && by != _name)
 				{
 					Say(pause is { } nowPaused ? $"{by} {(nowPaused ? "paused" : "resumed")}" : doSeek ? $"{by} jumped to {Clock(room)}" : $"Caught up with {by}");
 				}
 			}
+
+			// A little ahead of the room (someone a little behind): a little slower till they're level, as Syncplay's app
+			// does, rather than drifting till it's far enough to jump back. Normal again on any pause or jump.
+			var still = paused || player.IsPaused || pause is not null || seekTo is not null;
+			if ((still ? _slowed ? 1 : null : Slowdown((Position - room).TotalSeconds, _slowed)) is { } speed)
+			{
+				_ = player.SetSpeedAsync(speed);
+				_slowed = speed < 1;
+			}
+		}
+
+		if (_slowed && (string?)state["playstate"]?["setBy"] == _name)
+		{
+			// The room's where this player is now (it's the furthest behind): level, so normal speed again.
+			_ = _player?.SetSpeedAsync(1);
+			_slowed = false;
 		}
 
 		_ = SendStateAsync(latency, change: false);
@@ -594,6 +836,11 @@ public sealed partial class SyncplayClient : ObservableObject
 		}
 
 		UpdateCatchUp();
+		if (!_listed)
+		{
+			return;
+		}
+
 		var player = _watch.PlayingPlayer;
 		var file = player is null ? null : _watch.Title;
 		if (!ReferenceEquals(player, _player) || file != _file)
@@ -601,6 +848,7 @@ public sealed partial class SyncplayClient : ObservableObject
 			if (_player is not null)
 			{
 				_player.PositionChanged -= OnPosition;
+				(_player as IInteractiveMediaPlayer)?.RoomChatSent -= OnRoomChat;
 				if (player is null)
 				{
 					// Closed (or finished) while in the room: no longer watching, which the others see.
@@ -609,13 +857,20 @@ public sealed partial class SyncplayClient : ObservableObject
 				}
 			}
 
-			(_player, _file) = (player, file);
+			(_player, _file, _offRoom, _stalled, _advancedAt) = (player, file, false, false, Now);
 			if (player is not null)
 			{
 				Interlocked.Exchange(ref _positionTicks, -1);
 				player.PositionChanged += OnPosition;
-				_announce = !OthersOnFile;
+				(player as IInteractiveMediaPlayer)?.RoomChatSent += OnRoomChat;
+				// A new episode plays at normal speed.
+				_slowed = false;
+				// Never when it was started following someone: they're on it, whatever their title for it.
+				_announce = !OthersOnFile && !(_following is var (anime, number) && ReferenceEquals(anime, _watch.Anime) && number == _watch.CurrentEpisode);
+				// Leading, it's where the room is; otherwise it's to catch up first (see OnState).
+				_caughtUp = _announce;
 				_followEpisodesAfter = Now + FollowEpisodesAfterSeconds;
+				_startedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 			}
 
 			ShowPeople();
@@ -642,14 +897,30 @@ public sealed partial class SyncplayClient : ObservableObject
 			if (_watch.Anime is { ServiceName: { } service } anime)
 			{
 				// Which episode, for the others in Totoro to play it too (the server passes it on as it is; Syncplay's app ignores it).
-				sent["totoro"] = new JsonObject { ["service"] = service, ["id"] = anime.Id, ["episode"] = _watch.CurrentEpisode };
+				sent["totoro"] = new JsonObject { ["service"] = service, ["id"] = anime.Id, ["episode"] = _watch.CurrentEpisode, ["startedAt"] = _startedAt };
 			}
 
 			_ = SendAsync(new JsonObject { ["Set"] = new JsonObject { ["file"] = sent } });
 			_ = SendAsync(new JsonObject { ["Set"] = new JsonObject { ["ready"] = new JsonObject { ["isReady"] = true, ["manuallyInitiated"] = false } } });
 		}
 
-		if (now >= _settleUntil)
+		if (paused || position != _lastPosition || Interlocked.Read(ref _positionTicks) < 0)
+		{
+			_advancedAt = now;
+		}
+
+		// Loading (a stream or torrent catching up): said as paused, so the room waits for it rather than the server
+		// taking everyone back to it again and again (it keeps the room with whoever's furthest behind).
+		var stalled = now >= _settleUntil && !_offRoom && _caughtUp && IsStalled(paused, now - _advancedAt, position, _watch.PlaybackDuration);
+		var stallChanged = stalled != _stalled;
+		_stalled = stalled;
+		if (stallChanged && stalled)
+		{
+			Say("Loading: the room waits for you");
+			_ = TellAsync(Loading);
+		}
+
+		if (now >= _settleUntil && !_offRoom && _caughtUp)
 		{
 			var seeked = IsSeek(_lastPosition, _lastPaused, TimeSpan.FromSeconds(now - _lastAt), position);
 			if (_announce)
@@ -657,7 +928,7 @@ public sealed partial class SyncplayClient : ObservableObject
 				_announce = false;
 				_ = SendStateAsync(null, change: true, doSeek: true);
 			}
-			else if (seeked || paused != _lastPaused)
+			else if (seeked || paused != _lastPaused || stallChanged)
 			{
 				_ = SendStateAsync(null, change: true, doSeek: seeked);
 			}
@@ -666,18 +937,23 @@ public sealed partial class SyncplayClient : ObservableObject
 		(_lastPosition, _lastPaused, _lastAt) = (position, paused, now);
 	}
 
-	private bool OthersOnFile => _file is not null && _people.ContainsValue(_file);
+	// By the title, or (titles differ with the database and its title language) by the episode, where the database is the same.
+	private bool OthersOnFile => _file is not null && (_people.ContainsValue(_file) || _watch.Anime is { } anime && _episodes.Values.Any(x =>
+		(string?)x.Episode["service"] == anime.ServiceName && (long?)x.Episode["id"] == anime.Id && (int?)x.Episode["episode"] == _watch.CurrentEpisode));
 
 	private void OnPosition(object? sender, TimeSpan position) => Interlocked.Exchange(ref _positionTicks, position.Ticks);
 
 	private Task SendStateAsync(double? latency, bool change, bool doSeek = false)
 	{
 		var state = new JsonObject();
+		// Out of step (another episode than the room's), it says the room's state back, as with nothing playing.
+		var current = _offRoom ? null : _player;
 		// Not while the player's still getting where it's going: the server takes any pause or play that isn't the room's as
 		// the user's, so a player still opening (or not yet paused as asked) would set the room going.
-		if ((_clientIgnoring == 0 || _serverIgnoring != 0) && _player is { } player && (change || Now >= _settleUntil))
+		// Nor before it's caught up with the room: where it opened isn't where the room is.
+		if ((_clientIgnoring == 0 || _serverIgnoring != 0) && current is { } player && (change || Now >= _settleUntil && _caughtUp))
 		{
-			var play = new JsonObject { ["position"] = Position.TotalSeconds, ["paused"] = player.IsPaused };
+			var play = new JsonObject { ["position"] = Position.TotalSeconds, ["paused"] = player.IsPaused || _stalled };
 			if (doSeek)
 			{
 				play["doSeek"] = true;
@@ -685,11 +961,13 @@ public sealed partial class SyncplayClient : ObservableObject
 
 			state["playstate"] = play;
 		}
-		else if (_player is null && _roomState is var (position, paused, at) && _clientIgnoring == 0)
+		else if (current is null && _roomState is var (position, paused, at) && _clientIgnoring == 0)
 		{
 			// Nothing playing here: the room as it is, so this doesn't hold it back where playback stopped (the server keeps
 			// the room with whoever's furthest behind, by where each last said they were).
-			state["playstate"] = new JsonObject { ["position"] = paused ? position : position + (Now - at), ["paused"] = paused };
+			// Playing, with the time the room's state took to get here (as when following it, see OnState): without it, what's
+			// said back falls behind a little each second, and as the furthest behind it takes the others back every minute or so.
+			state["playstate"] = new JsonObject { ["position"] = paused ? position : position + (Now - at) + _rtt / 2, ["paused"] = paused };
 		}
 
 		var ping = new JsonObject { ["clientLatencyCalculation"] = Now, ["clientRtt"] = _rtt };
@@ -726,17 +1004,15 @@ public sealed partial class SyncplayClient : ObservableObject
 
 	private async Task SendAsync(JsonObject message)
 	{
-		if (_tcp is not { Connected: true } tcp)
+		if (_stream is not { } stream)
 		{
 			return;
 		}
 
-		// Syncplay's server reads lines ending in CRLF.
-		var bytes = Encoding.UTF8.GetBytes(message.ToJsonString() + "\r\n");
 		await _writeLock.WaitAsync();
 		try
 		{
-			await tcp.GetStream().WriteAsync(bytes);
+			await WriteLineAsync(stream, message);
 		}
 		catch (Exception ex) when (ex is IOException or ObjectDisposedException or InvalidOperationException)
 		{
@@ -750,27 +1026,56 @@ public sealed partial class SyncplayClient : ObservableObject
 
 	private void ShowPeople()
 	{
-		Status = _people.Count == 0 ? $"In {_room} as {_name}, waiting for the others" : $"Watching with {string.Join(", ", _people.Keys)} in {_room}";
+		Status = (_people.Count == 0 ? $"In {_room} as {_name}, waiting for the others" : $"Watching with {string.Join(", ", _people.Keys)} in {_room}") +
+				 (IsEncrypted ? "" : " (not encrypted: this server can't)");
 		// And in the built-in player's list of who's in the room.
 		(_player as IInteractiveMediaPlayer)?.SetRoomPeople([new RoomPerson(_name, true, _file ?? ""), .. _people.Select(x => new RoomPerson(x.Key, false, x.Value))]);
 	}
 
-	/// <summary>Says something about someone in the room: as a notice over the video in the built-in player, or as a message.</summary>
+	/// <summary>
+	/// The latest about someone in the room (chat, someone joining) while nothing's playing here, for the main window to
+	/// show: the player would otherwise, and with none it'd be lost. Stays till it's closed or the next comes.
+	/// </summary>
+	[ObservableProperty]
+	public partial string RoomMessage { get; private set; } = "";
+
+	[ObservableProperty]
+	public partial bool IsRoomMessageOpen { get; set; }
+
+	/// <summary>Says something about someone in the room: as a notice over the video in the built-in player, as a message in another, or in the main window.</summary>
 	private void Notice(string person, string text)
 	{
+		Remember($"{person} {text}");
 		if (_player is IInteractiveMediaPlayer interactive)
 		{
 			interactive.ShowRoomNotice(person, text);
 		}
-		else
+		else if (_player is not null)
 		{
 			Say($"{person} {text}");
+		}
+		else
+		{
+			RoomMessage = $"{person} {text}";
+			IsRoomMessageOpen = true;
 		}
 	}
 
 	private void Say(string text) => _ = _player?.ShowMessageAsync(text, s_messageDuration);
 
 	private static string Clock(TimeSpan time) => time.ToString(time.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss");
+
+	// Syncplay's own: slower by this much from this far ahead of the room (seconds), till this close.
+	private const double SlowdownRate = 0.95;
+	private const double SlowdownAfter = 1.5;
+	private const double SlowdownUntil = 0.1;
+
+	// Whether the player's slowed down (see Slowdown).
+	private bool _slowed;
+
+	/// <summary>The speed to play at, <paramref name="ahead"/> seconds ahead of the room (null to keep it).</summary>
+	internal static double? Slowdown(double ahead, bool slowed) =>
+		!slowed && ahead > SlowdownAfter ? SlowdownRate : slowed && ahead < SlowdownUntil ? 1 : null;
 
 	/// <summary>What to do to the player to be where the room is: pause or resume it (null to leave it), and where to seek (null to stay).</summary>
 	internal static (bool? Pause, TimeSpan? SeekTo) Follow(TimeSpan local, bool localPaused, TimeSpan room, bool roomPaused, bool doSeek)

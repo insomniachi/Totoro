@@ -51,6 +51,9 @@ public interface IInteractiveMediaPlayer : IMediaPlayer
 
 	/// <summary>Shows a notice about someone in the room over the video for a few seconds, e.g. that they joined.</summary>
 	void ShowRoomNotice(string person, string text);
+
+	/// <summary>Raised when the user says something to the room (from the list of who's in it), with what they said.</summary>
+	event EventHandler<string>? RoomChatSent;
 }
 
 /// <summary>Someone in a watch-together room.</summary>
