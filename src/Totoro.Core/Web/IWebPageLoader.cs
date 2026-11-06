@@ -15,6 +15,17 @@ public interface IWebPageLoader
 	Task<WebPage> LoadAsync(Uri url, Uri? referrer, CancellationToken ct);
 
 	/// <summary>
+	/// Opens <paramref name="url"/> with <paramref name="script"/> run in it before the page's own scripts (in every
+	/// frame), and returns the first string the script sends from the page's top frame with
+	/// <c>window.chrome.webview.postMessage</c>: e.g. what a site's code computes, caught by wrapping the functions it calls.
+	/// Null if nothing is sent within <paramref name="timeout"/> of the page loading.
+	/// </summary>
+	/// <exception cref="WebPageException">The page couldn't be loaded.</exception>
+	/// <exception cref="NotSupportedException">This loader can't run scripts.</exception>
+	Task<string?> RunAsync(Uri url, string script, TimeSpan timeout, CancellationToken ct) =>
+		throw new NotSupportedException("This page loader can't run scripts in pages.");
+
+	/// <summary>
 	/// Whether a load is waiting on the user doing a site's check: time spent then is the user's, so timeouts (e.g. the
 	/// plugin tester's) don't count it.
 	/// </summary>

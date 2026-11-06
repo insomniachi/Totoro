@@ -106,6 +106,59 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 		}
 	}
 
+	public async Task<string?> RunAsync(Uri url, string script, TimeSpan timeout, CancellationToken ct)
+	{
+		await _gate.WaitAsync(ct);
+		try
+		{
+			return await mainThread.InvokeAsync(() => RunOnUiThreadAsync(url, script, timeout, ct));
+		}
+		finally
+		{
+			_gate.Release();
+		}
+	}
+
+	private async Task<string?> RunOnUiThreadAsync(Uri url, string script, TimeSpan timeout, CancellationToken ct)
+	{
+		var browser = await EnsureBrowserAsync();
+		var message = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+		void OnMessage(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
+		{
+			// Only the top frame's messages come here; and only the page's own site's (not one it went on to).
+			if (Uri.TryCreate(args.Source, UriKind.Absolute, out var source) && source.Host == url.Host)
+			{
+				try
+				{
+					message.TrySetResult(args.TryGetWebMessageAsString());
+				}
+				catch (ArgumentException)
+				{
+					// Sent as JSON, not a string: not the script's.
+				}
+			}
+		}
+
+		var scriptId = await browser.AddScriptToExecuteOnDocumentCreatedAsync(script);
+		browser.WebMessageReceived += OnMessage;
+		try
+		{
+			// shortcut: no Cloudflare check handling (as LoadAsync has); add it when a site that needs scripts run has one.
+			await NavigateAsync(browser, url, null, ct);
+			return await message.Task.WaitAsync(timeout, ct);
+		}
+		catch (TimeoutException)
+		{
+			return null;
+		}
+		finally
+		{
+			browser.WebMessageReceived -= OnMessage;
+			browser.RemoveScriptToExecuteOnDocumentCreated(scriptId);
+			browser.Navigate("about:blank");
+		}
+	}
+
 	private async Task<CoreWebView2> EnsureBrowserAsync()
 	{
 		_environment ??= await CoreWebView2Environment.CreateWithOptionsAsync(null, FileHelper.GetPath("WebView2"), new CoreWebView2EnvironmentOptions());
