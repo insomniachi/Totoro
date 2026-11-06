@@ -302,8 +302,11 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 		}
 	}
 
+	/// <summary>Downloads the catalog again (opening the page reuses the one already fetched).</summary>
 	[RelayCommand]
-	public async Task LoadCatalogAsync()
+	public Task RefreshCatalogAsync() => LoadCatalogAsync(refresh: true);
+
+	public async Task LoadCatalogAsync(bool refresh = false)
 	{
 		IsLoadingCatalog = true;
 		StatusMessage = "";
@@ -313,7 +316,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 
 		try
 		{
-			var items = await _pluginManager.GetCatalogAsync();
+			var items = await _pluginManager.GetCatalogAsync(refresh);
 			foreach (var item in items)
 			{
 				var vm = new PluginItemViewModel(item, _pluginManager, _settings.GetValueOrDefault(item.Id));

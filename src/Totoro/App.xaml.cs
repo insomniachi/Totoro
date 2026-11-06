@@ -251,7 +251,7 @@ public partial class App : Application
 		};
 	}
 
-	protected override void OnLaunched(LaunchActivatedEventArgs args)
+	protected override async void OnLaunched(LaunchActivatedEventArgs args)
 	{
 		Locator.SetServiceProvider(_host.Services);
 		_window = new MainWindow()
@@ -272,6 +272,11 @@ public partial class App : Application
 		var downloadsItem = _host.Services.GetServices<NavigationItemViewModel>().First(x => x.ViewModelType == typeof(DownloadsViewModel));
 		downloads.PropertyChanged += (_, _) => downloadsItem.BadgeCount = downloads.ActiveCount;
 		var window = _window;
+		// The Plugins item shows how many plugins have an update that can be installed.
+		var pluginManager = _host.Services.GetRequiredService<IPluginManager>();
+		var pluginsItem = _host.Services.GetServices<NavigationItemViewModel>().First(x => x.ViewModelType == typeof(PluginsViewModel));
+		WeakReferenceMessenger.Default.Register<App, PluginsChangedMessage>(this, (_, _) => window.DispatcherQueue.TryEnqueue(async () =>
+			pluginsItem.BadgeCount = (await pluginManager.GetCatalogAsync()).Count(x => x.HasUpdate && x.IsCompatible)));
 		var preferences = _host.Services.GetRequiredService<IPreferences>();
 		var manager = WinUIEx.WindowManager.Get(window);
 		// The pages reflow down to this, no further.
@@ -401,16 +406,35 @@ public partial class App : Application
 		{
 			Helpers.WindowsStartup.IsEnabled = true;
 		}
-		// Only when Windows starts it: started by the user, it always opens the window.
+		// Only when Windows starts it: started by the user, it always opens the window, after the splash.
 		if (preferences.StartInTray && Helpers.WindowsStartup.Launched)
 		{
 			manager.IsVisibleInTray = true;
+			await RunStartupAsync(_ => { });
 		}
 		else
 		{
+			var splash = new SplashWindow();
+			splash.Activate();
+			await RunStartupAsync(status => splash.Status = status);
+			// Shown before the splash closes, so the app always has a window open.
 			Show();
+			splash.Close();
 		}
 	}
+
+	/// <summary>The work done before the window opens, while the splash shows. Each step reports what it's doing.</summary>
+	private async Task RunStartupAsync(Action<string> status)
+	{
+		// The Plugins page lists the catalog (and its item the updates) as soon as it opens.
+		status("Checking for plugin updates…");		try
+		{
+			// Capped: a slow connection doesn't keep the window from opening (the page fetches it then).
+			await _host.Services.GetRequiredService<IPluginManager>().GetCatalogAsync().WaitAsync(TimeSpan.FromSeconds(10));
+		}
+		catch (TimeoutException)
+		{
+		}	}
 
 	private void AddModules(IServiceCollection services)
 	{

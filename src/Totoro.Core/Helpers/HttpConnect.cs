@@ -45,21 +45,43 @@ public static class HttpConnect
 		return new NetworkStream(await ConnectAsync(addresses, context.DnsEndPoint.Port, ct), ownsSocket: true);
 	}
 
-	// shortcut: IPv4 first rather than Happy Eyeballs (both at once); a network whose IPv4 is broken but IPv6 works
-	// still waits per IPv4 address. Upgrade if that shows up.
+	/// <summary>How long an address gets before the next one is tried, rather than the OS's ~21 s.</summary>
+	private static readonly TimeSpan s_perAddressTimeout = TimeSpan.FromSeconds(3);
+
+	// shortcut: IPv4 first, one address at a time, rather than Happy Eyeballs (both at once); a dead address costs up to
+	// 3 s before the next. Upgrade if that shows up.
 	public static async Task<Socket> ConnectAsync(IEnumerable<IPAddress> addresses, int port, CancellationToken ct)
 	{
-		// Dual mode where the OS has IPv6, so one socket can try both families.
-		var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
-		try
+		IPAddress[] ordered = [.. addresses.OrderBy(x => x.AddressFamily != AddressFamily.InterNetwork)];
+		Exception? last = null;
+		for (var i = 0; i < ordered.Length; i++)
 		{
-			await socket.ConnectAsync([.. addresses.OrderBy(x => x.AddressFamily != AddressFamily.InterNetwork)], port, ct);
-			return socket;
+			// Dual mode where the OS has IPv6, so the socket takes either family. A new one each try: a cancelled connect leaves it unusable.
+			var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+			using var attempt = CancellationTokenSource.CreateLinkedTokenSource(ct);
+			// The last address gets as long as it needs: a slow network may only have that one that works.
+			if (i < ordered.Length - 1)
+			{
+				attempt.CancelAfter(s_perAddressTimeout);
+			}
+
+			try
+			{
+				await socket.ConnectAsync(ordered[i], port, attempt.Token);
+				return socket;
+			}
+			catch (Exception ex) when (ex is SocketException || (ex is OperationCanceledException && !ct.IsCancellationRequested))
+			{
+				socket.Dispose();
+				last = ex;
+			}
+			catch
+			{
+				socket.Dispose();
+				throw;
+			}
 		}
-		catch
-		{
-			socket.Dispose();
-			throw;
-		}
+
+		throw last ?? new SocketException((int)SocketError.HostNotFound);
 	}
 }

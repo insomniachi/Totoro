@@ -21,6 +21,10 @@ public sealed class PluginManager : IPluginManager
 
 	private bool _requiresRestart;
 
+	// The remote catalog as last downloaded; fetched once (from startup), until a refresh.
+	private string? _catalogJson;
+	private Task? _catalogFetch;
+
 	// What changed since the app started (taking effect at the next start), by plugin id: installed versions, and uninstalls.
 	private readonly Dictionary<Guid, (string Version, string Directory)> _installedThisSession = [];
 	private readonly HashSet<Guid> _uninstalledThisSession = [];
@@ -28,12 +32,13 @@ public sealed class PluginManager : IPluginManager
 	public PluginManager(
 		IPluginLoader pluginLoader,
 		IPreferences preferences,
-		HttpClient? httpClient = null,
+		IHttpClientFactory? httpClients = null,
 		ILogger<PluginManager>? logger = null)
 	{
 		_pluginLoader = pluginLoader;
 		_preferences = preferences;
-		_httpClient = httpClient ?? new HttpClient();
+		// The factory's client tries IPv4 first (see HttpConnect): a plain one waits ~21 s on a network with broken IPv6.
+		_httpClient = httpClients?.CreateClient() ?? new HttpClient();
 		_logger = logger ?? NullLogger<PluginManager>.Instance;
 	}
 
@@ -48,24 +53,20 @@ public sealed class PluginManager : IPluginManager
 		WeakReferenceMessenger.Default.Send(new PluginsChangedMessage(RequiresRestart: true));
 	}
 
-	public async Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(CancellationToken ct = default)
+	public async Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(bool refresh = false, CancellationToken ct = default)
 	{
-		var catalogUrl = _preferences.ReadKey(CatalogUrlKey, DefaultCatalogUrl);
-		List<PluginCatalogItem> items = [];
+		var catalogUrl = _preferences.ReadKey(CatalogUrlKey, DefaultCatalogUrl) ?? DefaultCatalogUrl;
 
-		try
+		// Callers share one download (e.g. the page opened while the startup one is still going); a failed one is retried.
+		if (refresh || _catalogFetch is null || (_catalogFetch.IsCompleted && _catalogJson is null))
 		{
-			using var response = await _httpClient.GetAsync(catalogUrl, ct);
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync(ct);
-				items = JsonSerializer.Deserialize<List<PluginCatalogItem>>(json) ?? [];
-			}
+			_catalogFetch = FetchCatalogAsync(catalogUrl);
 		}
-		catch (Exception ex)
-		{
-			_logger.LogWarning(ex, "Failed to fetch remote plugin catalog from {Url}", catalogUrl);
-		}
+
+		await _catalogFetch.WaitAsync(ct);
+
+		// Fresh items each call: callers keep and annotate them.
+		List<PluginCatalogItem> items = _catalogJson is null ? [] : JsonSerializer.Deserialize<List<PluginCatalogItem>>(_catalogJson) ?? [];
 
 		// Include any locally loaded/installed plugins (e.g. from adjacent repo or sideload) that aren't in the remote catalog.
 		// Plugins that failed to load all have an empty id, and a plugin can be in both a dev folder and the Plugins folder.
@@ -91,6 +92,25 @@ public sealed class PluginManager : IPluginManager
 		}
 
 		return items;
+	}
+
+	/// <summary>Downloads the remote catalog into <see cref="_catalogJson"/>, keeping the last good one if it fails.</summary>
+	private async Task FetchCatalogAsync(string catalogUrl)
+	{
+		try
+		{
+			using var response = await _httpClient.GetAsync(catalogUrl);
+			if (response.IsSuccessStatusCode)
+			{
+				_catalogJson = await response.Content.ReadAsStringAsync();
+				// Its versions can mean new updates (the Plugins item's badge).
+				WeakReferenceMessenger.Default.Send(new PluginsChangedMessage(_requiresRestart));
+			}
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Failed to fetch remote plugin catalog from {Url}", catalogUrl);
+		}
 	}
 
 	public void Annotate(PluginCatalogItem item)

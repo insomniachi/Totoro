@@ -23,4 +23,20 @@ public class HttpConnectTests
 		Assert.Equal(IPAddress.Loopback, ((IPEndPoint)socket.RemoteEndPoint!).Address.MapToIPv4());
 		Assert.True(watch.Elapsed < TimeSpan.FromSeconds(5), $"Took {watch.Elapsed}");
 	}
+
+	[Fact]
+	public async Task ConnectAsync_MovesPastAnIPv4AddressThatDoesntAnswer()
+	{
+		using var listener = new TcpListener(IPAddress.Loopback, 0);
+		listener.Start();
+		var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+		// 192.0.2.0/24 is for documentation (TEST-NET-1): nothing answers, so on its own it waits out the OS's ~21 s.
+		IPAddress[] addresses = [IPAddress.Parse("192.0.2.1"), IPAddress.Loopback];
+
+		var watch = Stopwatch.StartNew();
+		using var socket = await HttpConnect.ConnectAsync(addresses, port, CancellationToken.None);
+
+		Assert.Equal(IPAddress.Loopback, ((IPEndPoint)socket.RemoteEndPoint!).Address.MapToIPv4());
+		Assert.True(watch.Elapsed < TimeSpan.FromSeconds(6), $"Took {watch.Elapsed}");
+	}
 }

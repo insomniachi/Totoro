@@ -13,7 +13,8 @@ public interface IPluginManager
 	bool RequiresRestart { get; }
 
 	/// <summary>The catalog's plugins and the ones installed otherwise (e.g. dev plugins), each with its state (see <see cref="Annotate"/>).</summary>
-	Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(CancellationToken ct = default);
+	/// <param name="refresh">Download the catalog again instead of using the one fetched earlier this session.</param>
+	Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(bool refresh = false, CancellationToken ct = default);
 
 	/// <summary>Sets the item's state (installed, which version, an update...), counting what was changed since the app started.</summary>
 	void Annotate(PluginCatalogItem item);
@@ -30,5 +31,5 @@ public interface IPluginManager
 	Task UninstallAsync(Guid pluginId, CancellationToken ct = default);
 }
 
-/// <summary>A plugin was installed, updated or uninstalled: it takes effect when the app restarts.</summary>
+/// <summary>A plugin was installed, updated or uninstalled (taking effect when the app restarts), or the catalog was fetched.</summary>
 public sealed record PluginsChangedMessage(bool RequiresRestart);

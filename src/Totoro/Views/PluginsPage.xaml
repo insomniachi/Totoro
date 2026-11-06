@@ -66,7 +66,7 @@
                         Text="{x:Bind ViewModel.SearchFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <Button
                         AutomationProperties.Name="Refresh"
-                        Command="{x:Bind ViewModel.LoadCatalogCommand}"
+                        Command="{x:Bind ViewModel.RefreshCatalogCommand}"
                         ToolTipService.ToolTip="Refresh">
                         <FontIcon FontSize="16" Glyph="&#xE72C;" />
                     </Button>
