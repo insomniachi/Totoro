@@ -43,4 +43,9 @@ public partial class NavigationItemViewModel : ObservableObject
 	[ObservableProperty]
 	public partial int BadgeCount { get; set; }
 
+	/// <summary>Shown only while its page is (e.g. the reader, which needs a chapter to open): the navigator shows and hides it.</summary>
+	public bool IsTransient { get; init; }
+
+	[ObservableProperty]
+	public partial bool IsVisible { get; set; } = true;
 }

@@ -69,9 +69,10 @@ public sealed partial class MainWindow : Window
 
 	private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
 	{
-		if (ViewModel is not null && args.SelectedItem is Core.Navigation.NavigationItemViewModel item)
+		// Null too (e.g. after leaving the reader for a page with no item), so a mode switch doesn't reopen the reader's item.
+		if (ViewModel is not null)
 		{
-			ViewModel.CurrentItem = item;
+			ViewModel.CurrentItem = args.SelectedItem as Core.Navigation.NavigationItemViewModel;
 		}
 	}
 

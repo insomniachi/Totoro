@@ -90,7 +90,7 @@ public sealed partial class ReaderPage : Page
 
 	/// <summary>
 	/// Shows the bar until it's been left alone a while. Reading is the pages alone: the bar shows on opening, on a click
-	/// or tap on the pages, with the mouse at the top, and on tabbing into it; it goes on turning a page with the keys.
+	/// or tap on the pages, as the mouse moves, and on tabbing into it; it goes on turning a page with the keys.
 	/// </summary>
 	private void ShowBar()
 	{
@@ -119,7 +119,7 @@ public sealed partial class ReaderPage : Page
 
 	private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
 	{
-		if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse && e.GetCurrentPoint(Root).Position.Y < Bar.ActualHeight)
+		if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
 		{
 			ShowBar();
 		}

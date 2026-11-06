@@ -40,7 +40,17 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 			}
 		};
 		_ = Updates.CheckOnStartupAsync();
-		_allItems = [.. navigationItems];
+		// The reader's item, in both modes, after the modes' own pages; not registered, so it isn't a startup or agent page.
+		var reading = new NavigationItemViewModel
+		{
+			Label = "Reading",
+			Key = "Reading",
+			ViewModelType = typeof(Manga.ReaderViewModel),
+			AnimatedIcon = () => UI.Icons.ReadAnimated,
+			IsTransient = true,
+			IsVisible = false,
+		};
+		_allItems = [.. navigationItems.Where(x => x.Mode is not null), reading, .. navigationItems.Where(x => x.Mode is null)];
 		// The app opens in the startup mode, on that mode's page named as the startup page (Library for Library); a
 		// startup page only one mode has (e.g. Schedule) opens in its mode.
 		Mode = preferences.StartupMode;

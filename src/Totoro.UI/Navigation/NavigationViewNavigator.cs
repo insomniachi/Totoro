@@ -47,11 +47,18 @@ internal class NavigationViewNavigator : FrameBasedNavigator
 			return;
 		}
 
-		var item = EnumerateItems(_navigationView.MenuItemsSource)
+		var items = EnumerateItems(_navigationView.MenuItemsSource)
 			.Concat(EnumerateItems(_navigationView.FooterMenuItemsSource))
-			.FirstOrDefault(x => x.ViewModelType == vmType);
+			.ToList();
+		foreach (var transient in items.Where(x => x.IsTransient))
+		{
+			transient.IsVisible = transient.ViewModelType == vmType;
+		}
 
-		if (item is null || ReferenceEquals(_navigationView.SelectedItem, item))
+		var item = items.FirstOrDefault(x => x.ViewModelType == vmType);
+
+		// No item for this page: keep the highlight, unless it's on an item just hidden.
+		if (item is null && _navigationView.SelectedItem is not NavigationItemViewModel { IsVisible: false } || ReferenceEquals(_navigationView.SelectedItem, item))
 		{
 			return;
 		}
