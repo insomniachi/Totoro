@@ -74,8 +74,22 @@ public partial class App : Application
 		Microsoft.Windows.AppLifecycle.AppInstance.Restart(string.Join(' ', args));
 	}
 
+	// Notifications pop up only for an app ID a Start menu shortcut carries (the installer gives Totoro's this one); the
+	// Windows App SDK's own, made up for unpackaged apps, only reach the notification centre on newer Windows.
+	private const string AppUserModelId = "Totoro";
+
+	// The ID Windows starts Totoro by for a click on a notification, fixed so the installer's shortcut can carry it too:
+	// Windows sends the click to the one on the shortcut. The Windows App SDK keeps one already registered, else makes one up.
+	private const string ToastActivator = "{DB818E89-7953-4806-AA3D-DD0DE0629516}";
+
+	[System.Runtime.InteropServices.LibraryImport("shell32.dll", StringMarshalling = System.Runtime.InteropServices.StringMarshalling.Utf16)]
+	private static partial int SetCurrentProcessExplicitAppUserModelID(string id);
+
 	public App()
 	{
+		// Before any window, and before registering for notifications, which use it.
+		SetCurrentProcessExplicitAppUserModelID(AppUserModelId);
+
 		// One Totoro at a time: launched again, it shows the running one and exits, before loading plugins (which moves
 		// their folders about, under the running one).
 		var instance = Microsoft.Windows.AppLifecycle.AppInstance.FindOrRegisterForKey("Totoro");
@@ -399,7 +413,27 @@ public partial class App : Application
 				Show();
 			}
 		});
-		notifications.Register();
+		var notificationsRegistered = false;
+		try
+		{
+			using (var server = Microsoft.Win32.Registry.CurrentUser.CreateSubKey($@"Software\Classes\CLSID\{ToastActivator}\LocalServer32"))
+			{
+				server.SetValue(null, $"\"{Environment.ProcessPath}\" ----AppNotificationActivated:");
+			}
+
+			using (var app = Microsoft.Win32.Registry.CurrentUser.CreateSubKey($@"Software\Classes\AppUserModelId\{AppUserModelId}"))
+			{
+				app.SetValue("CustomActivator", ToastActivator);
+			}
+
+			notifications.Register();
+			notificationsRegistered = true;
+		}
+		catch (Exception ex)
+		{
+			// E.g. the self-contained runtime missing Microsoft.WindowsAppRuntime.Insights.Resource.dll; the app still runs, without notifications.
+			_host.Services.GetRequiredService<ILogger<App>>().LogWarning(ex, "Couldn't register for notifications");
+		}
 		// Another launch of Totoro, redirected here (see the constructor).
 		Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().Activated += (_, _) => window.DispatcherQueue.TryEnqueue(() => Show());
 		// Clicking the icon opens the window, so the menu only quits.
@@ -413,7 +447,10 @@ public partial class App : Application
 		window.Closed += (_, _) =>
 		{
 			manager.IsVisibleInTray = false;
-			notifications.Unregister();
+			if (notificationsRegistered)
+			{
+				notifications.Unregister();
+			}
 			FileLogs.Dispose();
 			Exit();
 		};

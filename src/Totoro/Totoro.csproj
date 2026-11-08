@@ -80,6 +80,13 @@
     <PackageReference Include="VideoLAN.LibVLC.Windows" />
     <PackageReference Include="WinUIEx" />
   </ItemGroup>
+  <!-- The self-contained runtime leaves out this DLL, without which registering for notifications fails; it's in the runtime's MSIX -->
+  <Target Name="AddWindowsAppRuntimeInsightsResource" BeforeTargets="AssignTargetPaths" Condition="'$(WindowsAppSDKSelfContained)' == 'true'">
+    <Unzip SourceFiles="$(MicrosoftWindowsAppSDKPackageDir)tools\MSIX\win10-$(Platform)\Microsoft.WindowsAppRuntime.2.msix" DestinationFolder="$(IntermediateOutputPath)WindowsAppRuntime" Include="Microsoft.WindowsAppRuntime.Insights.Resource.dll" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <Content Include="$(IntermediateOutputPath)WindowsAppRuntime\Microsoft.WindowsAppRuntime.Insights.Resource.dll" Link="Microsoft.WindowsAppRuntime.Insights.Resource.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Core\Totoro.Core.csproj" />
     <ProjectReference Include="..\Totoro.UI\Totoro.UI.csproj" />

@@ -75,8 +75,8 @@ Type: dirifempty; Name: "{app}\Tools"
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; AppUserModelID: "Totoro"; AppUserModelToastActivatorCLSID: "DB818E89-7953-4806-AA3D-DD0DE0629516"
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; AppUserModelID: "Totoro"; AppUserModelToastActivatorCLSID: "DB818E89-7953-4806-AA3D-DD0DE0629516"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
