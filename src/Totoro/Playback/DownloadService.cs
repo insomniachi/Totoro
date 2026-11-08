@@ -164,6 +164,7 @@ public sealed class DownloadService(
 	IAnimeRelations relations,
 	IPreferences preferences,
 	AnimeSongService songs,
+	IEnumerable<IMediaSegmentsProvider> segmentProviders,
 	ILogger<DownloadService> logger) : ObservableObject, IDisposable
 {
 	// What players send, and a stream's own headers replace: Cloudflare turns requests without an Accept away at its edge
@@ -664,7 +665,8 @@ public sealed class DownloadService(
 				return false;
 			}
 
-			var episode = await Task.Run(async () => AudioFingerprint.Compute(await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None)));
+			var samples = await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None);
+			var (episode, duration) = await Task.Run(() => (AudioFingerprint.Compute(samples), AudioFingerprint.Duration(samples)));
 			List<MediaSegment> segments = [];
 			foreach (var kind in candidates.GroupBy(x => x.Kind))
 			{
@@ -698,6 +700,11 @@ public sealed class DownloadService(
 				[number] = [.. segments.OrderBy(x => x.Start)],
 			};
 			DownloadNames.WriteInfo(folder, info with { Segments = all });
+			foreach (var provider in segmentProviders)
+			{
+				_ = provider.SubmitSegmentsAsync(malId, number, duration, all[number]);
+			}
+
 			return true;
 		}
 		catch (Exception ex)

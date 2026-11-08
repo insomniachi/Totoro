@@ -19,4 +19,7 @@ public interface IMediaSegmentsProvider
 	/// <param name="duration">The episode's length; segments for other cuts of the episode (with a different length) are left out.</param>
 	/// <returns>The segments, in order; none if they aren't known.</returns>
 	Task<List<MediaSegment>> GetSegmentsAsync(long myAnimeListId, int episode, TimeSpan duration, CancellationToken ct);
+
+	/// <summary>Shares segments the app found itself (e.g. in a downloaded episode) with the database; never throws.</summary>
+	Task SubmitSegmentsAsync(long myAnimeListId, int episode, TimeSpan duration, IReadOnlyList<MediaSegment> segments) => Task.CompletedTask;
 }

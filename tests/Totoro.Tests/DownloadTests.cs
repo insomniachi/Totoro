@@ -97,7 +97,7 @@ public class DownloadTests
 			File.WriteAllText(Path.Combine(folder, DownloadNames.Episode("Kusuriya no Hitorigoto", 5) + ".mkv"), "");
 			var preferences = new PluginLoaderTests.FakePreferences();
 			preferences.DownloadFolder = root;
-			using var downloads = new DownloadService(null!, null!, null!, null!, preferences, null!, NullLogger<DownloadService>.Instance);
+			using var downloads = new DownloadService(null!, null!, null!, null!, preferences, null!, [], NullLogger<DownloadService>.Instance);
 			// Shown in English now; downloaded while it was shown in romaji.
 			var anime = new AnimeModel { Title = "The Apothecary Diaries", EngTitle = "The Apothecary Diaries", RomajiTitle = "Kusuriya no Hitorigoto" };
 
@@ -147,7 +147,7 @@ public class DownloadTests
 		{
 			var preferences = new PluginLoaderTests.FakePreferences();
 			preferences.DownloadFolder = folder;
-			using var downloads = new DownloadService(null!, null!, null!, null!, preferences, null!, NullLogger<DownloadService>.Instance);
+			using var downloads = new DownloadService(null!, null!, null!, null!, preferences, null!, [], NullLogger<DownloadService>.Instance);
 			var item = downloads.Download(null, "Frieren", 5, new VideoServer("x", new Uri($"http://localhost:{port}/e.mp4")), "Test");
 			var queued = downloads.Download(null, "Frieren", 6, new VideoServer("x", new Uri($"http://localhost:{port}/e.mp4")), "Test");
 			var part = Path.Combine(item.Folder, DownloadNames.Episode("Frieren", 5) + ".part");

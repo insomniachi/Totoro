@@ -1,15 +1,20 @@
+using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using Flurl;
 using Flurl.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Settings;
 
 namespace Totoro.Modules.MediaSegments.Aniskip;
 
-internal class AniskipModule : IModule
+internal class AniskipModule : IModule<Settings>
 {
 	public static Guid Id { get; } = new("5ccd59c9-7fd1-485e-b542-e4b8cfaf5655");
 
@@ -25,14 +30,17 @@ internal class AniskipModule : IModule
 	public void ConfigureServices(IServiceCollection services)
 	{
 		services.AddTransient(_ => Descriptor);
+		services.AddModuleSettings(this);
 		// Not keyed: playback takes whichever is registered (there's no setting to pick one).
 		services.AddTransient<IMediaSegmentsProvider, AniskipSegmentsProvider>();
 	}
 }
 
 /// <summary>Segments from Aniskip (api.aniskip.com), by MyAnimeList id.</summary>
-internal sealed class AniskipSegmentsProvider(ILogger<AniskipSegmentsProvider> logger) : IMediaSegmentsProvider
+internal sealed class AniskipSegmentsProvider(IModuleSettings<Settings> settings, ILogger<AniskipSegmentsProvider> logger) : IMediaSegmentsProvider
 {
+	private static readonly Lock s_counting = new();
+
 	public async Task<List<MediaSegment>> GetSegmentsAsync(long myAnimeListId, int episode, TimeSpan duration, CancellationToken ct)
 	{
 		try
@@ -67,6 +75,42 @@ internal sealed class AniskipSegmentsProvider(ILogger<AniskipSegmentsProvider> l
 		}
 	}
 
+	public async Task SubmitSegmentsAsync(long myAnimeListId, int episode, TimeSpan duration, IReadOnlyList<MediaSegment> segments)
+	{
+		var options = settings.Value;
+		if (!options.Submit)
+		{
+			return;
+		}
+
+		foreach (var segment in segments.Where(x => x.Type is MediaSegmentType.Opening or MediaSegmentType.Ending))
+		{
+			try
+			{
+				// A song's full length can run past the episode's end (an ending cut short).
+				await $"https://api.aniskip.com/v2/skip-times/{myAnimeListId}/{episode}".PostJsonAsync(new
+				{
+					skipType = segment.Type == MediaSegmentType.Opening ? "op" : "ed",
+					providerName = "Totoro",
+					startTime = segment.Start.TotalSeconds,
+					endTime = Math.Min(segment.End.TotalSeconds, duration.TotalSeconds),
+					episodeLength = duration.TotalSeconds,
+					submitterId = options.SubmitterId,
+				});
+
+				lock (s_counting)
+				{
+					options.Submitted++;
+					settings.Save();
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.LogWarning(ex, "Couldn't submit MAL {Id} episode {Episode}'s {Type} to Aniskip", myAnimeListId, episode, segment.Type);
+			}
+		}
+	}
+
 	private static MediaSegmentType? ToType(string type) => type switch
 	{
 		"op" => MediaSegmentType.Opening,
@@ -90,5 +134,27 @@ internal sealed class AniskipSegmentsProvider(ILogger<AniskipSegmentsProvider> l
 	{
 		[JsonPropertyName("startTime")] public double StartTime { get; set; }
 		[JsonPropertyName("endTime")] public double EndTime { get; set; }
+	}
+}
+
+public sealed class Settings : DataContainerConfig
+{
+	[DisplayName("Submit openings and endings")]
+	public bool Submit { get; set; } = true;
+
+	/// <summary>How many openings and endings were submitted; shown in <see cref="Submit"/>'s description.</summary>
+	[IgnoreDataMember]
+	public int Submitted { get; set; }
+
+	/// <summary>Who submits, to Aniskip: one random id per install.</summary>
+	[IgnoreDataMember]
+	public Guid SubmitterId { get; set; } = Guid.NewGuid();
+
+	protected override void ConfigureProperty(DataContainerPropertyBuilder propertyBuilder, PropertyInfo info)
+	{
+		if (info.Name == nameof(Submit))
+		{
+			propertyBuilder.WithDescription($"Shares the openings and endings found in downloaded episodes with Aniskip. Submitted so far: {Submitted}.");
+		}
 	}
 }
