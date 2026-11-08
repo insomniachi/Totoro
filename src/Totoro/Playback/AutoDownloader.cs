@@ -27,18 +27,21 @@ public sealed class AutoDownloader : IDisposable
 	private readonly IAnimeSettingsStore _animeSettings;
 	private readonly IAnimeRelations _relations;
 	private readonly IPreferences _preferences;
+	private readonly DownloadNotifier _notifier;
 	private readonly ILogger<AutoDownloader> _logger;
 	private readonly DispatcherQueueTimer _check;
 
 	// This session's: episodes downloaded or queued, and how often the provider didn't have one yet.
 	private readonly HashSet<(long Id, int Number)> _queued = [];
 	private readonly Dictionary<(long Id, int Number), (int Misses, DateTime NextCheck)> _retries = [];
+	// When each anime's watched count was last seen to change: at first, its list entry's last update (if the tracker says).
+	private readonly Dictionary<long, (int Watched, DateTime? At)> _watchedAt = [];
 	private List<AnimeModel>? _watching;
 	private DateTime _listAt;
 	private bool _checking;
 
 	public AutoDownloader(WatchService watch, DownloadService downloads, ReleaseScheduleService schedule, IAnimeSettingsStore animeSettings,
-						  IAnimeRelations relations, IPreferences preferences, ILogger<AutoDownloader> logger)
+						  IAnimeRelations relations, IPreferences preferences, DownloadNotifier notifier, ILogger<AutoDownloader> logger)
 	{
 		_watch = watch;
 		_downloads = downloads;
@@ -46,6 +49,7 @@ public sealed class AutoDownloader : IDisposable
 		_animeSettings = animeSettings;
 		_relations = relations;
 		_preferences = preferences;
+		_notifier = notifier;
 		_logger = logger;
 		// Made on the UI thread (at startup), where downloads are queued and WatchService changes.
 		var queue = DispatcherQueue.GetForCurrentThread();
@@ -60,7 +64,8 @@ public sealed class AutoDownloader : IDisposable
 		{
 			if (_preferences.AutoDownloadNext)
 			{
-				await CheckAsync(e.Anime, e.Number + 1, DateTime.Now);
+				// Not notified: the user's watching, and will get to it.
+				await CheckAsync(e.Anime, e.Number + 1, DateTime.Now, notify: false);
 			}
 		};
 	}
@@ -68,6 +73,15 @@ public sealed class AutoDownloader : IDisposable
 	/// <summary>Whether episode <paramref name="number"/> has aired by <paramref name="now"/>, by the anime's schedule.</summary>
 	internal static bool IsDue(AnimeModel anime, int number, DateTime now) =>
 		anime.AiringSchedule.TryGetValue(number, out var airs) ? airs <= now : EpisodeAvailability.AiredEpisodes(anime, now) >= number;
+
+	/// <summary>
+	/// Whether episode <paramref name="number"/> is a new one the user was waiting for: it aired after they watched the one
+	/// before it (at <paramref name="watchedAt"/>), or, not knowing when that was, it's the latest to have aired.
+	/// </summary>
+	internal static bool IsNew(AnimeModel anime, int number, DateTime? watchedAt, DateTime now) =>
+		anime.AiringSchedule.TryGetValue(number, out var airs) && watchedAt is { } at
+			? airs > at
+			: EpisodeAvailability.AiredEpisodes(anime, now) == number;
 
 	/// <summary>How long to wait before asking the provider again, after it didn't have the episode <paramref name="misses"/> times.</summary>
 	internal static TimeSpan RetryDelay(int misses) => TimeSpan.FromMinutes(15 * Math.Pow(2, Math.Clamp(misses, 1, 5) - 1));
@@ -90,7 +104,16 @@ public sealed class AutoDownloader : IDisposable
 
 			foreach (var anime in _watching)
 			{
-				await CheckAsync(anime, WatchService.NextEpisode(anime), DateTime.Now);
+				var watched = anime.Tracking?.WatchedEpisodes ?? 0;
+				var found = _watchedAt.TryGetValue(anime.Id, out var seen);
+				if (!found || seen.Watched != watched)
+				{
+					// Seen within a tick of it changing: near enough to tell an episode that aired since.
+					seen = _watchedAt[anime.Id] = (watched, found ? DateTime.Now : anime.Tracking?.UpdatedAt);
+				}
+
+				var number = watched + 1;
+				await CheckAsync(anime, number, DateTime.Now, IsNew(anime, number, seen.At, DateTime.Now));
 			}
 		}
 		catch (Exception ex)
@@ -104,7 +127,7 @@ public sealed class AutoDownloader : IDisposable
 		}
 	}
 
-	private async Task CheckAsync(AnimeModel anime, int number, DateTime now)
+	private async Task CheckAsync(AnimeModel anime, int number, DateTime now, bool notify)
 	{
 		var key = (anime.Id, number);
 		if (_queued.Contains(key) || anime.TotalEpisodes is > 0 and var total && number > total || !IsDue(anime, number, now) ||
@@ -130,7 +153,12 @@ public sealed class AutoDownloader : IDisposable
 		{
 			if (await HasEpisodeAsync(provider, anime, number))
 			{
-				await _downloads.DownloadEpisodesAsync(anime, number, number, provider);
+				var items = await _downloads.DownloadEpisodesAsync(anime, number, number, provider);
+				if (notify)
+				{
+					_ = _notifier.NotifyWhenDoneAsync(anime, number, items);
+				}
+
 				_retries.Remove(key);
 				return;
 			}

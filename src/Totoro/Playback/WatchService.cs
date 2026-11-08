@@ -88,6 +88,10 @@ public sealed partial class WatchService(
 	// the setting, and so on until the countdown's cancelled or another episode is started.
 	private bool _binge;
 
+	// Whether the episode playing was started to play the downloads (from a download notification): then they're played
+	// first whatever the setting, the next ones too.
+	private bool _fromDownloads;
+
 	// Marking the episode playing watched (see MarkWatchedWhilePlayingAsync), once it's started: whether it was, and the message.
 	private Task<(bool Marked, string Message)>? _marked;
 	private Action? _action;
@@ -336,9 +340,10 @@ public sealed partial class WatchService(
 
 	/// <summary>
 	/// Plays episode <paramref name="number"/>, from where it was left off if it wasn't finished. With
-	/// <paramref name="binge"/>, the episodes after it play on their own (see <see cref="_binge"/>).
+	/// <paramref name="binge"/>, the episodes after it play on their own (see <see cref="_binge"/>). With
+	/// <paramref name="fromDownloads"/>, from the download folder if it's there, whatever the setting.
 	/// </summary>
-	public Task WatchAsync(AnimeModel anime, int number, bool binge = false) => RunAsync(anime, number, binge, async ct =>
+	public Task WatchAsync(AnimeModel anime, int number, bool binge = false, bool fromDownloads = false) => RunAsync(anime, number, binge, fromDownloads, async ct =>
 	{
 		if (anime.TotalEpisodes is > 0 and var total && number > total)
 		{
@@ -404,12 +409,12 @@ public sealed partial class WatchService(
 	});
 
 	/// <summary>
-	/// Plays episode <paramref name="number"/> from the download folder if it's there (and the user plays downloads first),
+	/// Plays episode <paramref name="number"/> from the download folder if it's there (and the user plays downloads first, or asked for them),
 	/// whatever the anime's provider; returns whether it did.
 	/// </summary>
 	private async Task<bool> TryPlayDownloadedAsync(IMediaPlayer player, AnimeModel anime, int number, AnimeSettings settings, CancellationToken ct)
 	{
-		if (!preferences.PlayDownloadsFirst || providers.Create(DownloadsModule.Id) is not { } downloads)
+		if (!(_fromDownloads || preferences.PlayDownloadsFirst) || providers.Create(DownloadsModule.Id) is not { } downloads)
 		{
 			return false;
 		}
@@ -491,13 +496,16 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>Shows the anime and episode in the status bar, and runs <paramref name="play"/>, saying there how it goes.</summary>
-	private async Task RunAsync(AnimeModel anime, int number, bool binge, Func<CancellationToken, Task> play)
+	private Task RunAsync(AnimeModel anime, int number, bool binge, Func<CancellationToken, Task> play) => RunAsync(anime, number, binge, false, play);
+
+	private async Task RunAsync(AnimeModel anime, int number, bool binge, bool fromDownloads, Func<CancellationToken, Task> play)
 	{
 		_cancellation?.Cancel();
 		using var cancellation = _cancellation = new CancellationTokenSource();
 		var ct = cancellation.Token;
 
 		_binge = binge;
+		_fromDownloads = fromDownloads;
 		_inBrowser = false;
 		Anime = anime;
 		CurrentEpisode = number;
@@ -837,8 +845,9 @@ public sealed partial class WatchService(
 	/// </summary>
 	private async Task OfferNextAsync(AnimeModel anime, int next)
 	{
+		var fromDownloads = _fromDownloads;
 		void Offer() => Show(PlaybackStatusKind.Success, "", $"Play episode {next}",
-							 () => _ = WatchAsync(anime, next));
+							 () => _ = WatchAsync(anime, next, fromDownloads: fromDownloads));
 
 		var binge = _binge;
 		var automatically = preferences.PlayNextAutomatically || binge;
@@ -849,7 +858,7 @@ public sealed partial class WatchService(
 			var offer = _cancellation = new CancellationTokenSource();
 			if (await interactive.OfferNextAsync($"Episode {next}", automatically ? s_nextEpisodeCountdown : null, offer.Token))
 			{
-				_ = WatchAsync(anime, next, binge);
+				_ = WatchAsync(anime, next, binge, fromDownloads);
 			}
 			else if (!interactive.IsOpen && ReferenceEquals(_cancellation, offer))
 			{
@@ -897,7 +906,7 @@ public sealed partial class WatchService(
 			return;
 		}
 
-		_ = WatchAsync(anime, next, binge);
+		_ = WatchAsync(anime, next, binge, fromDownloads);
 	}
 
 	/// <summary>

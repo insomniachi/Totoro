@@ -30,6 +30,23 @@ public class AutoDownloadTests
 	}
 
 	[Fact]
+	public void IsNew_OnlyWhenItAiredAfterTheLastWasWatched()
+	{
+		var airing = new AnimeModel
+		{
+			AiringStatus = AiringStatus.CurrentlyAiring, AiredEpisodes = 6, NextEpisodeAt = s_now.AddDays(7),
+			AiringSchedule = new Dictionary<int, DateTime> { [5] = s_now.AddDays(-14), [6] = s_now.AddDays(-1) },
+		};
+		// Caught up on 5 before 6 aired: new.
+		Assert.True(AutoDownloader.IsNew(airing, 6, s_now.AddDays(-3), s_now));
+		// Watched 5 after 6 had aired: catching up, not new.
+		Assert.False(AutoDownloader.IsNew(airing, 6, s_now.AddHours(-1), s_now));
+		// Not knowing when: only the latest to have aired.
+		Assert.True(AutoDownloader.IsNew(airing, 6, null, s_now));
+		Assert.False(AutoDownloader.IsNew(airing, 5, null, s_now));
+	}
+
+	[Fact]
 	public void RetryDelay_BacksOffToFourHours()
 	{
 		Assert.Equal([15, 30, 60, 120, 240, 240], Enumerable.Range(1, 6).Select(x => AutoDownloader.RetryDelay(x).TotalMinutes));

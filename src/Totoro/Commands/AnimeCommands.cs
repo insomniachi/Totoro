@@ -18,7 +18,7 @@ namespace Totoro.Commands;
 /// <c>Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"</c>.
 /// </summary>
 public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService tracking, WatchService watch, DownloadService downloads,
-						   ILogger<AnimeCommands> logger)
+						   DownloadNotifier notifier, ILogger<AnimeCommands> logger)
 {
 	/// <summary>The app-wide instance (registered as a singleton), for x:Bind from XAML.</summary>
 	public static AnimeCommands Shared => Locator.GetRequiredService<AnimeCommands>();
@@ -76,7 +76,9 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 	{
 		if (await dialogs.ShowAsync<DownloadEpisodesDialogViewModel, DownloadRequest>(anime) is { Episodes: var range } request)
 		{
-			await downloads.DownloadEpisodesAsync(anime, range.First, range.Last ?? range.First, request.Provider);
+			var items = await downloads.DownloadEpisodesAsync(anime, range.First, range.Last ?? range.First, request.Provider);
+			// One notification once they're all done, not one for each.
+			_ = notifier.NotifyWhenDoneAsync(anime, range.First, items);
 		}
 	}
 

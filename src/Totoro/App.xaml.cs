@@ -115,6 +115,7 @@ public partial class App : Application
 				services.AddSingleton<SyncplayClient>();
 				services.AddSingleton<BrowserWatchTracker>();
 				services.AddSingleton<AutoDownloader>();
+				services.AddSingleton<DownloadNotifier>();
 				// Songs' audio, played in the Music tab.
 				services.AddSingleton<ISongPlayer, SongAudioPlayer>();
 				services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();
@@ -388,6 +389,17 @@ public partial class App : Application
 		};
 		window.Activated += (_, _) => UpdateTray();
 		manager.TrayIconSelected += (_, _) => Show();
+		// Download notifications' clicks, while the app runs (one clicked after it quit just launches it).
+		var notifier = _host.Services.GetRequiredService<DownloadNotifier>();
+		var notifications = Microsoft.Windows.AppNotifications.AppNotificationManager.Default;
+		notifications.NotificationInvoked += (_, e) => window.DispatcherQueue.TryEnqueue(() =>
+		{
+			if (notifier.Handle(e))
+			{
+				Show();
+			}
+		});
+		notifications.Register();
 		// Another launch of Totoro, redirected here (see the constructor).
 		Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().Activated += (_, _) => window.DispatcherQueue.TryEnqueue(() => Show());
 		// Clicking the icon opens the window, so the menu only quits.
@@ -401,6 +413,7 @@ public partial class App : Application
 		window.Closed += (_, _) =>
 		{
 			manager.IsVisibleInTray = false;
+			notifications.Unregister();
 			FileLogs.Dispose();
 			Exit();
 		};
