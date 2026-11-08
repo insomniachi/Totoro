@@ -136,14 +136,17 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISong
 	/// <summary>The songs AnimeThemes has, with their first version's episodes, video and audio.</summary>
 	private static async Task<IReadOnlyList<AnimeSong>> GetAnimeThemesAsync(long malId, CancellationToken ct)
 	{
-		var response = await "https://api.animethemes.moe/anime"
-							 .SetQueryParam("filter[has]", "resources")
-							 .SetQueryParam("filter[site]", "MyAnimeList")
-							 .SetQueryParam("filter[external_id]", malId)
-							 .SetQueryParam("include", "animethemes.song.artists,animethemes.animethemeentries.videos.audio")
+		// The GraphQL API, as the REST one (api.animethemes.moe) is down.
+		var query = $$"""
+			{ findAnimeByExternalSite(site: MAL, id: {{malId}}) { animethemes { type sequence
+			  song { title { romaji } performances { artist { ... on Artist { name { main } } } } }
+			  animethemeentries { episodes videos { nodes { link audio { link } } } } } } }
+			""";
+		var response = await "https://graphql.animethemes.moe/"
 							 .WithHeader("User-Agent", UserAgent)
-							 .GetStringAsync(cancellationToken: ct);
-		if (JsonNode.Parse(response)?["anime"]?[0]?["animethemes"] is not JsonArray themes)
+							 .PostJsonAsync(new { query }, cancellationToken: ct)
+							 .ReceiveString();
+		if (JsonNode.Parse(response)?["data"]?["findAnimeByExternalSite"]?[0]?["animethemes"] is not JsonArray themes)
 		{
 			return [];
 		}
@@ -163,13 +166,13 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISong
 				continue;
 			}
 
-			var artists = song["artists"] is JsonArray list ? string.Join(", ", list.Select(x => x?["name"]?.GetValue<string>()).OfType<string>()) : "";
+			var artists = song["performances"] is JsonArray list ? string.Join(", ", list.Select(x => x?["artist"]?["name"]?["main"]?.GetValue<string>()).OfType<string>()) : "";
 			var entry = theme["animethemeentries"]?[0];
-			var video = entry?["videos"]?[0];
+			var video = entry?["videos"]?["nodes"]?[0];
 			songs.Add(new AnimeSong(
 				kind.Value,
 				theme["sequence"]?.GetValue<int?>(),
-				song["title"]?.GetValue<string>() ?? "",
+				song["title"]?["romaji"]?.GetValue<string>() ?? "",
 				artists,
 				entry?["episodes"]?.GetValue<string>()?.Replace("-", "–") ?? "",
 				ToUri(video?["link"]),
