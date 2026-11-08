@@ -39,7 +39,7 @@ public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl
 	{
 	}
 
-	// Filled in here, not by the card: Interaction re-attaches behaviors (recreating the control) after the card's Loaded.
+	// Filled in on attach, so a new overlay shows the card's item at once.
 	protected override void OnAttached()
 	{
 		base.OnAttached();

@@ -27,7 +27,8 @@ public sealed partial class AnimeCard : UserControl
 	[GeneratedDependencyProperty]
 	public partial CardOverlaySelector? Overlays { get; set; }
 
-	// The overlays Overlays picked, in Interaction.Behaviors beside the template's own (which are left alone).
+	// The overlays Overlays picked, attached to the card directly: not through Interaction.Behaviors, whose shadow list
+	// Interaction empties on Unloaded and never refills on Loaded, so adding or removing after a reload throws E_BOUNDS.
 	private readonly List<Behavior> _selected = [];
 
 	// The item whose changes are followed while loaded (an unloaded card mustn't be kept alive by its long-lived item).
@@ -86,12 +87,11 @@ public sealed partial class AnimeCard : UserControl
 	{
 		var now = DateTime.Now;
 		var wanted = Media is { } item && Overlays is { } selector ? selector.Select(item, now).ToList() : [];
-		var behaviors = Interaction.GetBehaviors(this);
 		for (var i = _selected.Count - 1; i >= 0; i--)
 		{
 			if (!wanted.Contains(_selected[i].GetType()))
 			{
-				behaviors.Remove(_selected[i]);
+				_selected[i].Detach();
 				_selected.RemoveAt(i);
 			}
 		}
@@ -106,7 +106,7 @@ public sealed partial class AnimeCard : UserControl
 			{
 				var overlay = (Behavior)Activator.CreateInstance(type)!;
 				_selected.Add(overlay);
-				behaviors.Add(overlay); // attaching fills it in
+				overlay.Attach(this); // attaching fills it in
 			}
 		}
 	}
