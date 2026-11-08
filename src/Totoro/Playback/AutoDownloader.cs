@@ -113,7 +113,7 @@ public sealed class AutoDownloader : IDisposable
 			return;
 		}
 
-		if (_downloads.IsDownloaded(anime.Title, number))
+		if (_downloads.IsDownloaded(anime, number))
 		{
 			_queued.Add(key);
 			return;

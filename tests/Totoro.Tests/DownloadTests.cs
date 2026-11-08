@@ -88,6 +88,29 @@ public class DownloadTests
 	}
 
 	[Fact]
+	public void IsDownloaded_FindsTheFolderUnderAnotherTitle()
+	{
+		var root = Directory.CreateTempSubdirectory().FullName;
+		try
+		{
+			var folder = Directory.CreateDirectory(Path.Combine(root, "Kusuriya no Hitorigoto")).FullName;
+			File.WriteAllText(Path.Combine(folder, DownloadNames.Episode("Kusuriya no Hitorigoto", 5) + ".mkv"), "");
+			var preferences = new PluginLoaderTests.FakePreferences();
+			preferences.DownloadFolder = root;
+			using var downloads = new DownloadService(null!, null!, null!, null!, preferences, null!, NullLogger<DownloadService>.Instance);
+			// Shown in English now; downloaded while it was shown in romaji.
+			var anime = new AnimeModel { Title = "The Apothecary Diaries", EngTitle = "The Apothecary Diaries", RomajiTitle = "Kusuriya no Hitorigoto" };
+
+			Assert.True(downloads.IsDownloaded(anime, 5));
+			Assert.False(downloads.IsDownloaded(anime, 6));
+		}
+		finally
+		{
+			Directory.Delete(root, recursive: true);
+		}
+	}
+
+	[Fact]
 	public void IdScore_MatchesByIdsTheyShare()
 	{
 		var anime = new AnimeId { Anilist = 154587, MyAnimeList = 52991 };

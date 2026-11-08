@@ -228,14 +228,15 @@ public sealed class DownloadService(
 		}
 
 		var numbering = animeSettings.Get(anime).EpisodeNumbering;
+		var title = FolderTitle(anime);
 		var items = new List<DownloadItem>();
 		for (var number = from; number <= to; number++)
 		{
-			var item = Add(anime.Title, number, provider.Name);
+			var item = Add(title, number, provider.Name);
 			items.Add(item);
 			var episodeNumber = number;
 			// The stream is found when its turn comes: a provider's links may not last while others download.
-			_ = RunAsync(item, anime, number, anime.Title, async ct =>
+			_ = RunAsync(item, anime, number, title, async ct =>
 			{
 				var episode = watch.PickEpisode(episodes, anime, episodeNumber, numbering)
 							  ?? throw new DownloadException($"Episode {episodeNumber} isn't on {provider.Name} yet.");
@@ -253,14 +254,25 @@ public sealed class DownloadService(
 	/// </summary>
 	public DownloadItem Download(AnimeModel? anime, string title, int number, VideoServer server, string provider)
 	{
+		title = anime is null ? title : FolderTitle(anime);
 		var item = Add(title, number, provider);
 		_ = RunAsync(item, anime, number, title, _ => Task.FromResult(server));
 		return item;
 	}
 
 	/// <summary>Whether the anime's episode <paramref name="number"/> is in the download folder (not part-downloaded).</summary>
-	public bool IsDownloaded(string title, int number) =>
+	public bool IsDownloaded(AnimeModel anime, int number) =>
+		FolderTitle(anime) is var title &&
 		FindDownloaded(Path.Combine(preferences.DownloadFolder, DownloadNames.Folder(title)), DownloadNames.Episode(title, number)) is not null;
+
+	/// <summary>
+	/// The title the anime's downloads go under: the one its folder already has, if it has one under another of its titles
+	/// (the title language was changed since), so its episodes stay in one folder; else its title.
+	/// </summary>
+	private string FolderTitle(AnimeModel anime) =>
+		new[] { anime.Title, anime.RomajiTitle, anime.EngTitle }
+			.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x) && Directory.Exists(Path.Combine(preferences.DownloadFolder, DownloadNames.Folder(x))))
+		?? anime.Title;
 
 	/// <summary>The episode file called <paramref name="name"/> (any extension) in <paramref name="folder"/>; null if there's none.</summary>
 	private static string? FindDownloaded(string folder, string name) =>
