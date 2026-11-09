@@ -52,6 +52,9 @@ public sealed record MediaItem(Uri Uri, string Title, IReadOnlyDictionary<string
 {
 	/// <summary>Subtitle files to load beside the video (with <see cref="Headers"/>), the one to show first.</summary>
 	public IReadOnlyList<Streaming.SubtitleTrack> Subtitles { get; init; } = [];
+
+	/// <summary>The next episode will play once this one ends (a binge): a player can stay open to play it in the same window.</summary>
+	public bool PlaysNext { get; init; }
 }
 
 /// <summary>A chapter starting at <paramref name="Start"/> and lasting until the next one.</summary>

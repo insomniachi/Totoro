@@ -40,6 +40,18 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 	// Play's thread (the UI's): saving settings notifies views, which mpv's pipe thread mustn't do.
 	private SynchronizationContext? _ui;
 
+	// How long mpv waits, idle, for the next episode before it's closed (the countdown plus getting the episode ready).
+	private static readonly TimeSpan s_idleTimeout = TimeSpan.FromSeconds(30);
+
+	// Whether the current video has ended (mpv went idle), so PlaybackStopped was raised for it already.
+	private volatile bool _ended;
+
+	// Whether the next episode will play after the current video (see MediaItem.PlaysNext).
+	private volatile bool _playsNext;
+
+	// How many times Play was called, to tell whether a video was played since mpv went idle.
+	private int _loads;
+
 	public Guid Id => MpvModule.Id;
 
 	public string Name => "MPV";
@@ -65,24 +77,49 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 
 	public void Play(MediaItem media, TimeSpan startPosition)
 	{
-		Stop();
 		_paused = false;
 		_ui = SynchronizationContext.Current;
+		_subtitles = media.Subtitles;
+		// Not one that ended outside a binge: that one's quitting.
+		var waiting = _ended && _playsNext;
+		_playsNext = media.PlaysNext;
+		_ended = false;
+		Interlocked.Increment(ref _loads);
 
+		var url = media.Uri.IsFile ? media.Uri.LocalPath : media.Uri.AbsoluteUri;
+		var start = startPosition.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+		var headers = string.Join(",", (media.Headers ?? new Dictionary<string, string>()).Select(x => $"{x.Key}: {x.Value}"));
+
+		// mpv's waiting for the next episode of a binge: it plays in the same window, keeping its size, full screen and
+		// volume. Every per-file option is given, so none carries over from the last video.
+		if (waiting && _pipe is { IsConnected: true } && _process is { HasExited: false })
+		{
+			var options = new Dictionary<string, string>
+			{
+				["force-media-title"] = media.Title,
+				["start"] = start,
+				["http-header-fields"] = headers,
+			};
+			_ = SendMessageAsync(new { command = new { name = "loadfile", url, flags = "replace", options } });
+			return;
+		}
+
+		Stop();
 		var pipeName = $"totoro-mpv-{Guid.NewGuid():N}";
 		var startInfo = new ProcessStartInfo
 		{
 			FileName = GetFileName() ?? throw new FileNotFoundException("mpv isn't there: download it in the MPV module's settings."),
 			ArgumentList =
 			{
-				media.Uri.IsFile ? media.Uri.LocalPath : media.Uri.AbsoluteUri,
+				url,
 				$"--force-media-title={media.Title}",
 				$@"--input-ipc-server=\\.\pipe\{pipeName}",
-				$"--start={startPosition.TotalSeconds.ToString(CultureInfo.InvariantCulture)}",
-				// Close at the end even when an mpv.conf says keep-open: the exit is what tells the app playback's done.
+				$"--start={start}",
+				// Go idle at the end even when an mpv.conf says keep-open: going idle is what tells the app playback's done.
 				"--keep-open=no",
-				// Started without a console, mpv's pseudo-gui mode turns idle on, which keeps it open after the video too.
-				"--idle=no",
+				// Stays open (window and all) once idle, so a binge's next episode can play in it; see Handle.
+				"--idle=yes",
+				"--force-window=yes",
 				$"--volume={settings.Value.Volume}",
 			}
 		};
@@ -92,17 +129,17 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 			startInfo.ArgumentList.Add("--fullscreen");
 		}
 
-		if (media.Headers is { Count: > 0 } headers)
+		if (headers.Length > 0)
 		{
-			startInfo.ArgumentList.Add($"--http-header-fields={string.Join(",", headers.Select(x => $"{x.Key}: {x.Value}"))}");
+			startInfo.ArgumentList.Add($"--http-header-fields={headers}");
 		}
 
-		_subtitles = media.Subtitles;
 		var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
 		process.Exited += (_, _) =>
 		{
-			// Only for the current process: one that was replaced by a newer Play isn't a stop.
-			if (ReferenceEquals(process, _process))
+			// Only for the current process: one that was replaced by a newer Play isn't a stop, nor is closing it once
+			// its video has already ended.
+			if (ReferenceEquals(process, _process) && !_ended)
 			{
 				PlaybackStopped?.Invoke(this, EventArgs.Empty);
 			}
@@ -250,6 +287,8 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 3, "track-list" } });
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 4, "volume" } });
 			await WriteAsync(pipe, new { command = new object[] { "observe_property", 5, "pause" } });
+			// Reported as it is too, so a video that failed before the pipe connected counts.
+			await WriteAsync(pipe, new { command = new object[] { "observe_property", 6, "idle-active" } });
 			if (ReferenceEquals(process, _process))
 			{
 				_pipe = pipe;
@@ -318,6 +357,17 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 			return;
 		}
 
+		// Idle: the video ended (or failed). That's the end of playback; in a binge the window stays for the next episode,
+		// otherwise mpv quits as it would have without idle.
+		if (root.TryGetProperty("name", out property) && property.GetString() == "idle-active" &&
+			root.TryGetProperty("data", out var idle) && idle.ValueKind == JsonValueKind.True && !_ended)
+		{
+			_ended = true;
+			PlaybackStopped?.Invoke(this, EventArgs.Empty);
+			_ = _playsNext ? CloseIfIdleAsync(_loads) : SendAsync("quit");
+			return;
+		}
+
 		if (!root.TryGetProperty("event", out var type) || type.GetString() != "property-change" ||
 			!root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Number)
 		{
@@ -336,6 +386,17 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 			case "time-pos":
 				PositionChanged?.Invoke(this, value);
 				break;
+		}
+	}
+
+	/// <summary>Closes mpv if nothing else has been played since it went idle; a later episode then opens a new one.</summary>
+	private async Task CloseIfIdleAsync(int loads)
+	{
+		// shortcut: a fixed wait, as the player isn't told whether a next episode is coming; close sooner if that's added.
+		await Task.Delay(s_idleTimeout);
+		if (loads == Volatile.Read(ref _loads))
+		{
+			Stop();
 		}
 	}
 

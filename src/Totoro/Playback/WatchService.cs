@@ -579,6 +579,8 @@ public sealed partial class WatchService(
 	{
 		var key = anime.StoreKey;
 		var credits = TimeSpan.FromMinutes(anime.MediaFormat == AnimeMediaFormat.Movie ? 6 : 2);
+		// Only in a binge (see OfferNextAsync), so the player can stay open for it; fillers skipped don't change that.
+		media = media with { PlaysNext = offerEpisodes && (preferences.PlayNextAutomatically || _binge) && !IsPastLast(anime, number + 1) };
 
 		// Resume a little before where it was left, unless that was in the credits.
 		var start = track && progressStore.Get(anime, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
@@ -742,8 +744,7 @@ public sealed partial class WatchService(
 
 		// Not offered past the last episode, or the last aired one: a provider won't have it yet, so nothing's left to show
 		// once the player is closed (other players have closed by now; the built-in one stays open at the end).
-		if (anime.TotalEpisodes is > 0 and var total && next > total ||
-			EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is > 0 and var aired && next > aired)
+		if (IsPastLast(anime, next))
 		{
 			if (player is IInteractiveMediaPlayer { IsOpen: true })
 			{
@@ -1296,6 +1297,11 @@ public sealed partial class WatchService(
 		HasDetails = false;
 		(_player as IInteractiveMediaPlayer)?.ShowStatus(null);
 	}
+
+	/// <summary>Whether episode <paramref name="number"/> is past the last one, or the last one aired: no provider has it yet.</summary>
+	private static bool IsPastLast(AnimeModel anime, int number) =>
+		anime.TotalEpisodes is > 0 and var total && number > total ||
+		EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is > 0 and var aired && number > aired;
 
 	/// <summary>Closes the status bar when the player's window is closed, unless another episode has been started meanwhile.</summary>
 	private void HideWhenClosed(IMediaPlayer player)
