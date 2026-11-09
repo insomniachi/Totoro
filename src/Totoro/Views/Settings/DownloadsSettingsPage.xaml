@@ -18,7 +18,7 @@
 
             <toolkit:SettingsCard Description="Episodes go into a folder for each anime, named with its title." Header="Download folder">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE896;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xE64C;" />
                 </toolkit:SettingsCard.HeaderIcon>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBox
@@ -33,7 +33,7 @@
 
             <toolkit:SettingsCard Description="Downloads HLS streams (.m3u8). Leave empty to use the one on the PATH." Header="yt-dlp">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE896;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xEE6F;" />
                 </toolkit:SettingsCard.HeaderIcon>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBox

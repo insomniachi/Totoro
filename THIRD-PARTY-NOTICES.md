@@ -27,6 +27,7 @@ given. This file is shipped with the app.
 | XAML Behaviors (Microsoft.Xaml.Behaviors.WinUI.Managed) | MIT | Microsoft | https://github.com/microsoft/XamlBehaviors |
 | Microsoft.Extensions.\* | MIT | .NET Foundation and Contributors | https://github.com/dotnet/extensions, https://github.com/dotnet/runtime |
 | SharpDX (used by LibVLCSharp) | MIT | Alexandre Mutel | https://github.com/sharpdx/SharpDX |
+| Fluent UI System Icons (FluentSystemIcons-Regular.ttf) | MIT | Microsoft Corporation | https://github.com/microsoft/fluentui-system-icons |
 | Win2D (Microsoft.Graphics.Win2D) | MIT | Microsoft Corporation | https://github.com/microsoft/Win2D |
 | Windows App SDK, WebView2 | Microsoft Software License Terms | Microsoft Corporation | https://github.com/microsoft/WindowsAppSDK |
 

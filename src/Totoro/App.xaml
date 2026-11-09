@@ -12,7 +12,14 @@
                 <ResourceDictionary Source="Styles/NavigationView.xaml" />
                 <ResourceDictionary Source="ms-appx:///DevWinUI/Themes/Generic.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <!--  Other app resources here  -->
+            <!--  Fluent UI System Icons, for settings rows Segoe has no distinct glyph for (code points from its FluentSystemIcons-Regular.json)  -->
+            <!--  Its line height is taller than its glyphs (20x22 at 20px), so a Viewbox, as a SettingsCard puts its icon in, would shrink it below Segoe's: pin the box  -->
+            <Style x:Key="FluentFontIcon" TargetType="FontIcon">
+                <Setter Property="FontFamily" Value="ms-appx:///Assets/Fonts/FluentSystemIcons-Regular.ttf#FluentSystemIcons-Regular" />
+                <Setter Property="FontSize" Value="20" />
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

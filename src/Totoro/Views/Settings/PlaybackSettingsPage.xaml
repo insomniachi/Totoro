@@ -77,7 +77,7 @@
 
             <toolkit:SettingsCard Description="How torrent episodes play: rqbit downloads them on this PC; a debrid service like TorBox downloads them on its servers and streams its copy." Header="Torrent streamer">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE896;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xF4FD;" />
                 </toolkit:SettingsCard.HeaderIcon>
                 <ComboBox
                     MinWidth="200"
@@ -103,7 +103,7 @@
                 Header="Episode numbering"
                 IsClickEnabled="True">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE8AB;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xF7F9;" />
                 </toolkit:SettingsCard.HeaderIcon>
             </toolkit:SettingsCard>
 
@@ -114,7 +114,7 @@
 
             <toolkit:SettingsCard Description="When an opening or recap starts. Offering to skip shows a Skip button over the video in the built-in player, and a hint to press Page Up (next chapter) in mpv." Header="Openings">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE893;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xE854;" />
                 </toolkit:SettingsCard.HeaderIcon>
                 <ComboBox
                     MinWidth="200"
@@ -130,7 +130,7 @@
 
             <toolkit:SettingsCard Description="When the ending starts." Header="Endings">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE893;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xE851;" />
                 </toolkit:SettingsCard.HeaderIcon>
                 <ComboBox
                     MinWidth="200"
@@ -146,14 +146,14 @@
 
             <toolkit:SettingsCard Description="When you finish an episode, start the next one after a short countdown. Otherwise it's offered." Header="Play the next episode automatically">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE768;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xF569;" />
                 </toolkit:SettingsCard.HeaderIcon>
                 <ToggleSwitch IsOn="{x:Bind ViewModel.PlayNextAutomatically, Mode=TwoWay}" />
             </toolkit:SettingsCard>
 
             <toolkit:SettingsCard Description="The next episode skips filler (as MyAnimeList marks it). A filler episode you pick yourself still plays." Header="Skip filler episodes">
                 <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE893;" />
+                    <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xF3FE;" />
                 </toolkit:SettingsCard.HeaderIcon>
                 <ToggleSwitch IsOn="{x:Bind ViewModel.SkipFillers, Mode=TwoWay}" />
             </toolkit:SettingsCard>
