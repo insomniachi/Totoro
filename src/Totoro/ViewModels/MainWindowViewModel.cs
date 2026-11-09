@@ -20,6 +20,13 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	private readonly IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> _mangaDatabases;
 	private readonly IReadOnlyList<NavigationItemViewModel> _allItems;
 	private CancellationTokenSource? _search;
+	private readonly IPreferences _preferences;
+	private const string TourSeenKey = "TourSeen";
+
+	/// <summary>The first-run tour of the window's teaching tips: until it's been finished or skipped once.</summary>
+	public bool ShowTour { get; }
+
+	public void FinishTour() => _preferences.SaveKey(TourSeenKey, true);
 
 	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs)
 	{
@@ -66,6 +73,9 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		StartupItem = startup is not null && NavigationItems.Contains(startup) ? startup
 			: NavigationItems.FirstOrDefault(x => x.Label == startup?.Label) ?? NavigationItems.FirstOrDefault();
 		CurrentItem = StartupItem;
+
+		_preferences = preferences;
+		ShowTour = !preferences.ReadKey(TourSeenKey, false);
 
 		_accounts = [.. accounts.Select(x => new AccountViewModel(x))];
 		ShowAccount(preferences.SelectedAnimeDatabase);

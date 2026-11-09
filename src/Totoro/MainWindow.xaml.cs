@@ -64,7 +64,97 @@ public sealed partial class MainWindow : Window
 					DispatcherQueue.TryEnqueue(() => NavView.SelectedItem = item);
 				}
 			};
+
+			if (viewModel.ShowTour)
+			{
+				DispatcherQueue.TryEnqueue(() => StartTour(viewModel));
+			}
 		}
+	}
+
+	// The first-run tour: what each part of the window is for, one tip at a time.
+
+	private record TourStep(Func<FrameworkElement?> Target, string Title, string Text);
+
+	/// <summary>What each menu page is for, by its <see cref="Core.Navigation.NavigationItemViewModel.Name"/>; pages not here (Agent tools) get no tip.</summary>
+	private static readonly Dictionary<string, string> s_pageTips = new()
+	{
+		["Discover"] = "Find something new to watch: what's trending, what airs today, what starts next season, and sequels you missed.",
+		["Library"] = "Your anime list, by status: watching, plan to watch, completed, on hold and dropped. Pick one to see its details and play its episodes.",
+		["Search"] = "Find anime by title, season, year, score and genre.",
+		["Schedule"] = "When the next episodes of the anime airing now come out.",
+		["Watch"] = "Search a plugin directly, pick a show, an episode and a stream, and play it. Handy for anything that isn't on your list.",
+		["Downloads"] = "Episodes downloading and downloaded, to watch offline. The number on it is how many are downloading.",
+		["Discover (manga)"] = "Find something new to read: popular and new manga.",
+		["Library (manga)"] = "Your manga list, by status: reading, plan to read, completed, on hold and dropped.",
+		["Search (manga)"] = "Find manga by title, year, score and genre.",
+		["Read (manga)"] = "Search a plugin directly, pick a manga and a chapter, and read it. Handy for anything that isn't on your list.",
+		["Plugins"] = "Add, update and remove plugins: where Totoro finds anime to watch and manga to read. The number on it is how many have an update.",
+		["Settings"] = "Set the page Totoro opens on, your accounts, your player, playback and downloads.",
+	};
+
+	private TourStep[] _tour = [];
+	private UIElement? _tourHero;
+	private int _tourStep;
+
+	private void StartTour(MainWindowViewModel viewModel)
+	{
+		_tourHero ??= TourTip.HeroContent;
+		_tour =
+		[
+			// No target: in the middle of the window, with Totoro's picture.
+			new(() => null, "Welcome to Totoro", "Here's a quick look around. It takes a minute, and you can skip it any time."),
+			new(() => ModeSwitch, "Anime or manga", "Switch between your anime and your manga. The menu's pages change to match."),
+			new(() => SearchBox, "Search anything", "Find any anime or manga by name, and pick one to see its details."),
+			// Each page in the menu (the startup mode's), Settings last; its item is looked up when its tip shows.
+			.. viewModel.NavigationItems.Concat(viewModel.FooterNavigationItems)
+				.Where(x => x.IsVisible && s_pageTips.ContainsKey(x.Name))
+				.Select(x => new TourStep(() => NavView.ContainerFromMenuItem(x) as FrameworkElement, x.Label, s_pageTips[x.Name])),
+			new(() => AccountButton, "Your account", "Sign in to keep your list in sync as you watch and read. Watch together with friends from here too."),
+			// Collapsed when there's no assistant: no tip pointing at nothing.
+			.. viewModel.Chat.IsAvailable
+				? [new TourStep(() => AssistantButton, "Ask the assistant", "Ask for recommendations, or to find, play or update something for you.")]
+				: Array.Empty<TourStep>(),
+		];
+		_tourStep = 0;
+		ShowTourStep();
+	}
+
+	private void ShowTourStep()
+	{
+		var step = _tour[_tourStep];
+		TourTip.Target = step.Target();
+		TourTip.PreferredPlacement = TourTip.Target is null ? TeachingTipPlacementMode.Center : TeachingTipPlacementMode.Auto;
+		TourTip.HeroContent = _tourStep == 0 ? _tourHero : null;
+		TourTip.Title = step.Title;
+		TourTip.Subtitle = step.Text;
+		TourTip.ActionButtonContent = _tourStep == _tour.Length - 1 ? "Got it" : "Next";
+		TourTip.IsOpen = true;
+	}
+
+	private void OnTourNext(TeachingTip sender, object args)
+	{
+		sender.IsOpen = false;
+		if (++_tourStep == _tour.Length)
+		{
+			ViewModel?.FinishTour();
+		}
+	}
+
+	// The next step once the tip has closed: opened again before then, it stays where it was, at the last step's target.
+	private void OnTourTipClosed(TeachingTip sender, TeachingTipClosedEventArgs args)
+	{
+		if (_tourStep < _tour.Length && args.Reason == TeachingTipCloseReason.Programmatic)
+		{
+			ShowTourStep();
+		}
+	}
+
+	private void OnTourSkip(TeachingTip sender, object args)
+	{
+		_tourStep = _tour.Length;
+		sender.IsOpen = false;
+		ViewModel?.FinishTour();
 	}
 
 	private void OnNavigationSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

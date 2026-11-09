@@ -345,6 +345,7 @@
                     </Grid.ColumnDefinitions>
                     <!--  Anime or manga, at the title bar's left: switches the menu's pages (see MainWindowViewModel.Mode)  -->
                     <toolkit:Segmented
+                        x:Name="ModeSwitch"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Anime or manga"
                         SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}">
@@ -359,6 +360,7 @@
                     </toolkit:Segmented>
                     <!--  Finds anime and manga in the selected databases, whatever the mode; choosing one opens its details in the side pane  -->
                     <AutoSuggestBox
+                        x:Name="SearchBox"
                         Grid.Column="1"
                         MaxWidth="360"
                         Margin="12,0"
@@ -453,6 +455,7 @@
                     <!--  Opens and closes the assistant's panel  -->
                     <!--  Just the icon, as subtle buttons are: the accent color while the panel's open, not a filled button  -->
                     <ToggleButton
+                        x:Name="AssistantButton"
                         Height="32"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Assistant"
@@ -479,6 +482,7 @@
 
                     <!--  The account of the selected anime database; click to sign in or out  -->
                     <Button
+                        x:Name="AccountButton"
                         Padding="0"
                         AutomationProperties.AutomationId="AccountButton"
                         AutomationProperties.Name="{x:Bind ViewModel.Account.Status, Mode=OneWay}"
@@ -916,5 +920,24 @@
                 </StackPanel>
             </InfoBar>
         </Grid>
+
+        <!--  The first-run tour (see StartTour): one tip, moved from step to step; Next to the next, Skip tour to end it  -->
+        <TeachingTip
+            x:Name="TourTip"
+            ActionButtonClick="OnTourNext"
+            ActionButtonContent="Next"
+            CloseButtonClick="OnTourSkip"
+            CloseButtonContent="Skip tour"
+            Closed="OnTourTipClosed">
+            <!--  The welcome step's picture only (see ShowTourStep)  -->
+            <TeachingTip.HeroContent>
+                <Image
+                    Height="140"
+                    Margin="0,16,0,0"
+                    AutomationProperties.AccessibilityView="Raw"
+                    Source="/Assets/Totoro.png"
+                    Stretch="Uniform" />
+            </TeachingTip.HeroContent>
+        </TeachingTip>
     </Grid>
 </Window>
