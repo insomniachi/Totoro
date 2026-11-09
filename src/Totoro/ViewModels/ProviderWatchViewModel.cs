@@ -347,8 +347,8 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 			return;
 		}
 
-		// Untracked, a match may be the wrong season: its title and skip times would be too, so the show's own title alone.
-		await _watch.WatchFromAsync(new AnimeModel { Title = show.Title }, (int)episode.Episode.Number, provider, episode.Episode, stream, track: false);
+		// Untracked, a match may be the wrong season: its title and skip times would be too, so the show's own title and image alone (the image as the blurred banner too).
+		await _watch.WatchFromAsync(new AnimeModel { Title = show.Title, Image = show.Image, BannerImage = show.Image }, (int)episode.Episode.Number, provider, episode.Episode, stream, track: false);
 	}
 
 	/// <summary>

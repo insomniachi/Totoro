@@ -95,6 +95,17 @@
                                 CornerRadius="{TemplateBinding CornerRadius}">
                                 <!--  Inside the 1px border: 7, one less than its 8 (OverlayCornerRadius), so the layers meet it with no gap  -->
                                 <Grid>
+                                    <!--  No banner: the same frosted dark layer as under the banner, since the severity background alone is near-clear  -->
+                                    <Border CornerRadius="7" Visibility="{Binding BannerUrl, Converter={StaticResource VisibleIfNoneConverter}}">
+                                        <Grid>
+                                            <Rectangle RadiusX="10" RadiusY="10">
+                                                <Rectangle.Fill>
+                                                    <media:BackdropBlurBrush Amount="3" />
+                                                </Rectangle.Fill>
+                                            </Rectangle>
+                                            <Rectangle Fill="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" Opacity="0.82" />
+                                        </Grid>
+                                    </Border>
                                     <Border
                                         x:Name="SeverityBackground"
                                         Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
