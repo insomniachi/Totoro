@@ -3,6 +3,7 @@
     x:Class="Totoro.Views.DownloadsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Totoro.UI.Controls"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views"
     xmlns:playback="using:Totoro.Playback">
@@ -144,13 +145,13 @@
                                     ToolTipService.ToolTip="Edit info">
                                     <FontIcon FontSize="16" Glyph="&#xE70F;" />
                                 </Button>
-                                <Button
+                                <controls:BusyButton
                                     AutomationProperties.Name="Find openings and endings"
                                     Click="OnFindSegmentsClick"
                                     Tag="{x:Bind}"
                                     ToolTipService.ToolTip="Find the openings and endings of episodes that don't have them yet">
                                     <FontIcon FontSize="16" Glyph="&#xE8D6;" />
-                                </Button>
+                                </controls:BusyButton>
                                 <Button AutomationProperties.Name="Delete" ToolTipService.ToolTip="Delete">
                                     <FontIcon FontSize="16" Glyph="&#xE74D;" />
                                     <Button.Flyout>

@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Totoro.Playback;
+using Totoro.UI.Controls;
 using Totoro.ViewModels;
 
 namespace Totoro.Views;
@@ -26,7 +27,27 @@ public sealed partial class DownloadsPage : Page
 
 	private void OnEditInfoClick(object sender, RoutedEventArgs e) => _ = ViewModel?.EditInfoAsync((DownloadedAnime)((FrameworkElement)sender).Tag);
 
-	private void OnFindSegmentsClick(object sender, RoutedEventArgs e) => _ = ViewModel?.FindSegmentsAsync((DownloadedAnime)((FrameworkElement)sender).Tag);
+	private async void OnFindSegmentsClick(object sender, RoutedEventArgs e)
+	{
+		if (ViewModel is null)
+		{
+			return;
+		}
+
+		// A spinner, and no second run, until it's done.
+		var button = (BusyButton)sender;
+		button.IsBusy = true;
+		button.IsEnabled = false;
+		try
+		{
+			await ViewModel.FindSegmentsAsync((DownloadedAnime)button.Tag);
+		}
+		finally
+		{
+			button.IsBusy = false;
+			button.IsEnabled = true;
+		}
+	}
 
 	private void OnDeleteClick(object sender, RoutedEventArgs e)
 	{

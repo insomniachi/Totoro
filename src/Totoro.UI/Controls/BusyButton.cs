@@ -18,6 +18,8 @@ public sealed partial class BusyButton : Button
 	public BusyButton()
 	{
 		DefaultStyleKey = typeof(Button); // Button's default style, which a derived class doesn't get
+		// The app's implicit Button style (rounded, no border) skips derived types too; a Style set in XAML replaces this.
+		Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
 		_busyContent.Children.Add(_hiddenContent);
 		_busyContent.Children.Add(_ring);
 		// The content's color, e.g. white on an accent button, where the ring's own accent color wouldn't show
@@ -55,8 +57,8 @@ public sealed partial class BusyButton : Button
 	private void Wrap(object content)
 	{
 		if (ReferenceEquals(content, _busyContent)) return;
+		Content = _busyContent; // first, so content that's an element (an icon) leaves the button before going behind the spinner
 		_hiddenContent.Content = content;
-		Content = _busyContent;
 	}
 
 	/// <summary>Undoes the Disabled state the button goes to while its command runs; it still takes no clicks.</summary>
