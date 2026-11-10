@@ -148,6 +148,8 @@
                                 <controls:BusyButton
                                     AutomationProperties.Name="Find openings and endings"
                                     Click="OnFindSegmentsClick"
+                                    IsBusy="{x:Bind IsFindingSegments, Mode=OneTime}"
+                                    IsEnabled="{x:Bind helpers:CommonConverters.Not(IsFindingSegments), Mode=OneTime}"
                                     Tag="{x:Bind}"
                                     ToolTipService.ToolTip="Find the openings and endings of episodes that don't have them yet">
                                     <FontIcon FontSize="16" Glyph="&#xE8D6;" />

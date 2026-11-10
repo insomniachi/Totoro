@@ -53,13 +53,13 @@ public partial class App : Application
 	private IHost _host;
 	// A file a day in %LocalAppData%\Totoro\Logs, the last week's kept. Shared by the host and the plugin loader's own
 	// logger, so one writer appends to the file.
-	private static readonly Serilog.Core.Logger FileLogs = new Serilog.LoggerConfiguration()
+	private static readonly Serilog.Core.Logger s_fileLogs = new Serilog.LoggerConfiguration()
 		.WriteTo.File(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "Logs", "totoro-.log"),
 			rollingInterval: Serilog.RollingInterval.Day, retainedFileCountLimit: 7)
 		.CreateLogger();
 	// Made before the host (its plugins add services), so with a logger of its own, to the same places as the host's.
 	private readonly IPluginLoader _pluginLoader = new PluginLoader(
-		LoggerFactory.Create(x => x.AddDebug().AddSerilog(FileLogs).SetMinimumLevel(LogLevel.Information)).CreateLogger<PluginLoader>());
+		LoggerFactory.Create(x => x.AddDebug().AddSerilog(s_fileLogs).SetMinimumLevel(LogLevel.Information)).CreateLogger<PluginLoader>());
 
 	/// <summary>
 	/// Restarts the app, e.g. to load plugins that were installed, with the arguments it was started with (so dev
@@ -103,7 +103,7 @@ public partial class App : Application
 
 		InitializeComponent();
 		_host = Host.CreateDefaultBuilder()
-			.ConfigureLogging(x => x.AddSerilog(FileLogs))
+			.ConfigureLogging(x => x.AddSerilog(s_fileLogs))
 			.ConfigureServices((context, services) =>
 			{
 				AddModules(services);
@@ -451,7 +451,7 @@ public partial class App : Application
 			{
 				notifications.Unregister();
 			}
-			FileLogs.Dispose();
+			s_fileLogs.Dispose();
 			Exit();
 		};
 		// E.g. for the installer of a newer version to replace the app (see UpdateService).

@@ -6,6 +6,7 @@ public static class CommonConverters
 {
 	public static Visibility BooleanToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
 	public static Visibility InvertedBooleanToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+	public static bool Not(bool value) => !value;
 
 	public static Visibility VisibleIfAny(string? text) => string.IsNullOrWhiteSpace(text) ? Visibility.Collapsed : Visibility.Visible;
 	public static Visibility CollapsedIfAny(string? text) => string.IsNullOrWhiteSpace(text) ? Visibility.Visible : Visibility.Collapsed;

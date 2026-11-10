@@ -155,7 +155,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 IsHitTestVisible="False"
-                ItemsSource="{x:Bind ViewModel.RoomNotices}">
+                ItemsSource="{x:Bind ViewModel.RoomNotices, Mode=OneWay}">
                 <ItemsControl.ItemContainerTransitions>
                     <TransitionCollection>
                         <EntranceThemeTransition FromVerticalOffset="-24" />

@@ -357,6 +357,7 @@
                     <!--  Anime or manga, at the title bar's left: switches the menu's pages (see MainWindowViewModel.Mode)  -->
                     <toolkit:Segmented
                         x:Name="ModeSwitch"
+                        AutomationProperties.AutomationId="ModeSwitch"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Anime or manga"
                         SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}">
@@ -372,6 +373,7 @@
                     <!--  Finds anime and manga in the selected databases, whatever the mode; choosing one opens its details in the side pane  -->
                     <AutoSuggestBox
                         x:Name="SearchBox"
+                        AutomationProperties.AutomationId="SearchBox"
                         Grid.Column="1"
                         MaxWidth="360"
                         Margin="12,0"
@@ -467,6 +469,7 @@
                     <!--  Just the icon, as subtle buttons are: the accent color while the panel's open, not a filled button  -->
                     <ToggleButton
                         x:Name="AssistantButton"
+                        AutomationProperties.AutomationId="AssistantButton"
                         Height="32"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Assistant"
@@ -935,6 +938,7 @@
         <!--  The first-run tour (see StartTour): one tip, moved from step to step; Next to the next, Skip tour to end it  -->
         <TeachingTip
             x:Name="TourTip"
+            AutomationProperties.AutomationId="TourTip"
             ActionButtonClick="OnTourNext"
             ActionButtonContent="Next"
             CloseButtonClick="OnTourSkip"

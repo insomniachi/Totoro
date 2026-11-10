@@ -122,8 +122,15 @@ public sealed partial class MainWindow : Window
 
 	private void ShowTourStep()
 	{
+		// A menu item with no container yet (in the pane's overflow, say) is skipped: a tip there would point at nothing.
+		var target = _tour[_tourStep].Target();
+		while (target is null && _tourStep > 0 && _tourStep < _tour.Length - 1)
+		{
+			target = _tour[++_tourStep].Target();
+		}
+
 		var step = _tour[_tourStep];
-		TourTip.Target = step.Target();
+		TourTip.Target = target;
 		TourTip.PreferredPlacement = TourTip.Target is null ? TeachingTipPlacementMode.Center : TeachingTipPlacementMode.Auto;
 		TourTip.HeroContent = _tourStep == 0 ? _tourHero : null;
 		TourTip.Title = step.Title;
@@ -212,7 +219,7 @@ public sealed partial class MainWindow : Window
 		if (e.Key == Windows.System.VirtualKey.Enter)
 		{
 			e.Handled = true;
-			ViewModel.SendRoomChatCommand.Execute(null);
+			ViewModel?.SendRoomChatCommand.Execute(null);
 		}
 	}
 

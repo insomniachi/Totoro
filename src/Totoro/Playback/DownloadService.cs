@@ -90,6 +90,9 @@ public sealed record DownloadedAnime(string Name, string Path, DownloadInfo? Inf
 {
 	public string Title => Info?.Title ?? Name;
 
+	/// <summary>Whether its openings and endings are being looked for (see <see cref="DownloadService.FindMissingSegmentsAsync"/>).</summary>
+	public bool IsFindingSegments { get; init; }
+
 	/// <summary>e.g. "3 episodes · 1.3 GB · AniList 166794 · MyAnimeList 55866", or that it has no info.</summary>
 	public string Summary => string.Join(" · ", new[]
 	{
@@ -186,6 +189,7 @@ public sealed class DownloadService(
 
 	// Finding openings and endings, one episode at a time, so info files are written one at a time.
 	private readonly SemaphoreSlim _detecting = new(1, 1);
+	private readonly HashSet<string> _findingSegments = new(StringComparer.OrdinalIgnoreCase); // by folder name
 
 	// Songs' fingerprints and lengths, by their audio's URL: a season's episodes share them.
 	private readonly ConcurrentDictionary<Uri, (uint[] Print, TimeSpan Length)> _songPrints = new();
@@ -364,7 +368,8 @@ public sealed class DownloadService(
 							 .ToList();
 		var cover = folder.EnumerateFiles(DownloadNames.CoverFile + ".*").FirstOrDefault();
 		return new DownloadedAnime(folder.Name, folder.FullName, info, episodes.Count, episodes.Sum(x => x.Length),
-								   cover is null ? "" : new Uri(cover.FullName).AbsoluteUri);
+								   cover is null ? "" : new Uri(cover.FullName).AbsoluteUri)
+		{ IsFindingSegments = _findingSegments.Contains(folder.Name) };
 	}
 
 	/// <summary>
@@ -617,19 +622,38 @@ public sealed class DownloadService(
 			throw new DownloadException($"{name}'s songs are found by its MyAnimeList id: add it with Edit info.");
 		}
 
-		var missing = folder.EnumerateFiles()
-							.Where(x => !x.Extension.Equals(".part", StringComparison.OrdinalIgnoreCase))
-							.Select(x => (File: x, Number: DownloadNames.ParseEpisode(x.Name)))
-							.Where(x => x.Number is { } number && info.Segments?.ContainsKey(number) != true)
-							.ToList();
-		var found = 0;
-		foreach (var (file, number) in missing)
+		if (!_findingSegments.Add(folder.Name))
 		{
-			found += await DetectSegmentsAsync(number!.Value, file.FullName, folder.FullName) ? 1 : 0;
+			throw new DownloadException($"{name}'s openings and endings are already being looked for.");
 		}
 
-		RefreshLibrary();
-		return (missing.Count, found);
+		try
+		{
+			// Just its row, so the list keeps its place; the refresh at the end reads them all again.
+			var index = Library.ToList().FindIndex(x => x.Name.Equals(folder.Name, StringComparison.OrdinalIgnoreCase));
+			if (index >= 0)
+			{
+				Library[index] = Library[index] with { IsFindingSegments = true };
+			}
+
+			var missing = folder.EnumerateFiles()
+								.Where(x => !x.Extension.Equals(".part", StringComparison.OrdinalIgnoreCase))
+								.Select(x => (File: x, Number: DownloadNames.ParseEpisode(x.Name)))
+								.Where(x => x.Number is { } number && info.Segments?.ContainsKey(number) != true)
+								.ToList();
+			var found = 0;
+			foreach (var (file, number) in missing)
+			{
+				found += await DetectSegmentsAsync(number!.Value, file.FullName, folder.FullName) ? 1 : 0;
+			}
+
+			return (missing.Count, found);
+		}
+		finally
+		{
+			_findingSegments.Remove(folder.Name);
+			RefreshLibrary();
+		}
 	}
 
 	private static string FfmpegPath => Path.Combine(MpvInstaller.Folder, "ffmpeg.exe");

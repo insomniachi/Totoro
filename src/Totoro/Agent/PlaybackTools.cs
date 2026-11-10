@@ -365,6 +365,25 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 		return $"Saved {anime.Name}'s info.";
 	}
 
+	[AgentTool("find_downloaded_anime_segments")]
+	[Description("Finds the openings and endings of an anime's downloaded episodes that don't have them yet, by the sound of its songs, " +
+				 "so the player can skip them. Needs the MPV media player set up (for its FFmpeg) and the anime's MyAnimeList id in its info " +
+				 "(edit_downloaded_anime adds it). It takes a while: each episode is listened to.")]
+	public async Task<string> FindDownloadedAnimeSegmentsAsync([Description("The anime's folder, from get_downloaded_anime.")] string folder)
+	{
+		try
+		{
+			var (looked, found) = await downloads.FindMissingSegmentsAsync(folder);
+			return looked == 0
+				? $"All of {folder}'s episodes have them already."
+				: $"Found the opening and ending of {found} of {looked} episodes of {folder}.";
+		}
+		catch (Exception ex) when (ex is DownloadException or JsonException or IOException or UnauthorizedAccessException)
+		{
+			throw new AgentToolException(ex.Message);
+		}
+	}
+
 	[AgentTool("delete_downloaded_anime", RequiresApproval = true)]
 	[Description("Deletes an anime's folder in the download folder, with all its episodes (to the Recycle Bin).")]
 	public string DeleteDownloadedAnime([Description("The anime's folder, from get_downloaded_anime.")] string folder)
