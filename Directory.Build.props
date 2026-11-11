@@ -4,10 +4,13 @@
 	  <Nullable>enable</Nullable>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	  <TargetFramework>net10.0</TargetFramework>
+	  <TargetFramework>net11.0</TargetFramework>
 	  <Platforms>x64</Platforms>
 	  <!-- Report .editorconfig code-style rules (the naming conventions, IDE1006) when building, not only in the editor -->
 	  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	  <!-- CsWinRT1032: collection expressions are only a problem for trimmed/AOT builds, and the app isn't trimmed.
+	       WFO2000: getters that return a new object each time do so on purpose (XAML icons can't share a parent; snapshots). -->
+	  <NoWarn>$(NoWarn);CsWinRT1032;WFO2000</NoWarn>
   </PropertyGroup>
   <ItemGroup>
 	  <!-- The namespace-matches-folder rule (IDE0130) needs these to run at build time -->

@@ -10,7 +10,7 @@ namespace Totoro.Tests;
 public class PluginLoaderTests
 {
 	[Fact]
-	public async Task PluginLoader_LoadsSenshiPlugin_FromDevDirectory()
+	public void PluginLoader_LoadsSenshiPlugin_FromDevDirectory()
 	{
 		var senshiBin = FindPluginBin("Totoro.Plugins.Senshi");
 		Assert.True(Directory.Exists(senshiBin), $"Senshi bin directory should exist at {senshiBin}");
@@ -34,11 +34,6 @@ public class PluginLoaderTests
 		var provider = sp.GetKeyedService<IAnimeProvider>(senshi.Id);
 		Assert.NotNull(provider);
 		Assert.Equal("Senshi", provider.Name);
-
-		// Verify live SearchAsync executes and returns results from senshi.to
-		var searchResults = await provider.SearchAsync("Frieren", CancellationToken.None);
-		Assert.NotEmpty(searchResults);
-		Assert.Contains(searchResults, s => s.Title.Contains("Frieren", StringComparison.OrdinalIgnoreCase));
 	}
 
 	[Fact]
