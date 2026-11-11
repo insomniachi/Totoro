@@ -74,7 +74,7 @@ public sealed class ProviderEpisodes(WatchService watch, IAnimeSettingsStore ani
 			var numbering = animeSettings.Get(anime).EpisodeNumbering;
 			for (var number = aired; number > watched; number--)
 			{
-				if (WatchService.PickEpisode(episodes, anime, number, numbering, relations) is not null)
+				if (ShowMatching.PickEpisode(episodes, anime, number, numbering, relations) is not null)
 				{
 					return number;
 				}

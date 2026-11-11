@@ -180,7 +180,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 		var anime = await lookup.GetAsync(animeId);
 		var source = GetProvider(anime, provider);
 		var candidates = string.IsNullOrWhiteSpace(query)
-			? await WatchService.SearchShowsAsync(source, anime, CancellationToken.None)
+			? await ShowMatching.SearchShowsAsync(source, anime, CancellationToken.None)
 			: await source.SearchAsync(query, CancellationToken.None);
 		var (matched, _) = await watch.FindShowAsync(source, anime, CancellationToken.None);
 		return new ProviderShows(source.Name, matched is null ? null : ToCandidate(matched), [.. candidates.Select(ToCandidate)]);

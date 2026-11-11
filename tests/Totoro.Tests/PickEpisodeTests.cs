@@ -51,9 +51,9 @@ public class PickEpisodeTests
 		var providerEpisodes = Enumerable.Range(29, 10).Select(i => new ProviderEpisode("show", $"ep_{i}", i)).ToList();
 		var relations = new FakeAnimeRelations();
 
-		Assert.Equal(1, WatchService.AnimeEpisode(providerEpisodes, anime, providerEpisodes[0], EpisodeNumbering.Absolute, relations));
+		Assert.Equal(1, ShowMatching.AnimeEpisode(providerEpisodes, anime, providerEpisodes[0], EpisodeNumbering.Absolute, relations));
 		// By season, 29 is nothing of this anime's: left as the provider numbers it.
-		Assert.Equal(29, WatchService.AnimeEpisode(providerEpisodes, anime, providerEpisodes[0], EpisodeNumbering.Season, relations));
+		Assert.Equal(29, ShowMatching.AnimeEpisode(providerEpisodes, anime, providerEpisodes[0], EpisodeNumbering.Season, relations));
 	}
 
 	[Fact]
@@ -76,12 +76,12 @@ public class PickEpisodeTests
 			.ToList();
 
 		// Season 3, Episode 1 -> mapped to absolute 49
-		var ep1 = WatchService.PickEpisode(providerEpisodes, anime, 1, null, relations);
+		var ep1 = ShowMatching.PickEpisode(providerEpisodes, anime, 1, null, relations);
 		Assert.NotNull(ep1);
 		Assert.Equal(49, (int)ep1.Number);
 
 		// Season 3, Episode 2 -> mapped to absolute 50
-		var ep2 = WatchService.PickEpisode(providerEpisodes, anime, 2, null, relations);
+		var ep2 = ShowMatching.PickEpisode(providerEpisodes, anime, 2, null, relations);
 		Assert.NotNull(ep2);
 		Assert.Equal(50, (int)ep2.Number);
 	}
@@ -106,7 +106,7 @@ public class PickEpisodeTests
 
 		// Season 3, Episode 3 -> mapped to absolute 51, which is missing from provider.
 		// It MUST NOT pick episode 3 from season 1! It should return null (fail cleanly).
-		var ep3 = WatchService.PickEpisode(providerEpisodes, anime, 3, null, relations);
+		var ep3 = ShowMatching.PickEpisode(providerEpisodes, anime, 3, null, relations);
 		Assert.Null(ep3);
 	}
 
@@ -127,7 +127,7 @@ public class PickEpisodeTests
 			.ToList();
 
 		// When user explicitly specifies Season numbering
-		var ep3 = WatchService.PickEpisode(providerEpisodes, anime, 3, EpisodeNumbering.Season, relations);
+		var ep3 = ShowMatching.PickEpisode(providerEpisodes, anime, 3, EpisodeNumbering.Season, relations);
 		Assert.NotNull(ep3);
 		Assert.Equal(3, (int)ep3.Number);
 	}
@@ -148,7 +148,7 @@ public class PickEpisodeTests
 			.Select(i => new ProviderEpisode("show1", $"ep_{i}", i))
 			.ToList();
 
-		var ep3 = WatchService.PickEpisode(providerEpisodes, anime, 3, EpisodeNumbering.Absolute, relations);
+		var ep3 = ShowMatching.PickEpisode(providerEpisodes, anime, 3, EpisodeNumbering.Absolute, relations);
 		Assert.NotNull(ep3);
 		Assert.Equal(3, (int)ep3.Number);
 	}
@@ -169,7 +169,7 @@ public class PickEpisodeTests
 			.Select(i => new ProviderEpisode("show1", $"ep_{i}", i))
 			.ToList();
 
-		Assert.Null(WatchService.PickEpisode(providerEpisodes, anime, 13, EpisodeNumbering.Absolute, relations));
+		Assert.Null(ShowMatching.PickEpisode(providerEpisodes, anime, 13, EpisodeNumbering.Absolute, relations));
 	}
 
 	[Fact]
@@ -189,11 +189,11 @@ public class PickEpisodeTests
 			.Select(i => new ProviderEpisode("show1", $"ep_{i}", i))
 			.ToList();
 
-		var ep1 = WatchService.PickEpisode(providerEpisodes, anime, 1, null, relations);
+		var ep1 = ShowMatching.PickEpisode(providerEpisodes, anime, 1, null, relations);
 		Assert.NotNull(ep1);
 		Assert.Equal(1, (int)ep1.Number);
 
-		var ep3 = WatchService.PickEpisode(providerEpisodes, anime, 3, null, relations);
+		var ep3 = ShowMatching.PickEpisode(providerEpisodes, anime, 3, null, relations);
 		Assert.NotNull(ep3);
 		Assert.Equal(3, (int)ep3.Number);
 	}
