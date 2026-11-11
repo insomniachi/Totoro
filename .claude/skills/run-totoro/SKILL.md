@@ -30,6 +30,7 @@ and does so silently when the app isn't running. Wait about 10s after launch bef
 | Anime or manga | `winapp ui invoke "Manga" --type ListItem -a <pid>` |
 | A list's status tab | `winapp ui invoke "Completed" --type ListItem -a <pid>` |
 | Open an anime from a card | `winapp ui invoke "<title>" --type Button -a <pid>` (cards are buttons named after their title) |
+| A card's actions (its hover buttons and right-click menu) | `winapp ui invoke "<title>" --type Button --action expand -a <pid>`, then `winapp ui invoke "Play" --type MenuItem -a <pid>` (Play, Binge, Edit tracking, Download, Settings; `--action collapse` closes it) |
 | Play the next episode | `winapp ui invoke WatchButton -a <pid>` (named "Play episode N" or "Resume episode N"; read it with `get-property WatchButton`) |
 | Search | `winapp ui set-value "Search anime and manga" "<text>" -a <pid>` |
 | Find anything | `winapp ui search "<text>" -a <pid>`; `winapp ui inspect -a <pid> -i` lists what can be acted on |

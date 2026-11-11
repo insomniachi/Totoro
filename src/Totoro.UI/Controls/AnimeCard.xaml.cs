@@ -3,6 +3,7 @@ using System.Windows.Input;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
@@ -210,8 +211,9 @@ public sealed partial class AnimeCard : UserControl
 	/// <summary>
 	/// Shows the card to UI Automation (screen readers, winapp ui) as a button named after its title, which opens it.
 	/// Without it the card is a plain pane: only its title's text can be found, and nothing can invoke it.
+	/// Expanding it opens its menu (its right-click menu, with the actions it shows on hover), for a card that has one.
 	/// </summary>
-	private sealed partial class CardAutomationPeer(AnimeCard owner) : FrameworkElementAutomationPeer(owner), IInvokeProvider
+	private sealed partial class CardAutomationPeer(AnimeCard owner) : FrameworkElementAutomationPeer(owner), IInvokeProvider, IExpandCollapseProvider
 	{
 		protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
 
@@ -219,10 +221,21 @@ public sealed partial class AnimeCard : UserControl
 
 		protected override string GetNameCore() => owner.Media?.Title ?? "";
 
-		protected override object? GetPatternCore(PatternInterface patternInterface) =>
-			patternInterface == PatternInterface.Invoke ? this : base.GetPatternCore(patternInterface);
+		protected override object? GetPatternCore(PatternInterface patternInterface) => patternInterface switch
+		{
+			PatternInterface.Invoke => this,
+			PatternInterface.ExpandCollapse when owner.ContextFlyout is not null => this,
+			_ => base.GetPatternCore(patternInterface),
+		};
 
 		public void Invoke() => owner.Open();
+
+		public ExpandCollapseState ExpandCollapseState =>
+			owner.ContextFlyout is { IsOpen: true } ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
+
+		public void Expand() => owner.ContextFlyout?.ShowAt(owner);
+
+		public void Collapse() => owner.ContextFlyout?.Hide();
 	}
 
 	/// <summary>
