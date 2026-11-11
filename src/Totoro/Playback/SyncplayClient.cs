@@ -1,7 +1,5 @@
 using System.Diagnostics;
-using System.Net.Sockets;
 using System.Collections.ObjectModel;
-using System.Net.Security;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -28,13 +26,6 @@ public sealed partial class SyncplayClient : ObservableObject
 	private const string ProtocolVersion = "1.2.255";
 	private const string ReleaseVersion = "1.7.4";
 
-	// While paused (or told someone seeked), this far from where it should be is a seek.
-	private static readonly TimeSpan s_seekThreshold = TimeSpan.FromSeconds(1.5);
-
-	// While playing, this far behind or ahead of the room it seeks to where the room is (Syncplay's own rewind threshold),
-	// and a jump this far is the user seeking.
-	private static readonly TimeSpan s_desyncThreshold = TimeSpan.FromSeconds(4);
-
 	// After following the room (or an episode starting), the player's given this long to get there before changes count as the user's.
 	private const double SettleSeconds = 1.5;
 
@@ -56,10 +47,7 @@ public sealed partial class SyncplayClient : ObservableObject
 	// After an episode starts here, others' for a while aren't followed: two started at once would otherwise swap back and forth.
 	private const double FollowEpisodesAfterSeconds = 5;
 	private double _followEpisodesAfter;
-	private readonly SemaphoreSlim _writeLock = new(1, 1);
-	private TcpClient? _tcp;
-	// What's said and heard over it: the TCP stream, or the encryption over it.
-	private Stream? _stream;
+	private SyncplayConnection? _socket;
 	private string _password = "";
 	private CancellationTokenSource? _cts;
 	// The current connection's, cancelled when the server's gone quiet (see Tick); and when it last heard from it.
@@ -103,9 +91,6 @@ public sealed partial class SyncplayClient : ObservableObject
 	// Whether the player's stuck loading, which the room's told is a pause (see Tick); and when it last moved on.
 	private bool _stalled;
 	private double _advancedAt;
-
-	// Playing and not moving this long is loading, not the user's doing.
-	private const double StallSeconds = 2;
 
 	// The player as of the last check, to tell the user's own pauses and seeks from playing on.
 	private TimeSpan _lastPosition;
@@ -331,7 +316,8 @@ public sealed partial class SyncplayClient : ObservableObject
 			// Ticking from here: a server that never answers is let go after a while (see Tick), not waited on for ever.
 			_lastHeard = Now;
 			_timer.Start();
-			var stream = await OpenAsync(host, port, connection.Token);
+			var socket = _socket = await SyncplayConnection.OpenAsync(host, port, connection.Token);
+			IsEncrypted = socket.IsEncrypted;
 			var hello = new JsonObject
 			{
 				["username"] = _name,
@@ -347,7 +333,7 @@ public sealed partial class SyncplayClient : ObservableObject
 			}
 
 			await SendAsync(new JsonObject { ["Hello"] = hello });
-			using var reader = new StreamReader(stream, Encoding.UTF8);
+			using var reader = new StreamReader(socket.Stream, Encoding.UTF8);
 			while (await reader.ReadLineAsync(connection.Token) is { } line)
 			{
 				_lastHeard = Now;
@@ -383,64 +369,9 @@ public sealed partial class SyncplayClient : ObservableObject
 		}
 	}
 
-	/// <summary>
-	/// Connects, encrypted where the server can be (syncplay.pl's can): it's asked first, and turns it on or says it can't.
-	/// A server from before Syncplay had encryption turns the question down and closes: then it's asked again without it.
-	/// </summary>
-	private async Task<Stream> OpenAsync(string host, int port, CancellationToken ct)
-	{
-		var tcp = _tcp = new TcpClient();
-		await tcp.ConnectAsync(host, port, ct);
-		Stream stream = tcp.GetStream();
-		await WriteLineAsync(stream, new JsonObject { ["TLS"] = new JsonObject { ["startTLS"] = "send" } }, ct);
-		var reply = await ReadLineAsync(stream, ct);
-		var answer = reply is null ? null : (string?)JsonNode.Parse(reply)?["TLS"]?["startTLS"];
-		if (answer == "true")
-		{
-			var tls = new SslStream(stream);
-			// Checked as any HTTPS site's is: a server whose certificate isn't valid isn't joined.
-			await tls.AuthenticateAsClientAsync(new SslClientAuthenticationOptions { TargetHost = host }, ct);
-			IsEncrypted = true;
-			return _stream = tls;
-		}
-
-		if (answer is null)
-		{
-			tcp.Dispose();
-			tcp = _tcp = new TcpClient();
-			await tcp.ConnectAsync(host, port, ct);
-			stream = tcp.GetStream();
-		}
-
-		IsEncrypted = false;
-		return _stream = stream;
-	}
-
 	/// <summary>Whether the connection to the server is encrypted, so the room, chat and what's watched aren't sent in the open.</summary>
 	[ObservableProperty]
 	public partial bool IsEncrypted { get; private set; }
-
-	/// <summary>A line from <paramref name="stream"/> a byte at a time: before encryption starts, nothing after it may be read.</summary>
-	private static async Task<string?> ReadLineAsync(Stream stream, CancellationToken ct)
-	{
-		var line = new List<byte>();
-		var b = new byte[1];
-		while (await stream.ReadAsync(b, ct) == 1)
-		{
-			if (b[0] == '\n')
-			{
-				return Encoding.UTF8.GetString([.. line]).TrimEnd('\r');
-			}
-
-			line.Add(b[0]);
-		}
-
-		return null;
-	}
-
-	// Syncplay's server reads lines ending in CRLF.
-	private static Task WriteLineAsync(Stream stream, JsonObject message, CancellationToken ct = default) =>
-		stream.WriteAsync(Encoding.UTF8.GetBytes(message.ToJsonString() + "\r\n"), ct).AsTask();
 
 	private void Disconnect(string status)
 	{
@@ -460,9 +391,8 @@ public sealed partial class SyncplayClient : ObservableObject
 	/// <summary>Drops the connection and everything that came with it: on leaving the room, or before rejoining it.</summary>
 	private void TearDown()
 	{
-		_stream?.Dispose();
-		_tcp?.Dispose();
-		(_stream, _tcp) = (null, null);
+		_socket?.Dispose();
+		_socket = null;
 		if (_slowed)
 		{
 			// Back to normal speed, out of the room.
@@ -692,17 +622,10 @@ public sealed partial class SyncplayClient : ObservableObject
 
 	/// <summary>
 	/// Whether to follow an episode someone started (see <see cref="PlayAsync"/>): always, unless one started here a moment
-	/// ago; then only the later of the two (see <see cref="StartedAfter"/>), so two started at once end up one, not swapped.
+	/// ago; then only the later of the two (see <see cref="SyncplaySync.StartedAfter"/>), so two started at once end up one, not swapped.
 	/// </summary>
 	private bool ShouldFollow(string by, long startedAt) =>
-		_player is null || Now >= _followEpisodesAfter || StartedAfter(startedAt, by, _startedAt, _name);
-
-	/// <summary>
-	/// Whether their start (<paramref name="theirs"/>, by <paramref name="by"/>) came after ours, the name settling a tie: each
-	/// side compares the same two, so exactly one follows the other, however far apart their clocks. Unknown (0) never is.
-	/// </summary>
-	internal static bool StartedAfter(long theirs, string by, long ours, string me) =>
-		theirs > 0 && (theirs > ours || theirs == ours && string.CompareOrdinal(by, me) < 0);
+		_player is null || Now >= _followEpisodesAfter || SyncplaySync.StartedAfter(startedAt, by, _startedAt, _name);
 
 	/// <summary>What's playing here isn't what someone started: it's kept out of the room until another episode plays.</summary>
 	private void LeaveStep()
@@ -719,13 +642,6 @@ public sealed partial class SyncplayClient : ObservableObject
 
 	// The chat message saying the room's paused for someone's player loading (see Tick); shown as it is too.
 	private const string Loading = "is loading: the room waits";
-
-	/// <summary>
-	/// Whether the player's stuck loading: playing, yet not moved on for <paramref name="stillFor"/> seconds. Not near
-	/// the end, where a player can sit before it says it's done.
-	/// </summary>
-	internal static bool IsStalled(bool paused, double stillFor, TimeSpan position, TimeSpan duration) =>
-		!paused && stillFor > StallSeconds && duration - position > TimeSpan.FromSeconds(5);
 
 	/// <summary>Says something to the room, in Syncplay's chat (which Syncplay's own app shows too).</summary>
 	private Task TellAsync(string text) => SendAsync(new JsonObject { ["Chat"] = FitChat(text) });
@@ -777,7 +693,7 @@ public sealed partial class SyncplayClient : ObservableObject
 			var doSeek = (bool?)play["doSeek"] ?? false;
 			// shortcut: takes half the round trip as how old the message is, where Syncplay averages; fine on a steady connection.
 			var room = TimeSpan.FromSeconds(Math.Max(0, ((double?)play["position"] ?? 0) + (paused ? 0 : _rtt / 2)));
-			var (pause, seekTo) = Follow(Position, player.IsPaused, room, paused, doSeek);
+			var (pause, seekTo) = SyncplaySync.Follow(Position, player.IsPaused, room, paused, doSeek);
 			_caughtUp = true;
 			if (_stalled && pause == true)
 			{
@@ -808,7 +724,7 @@ public sealed partial class SyncplayClient : ObservableObject
 			// A little ahead of the room (someone a little behind): a little slower till they're level, as Syncplay's app
 			// does, rather than drifting till it's far enough to jump back. Normal again on any pause or jump.
 			var still = paused || player.IsPaused || pause is not null || seekTo is not null;
-			if ((still ? _slowed ? 1 : null : Slowdown((Position - room).TotalSeconds, _slowed)) is { } speed)
+			if ((still ? _slowed ? 1 : null : SyncplaySync.Slowdown((Position - room).TotalSeconds, _slowed)) is { } speed)
 			{
 				_ = player.SetSpeedAsync(speed);
 				_slowed = speed < 1;
@@ -911,7 +827,7 @@ public sealed partial class SyncplayClient : ObservableObject
 
 		// Loading (a stream or torrent catching up): said as paused, so the room waits for it rather than the server
 		// taking everyone back to it again and again (it keeps the room with whoever's furthest behind).
-		var stalled = now >= _settleUntil && !_offRoom && _caughtUp && IsStalled(paused, now - _advancedAt, position, _watch.PlaybackDuration);
+		var stalled = now >= _settleUntil && !_offRoom && _caughtUp && SyncplaySync.IsStalled(paused, now - _advancedAt, position, _watch.PlaybackDuration);
 		var stallChanged = stalled != _stalled;
 		_stalled = stalled;
 		if (stallChanged && stalled)
@@ -922,7 +838,7 @@ public sealed partial class SyncplayClient : ObservableObject
 
 		if (now >= _settleUntil && !_offRoom && _caughtUp)
 		{
-			var seeked = IsSeek(_lastPosition, _lastPaused, TimeSpan.FromSeconds(now - _lastAt), position);
+			var seeked = SyncplaySync.IsSeek(_lastPosition, _lastPaused, TimeSpan.FromSeconds(now - _lastAt), position);
 			if (_announce)
 			{
 				_announce = false;
@@ -1002,27 +918,7 @@ public sealed partial class SyncplayClient : ObservableObject
 		return SendAsync(new JsonObject { ["State"] = state });
 	}
 
-	private async Task SendAsync(JsonObject message)
-	{
-		if (_stream is not { } stream)
-		{
-			return;
-		}
-
-		await _writeLock.WaitAsync();
-		try
-		{
-			await WriteLineAsync(stream, message);
-		}
-		catch (Exception ex) when (ex is IOException or ObjectDisposedException or InvalidOperationException)
-		{
-			// Lost: the read loop says so.
-		}
-		finally
-		{
-			_writeLock.Release();
-		}
-	}
+	private Task SendAsync(JsonObject message) => _socket?.SendAsync(message) ?? Task.CompletedTask;
 
 	private void ShowPeople()
 	{
@@ -1065,34 +961,8 @@ public sealed partial class SyncplayClient : ObservableObject
 
 	private static string Clock(TimeSpan time) => time.ToString(time.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss");
 
-	// Syncplay's own: slower by this much from this far ahead of the room (seconds), till this close.
-	private const double SlowdownRate = 0.95;
-	private const double SlowdownAfter = 1.5;
-	private const double SlowdownUntil = 0.1;
-
-	// Whether the player's slowed down (see Slowdown).
+	// Whether the player's slowed down (see SyncplaySync.Slowdown).
 	private bool _slowed;
-
-	/// <summary>The speed to play at, <paramref name="ahead"/> seconds ahead of the room (null to keep it).</summary>
-	internal static double? Slowdown(double ahead, bool slowed) =>
-		!slowed && ahead > SlowdownAfter ? SlowdownRate : slowed && ahead < SlowdownUntil ? 1 : null;
-
-	/// <summary>What to do to the player to be where the room is: pause or resume it (null to leave it), and where to seek (null to stay).</summary>
-	internal static (bool? Pause, TimeSpan? SeekTo) Follow(TimeSpan local, bool localPaused, TimeSpan room, bool roomPaused, bool doSeek)
-	{
-		var apart = (room - local).Duration();
-		var seek = apart > (doSeek || roomPaused ? s_seekThreshold : s_desyncThreshold);
-		return (roomPaused != localPaused ? roomPaused : null, seek ? room : null);
-	}
-
-	/// <summary>Whether the player got to <paramref name="position"/> by seeking, rather than by playing (or staying paused) since the last check.</summary>
-	internal static bool IsSeek(TimeSpan last, bool lastPaused, TimeSpan elapsed, TimeSpan position)
-	{
-		var expected = lastPaused ? last : last + elapsed;
-		// Playing, only a jump the room wouldn't count as in step: the built-in player lands a seek on a keyframe a few
-		// seconds off, and a stream can stall, neither of which is the user's doing.
-		return (position - expected).Duration() > (lastPaused ? s_seekThreshold : s_desyncThreshold);
-	}
 
 	/// <summary>Reads "host:port" (or just the host, on Syncplay's usual port 8999).</summary>
 	internal static bool TryParseServer(string server, out string host, out int port)

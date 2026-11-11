@@ -102,12 +102,9 @@ public sealed partial class WatchService(
 	// The player of the episode playing, or of the last one.
 	private IMediaPlayer? _player;
 
-	// The built-in player whose episode list is followed (picking an episode plays it), and the anime it lists.
-	private IInteractiveMediaPlayer? _listingPlayer;
-	private AnimeModel? _listedAnime;
-
-	// Episode details (titles, thumbnails) from ani.zip, by anime: fetched once while watching it.
-	private readonly Dictionary<string, List<EpisodeInfo>> _episodeDetails = [];
+	// The built-in player's episode list; made on first use, as it plays through this.
+	private PlayerEpisodeList? _episodeList;
+	private PlayerEpisodeList EpisodeList => _episodeList ??= new(progressStore, (anime, number) => _ = WatchAsync(anime, number));
 
 	/// <summary>Whether the status bar is showing. The user can close it while an episode plays (see <see cref="IsActive"/>).</summary>
 	[ObservableProperty] public partial bool IsOpen { get; set; }
@@ -244,41 +241,8 @@ public sealed partial class WatchService(
 			return;
 		}
 
-		List<string> parts = [];
-		if (Anime.MediaFormat != AnimeMediaFormat.Unknown)
-		{
-			parts.Add(Anime.MediaFormat.ToString().ToUpperInvariant());
-		}
-
-		if (Anime.Season is { } season)
-		{
-			parts.Add($"{season.SeasonName} {season.Year}");
-		}
-
-		if (Anime.MeanScore is > 0 and var score)
-		{
-			parts.Add($"★ {score / 10f:0.#}");
-		}
-
-		if (Anime.Studios.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)) is { } studio)
-		{
-			parts.Add(studio);
-		}
-
-		Metadata = string.Join(" · ", parts);
-
-		List<string> sourceParts = [];
-		if (!string.IsNullOrWhiteSpace(ProviderName))
-		{
-			sourceParts.Add(ProviderName);
-		}
-
-		if (!string.IsNullOrWhiteSpace(PlayerName))
-		{
-			sourceParts.Add(PlayerName);
-		}
-
-		SourceInfo = string.Join(" · ", sourceParts);
+		Metadata = PlaybackStatusText.Metadata(Anime);
+		SourceInfo = PlaybackStatusText.Source(ProviderName, PlayerName);
 	}
 
 	/// <summary>The episode after the last one watched (the first if the anime isn't on the list).</summary>
@@ -514,9 +478,9 @@ public sealed partial class WatchService(
 		PlayerName = null;
 		Title = PlayingTitle(anime, number);
 
-		if (_episodeDetails.TryGetValue(anime.StoreKey, out var cached) && cached.FirstOrDefault(x => x.EpisodeNumber == number) is { } cachedInfo)
+		if (EpisodeList.CachedTitle(anime, number) is { } cachedTitle)
 		{
-			EpisodeName = EpisodeTitle(cachedInfo);
+			EpisodeName = cachedTitle;
 		}
 
 		try
@@ -687,12 +651,12 @@ public sealed partial class WatchService(
 			{
 				if (offerEpisodes)
 				{
-					_ = ListEpisodesAsync(interactive, anime, number, ct);
+					_ = EpisodeList.ListAsync(interactive, anime, number, x => EpisodeName = x, ct);
 				}
 				else
 				{
 					// An earlier anime's list would play from its own provider.
-					_listedAnime = null;
+					EpisodeList.Forget();
 					interactive.SetEpisodes([]);
 				}
 			}
@@ -777,7 +741,7 @@ public sealed partial class WatchService(
 	/// <summary>Says, while it plays, where the episode will count as watched: so it's known before closing the player.</summary>
 	private void ShowCountsAt(IMediaPlayer player, TimeSpan countsAt, TimeSpan duration)
 	{
-		CountsAsWatchedAt = FormatTime(countsAt, duration);
+		CountsAsWatchedAt = PlaybackStatusText.Time(countsAt, duration);
 		CountsAtFraction = Math.Clamp(countsAt / duration, 0, 1);
 		(player as IInteractiveMediaPlayer)?.SetWatchedMark(countsAt, false);
 	}
@@ -984,7 +948,7 @@ public sealed partial class WatchService(
 		}
 
 		IsMarkedWatched |= marked;
-		CountsAsWatchedAt = FormatTime(countsAt, duration);
+		CountsAsWatchedAt = PlaybackStatusText.Time(countsAt, duration);
 		CountsAtFraction = Math.Clamp(countsAt / duration, 0, 1);
 		ShowPosition(position, duration);
 	}
@@ -1218,14 +1182,8 @@ public sealed partial class WatchService(
 
 		(PlaybackPosition, PlaybackDuration) = (position, duration);
 		PlaybackFraction = Math.Clamp(position / duration, 0, 1);
-		PlaybackTime = $"{FormatTime(position, duration)} / {FormatTime(duration, duration)}";
+		PlaybackTime = $"{PlaybackStatusText.Time(position, duration)} / {PlaybackStatusText.Time(duration, duration)}";
 		PlaybackPercent = $"{(int)Math.Round(PlaybackFraction * 100)}%";
-	}
-
-	/// <summary>m:ss, or h:mm:ss for something an hour or longer (a movie).</summary>
-	private static string FormatTime(TimeSpan time, TimeSpan duration)
-	{
-		return time.ToString(duration.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss");
 	}
 
 	private void Show(PlaybackStatusKind kind, string message, string actionText = "", Action? action = null)
@@ -1280,97 +1238,6 @@ public sealed partial class WatchService(
 				interactive.ShowStatus(null);
 				break;
 		}
-	}
-
-	/// <summary>
-	/// Gives the built-in player the anime's episodes (with their titles and thumbnails, where ani.zip has them) for its
-	/// episode list, and plays the one the user picks from it.
-	/// </summary>
-	private async Task ListEpisodesAsync(IInteractiveMediaPlayer interactive, AnimeModel anime, int current, CancellationToken ct)
-	{
-		_listedAnime = anime;
-		if (!ReferenceEquals(_listingPlayer, interactive))
-		{
-			_listingPlayer?.EpisodeRequested -= OnEpisodeRequested;
-			interactive.EpisodeRequested += OnEpisodeRequested;
-			_listingPlayer = interactive;
-		}
-
-		try
-		{
-			if (!_episodeDetails.TryGetValue(anime.StoreKey, out var details))
-			{
-				details = [.. (await anime.GetEpisodesAsync(ct)).Where(x => !x.IsSpecial)];
-				if (details.Count > 0)
-				{
-					_episodeDetails[anime.StoreKey] = details;
-				}
-			}
-
-			// The aired ones ani.zip knows of, or else as many as the anime has; the one playing at least.
-			var count = Math.Max(current, details.Count > 0 ? details.Max(x => x.EpisodeNumber) : anime.TotalEpisodes ?? current);
-			var watched = anime.Tracking?.WatchedEpisodes ?? 0;
-			var saved = progressStore.GetAll(anime);
-			List<PlayerEpisode> episodes = [];
-			for (var number = 1; number <= count; number++)
-			{
-				var info = details.FirstOrDefault(x => x.EpisodeNumber == number);
-				episodes.Add(new PlayerEpisode(
-					number,
-					info is null ? $"Episode {number}" : EpisodeTitle(info),
-					info is null ? "" : EpisodeDetails(info),
-					info?.Overview ?? "",
-					string.IsNullOrEmpty(info?.Image) ? null : info.Image,
-					number <= watched,
-					number == current,
-					saved.GetValueOrDefault(number)?.Fraction ?? 0));
-			}
-
-			if (ReferenceEquals(_listedAnime, anime))
-			{
-				if (details.FirstOrDefault(x => x.EpisodeNumber == current) is { } currentInfo)
-				{
-					EpisodeName = EpisodeTitle(currentInfo);
-				}
-
-				interactive.SetEpisodes(episodes);
-			}
-		}
-		catch (OperationCanceledException)
-		{
-			// Another episode was started meanwhile; it lists them.
-		}
-	}
-
-	private void OnEpisodeRequested(object? sender, int number)
-	{
-		if (_listedAnime is { } anime)
-		{
-			_ = WatchAsync(anime, number);
-		}
-	}
-
-	private static string EpisodeTitle(EpisodeInfo info)
-	{
-		return new[] { info.Titles.English, info.Titles.Romaji, info.Titles.Japanese }.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))
-			   ?? $"Episode {info.EpisodeNumber}";
-	}
-
-	/// <summary>e.g. "3 Oct 2025 · 24 min".</summary>
-	private static string EpisodeDetails(EpisodeInfo info)
-	{
-		List<string> details = [];
-		if (info.AirDateUtc is { } aired)
-		{
-			details.Add(aired.ToLocalTime().ToString("d MMM yyyy"));
-		}
-
-		if (info.Runtime > 0)
-		{
-			details.Add($"{info.Runtime} min");
-		}
-
-		return string.Join(" · ", details);
 	}
 
 	/// <summary>The player of the episode playing; null when none is.</summary>

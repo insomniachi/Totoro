@@ -155,7 +155,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 IsHitTestVisible="False"
-                ItemsSource="{x:Bind ViewModel.RoomNotices, Mode=OneWay}">
+                ItemsSource="{x:Bind ViewModel.Room.RoomNotices, Mode=OneWay}">
                 <ItemsControl.ItemContainerTransitions>
                     <TransitionCollection>
                         <EntranceThemeTransition FromVerticalOffset="-24" />
@@ -466,8 +466,8 @@
                     <AppBarElementContainer VerticalAlignment="Center" Visibility="{x:Bind local:PlayerWindow.HiddenForClips(ViewModel.IsClip), Mode=OneWay}">
                         <Button
                             AutomationProperties.Name="Previous episode"
-                            Command="{x:Bind ViewModel.PreviousEpisodeCommand}"
-                            IsEnabled="{x:Bind ViewModel.HasPreviousEpisode, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.EpisodeList.PreviousEpisodeCommand}"
+                            IsEnabled="{x:Bind ViewModel.EpisodeList.HasPreviousEpisode, Mode=OneWay}"
                             Style="{StaticResource PlayerButtonStyle}"
                             ToolTipService.ToolTip="Previous episode">
                             <FontIcon FontSize="16" Glyph="&#xE892;" />
@@ -522,7 +522,7 @@
                         <Button
                             AutomationProperties.Name="Next episode"
                             Command="{x:Bind ViewModel.NextEpisodeCommand, Mode=OneTime}"
-                            IsEnabled="{x:Bind ViewModel.HasNextEpisode, Mode=OneWay}"
+                            IsEnabled="{x:Bind ViewModel.EpisodeList.HasNextEpisode, Mode=OneWay}"
                             Style="{StaticResource PlayerButtonStyle}"
                             ToolTipService.ToolTip="{x:Bind local:PlayerWindow.WithKey('Next episode', Shortcuts.NextEpisodeKeys), Mode=OneTime}">
                             <FontIcon FontSize="16" Glyph="&#xE893;" />
@@ -551,16 +551,16 @@
                         </Button>
                     </AppBarElementContainer>
                     <!--  Watching together: who's in the room (with a badge of how many others), and what each is playing  -->
-                    <AppBarElementContainer VerticalAlignment="Center" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsInRoom), Mode=OneWay}">
+                    <AppBarElementContainer VerticalAlignment="Center" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Room.IsInRoom), Mode=OneWay}">
                         <!--  The badge sits on the button's corner, outside it: the button clips its content  -->
                         <Grid>
                             <Button
                                 x:Name="RoomButton"
                                 AutomationProperties.AutomationId="RoomButton"
-                                AutomationProperties.Name="{x:Bind local:PlayerWindow.RoomButtonName(ViewModel.RoomPeople), Mode=OneWay}"
+                                AutomationProperties.Name="{x:Bind local:PlayerWindow.RoomButtonName(ViewModel.Room.RoomPeople), Mode=OneWay}"
                                 Click="OnRoomButtonClick"
                                 Style="{StaticResource PlayerButtonStyle}"
-                                ToolTipService.ToolTip="{x:Bind local:PlayerWindow.RoomButtonName(ViewModel.RoomPeople), Mode=OneWay}">
+                                ToolTipService.ToolTip="{x:Bind local:PlayerWindow.RoomButtonName(ViewModel.Room.RoomPeople), Mode=OneWay}">
                                 <FontIcon FontSize="16" Glyph="&#xE716;" />
                                 <!--  Above the controls, clear of the seek bar, like the episode list (see OnRoomButtonClick)  -->
                                 <FlyoutBase.AttachedFlyout>
@@ -576,7 +576,7 @@
                                             RequestedTheme="Dark"
                                             Spacing="12">
                                             <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Watching together" />
-                                            <ItemsControl ItemsSource="{x:Bind ViewModel.RoomPeople, Mode=OneWay}">
+                                            <ItemsControl ItemsSource="{x:Bind ViewModel.Room.RoomPeople, Mode=OneWay}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate x:DataType="media:RoomPerson">
                                                         <StackPanel
@@ -607,7 +607,7 @@
                                                 KeyDown="OnRoomChatKeyDown"
                                                 MaxLength="150"
                                                 PlaceholderText="Say something to the room"
-                                                Text="{x:Bind ViewModel.RoomChat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                Text="{x:Bind ViewModel.Room.RoomChat, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                         </StackPanel>
                                     </Flyout>
                                 </FlyoutBase.AttachedFlyout>
@@ -616,8 +616,8 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
                                 IsHitTestVisible="False"
-                                Value="{x:Bind local:PlayerWindow.OthersInRoom(ViewModel.RoomPeople), Mode=OneWay}"
-                                Visibility="{x:Bind local:PlayerWindow.BadgeVisibility(ViewModel.RoomPeople), Mode=OneWay}" />
+                                Value="{x:Bind local:PlayerWindow.OthersInRoom(ViewModel.Room.RoomPeople), Mode=OneWay}"
+                                Visibility="{x:Bind local:PlayerWindow.BadgeVisibility(ViewModel.Room.RoomPeople), Mode=OneWay}" />
                         </Grid>
                     </AppBarElementContainer>
                     <!--  The episode list pops up above the controls, over this button: each episode's thumbnail and details; picking one plays it  -->
@@ -660,7 +660,7 @@
                                                 Margin="0"
                                                 HorizontalAlignment="Right"
                                                 AutomationProperties.Name="Close the episode list"
-                                                Command="{x:Bind ViewModel.ToggleEpisodeListCommand}"
+                                                Command="{x:Bind ViewModel.EpisodeList.ToggleEpisodeListCommand}"
                                                 Style="{StaticResource PlayerButtonStyle}"
                                                 ToolTipService.ToolTip="Close (Esc)">
                                                 <FontIcon FontSize="16" Glyph="&#xE711;" />
@@ -672,7 +672,7 @@
                                             Padding="0,0,0,8"
                                             IsItemClickEnabled="True"
                                             ItemClick="OnEpisodeClick"
-                                            ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}"
+                                            ItemsSource="{x:Bind ViewModel.EpisodeList.Episodes, Mode=OneWay}"
                                             SelectionMode="None">
                                             <ListView.ItemTemplate>
                                                 <DataTemplate x:DataType="player:EpisodeListItem">

@@ -203,7 +203,7 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		ResetForNewVideo();
 		if (isClip)
 		{
-			SetEpisodes([]);
+			EpisodeList.SetEpisodes([]);
 		}
 
 		IsBuffering = true;
@@ -381,8 +381,8 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		var next = _next = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 		NextTitle = title;
 		// Its thumbnail and title, from the episode list.
-		var current = Episodes.FirstOrDefault(x => x.IsCurrent);
-		var upNext = current is null ? null : Episodes.FirstOrDefault(x => x.Number == current.Number + 1);
+		var current = EpisodeList.Episodes.FirstOrDefault(x => x.IsCurrent);
+		var upNext = current is null ? null : EpisodeList.Episodes.FirstOrDefault(x => x.Number == current.Number + 1);
 		NextName = upNext?.Title ?? title;
 		NextImage = upNext?.Image ?? "";
 		NextCountdown = "";
@@ -627,84 +627,11 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	/// <summary>Whether there's a button over the video to take up, e.g. for a key that does it.</summary>
 	public bool HasOffer => _offer is not null;
 
-	/// <summary>Raised when the user picks an episode to play, by its number: from the list, or previous or next.</summary>
-	public event EventHandler<int>? EpisodeRequested;
+	/// <summary>The watch-together room, while in one.</summary>
+	public PlayerRoomViewModel Room { get; } = new();
 
-	private static readonly TimeSpan s_roomNoticeDuration = TimeSpan.FromSeconds(5);
-
-	/// <summary>Who's watching together (in a watch-together room), the user first; empty when not in a room.</summary>
-	[ObservableProperty] public partial IReadOnlyList<RoomPerson> RoomPeople { get; private set; } = [];
-
-	[ObservableProperty] public partial bool IsInRoom { get; private set; }
-
-	/// <summary>Notices about the people in the room shown over the video, e.g. someone joining; each goes after a few seconds.</summary>
-	public ObservableCollection<RoomNotice> RoomNotices { get; } = [];
-
-	/// <inheritdoc cref="IInteractiveMediaPlayer.SetRoomPeople"/>
-	public void SetRoomPeople(IReadOnlyList<RoomPerson>? people)
-	{
-		RoomPeople = people ?? [];
-		IsInRoom = people is not null;
-	}
-
-	/// <inheritdoc cref="IInteractiveMediaPlayer.RoomChatSent"/>
-	public event EventHandler<string>? RoomChatSent;
-
-	/// <summary>What the user's typing to say to the room.</summary>
-	[ObservableProperty] public partial string RoomChat { get; set; } = "";
-
-	/// <summary>Says <see cref="RoomChat"/> to the room, and clears it.</summary>
-	public void SendRoomChat()
-	{
-		if (RoomChat.Trim() is { Length: > 0 } text)
-		{
-			RoomChatSent?.Invoke(this, text);
-			RoomChat = "";
-		}
-	}
-
-	/// <inheritdoc cref="IInteractiveMediaPlayer.ShowRoomNotice"/>
-	public async Task ShowRoomNoticeAsync(string person, string text)
-	{
-		var notice = new RoomNotice(person, text);
-		RoomNotices.Add(notice);
-		await Task.Delay(s_roomNoticeDuration);
-		RoomNotices.Remove(notice);
-	}
-
-	/// <summary>The anime's episodes, for the episode list.</summary>
-	[ObservableProperty] public partial IReadOnlyList<EpisodeListItem> Episodes { get; private set; } = [];
-
-	[ObservableProperty] public partial bool IsEpisodeListOpen { get; set; }
-
-	[ObservableProperty] public partial bool HasPreviousEpisode { get; private set; }
-
-	[ObservableProperty] public partial bool HasNextEpisode { get; private set; }
-
-	/// <inheritdoc cref="IInteractiveMediaPlayer.SetEpisodes"/>
-	public void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes)
-	{
-		Episodes = [.. episodes.Select(x => new EpisodeListItem(x))];
-		var current = episodes.FirstOrDefault(x => x.IsCurrent)?.Number;
-		HasPreviousEpisode = episodes.Any(x => x.Number == current - 1);
-		HasNextEpisode = episodes.Any(x => x.Number == current + 1);
-	}
-
-	[RelayCommand]
-	private void ToggleEpisodeList() => IsEpisodeListOpen = !IsEpisodeListOpen;
-
-	[RelayCommand]
-	private void PlayEpisode(EpisodeListItem? episode)
-	{
-		IsEpisodeListOpen = false;
-		if (episode is { IsCurrent: false })
-		{
-			EpisodeRequested?.Invoke(this, episode.Number);
-		}
-	}
-
-	[RelayCommand]
-	private void PreviousEpisode() => RequestRelative(-1);
+	/// <summary>The anime's episodes, and moving between them.</summary>
+	public PlayerEpisodeListViewModel EpisodeList { get; } = new();
 
 	/// <summary>Plays the next episode: takes up the "Up next" offer if it's showing.</summary>
 	[RelayCommand]
@@ -716,15 +643,7 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 			return;
 		}
 
-		RequestRelative(1);
-	}
-
-	private void RequestRelative(int offset)
-	{
-		if (Episodes.FirstOrDefault(x => x.IsCurrent) is { } current && Episodes.Any(x => x.Number == current.Number + offset))
-		{
-			EpisodeRequested?.Invoke(this, current.Number + offset);
-		}
+		EpisodeList.RequestRelative(1);
 	}
 
 	partial void OnVolumeChanged(double value)
@@ -938,6 +857,3 @@ public sealed record EpisodeListItem(PlayerEpisode Episode)
 	/// <summary>Its accessible name, e.g. "Episode 5, Title, playing".</summary>
 	public string Name => $"Episode {Number}, {Title}{(IsCurrent ? ", playing" : IsWatched ? ", watched" : "")}";
 }
-
-/// <summary>A notice about someone in the watch-together room, e.g. "joined the room".</summary>
-public sealed record RoomNotice(string Person, string Text);

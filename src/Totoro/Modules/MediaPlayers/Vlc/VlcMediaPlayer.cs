@@ -116,11 +116,11 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 
 	public void SetWatchedMark(TimeSpan? countsAt, bool isWatched) => _window?.ViewModel.SetWatchedMark(countsAt, isWatched);
 
-	public void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes) => _window?.ViewModel.SetEpisodes(episodes);
+	public void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes) => _window?.ViewModel.EpisodeList.SetEpisodes(episodes);
 
-	public void SetRoomPeople(IReadOnlyList<RoomPerson>? people) => _window?.ViewModel.SetRoomPeople(people);
+	public void SetRoomPeople(IReadOnlyList<RoomPerson>? people) => _window?.ViewModel.Room.SetRoomPeople(people);
 
-	public void ShowRoomNotice(string person, string text) => _ = _window?.ViewModel.ShowRoomNoticeAsync(person, text);
+	public void ShowRoomNotice(string person, string text) => _ = _window?.ViewModel.Room.ShowRoomNoticeAsync(person, text);
 
 	/// <summary>The window's view model, opening the window if it isn't.</summary>
 	private PlayerViewModel Open()
@@ -138,8 +138,8 @@ internal sealed class VlcMediaPlayer(IModuleSettings<Settings> settings, IPrefer
 		viewModel.DurationChanged += (_, e) => DurationChanged?.Invoke(this, e);
 		viewModel.PositionChanged += (_, e) => PositionChanged?.Invoke(this, e);
 		viewModel.Ended += (_, _) => PlaybackStopped?.Invoke(this, EventArgs.Empty);
-		viewModel.EpisodeRequested += (_, e) => EpisodeRequested?.Invoke(this, e);
-		viewModel.RoomChatSent += (_, e) => RoomChatSent?.Invoke(this, e);
+		viewModel.EpisodeList.EpisodeRequested += (_, e) => EpisodeRequested?.Invoke(this, e);
+		viewModel.Room.RoomChatSent += (_, e) => RoomChatSent?.Invoke(this, e);
 
 		var window = new PlayerWindow(viewModel, settings.Value);
 		window.Closed += async (_, _) =>

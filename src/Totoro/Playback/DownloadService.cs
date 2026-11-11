@@ -182,17 +182,19 @@ public sealed class DownloadService(
 		},
 	};
 
-	private static readonly TimeSpan s_reportInterval = TimeSpan.FromSeconds(1);
+	internal static readonly TimeSpan ReportInterval = TimeSpan.FromSeconds(1);
 
 	// One download at a time: CDNs turn many at once away (AnimePahe's: 429), and a provider may not take parallel lookups.
 	private readonly SemaphoreSlim _queue = new(1, 1);
 
-	// Finding openings and endings, one episode at a time, so info files are written one at a time.
-	private readonly SemaphoreSlim _detecting = new(1, 1);
-	private readonly HashSet<string> _findingSegments = [with(StringComparer.OrdinalIgnoreCase)]; // by folder name
+	private readonly YtDlpDownloader _ytDlp = new(preferences);
 
-	// Songs' fingerprints and lengths, by their audio's URL: a season's episodes share them.
-	private readonly ConcurrentDictionary<Uri, (uint[] Print, TimeSpan Length)> _songPrints = new();
+	// Made on first use: it shares the HTTP client.
+	private SegmentDetector? _segments;
+	private SegmentDetector Segments => _segments ??= new(_http, songs, segmentProviders, logger);
+
+	// The anime folders whose openings and endings are being looked for.
+	private readonly HashSet<string> _findingSegments = [with(StringComparer.OrdinalIgnoreCase)]; // by folder name
 
 	/// <summary>How many downloads are going or waiting their turn.</summary>
 	public int ActiveCount => Downloads.Count(x => x.IsActive);
@@ -511,7 +513,7 @@ public sealed class DownloadService(
 			item.State = DownloadState.Completed;
 			RefreshLibrary();
 			// After it's done, so the next download doesn't wait for it.
-			_ = DetectSegmentsAsync(number, path, item.Folder);
+			_ = Segments.DetectAsync(number, path, item.Folder);
 		}
 		catch (Exception ex)
 		{
@@ -610,7 +612,7 @@ public sealed class DownloadService(
 	/// </summary>
 	public async Task<(int Checked, int Found)> FindMissingSegmentsAsync(string name)
 	{
-		if (!File.Exists(FfmpegPath))
+		if (!File.Exists(SegmentDetector.FfmpegPath))
 		{
 			throw new DownloadException("It needs FFmpeg, which comes with mpv: set up the MPV media player first.");
 		}
@@ -644,7 +646,7 @@ public sealed class DownloadService(
 			var found = 0;
 			foreach (var (file, number) in missing)
 			{
-				found += await DetectSegmentsAsync(number!.Value, file.FullName, folder.FullName) ? 1 : 0;
+				found += await Segments.DetectAsync(number!.Value, file.FullName, folder.FullName) ? 1 : 0;
 			}
 
 			return (missing.Count, found);
@@ -653,129 +655,6 @@ public sealed class DownloadService(
 		{
 			_findingSegments.Remove(folder.Name);
 			RefreshLibrary();
-		}
-	}
-
-	private static string FfmpegPath => Path.Combine(MpvInstaller.Folder, "ffmpeg.exe");
-
-	/// <summary>
-	/// Finds the episode's opening and ending by the sound of the anime's songs on AnimeThemes (see
-	/// <see cref="AudioFingerprint"/>), and keeps them in the anime's info file, for the Downloads provider to play it with.
-	/// Needs mpv's ffmpeg and the anime's MyAnimeList id in its info file; without them, or if the songs aren't found, the
-	/// episode has none (and Aniskip's are used). Returns whether any were found.
-	/// </summary>
-	private async Task<bool> DetectSegmentsAsync(int number, string file, string folder)
-	{
-		var ffmpeg = FfmpegPath;
-		if (!File.Exists(ffmpeg))
-		{
-			return false;
-		}
-
-		await _detecting.WaitAsync();
-		var title = Path.GetFileName(folder);
-		try
-		{
-			if (DownloadNames.ReadInfo(folder)?.MalId is not { } malId)
-			{
-				return false;
-			}
-
-			var candidates = (await songs.GetSongsAsync(malId))
-				.Where(x => x.Kind is AnimeSongKind.Opening or AnimeSongKind.Ending && x.Audio is not null && AudioFingerprint.Covers(x.Episodes, number))
-				.ToList();
-			if (candidates.Count == 0)
-			{
-				return false;
-			}
-
-			var samples = await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None);
-			var (episode, duration) = await Task.Run(() => (AudioFingerprint.Compute(samples), AudioFingerprint.Duration(samples)));
-			List<MediaSegment> segments = [];
-			foreach (var kind in candidates.GroupBy(x => x.Kind))
-			{
-				// Of a kind's songs (when the episodes they're in aren't known), the one that matches best.
-				(MediaSegment Segment, double ErrorRate)? best = null;
-				foreach (var song in kind)
-				{
-					var (print, length) = await GetSongPrintAsync(ffmpeg, song.Audio!);
-					if (await Task.Run(() => AudioFingerprint.Find(print, episode)) is { } found && (best is null || found.ErrorRate < best.Value.ErrorRate))
-					{
-						var type = kind.Key == AnimeSongKind.Opening ? MediaSegmentType.Opening : MediaSegmentType.Ending;
-						best = (new MediaSegment(type, found.Start, found.Start + length), found.ErrorRate);
-					}
-				}
-
-				if (best is { } match)
-				{
-					segments.Add(match.Segment);
-				}
-			}
-
-			logger.LogInformation("Found {Count} of {Anime} episode {Number}'s opening and ending", segments.Count, title, number);
-			// Read again: the info may have been edited while the songs were looked for.
-			if (segments.Count == 0 || DownloadNames.ReadInfo(folder) is not { } info)
-			{
-				return false;
-			}
-
-			var all = new Dictionary<int, IReadOnlyList<MediaSegment>>(info.Segments ?? new Dictionary<int, IReadOnlyList<MediaSegment>>())
-			{
-				[number] = [.. segments.OrderBy(x => x.Start)],
-			};
-			DownloadNames.WriteInfo(folder, info with { Segments = all });
-			foreach (var provider in segmentProviders)
-			{
-				_ = provider.SubmitSegmentsAsync(malId, number, duration, all[number]);
-			}
-
-			return true;
-		}
-		catch (Exception ex)
-		{
-			logger.LogWarning(ex, "Couldn't find {Anime} episode {Number}'s opening and ending", title, number);
-			return false;
-		}
-		finally
-		{
-			_detecting.Release();
-		}
-	}
-
-	private async Task<(uint[] Print, TimeSpan Length)> GetSongPrintAsync(string ffmpeg, Uri audio)
-	{
-		if (_songPrints.TryGetValue(audio, out var known))
-		{
-			return known;
-		}
-
-		// Kept across restarts: AnimeThemes' files don't change. The folder's version changes with how prints are taken.
-		var saved = FileHelper.GetPath(Path.Combine("Fingerprints", "v1",
-			Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(audio.AbsoluteUri)))[..32] + ".fp"));
-		if (AudioFingerprint.Load(saved) is { } loaded)
-		{
-			return _songPrints[audio] = loaded;
-		}
-
-		var file = Path.GetTempFileName();
-		try
-		{
-			using (var request = new HttpRequestMessage(HttpMethod.Get, audio))
-			{
-				// AnimeThemes refuses requests without one of its own.
-				request.Headers.UserAgent.ParseAdd("Totoro/1.0 (anime tracker)");
-				using var response = await _http.SendAsync(request);
-				await File.WriteAllBytesAsync(file, await response.EnsureSuccessStatusCode().Content.ReadAsByteArrayAsync());
-			}
-
-			var samples = await AudioFingerprint.DecodeAsync(ffmpeg, file, CancellationToken.None);
-			var (print, length) = await Task.Run(() => (AudioFingerprint.Compute(samples), AudioFingerprint.Duration(samples)));
-			AudioFingerprint.Save(saved, print, length);
-			return _songPrints[audio] = (print, length);
-		}
-		finally
-		{
-			File.Delete(file);
 		}
 	}
 
@@ -914,7 +793,7 @@ public sealed class DownloadService(
 		if (url.AbsolutePath.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
 		{
 			downloader.Report("yt-dlp");
-			return await DownloadWithYtDlpAsync(url, headers, output, progress, ct);
+			return await _ytDlp.DownloadAsync(url, headers, output, progress, ct);
 		}
 
 		using var response = await GetAsync(url, headers, ct);
@@ -922,7 +801,7 @@ public sealed class DownloadService(
 		if (type.Contains("mpegurl", StringComparison.OrdinalIgnoreCase))
 		{
 			downloader.Report("yt-dlp");
-			return await DownloadWithYtDlpAsync(url, headers, output, progress, ct);
+			return await _ytDlp.DownloadAsync(url, headers, output, progress, ct);
 		}
 
 		downloader.Report("HTTP");
@@ -946,7 +825,7 @@ public sealed class DownloadService(
 			written += read;
 			// Once a second, not every read: each report is a trip to the UI thread. The speed is that second's, as received:
 			// unlike yt-dlp's fragments, a stream arrives steadily enough not to need smoothing.
-			if (sinceReport.Elapsed >= s_reportInterval)
+			if (sinceReport.Elapsed >= ReportInterval)
 			{
 				var speed = (written - reported) / sinceReport.Elapsed.TotalSeconds;
 				progress.Report(new DownloadProgress(length > 0 ? (double)written / length.Value : -1, speed, written, length));
@@ -966,150 +845,6 @@ public sealed class DownloadService(
 		"video/mp4" => ".mp4",
 		_ => new TorrentFile(0, path, 0).IsVideo ? Path.GetExtension(path).ToLowerInvariant() : ".mp4",
 	};
-
-	/// <summary>
-	/// Downloads an HLS stream (its best video and audio) with yt-dlp, into an MPEG-TS file, or one ffmpeg merged when its
-	/// audio is apart from its video; returns the file's extension. It connects as Chrome does:
-	/// Cloudflare turns away other clients (AnimePahe's CDN answers .NET, ffmpeg and curl with 403), but not browsers.
-	/// </summary>
-	private async Task<string> DownloadWithYtDlpAsync(Uri url, IReadOnlyDictionary<string, string> headers, string output,
-													  IProgress<DownloadProgress> progress, CancellationToken ct)
-	{
-		var ytDlp = FindYtDlp() ?? throw new DownloadException(
-			"Downloading this stream (HLS) needs yt-dlp. Install it (e.g. \"winget install yt-dlp\") or choose yt-dlp.exe in Settings, then download again.");
-
-		var startInfo = new ProcessStartInfo(ytDlp)
-		{
-			UseShellExecute = false,
-			CreateNoWindow = true,
-			RedirectStandardOutput = true,
-			RedirectStandardError = true,
-		};
-		// Its own HLS downloader (8 fragments at a time) rather than ffmpeg, which would be turned away; nothing to fix up
-		// afterwards, so it needs no ffmpeg at all. A few fragments at a time, backing off when the CDN says too many
-		// (429), and failing rather than skipping one it can't get, which would leave a gap in the episode. % starts a
-		// field in yt-dlp's output template.
-		string[] args =
-		[
-			"--no-config", "--no-playlist", "--impersonate", "chrome", "--hls-prefer-native", "--fixup", "never", "--newline",
-			"-N", "3", "--fragment-retries", "15", "--retry-sleep", "fragment:exp=2:60", "--abort-on-unavailable-fragments",
-			"--progress-template", "download:[totoro] %(progress.fragment_index)s/%(progress.fragment_count)s %(progress.downloaded_bytes)s %(progress.total_bytes_estimate)s",
-			"-o", output.Replace("%", "%%", StringComparison.Ordinal),
-		];
-		foreach (var arg in args)
-		{
-			startInfo.ArgumentList.Add(arg);
-		}
-
-		// To merge a stream whose audio is apart from its video (KickAssAnime's): mpv's download comes with ffmpeg, else
-		// yt-dlp looks for one on the PATH.
-		if (File.Exists(Path.Combine(Modules.MediaPlayers.Mpv.MpvInstaller.Folder, "ffmpeg.exe")))
-		{
-			startInfo.ArgumentList.Add("--ffmpeg-location");
-			startInfo.ArgumentList.Add(Modules.MediaPlayers.Mpv.MpvInstaller.Folder);
-		}
-
-		foreach (var (name, value) in headers)
-		{
-			startInfo.ArgumentList.Add("--add-header");
-			startInfo.ArgumentList.Add($"{name}:{value}");
-		}
-
-		startInfo.ArgumentList.Add(url.AbsoluteUri);
-
-		using var process = new Process { StartInfo = startInfo };
-		var errors = new List<string>();
-		// 0 is long ago, so the first line is reported.
-		long lastReport = 0;
-		var speedMeter = new SpeedMeter();
-		process.ErrorDataReceived += (_, e) =>
-		{
-			if (e.Data is { } line && line.StartsWith("ERROR:", StringComparison.Ordinal))
-			{
-				lock (errors)
-				{
-					errors.Add(line["ERROR:".Length..].Trim());
-				}
-			}
-		};
-		process.OutputDataReceived += (_, e) =>
-		{
-			// "[totoro] 12/145 5000000 60000000.0": fragments downloaded, of how many, bytes downloaded, and the size it
-			// expects from the fragments so far; "NA" for what isn't known yet. Not its speed: that's the fragment it last
-			// reported on's, one of several at once. It prints many a second; like a download's, one a second is reported.
-			if (Stopwatch.GetElapsedTime(lastReport) >= s_reportInterval &&
-				e.Data is { } line && line.StartsWith("[totoro] ", StringComparison.Ordinal) &&
-				line["[totoro] ".Length..].Split(' ', '/') is [var done, var count, var downloaded, var total] &&
-				int.TryParse(done, out var fragment) && int.TryParse(count, out var fragments) && fragments > 0)
-			{
-				lastReport = Stopwatch.GetTimestamp();
-				var bytes = Number(downloaded);
-				progress.Report(new DownloadProgress(Math.Clamp((double)fragment / fragments, 0, 1), speedMeter.Next(bytes), bytes, Number(total)));
-			}
-
-			static double? Number(string text) => double.TryParse(text, CultureInfo.InvariantCulture, out var number) ? number : null;
-		};
-
-		process.Start();
-		ChildProcesses.Add(process);
-		process.BeginOutputReadLine();
-		process.BeginErrorReadLine();
-		try
-		{
-			await process.WaitForExitAsync(ct);
-		}
-		catch (OperationCanceledException)
-		{
-			process.Kill(entireProcessTree: true);
-			await process.WaitForExitAsync(CancellationToken.None);
-			throw;
-		}
-
-		if (process.ExitCode != 0)
-		{
-			string reason;
-			lock (errors)
-			{
-				reason = errors.LastOrDefault() ?? $"exit code {process.ExitCode}";
-			}
-
-			throw new DownloadException($"yt-dlp couldn't download it: {reason}");
-		}
-
-		if (File.Exists(output))
-		{
-			return ".ts";
-		}
-
-		// Merged from separate video and audio, it's the output with the merged format's extension added (episode.part.mp4).
-		foreach (var extension in new[] { ".mp4", ".mkv", ".webm" })
-		{
-			if (File.Exists(output + extension))
-			{
-				File.Move(output + extension, output);
-				return extension;
-			}
-		}
-
-		// Without ffmpeg, yt-dlp leaves the video and audio apart (episode.part.f3102.mp4...) and succeeds.
-		throw new DownloadException("This stream's audio is apart from its video, which takes ffmpeg to put together: download mpv in its settings (it comes with ffmpeg), or install ffmpeg, then download again.");
-	}
-
-	/// <summary>The yt-dlp.exe the user chose; if they haven't, the one on the PATH, or the one downloaded with mpv.</summary>
-	private string? FindYtDlp()
-	{
-		if (preferences.YtDlpPath is { Length: > 0 } chosen)
-		{
-			return File.Exists(chosen) ? chosen : throw new DownloadException($"yt-dlp isn't at {chosen} any more: choose it again on the Downloads page.");
-		}
-
-		// The user's and machine's PATH as they are now (from the registry), so yt-dlp installed while Totoro runs is found.
-		return new[] { EnvironmentVariableTarget.Process, EnvironmentVariableTarget.User, EnvironmentVariableTarget.Machine }
-			   .SelectMany(x => (Environment.GetEnvironmentVariable("PATH", x) ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-			   .Select(x => Path.Combine(Environment.ExpandEnvironmentVariables(x), "yt-dlp.exe"))
-			   .Append(Path.Combine(Modules.MediaPlayers.Mpv.MpvInstaller.Folder, "yt-dlp.exe"))
-			   .FirstOrDefault(File.Exists);
-	}
 
 	/// <summary>Gets <paramref name="url"/> with the headers the stream needs, up to its headers; fails on an error status.</summary>
 	private async Task<HttpResponseMessage> GetAsync(Uri url, IReadOnlyDictionary<string, string> headers, CancellationToken ct)

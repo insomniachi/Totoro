@@ -31,14 +31,6 @@ public sealed partial class PlayerWindow : Window
 	private static readonly TimeSpan s_hideControlsAfter = TimeSpan.FromSeconds(3);
 	private static readonly TimeSpan s_arrowSeek = TimeSpan.FromSeconds(5);
 
-	// The seek bar's sections: the opening (and recap) and the ending, in Windows' yellow and teal; the episode in the accent colour.
-	private static readonly Color s_openingColor = Color.FromArgb(255, 0xFF, 0xB9, 0x00);
-	private static readonly Color s_endingColor = Color.FromArgb(255, 0x00, 0xB7, 0xC3);
-
-	// The slider's thumb (SliderHorizontalThumbWidth), and the gap between the track's sections.
-	private const double ThumbWidth = 18;
-	private const double SectionGap = 3;
-
 	private readonly DispatcherTimer _hideTimer = new() { Interval = s_hideControlsAfter };
 	private bool _isPointerOverBar;
 	private bool _isDraggingSeekBar;
@@ -75,6 +67,7 @@ public sealed partial class PlayerWindow : Window
 		UpdateTitle();
 
 		ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+		ViewModel.EpisodeList.PropertyChanged += OnEpisodeListPropertyChanged;
 		_hideTimer.Tick += (_, _) => HideControlsIfIdle();
 		// The slider handles the pointer itself; dragging it seeks when let go, not on every step.
 		SeekBar.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((_, _) => _isDraggingSeekBar = true), true);
@@ -94,6 +87,7 @@ public sealed partial class PlayerWindow : Window
 			_hideTimer.Stop();
 			SetCursorHidden(false);
 			ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+			ViewModel.EpisodeList.PropertyChanged -= OnEpisodeListPropertyChanged;
 		};
 		SetChromeShown(true);
 		ShowControls();
@@ -177,6 +171,22 @@ public sealed partial class PlayerWindow : Window
 		PlayPauseButton.Focus(FocusState.Programmatic);
 	}
 
+	private void OnEpisodeListPropertyChanged(object? sender, PropertyChangedEventArgs e)
+	{
+		if (e.PropertyName == nameof(PlayerEpisodeListViewModel.IsEpisodeListOpen))
+		{
+			// Opened or closed from elsewhere (a key, picking an episode): the pop-up follows.
+			if (ViewModel.EpisodeList.IsEpisodeListOpen && !EpisodeFlyout.IsOpen)
+			{
+				ShowEpisodeList();
+			}
+			else if (!ViewModel.EpisodeList.IsEpisodeListOpen && EpisodeFlyout.IsOpen)
+			{
+				EpisodeFlyout.Hide();
+			}
+		}
+	}
+
 	private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		switch (e.PropertyName)
@@ -201,18 +211,6 @@ public sealed partial class PlayerWindow : Window
 			case nameof(PlayerViewModel.IsPlaying) when !ViewModel.IsPlaying:
 				// Paused or over: the controls stay until it plays again.
 				ShowControls();
-				break;
-			case nameof(PlayerViewModel.IsEpisodeListOpen):
-				// Opened or closed from elsewhere (a key, picking an episode): the pop-up follows.
-				if (ViewModel.IsEpisodeListOpen && !EpisodeFlyout.IsOpen)
-				{
-					ShowEpisodeList();
-				}
-				else if (!ViewModel.IsEpisodeListOpen && EpisodeFlyout.IsOpen)
-				{
-					EpisodeFlyout.Hide();
-				}
-
 				break;
 			case nameof(PlayerViewModel.IsFullScreen):
 				var kind = ViewModel.IsFullScreen ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Overlapped;
@@ -262,7 +260,7 @@ public sealed partial class PlayerWindow : Window
 				ViewModel.ToggleFullScreenCommand.Execute(null);
 				break;
 			case var key when KeyboardShortcuts.IsPressed(keys.EpisodesKeys, key):
-				ViewModel.ToggleEpisodeListCommand.Execute(null);
+				ViewModel.EpisodeList.ToggleEpisodeListCommand.Execute(null);
 				break;
 			case var key when ViewModel.HasOffer && KeyboardShortcuts.IsPressed(keys.SkipKeys, key):
 				ViewModel.AcceptOfferCommand.Execute(null);
@@ -291,7 +289,7 @@ public sealed partial class PlayerWindow : Window
 
 	private void OnVideoTapped(object sender, TappedRoutedEventArgs e) => ViewModel.PlayPauseCommand.Execute(null);
 
-	private void OnEpisodesButtonClick(object sender, RoutedEventArgs e) => ViewModel.ToggleEpisodeListCommand.Execute(null);
+	private void OnEpisodesButtonClick(object sender, RoutedEventArgs e) => ViewModel.EpisodeList.ToggleEpisodeListCommand.Execute(null);
 
 	/// <summary>Opens the episode list above the controls (clear of the seek bar), centred over the Episodes button.</summary>
 	private void ShowEpisodeList()
@@ -313,20 +311,20 @@ public sealed partial class PlayerWindow : Window
 		if (e.Key == VirtualKey.Enter)
 		{
 			e.Handled = true;
-			ViewModel.SendRoomChat();
+			ViewModel.Room.SendRoomChat();
 		}
 	}
 
 	private void OnEpisodeListOpened(object? sender, object e)
 	{
-		ViewModel.IsEpisodeListOpen = true;
-		if (ViewModel.Episodes.FirstOrDefault(x => x.IsCurrent) is { } current)
+		ViewModel.EpisodeList.IsEpisodeListOpen = true;
+		if (ViewModel.EpisodeList.Episodes.FirstOrDefault(x => x.IsCurrent) is { } current)
 		{
 			EpisodeListView.ScrollIntoView(current, ScrollIntoViewAlignment.Leading);
 		}
 	}
 
-	private void OnEpisodeListClosed(object? sender, object e) => ViewModel.IsEpisodeListOpen = false;
+	private void OnEpisodeListClosed(object? sender, object e) => ViewModel.EpisodeList.IsEpisodeListOpen = false;
 
 	private void OnVideoDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
 	{
@@ -339,7 +337,7 @@ public sealed partial class PlayerWindow : Window
 
 	private void OnControlsPointerExited(object sender, PointerRoutedEventArgs e) => _isPointerOverBar = false;
 
-	private void OnEpisodeClick(object sender, ItemClickEventArgs e) => ViewModel.PlayEpisodeCommand.Execute(e.ClickedItem);
+	private void OnEpisodeClick(object sender, ItemClickEventArgs e) => ViewModel.EpisodeList.PlayEpisodeCommand.Execute(e.ClickedItem);
 
 	private void OnSeekBarValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 	{
@@ -375,122 +373,22 @@ public sealed partial class PlayerWindow : Window
 
 	private void OnSeekTrackSizeChanged(object sender, SizeChangedEventArgs e) => DrawSections();
 
-	/// <summary>
-	/// Draws the seek bar's track in sections: the episode, and its opening, ending and recap in their own colours, with
-	/// a gap between each. Drawn twice, dim and bright: the bright one is clipped to how far playback is.
-	/// </summary>
+	// Drawn on first use: the canvases are the window's own.
+	private SeekBarPainter? _painter;
+	private SeekBarPainter Painter => _painter ??= new(SeekTrack, TrackSections, PlayedSections, WatchedMark);
+
 	private void DrawSections()
 	{
-		TrackSections.Children.Clear();
-		PlayedSections.Children.Clear();
-		var width = SeekTrack.ActualWidth;
-		if (width <= 0)
+		if (Painter.DrawSections(ViewModel.Duration, ViewModel.Chapters))
 		{
-			return;
+			UpdatePlayed(_isDraggingSeekBar ? SeekBar.Value : ViewModel.Position);
+			DrawWatchedMark();
 		}
-
-		foreach (var (start, end, type) in GetSections())
-		{
-			// The first and last reach the track's ends; the others meet with a gap.
-			var left = start <= 0 ? 0 : ToTrackX(start, width) + SectionGap / 2;
-			var right = end >= 1 ? width : ToTrackX(end, width) - SectionGap / 2;
-			if (right - left < 1)
-			{
-				continue;
-			}
-
-			foreach (var (canvas, isPlayed) in new[] { (TrackSections, false), (PlayedSections, true) })
-			{
-				var section = new Rectangle
-				{
-					Width = right - left,
-					Height = SeekTrack.ActualHeight,
-					RadiusX = 2,
-					RadiusY = 2,
-					Fill = new SolidColorBrush(SectionColor(type, isPlayed)),
-				};
-				Canvas.SetLeft(section, left);
-				canvas.Children.Add(section);
-			}
-		}
-
-		UpdatePlayed(_isDraggingSeekBar ? SeekBar.Value : ViewModel.Position);
-		DrawWatchedMark();
 	}
 
-	/// <summary>
-	/// A notch across the track where the episode counts as watched, while it hasn't been yet (then a check by its length
-	/// says it has).
-	/// </summary>
-	private void DrawWatchedMark()
-	{
-		WatchedMark.Children.Clear();
-		var width = SeekTrack.ActualWidth;
-		if (ViewModel.IsWatched || ViewModel.WatchedAt < 0 || ViewModel.Duration <= 0 || width <= 0)
-		{
-			return;
-		}
+	private void DrawWatchedMark() => Painter.DrawWatchedMark(ViewModel.IsWatched, ViewModel.WatchedAt, ViewModel.Duration);
 
-		const double NotchHeight = 12;
-		var notch = new Rectangle
-		{
-			Width = 2,
-			Height = NotchHeight,
-			RadiusX = 1,
-			RadiusY = 1,
-			Fill = new SolidColorBrush(Colors.White),
-			IsHitTestVisible = false,
-		};
-		Canvas.SetLeft(notch, ToTrackX(Math.Clamp(ViewModel.WatchedAt / ViewModel.Duration, 0, 1), width) - notch.Width / 2);
-		Canvas.SetTop(notch, (SeekTrack.ActualHeight - NotchHeight) / 2);
-		WatchedMark.Children.Add(notch);
-	}
-
-	/// <summary>Brightens the track up to <paramref name="seconds"/>.</summary>
-	private void UpdatePlayed(double seconds)
-	{
-		var width = SeekTrack.ActualWidth;
-		var played = ViewModel.Duration > 0 && width > 0 ? ToTrackX(Math.Clamp(seconds / ViewModel.Duration, 0, 1), width) : 0;
-		PlayedSections.Clip = new RectangleGeometry { Rect = new Rect(0, 0, played, SeekTrack.ActualHeight) };
-	}
-
-	/// <summary>The track's sections, as fractions of the video: the episode where there's no segment.</summary>
-	private List<(double Start, double End, MediaSegmentType? Type)> GetSections()
-	{
-		var duration = ViewModel.Duration;
-		var chapters = ViewModel.Chapters;
-		if (duration <= 0 || chapters.Count == 0)
-		{
-			return [(0, 1, null)];
-		}
-
-		List<(double, double, MediaSegmentType?)> sections = [];
-		for (var i = 0; i < chapters.Count; i++)
-		{
-			var start = Math.Clamp(chapters[i].Start.TotalSeconds / duration, 0, 1);
-			var end = Math.Clamp((i + 1 < chapters.Count ? chapters[i + 1].Start.TotalSeconds : duration) / duration, 0, 1);
-			sections.Add((i == 0 ? 0 : start, end, Enum.TryParse<MediaSegmentType>(chapters[i].Title, out var type) ? type : null));
-		}
-
-		return sections;
-	}
-
-	// Where a fraction of the video is on the track: where the slider's thumb centre is for it, half a thumb in from
-	// each end.
-	private static double ToTrackX(double fraction, double width) => ThumbWidth / 2 + fraction * (width - ThumbWidth);
-
-	private static Color SectionColor(MediaSegmentType? type, bool isPlayed)
-	{
-		var color = type switch
-		{
-			MediaSegmentType.Opening or MediaSegmentType.Recap => s_openingColor,
-			MediaSegmentType.Ending => s_endingColor,
-			_ => isPlayed ? (Color)Application.Current.Resources["SystemAccentColorLight2"] : Colors.White,
-		};
-		// Unplayed is dimmer; the episode's unplayed part is a plain grey track.
-		color.A = isPlayed ? (byte)255 : type is null ? (byte)0x5C : (byte)0x80;
-		return color;
-	}
+	private void UpdatePlayed(double seconds) => Painter.UpdatePlayed(seconds, ViewModel.Duration);
 
 	private void OnTracksMenuOpening(object sender, object e)
 	{
@@ -555,7 +453,7 @@ public sealed partial class PlayerWindow : Window
 	{
 		_hideTimer.Stop();
 		// Not while paused, being used, or a menu or the episode list is open.
-		if (!ViewModel.IsPlaying || _isPointerOverBar || _isDraggingSeekBar || ViewModel.IsEpisodeListOpen ||
+		if (!ViewModel.IsPlaying || _isPointerOverBar || _isDraggingSeekBar || ViewModel.EpisodeList.IsEpisodeListOpen ||
 			Content.XamlRoot is { } root && VisualTreeHelper.GetOpenPopupsForXamlRoot(root).Count > 0)
 		{
 			_hideTimer.Start();

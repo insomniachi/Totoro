@@ -320,10 +320,7 @@ public partial class PluginTesterViewModel : ObservableObject
 
 		IsBusy = true;
 		InfoBarIsOpen = false;
-		_cancellation?.Cancel();
-		_cancellation?.Dispose();
-		_cancellation = new CancellationTokenSource();
-		var ct = _cancellation.Token;
+		var ct = RestartCancellation();
 
 		var targetItems = SelectedFilterOption?.Id is { } targetId
 			? Plugins.Where(p => p.Id == targetId).ToList()
@@ -350,27 +347,7 @@ public partial class PluginTesterViewModel : ObservableObject
 				item.OverallStatus = PluginTestStageStatus.Running;
 				StatusMessage = $"Testing {item.Name} ({i + 1} of {targetItems.Count})...";
 
-				var progressHandler = new Progress<PluginTestProgress>(p =>
-				{
-					if (p.ProviderId == item.Id)
-					{
-						if (p.StageName == "Search")
-						{
-							item.SearchStage.Status = p.Status;
-							item.SearchStage.Message = p.Message;
-						}
-						else if (p.StageName == "GetEpisodes")
-						{
-							item.EpisodesStage.Status = p.Status;
-							item.EpisodesStage.Message = p.Message;
-						}
-						else if (p.StageName == "GetServers")
-						{
-							item.ServersStage.Status = p.Status;
-							item.ServersStage.Message = p.Message;
-						}
-					}
-				});
+				var progressHandler = ProgressFor(item);
 
 				var result = await _tester.TestProviderAsync(item.Provider, query, progressHandler, TimeSpan.FromSeconds(TimeoutSeconds), ct);
 				item.ApplyResult(result);
@@ -465,34 +442,11 @@ public partial class PluginTesterViewModel : ObservableObject
 		item.OverallStatus = PluginTestStageStatus.Running;
 		StatusMessage = $"Testing {item.Name}...";
 
-		_cancellation?.Cancel();
-		_cancellation?.Dispose();
-		_cancellation = new CancellationTokenSource();
-		var ct = _cancellation.Token;
+		var ct = RestartCancellation();
 
 		try
 		{
-			var progressHandler = new Progress<PluginTestProgress>(p =>
-			{
-				if (p.ProviderId == item.Id)
-				{
-					if (p.StageName == "Search")
-					{
-						item.SearchStage.Status = p.Status;
-						item.SearchStage.Message = p.Message;
-					}
-					else if (p.StageName == "GetEpisodes")
-					{
-						item.EpisodesStage.Status = p.Status;
-						item.EpisodesStage.Message = p.Message;
-					}
-					else if (p.StageName == "GetServers")
-					{
-						item.ServersStage.Status = p.Status;
-						item.ServersStage.Message = p.Message;
-					}
-				}
-			});
+			var progressHandler = ProgressFor(item);
 
 			var result = await _tester.TestProviderAsync(item.Provider, query, progressHandler, TimeSpan.FromSeconds(TimeoutSeconds), ct);
 			item.ApplyResult(result);
@@ -524,6 +478,38 @@ public partial class PluginTesterViewModel : ObservableObject
 		{
 			IsBusy = false;
 		}
+	}
+
+	/// <summary>Shows a test's progress on its card, stage by stage.</summary>
+	private static Progress<PluginTestProgress> ProgressFor(PluginTestItemViewModel item) => new(p =>
+	{
+		if (p.ProviderId == item.Id)
+		{
+			if (p.StageName == "Search")
+			{
+				item.SearchStage.Status = p.Status;
+				item.SearchStage.Message = p.Message;
+			}
+			else if (p.StageName == "GetEpisodes")
+			{
+				item.EpisodesStage.Status = p.Status;
+				item.EpisodesStage.Message = p.Message;
+			}
+			else if (p.StageName == "GetServers")
+			{
+				item.ServersStage.Status = p.Status;
+				item.ServersStage.Message = p.Message;
+			}
+		}
+	});
+
+	/// <summary>Cancels any run going, and starts a new one's cancellation.</summary>
+	private CancellationToken RestartCancellation()
+	{
+		_cancellation?.Cancel();
+		_cancellation?.Dispose();
+		_cancellation = new CancellationTokenSource();
+		return _cancellation.Token;
 	}
 
 	[RelayCommand]
