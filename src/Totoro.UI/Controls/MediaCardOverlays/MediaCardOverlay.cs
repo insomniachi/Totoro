@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>When an overlay is on its card.</summary>
 public enum OverlayMode
@@ -15,11 +15,11 @@ public enum OverlayMode
 }
 
 /// <summary>
-/// Something shown over an <see cref="AnimeCard"/>, in its OverlayLayer: attached to the cards of a page (in its card
+/// Something shown over an <see cref="MediaCard"/>, in its OverlayLayer: attached to the cards of a page (in its card
 /// template's Interaction.Behaviors), so the card itself stays plain and each page adds what it needs. Behaviors that
 /// show nothing of their own (like <see cref="HoverEffectsBehavior"/>) aren't overlays.
 /// </summary>
-public abstract class AnimeCardOverlay<TControl> : BehaviorBase<AnimeCard>
+public abstract class MediaCardOverlay<TControl> : BehaviorBase<MediaCard>
 	where TControl : UIElement
 {
 	private TControl? Control { get; set; }

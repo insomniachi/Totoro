@@ -1,7 +1,7 @@
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
-using Totoro.UI.Controls.AnimeCardOverlays;
+using Totoro.UI.Controls.MediaCardOverlays;
 using Xunit;
 
 namespace Totoro.Tests;

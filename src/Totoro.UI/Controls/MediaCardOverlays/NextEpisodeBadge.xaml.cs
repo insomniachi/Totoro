@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>The badge <see cref="NextEpisodeOverlay"/> puts on a card.</summary>
 public sealed partial class NextEpisodeBadge : UserControl

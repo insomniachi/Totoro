@@ -4,13 +4,13 @@ using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// How many episodes of an anime the user is watching they've watched (or chapters of a manga read), out of its total (e.g. "5/12", or "5/?" while the
 /// total isn't known), on its card's bottom right; hidden while the card is hovered, where its actions show.
 /// </summary>
-public sealed class WatchProgressOverlay : LiveAnimeCardOverlay<LabelBadge>
+public sealed class WatchProgressOverlay : LiveMediaCardOverlay<LabelBadge>
 {
 	private LabelBadge? _badge;
 	private PointerEventHandler? _onCaptureLost;

@@ -116,7 +116,7 @@
                                     <!--  Blurred banner image of anime as background if it exists  -->
                                     <!--
                                         Each layer is clipped to the corners on its own, so where an edge pixel is partly covered, the light
-                                        image showed through the dark layer over it (a light fringe, as on the anime card). The image and its
+                                        image showed through the dark layer over it (a light fringe, as on the media card). The image and its
                                         blur are rounded a little more (10 to the clip's 7), so they stay just inside the curve, and the
                                         dark layer alone draws the corners.
                                     -->

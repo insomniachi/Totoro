@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 public sealed partial class ActionsOverlayResources : ResourceDictionary
 {

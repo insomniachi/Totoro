@@ -1,7 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// While a child (e.g. a button) captures the pointer, leaving the card raises no PointerExited; releasing outside

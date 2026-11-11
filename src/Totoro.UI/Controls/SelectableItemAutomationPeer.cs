@@ -11,12 +11,14 @@ namespace Totoro.UI.Controls;
 /// </summary>
 public sealed partial class SelectableItemAutomationPeer(ListViewItem owner) : ListViewItemAutomationPeer(owner), ISelectionItemProvider
 {
-	public bool IsSelected => owner.IsSelected;
+	private ListViewItem Item => (ListViewItem)Owner;
+
+	public bool IsSelected => Item.IsSelected;
 
 	public IRawElementProviderSimple? SelectionContainer =>
-		ItemsControl.ItemsControlFromItemContainer(owner) is { } list && FromElement(list) is { } peer ? ProviderFromPeer(peer) : null;
+		ItemsControl.ItemsControlFromItemContainer(Item) is { } list && FromElement(list) is { } peer ? ProviderFromPeer(peer) : null;
 
-	public void Select() => owner.IsSelected = true;
+	public void Select() => Item.IsSelected = true;
 
 	// Single selection: adding an item selects it, and the list can't be left with none.
 	public void AddToSelection() => Select();

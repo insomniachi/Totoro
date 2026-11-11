@@ -2,14 +2,14 @@ using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// Whether an anime is airing or yet to air (a manga publishing or yet to be), as a coloured dot on its card's bottom left.
 /// Finished ones, most of them, get none, nor do those being watched or read: an airing anime being watched has its next
 /// episode countdown (NextEpisodeOverlay), which says as much.
 /// </summary>
-public sealed class AiringStatusOverlay : LiveAnimeCardOverlay<AiringStatusBadge>
+public sealed class AiringStatusOverlay : LiveMediaCardOverlay<AiringStatusBadge>
 {
 	internal static bool IsShown(IMediaModel item) =>
 		Status(item) is AiringStatus.CurrentlyAiring or AiringStatus.NotYetAired && item.ListStatus is not ListItemStatus.Watching;

@@ -3,13 +3,13 @@ using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// An anime's format and when it aired (e.g. "TV · Fall 2024"), or a manga's and the year it began ("Manhwa · 2018"), on
 /// its card's bottom left; none when neither is known.
 /// </summary>
-public sealed class FormatSeasonOverlay : LiveAnimeCardOverlay<LabelBadge>
+public sealed class FormatSeasonOverlay : LiveMediaCardOverlay<LabelBadge>
 {
 	internal static bool IsShown(IMediaModel item) => Text(item).Length > 0;
 

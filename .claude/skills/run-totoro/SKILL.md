@@ -56,7 +56,7 @@ winapp ui get-value ToolResult -a <pid>                         # the JSON resul
 When adding UI, check it with `winapp ui inspect -a <pid> -i`. Anything you can act on must show up there with a name:
 
 - A button whose content isn't plain text (an icon, a StackPanel) needs `AutomationProperties.Name`.
-- A control that handles `Tapped` itself needs an automation peer that implements Invoke, e.g. `AnimeCard`.
+- A control that handles `Tapped` itself needs an automation peer that implements Invoke, e.g. `MediaCard`.
 - Use `controls:SelectableSegmented` / `SelectableSegmentedItem`, not the toolkit's `Segmented`: its segments can't be selected through UI Automation.
 - An item in a list is named by its `ToString()` unless the container sets a name.
 - Use `controls:SelectableTokenView`, not the Labs `TokenView`: reading the plain one hangs and leaves the app's whole tree unreadable.

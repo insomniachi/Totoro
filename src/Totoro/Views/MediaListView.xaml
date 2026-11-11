@@ -17,7 +17,7 @@
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:toolkitui="using:CommunityToolkit.WinUI"
     xmlns:ui="using:Totoro.UI"
-    xmlns:overlays="using:Totoro.UI.Controls.AnimeCardOverlays"
+    xmlns:overlays="using:Totoro.UI.Controls.MediaCardOverlays"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -73,22 +73,22 @@
         <local:MediaTemplateSelector x:Key="CardTemplate">
             <local:MediaTemplateSelector.Anime>
                 <DataTemplate x:DataType="anime:AnimeModel">
-                    <controls:AnimeCard Height="400" Anime="{x:Bind}" Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
+                    <controls:MediaCard Height="400" Media="{x:Bind}" Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
                         <Interactivity:Interaction.Behaviors>
                             <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
                             <overlays:HoverEffectsBehavior />
                         </Interactivity:Interaction.Behaviors>
-                    </controls:AnimeCard>
+                    </controls:MediaCard>
                 </DataTemplate>
             </local:MediaTemplateSelector.Anime>
             <local:MediaTemplateSelector.Manga>
                 <DataTemplate x:DataType="manga:MangaModel">
-                    <controls:AnimeCard Height="400" Media="{x:Bind}" Command="{x:Bind commands:MangaCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
+                    <controls:MediaCard Height="400" Media="{x:Bind}" Command="{x:Bind commands:MangaCommands.Shared.ShowDetailsCommand}" Overlays="{StaticResource CardOverlays}">
                         <Interactivity:Interaction.Behaviors>
                             <overlays:ActionsOverlay Actions="{StaticResource MangaCardActions}" />
                             <overlays:HoverEffectsBehavior />
                         </Interactivity:Interaction.Behaviors>
-                    </controls:AnimeCard>
+                    </controls:MediaCard>
                 </DataTemplate>
             </local:MediaTemplateSelector.Manga>
         </local:MediaTemplateSelector>

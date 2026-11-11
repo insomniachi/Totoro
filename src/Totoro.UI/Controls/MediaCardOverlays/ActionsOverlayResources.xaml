@@ -6,7 +6,7 @@
     High contrast keeps the default style.
 -->
 <ResourceDictionary
-    x:Class="Totoro.UI.Controls.AnimeCardOverlays.ActionsOverlayResources"
+    x:Class="Totoro.UI.Controls.MediaCardOverlays.ActionsOverlayResources"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>

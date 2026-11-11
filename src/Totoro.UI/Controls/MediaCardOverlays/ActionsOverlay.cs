@@ -4,14 +4,14 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// A card's actions: the ones marked <see cref="CardAction.ShowOnHover"/> as buttons on the cover while it's hovered,
 /// one click each, and all of them in the card's right-click menu.
 /// Declare the actions inline, or as a shared <see cref="CardActionCollection"/> resource.
 /// </summary>
-public partial class ActionsOverlay : AnimeCardOverlay<StackPanel>
+public partial class ActionsOverlay : MediaCardOverlay<StackPanel>
 {
 	public ActionsOverlay()
 	{

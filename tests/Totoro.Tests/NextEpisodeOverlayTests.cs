@@ -1,4 +1,4 @@
-using Totoro.UI.Controls.AnimeCardOverlays;
+using Totoro.UI.Controls.MediaCardOverlays;
 using Xunit;
 
 namespace Totoro.Tests;

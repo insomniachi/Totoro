@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:commands="using:Totoro.Commands"
-    xmlns:overlays="using:Totoro.UI.Controls.AnimeCardOverlays"
+    xmlns:overlays="using:Totoro.UI.Controls.MediaCardOverlays"
     xmlns:toolkitui="using:CommunityToolkit.WinUI"
     xmlns:controls="using:Totoro.UI.Controls"
     xmlns:helpers="using:Totoro.Helpers"
@@ -31,7 +31,7 @@
         <overlays:BrowseOverlays x:Key="CardOverlays" />
 
         <DataTemplate x:Key="CardTemplate" x:DataType="manga:MangaModel">
-            <controls:AnimeCard
+            <controls:MediaCard
                 Width="190"
                 Height="320"
                 Command="{x:Bind commands:MangaCommands.Shared.ShowDetailsCommand}"
@@ -41,7 +41,7 @@
                     <overlays:ActionsOverlay Actions="{StaticResource CardActions}" />
                     <overlays:HoverEffectsBehavior />
                 </Interactivity:Interaction.Behaviors>
-            </controls:AnimeCard>
+            </controls:MediaCard>
         </DataTemplate>
 
         <!--  The rows are the anime Discover page's (DiscoverPage.xaml), which pages them too  -->

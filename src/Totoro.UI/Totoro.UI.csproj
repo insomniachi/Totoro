@@ -8,9 +8,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Controls\AnimeCard.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Labs.WinUI.DependencyPropertyGenerator" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" />
     <PackageReference Include="CommunityToolkit.WinUI.Behaviors" />
@@ -28,10 +25,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Totoro.Core\Totoro.Core.csproj" />
     <InternalsVisibleTo Include="Totoro.Tests" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Controls\AnimeCard.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 </Project>

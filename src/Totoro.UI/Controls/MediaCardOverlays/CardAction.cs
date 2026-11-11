@@ -3,11 +3,11 @@ using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// An action a card overlay offers, e.g. one of the <see cref="ActionsOverlay"/>'s buttons or menu items.
-/// <see cref="Command"/> receives <see cref="CommandParameter"/> if set, otherwise the card's <c>AnimeModel</c>.
+/// <see cref="Command"/> receives <see cref="CommandParameter"/> if set, otherwise the card's anime or manga (<c>MediaCard.Media</c>).
 /// </summary>
 public sealed partial class CardAction : DependencyObject
 {

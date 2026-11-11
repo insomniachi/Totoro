@@ -3,9 +3,9 @@ using Microsoft.UI.Xaml;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
-/// <summary>An overlay the card refreshes when its item changes or a minute passes (see <see cref="AnimeCard.Overlays"/>).</summary>
+/// <summary>An overlay the card refreshes when its item changes or a minute passes (see <see cref="MediaCard.Overlays"/>).</summary>
 internal interface ILiveOverlay
 {
 	void Update(IMediaModel? item, DateTime now);
@@ -17,7 +17,7 @@ internal interface ILiveOverlay
 /// it has something to show; the card then updates it when it shows another item (cards are reused for others as a
 /// list scrolls), when the item's place on the list changes, and each minute (one timer for every card).
 /// </summary>
-public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl>, ILiveOverlay
+public abstract class LiveMediaCardOverlay<TControl> : MediaCardOverlay<TControl>, ILiveOverlay
 	where TControl : UIElement
 {
 	private TControl? _control;
@@ -61,7 +61,7 @@ public abstract class LiveAnimeCardOverlay<TControl> : AnimeCardOverlay<TControl
 	}
 }
 
-/// <summary>One timer for every live overlay of every card (see AnimeCard.Overlays), ticking each minute while any follows it.</summary>
+/// <summary>One timer for every live overlay of every card (see MediaCard.Overlays), ticking each minute while any follows it.</summary>
 internal static class MinuteTimer
 {
 	private static DispatcherQueueTimer? s_timer;

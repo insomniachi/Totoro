@@ -2,7 +2,7 @@ using Totoro.Core;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// How many episodes of an anime the user is watching have aired that they haven't watched, as a badge (Fluent's
@@ -10,7 +10,7 @@ namespace Totoro.UI.Controls.AnimeCardOverlays;
 /// <see cref="EpisodeAvailability"/>). Once its provider's been checked (<see cref="AnimeModel.ProviderEpisodes"/>), the
 /// count is of those the provider has; when it has none of them yet, the badge is grey, with the count that aired.
 /// </summary>
-public sealed class NewEpisodesOverlay : LiveAnimeCardOverlay<NewEpisodesBadge>
+public sealed class NewEpisodesOverlay : LiveMediaCardOverlay<NewEpisodesBadge>
 {
 	internal static bool IsShown(IMediaModel item, DateTime now) => item is AnimeModel anime && EpisodeAvailability.NewEpisodes(anime, now) > 0;
 

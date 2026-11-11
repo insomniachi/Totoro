@@ -12,13 +12,13 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Xaml.Interactivity;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
-using Totoro.UI.Controls.AnimeCardOverlays;
+using Totoro.UI.Controls.MediaCardOverlays;
 
 namespace Totoro.UI.Controls;
 
-public sealed partial class AnimeCard : UserControl
+public sealed partial class MediaCard : UserControl
 {
-	public AnimeCard()
+	public MediaCard()
 	{
 		InitializeComponent();
 		Tapped += OnTapped;
@@ -114,27 +114,13 @@ public sealed partial class AnimeCard : UserControl
 		}
 	}
 
-	/// <summary>The anime shown, for overlays only anime have (e.g. the next episode); null on a manga's card.</summary>
-	[GeneratedDependencyProperty]
-	public partial AnimeModel? Anime { get; set; }
-
-	/// <summary>The anime or manga shown: what the card itself and the overlays both have (score, place on the list...) show.</summary>
+	/// <summary>The anime or manga shown, and what its overlays show (score, place on the list, an anime's next episode...).</summary>
 	[GeneratedDependencyProperty]
 	public partial IMediaModel? Media { get; set; }
 
 	/// <summary>Runs with the card's <see cref="Media"/> when the card is clicked, e.g. to show its details.</summary>
 	[GeneratedDependencyProperty]
 	public partial ICommand? Command { get; set; }
-
-	// Either is set; each keeps the other in step (a manga's card has no anime, which mustn't clear its manga). Only on a
-	// real change: setting one to what it already is still calls these, and they'd call each other forever.
-	partial void OnAnimeChanged(AnimeModel? newValue)
-	{
-		if (!ReferenceEquals(Media, newValue) && (newValue is not null || Media is AnimeModel))
-		{
-			Media = newValue;
-		}
-	}
 
 	// The poster showing (its URL).
 	private string? _shownImage;
@@ -148,11 +134,6 @@ public sealed partial class AnimeCard : UserControl
 		{
 			_shownImage = newValue.Image;
 			PosterFade.Opacity = 0;
-		}
-
-		if (!ReferenceEquals(Anime, newValue as AnimeModel))
-		{
-			Anime = newValue as AnimeModel;
 		}
 
 		// A recycled card whose old and new titles are both trimmed gets no IsTextTrimmedChanged: the tooltip would keep
@@ -213,11 +194,11 @@ public sealed partial class AnimeCard : UserControl
 	/// Without it the card is a plain pane: only its title's text can be found, and nothing can invoke it.
 	/// Expanding it opens its menu (its right-click menu, with the actions it shows on hover), for a card that has one.
 	/// </summary>
-	private sealed partial class CardAutomationPeer(AnimeCard owner) : FrameworkElementAutomationPeer(owner), IInvokeProvider, IExpandCollapseProvider
+	private sealed partial class CardAutomationPeer(MediaCard owner) : FrameworkElementAutomationPeer(owner), IInvokeProvider, IExpandCollapseProvider
 	{
 		protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
 
-		protected override string GetClassNameCore() => nameof(AnimeCard);
+		protected override string GetClassNameCore() => nameof(MediaCard);
 
 		protected override string GetNameCore() => owner.Media?.Title ?? "";
 

@@ -2,13 +2,13 @@ using System.Globalization;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// The next episode of an anime being watched or planned, and how long until it airs (e.g. "Ep 4 in 5d 22h"), on its
 /// card's top left, while there's one coming.
 /// </summary>
-public sealed class NextEpisodeOverlay : LiveAnimeCardOverlay<NextEpisodeBadge>
+public sealed class NextEpisodeOverlay : LiveMediaCardOverlay<NextEpisodeBadge>
 {
 	protected override NextEpisodeBadge Create() => new();
 

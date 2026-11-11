@@ -1,10 +1,10 @@
 using Totoro.Core.Modules;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// Which overlays a card shows for its item, like a DataTemplateSelector for the overlays: set on a page's cards
-/// (<see cref="AnimeCard.Overlays"/>), so each card carries only the overlays its item needs. The card asks again when
+/// (<see cref="MediaCard.Overlays"/>), so each card carries only the overlays its item needs. The card asks again when
 /// it shows another item, when the item changes, and each minute, and keeps the overlays it already has (by type).
 /// Overlays every card has (its actions, hover effects) stay in the card template's Interaction.Behaviors.
 /// </summary>

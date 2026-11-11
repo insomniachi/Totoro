@@ -1,10 +1,10 @@
 using Microsoft.UI.Xaml;
 using Totoro.Core.Modules;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>Where an anime or manga is on the user's list (e.g. "Watching"), on its card's top left; none when it isn't on it.</summary>
-public sealed class ListStatusOverlay : LiveAnimeCardOverlay<LabelBadge>
+public sealed class ListStatusOverlay : LiveMediaCardOverlay<LabelBadge>
 {
 	internal static bool IsShown(IMediaModel item) => item.ListStatus is not null;
 

@@ -1,10 +1,10 @@
 using Microsoft.UI.Xaml;
 using Totoro.Core.Modules;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>An anime's or manga's mean score out of 10 (e.g. "★ 8.4"), on its card's top right; none while it has no score.</summary>
-public sealed class MeanScoreOverlay : LiveAnimeCardOverlay<LabelBadge>
+public sealed class MeanScoreOverlay : LiveMediaCardOverlay<LabelBadge>
 {
 	internal static bool IsShown(IMediaModel item) => item.MeanScore is > 0;
 

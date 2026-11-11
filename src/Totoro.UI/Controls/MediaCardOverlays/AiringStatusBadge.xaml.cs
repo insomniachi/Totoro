@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>The badge <see cref="AiringStatusOverlay"/> puts on a card.</summary>
 public sealed partial class AiringStatusBadge : UserControl

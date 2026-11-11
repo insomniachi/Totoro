@@ -2,7 +2,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>An icon and a short label on a card's corner, e.g. its list status (<see cref="ListStatusOverlay"/>).</summary>
 public sealed partial class LabelBadge : UserControl

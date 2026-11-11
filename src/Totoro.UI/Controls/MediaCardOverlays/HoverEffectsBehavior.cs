@@ -11,14 +11,14 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 
-namespace Totoro.UI.Controls.AnimeCardOverlays;
+namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
 /// On hover, the card grows slightly and its edge lights up in the accent color, while its image zooms in from its
 /// center and blurs, so the actions over it stand out.
 /// </summary>
 /// <remarks>The blur is a backdrop brush, which the compositor redraws every frame, so it only exists while the card is hovered: on every card it slows scrolling.</remarks>
-public class HoverEffectsBehavior : BehaviorBase<AnimeCard>
+public class HoverEffectsBehavior : BehaviorBase<MediaCard>
 {
 	private const float BlurAmount = 4;
 	private static readonly TimeSpan s_imageDuration = TimeSpan.FromMilliseconds(250);
