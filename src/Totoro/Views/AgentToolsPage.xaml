@@ -99,6 +99,7 @@
                 Grid.Row="1"
                 Grid.Column="1"
                 AcceptsReturn="True"
+                AutomationProperties.AutomationId="ToolArguments"
                 FontFamily="Consolas"
                 Header="Arguments (JSON)"
                 IsSpellCheckEnabled="False"
@@ -107,6 +108,7 @@
 
             <Button
                 Grid.Row="2"
+                AutomationProperties.AutomationId="RunTool"
                 Command="{x:Bind ViewModel.RunToolCommand}"
                 Content="Run"
                 Style="{ThemeResource AccentButtonStyle}" />

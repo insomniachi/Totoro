@@ -52,6 +52,8 @@ The app has an assistant: a chat panel (the title bar's Assistant button) whose 
 
 Try the tools in the app on the **Agent tools** page. It lists every tool with the schema the agent sees, and calls a tool with JSON arguments.
 
+Run and drive the app with the `winapp ui` CLI (UI Automation), not desktop control: `.claude/skills/run-totoro` has the commands, and what new UI needs to stay drivable (names, automation peers).
+
 ## Finding your way around: graphify
 
 The code is mapped as a knowledge graph in `graphify-out/` (rebuilt by a git hook after each commit). Follow `.agents/rules/graphify.md`: for questions about the code, ask the graph first, with the `graphify` MCP server's tools (`query_graph`, `get_node`, `shortest_path`..., set up in `.mcp.json`). The CLI is `py -3.13 -m graphify` (its `graphify.exe` isn't on the PATH), e.g. `py -3.13 -m graphify query "..."` or `py -3.13 -m graphify update .` after changing code.

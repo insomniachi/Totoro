@@ -258,14 +258,14 @@
                     <!--  Any, one year, or a range; a range may be open at either end  -->
                     <StackPanel Spacing="8">
                         <TextBlock Text="Year" />
-                        <toolkit:Segmented
+                        <controls:SelectableSegmented
                             HorizontalAlignment="Stretch"
                             AutomationProperties.Name="Year filter"
                             SelectedIndex="{x:Bind ViewModel.YearModeIndex, Mode=TwoWay}">
-                            <toolkit:SegmentedItem Content="Any" />
-                            <toolkit:SegmentedItem Content="Year" />
-                            <toolkit:SegmentedItem Content="Range" />
-                        </toolkit:Segmented>
+                            <controls:SelectableSegmentedItem Content="Any" />
+                            <controls:SelectableSegmentedItem Content="Year" />
+                            <controls:SelectableSegmentedItem Content="Range" />
+                        </controls:SelectableSegmented>
                         <!--  TargetType converts the cases' names to the enum, to compare them with the value  -->
                         <toolkit:SwitchPresenter TargetType="anime:YearFilterMode" Value="{x:Bind ViewModel.YearMode, Mode=OneWay}">
                             <toolkit:Case Value="Year">

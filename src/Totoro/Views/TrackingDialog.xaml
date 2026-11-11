@@ -8,7 +8,7 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:controls="using:Totoro.UI.Controls"
     xmlns:vm="using:Totoro.ViewModels"
     mc:Ignorable="d">
 
@@ -82,21 +82,21 @@
                 <DataTemplate x:DataType="vm:TrackingDialogViewModel">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Score" />
-                        <toolkit:Segmented
+                        <controls:SelectableSegmented
                             HorizontalAlignment="Stretch"
                             AutomationProperties.Name="Score"
                             SelectedIndex="{x:Bind SmileyIndex, Mode=TwoWay}">
                             <!--  The item's default style sets its own FontSize, so size the faces on their TextBlocks  -->
-                            <toolkit:SegmentedItem AutomationProperties.Name="Disliked">
+                            <controls:SelectableSegmentedItem AutomationProperties.Name="Disliked">
                                 <TextBlock FontSize="20" Text="🙁" />
-                            </toolkit:SegmentedItem>
-                            <toolkit:SegmentedItem AutomationProperties.Name="Neutral">
+                            </controls:SelectableSegmentedItem>
+                            <controls:SelectableSegmentedItem AutomationProperties.Name="Neutral">
                                 <TextBlock FontSize="20" Text="😐" />
-                            </toolkit:SegmentedItem>
-                            <toolkit:SegmentedItem AutomationProperties.Name="Liked">
+                            </controls:SelectableSegmentedItem>
+                            <controls:SelectableSegmentedItem AutomationProperties.Name="Liked">
                                 <TextBlock FontSize="20" Text="🙂" />
-                            </toolkit:SegmentedItem>
-                        </toolkit:Segmented>
+                            </controls:SelectableSegmentedItem>
+                        </controls:SelectableSegmented>
                     </StackPanel>
                 </DataTemplate>
             </local:ScoreTemplateSelector.Smileys>

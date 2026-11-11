@@ -65,6 +65,7 @@
                 Spacing="8">
                 <Button
                     AutomationProperties.AutomationId="WatchButton"
+                    AutomationProperties.Name="{x:Bind ViewModel.PlayText, Mode=OneWay}"
                     Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
                     CommandParameter="{x:Bind ViewModel.Anime, Mode=OneWay}"
                     Style="{ThemeResource AccentButtonStyle}"

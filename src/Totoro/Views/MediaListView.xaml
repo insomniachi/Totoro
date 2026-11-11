@@ -140,12 +140,12 @@
                 ContentOrientation="Horizontal"
                 HorizontalScrollBarVisibility="Auto"
                 VerticalScrollMode="Disabled">
-                <toolkit:Segmented
+                <controls:SelectableSegmented
                     x:Name="StatusTabs"
                     AutomationProperties.Name="Status"
                     ItemsSource="{x:Bind ViewModel.StatusFilter.Options, Mode=OneWay}"
                     SelectedIndex="{x:Bind ViewModel.StatusFilter.SelectedIndex, Mode=TwoWay}">
-                    <toolkit:Segmented.ItemTemplate>
+                    <controls:SelectableSegmented.ItemTemplate>
                         <!--  The item's default style sets its own FontSize, so size the text here rather than on the Segmented  -->
                         <DataTemplate x:DataType="filtering:FilterOption">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -161,15 +161,15 @@
                                     Text="{x:Bind Label, Mode=OneTime}" />
                             </StackPanel>
                         </DataTemplate>
-                    </toolkit:Segmented.ItemTemplate>
-                    <toolkit:Segmented.ItemContainerStyle>
+                    </controls:SelectableSegmented.ItemTemplate>
+                    <controls:SelectableSegmented.ItemContainerStyle>
                         <!--  No BasedOn needed: the control's theme style (and its template) still applies underneath  -->
                         <Style TargetType="toolkit:SegmentedItem">
                             <Setter Property="MinWidth" Value="160" />
                             <Setter Property="Padding" Value="24,12" />
                         </Style>
-                    </toolkit:Segmented.ItemContainerStyle>
-                </toolkit:Segmented>
+                    </controls:SelectableSegmented.ItemContainerStyle>
+                </controls:SelectableSegmented>
             </ScrollView>
 
             <!--  The filters (title, genres, season, year) and sorting show only while Filters is on; it's right of the tabs  -->
@@ -283,14 +283,14 @@
                         <!--  As on the search page: any, one year, or a range; a range may be open at either end  -->
                         <StackPanel Spacing="8">
                             <TextBlock Text="Year" />
-                            <toolkit:Segmented
+                            <controls:SelectableSegmented
                                 HorizontalAlignment="Stretch"
                                 AutomationProperties.Name="Year filter"
                                 SelectedIndex="{x:Bind ViewModel.SeasonFilter.YearModeIndex, Mode=TwoWay}">
-                                <toolkit:SegmentedItem Content="Any" />
-                                <toolkit:SegmentedItem Content="Year" />
-                                <toolkit:SegmentedItem Content="Range" />
-                            </toolkit:Segmented>
+                                <controls:SelectableSegmentedItem Content="Any" />
+                                <controls:SelectableSegmentedItem Content="Year" />
+                                <controls:SelectableSegmentedItem Content="Range" />
+                            </controls:SelectableSegmented>
                             <!--  TargetType converts the cases' names to the enum, to compare them with the value  -->
                             <toolkit:SwitchPresenter TargetType="anime:YearFilterMode" Value="{x:Bind ViewModel.SeasonFilter.YearMode, Mode=OneWay}">
                                 <toolkit:Case Value="Year">

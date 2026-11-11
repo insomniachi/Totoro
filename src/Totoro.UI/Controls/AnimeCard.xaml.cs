@@ -3,6 +3,8 @@ using System.Windows.Input;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -186,13 +188,41 @@ public sealed partial class AnimeCard : UserControl
 
 	private void OnTapped(object sender, TappedRoutedEventArgs e)
 	{
-		if (IsFromOverlay(e.OriginalSource) || Command is not { } command || !command.CanExecute(Media))
+		if (!IsFromOverlay(e.OriginalSource) && Open())
 		{
-			return;
+			e.Handled = true;
+		}
+	}
+
+	private bool Open()
+	{
+		if (Command is not { } command || !command.CanExecute(Media))
+		{
+			return false;
 		}
 
 		command.Execute(Media);
-		e.Handled = true;
+		return true;
+	}
+
+	protected override AutomationPeer OnCreateAutomationPeer() => new CardAutomationPeer(this);
+
+	/// <summary>
+	/// Shows the card to UI Automation (screen readers, winapp ui) as a button named after its title, which opens it.
+	/// Without it the card is a plain pane: only its title's text can be found, and nothing can invoke it.
+	/// </summary>
+	private sealed partial class CardAutomationPeer(AnimeCard owner) : FrameworkElementAutomationPeer(owner), IInvokeProvider
+	{
+		protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
+
+		protected override string GetClassNameCore() => nameof(AnimeCard);
+
+		protected override string GetNameCore() => owner.Media?.Title ?? "";
+
+		protected override object? GetPatternCore(PatternInterface patternInterface) =>
+			patternInterface == PatternInterface.Invoke ? this : base.GetPatternCore(patternInterface);
+
+		public void Invoke() => owner.Open();
 	}
 
 	/// <summary>

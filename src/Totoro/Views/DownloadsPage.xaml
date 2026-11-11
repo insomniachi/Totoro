@@ -49,6 +49,7 @@
                 <Button
                     Grid.Column="2"
                     VerticalAlignment="Center"
+                    AutomationProperties.Name="Open folder"
                     Click="{x:Bind ViewModel.OpenFolder}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="16" Glyph="&#xE838;" />

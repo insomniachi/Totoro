@@ -34,6 +34,9 @@ public sealed partial class DownloadItem : ObservableObject
 	/// <summary>e.g. "Sousou no Frieren · Episode 5".</summary>
 	public required string Title { get; init; }
 
+	// A list's items are named after this in UI Automation (screen readers, winapp ui).
+	public override string ToString() => Title;
+
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(IsActive))]
 	public partial DownloadState State { get; internal set; }
@@ -89,6 +92,9 @@ public sealed partial class DownloadItem : ObservableObject
 public sealed record DownloadedAnime(string Name, string Path, DownloadInfo? Info, int Episodes, long Bytes, string Cover)
 {
 	public string Title => Info?.Title ?? Name;
+
+	// A list's items are named after this in UI Automation (screen readers, winapp ui).
+	public override string ToString() => Title;
 
 	/// <summary>Whether its openings and endings are being looked for (see <see cref="DownloadService.FindMissingSegmentsAsync"/>).</summary>
 	public bool IsFindingSegments { get; init; }

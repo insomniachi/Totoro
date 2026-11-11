@@ -12,6 +12,7 @@
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:navigation="using:Totoro.Core.Navigation"
     xmlns:services="using:Totoro.Core.Services"
+    xmlns:controls="using:Totoro.UI.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:uiNavigation="using:Totoro.UI.Navigation"
@@ -355,21 +356,21 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <!--  Anime or manga, at the title bar's left: switches the menu's pages (see MainWindowViewModel.Mode)  -->
-                    <toolkit:Segmented
+                    <controls:SelectableSegmented
                         x:Name="ModeSwitch"
                         AutomationProperties.AutomationId="ModeSwitch"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Anime or manga"
                         SelectedIndex="{x:Bind ViewModel.ModeIndex, Mode=TwoWay}">
-                        <toolkit:SegmentedItem
+                        <controls:SelectableSegmentedItem
                             Content="Anime"
                             Icon="{ui:FontIcon Glyph=&#xE7F4;}"
                             ToolTipService.ToolTip="Track and watch anime" />
-                        <toolkit:SegmentedItem
+                        <controls:SelectableSegmentedItem
                             Content="Manga"
                             Icon="{ui:FontIcon Glyph=&#xE736;}"
                             ToolTipService.ToolTip="Track and read manga" />
-                    </toolkit:Segmented>
+                    </controls:SelectableSegmented>
                     <!--  Finds anime and manga in the selected databases, whatever the mode; choosing one opens its details in the side pane  -->
                     <AutoSuggestBox
                         x:Name="SearchBox"
