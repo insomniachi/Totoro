@@ -166,6 +166,11 @@ public sealed partial class WatchService(
 				return EpisodeName;
 			}
 
+			if (Anime is { } anime && IsMovie(anime))
+			{
+				return "";
+			}
+
 			var number = $"Episode {CurrentEpisode}";
 			return EpisodeName.Length > 0 && !EpisodeName.Equals(number, StringComparison.OrdinalIgnoreCase) ? $"{CurrentEpisode} · {EpisodeName}" : number;
 		}
@@ -485,13 +490,18 @@ public sealed partial class WatchService(
 		return (int)episode.Number;
 	}
 
+	/// <summary>A one-part movie, where "Episode 1" says nothing.</summary>
+	private static bool IsMovie(AnimeModel anime) => anime.MediaFormat == AnimeMediaFormat.Movie && anime.TotalEpisodes is null or <= 1;
+
+	private static string PlayingTitle(AnimeModel anime, int number) => IsMovie(anime) ? anime.Title : $"{anime.Title} · Episode {number}";
+
 	/// <summary>Plays the server's video (streaming it first if it's a torrent) until the player closes.</summary>
 	private async Task PlayServerAsync(IMediaPlayer player, AnimeModel anime, int number, VideoServer server, AnimeSettings settings, bool track,
 									   bool offerEpisodes, CancellationToken ct)
 	{
 		// A torrent is streamed to the player over HTTP, until playback ends.
 		await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(server, ct) : null;
-		var media = new MediaItem(stream?.Url ?? server.Url, $"{anime.Title} - Episode {number}", stream?.Headers ?? server.Headers) { Subtitles = server.Subtitles };
+		var media = new MediaItem(stream?.Url ?? server.Url, IsMovie(anime) ? anime.Title : $"{anime.Title} - Episode {number}",stream?.Headers ?? server.Headers) { Subtitles = server.Subtitles };
 		await PlayAsync(player, anime, number, media, server.Segments, settings, track, offerEpisodes, ct);
 	}
 
@@ -516,7 +526,7 @@ public sealed partial class WatchService(
 		EpisodeName = "";
 		ProviderName = null;
 		PlayerName = null;
-		Title = $"{anime.Title} · Episode {number}";
+		Title = PlayingTitle(anime, number);
 
 		if (_episodeDetails.TryGetValue(anime.StoreKey, out var cached) && cached.FirstOrDefault(x => x.EpisodeNumber == number) is { } cachedInfo)
 		{
@@ -980,7 +990,7 @@ public sealed partial class WatchService(
 			EpisodeName = "";
 			ProviderName = null;
 			PlayerName = browser;
-			Title = $"{anime.Title} · Episode {number}";
+			Title = PlayingTitle(anime, number);
 			// Nothing here can control the browser's video.
 			_player = null;
 			Show(PlaybackStatusKind.Playing, "");
