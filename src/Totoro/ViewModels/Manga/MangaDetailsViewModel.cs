@@ -87,24 +87,24 @@ public partial class MangaDetailsViewModel : NavigatableViewModel
 	/// <summary>Under the title, as on the anime details page: its English (or romaji) title when that's not the title.</summary>
 	public string Subtitle => new[] { Manga.EngTitle, Manga.RomajiTitle }.FirstOrDefault(x => !string.IsNullOrEmpty(x) && x != Manga.Title) ?? "";
 
-	/// <summary>The Overview's chips, as the anime ones: e.g. Manhwa, Publishing, ★ 8.4, Since Dec 2018, 140 chapters, 12 volumes.</summary>
-	public IReadOnlyList<string> Facts =>
-	[
-		.. new[]
+	/// <summary>Whether it's still publishing: a dot before <see cref="Facts"/>, as on the anime details page.</summary>
+	public bool IsPublishing => Manga.Status == AiringStatus.CurrentlyAiring;
+
+	/// <summary>A line under the title, e.g. "Publishing · Manhwa · Since Dec 2018 · 140 chapters · 12 volumes · ★ 8.4".</summary>
+	public string Facts => string.Join(" · ", new[]
+	{
+		Manga.Status switch
 		{
-			Manga.Format == MangaFormat.Unknown ? null : Manga.Format.ToString(),
-			Manga.Status switch
-			{
-				AiringStatus.CurrentlyAiring => "Publishing",
-				AiringStatus.NotYetAired => "Not yet published",
-				_ => "Finished",
-			},
-			Manga.MeanScore is > 0 and var score ? $"★ {score / 10:0.0}" : null,
-			Manga.StartDate is { } start ? $"Since {start:MMM yyyy}" : null,
-			Manga.TotalChapters is { } chapters ? $"{chapters} chapters" : null,
-			Manga.TotalVolumes is { } volumes ? $"{volumes} volumes" : null,
-		}.OfType<string>(),
-	];
+			AiringStatus.CurrentlyAiring => "Publishing",
+			AiringStatus.NotYetAired => "Not yet published",
+			_ => "Finished",
+		},
+		Manga.Format == MangaFormat.Unknown ? null : Manga.Format.ToString(),
+		Manga.StartDate is { } start ? $"Since {start:MMM yyyy}" : null,
+		Manga.TotalChapters is { } chapters ? $"{chapters} chapters" : null,
+		Manga.TotalVolumes is { } volumes ? $"{volumes} volumes" : null,
+		Manga.MeanScore is > 0 and var score ? $"★ {score / 10:0.0}" : null,
+	}.OfType<string>());
 
 	protected override Task OnNavigatedToInternalAsync() => LoadChaptersAsync();
 

@@ -77,6 +77,27 @@
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="Wrap"
                                 Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Subtitle), Mode=OneWay}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!--  Still coming out: a dot, in the system's "success" green  -->
+                                <Ellipse
+                                    Width="6"
+                                    Height="6"
+                                    Margin="0,0,6,0"
+                                    VerticalAlignment="Center"
+                                    Fill="{ThemeResource SystemFillColorSuccessBrush}"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsAiring), Mode=OneWay}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind ViewModel.Facts, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </Grid>
                         </StackPanel>
                     </Grid>
                 </Grid>
@@ -162,24 +183,20 @@
                             Height="16"
                             HorizontalAlignment="Left"
                             CornerRadius="4" />
+                        <toolkit:Shimmer
+                            Width="260"
+                            Height="16"
+                            HorizontalAlignment="Left"
+                            CornerRadius="4" />
                     </StackPanel>
                 </Grid>
             </Grid>
 
             <StackPanel Padding="24,0" Spacing="24">
-                <StackPanel Spacing="8">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <toolkit:Shimmer Width="44" Height="24" CornerRadius="12" />
-                        <toolkit:Shimmer Width="72" Height="24" CornerRadius="12" />
-                        <toolkit:Shimmer Width="88" Height="24" CornerRadius="12" />
-                        <toolkit:Shimmer Width="56" Height="24" CornerRadius="12" />
-                        <toolkit:Shimmer Width="96" Height="24" CornerRadius="12" />
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <toolkit:Shimmer Width="80" Height="24" CornerRadius="12" />
-                        <toolkit:Shimmer Width="64" Height="24" CornerRadius="12" />
-                        <toolkit:Shimmer Width="76" Height="24" CornerRadius="12" />
-                    </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <toolkit:Shimmer Width="80" Height="24" CornerRadius="12" />
+                    <toolkit:Shimmer Width="64" Height="24" CornerRadius="12" />
+                    <toolkit:Shimmer Width="76" Height="24" CornerRadius="12" />
                 </StackPanel>
 
                 <toolkit:Shimmer Height="76" CornerRadius="8" />

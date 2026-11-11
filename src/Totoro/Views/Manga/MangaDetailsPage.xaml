@@ -59,6 +59,27 @@
                     Text="{x:Bind ViewModel.Subtitle, Mode=OneTime}"
                     TextWrapping="Wrap"
                     Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Subtitle), Mode=OneTime}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!--  Still coming out: a dot, in the system's "success" green  -->
+                    <Ellipse
+                        Width="6"
+                        Height="6"
+                        Margin="0,0,6,0"
+                        VerticalAlignment="Center"
+                        Fill="{ThemeResource SystemFillColorSuccessBrush}"
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsPublishing), Mode=OneTime}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.Facts, Mode=OneTime}"
+                        TextWrapping="Wrap" />
+                </Grid>
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind ViewModel.ListText, Mode=OneWay}" />
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button
@@ -93,21 +114,14 @@
             <SelectorBarItem Tag="Chapters" Text="Chapters" />
         </SelectorBar>
 
-        <!--  As the anime details page's Overview: facts and genres as chips, then the synopsis  -->
+        <!--  As the anime details page's Overview: genres as chips, then the synopsis  -->
         <ScrollView x:Name="OverviewTab" Grid.Row="2">
             <StackPanel Spacing="24">
-                <StackPanel Spacing="8">
-                    <ItemsControl
-                        IsTabStop="False"
-                        ItemTemplate="{StaticResource ChipTemplate}"
-                        ItemsPanel="{StaticResource ChipPanel}"
-                        ItemsSource="{x:Bind ViewModel.Facts, Mode=OneTime}" />
-                    <ItemsControl
-                        IsTabStop="False"
-                        ItemTemplate="{StaticResource ChipTemplate}"
-                        ItemsPanel="{StaticResource ChipPanel}"
-                        ItemsSource="{x:Bind ViewModel.Manga.Genres, Mode=OneTime}" />
-                </StackPanel>
+                <ItemsControl
+                    IsTabStop="False"
+                    ItemTemplate="{StaticResource ChipTemplate}"
+                    ItemsPanel="{StaticResource ChipPanel}"
+                    ItemsSource="{x:Bind ViewModel.Manga.Genres, Mode=OneTime}" />
                 <StackPanel Spacing="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Manga.Description), Mode=OneTime}">
                     <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="Synopsis" />
                     <RichTextBlock text:HtmlText.Html="{x:Bind ViewModel.Manga.Description, Mode=OneTime}" />

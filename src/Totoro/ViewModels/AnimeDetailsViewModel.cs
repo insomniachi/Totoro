@@ -115,7 +115,10 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	// Image URLs, or null when missing; the view turns them into image sources (see CommonConverters.ToImageSource).
 	[ObservableProperty] public partial string? BannerImage { get; set; }
 	[ObservableProperty] public partial string? CoverImage { get; set; }
-	[ObservableProperty] public partial IReadOnlyList<string> Facts { get; set; } = [];
+	/// <summary>Whether it's airing now: a dot before <see cref="Facts"/>.</summary>
+	[ObservableProperty] public partial bool IsAiring { get; set; }
+	/// <summary>A line under the title, e.g. "Airing · TV · Fall 2026 · 12 episodes · ★ 8.5".</summary>
+	[ObservableProperty] public partial string Facts { get; set; } = "";
 	[ObservableProperty] public partial IReadOnlyList<string> Genres { get; set; } = [];
 	[ObservableProperty] public partial string Description { get; set; } = "";
 	[ObservableProperty] public partial string Studios { get; set; } = "";
@@ -269,7 +272,8 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Subtitle = details.OtherTitle;
 		CoverImage = NullIfEmpty(details.Image);
 		BannerImage = NullIfEmpty(details.BannerImage) ?? CoverImage;
-		Facts = GetFacts(details);
+		IsAiring = details.AiringStatus == AiringStatus.CurrentlyAiring;
+		Facts = string.Join(" · ", GetFacts(details));
 		Genres = [.. details.Genres];
 		Description = details.Description;
 		Studios = string.Join(", ", details.Studios);
@@ -314,7 +318,15 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 
 	private static List<string> GetFacts(AnimeModel anime)
 	{
-		List<string> facts = [];
+		List<string> facts =
+		[
+			anime.AiringStatus switch
+			{
+				AiringStatus.CurrentlyAiring => "Airing",
+				AiringStatus.NotYetAired => "Not yet aired",
+				_ => "Finished",
+			},
+		];
 
 		var format = MediaText.Format(anime.MediaFormat);
 		if (format is not null)
@@ -322,12 +334,10 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 			facts.Add(format);
 		}
 
-		facts.Add(anime.AiringStatus switch
+		if (anime.Season is { } season)
 		{
-			AiringStatus.CurrentlyAiring => "Airing",
-			AiringStatus.NotYetAired => "Not yet aired",
-			_ => "Finished",
-		});
+			facts.Add($"{season.SeasonName} {season.Year}");
+		}
 
 		if (anime.TotalEpisodes is > 0 and var total)
 		{
@@ -338,11 +348,6 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		{
 			// AniList's mean score is out of 100.
 			facts.Add($"★ {score / 10:0.0}");
-		}
-
-		if (anime.Season is { } season)
-		{
-			facts.Add($"{season.SeasonName} {season.Year}");
 		}
 
 		return facts;

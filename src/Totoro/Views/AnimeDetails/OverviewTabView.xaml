@@ -10,7 +10,7 @@
     xmlns:vm="using:Totoro.ViewModels">
 
     <UserControl.Resources>
-        <!--  A small rounded label, used for the facts and genres  -->
+        <!--  A small rounded label, used for the genres  -->
         <DataTemplate x:Key="ChipTemplate" x:DataType="x:String">
             <Border
                 Padding="12,4"
@@ -31,19 +31,12 @@
     </UserControl.Resources>
 
     <StackPanel Padding="24,0" Spacing="24">
-        <!--  Facts and genres  -->
-        <StackPanel Spacing="8">
-            <ItemsControl
-                IsTabStop="False"
-                ItemTemplate="{StaticResource ChipTemplate}"
-                ItemsPanel="{StaticResource ChipPanel}"
-                ItemsSource="{x:Bind ViewModel.Facts, Mode=OneWay}" />
-            <ItemsControl
-                IsTabStop="False"
-                ItemTemplate="{StaticResource ChipTemplate}"
-                ItemsPanel="{StaticResource ChipPanel}"
-                ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}" />
-        </StackPanel>
+        <!--  Genres; the other facts are a line under the title, in the page's header  -->
+        <ItemsControl
+            IsTabStop="False"
+            ItemTemplate="{StaticResource ChipTemplate}"
+            ItemsPanel="{StaticResource ChipPanel}"
+            ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}" />
 
         <!--  The user's list entry  -->
         <Grid
