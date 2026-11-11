@@ -27,7 +27,7 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 	{
 		_plugins.Clear();
 
-		var searchDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		HashSet<string> searchDirectories = [with(StringComparer.OrdinalIgnoreCase)];
 
 		// 1. Additional / Dev paths passed explicitly (e.g. from command line args)
 		if (additionalSearchPaths is not null)

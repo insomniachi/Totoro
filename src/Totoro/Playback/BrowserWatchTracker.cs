@@ -29,7 +29,7 @@ public sealed class BrowserWatchTracker : IDisposable
 	private readonly ILogger<BrowserWatchTracker> _logger;
 	private readonly DispatcherQueueTimer _check;
 	private readonly HashSet<(string Title, int Episode)> _done = [];
-	private readonly Dictionary<string, AnimeModel?> _found = new(StringComparer.OrdinalIgnoreCase);
+	private readonly Dictionary<string, AnimeModel?> _found = [with(StringComparer.OrdinalIgnoreCase)];
 	private GlobalSystemMediaTransportControlsSessionManager? _sessions;
 	private bool _checking;
 

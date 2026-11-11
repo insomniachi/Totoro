@@ -15,14 +15,16 @@ public sealed partial class TrackingFieldTemplateSelector : DataTemplateSelector
 
 	public DataTemplate? Choice { get; set; }
 
-	protected override DataTemplate? SelectTemplateCore(object item) => item switch
-	{
-		TextField => Text,
-		NumberField => Number,
-		ToggleField => Toggle,
-		ChoiceField => Choice,
-		_ => null,
-	};
+	// TrackingField is closed, so a new kind of field without a template here is a compiler warning.
+	protected override DataTemplate? SelectTemplateCore(object item) => item is TrackingField field
+		? field switch
+		{
+			TextField => Text,
+			NumberField => Number,
+			ToggleField => Toggle,
+			ChoiceField => Choice,
+		}
+		: null;
 
 	protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container) => SelectTemplateCore(item);
 }

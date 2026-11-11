@@ -5,7 +5,7 @@ namespace Totoro.Core.Modules.Anime;
 /// every tracker has. The tracker fills in its current value and reads the edited one back by <see cref="Key"/> from
 /// <see cref="Tracking.Fields"/>.
 /// </summary>
-public abstract class TrackingField(string key, string label)
+public closed class TrackingField(string key, string label)
 {
 	public string Key { get; } = key;
 

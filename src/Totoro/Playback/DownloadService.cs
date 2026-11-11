@@ -189,7 +189,7 @@ public sealed class DownloadService(
 
 	// Finding openings and endings, one episode at a time, so info files are written one at a time.
 	private readonly SemaphoreSlim _detecting = new(1, 1);
-	private readonly HashSet<string> _findingSegments = new(StringComparer.OrdinalIgnoreCase); // by folder name
+	private readonly HashSet<string> _findingSegments = [with(StringComparer.OrdinalIgnoreCase)]; // by folder name
 
 	// Songs' fingerprints and lengths, by their audio's URL: a season's episodes share them.
 	private readonly ConcurrentDictionary<Uri, (uint[] Print, TimeSpan Length)> _songPrints = new();

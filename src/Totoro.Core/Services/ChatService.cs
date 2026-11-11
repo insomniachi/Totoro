@@ -14,7 +14,7 @@ using Totoro.Core.Modules.Chat;
 namespace Totoro.Core.Services;
 
 /// <summary>Something in the conversation, as the chat shows it.</summary>
-public abstract partial class ChatEntry : ObservableObject;
+public closed partial class ChatEntry : ObservableObject;
 
 public sealed class ChatUserEntry(string text) : ChatEntry
 {

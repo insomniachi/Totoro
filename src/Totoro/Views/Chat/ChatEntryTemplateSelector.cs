@@ -21,17 +21,19 @@ public sealed partial class ChatEntryTemplateSelector : DataTemplateSelector
 
 	public DataTemplate? Songs { get; set; }
 
-	protected override DataTemplate? SelectTemplateCore(object item) => item switch
-	{
-		ChatUserEntry => User,
-		ChatReplyEntry => Reply,
-		ChatToolEntry => Tool,
-		ChatApprovalEntry => Approval,
-		ChatErrorEntry => Error,
-		ChatAnimeEntry => Anime,
-		ChatSongEntry => Songs,
-		_ => null,
-	};
+	// ChatEntry is closed, so a new kind of entry without a template here is a compiler warning.
+	protected override DataTemplate? SelectTemplateCore(object item) => item is ChatEntry entry
+		? entry switch
+		{
+			ChatUserEntry => User,
+			ChatReplyEntry => Reply,
+			ChatToolEntry => Tool,
+			ChatApprovalEntry => Approval,
+			ChatErrorEntry => Error,
+			ChatAnimeEntry => Anime,
+			ChatSongEntry => Songs,
+		}
+		: null;
 
 	protected override DataTemplate? SelectTemplateCore(object item, DependencyObject container) => SelectTemplateCore(item);
 }
