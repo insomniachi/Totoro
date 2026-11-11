@@ -78,7 +78,7 @@ internal sealed class YtDlpDownloader(IPreferences preferences)
 			// "[totoro] 12/145 5000000 60000000.0": fragments downloaded, of how many, bytes downloaded, and the size it
 			// expects from the fragments so far; "NA" for what isn't known yet. Not its speed: that's the fragment it last
 			// reported on's, one of several at once. It prints many a second; like a download's, one a second is reported.
-			if (Stopwatch.GetElapsedTime(lastReport) >= DownloadService.ReportInterval &&
+			if (Stopwatch.GetElapsedTime(lastReport) >= DownloadService.s_reportInterval &&
 				e.Data is { } line && line.StartsWith("[totoro] ", StringComparison.Ordinal) &&
 				line["[totoro] ".Length..].Split(' ', '/') is [var done, var count, var downloaded, var total] &&
 				int.TryParse(done, out var fragment) && int.TryParse(count, out var fragments) && fragments > 0)

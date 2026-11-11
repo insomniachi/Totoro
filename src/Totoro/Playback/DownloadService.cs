@@ -182,7 +182,7 @@ public sealed class DownloadService(
 		},
 	};
 
-	internal static readonly TimeSpan ReportInterval = TimeSpan.FromSeconds(1);
+	internal static readonly TimeSpan s_reportInterval = TimeSpan.FromSeconds(1);
 
 	// One download at a time: CDNs turn many at once away (AnimePahe's: 429), and a provider may not take parallel lookups.
 	private readonly SemaphoreSlim _queue = new(1, 1);
@@ -825,7 +825,7 @@ public sealed class DownloadService(
 			written += read;
 			// Once a second, not every read: each report is a trip to the UI thread. The speed is that second's, as received:
 			// unlike yt-dlp's fragments, a stream arrives steadily enough not to need smoothing.
-			if (sinceReport.Elapsed >= ReportInterval)
+			if (sinceReport.Elapsed >= s_reportInterval)
 			{
 				var speed = (written - reported) / sinceReport.Elapsed.TotalSeconds;
 				progress.Report(new DownloadProgress(length > 0 ? (double)written / length.Value : -1, speed, written, length));
