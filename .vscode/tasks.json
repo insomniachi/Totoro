@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["build", "Totoro.slnx", "-p:Platform=x64", "-nologo", "-v:q", "-clp:NoSummary"],
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["test", "tests/Totoro.Tests", "-p:Platform=x64", "-nologo"],
+            "group": { "kind": "test", "isDefault": true },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "graphify update",
+            "type": "process",
+            "command": "py",
+            "args": ["-3.13", "-m", "graphify", "update", "."],
+            "problemMatcher": []
+        }
+    ]
+}

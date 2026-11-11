@@ -1,0 +1,21 @@
+{
+    "dotnet.defaultSolution": "Totoro.slnx",
+    // Agent worktrees hold full repo copies; graphify-out and ui-test-artifacts are generated.
+    "files.watcherExclude": {
+        "**/bin/**": true,
+        "**/obj/**": true,
+        "**/.claude/worktrees/**": true,
+        "**/graphify-out/**": true,
+        "**/ui-test-artifacts/**": true
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/.claude/worktrees": true,
+        "**/graphify-out": true,
+        "**/ui-test-artifacts": true
+    },
+    "files.exclude": {
+        "**/.claude/worktrees": true
+    }
+}

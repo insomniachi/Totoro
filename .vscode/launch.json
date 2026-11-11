@@ -1,0 +1,9 @@
+{
+    "configurations": [
+        {
+            "type": "winapp",
+            "request": "launch",
+            "name": "WinApp: Launch and Attach"
+        }
+    ]
+}

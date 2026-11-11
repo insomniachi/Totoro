@@ -369,3 +369,10 @@ installer/output/
 graphify-out/
 
 ui-test-artifacts/
+
+# VS Code: the workspace setup is shared; anything else in .vscode is personal
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
