@@ -28,8 +28,6 @@ public sealed partial class DataContainerEditor : UserControl
 {
 	// In XAML for ThemeResource: brushes looked up in code keep the theme they were looked up in.
 	private const string Xmlns = "xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'";
-	private const string KeycapXaml = $"<Border {Xmlns} Background='{{ThemeResource AccentFillColorDefaultBrush}}' CornerRadius='4' Padding='8,2,8,2' MinWidth='28'>"
-		+ "<TextBlock FontWeight='SemiBold' HorizontalAlignment='Center' Foreground='{ThemeResource TextOnAccentFillColorPrimaryBrush}' /></Border>";
 	private const string OrXaml = $"<TextBlock {Xmlns} Text='or' VerticalAlignment='Center' Foreground='{{ThemeResource TextFillColorSecondaryBrush}}' />";
 	private const string SwatchXaml = $"<Border {Xmlns} Width='24' Height='24' CornerRadius='4' BorderThickness='1' BorderBrush='{{ThemeResource ControlStrokeColorDefaultBrush}}' />";
 
@@ -555,9 +553,7 @@ public sealed partial class DataContainerEditor : UserControl
 				var keys = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
 				foreach (var key in KeyboardShortcuts.GetKeys(shortcut))
 				{
-					var keycap = (Border)XamlReader.Load(KeycapXaml);
-					((TextBlock)keycap.Child).Text = KeyboardShortcuts.KeyLabel(key);
-					keys.Children.Add(keycap);
+					keys.Children.Add(new DevWinUI.KeyVisual { Content = KeyboardShortcuts.KeyLabel(key), VisualType = DevWinUI.VisualType.Small });
 				}
 
 				keycaps.Children.Add(keys);
