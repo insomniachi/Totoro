@@ -92,7 +92,8 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 				 "it's marked watched when they finish it.")]
 	public async Task<PlayResult> PlayEpisodeAsync(
 		long animeId,
-		[Description("The episode's number; leave it out for the next one the user hasn't watched (past fillers, if they skip them).")] int? episode = null)
+		[Description("The episode's number; leave it out for the next one the user hasn't watched (past fillers, if they skip them).")] int? episode = null,
+		[Description("Where to start, in seconds from the episode's start (e.g. a scene's playFromSeconds); leave it out to resume where the user left off.")] double? startAtSeconds = null)
 	{
 		var anime = await lookup.GetAsync(animeId);
 		var number = episode ?? await watch.NextToWatchAsync(anime);
@@ -108,7 +109,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 			return new PlayResult(false, $"It isn't clear which {provider.Name} show {anime.Title} is.", [.. candidates.Select(ToCandidate)]);
 		}
 
-		var status = await watch.StartWatchingAsync(anime, number, s_startTimeout);
+		var status = await watch.StartWatchingAsync(anime, number, s_startTimeout, startAtSeconds is > 0 and var seconds ? TimeSpan.FromSeconds(seconds) : null);
 		var started = status.IsActive && status.Kind is PlaybackStatusKind.Playing or PlaybackStatusKind.Progress;
 		return new PlayResult(started, status.IsActive ? status.Message : "It was cancelled.");
 	}

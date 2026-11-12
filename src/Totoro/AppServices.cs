@@ -103,7 +103,8 @@ internal static class AppServices
 				.AddAgentTools<AnimePluginTools>()
 				.AddAgentTools<PluginTools>()
 				.AddAgentTools<ReleaseScheduleTools>()
-				.AddAgentTools<MangaTools>();
+				.AddAgentTools<MangaTools>()
+				.AddAgentTools<ImageSearchTools>();
 		// The assistant: a chat that calls those tools (see ChatService).
 		services.AddSingleton<ChatViewModel>();
 
@@ -139,6 +140,8 @@ internal static class AppServices
 			x.Mode = MediaMode.Anime;
 			x.AnimatedIcon = () => Icons.SearchAnimated;
 		});
+		// Search's Image tab, which the page's view model is given.
+		services.AddTransient<ImageSearchViewModel>();
 		// Manga mode's pages: the same names as anime's where they do the same, so switching mode keeps the user's place.
 		services.AddMainNavigationItem<MangaDiscoverPage, MangaDiscoverViewModel>("Discover", x =>
 		{

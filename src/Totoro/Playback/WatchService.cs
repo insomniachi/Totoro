@@ -92,6 +92,9 @@ public sealed partial class WatchService(
 	// first whatever the setting, the next ones too.
 	private bool _fromDownloads;
 
+	/// <summary>Where the episode being got ready starts, rather than where it was left off (see <see cref="WatchAsync"/>).</summary>
+	private TimeSpan? _startAt;
+
 	// Marking the episode playing watched (see MarkWatchedWhilePlayingAsync), once it's started: whether it was, and the message.
 	private Task<(bool Marked, string Message)>? _marked;
 	private Action? _action;
@@ -253,8 +256,8 @@ public sealed partial class WatchService(
 	/// couldn't be played (or, if getting it ready takes longer than <paramref name="timeout"/>, while still at it),
 	/// rather than when playback ends: for callers that don't follow the whole playback, e.g. agent tools.
 	/// </summary>
-	public Task<PlaybackStatus> StartWatchingAsync(AnimeModel anime, int number, TimeSpan timeout) =>
-		StartAsync(() => WatchAsync(anime, number), timeout);
+	public Task<PlaybackStatus> StartWatchingAsync(AnimeModel anime, int number, TimeSpan timeout, TimeSpan? startAt = null) =>
+		StartAsync(() => WatchAsync(anime, number, startAt: startAt), timeout);
 
 	/// <summary>Starts <see cref="WatchFromAsync"/> like <see cref="StartWatchingAsync"/>.</summary>
 	public Task<PlaybackStatus> StartWatchingFromAsync(AnimeModel anime, int number, IAnimeProvider provider, ProviderEpisode episode,
@@ -312,7 +315,8 @@ public sealed partial class WatchService(
 	/// <paramref name="binge"/>, the episodes after it play on their own (see <see cref="_binge"/>). With
 	/// <paramref name="fromDownloads"/>, from the download folder if it's there, whatever the setting.
 	/// </summary>
-	public Task WatchAsync(AnimeModel anime, int number, bool binge = false, bool fromDownloads = false) => RunAsync(anime, number, binge, fromDownloads, async ct =>
+	/// <param name="startAt">Where to start instead, e.g. a scene found from a screenshot.</param>
+	public Task WatchAsync(AnimeModel anime, int number, bool binge = false, bool fromDownloads = false, TimeSpan? startAt = null) => RunAsync(anime, number, binge, fromDownloads, startAt, async ct =>
 	{
 		if (anime.TotalEpisodes is > 0 and var total && number > total)
 		{
@@ -456,9 +460,9 @@ public sealed partial class WatchService(
 	}
 
 	/// <summary>Shows the anime and episode in the status bar, and runs <paramref name="play"/>, saying there how it goes.</summary>
-	private Task RunAsync(AnimeModel anime, int number, bool binge, Func<CancellationToken, Task> play) => RunAsync(anime, number, binge, false, play);
+	private Task RunAsync(AnimeModel anime, int number, bool binge, Func<CancellationToken, Task> play) => RunAsync(anime, number, binge, false, null, play);
 
-	private async Task RunAsync(AnimeModel anime, int number, bool binge, bool fromDownloads, Func<CancellationToken, Task> play)
+	private async Task RunAsync(AnimeModel anime, int number, bool binge, bool fromDownloads, TimeSpan? startAt, Func<CancellationToken, Task> play)
 	{
 		_cancellation?.Cancel();
 		using var cancellation = _cancellation = new CancellationTokenSource();
@@ -466,6 +470,7 @@ public sealed partial class WatchService(
 
 		_binge = binge;
 		_fromDownloads = fromDownloads;
+		_startAt = startAt;
 		_inBrowser = false;
 		Anime = anime;
 		CurrentEpisode = number;
@@ -543,7 +548,8 @@ public sealed partial class WatchService(
 		media = media with { PlaysNext = offerEpisodes && (preferences.PlayNextAutomatically || _binge) && !IsPastLast(anime, number + 1) };
 
 		// Resume a little before where it was left, unless that was in the credits.
-		var start = track && progressStore.Get(anime, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
+		var start = _startAt is { } startAt ? startAt
+			: track && progressStore.Get(anime, number) is { } saved && saved.Position > s_minimumProgress && saved.Duration - saved.Position > credits
 			? saved.Position - TimeSpan.FromSeconds(3)
 			: TimeSpan.Zero;
 

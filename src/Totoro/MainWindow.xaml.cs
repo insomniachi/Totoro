@@ -81,7 +81,7 @@ public sealed partial class MainWindow : Window
 	{
 		["Discover"] = "Find something new to watch: what's trending, what airs today, what starts next season, and sequels you missed.",
 		["Library"] = "Your anime list, by status: watching, plan to watch, completed, on hold and dropped. Pick one to see its details and play its episodes.",
-		["Search"] = "Find anime by title, season, year, score and genre.",
+		["Search"] = "Find anime by title, season, year, score and genre, or paste a screenshot (Ctrl+V) to find which anime, episode and moment it's from.",
 		["Schedule"] = "When the next episodes of the anime airing now come out.",
 		["Watch"] = "Search a plugin directly, pick a show, an episode and a stream, and play it. Handy for anything that isn't on your list.",
 		["Downloads"] = "Episodes downloading and downloaded, to watch offline. The number on it is how many are downloading.",

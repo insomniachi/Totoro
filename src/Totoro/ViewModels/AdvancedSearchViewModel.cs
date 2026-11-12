@@ -8,7 +8,10 @@ using Totoro.Core.Settings;
 
 namespace Totoro.ViewModels;
 
-/// <summary>The anime Search page: an anime database searched by title, season, years, score and genres (see <see cref="MediaSearchViewModel"/>).</summary>
+/// <summary>
+/// The anime Search page: an anime database searched by title, season, years, score and genres (see
+/// <see cref="MediaSearchViewModel"/>), and on its Image tab, by a screenshot (<see cref="ImageSearch"/>).
+/// </summary>
 /// <remarks>
 /// Its fields are initialized from a primary constructor's parameters: initializers run before the base constructor,
 /// which selects a database and so already loads its genres.
@@ -18,6 +21,7 @@ public sealed class AdvancedSearchViewModel(
 	IFactory<IAnimeTracker, Guid> trackers,
 	IPreferences preferences,
 	IEnumerable<Descriptor> modules,
+	ImageSearchViewModel imageSearch,
 	ILogger<AdvancedSearchViewModel> logger)
 	: MediaSearchViewModel(MediaMode.Anime,
 		[.. providers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))],
@@ -25,6 +29,9 @@ public sealed class AdvancedSearchViewModel(
 {
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers = providers;
 	private readonly IFactory<IAnimeTracker, Guid> _trackers = trackers;
+
+	/// <summary>The page's Image tab: which anime a screenshot is from.</summary>
+	public ImageSearchViewModel ImageSearch { get; } = imageSearch;
 
 	// A primary constructor has no body: changes elsewhere are followed from arriving on the page.
 	protected override Task OnNavigatedToInternalAsync()
