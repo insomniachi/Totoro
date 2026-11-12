@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Filtering;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Relations;
 using Totoro.Core.Services;
 using Totoro.UI.Navigation;
 
@@ -11,17 +12,21 @@ namespace Totoro.ViewModels;
 
 /// <summary>
 /// Discover's See all for its missed row: every sequel, prequel, side story and spin-off of what the user watched that
-/// isn't on their list, in a grid, narrowed to some kinds by <see cref="Filter"/> and sorted as the Library sorts.
+/// isn't on their list, in a grid, less the kinds and formats ticked off and sorted as the Library sorts.
 /// </summary>
 public sealed partial class MissedRelationsViewModel(MissedRelationsService missedRelations, ILogger<MissedRelationsViewModel> logger)
 	: NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>
 {
-	private IReadOnlyList<AnimeModel> _all = [];
+	private IReadOnlyList<MissedRelationGroup> _groups = [];
+	private Dictionary<long, MissedRelationGroup> _groupOf = [];
 
-	[ObservableProperty] public partial IReadOnlyList<AnimeModel> Shown { get; private set; } = [];
+	[ObservableProperty] public partial IReadOnlyList<MissedRelationGroup> Shown { get; private set; } = [];
 
-	/// <summary>The kinds shown; null for all of them.</summary>
-	[ObservableProperty] public partial IReadOnlyCollection<AnimeRelationType>? Filter { get; set; }
+	/// <summary>The kinds left out, ticked off on the page; <see cref="Refresh"/> after changing them.</summary>
+	public HashSet<AnimeRelationType> HiddenRelations { get; } = [];
+
+	/// <summary>The formats left out; music videos at first, as a sequel locator does. One of unknown format always shows.</summary>
+	public HashSet<AnimeMediaFormat> HiddenFormats { get; } = [AnimeMediaFormat.Music];
 
 	/// <summary>e.g. "42 missed"; or why there are none.</summary>
 	[ObservableProperty] public partial string Summary { get; private set; } = "";
@@ -51,7 +56,8 @@ public sealed partial class MissedRelationsViewModel(MissedRelationsService miss
 		Sort ??= SortOptions[0];
 		try
 		{
-			_all = await missedRelations.GetAsync();
+			_groups = await missedRelations.GetGroupsAsync();
+			_groupOf = _groups.SelectMany(g => g.Missed.Select(x => (x.Id, g))).ToDictionary();
 		}
 		catch (Exception ex)
 		{
@@ -63,7 +69,7 @@ public sealed partial class MissedRelationsViewModel(MissedRelationsService miss
 		Show();
 	}
 
-	partial void OnFilterChanged(IReadOnlyCollection<AnimeRelationType>? value) => Show();
+	public void Refresh() => Show();
 
 	partial void OnSortChanged(FilterOption<ListSort>? value)
 	{
@@ -79,10 +85,13 @@ public sealed partial class MissedRelationsViewModel(MissedRelationsService miss
 
 	private void Show()
 	{
-		var filtered = _all.Where(x => Filter is null || x.Relation is { } relation && Filter.Contains(relation));
-		Shown = UserListQuery.Sort(filtered, Sort?.Value ?? ListSort.Popularity, SortDescending);
-		Summary = _all.Count == 0 ? "Nothing missed: you've seen every sequel, prequel, side story and spin-off of what you watched, or there's no list to check."
-			: $"{Shown.Count} missed";
+		var filtered = _groups.SelectMany(g => g.Missed).Where(x => x.Relation is not { } relation || !HiddenRelations.Contains(relation))
+							 .Where(x => !HiddenFormats.Contains(x.MediaFormat));
+		// A franchise goes where its first anime sorts, with its anime in that order.
+		var sorted = UserListQuery.Sort(filtered, Sort?.Value ?? ListSort.Popularity, SortDescending);
+		Shown = [.. sorted.GroupBy(x => _groupOf[x.Id]).Select(g => g.Key with { Missed = [.. g] })];
+		Summary = _groups.Count == 0 ? "Nothing missed: you've seen every sequel, prequel, side story and spin-off of what you watched, or there's no list to check."
+			: $"{sorted.Count} missed in {Shown.Count} franchises";
 	}
 
 	protected override Task OnNavigatedFromInternalAsync()
@@ -94,7 +103,7 @@ public sealed partial class MissedRelationsViewModel(MissedRelationsService miss
 	/// <summary>One added from its card shows it's on the list now; it stays until the page is opened again.</summary>
 	public void Receive(AnimeTrackingChangedMessage message)
 	{
-		foreach (var anime in _all.Where(x => !ReferenceEquals(x, message.Anime) && x.StoreKey == message.Anime.StoreKey))
+		foreach (var anime in _groups.SelectMany(g => g.Missed).Where(x => !ReferenceEquals(x, message.Anime) && x.StoreKey == message.Anime.StoreKey))
 		{
 			anime.Tracking = message.Tracking;
 		}

@@ -92,22 +92,3 @@ public sealed class MediaSearchOverlays : CardOverlaySelector
 		}
 	}
 }
-
-/// <summary>Missed relations: where each is on the list, its score, and its format and season.</summary>
-public sealed class MissedRelationsOverlays : CardOverlaySelector
-{
-	private readonly BrowseOverlays _browse = new();
-
-	public override IEnumerable<Type> Select(IMediaModel item, DateTime now)
-	{
-		foreach (var overlay in _browse.Select(item, now))
-		{
-			yield return overlay;
-		}
-
-		if (FormatSeasonOverlay.IsShown(item))
-		{
-			yield return typeof(FormatSeasonOverlay);
-		}
-	}
-}

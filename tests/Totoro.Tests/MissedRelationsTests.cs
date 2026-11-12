@@ -40,6 +40,29 @@ public class MissedRelationsTests
 	}
 
 	[Fact]
+	public void Group_JoinsAFranchiseThroughWatchedAndMissed()
+	{
+		static AnimeModel Watched(long id, params AnimeModel[] related) =>
+			new() { Id = id, Tracking = new Tracking { Status = ListItemStatus.Completed }, Related = related };
+
+		// 1 → 2 (watched) → 3 (missed); 4 ← 5 → 4 shared by two watched; 6 → 7 alone.
+		var list = new[] { Watched(1), Watched(2), Watched(5), Watched(6), Watched(8) };
+		var withRelations = new[]
+		{
+			Watched(1, Related(2, AnimeRelationType.Sequel)),
+			Watched(2, Related(1, AnimeRelationType.Prequel), Related(3, AnimeRelationType.Sequel, popularity: 5)),
+			Watched(5, Related(4, AnimeRelationType.SideStory, popularity: 9)),
+			Watched(8, Related(4, AnimeRelationType.SideStory, popularity: 9)),
+			Watched(6, Related(7, AnimeRelationType.SpinOff, popularity: 1)),
+		};
+
+		var groups = MissedRelations.Group(list, withRelations);
+
+		Assert.Equal<long[]>([[5, 8], [1, 2], [6]], groups.Select(g => g.Watched.Select(x => x.Id).Order().ToArray()));
+		Assert.Equal<long[]>([[4], [3], [7]], groups.Select(g => g.Missed.Select(x => x.Id).ToArray()));
+	}
+
+	[Fact]
 	public void IsWatched_CountsCompletedWatchingAndRewatching()
 	{
 		Assert.True(MissedRelations.IsWatched(new AnimeModel { Tracking = new Tracking { Status = ListItemStatus.Rewatching } }));

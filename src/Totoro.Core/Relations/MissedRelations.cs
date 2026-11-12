@@ -31,4 +31,50 @@ public static class MissedRelations
 							.OrderByDescending(x => x.Popularity)
 		];
 	}
+
+	/// <summary>
+	/// <see cref="Find"/>'s anime by franchise: each with the watched entries of <paramref name="list"/> it's related to,
+	/// joined with whatever those are related to, as a sequel locator shows them. Most popular franchise first.
+	/// </summary>
+	public static IReadOnlyList<MissedRelationGroup> Group(IReadOnlyCollection<AnimeModel> list, IReadOnlyCollection<AnimeModel> withRelations)
+	{
+		var missed = Find(list, withRelations);
+		var watched = list.Where(IsWatched).DistinctBy(x => x.Id).ToDictionary(x => x.Id);
+		var missedIds = missed.Select(x => x.Id).ToHashSet();
+		var parent = new Dictionary<long, long>();
+		long Root(long id)
+		{
+			while (parent.TryGetValue(id, out var up) && up != id)
+			{
+				id = up;
+			}
+			return id;
+		}
+
+		foreach (var anime in withRelations)
+		{
+			foreach (var related in anime.Related.Where(x => watched.ContainsKey(x.Id) || missedIds.Contains(x.Id)))
+			{
+				var (a, b) = (Root(related.Id), Root(anime.Id));
+				if (a != b)
+				{
+					parent[a] = b;
+				}
+			}
+		}
+
+		var watchedBy = watched.Values.ToLookup(x => Root(x.Id));
+		return
+		[
+			.. missed.GroupBy(x => Root(x.Id))
+					 .Select(g => new MissedRelationGroup([.. watchedBy[g.Key].OrderByDescending(x => x.Popularity)], [.. g]))
+		];
+	}
+}
+
+/// <summary>One franchise's missed anime, and the watched ones that are why.</summary>
+public sealed record MissedRelationGroup(IReadOnlyList<AnimeModel> Watched, IReadOnlyList<AnimeModel> Missed)
+{
+	/// <summary>Its most popular watched entry's title, usually the franchise's first.</summary>
+	public string Title => Watched.FirstOrDefault()?.Title ?? Missed[0].Title;
 }
