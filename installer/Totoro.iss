@@ -8,7 +8,7 @@
   #define AppVersion "2.0.0"
 #endif
 #ifndef PublishDir
-  #define PublishDir "..\src\Totoro\bin\Release\net11.0-windows10.0.19041.0\win-x64\publish"
+  #define PublishDir "..\src\Totoro\bin\Release\net11.0-windows10.0.26100.0\win-x64\publish"
 #endif
 #ifndef OutputDir
   #define OutputDir "output"
