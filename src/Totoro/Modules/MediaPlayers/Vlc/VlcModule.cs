@@ -93,5 +93,6 @@ public sealed class Settings : DataContainerConfig
 	[DisplayName("Volume")]
 	[Description("Songs play at it too; changing it in the player changes it here too.")]
 	[Range(0, 100)]
+	[Editor(DataContainerEditors.Slider, "")]
 	public int Volume { get; set; } = 100;
 }

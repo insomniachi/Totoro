@@ -172,10 +172,29 @@ public sealed partial class DataContainerEditor : UserControl
 			Minimum = property.Minimum,
 			Maximum = property.Maximum,
 			StepFrequency = isWhole ? 1 : (property.Maximum - property.Minimum) / 100,
+			VerticalAlignment = VerticalAlignment.Center,
 		};
-		Sync(slider, property, () => slider.Value = property.Value is null ? property.Minimum : Convert.ToDouble(property.Value));
+		AutomationProperties.SetName(slider, GetHeader(property));
+		// The value beside it, not only in the tooltip while dragging: wide enough for the largest, so the slider doesn't move.
+		var label = new TextBlock
+		{
+			VerticalAlignment = VerticalAlignment.Center,
+			TextAlignment = TextAlignment.Right,
+			MinWidth = Format(property.Maximum).Length * 9,
+		};
+		string Format(double value) => value.ToString(isWhole ? "0" : "0.##", CultureInfo.CurrentCulture);
+
+		var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12 };
+		panel.Children.Add(slider);
+		panel.Children.Add(label);
+		Sync(panel, property, () =>
+		{
+			var value = property.Value is null ? property.Minimum : Convert.ToDouble(property.Value);
+			slider.Value = value;
+			label.Text = Format(value);
+		});
 		slider.ValueChanged += (_, args) => property.Value = Convert.ChangeType(isWhole ? Math.Round(args.NewValue) : args.NewValue, type);
-		return slider;
+		return panel;
 	}
 
 	private static bool IsWhole(Type type) => type != typeof(double) && type != typeof(float) && type != typeof(decimal) && type != typeof(Half);
@@ -472,6 +491,27 @@ public sealed partial class DataContainerEditor : UserControl
 		textBox.PlaceholderText = folder ? "No folder chosen" : "No file chosen";
 		AutomationProperties.SetName(textBox, header);
 
+		// One line, scrolled to its end while not being edited: a long path shows its file name, not "C:\Users\...", and
+		// the whole of it in the tooltip.
+		textBox.TextWrapping = TextWrapping.NoWrap;
+		void ShowEnd()
+		{
+			if (textBox.FocusState == FocusState.Unfocused && textBox.FindDescendant<ScrollViewer>() is { } scroller)
+			{
+				scroller.ChangeView(scroller.ScrollableWidth, null, null, disableAnimation: true);
+			}
+		}
+
+		// After layout, when the text's width is known.
+		void ShowEndSoon() => textBox.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, ShowEnd);
+		textBox.Loaded += (_, _) => ShowEndSoon();
+		textBox.LostFocus += (_, _) => ShowEndSoon();
+		textBox.TextChanged += (_, _) =>
+		{
+			ToolTipService.SetToolTip(textBox, string.IsNullOrEmpty(textBox.Text) ? null : textBox.Text);
+			ShowEndSoon();
+		};
+
 		var browse = new Button { Content = new SymbolIcon(Symbol.More), VerticalAlignment = VerticalAlignment.Top };
 		ToolTipService.SetToolTip(browse, "Browse");
 		AutomationProperties.SetName(browse, "Browse");
@@ -513,7 +553,7 @@ public sealed partial class DataContainerEditor : UserControl
 	private static Button CreateShortcutEditor(DataContainerProperty property)
 	{
 		// Wrapping, so several shortcuts don't squeeze the card's header.
-		var keycaps = new WrapPanel { HorizontalSpacing = 4, VerticalSpacing = 4, MaxWidth = 180 };
+		var keycaps = new WrapPanel { HorizontalSpacing = 4, VerticalSpacing = 4, MaxWidth = 300 };
 		var editing = new WrapPanel { HorizontalSpacing = 4, VerticalSpacing = 4, MinHeight = 32 };
 		var clear = new Button { Content = "Clear" };
 		var panel = new StackPanel { Spacing = 12, Width = 280 };

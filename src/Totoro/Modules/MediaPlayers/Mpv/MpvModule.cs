@@ -70,6 +70,7 @@ public sealed class Settings : DataContainerConfig
 	[DisplayName("Volume")]
 	[Description("mpv's volume (up to 130); changing it in mpv changes it here too.")]
 	[Range(0, 130)]
+	[Editor(DataContainerEditors.Slider, "")]
 	public int Volume { get; set; } = 100;
 }
 

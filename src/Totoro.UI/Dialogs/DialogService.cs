@@ -56,9 +56,10 @@ public sealed class DialogService(IViewRegistry viewRegistry, IServiceScopeFacto
 			Content = scroller,
 		};
 
-		// Room for that gutter beside content as wide as a dialog's content gets (e.g. settings at their MinWidth), which
-		// would otherwise lose its right edge to it.
-		dialog.Resources["ContentDialogMaxWidth"] = (double)Application.Current.Resources["ContentDialogMaxWidth"] + ScrollBarGutter;
+		// As wide as the view's MinWidth asks for (with the dialog's padding, 24 each side), if more than a dialog's usual
+		// width; and room for that gutter beside content that wide, which would otherwise lose its right edge to it.
+		var width = Math.Max((double)Application.Current.Resources["ContentDialogMaxWidth"], view.MinWidth + 48);
+		dialog.Resources["ContentDialogMaxWidth"] = width + ScrollBarGutter;
 
 		void Sync(object? sender = null, PropertyChangedEventArgs? e = null)
 		{

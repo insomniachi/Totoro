@@ -13,9 +13,9 @@ public sealed partial class DataContainerDialog : UserControl
 	{
 		Content = _editor;
 		IsTabStop = false;
-		// The dialog's full content width (548 less padding), so the cards keep their editors beside the headers
-		// instead of wrapping them underneath.
-		MinWidth = 500;
+		// Wider than a dialog's usual 500 (the dialog service widens it to fit), so the cards keep their editors beside the
+		// headers instead of wrapping them underneath, with room for wide ones (keycaps, a slider and its value, chips).
+		MinWidth = 640;
 	}
 
 	/// <summary>Set by the dialog service.</summary>
