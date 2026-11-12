@@ -248,7 +248,7 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 		{
 			if (draft.UseOwn)
 			{
-				draft.Config.UpdateValues(draft.Container);
+				// The container is bound to the draft's settings, so they already have the edits.
 				_settings.ProviderSettings[id] = draft.Module.ToJson(draft.Config);
 			}
 			else

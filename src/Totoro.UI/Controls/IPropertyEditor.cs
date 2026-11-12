@@ -16,9 +16,9 @@ public interface IPropertyEditor
 	string EditorType { get; }
 
 	/// <summary>
-	/// The control editing <paramref name="property"/>: it writes <see cref="DataContainerProperty.Value"/> back as
-	/// <see cref="DataContainerProperty.ValueType"/> (a value of another type isn't saved), always as a new object (the
-	/// dialog's copies share the settings' until saved), and follows changes to it with
+	/// The control editing <paramref name="property"/>: it writes the value with
+	/// <see cref="DataContainerProperty.TrySetValue"/> (which converts it to <see cref="DataContainerProperty.ValueType"/>
+	/// and checks it), always as a new object (the dialog's copies share the settings' until saved), and follows changes to it with
 	/// <see cref="DataContainerEditor.Sync"/>. The card around it shows the setting's name and description.
 	/// </summary>
 	FrameworkElement Create(DataContainerProperty property);

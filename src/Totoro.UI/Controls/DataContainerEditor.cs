@@ -20,9 +20,8 @@ namespace Totoro.UI.Controls;
 /// Edits a <see cref="DataContainer"/> (e.g. from <see cref="DataContainerConfig.ToDataContainer"/>): a settings card
 /// per property, with the editor its EditorType asks for (see <see cref="DataContainerEditors"/>); one with properties
 /// under it (see <see cref="ParentAttribute"/>) is an expander with their cards as its items. Edits go straight
-/// to the properties' values, keeping each value's type (an int stays an int), so
-/// <see cref="DataContainerConfig.UpdateValues"/> can read them back. For edits that can be cancelled, use the dialog
-/// (IDialogService.EditAsync), which edits copies.
+/// to the properties' values (through <see cref="DataContainerProperty.TrySetValue"/>), so to settings they're bound
+/// to. For edits that can be cancelled, use the dialog (IDialogService.EditAsync), which edits copies.
 /// </summary>
 public sealed partial class DataContainerEditor : UserControl
 {
@@ -193,7 +192,7 @@ public sealed partial class DataContainerEditor : UserControl
 			slider.Value = value;
 			label.Text = Format(value);
 		});
-		slider.ValueChanged += (_, args) => property.Value = Convert.ChangeType(isWhole ? Math.Round(args.NewValue) : args.NewValue, type);
+		slider.ValueChanged += (_, args) => property.TrySetValue(Convert.ChangeType(isWhole ? Math.Round(args.NewValue) : args.NewValue, type));
 		return panel;
 	}
 
@@ -219,7 +218,7 @@ public sealed partial class DataContainerEditor : UserControl
 				// Not while showing the value: boxes checked one at a time would write the values in between.
 				if (!showing)
 				{
-					property.Value = Enum.ToObject(type, flags.Where(x => x.Box.IsChecked == true).Aggregate(0L, (all, x) => all | x.Bits));
+					property.TrySetValue(Enum.ToObject(type, flags.Where(x => x.Box.IsChecked == true).Aggregate(0L, (all, x) => all | x.Bits)));
 				}
 			}
 
@@ -264,9 +263,9 @@ public sealed partial class DataContainerEditor : UserControl
 		{
 			if (!showing && args.NewDate is { } date)
 			{
-				property.Value = type == typeof(DateOnly) ? DateOnly.FromDateTime(date.Date)
+				property.TrySetValue(type == typeof(DateOnly) ? DateOnly.FromDateTime(date.Date)
 					: type == typeof(DateTime) ? date.Date
-					: date;
+					: date);
 			}
 		};
 		return picker;
@@ -287,7 +286,7 @@ public sealed partial class DataContainerEditor : UserControl
 		{
 			if (!showing && args.NewTime is { } time)
 			{
-				property.Value = TimeOnly.FromTimeSpan(time);
+				property.TrySetValue(TimeOnly.FromTimeSpan(time));
 			}
 		};
 		return picker;
@@ -310,7 +309,7 @@ public sealed partial class DataContainerEditor : UserControl
 		{
 			if (TimeSpan.TryParse(textBox.Text, CultureInfo.InvariantCulture, out var value))
 			{
-				property.Value = value;
+				property.TrySetValue(value);
 			}
 		};
 		return textBox;
@@ -333,7 +332,7 @@ public sealed partial class DataContainerEditor : UserControl
 				picker.Color = shown;
 			}
 		});
-		picker.ColorChanged += (_, args) => property.Value = System.Drawing.Color.FromArgb(args.NewColor.A, args.NewColor.R, args.NewColor.G, args.NewColor.B);
+		picker.ColorChanged += (_, args) => property.TrySetValue(System.Drawing.Color.FromArgb(args.NewColor.A, args.NewColor.R, args.NewColor.G, args.NewColor.B));
 		return button;
 	}
 
@@ -351,7 +350,7 @@ public sealed partial class DataContainerEditor : UserControl
 
 		List<string> Get() => (property.Value as IEnumerable<string>)?.ToList() ?? [];
 		// A new list, never the one there: the dialog's copies share it with the settings until saved.
-		void Set(List<string> items) => property.Value = isArray ? items.ToArray() : items;
+		void Set(List<string> items) => property.TrySetValue(isArray ? items.ToArray() : items);
 
 		Sync(panel, property, () =>
 		{
@@ -393,8 +392,16 @@ public sealed partial class DataContainerEditor : UserControl
 	private static TextBox CreateTextBox(DataContainerProperty property)
 	{
 		var textBox = new TextBox { MinWidth = 200, MaxWidth = 350, TextWrapping = TextWrapping.Wrap };
-		Sync(textBox, property, () => textBox.Text = property.Value?.ToString() ?? "");
-		textBox.TextChanged += (_, _) => property.Value = textBox.Text;
+		Sync(textBox, property, () =>
+		{
+			// Rewriting what's typed when it already reads as the value (e.g. "1:5" as 01:05:00) would move the caret.
+			if (GetValueType(property) is not { } type || !SettingText.TryParse(textBox.Text, type, out var typed) || !Equals(typed, property.Value))
+			{
+				textBox.Text = SettingText.Format(property.Value);
+			}
+		});
+		// Text for any type without an editor of its own: written only once it reads as one (see TrySetValue).
+		textBox.TextChanged += (_, _) => property.TrySetValue(textBox.Text);
 		return textBox;
 	}
 
@@ -409,7 +416,7 @@ public sealed partial class DataContainerEditor : UserControl
 				passwordBox.Password = property.Value?.ToString() ?? "";
 			}
 		});
-		passwordBox.PasswordChanged += (_, _) => property.Value = passwordBox.Password;
+		passwordBox.PasswordChanged += (_, _) => property.TrySetValue(passwordBox.Password);
 		return passwordBox;
 	}
 
@@ -418,7 +425,7 @@ public sealed partial class DataContainerEditor : UserControl
 		// The card shows the header; the switch's own On/Off text is enough.
 		var toggle = new ToggleSwitch { MinWidth = 0 };
 		Sync(toggle, property, () => toggle.IsOn = property.Value is true);
-		toggle.Toggled += (_, _) => property.Value = toggle.IsOn;
+		toggle.Toggled += (_, _) => property.TrySetValue(toggle.IsOn);
 		return toggle;
 	}
 
@@ -450,7 +457,7 @@ public sealed partial class DataContainerEditor : UserControl
 			var value = isWhole ? Math.Round(args.NewValue) : args.NewValue;
 			try
 			{
-				property.Value = Convert.ChangeType(value, type);
+				property.TrySetValue(Convert.ChangeType(value, type));
 			}
 			catch (OverflowException)
 			{
@@ -476,7 +483,7 @@ public sealed partial class DataContainerEditor : UserControl
 		{
 			if (comboBox.SelectedIndex >= 0)
 			{
-				property.Value = values[comboBox.SelectedIndex];
+				property.TrySetValue(values[comboBox.SelectedIndex]);
 			}
 		};
 		return comboBox;
@@ -522,7 +529,7 @@ public sealed partial class DataContainerEditor : UserControl
 			{
 				if (await new FolderPicker(window).PickSingleFolderAsync() is { } picked)
 				{
-					property.Value = picked.Path;
+					property.TrySetValue(picked.Path);
 				}
 
 				return;
@@ -532,7 +539,7 @@ public sealed partial class DataContainerEditor : UserControl
 			picker.FileTypeFilter.Add("*");
 			if (await picker.PickSingleFileAsync() is { } file)
 			{
-				property.Value = file.Path;
+				property.TrySetValue(file.Path);
 			}
 		};
 
@@ -570,7 +577,7 @@ public sealed partial class DataContainerEditor : UserControl
 		ToolTipService.SetToolTip(button, "Change");
 
 		List<string> GetShortcuts() => KeyboardShortcuts.Split(property.Value?.ToString() ?? "").ToList();
-		void SetShortcuts(List<string> shortcuts) => property.Value = string.Join(", ", shortcuts);
+		void SetShortcuts(List<string> shortcuts) => property.TrySetValue(string.Join(", ", shortcuts));
 
 		void Show()
 		{

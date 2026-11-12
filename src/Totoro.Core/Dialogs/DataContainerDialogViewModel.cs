@@ -29,9 +29,17 @@ public sealed class DataContainerDialogViewModel : DialogViewModel<bool>
 
 	public override Task<bool> ConfirmAsync()
 	{
-		for (var i = 0; i < _original.Count; i++)
+		// Only what changed (an action's can't be written), and all of it checked before any is written, so a value that
+		// isn't valid leaves every original as it was and keeps the dialog open.
+		var changed = _original.Zip(Properties).Where(x => !Equals(x.First.Value, x.Second.Value)).ToList();
+		if (changed.Any(x => !x.First.Clone().TrySetValue(x.Second.Value, out _)))
 		{
-			_original[i].Value = Properties[i].Value;
+			return Task.FromResult(false);
+		}
+
+		foreach (var (original, copy) in changed)
+		{
+			original.TrySetValue(copy.Value, out _);
 		}
 
 		Result = true;
@@ -52,13 +60,12 @@ public static class DataContainerDialogExtensions
 		/// <summary>Edits a module's settings in a dialog and saves them if the user saved; returns whether they did.</summary>
 		public async Task<bool> EditSettingsAsync(IModuleSettings settings)
 		{
-			var container = settings.Config.ToDataContainer();
-			if (!await dialogs.EditAsync(settings.Descriptor.Name, container))
+			// Bound to the settings: confirming writes the edited values into them.
+			if (!await dialogs.EditAsync(settings.Descriptor.Name, settings.Config.ToDataContainer()))
 			{
 				return false;
 			}
 
-			settings.Config.UpdateValues(container);
 			settings.Save();
 			return true;
 		}

@@ -135,9 +135,9 @@ public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<Do
 			return false;
 		}
 
-		if (GetDraft(id) is var (config, container))
+		// The container is bound to the draft's settings, so they already have the edits.
+		if (GetDraft(id) is var (config, _))
 		{
-			config.UpdateValues(container);
 			provider.UseSettings(config);
 		}
 

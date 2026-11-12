@@ -248,29 +248,17 @@ public sealed class AppSettingsTools(
 		var options = Editable(settings.Config).ToList();
 		var option = options.FirstOrDefault(x => x.Name.Equals(setting, StringComparison.OrdinalIgnoreCase))
 			?? options.FirstOrDefault(x => x.DisplayName?.Equals(setting, StringComparison.OrdinalIgnoreCase) == true);
-		if (option is null || settings.Config.GetType().GetProperty(option.Name) is not { CanWrite: true } property)
+		if (option is null)
 		{
 			throw new AgentToolException($"{settings.Descriptor.Name} has no setting called {setting}.");
 		}
 
-		object parsed;
-		if (option.AllowedValues?.ToList() is { Count: > 0 } allowed)
+		// Bound to the settings: checked (type, choices, range) and written as the settings page would.
+		if (!option.TrySetValue(value, out var error))
 		{
-			parsed = allowed.FirstOrDefault(x => string.Equals(x.ToString(), value, StringComparison.OrdinalIgnoreCase))
-				?? throw new AgentToolException($"\"{value}\" isn't one of {option.DisplayName}'s values: {string.Join(", ", allowed)}.");
-		}
-		else
-		{
-			parsed = ParseValue(value, Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType);
-			// Only numbers have a [Range]; a date, say, doesn't convert to one.
-			var hasRange = option.Minimum != double.MinValue || option.Maximum != double.MaxValue;
-			if (hasRange && Convert.ToDouble(parsed, CultureInfo.InvariantCulture) is var number && (number < option.Minimum || number > option.Maximum))
-			{
-				throw new AgentToolException($"{option.DisplayName} must be between {option.Minimum} and {option.Maximum}.");
-			}
+			throw new AgentToolException(error ?? $"\"{value}\" isn't a valid value for {setting}.");
 		}
 
-		property.SetValue(settings.Config, parsed);
 		settings.Save();
 		return new ModuleSettingsInfo(settings.Descriptor.Name, [.. Editable(settings.Config).Select(Describe)]);
 	}
@@ -342,62 +330,7 @@ public sealed class AppSettingsTools(
 			// Secrets stay out of the chat: the model is only told whether one is set.
 			property.EditorType == DataContainerEditors.Password
 				? property.Value is string { Length: > 0 } ? "(set)" : ""
-				: FormatValue(property.Value),
+				: SettingText.Format(property.Value),
 			property.AllowedValues?.Any() == true ? [.. property.AllowedValues.Select(x => x.ToString() ?? "")] : null);
-	}
-
-	/// <summary>A setting's value as <see cref="ParseValue"/> reads it back.</summary>
-	private static string FormatValue(object? value) => value switch
-	{
-		System.Drawing.Color color => HexColorJsonConverter.ToHex(color),
-		string text => text,
-		IEnumerable<string> items => string.Join(", ", items),
-		DateOnly or DateTime or DateTimeOffset => ((IFormattable)value).ToString("O", CultureInfo.InvariantCulture),
-		TimeOnly time => time.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
-		TimeSpan span => span.ToString("c", CultureInfo.InvariantCulture),
-		_ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "",
-	};
-
-	private static object ParseValue(string value, Type type)
-	{
-		try
-		{
-			if (type.IsEnum)
-			{
-				// A [Flags] one takes several: "A, B".
-				return Enum.Parse(type, value, ignoreCase: true);
-			}
-
-			if (type == typeof(string))
-			{
-				return value;
-			}
-
-			if (type == typeof(System.Drawing.Color))
-			{
-				return HexColorJsonConverter.FromHex(value) ?? throw new FormatException();
-			}
-
-			if (typeof(IEnumerable<string>).IsAssignableFrom(type))
-			{
-				var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-				return type.IsArray ? items : items.ToList();
-			}
-
-			// Numbers, bools, dates, times, durations...
-			return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value) ?? throw new FormatException();
-		}
-		catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidCastException or OverflowException or NotSupportedException)
-		{
-			var expected = type.IsEnum ? string.Join(", ", Enum.GetNames(type))
-				: type == typeof(bool) ? "true or false"
-				: type == typeof(System.Drawing.Color) ? "a color, #RRGGBB or #AARRGGBB"
-				: type == typeof(DateOnly) || type == typeof(DateTime) || type == typeof(DateTimeOffset) ? "a date, yyyy-MM-dd"
-				: type == typeof(TimeOnly) ? "a time of day, HH:mm"
-				: type == typeof(TimeSpan) ? "a duration, h:mm:ss"
-				: type.IsPrimitive || type == typeof(decimal) ? "a number"
-				: $"a {type.Name}";
-			throw new AgentToolException($"\"{value}\" isn't a valid value; it takes {expected}.");
-		}
 	}
 }

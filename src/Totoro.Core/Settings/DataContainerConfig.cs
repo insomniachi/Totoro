@@ -7,39 +7,11 @@ namespace Totoro.Core.Settings;
 
 public class DataContainerConfig
 {
-	public void UpdateValues(List<DataContainerProperty> options)
-	{
-		var type = GetType();
-		foreach (var option in options)
-		{
-			if (type.GetProperty(option.Name) is not { CanWrite: true } propInfo)
-			{
-				continue;
-			}
-
-			// The editors keep each value's own type, except the text box, which any other type (e.g. TimeSpan) falls back to.
-			var value = option.Value is string text && propInfo.PropertyType != typeof(string) ? FromText(text, propInfo.PropertyType) : option.Value;
-
-			// A value of another type (or null) wasn't edited, or isn't valid: keep the current one.
-			if (propInfo.PropertyType.IsInstanceOfType(value))
-			{
-				propInfo.SetValue(this, value);
-			}
-		}
-	}
-
-	private static object? FromText(string text, Type type)
-	{
-		try
-		{
-			return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(text);
-		}
-		catch (Exception ex) when (ex is FormatException or NotSupportedException or ArgumentException || ex.InnerException is FormatException or OverflowException)
-		{
-			return null;
-		}
-	}
-
+	/// <summary>
+	/// The settings to edit, bound to this object: setting a property's value sets this object's property. To edit
+	/// without changing these settings until confirmed, edit a copy (IModuleSettings.CreateCopy, or the dialog, which
+	/// edits copies of the properties).
+	/// </summary>
 	public DataContainer ToDataContainer()
 	{
 		var options = new DataContainer();
@@ -53,10 +25,8 @@ public class DataContainerConfig
 			var builder = new DataContainerPropertyBuilder()
 						  .WithName(propertyInfo.Name)
 						  .WithDisplayName(propertyInfo.Name)
-						  .WithValue(propertyInfo.GetValue(this))
-						  // The property's type, not the value's: a null one has none. It picks the editor, and an enum's values
-						  // are offered as values, not names, so the editor's choice converts back to the property's type.
-						  .WithType(propertyInfo.PropertyType);
+						  // Its type is the property's, not its value's (a null one has none): it picks the editor.
+						  .WithBinding(this, propertyInfo);
 
 			if (propertyInfo.GetCustomAttribute<DescriptionAttribute>() is { } descriptionAttribute)
 			{

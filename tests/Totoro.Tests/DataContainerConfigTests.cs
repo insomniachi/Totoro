@@ -11,50 +11,114 @@ public class DataContainerConfigTests
 		public int? Limit { get; set; }
 		public DayOfWeek Day { get; set; }
 		public string Name { get; set; } = "a";
+		public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(1);
+		[System.ComponentModel.DataAnnotations.Range(0, 10)] public int Level { get; set; } = 5;
+		[System.ComponentModel.DataAnnotations.AllowedValues("Sub", "Dub")] public string Audio { get; set; } = "Sub";
 		public string ReadOnly => "fixed";
 	}
 
 	[Fact]
-	public void UpdateValuesSavesEveryTypeTheEditorWrites()
+	public void PropertiesAreBoundToTheSettings()
 	{
 		var config = new Config();
 		var container = config.ToDataContainer();
-		container.GetProperty(nameof(Config.Size))!.Value = 5L;
-		container.GetProperty(nameof(Config.Limit))!.Value = 3;
-		container.GetProperty(nameof(Config.Day))!.Value = DayOfWeek.Friday;
-		container.GetProperty(nameof(Config.Name))!.Value = null; // not a string: keeps the current value
-		container.Add(new DataContainerProperty { Name = "Missing", Value = 1 });
+		var size = container.GetProperty(nameof(Config.Size))!;
 
-		config.UpdateValues(container);
-
+		size.Value = 5L;
 		Assert.Equal(5L, config.Size);
-		Assert.Equal(3, config.Limit);
-		Assert.Equal(DayOfWeek.Friday, config.Day);
-		Assert.Equal("a", config.Name);
-	}
 
-	private sealed class TextConfig : DataContainerConfig
-	{
-		public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(1);
-		public int? Limit { get; set; } = 2;
+		config.Size = 9;
+		Assert.Equal(9L, size.Value);
 	}
 
 	[Fact]
-	public void UpdateValuesReadsTextBoxTextForOtherTypes()
+	public void TrySetValueConvertsAndChecks()
 	{
-		var config = new TextConfig();
+		var config = new Config();
 		var container = config.ToDataContainer();
-		container.GetProperty(nameof(TextConfig.Delay))!.Value = "00:05:00";
-		container.GetProperty(nameof(TextConfig.Limit))!.Value = "not a number";
+		bool Set(string name, object? value) => container.GetProperty(name)!.TrySetValue(value, out _);
 
-		config.UpdateValues(container);
-
+		// Converted: another kind of number, and text.
+		Assert.True(Set(nameof(Config.Size), 7));
+		Assert.Equal(7L, config.Size);
+		Assert.True(Set(nameof(Config.Delay), "00:05:00"));
 		Assert.Equal(TimeSpan.FromMinutes(5), config.Delay);
-		Assert.Equal(2, config.Limit);
+		Assert.True(Set(nameof(Config.Day), "friday"));
+		Assert.Equal(DayOfWeek.Friday, config.Day);
+		Assert.True(Set(nameof(Config.Limit), "3"));
+		Assert.Equal(3, config.Limit);
 
-		container.GetProperty(nameof(TextConfig.Limit))!.Value = "7";
-		config.UpdateValues(container);
-		Assert.Equal(7, config.Limit);
+		// Null only where the type takes it.
+		Assert.True(Set(nameof(Config.Limit), null));
+		Assert.Null(config.Limit);
+		Assert.False(Set(nameof(Config.Size), null));
+
+		// Choices matched by name, ignoring case; others refused.
+		Assert.True(Set(nameof(Config.Audio), "dub"));
+		Assert.Equal("Dub", config.Audio);
+		Assert.False(Set(nameof(Config.Audio), "Raw"));
+
+		// Not valid: refused, and the setting keeps its value.
+		Assert.False(Set(nameof(Config.Level), 11));
+		Assert.False(Set(nameof(Config.Size), "not a number"));
+		Assert.False(Set(nameof(Config.Day), "99"));
+		Assert.False(Set(nameof(Config.ReadOnly), "x"));
+		Assert.Equal(5, config.Level);
+		Assert.Equal(7L, config.Size);
+	}
+
+	[Fact]
+	public void TrySetValueSaysWhyForAnAgent()
+	{
+		var container = new Config().ToDataContainer();
+
+		Assert.False(container.GetProperty(nameof(Config.Delay))!.TrySetValue("soon", out var error));
+		Assert.Contains("h:mm:ss", error);
+		Assert.False(container.GetProperty(nameof(Config.Level))!.TrySetValue(20, out error));
+		Assert.Contains("between 0 and 10", error);
+	}
+
+	[Fact]
+	public void PropertiesMadeOnTheFlyHoldTheirValue()
+	{
+		var name = new DataContainerProperty { Name = "Name", Value = "" };
+		var count = new DataContainerPropertyBuilder().WithName("Count").WithType(typeof(int?)).Build();
+
+		Assert.True(name.TrySetValue("Totoro", out _));
+		Assert.Equal("Totoro", name.Value);
+		Assert.Equal(DataContainerEditors.NumberBox, count.EditorType);
+		Assert.True(count.TrySetValue("4", out _));
+		Assert.Equal(4, count.Value);
+	}
+
+	[Fact]
+	public void BuilderCallsCanComeInAnyOrder()
+	{
+		var choices = new object[] { 1, 2 };
+		var first = new DataContainerPropertyBuilder().WithAllowedValues(choices).WithEditorType(DataContainerEditors.Slider).WithType(typeof(int)).Build();
+		var second = new DataContainerPropertyBuilder().WithType(typeof(int)).WithEditorType(DataContainerEditors.Slider).WithAllowedValues(choices).Build();
+
+		Assert.Equal(first.EditorType, second.EditorType);
+		Assert.Equal(first.AllowedValues, second.AllowedValues);
+	}
+
+	[Fact]
+	public void TheDialogWritesBackOnlyValidEdits()
+	{
+		var config = new Config();
+		var container = config.ToDataContainer();
+		var dialog = new Totoro.Core.Dialogs.DataContainerDialogViewModel(new("Test", container));
+		dialog.Properties.GetProperty(nameof(Config.Name))!.Value = "b";
+		dialog.Properties.GetProperty(nameof(Config.Level))!.Value = 50;
+
+		// One edit isn't valid: nothing is written, and the dialog stays open.
+		Assert.False(dialog.ConfirmAsync().Result);
+		Assert.Equal("a", config.Name);
+
+		dialog.Properties.GetProperty(nameof(Config.Level))!.Value = 8;
+		Assert.True(dialog.ConfirmAsync().Result);
+		Assert.Equal("b", config.Name);
+		Assert.Equal(8, config.Level);
 	}
 
 	[Flags]
@@ -105,7 +169,6 @@ public class DataContainerConfigTests
 			container.GetProperty(nameof(TypedConfig.Tags))!.Value = new List<string> { "a", "b" };
 			container.GetProperty(nameof(TypedConfig.Names))!.Value = new[] { "x" };
 			container.GetProperty(nameof(TypedConfig.Days))!.Value = Days.Monday | Days.Tuesday;
-			settings.Value.UpdateValues(container);
 			settings.Save();
 
 			// A new instance reads the file, as after restarting the app.
@@ -140,4 +203,19 @@ public class DataContainerConfigTests
 	[InlineData("#12345")]
 	[InlineData("#GG0000")]
 	public void RejectsOtherColorText(string text) => Assert.Null(HexColorJsonConverter.FromHex(text));
+
+	[Theory]
+	[InlineData(typeof(DateOnly), "2026-11-12")]
+	[InlineData(typeof(TimeOnly), "07:30:00")]
+	[InlineData(typeof(TimeSpan), "01:30:00")]
+	[InlineData(typeof(int), "42")]
+	[InlineData(typeof(bool), "True")]
+	[InlineData(typeof(Days), "Monday, Tuesday")]
+	[InlineData(typeof(System.Drawing.Color), "#FF102030")]
+	[InlineData(typeof(string[]), "a, b")]
+	public void SettingTextReadsWhatItWrites(Type type, string text)
+	{
+		Assert.True(SettingText.TryParse(text, type, out var value));
+		Assert.Equal(text, SettingText.Format(value));
+	}
 }
