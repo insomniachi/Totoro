@@ -23,7 +23,7 @@ public sealed record PluginManifest
 	public string Author { get; init; } = "";
 
 	/// <summary>
-	/// The main assembly file name (e.g. "Totoro.Plugins.Senshi.dll").
+	/// The main assembly file name (e.g. "Totoro.Plugins.SubsPlease.dll").
 	/// </summary>
 	[JsonPropertyName("entryPoint")]
 	public required string EntryPoint { get; init; }

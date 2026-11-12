@@ -96,13 +96,13 @@ public class PluginManagerTests
 	[Fact]
 	public async Task Uninstall_RefusesDevPlugin()
 	{
-		var senshiBin = PluginLoaderTests.FindPluginBin("Totoro.Plugins.Senshi");
+		var pluginBin = PluginLoaderTests.FindPluginBin("Totoro.Plugins.SubsPlease");
 		var loader = new PluginLoader();
-		var senshi = Assert.Single(loader.LoadPlugins([senshiBin]), p => p.Name == "Senshi");
+		var plugin = Assert.Single(loader.LoadPlugins([pluginBin]), p => p.Name == "SubsPlease");
 		var manager = new PluginManager(loader, new PluginLoaderTests.FakePreferences());
 
-		await Assert.ThrowsAsync<InvalidOperationException>(() => manager.UninstallAsync(senshi.Id));
-		Assert.True(Directory.Exists(senshiBin));
+		await Assert.ThrowsAsync<InvalidOperationException>(() => manager.UninstallAsync(plugin.Id));
+		Assert.True(Directory.Exists(pluginBin));
 	}
 
 	[Fact]
@@ -168,10 +168,10 @@ public class PluginManagerTests
 	[Fact]
 	public void LoadPlugins_SkipsPluginMarkedForDeletion()
 	{
-		var senshiBin = PluginLoaderTests.FindPluginBin("Totoro.Plugins.Senshi");
-		var copy = Path.Combine(PluginsDir, "Senshi");
+		var pluginBin = PluginLoaderTests.FindPluginBin("Totoro.Plugins.SubsPlease");
+		var copy = Path.Combine(PluginsDir, "SubsPlease");
 		Directory.CreateDirectory(copy);
-		foreach (var file in Directory.GetFiles(senshiBin))
+		foreach (var file in Directory.GetFiles(pluginBin))
 		{
 			File.Copy(file, Path.Combine(copy, Path.GetFileName(file)), overwrite: true);
 		}
@@ -181,7 +181,7 @@ public class PluginManagerTests
 		{
 			var plugins = new PluginLoader().LoadPlugins();
 
-			Assert.DoesNotContain(plugins, p => p.Name == "Senshi");
+			Assert.DoesNotContain(plugins, p => p.Name == "SubsPlease");
 			Assert.False(Directory.Exists(copy));
 		}
 		finally
@@ -196,11 +196,11 @@ public class PluginManagerTests
 	[Fact]
 	public void PluginLoadContext_SharesHostDependencies()
 	{
-		var senshiBin = PluginLoaderTests.FindPluginBin("Totoro.Plugins.Senshi");
-		var senshi = Assert.Single(new PluginLoader().LoadPlugins([senshiBin]), p => p.Name == "Senshi");
+		var pluginBin = PluginLoaderTests.FindPluginBin("Totoro.Plugins.SubsPlease");
+		var plugin = Assert.Single(new PluginLoader().LoadPlugins([pluginBin]), p => p.Name == "SubsPlease");
 
 		// The host has Flurl, so the plugin uses the host's rather than a copy of its own: the same types on both sides.
-		var flurl = senshi.LoadContext!.LoadFromAssemblyName(new AssemblyName("Flurl"));
+		var flurl = plugin.LoadContext!.LoadFromAssemblyName(new AssemblyName("Flurl"));
 		Assert.Same(AssemblyLoadContext.Default, AssemblyLoadContext.GetLoadContext(flurl));
 	}
 }

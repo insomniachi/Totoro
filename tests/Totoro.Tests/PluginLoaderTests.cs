@@ -10,33 +10,6 @@ namespace Totoro.Tests;
 public class PluginLoaderTests
 {
 	[Fact]
-	public void PluginLoader_LoadsSenshiPlugin_FromDevDirectory()
-	{
-		var senshiBin = FindPluginBin("Totoro.Plugins.Senshi");
-		Assert.True(Directory.Exists(senshiBin), $"Senshi bin directory should exist at {senshiBin}");
-
-		var loader = new PluginLoader();
-		var plugins = loader.LoadPlugins([senshiBin]);
-
-		var senshi = Assert.Single(plugins, p => p.Name.Equals("Senshi", StringComparison.OrdinalIgnoreCase));
-		Assert.True(senshi.IsLoaded, $"Senshi should be loaded cleanly, but error was: {senshi.LoadError}");
-		Assert.NotNull(senshi.Module);
-		Assert.Equal("Senshi", senshi.Module.Descriptor.Name);
-		Assert.Equal(new Guid("c6066fda-8e30-4545-9599-8e6c3e917312"), senshi.Id);
-		Assert.True(senshi.IsDev);
-
-		// Verify module can configure services into DI and resolve IAnimeProvider
-		var services = new ServiceCollection();
-		services.AddLogging();
-		senshi.Module.ConfigureServices(services);
-		var sp = services.BuildServiceProvider();
-
-		var provider = sp.GetKeyedService<IAnimeProvider>(senshi.Id);
-		Assert.NotNull(provider);
-		Assert.Equal("Senshi", provider.Name);
-	}
-
-	[Fact]
 	public void PluginLoader_LoadsSubsPleasePlugin_FromDevDirectory()
 	{
 		var subsPleaseBin = FindPluginBin("Totoro.Plugins.SubsPlease");
@@ -96,7 +69,6 @@ public class PluginLoaderTests
 		var loader = new PluginLoader();
 		var plugins = loader.LoadPlugins([pluginsRoot]);
 
-		Assert.Contains(plugins, p => p.Name.Equals("Senshi", StringComparison.OrdinalIgnoreCase) && p.IsLoaded);
 		Assert.Contains(plugins, p => p.Name.Equals("SubsPlease", StringComparison.OrdinalIgnoreCase) && p.IsLoaded);
 		Assert.Contains(plugins, p => p.Name.Equals("AnimePahe", StringComparison.OrdinalIgnoreCase) && p.IsLoaded);
 	}
@@ -110,8 +82,8 @@ public class PluginLoaderTests
 	[Fact]
 	public async Task PluginManager_InstallsPackage_FromTotoroPluginZip()
 	{
-		var packageFile = FindPluginPackage("Senshi");
-		Assert.True(File.Exists(packageFile), $"Senshi.totoro-plugin should exist at {packageFile}");
+		var packageFile = FindPluginPackage("SubsPlease");
+		Assert.True(File.Exists(packageFile), $"SubsPlease.totoro-plugin should exist at {packageFile}");
 
 		var mockPrefs = new FakePreferences();
 		var loader = new PluginLoader();
@@ -120,7 +92,7 @@ public class PluginLoaderTests
 		var installed = await manager.InstallFromFileAsync(packageFile);
 
 		Assert.NotNull(installed);
-		Assert.Equal("Senshi", installed.Name);
+		Assert.Equal("SubsPlease", installed.Name);
 		Assert.True(Directory.Exists(installed.DirectoryPath));
 		Assert.True(File.Exists(Path.Combine(installed.DirectoryPath, "plugin.json")));
 		Assert.True(File.Exists(installed.AssemblyPath));
