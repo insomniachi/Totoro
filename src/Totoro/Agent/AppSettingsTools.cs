@@ -240,19 +240,37 @@ public sealed class AppSettingsTools(
 	public ModuleSettingsInfo UpdateModuleSetting(
 		string module,
 		[Description("The setting's name.")] string setting,
-		[Description("Its new value: true or false, a number, one of its allowedValues, or text.")] string value)
+		[Description("Its new value, written as get_module_settings shows it: true or false, a number, one of its allowedValues, a date (yyyy-MM-dd), a time (HH:mm), a duration (h:mm:ss), a color (#RRGGBB), a list (items separated by commas), or text.")] string value)
 	{
 		var settings = moduleSettings.FirstOrDefault(x => x.Descriptor.Name.Equals(module, StringComparison.OrdinalIgnoreCase))
 			?? throw new AgentToolException($"There's no module called {module}.");
-		var property = settings.Config.GetType().GetProperty(setting, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
-			?? settings.Config.GetType().GetProperties().FirstOrDefault(x => settings.Config.ToDataContainer().GetProperty(x.Name)?.DisplayName?
-																						.Equals(setting, StringComparison.OrdinalIgnoreCase) == true);
-		if (property is not { CanWrite: true })
+		// Through the settings page's view of them, so the agent is held to the same rules: no hidden settings, ranges, choices.
+		var options = Editable(settings.Config).ToList();
+		var option = options.FirstOrDefault(x => x.Name.Equals(setting, StringComparison.OrdinalIgnoreCase))
+			?? options.FirstOrDefault(x => x.DisplayName?.Equals(setting, StringComparison.OrdinalIgnoreCase) == true);
+		if (option is null || settings.Config.GetType().GetProperty(option.Name) is not { CanWrite: true } property)
 		{
 			throw new AgentToolException($"{settings.Descriptor.Name} has no setting called {setting}.");
 		}
 
-		property.SetValue(settings.Config, ParseValue(value, property.PropertyType));
+		object parsed;
+		if (option.AllowedValues?.ToList() is { Count: > 0 } allowed)
+		{
+			parsed = allowed.FirstOrDefault(x => string.Equals(x.ToString(), value, StringComparison.OrdinalIgnoreCase))
+				?? throw new AgentToolException($"\"{value}\" isn't one of {option.DisplayName}'s values: {string.Join(", ", allowed)}.");
+		}
+		else
+		{
+			parsed = ParseValue(value, Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType);
+			// Only numbers have a [Range]; a date, say, doesn't convert to one.
+			var hasRange = option.Minimum != double.MinValue || option.Maximum != double.MaxValue;
+			if (hasRange && Convert.ToDouble(parsed, CultureInfo.InvariantCulture) is var number && (number < option.Minimum || number > option.Maximum))
+			{
+				throw new AgentToolException($"{option.DisplayName} must be between {option.Minimum} and {option.Maximum}.");
+			}
+		}
+
+		property.SetValue(settings.Config, parsed);
 		settings.Save();
 		return new ModuleSettingsInfo(settings.Descriptor.Name, [.. Editable(settings.Config).Select(Describe)]);
 	}
@@ -324,9 +342,21 @@ public sealed class AppSettingsTools(
 			// Secrets stay out of the chat: the model is only told whether one is set.
 			property.EditorType == DataContainerEditors.Password
 				? property.Value is string { Length: > 0 } ? "(set)" : ""
-				: Convert.ToString(property.Value, CultureInfo.InvariantCulture) ?? "",
+				: FormatValue(property.Value),
 			property.AllowedValues?.Any() == true ? [.. property.AllowedValues.Select(x => x.ToString() ?? "")] : null);
 	}
+
+	/// <summary>A setting's value as <see cref="ParseValue"/> reads it back.</summary>
+	private static string FormatValue(object? value) => value switch
+	{
+		System.Drawing.Color color => HexColorJsonConverter.ToHex(color),
+		string text => text,
+		IEnumerable<string> items => string.Join(", ", items),
+		DateOnly or DateTime or DateTimeOffset => ((IFormattable)value).ToString("O", CultureInfo.InvariantCulture),
+		TimeOnly time => time.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
+		TimeSpan span => span.ToString("c", CultureInfo.InvariantCulture),
+		_ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "",
+	};
 
 	private static object ParseValue(string value, Type type)
 	{
@@ -334,14 +364,39 @@ public sealed class AppSettingsTools(
 		{
 			if (type.IsEnum)
 			{
+				// A [Flags] one takes several: "A, B".
 				return Enum.Parse(type, value, ignoreCase: true);
 			}
 
-			return type == typeof(string) ? value : System.Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
+			if (type == typeof(string))
+			{
+				return value;
+			}
+
+			if (type == typeof(System.Drawing.Color))
+			{
+				return HexColorJsonConverter.FromHex(value) ?? throw new FormatException();
+			}
+
+			if (typeof(IEnumerable<string>).IsAssignableFrom(type))
+			{
+				var items = value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+				return type.IsArray ? items : items.ToList();
+			}
+
+			// Numbers, bools, dates, times, durations...
+			return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value) ?? throw new FormatException();
 		}
-		catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidCastException or OverflowException)
+		catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidCastException or OverflowException or NotSupportedException)
 		{
-			var expected = type.IsEnum ? string.Join(", ", Enum.GetNames(type)) : type == typeof(bool) ? "true or false" : "a number";
+			var expected = type.IsEnum ? string.Join(", ", Enum.GetNames(type))
+				: type == typeof(bool) ? "true or false"
+				: type == typeof(System.Drawing.Color) ? "a color, #RRGGBB or #AARRGGBB"
+				: type == typeof(DateOnly) || type == typeof(DateTime) || type == typeof(DateTimeOffset) ? "a date, yyyy-MM-dd"
+				: type == typeof(TimeOnly) ? "a time of day, HH:mm"
+				: type == typeof(TimeSpan) ? "a duration, h:mm:ss"
+				: type.IsPrimitive || type == typeof(decimal) ? "a number"
+				: $"a {type.Name}";
 			throw new AgentToolException($"\"{value}\" isn't a valid value; it takes {expected}.");
 		}
 	}

@@ -9,6 +9,12 @@ public partial class DataContainerProperty : ObservableObject
 	public string? Description { get; init; }
 	public string EditorType { get; init; } = DataContainerEditors.TextBox;
 	[ObservableProperty] public partial object? Value { get; set; }
+
+	/// <summary>
+	/// The type the setting holds (a nullable's underlying type), which an editor writes <see cref="Value"/> back as, so
+	/// <see cref="DataContainerConfig.UpdateValues"/> can read it; null if unknown (then go by the value's own type).
+	/// </summary>
+	public Type? ValueType { get; init; }
 	public IEnumerable<object>? AllowedValues { get; init; }
 	public string? IconKey { get; init; }
 
@@ -29,11 +35,6 @@ public partial class DataContainerProperty : ObservableObject
 		return defaultValue;
 	}
 
-	public object? GetAsType(Type type, object? defaultValue)
-	{
-		return Value is null ? defaultValue : Convert.ChangeType(Value, type);
-	}
-
 	/// <summary>A copy to edit without touching this one, e.g. until a dialog is confirmed.</summary>
 	public DataContainerProperty Clone()
 	{
@@ -44,6 +45,7 @@ public partial class DataContainerProperty : ObservableObject
 			Description = Description,
 			EditorType = EditorType,
 			Value = Value,
+			ValueType = ValueType,
 			AllowedValues = AllowedValues,
 			IconKey = IconKey,
 			Parent = Parent,

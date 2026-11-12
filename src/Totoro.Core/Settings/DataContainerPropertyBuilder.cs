@@ -1,5 +1,5 @@
-﻿using System.Numerics;
-using System.Runtime.CompilerServices;
+﻿using System.Drawing;
+using System.Numerics;
 
 namespace Totoro.Core.Settings;
 
@@ -11,7 +11,8 @@ public class DataContainerPropertyBuilder
 	private string _editorType = DataContainerEditors.TextBox;
 	private string _name = "";
 	private object? _value = "";
-	private string? _iconKey = "";
+	private Type? _valueType;
+	private string? _iconKey;
 	private string? _parent;
 	private double _minimum = double.MinValue;
 	private double _maximum = double.MaxValue;
@@ -34,19 +35,26 @@ public class DataContainerPropertyBuilder
 		return this;
 	}
 
+	/// <summary>The value, and (unless it's null) its type, which picks the editor; see <see cref="WithType"/>.</summary>
 	public DataContainerPropertyBuilder WithValue(object? value)
 	{
 		_value = value;
-		SetDefaultsForType(value);
+		if (value is not null)
+		{
+			WithType(value.GetType());
+		}
+
 		return this;
 	}
 
-	public DataContainerPropertyBuilder WithValueAndName<T>(T value, [CallerArgumentExpression(nameof(value))] string valueExpression = "")
+	/// <summary>
+	/// The type the setting holds (a nullable's underlying type), e.g. a property's when its value is null: the editor
+	/// for it (a date picker for a DateOnly...) and what the editor writes back.
+	/// </summary>
+	public DataContainerPropertyBuilder WithType(Type type)
 	{
-		_value = value;
-		_name = valueExpression.Split('.').LastOrDefault() ?? "";
-		_displayName = _name;
-		SetDefaultsForType(value);
+		_valueType = Nullable.GetUnderlyingType(type) ?? type;
+		SetDefaultsForType(_valueType);
 		return this;
 	}
 
@@ -90,19 +98,15 @@ public class DataContainerPropertyBuilder
 		return this;
 	}
 
-	public bool HasAllowedValues()
-	{
-		return _allowedValues.Any();
-	}
-
 	public DataContainerProperty Build()
 	{
-		var item = new DataContainerProperty
+		return new DataContainerProperty
 		{
 			Name = _name,
 			DisplayName = string.IsNullOrEmpty(_displayName) ? _name : _displayName,
 			Description = _description,
 			Value = _value,
+			ValueType = _valueType,
 			EditorType = _editorType,
 			AllowedValues = _allowedValues,
 			IconKey = _iconKey,
@@ -110,42 +114,49 @@ public class DataContainerPropertyBuilder
 			Minimum = _minimum,
 			Maximum = _maximum,
 		};
-
-		Reset();
-
-		return item;
 	}
 
-	private void Reset()
+	private void SetDefaultsForType(Type type)
 	{
-		_name = "";
-		_displayName = "";
-		_displayName = "";
-		_value = "";
 		_editorType = DataContainerEditors.TextBox;
 		_allowedValues = [];
-		_parent = null;
-		_minimum = double.MinValue;
-		_maximum = double.MaxValue;
-	}
-
-	private void SetDefaultsForType(object? value)
-	{
-		if (value is null)
+		if (type == typeof(bool))
 		{
-			return;
+			_editorType = DataContainerEditors.ToggleSwitch;
 		}
-
-		var type = value.GetType();
-		if (type.GetInterfaces()
-				.Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(INumber<>)))
+		else if (type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(INumber<>)))
 		{
 			_editorType = DataContainerEditors.NumberBox;
+		}
+		else if (type.IsEnum && type.IsDefined(typeof(FlagsAttribute), false))
+		{
+			// Any combination of the values: one choice each, not a list of allowed values.
+			_editorType = DataContainerEditors.Flags;
 		}
 		else if (type.IsEnum)
 		{
 			_editorType = DataContainerEditors.ComboBox;
 			_allowedValues = Enum.GetValues(type).Cast<object>();
+		}
+		else if (type == typeof(DateOnly) || type == typeof(DateTime) || type == typeof(DateTimeOffset))
+		{
+			_editorType = DataContainerEditors.DatePicker;
+		}
+		else if (type == typeof(TimeOnly))
+		{
+			_editorType = DataContainerEditors.TimePicker;
+		}
+		else if (type == typeof(TimeSpan))
+		{
+			_editorType = DataContainerEditors.Duration;
+		}
+		else if (type == typeof(Color))
+		{
+			_editorType = DataContainerEditors.Color;
+		}
+		else if (type != typeof(string) && typeof(IEnumerable<string>).IsAssignableFrom(type))
+		{
+			_editorType = DataContainerEditors.Tokens;
 		}
 	}
 }

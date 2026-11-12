@@ -12,38 +12,32 @@ public class DataContainerConfig
 		var type = GetType();
 		foreach (var option in options)
 		{
-			var propInfo = type.GetProperty(option.Name);
-			var currentValue = propInfo!.GetValue(this);
-			var optionValue = GetValue(option, propInfo.PropertyType, currentValue);
-			if (optionValue is not null)
+			if (type.GetProperty(option.Name) is not { CanWrite: true } propInfo)
 			{
-				propInfo.SetValue(this, optionValue);
+				continue;
+			}
+
+			// The editors keep each value's own type, except the text box, which any other type (e.g. TimeSpan) falls back to.
+			var value = option.Value is string text && propInfo.PropertyType != typeof(string) ? FromText(text, propInfo.PropertyType) : option.Value;
+
+			// A value of another type (or null) wasn't edited, or isn't valid: keep the current one.
+			if (propInfo.PropertyType.IsInstanceOfType(value))
+			{
+				propInfo.SetValue(this, value);
 			}
 		}
 	}
 
-	public static T CreateFrom<T>(List<DataContainerProperty> options)
-		where T : class, new()
+	private static object? FromText(string text, Type type)
 	{
-		var type = typeof(T);
-		return (T)CreateType(type, options);
-	}
-
-	public static object CreateType(Type type, List<DataContainerProperty> options)
-	{
-		var instance = Activator.CreateInstance(type)!;
-		foreach (var option in options)
+		try
 		{
-			var propInfo = type.GetProperty(option.Name);
-			var currentValue = propInfo!.GetValue(instance);
-			var optionValue = GetValue(option, propInfo.PropertyType, currentValue);
-			if (optionValue is not null)
-			{
-				propInfo.SetValue(instance, optionValue);
-			}
+			return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(text);
 		}
-
-		return instance;
+		catch (Exception ex) when (ex is FormatException or NotSupportedException or ArgumentException || ex.InnerException is FormatException or OverflowException)
+		{
+			return null;
+		}
 	}
 
 	public DataContainer ToDataContainer()
@@ -59,10 +53,10 @@ public class DataContainerConfig
 			var builder = new DataContainerPropertyBuilder()
 						  .WithName(propertyInfo.Name)
 						  .WithDisplayName(propertyInfo.Name)
-						  .WithValue(propertyInfo.GetValue(this));
-
-			// Enums need nothing here: WithValue already offers the enum's values (as values, not names, so the editor's
-			// choice converts back to the property's type).
+						  .WithValue(propertyInfo.GetValue(this))
+						  // The property's type, not the value's: a null one has none. It picks the editor, and an enum's values
+						  // are offered as values, not names, so the editor's choice converts back to the property's type.
+						  .WithType(propertyInfo.PropertyType);
 
 			if (propertyInfo.GetCustomAttribute<DescriptionAttribute>() is { } descriptionAttribute)
 			{
@@ -94,15 +88,6 @@ public class DataContainerConfig
 				builder.WithParent(parentAttribute.Name);
 			}
 
-			if (propertyInfo.PropertyType == typeof(bool))
-			{
-				builder.WithEditorType(DataContainerEditors.ToggleSwitch);
-			}
-			else if (builder.HasAllowedValues())
-			{
-				builder.WithEditorType(DataContainerEditors.ComboBox);
-			}
-
 			if (propertyInfo.GetCustomAttribute<EditorAttribute>() is { } editorTypeAttribute)
 			{
 				builder.WithEditorType(editorTypeAttribute.EditorTypeName);
@@ -117,29 +102,4 @@ public class DataContainerConfig
 	}
 
 	protected virtual void ConfigureProperty(DataContainerPropertyBuilder propertyBuilder, PropertyInfo info) { }
-
-	private static object? GetValue(DataContainerProperty options, Type t, object? defaultValue)
-	{
-		if (t == typeof(int))
-		{
-			return options.GetInt32((int)defaultValue!);
-		}
-
-		if (t == typeof(double))
-		{
-			return options.GetDouble((double)defaultValue!);
-		}
-
-		if (t == typeof(string))
-		{
-			return options.GetString((string)defaultValue!);
-		}
-
-		if (t == typeof(bool))
-		{
-			return options.GetBool((bool)defaultValue!);
-		}
-
-		return t.IsEnum ? options.GetAsType(t, defaultValue) : null;
-	}
 }

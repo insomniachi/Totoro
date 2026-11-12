@@ -36,7 +36,8 @@ public interface IModuleSettings<out TData> : IModuleSettings
 public class ModuleSettings<TData> : IModuleSettings<TData>
 	where TData : DataContainerConfig, new()
 {
-	private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true };
+	// Every read and write goes through these, so the types settings can hold (see DataContainerEditors) round-trip.
+	private static readonly JsonSerializerOptions s_options = new() { WriteIndented = true, Converters = { new HexColorJsonConverter() } };
 	private readonly string _filePath;
 
 	public ModuleSettings(Descriptor descriptor)
@@ -54,7 +55,7 @@ public class ModuleSettings<TData> : IModuleSettings<TData>
 		}
 
 		var text = File.ReadAllText(_filePath);
-		if (JsonSerializer.Deserialize<TData>(text) is { } data)
+		if (JsonSerializer.Deserialize<TData>(text, s_options) is { } data)
 		{
 			Value = data;
 		}

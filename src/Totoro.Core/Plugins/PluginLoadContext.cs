@@ -115,7 +115,9 @@ public sealed class PluginLoadContext : AssemblyLoadContext
 			return false;
 		}
 
+		// Totoro.UI too: a plugin's own settings editors (IPropertyEditor) must be the app's type.
 		return name.Equals("Totoro.Core", StringComparison.OrdinalIgnoreCase)
+			|| name.Equals("Totoro.UI", StringComparison.OrdinalIgnoreCase)
 			|| name.Equals("HtmlAgilityPack", StringComparison.OrdinalIgnoreCase)
 			|| name.StartsWith("Microsoft.Extensions.", StringComparison.OrdinalIgnoreCase)
 			|| name.StartsWith("System.", StringComparison.OrdinalIgnoreCase)

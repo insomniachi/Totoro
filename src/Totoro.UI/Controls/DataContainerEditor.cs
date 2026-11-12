@@ -1,12 +1,16 @@
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.Storage.Pickers;
 using Windows.System;
+using Totoro.Core;
 using Totoro.UI.Input;
 using Totoro.Core.Settings;
 
@@ -22,6 +26,13 @@ namespace Totoro.UI.Controls;
 /// </summary>
 public sealed partial class DataContainerEditor : UserControl
 {
+	// In XAML for ThemeResource: brushes looked up in code keep the theme they were looked up in.
+	private const string Xmlns = "xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'";
+	private const string KeycapXaml = $"<Border {Xmlns} Background='{{ThemeResource AccentFillColorDefaultBrush}}' CornerRadius='4' Padding='8,2,8,2' MinWidth='28'>"
+		+ "<TextBlock FontWeight='SemiBold' HorizontalAlignment='Center' Foreground='{ThemeResource TextOnAccentFillColorPrimaryBrush}' /></Border>";
+	private const string OrXaml = $"<TextBlock {Xmlns} Text='or' VerticalAlignment='Center' Foreground='{{ThemeResource TextFillColorSecondaryBrush}}' />";
+	private const string SwatchXaml = $"<Border {Xmlns} Width='24' Height='24' CornerRadius='4' BorderThickness='1' BorderBrush='{{ThemeResource ControlStrokeColorDefaultBrush}}' />";
+
 	private readonly StackPanel _cards = new() { Spacing = 4 };
 
 	public DataContainerEditor()
@@ -36,7 +47,10 @@ public sealed partial class DataContainerEditor : UserControl
 	partial void OnPropertiesChanged(IEnumerable<DataContainerProperty>? newValue)
 	{
 		_cards.Children.Clear();
-		var byParent = (newValue ?? []).ToLookup(x => x.Parent ?? "");
+		var properties = (newValue ?? []).ToList();
+		var names = properties.Select(x => x.Name).ToHashSet();
+		// A parent that isn't there (or itself) would hide the setting: show it at the top instead.
+		var byParent = properties.ToLookup(x => x.Parent is { } parent && parent != x.Name && names.Contains(parent) ? parent : "");
 		foreach (var property in byParent[""])
 		{
 			_cards.Children.Add(CreateCard(property, byParent));
@@ -45,9 +59,13 @@ public sealed partial class DataContainerEditor : UserControl
 
 	private static FrameworkElement CreateCard(DataContainerProperty property, ILookup<string, DataContainerProperty> byParent)
 	{
-		var header = string.IsNullOrEmpty(property.DisplayName) ? property.Name : property.DisplayName;
+		var header = GetHeader(property);
 		var editor = CreateEditor(property);
-		Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(editor, header);
+		// A panel isn't what a screen reader lands on: editors made of several controls name their own.
+		if (editor is not Panel)
+		{
+			AutomationProperties.SetName(editor, header);
+		}
 
 		if (!byParent[property.Name].Any())
 		{
@@ -88,19 +106,271 @@ public sealed partial class DataContainerEditor : UserControl
 		}
 	}
 
+	/// <summary>The app's own editors, one per name in <see cref="DataContainerEditors"/>.</summary>
+	private static readonly IPropertyEditor[] s_builtInEditors =
+	[
+		new PropertyEditor(DataContainerEditors.TextBox, CreateTextBox),
+		new PropertyEditor(DataContainerEditors.MultilineText, CreateMultilineTextBox),
+		new PropertyEditor(DataContainerEditors.ToggleSwitch, CreateToggleSwitch),
+		new PropertyEditor(DataContainerEditors.NumberBox, CreateNumberBox),
+		new PropertyEditor(DataContainerEditors.Slider, CreateSlider),
+		new PropertyEditor(DataContainerEditors.ComboBox, CreateComboBox),
+		new PropertyEditor(DataContainerEditors.Flags, CreateFlags),
+		new PropertyEditor(DataContainerEditors.FileBrowser, x => CreatePathBrowser(x, folder: false)),
+		new PropertyEditor(DataContainerEditors.FolderBrowser, x => CreatePathBrowser(x, folder: true)),
+		new PropertyEditor(DataContainerEditors.Password, CreatePasswordBox),
+		new PropertyEditor(DataContainerEditors.DatePicker, CreateDatePicker),
+		new PropertyEditor(DataContainerEditors.TimePicker, CreateTimePicker),
+		new PropertyEditor(DataContainerEditors.Duration, CreateDurationBox),
+		new PropertyEditor(DataContainerEditors.Color, CreateColorPicker),
+		new PropertyEditor(DataContainerEditors.Tokens, CreateTokens),
+		new PropertyEditor(DataContainerEditors.Shortcut, CreateShortcutEditor),
+		new PropertyEditor(DataContainerEditors.Button, x => x.Value is SettingsAction action ? new Button { MinWidth = 120, Command = action.Command } : CreateTextBox(x)),
+	];
+
+	/// <summary>The setting's name as shown: its display name, else its name. For editors naming their own controls.</summary>
+	public static string GetHeader(DataContainerProperty property) => string.IsNullOrEmpty(property.DisplayName) ? property.Name : property.DisplayName;
+
 	private static FrameworkElement CreateEditor(DataContainerProperty property)
 	{
-		return property.EditorType switch
+		// Plugins' after the app's, and the last registered wins: a plugin can replace one of the app's editors.
+		var editor = s_builtInEditors.Concat(Locator.GetServices<IPropertyEditor>()).LastOrDefault(x => x.EditorType == property.EditorType);
+		try
 		{
-			DataContainerEditors.ToggleSwitch => CreateToggleSwitch(property),
-			DataContainerEditors.NumberBox => CreateNumberBox(property),
-			DataContainerEditors.ComboBox => CreateComboBox(property),
-			DataContainerEditors.FileBrowser => CreateFileBrowser(property),
-			DataContainerEditors.Password => CreatePasswordBox(property),
-			DataContainerEditors.Shortcut => CreateShortcutEditor(property),
-			DataContainerEditors.Button when property.Value is SettingsAction action => new Button { MinWidth = 120, Command = action.Command },
-			_ => CreateTextBox(property),
+			// No editor of that name (e.g. its plugin was removed): the value's text is still editable.
+			return editor?.Create(property) ?? CreateTextBox(property);
+		}
+		catch (Exception) when (!s_builtInEditors.Contains(editor))
+		{
+			// A plugin's editor failing mustn't stop its settings from opening.
+			return CreateTextBox(property);
+		}
+	}
+
+	/// <summary>The type to write the value back as: the setting's, else the value's own.</summary>
+	private static Type? GetValueType(DataContainerProperty property) => property.ValueType ?? property.Value?.GetType();
+
+	private static TextBox CreateMultilineTextBox(DataContainerProperty property)
+	{
+		var textBox = CreateTextBox(property);
+		textBox.AcceptsReturn = true;
+		textBox.MinHeight = 80;
+		return textBox;
+	}
+
+	/// <summary>A number with both ends of a [Range]: without them a slider has nothing to slide between.</summary>
+	private static FrameworkElement CreateSlider(DataContainerProperty property)
+	{
+		if (property.Minimum == double.MinValue || property.Maximum == double.MaxValue)
+		{
+			return CreateNumberBox(property);
+		}
+
+		var type = GetValueType(property) ?? typeof(double);
+		var isWhole = IsWhole(type);
+		var slider = new Slider
+		{
+			MinWidth = 200,
+			Minimum = property.Minimum,
+			Maximum = property.Maximum,
+			StepFrequency = isWhole ? 1 : (property.Maximum - property.Minimum) / 100,
 		};
+		Sync(slider, property, () => slider.Value = property.Value is null ? property.Minimum : Convert.ToDouble(property.Value));
+		slider.ValueChanged += (_, args) => property.Value = Convert.ChangeType(isWhole ? Math.Round(args.NewValue) : args.NewValue, type);
+		return slider;
+	}
+
+	private static bool IsWhole(Type type) => type != typeof(double) && type != typeof(float) && type != typeof(decimal) && type != typeof(Half);
+
+	/// <summary>A check box for each single value of a [Flags] enum (not 0, nor ones combining others).</summary>
+	private static StackPanel CreateFlags(DataContainerProperty property)
+	{
+		var type = GetValueType(property)!;
+		var flags = Enum.GetValues(type).Cast<Enum>()
+			.Select(x => (Value: x, Bits: Convert.ToInt64(x)))
+			.Where(x => x.Bits > 0 && (x.Bits & (x.Bits - 1)) == 0)
+			.Select(x => (x.Value, x.Bits, Box: new CheckBox { Content = GetLabel(x.Value) }))
+			.ToList();
+
+		var panel = new StackPanel();
+		var showing = false;
+		foreach (var (_, _, box) in flags)
+		{
+			panel.Children.Add(box);
+			void Write(object sender, RoutedEventArgs e)
+			{
+				// Not while showing the value: boxes checked one at a time would write the values in between.
+				if (!showing)
+				{
+					property.Value = Enum.ToObject(type, flags.Where(x => x.Box.IsChecked == true).Aggregate(0L, (all, x) => all | x.Bits));
+				}
+			}
+
+			box.Checked += Write;
+			box.Unchecked += Write;
+		}
+
+		Sync(panel, property, () =>
+		{
+			showing = true;
+			var value = property.Value is null ? 0 : Convert.ToInt64(property.Value);
+			foreach (var (_, bits, box) in flags)
+			{
+				box.IsChecked = (value & bits) == bits;
+			}
+
+			showing = false;
+		});
+		return panel;
+	}
+
+	private static CalendarDatePicker CreateDatePicker(DataContainerProperty property)
+	{
+		var type = GetValueType(property) ?? typeof(DateTimeOffset);
+		var picker = new CalendarDatePicker { MinWidth = 200 };
+		var showing = false;
+		Sync(picker, property, () =>
+		{
+			// Not written back: a DateTime's time of day would be lost just by showing it.
+			showing = true;
+			// default(...) is year 1, which a DateTimeOffset at a positive offset can't hold: show it as no date.
+			picker.Date = property.Value switch
+			{
+				DateOnly date when date != default => new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue)),
+				DateTime date when date != default => new DateTimeOffset(date),
+				DateTimeOffset date when date != default => date,
+				_ => null,
+			};
+			showing = false;
+		});
+		picker.DateChanged += (_, args) =>
+		{
+			if (!showing && args.NewDate is { } date)
+			{
+				property.Value = type == typeof(DateOnly) ? DateOnly.FromDateTime(date.Date)
+					: type == typeof(DateTime) ? date.Date
+					: date;
+			}
+		};
+		return picker;
+	}
+
+	private static TimePicker CreateTimePicker(DataContainerProperty property)
+	{
+		var picker = new TimePicker();
+		var showing = false;
+		Sync(picker, property, () =>
+		{
+			// Not written back: the picker has no seconds, which would be lost just by showing it.
+			showing = true;
+			picker.SelectedTime = property.Value is TimeOnly time ? time.ToTimeSpan() : null;
+			showing = false;
+		});
+		picker.SelectedTimeChanged += (_, args) =>
+		{
+			if (!showing && args.NewTime is { } time)
+			{
+				property.Value = TimeOnly.FromTimeSpan(time);
+			}
+		};
+		return picker;
+	}
+
+	/// <summary>A TimeSpan as text: written back only once it reads as one, so a half-typed value doesn't save.</summary>
+	private static TextBox CreateDurationBox(DataContainerProperty property)
+	{
+		var textBox = new TextBox { MinWidth = 200, PlaceholderText = "h:mm:ss" };
+		Sync(textBox, property, () =>
+		{
+			var value = property.Value as TimeSpan? ?? TimeSpan.Zero;
+			// Rewriting what's typed (e.g. "1:5" as 01:05:00) would move the caret.
+			if (!TimeSpan.TryParse(textBox.Text, CultureInfo.InvariantCulture, out var typed) || typed != value)
+			{
+				textBox.Text = value.ToString("c", CultureInfo.InvariantCulture);
+			}
+		});
+		textBox.TextChanged += (_, _) =>
+		{
+			if (TimeSpan.TryParse(textBox.Text, CultureInfo.InvariantCulture, out var value))
+			{
+				property.Value = value;
+			}
+		};
+		return textBox;
+	}
+
+	/// <summary>A swatch of the color, opening WinUI's color picker.</summary>
+	private static DropDownButton CreateColorPicker(DataContainerProperty property)
+	{
+		var swatch = (Border)XamlReader.Load(SwatchXaml);
+		var picker = new ColorPicker { IsAlphaEnabled = true, IsMoreButtonVisible = true };
+		var button = new DropDownButton { Content = swatch, Flyout = new Flyout { Content = picker } };
+		ToolTipService.SetToolTip(button, "Change");
+		Sync(button, property, () =>
+		{
+			var color = property.Value is System.Drawing.Color value ? value : System.Drawing.Color.Black;
+			var shown = Windows.UI.Color.FromArgb(color.A, color.R, color.G, color.B);
+			swatch.Background = new SolidColorBrush(shown);
+			if (picker.Color != shown)
+			{
+				picker.Color = shown;
+			}
+		});
+		picker.ColorChanged += (_, args) => property.Value = System.Drawing.Color.FromArgb(args.NewColor.A, args.NewColor.R, args.NewColor.G, args.NewColor.B);
+		return button;
+	}
+
+	/// <summary>A list of strings as removable chips, and a box adding one on Enter. Each change writes a new list.</summary>
+	private static StackPanel CreateTokens(DataContainerProperty property)
+	{
+		var header = GetHeader(property);
+		var isArray = GetValueType(property)?.IsArray == true;
+		var chips = new WrapPanel { HorizontalSpacing = 4, VerticalSpacing = 4 };
+		var input = new TextBox { PlaceholderText = "Type one, then press Enter" };
+		AutomationProperties.SetName(input, header);
+		var panel = new StackPanel { Spacing = 8, MinWidth = 200, MaxWidth = 350 };
+		panel.Children.Add(chips);
+		panel.Children.Add(input);
+
+		List<string> Get() => (property.Value as IEnumerable<string>)?.ToList() ?? [];
+		// A new list, never the one there: the dialog's copies share it with the settings until saved.
+		void Set(List<string> items) => property.Value = isArray ? items.ToArray() : items;
+
+		Sync(panel, property, () =>
+		{
+			chips.Children.Clear();
+			foreach (var item in Get())
+			{
+				var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+				content.Children.Add(new TextBlock { Text = item });
+				content.Children.Add(new FontIcon { Glyph = "", FontSize = 10 });
+				var remove = new Button { Content = content };
+				AutomationProperties.SetName(remove, $"Remove {item}");
+				remove.Click += (_, _) =>
+				{
+					Set(Get().Where(x => x != item).ToList());
+					// Its button is gone: keep the focus here.
+					input.Focus(FocusState.Programmatic);
+				};
+				chips.Children.Add(remove);
+			}
+
+			chips.Visibility = chips.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+		});
+		input.KeyDown += (_, e) =>
+		{
+			if (e.Key == VirtualKey.Enter && input.Text.Trim() is { Length: > 0 } text)
+			{
+				e.Handled = true;
+				if (!Get().Contains(text))
+				{
+					Set([.. Get(), text]);
+				}
+
+				input.Text = "";
+			}
+		};
+		return panel;
 	}
 
 	private static TextBox CreateTextBox(DataContainerProperty property)
@@ -137,9 +407,9 @@ public sealed partial class DataContainerEditor : UserControl
 
 	private static NumberBox CreateNumberBox(DataContainerProperty property)
 	{
-		// Written back as the value's own type: settings read an int property only from an int.
-		var type = property.Value?.GetType() ?? typeof(double);
-		var isWhole = type != typeof(double) && type != typeof(float) && type != typeof(decimal);
+		// Written back as the setting's own type: settings read an int property only from an int.
+		var type = GetValueType(property) ?? typeof(double);
+		var isWhole = IsWhole(type);
 
 		var numberBox = new NumberBox
 		{
@@ -161,7 +431,17 @@ public sealed partial class DataContainerEditor : UserControl
 			}
 
 			var value = isWhole ? Math.Round(args.NewValue) : args.NewValue;
-			property.Value = Convert.ChangeType(value, type);
+			try
+			{
+				property.Value = Convert.ChangeType(value, type);
+			}
+			catch (OverflowException)
+			{
+				// Too big for the value's type (e.g. an int without a [Range]): keep the last value.
+				numberBox.Value = args.OldValue;
+				return;
+			}
+
 			if (value != args.NewValue)
 			{
 				numberBox.Value = value;
@@ -185,18 +465,32 @@ public sealed partial class DataContainerEditor : UserControl
 		return comboBox;
 	}
 
-	private static Grid CreateFileBrowser(DataContainerProperty property)
+	/// <summary>A file's or folder's path: typed, or picked with the button beside it.</summary>
+	private static Grid CreatePathBrowser(DataContainerProperty property, bool folder)
 	{
+		var header = GetHeader(property);
 		var textBox = CreateTextBox(property);
 		textBox.MaxWidth = 250;
-		textBox.PlaceholderText = "No file chosen";
+		textBox.PlaceholderText = folder ? "No folder chosen" : "No file chosen";
+		AutomationProperties.SetName(textBox, header);
 
 		var browse = new Button { Content = new SymbolIcon(Symbol.More), VerticalAlignment = VerticalAlignment.Top };
 		ToolTipService.SetToolTip(browse, "Browse");
-		Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(browse, "Browse");
+		AutomationProperties.SetName(browse, "Browse");
 		browse.Click += async (_, _) =>
 		{
-			var picker = new FileOpenPicker(browse.XamlRoot.ContentIslandEnvironment.AppWindowId);
+			var window = browse.XamlRoot.ContentIslandEnvironment.AppWindowId;
+			if (folder)
+			{
+				if (await new FolderPicker(window).PickSingleFolderAsync() is { } picked)
+				{
+					property.Value = picked.Path;
+				}
+
+				return;
+			}
+
+			var picker = new FileOpenPicker(window);
 			picker.FileTypeFilter.Add("*");
 			if (await picker.PickSingleFileAsync() is { } file)
 			{
@@ -255,31 +549,15 @@ public sealed partial class DataContainerEditor : UserControl
 				// Each shortcut's keys together, "or" between shortcuts.
 				if (keycaps.Children.Count > 0)
 				{
-					keycaps.Children.Add(new TextBlock
-					{
-						Text = "or",
-						VerticalAlignment = VerticalAlignment.Center,
-						Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-					});
+					keycaps.Children.Add((TextBlock)XamlReader.Load(OrXaml));
 				}
 
 				var keys = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
 				foreach (var key in KeyboardShortcuts.GetKeys(shortcut))
 				{
-					keys.Children.Add(new Border
-					{
-						Background = (Brush)Application.Current.Resources["AccentFillColorDefaultBrush"],
-						CornerRadius = new CornerRadius(4),
-						Padding = new Thickness(8, 2, 8, 2),
-						MinWidth = 28,
-						Child = new TextBlock
-						{
-							Text = KeyboardShortcuts.KeyLabel(key),
-							FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-							Foreground = (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"],
-							HorizontalAlignment = HorizontalAlignment.Center,
-						},
-					});
+					var keycap = (Border)XamlReader.Load(KeycapXaml);
+					((TextBlock)keycap.Child).Text = KeyboardShortcuts.KeyLabel(key);
+					keys.Children.Add(keycap);
 				}
 
 				keycaps.Children.Add(keys);
@@ -332,10 +610,8 @@ public sealed partial class DataContainerEditor : UserControl
 			button.Content = action.IsBusy ? ring : action.Label;
 			button.IsEnabled = !action.IsBusy;
 			var text = action.Description is { Length: > 0 } own ? own : description;
-			if (!string.IsNullOrEmpty(text))
-			{
-				setDescription(text);
-			}
+			// Null (the card's default, no description) when there's none, so an earlier action's text doesn't stay.
+			setDescription(string.IsNullOrEmpty(text) ? null! : text);
 		}
 
 		void OnChanged(object? sender, PropertyChangedEventArgs e) => Show();
@@ -351,8 +627,11 @@ public sealed partial class DataContainerEditor : UserControl
 		card.Unloaded += (_, _) => action.PropertyChanged -= OnChanged;
 	}
 
-	/// <summary>Shows the property's value now, and again whenever it changes while the editor is on screen.</summary>
-	private static void Sync(FrameworkElement editor, DataContainerProperty property, Action show)
+	/// <summary>
+	/// Shows the property's value now (with <paramref name="show"/>), and again whenever it changes while the editor is
+	/// on screen; for a plugin's editors too (see <see cref="IPropertyEditor"/>).
+	/// </summary>
+	public static void Sync(FrameworkElement editor, DataContainerProperty property, Action show)
 	{
 		void OnChanged(object? sender, PropertyChangedEventArgs e)
 		{

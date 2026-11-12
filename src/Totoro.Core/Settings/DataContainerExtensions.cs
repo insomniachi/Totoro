@@ -4,9 +4,9 @@ public static class DataContainerExtensions
 {
 	extension(DataContainerProperty item)
 	{
-		public string? GetString(string defaultValue = "")
+		public string GetString(string defaultValue = "")
 		{
-			return item.GetValue(defaultValue);
+			return item.GetValue(defaultValue) ?? defaultValue;
 		}
 
 		public bool GetBool(bool defaultValue = false)

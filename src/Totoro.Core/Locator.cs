@@ -21,4 +21,10 @@ public static class Locator
 
 		return s_serviceProvider.GetRequiredService<T>();
 	}
+
+	/// <summary>Every <typeparamref name="T"/> registered; none before the app has started (e.g. in tests).</summary>
+	public static IEnumerable<T> GetServices<T>()
+	{
+		return s_serviceProvider?.GetServices<T>() ?? [];
+	}
 }
