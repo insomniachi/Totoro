@@ -97,6 +97,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="playback:DownloadedAnime">
                         <Grid
+                            x:Name="Card"
                             Padding="16"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -134,27 +135,13 @@
                                 Orientation="Horizontal"
                                 Spacing="8">
                                 <Button
-                                    AutomationProperties.Name="Show in folder"
-                                    Click="{x:Bind ShowInExplorer}"
-                                    ToolTipService.ToolTip="Show in folder">
-                                    <FontIcon FontSize="16" Glyph="&#xE838;" />
-                                </Button>
-                                <Button
-                                    AutomationProperties.Name="Edit info"
-                                    Click="OnEditInfoClick"
+                                    AutomationProperties.Name="Play"
+                                    Click="OnPlayClick"
+                                    Style="{ThemeResource AccentButtonStyle}"
                                     Tag="{x:Bind}"
-                                    ToolTipService.ToolTip="Edit info">
-                                    <FontIcon FontSize="16" Glyph="&#xE70F;" />
+                                    ToolTipService.ToolTip="Play">
+                                    <FontIcon FontSize="16" Glyph="&#xE768;" />
                                 </Button>
-                                <controls:BusyButton
-                                    AutomationProperties.Name="Find openings and endings"
-                                    Click="OnFindSegmentsClick"
-                                    IsBusy="{x:Bind IsFindingSegments, Mode=OneTime}"
-                                    IsEnabled="{x:Bind helpers:CommonConverters.Not(IsFindingSegments), Mode=OneTime}"
-                                    Tag="{x:Bind}"
-                                    ToolTipService.ToolTip="Find the openings and endings of episodes that don't have them yet">
-                                    <FontIcon FontSize="16" Glyph="&#xE8D6;" />
-                                </controls:BusyButton>
                                 <Button AutomationProperties.Name="Delete" ToolTipService.ToolTip="Delete">
                                     <FontIcon FontSize="16" Glyph="&#xE74D;" />
                                     <Button.Flyout>
@@ -170,7 +157,45 @@
                                         </Flyout>
                                     </Button.Flyout>
                                 </Button>
+                                <!--  The rest: the card's context menu, which "see more" opens too.  -->
+                                <Button
+                                    AutomationProperties.Name="More"
+                                    Flyout="{Binding ContextFlyout, ElementName=Card}"
+                                    Style="{ThemeResource SubtleButtonStyle}"
+                                    ToolTipService.ToolTip="More">
+                                    <FontIcon
+                                        FontSize="16"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xE712;" />
+                                </Button>
                             </StackPanel>
+                            <Grid.ContextFlyout>
+                                <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                    <MenuFlyoutItem Click="{x:Bind ShowInExplorer}" Text="Show in folder">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE838;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        Click="OnEditInfoClick"
+                                        Tag="{x:Bind}"
+                                        Text="Edit info">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE70F;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem
+                                        Click="OnFindSegmentsClick"
+                                        IsEnabled="{x:Bind helpers:CommonConverters.Not(IsFindingSegments), Mode=OneTime}"
+                                        Tag="{x:Bind}"
+                                        Text="Find openings and endings"
+                                        ToolTipService.ToolTip="Find the openings and endings of episodes that don't have them yet">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE8D6;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Grid.ContextFlyout>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -253,5 +278,46 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
+
+        <!--  Play: a downloaded episode, the one to continue from selected (see OnPlayClick).  -->
+        <ContentDialog
+            x:Name="PlayDialog"
+            CloseButtonText="Cancel"
+            DefaultButton="Primary"
+            PrimaryButtonText="Play"
+            SecondaryButtonText="Continue"
+            Style="{StaticResource DefaultContentDialogStyle}">
+            <GridView
+                x:Name="EpisodeGrid"
+                MaxHeight="360"
+                AutomationProperties.Name="Episodes"
+                DoubleTapped="OnEpisodeDoubleTapped"
+                SelectionChanged="OnEpisodeSelectionChanged"
+                SelectionMode="Single">
+                <GridView.Resources>
+                    <!--  The selected episode filled with the accent color, its number on it.  -->
+                    <StaticResource x:Key="GridViewItemBackgroundSelected" ResourceKey="AccentFillColorDefaultBrush" />
+                    <StaticResource x:Key="GridViewItemBackgroundSelectedPointerOver" ResourceKey="AccentFillColorSecondaryBrush" />
+                    <StaticResource x:Key="GridViewItemBackgroundSelectedPressed" ResourceKey="AccentFillColorTertiaryBrush" />
+                    <StaticResource x:Key="GridViewItemForegroundSelected" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+                </GridView.Resources>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Border
+                            Width="56"
+                            Height="44"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{ThemeResource ControlCornerRadius}">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind}" />
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </ContentDialog>
     </Grid>
 </Page>

@@ -99,6 +99,9 @@ public sealed record DownloadedAnime(string Name, string Path, DownloadInfo? Inf
 	/// <summary>Whether its openings and endings are being looked for (see <see cref="DownloadService.FindMissingSegmentsAsync"/>).</summary>
 	public bool IsFindingSegments { get; init; }
 
+	/// <summary>The numbers of its downloaded episodes, in order.</summary>
+	public IReadOnlyList<int> EpisodeNumbers { get; init; } = [];
+
 	/// <summary>e.g. "3 episodes · 1.3 GB · AniList 166794 · MyAnimeList 55866", or that it has no info.</summary>
 	public string Summary => string.Join(" · ", new[]
 	{
@@ -377,7 +380,10 @@ public sealed class DownloadService(
 		var cover = folder.EnumerateFiles(DownloadNames.CoverFile + ".*").FirstOrDefault();
 		return new DownloadedAnime(folder.Name, folder.FullName, info, episodes.Count, episodes.Sum(x => x.Length),
 								   cover is null ? "" : new Uri(cover.FullName).AbsoluteUri)
-		{ IsFindingSegments = _findingSegments.Contains(folder.Name) };
+		{
+			IsFindingSegments = _findingSegments.Contains(folder.Name),
+			EpisodeNumbers = [.. episodes.Select(x => DownloadNames.ParseEpisode(x.Name)!.Value).Distinct().Order()],
+		};
 	}
 
 	/// <summary>
