@@ -47,7 +47,7 @@ public sealed record CalendarBand(IReadOnlyList<ScheduledEpisode> Episodes)
 /// A month calendar of when the episodes of the anime the user is watching air (see <see cref="ReleaseScheduleService"/>),
 /// from this month on.
 /// </summary>
-public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService schedule, AnimeTrackingService tracking) : NavigatableViewModel
+public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService schedule, AnimeTrackingService tracking) : NavigatableViewModel, Core.Navigation.IAnimeDatabaseView
 {
 	private List<AnimeModel> _watching = [];
 
@@ -81,6 +81,8 @@ public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService sche
 		Month = ThisMonth;
 		return LoadState.LoadAsync();
 	}
+
+	protected override Task OnNetworkRestoredAsync() => LoadState.Error.Length > 0 ? LoadState.LoadAsync() : Task.CompletedTask;
 
 	private async Task LoadWatchingAsync()
 	{

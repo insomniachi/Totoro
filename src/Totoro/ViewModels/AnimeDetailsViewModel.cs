@@ -19,7 +19,7 @@ namespace Totoro.ViewModels;
 /// Exposes display-ready values rather than the model, so the view binds to flat properties only.
 /// </summary>
 public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<PlaybackProgressChangedMessage>,
-	IRecipient<AnimeTrackingChangedMessage>
+	IRecipient<AnimeTrackingChangedMessage>, Core.Navigation.IAnimeDatabaseView
 {
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
 	private readonly ILogger<AnimeDetailsViewModel> _logger;

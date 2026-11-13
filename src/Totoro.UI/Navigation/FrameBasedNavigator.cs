@@ -1,16 +1,59 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
 
 namespace Totoro.UI.Navigation;
 
-internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IServiceScopeFactory serviceScopeFactory, ILogger logger) : INavigator
+internal abstract class FrameBasedNavigator : INavigator, IRecipient<AnimeDatabaseChangedMessage>
 {
+	private readonly IViewRegistry viewRegistry;
+	private readonly IServiceScopeFactory serviceScopeFactory;
+	private readonly ILogger logger;
+
 	// Scope that owns the current page's view model and its dependencies.
 	// Disposed when we navigate away, after OnNavigatedFromAsync has run.
 	private IServiceScope? _currentScope;
+
+	// What the current page was given, to make it again with.
+	private object? _currentParameter;
+
+	protected FrameBasedNavigator(IViewRegistry viewRegistry, IServiceScopeFactory serviceScopeFactory, ILogger logger)
+	{
+		this.viewRegistry = viewRegistry;
+		this.serviceScopeFactory = serviceScopeFactory;
+		this.logger = logger;
+		// Navigators live as long as the window (Navigators keeps them).
+		WeakReferenceMessenger.Default.Register(this);
+	}
+
+	// Sent from wherever the database was picked (Settings, the title bar, an agent tool): handled on the UI thread.
+	public void Receive(AnimeDatabaseChangedMessage message) => GetFrame().DispatcherQueue.TryEnqueue(() =>
+	{
+		var frame = GetFrame();
+		if (frame.Content is not Page { DataContext: IAnimeDatabaseView })
+		{
+			return;
+		}
+
+		if (this is IDismissibleNavigator dismissible)
+		{
+			dismissible.Close();
+			return;
+		}
+
+		// The same page again, with a new view model, in place of the old one in the history.
+		frame.Navigate(frame.Content.GetType(), _currentParameter);
+		if (frame.BackStackDepth > 0)
+		{
+			frame.BackStack.RemoveAt(frame.BackStackDepth - 1);
+		}
+
+		OnNavigated();
+	});
 
 	public event EventHandler? Navigated;
 
@@ -151,6 +194,7 @@ internal abstract class FrameBasedNavigator(IViewRegistry viewRegistry, IService
 			// for as long as the page is shown. OnFrameNavigating disposes it.
 			var scope = serviceScopeFactory.CreateScope();
 			_currentScope = scope;
+			_currentParameter = e.Parameter;
 			var vmObj = e.Parameter is null
 				? ActivatorUtilities.CreateInstance(scope.ServiceProvider, map.ViewModel)
 				: ActivatorUtilities.CreateInstance(scope.ServiceProvider, map.ViewModel, e.Parameter);

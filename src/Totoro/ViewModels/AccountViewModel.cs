@@ -30,6 +30,8 @@ public sealed partial class AccountViewModel : ObservableObject, IRecipient<Acco
 
 	[ObservableProperty] public partial string Status { get; private set; } = "";
 
+	[ObservableProperty] public partial bool IsSignedIn { get; private set; }
+
 	/// <summary>The signed-in user's name; null when not signed in.</summary>
 	[ObservableProperty] public partial string? UserName { get; private set; }
 
@@ -78,7 +80,8 @@ public sealed partial class AccountViewModel : ObservableObject, IRecipient<Acco
 
 	private async Task RefreshAsync()
 	{
-		if (!_account.IsSignedIn)
+		IsSignedIn = _account.IsSignedIn;
+		if (!IsSignedIn)
 		{
 			Status = "Not signed in";
 			ActionText = "Sign in";

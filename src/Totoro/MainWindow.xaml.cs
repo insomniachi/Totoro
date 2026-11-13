@@ -2,7 +2,6 @@ using System.Reflection;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Totoro.Core.Services;
@@ -209,7 +208,13 @@ public sealed partial class MainWindow : Window
 
 	private bool IsFullScreen => AppWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen;
 
-	private void OnFullScreenClick(object sender, RoutedEventArgs e) => SetFullScreen(!IsFullScreen);
+	private void OnFullScreenInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+	{
+		args.Handled = true;
+		SetFullScreen(!IsFullScreen);
+	}
+
+	private void OnNetworkClick(object sender, RoutedEventArgs e) => _ = Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:network-status"));
 
 	// Watch together, Leave and Catch up: out of the way of what they open (the dialog, the player).
 	private void OnWatchTogetherClick(object sender, RoutedEventArgs e) => AccountFlyout.Hide();
@@ -235,10 +240,6 @@ public sealed partial class MainWindow : Window
 	private void SetFullScreen(bool isFullScreen)
 	{
 		AppWindow.SetPresenter(isFullScreen ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Overlapped);
-		var name = isFullScreen ? "Exit full screen (F11)" : "Full screen (F11)";
-		AutomationProperties.SetName(FullScreenButton, name);
-		ToolTipService.SetToolTip(FullScreenButton, name);
-		FullScreenIcon.Glyph = isFullScreen ? "" : "";
 	}
 
 	/// <summary>The app's version, e.g. "2.1.0", for the title bar: the release's (see .github/workflows), without the commit's hash.</summary>

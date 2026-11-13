@@ -21,6 +21,12 @@ public static class Navigators
 
 	internal static void AddNavigator(string key, INavigator navigator)
 	{
+		// A host loaded again gets a new navigator: the old one stops hearing messages, so a page isn't reloaded twice.
+		if (s_navigators.TryGetValue(key, out var old))
+		{
+			CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger.Default.UnregisterAll(old);
+		}
+
 		s_navigators[key] = navigator;
 		NavigatorAdded?.Invoke(null, new NavigatorAddedEventArgs(key, navigator));
 	}

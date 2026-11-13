@@ -9,7 +9,7 @@ namespace Totoro.ViewModels;
 
 /// <summary>The anime Library: the user's anime list (see <see cref="MediaListViewModel"/>).</summary>
 public sealed class UserListViewModel(IFactory<IAnimeTracker, Guid> trackers, AnimeTrackingService tracking, IPreferences preferences)
-	: MediaListViewModel(MediaMode.Anime, preferences, tracking.GetSignedOutListAccount), IRecipient<AnimeTrackingChangedMessage>
+	: MediaListViewModel(MediaMode.Anime, preferences, tracking.GetSignedOutListAccount), IRecipient<AnimeTrackingChangedMessage>, IAnimeDatabaseView
 {
 	protected override async Task<(Guid TrackerId, IReadOnlyList<IMediaModel> Items)?> GetListAsync()
 	{

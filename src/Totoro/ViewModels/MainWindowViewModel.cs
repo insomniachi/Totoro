@@ -28,7 +28,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	public void FinishTour() => _preferences.SaveKey(TourSeenKey, true);
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules)
 	{
 		_dialogs = dialogs;
 		_databases = databases;
@@ -78,6 +78,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		ShowTour = !preferences.ReadKey(TourSeenKey, false);
 
 		_accounts = [.. accounts.Select(x => new AccountViewModel(x))];
+		AnimeDatabases = [.. databases.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))];
 		ShowAccount(preferences.SelectedAnimeDatabase);
 		WeakReferenceMessenger.Default.RegisterAll(this);
 	}
@@ -139,6 +140,9 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	/// <summary>The assistant, in a panel beside the pages.</summary>
 	public ChatViewModel Chat { get; }
 
+	/// <summary>The title bar's network status. Read by the window's binding, so it's created on the UI thread.</summary>
+	public UI.Networking.NetworkStatus Network => UI.Networking.NetworkStatus.Current;
+
 	/// <summary>Updating Totoro: a newer version is offered in a bar over the content.</summary>
 	public UpdateService Updates { get; }
 
@@ -148,6 +152,21 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	/// <summary>The account of the selected anime database, shown in the title bar.</summary>
 	[ObservableProperty]
 	public partial AccountViewModel? Account { get; private set; }
+
+	/// <summary>The anime databases, to switch between from the account flyout (as in Settings).</summary>
+	public IReadOnlyList<AnimeDatabaseOption> AnimeDatabases { get; }
+
+	/// <summary>The selected anime database; picking another selects it app-wide.</summary>
+	[ObservableProperty]
+	public partial AnimeDatabaseOption? AnimeDatabase { get; set; }
+
+	partial void OnAnimeDatabaseChanged(AnimeDatabaseOption? value)
+	{
+		if (value is not null && value.Id != _preferences.SelectedAnimeDatabase)
+		{
+			_preferences.SelectedAnimeDatabase = value.Id;
+		}
+	}
 
 	/// <summary>Watching together in a Syncplay room, joined from the account flyout.</summary>
 	public SyncplayClient Syncplay { get; }
@@ -274,5 +293,6 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	{
 		// An unset (or unknown) database means the first one, as in the database factory and Settings.
 		Account = _accounts.FirstOrDefault(x => x.Id == databaseId) ?? _accounts.FirstOrDefault();
+		AnimeDatabase = AnimeDatabases.FirstOrDefault(x => x.Id == databaseId) ?? AnimeDatabases.FirstOrDefault();
 	}
 }

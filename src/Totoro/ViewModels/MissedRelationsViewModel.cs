@@ -15,7 +15,7 @@ namespace Totoro.ViewModels;
 /// isn't on their list, in a grid, less the kinds and formats ticked off and sorted as the Library sorts.
 /// </summary>
 public sealed partial class MissedRelationsViewModel(MissedRelationsService missedRelations, ILogger<MissedRelationsViewModel> logger)
-	: NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>
+	: NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>, Core.Navigation.IAnimeDatabaseView
 {
 	private IReadOnlyList<MissedRelationGroup> _groups = [];
 	private Dictionary<long, MissedRelationGroup> _groupOf = [];

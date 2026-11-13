@@ -22,6 +22,8 @@ public partial class MangaDiscoverViewModel(IFactory<IMangaMetadataProvider, Gui
 
 	protected override Task OnNavigatedToInternalAsync() => LoadAsync();
 
+	protected override Task OnNetworkRestoredAsync() => Error.Length > 0 ? LoadAsync() : Task.CompletedTask;
+
 	[RelayCommand]
 	private async Task LoadAsync()
 	{

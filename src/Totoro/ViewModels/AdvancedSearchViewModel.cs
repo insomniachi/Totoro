@@ -25,7 +25,7 @@ public sealed class AdvancedSearchViewModel(
 	ILogger<AdvancedSearchViewModel> logger)
 	: MediaSearchViewModel(MediaMode.Anime,
 		[.. providers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))],
-		preferences.SelectedAnimeDatabase, logger), IRecipient<AnimeTrackingChangedMessage>
+		preferences.SelectedAnimeDatabase, logger), IRecipient<AnimeTrackingChangedMessage>, IAnimeDatabaseView
 {
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers = providers;
 	private readonly IFactory<IAnimeTracker, Guid> _trackers = trackers;

@@ -221,6 +221,8 @@ public abstract partial class MediaListViewModel : NavigatableViewModel
 
 	protected override Task OnNavigatedToInternalAsync() => LoadState.LoadAsync();
 
+	protected override Task OnNetworkRestoredAsync() => LoadState.Error.Length > 0 ? LoadState.LoadAsync() : Task.CompletedTask;
+
 	private async Task LoadListAsync()
 	{
 		(Guid TrackerId, IReadOnlyList<IMediaModel> Items)? list;

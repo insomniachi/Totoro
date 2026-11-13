@@ -19,7 +19,7 @@ public sealed partial class DiscoverViewModel(
 	IFactory<IAnimeMetadataProvider, Guid> providers,
 	MissedRelationsService missedRelations,
 	ILogger<DiscoverViewModel> logger)
-	: NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>
+	: NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>, Core.Navigation.IAnimeDatabaseView
 {
 	private const int SpotlightCount = 8;
 	private const int MissedCount = 20;
@@ -47,6 +47,8 @@ public sealed partial class DiscoverViewModel(
 
 	[RelayCommand]
 	private Task RetryAsync() => RunBusyAsync(LoadAsync);
+
+	protected override Task OnNetworkRestoredAsync() => Error.Length > 0 ? LoadAsync() : Task.CompletedTask;
 
 	private async Task LoadAsync()
 	{

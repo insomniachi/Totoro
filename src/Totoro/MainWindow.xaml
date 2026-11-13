@@ -22,6 +22,11 @@
 
     <!--  Theme and backdrop come from the user's settings; see IAppearanceService  -->
     <Grid>
+        <!--  Window-wide: F11 toggles full screen, Esc only leaves it  -->
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="F11" Invoked="OnFullScreenInvoked" />
+            <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
+        </Grid.KeyboardAccelerators>
         <Grid.Resources>
             <helpers:StringToImageSourceConverter x:Key="StringToImageSourceConverter" />
             <helpers:VisibleIfAnyConverter x:Key="VisibleIfAnyConverter" />
@@ -529,12 +534,38 @@
                                                 TextWrapping="Wrap" />
                                         </StackPanel>
                                     </StackPanel>
-                                    <Button
-                                        HorizontalAlignment="Stretch"
-                                        AutomationProperties.AutomationId="AccountActionButton"
-                                        AutomationProperties.Name="{x:Bind ViewModel.Account.ActionName, Mode=OneWay}"
-                                        Command="{x:Bind ViewModel.Account.SignInOrOutCommand, Mode=OneWay}"
-                                        Content="{x:Bind ViewModel.Account.ActionText, Mode=OneWay}" />
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <!--  Signed out: which anime database to sign in to (its icon); the pages that show its anime load again  -->
+                                        <ComboBox
+                                            Grid.Column="1"
+                                            AutomationProperties.AutomationId="AnimeDatabaseComboBox"
+                                            AutomationProperties.Name="Anime database"
+                                            ItemsSource="{x:Bind ViewModel.AnimeDatabases}"
+                                            SelectedItem="{x:Bind ViewModel.AnimeDatabase, Mode=TwoWay}"
+                                            ToolTipService.ToolTip="Anime database"
+                                            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.Account.IsSignedIn), Mode=OneWay}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:AnimeDatabaseOption">
+                                                    <Image
+                                                        Width="16"
+                                                        Height="16"
+                                                        AutomationProperties.Name="{x:Bind Name, Mode=OneTime}"
+                                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}"
+                                                        ToolTipService.ToolTip="{x:Bind Name, Mode=OneTime}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <Button
+                                            HorizontalAlignment="Stretch"
+                                            AutomationProperties.AutomationId="AccountActionButton"
+                                            AutomationProperties.Name="{x:Bind ViewModel.Account.ActionName, Mode=OneWay}"
+                                            Command="{x:Bind ViewModel.Account.SignInOrOutCommand, Mode=OneWay}"
+                                            Content="{x:Bind ViewModel.Account.ActionText, Mode=OneWay}" />
+                                    </Grid>
 
                                     <!--  Watching together over Syncplay: everyone in the same room plays in step  -->
                                     <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
@@ -597,27 +628,18 @@
                         </Button.Flyout>
                     </Button>
 
-                    <!--  Full screen and back, beside the caption buttons (which full screen hides, so this is the way out)  -->
+                    <!--  Only while there's no internet. A button (opens Windows' network settings) so its tooltip shows: plain content in the title bar is drag area  -->
                     <Button
-                        x:Name="FullScreenButton"
                         Height="32"
                         VerticalAlignment="Center"
-                        AutomationProperties.Name="Full screen"
+                        AutomationProperties.AutomationId="NetworkStatusButton"
+                        AutomationProperties.Name="No internet connection"
                         Background="Transparent"
                         BorderThickness="0"
-                        Click="OnFullScreenClick"
-                        KeyboardAcceleratorPlacementMode="Hidden"
-                        ToolTipService.ToolTip="Full screen (F11)">
-                        <!--  Window-wide: F11 toggles  -->
-                        <Button.KeyboardAccelerators>
-                            <KeyboardAccelerator Key="F11" />
-                        </Button.KeyboardAccelerators>
-                        <!--  Esc only leaves full screen. On the icon, not the button: an unhandled accelerator on a button clicks it  -->
-                        <FontIcon x:Name="FullScreenIcon" FontSize="16" Glyph="&#xE740;">
-                            <FontIcon.KeyboardAccelerators>
-                                <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
-                            </FontIcon.KeyboardAccelerators>
-                        </FontIcon>
+                        Click="OnNetworkClick"
+                        ToolTipService.ToolTip="No internet connection"
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Network.IsOffline), Mode=OneWay}">
+                        <FontIcon FontSize="16" Glyph="&#xF384;" />
                     </Button>
                 </StackPanel>
             </TitleBar.RightHeader>
