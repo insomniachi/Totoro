@@ -22,6 +22,15 @@ and does so silently when the app isn't running. Wait about 10s after launch bef
   `dotnet restore src/Totoro/Totoro.csproj -r win-x64`, then run again.
 - `--devtools on` (the default) adds an in-app XAML toolbar; you need it only for `winapp devtools`.
 
+### In Windows Sandbox (a fresh install)
+
+```bash
+pwsh .claude/skills/run-totoro/sandbox.ps1
+```
+
+Installs the ReAnime plugin and makes images load (WinINet's revocation check hangs in the guest), then launches and
+prints the PID. Add `--on sandbox` to every `winapp ui` command. In-app restart doesn't work in the sandbox.
+
 ## Drive
 
 | To | Command |
