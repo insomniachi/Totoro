@@ -119,11 +119,23 @@ public sealed partial class ReaderPage : Page
 
 	private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
 	{
-		if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+		if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
 		{
-			ShowBar();
+			return;
 		}
+
+		// Only a real move: a page turned from the keys changes what's under a still mouse, which raises one too.
+		var position = e.GetCurrentPoint(Root).Position;
+		if (position == _lastPointerPosition)
+		{
+			return;
+		}
+
+		_lastPointerPosition = position;
+		ShowBar();
 	}
+
+	private Point? _lastPointerPosition;
 
 	private void OnPagesTapped(object sender, TappedRoutedEventArgs e)
 	{
