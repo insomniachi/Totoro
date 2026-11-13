@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using DynamicData;
 using DynamicData.Binding;
 using Microsoft.Extensions.Logging;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
@@ -330,13 +331,16 @@ public abstract partial class MediaSearchViewModel : NavigatableViewModel
 						 .Subscribe(ShowResults);
 	}
 
-	private IObservable<IReadOnlyList<IMediaModel>> Search(AdvancedSearchRequest request)
+	/// <summary>The results, or why there are none when the search failed (shown instead of "Nothing matches").</summary>
+	private sealed record SearchOutcome(IReadOnlyList<IMediaModel> Items, string? Error = null);
+
+	private IObservable<SearchOutcome> Search(AdvancedSearchRequest request)
 	{
 		_lastSearchWasEmpty = request.IsEmpty();
 		if (_lastSearchWasEmpty || Provider is not { } provider)
 		{
 			// Nothing to search for: show nothing rather than the last results.
-			return Observable.Return<IReadOnlyList<IMediaModel>>([]);
+			return Observable.Return(new SearchOutcome([]));
 		}
 
 		IsLoading = true;
@@ -345,30 +349,31 @@ public abstract partial class MediaSearchViewModel : NavigatableViewModel
 		{
 			try
 			{
-				return await SearchAsync(provider.Id, request, ct);
+				return new SearchOutcome(await SearchAsync(provider.Id, request, ct));
 			}
 			catch (OperationCanceledException)
 			{
-				return [];
+				return new SearchOutcome([]);
 			}
 			catch (Exception ex)
 			{
 				// Keep the subscription alive for the next search.
 				_logger.LogWarning(ex, "Search failed on {Provider}", provider.Name);
-				return [];
+				return new SearchOutcome([], NetworkErrors.Describe(ex, provider.Name));
 			}
 		});
 	}
 
-	private void ShowResults(IReadOnlyList<IMediaModel> items)
+	private void ShowResults(SearchOutcome outcome)
 	{
+		var items = outcome.Items;
 		_results.Edit(cache =>
 		{
 			cache.Clear();
 			cache.AddOrUpdate(items);
 		});
 		IsLoading = false;
-		Message = items.Count > 0 ? "" : _lastSearchWasEmpty ? NoFiltersMessage : "Nothing matches these filters.";
+		Message = items.Count > 0 ? "" : outcome.Error ?? (_lastSearchWasEmpty ? NoFiltersMessage : "Nothing matches these filters.");
 	}
 
 	private AdvancedSearchRequest CreateRequest()

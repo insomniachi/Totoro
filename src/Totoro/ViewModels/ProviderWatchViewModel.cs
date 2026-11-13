@@ -2,6 +2,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Totoro.Core.Dialogs;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Streaming;
@@ -318,7 +319,9 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 		}
 		catch (Exception ex) when (isCurrent())
 		{
-			Message = $"Couldn't get it from {SelectedProvider?.Label}: {ex.Message}";
+			Message = NetworkErrors.IsConnectionFailure(ex)
+				? NetworkErrors.Describe(ex, SelectedProvider?.Label ?? "the provider")
+				: $"Couldn't get it from {SelectedProvider?.Label}: {ex.Message}";
 		}
 		catch (Exception)
 		{

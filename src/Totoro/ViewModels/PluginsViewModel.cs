@@ -322,6 +322,9 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 				var vm = new PluginItemViewModel(item, _pluginManager, _settings.GetValueOrDefault(item.Id));
 				_allCatalogItems.Add(vm);
 			}
+
+			// The installed plugins still show; the ones to install don't, and the refresh button tries again.
+			StatusMessage = _pluginManager.CatalogError ?? "";
 		}
 		catch (Exception ex)
 		{

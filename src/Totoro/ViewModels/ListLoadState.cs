@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using GraphQL.Client.Http;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 using Totoro.Core.Services;
 
@@ -48,7 +49,7 @@ public sealed partial class ListLoadState(Func<IAccount?> signedOutAccount, Func
 		}
 		catch (Exception ex) when (ex is HttpRequestException or GraphQLHttpRequestException)
 		{
-			Error = $"Couldn't reach the database; it may be down, or you may be offline. Try again in a bit. ({ex.Message})";
+			Error = NetworkErrors.Describe(ex, "the database");
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{

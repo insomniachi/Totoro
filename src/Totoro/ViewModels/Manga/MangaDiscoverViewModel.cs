@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Manga;
 using Totoro.UI.Navigation;
@@ -40,7 +41,7 @@ public partial class MangaDiscoverViewModel(IFactory<IMangaMetadataProvider, Gui
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
-			Error = $"Couldn't reach {database.Name}; it may be down, or you may be offline. ({ex.Message})";
+			Error = NetworkErrors.Describe(ex, database.Name);
 		}
 	}
 }

@@ -16,6 +16,9 @@ public interface IPluginManager
 	/// <param name="refresh">Download the catalog again instead of using the one fetched earlier this session.</param>
 	Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(bool refresh = false, CancellationToken ct = default);
 
+	/// <summary>Why the last catalog download failed, for the user; null if it didn't. <see cref="GetCatalogAsync"/> then has only what's installed (or the last good catalog).</summary>
+	string? CatalogError { get; }
+
 	/// <summary>Sets the item's state (installed, which version, an update...), counting what was changed since the app started.</summary>
 	void Annotate(PluginCatalogItem item);
 

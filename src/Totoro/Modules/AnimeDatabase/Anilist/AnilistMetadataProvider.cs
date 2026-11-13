@@ -1,6 +1,7 @@
 using GraphQL;
 using GraphQL.Client.Http;
 using Microsoft.Extensions.Logging;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Settings;
 using Totoro.Modules.AnimeDatabase.Anilist.GraphQl;
@@ -93,7 +94,7 @@ internal partial class AnilistMetadataProvider(
 
 			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(ToModel)];
 		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
+		catch (Exception ex) when (ex is not OperationCanceledException && !NetworkErrors.IsConnectionFailure(ex))
 		{
 			logger.LogWarning(ex, "AniList request failed");
 			return [];
@@ -199,7 +200,7 @@ internal partial class AnilistMetadataProvider(
 
 			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(ToModel)];
 		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
+		catch (Exception ex) when (ex is not OperationCanceledException && !NetworkErrors.IsConnectionFailure(ex))
 		{
 			logger.LogWarning(ex, "AniList request failed");
 			return [];
@@ -227,7 +228,7 @@ internal partial class AnilistMetadataProvider(
 
 			return [.. response.Data.Page.Media.Where(FilterNsfw).Select(ToModel)];
 		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
+		catch (Exception ex) when (ex is not OperationCanceledException && !NetworkErrors.IsConnectionFailure(ex))
 		{
 			logger.LogWarning(ex, "AniList request failed");
 			return [];
@@ -373,7 +374,7 @@ internal partial class AnilistMetadataProvider(
 						   .Select(ToModel)
 			];
 		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
+		catch (Exception ex) when (ex is not OperationCanceledException && !NetworkErrors.IsConnectionFailure(ex))
 		{
 			logger.LogWarning(ex, "AniList request failed");
 			return [];

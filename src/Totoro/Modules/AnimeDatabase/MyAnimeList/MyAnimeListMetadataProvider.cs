@@ -4,6 +4,7 @@ using GraphQL.Client.Http;
 using JikanDotNet;
 using MalApi;
 using Microsoft.Extensions.Logging;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules.Anime;
 using Totoro.Modules.AnimeDatabase.Anilist;
 using AdvancedSearchRequest = Totoro.Core.Modules.Anime.AdvancedSearchRequest;
@@ -204,7 +205,7 @@ internal class MyAnimeListMetadataProvider(
 						   .Select(MalToModelConverter.ConvertJikanModel)
 			];
 		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
+		catch (Exception ex) when (ex is not OperationCanceledException && !NetworkErrors.IsConnectionFailure(ex))
 		{
 			logger.LogWarning(ex, "Jikan schedule request failed");
 			return [];
@@ -229,7 +230,7 @@ internal class MyAnimeListMetadataProvider(
 			ct.ThrowIfCancellationRequested();
 			return [.. result.Data.Select(x => MalToModelConverter.ConvertModel(x.Anime))];
 		}
-		catch (Exception ex) when (ex is not OperationCanceledException)
+		catch (Exception ex) when (ex is not OperationCanceledException && !NetworkErrors.IsConnectionFailure(ex))
 		{
 			logger.LogWarning(ex, "MyAnimeList ranking request failed");
 			return [];

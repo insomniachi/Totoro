@@ -116,6 +116,15 @@
         -->
         <controls:ShimmerView IsLoading="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
         <StackPanel Padding="16" Spacing="12">
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{x:Bind helpers:CommonConverters.IsAny(ViewModel.Error), Mode=OneWay}"
+                Message="{x:Bind ViewModel.Error, Mode=OneWay}"
+                Severity="Error">
+                <InfoBar.ActionButton>
+                    <Button Command="{x:Bind ViewModel.RetryCommand}" Content="Try again" />
+                </InfoBar.ActionButton>
+            </InfoBar>
 
             <!--  Spotlight: trending anime with their banners, turning over by themselves (see the code-behind); one block while loading  -->
             <FlipView

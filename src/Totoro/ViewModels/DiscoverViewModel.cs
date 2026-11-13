@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.Logging;
+using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Services;
@@ -35,27 +36,45 @@ public sealed partial class DiscoverViewModel(
 
 	public string NextSeasonTitle => $"Next season ({Next.SeasonName} {Next.Year})";
 
-	protected override async Task OnNavigatedToInternalAsync()
+	/// <summary>Why nothing loaded (every row failed); "" if anything did.</summary>
+	[ObservableProperty] public partial string Error { get; private set; } = "";
+
+	protected override Task OnNavigatedToInternalAsync()
 	{
 		WeakReferenceMessenger.Default.Register(this);
+		return LoadAsync();
+	}
+
+	[RelayCommand]
+	private Task RetryAsync() => RunBusyAsync(LoadAsync);
+
+	private async Task LoadAsync()
+	{
+		Error = "";
 		if (providers.CreateDefault() is not { } database)
 		{
 			return;
 		}
 
 		// All at once; each comes back empty if its request fails (the providers log it).
-		var trending = LoadAsync(database.GetPopularAnimeAsync);
-		var today = LoadAsync(database.GetAiringTodayAsync);
-		var next = LoadAsync(database.GetUpcomingAnimeAsync);
+		Exception? failure = null;
+		var trending = LoadRowAsync(database.GetPopularAnimeAsync, ex => failure ??= ex);
+		var today = LoadRowAsync(database.GetAiringTodayAsync, ex => failure ??= ex);
+		var next = LoadRowAsync(database.GetUpcomingAnimeAsync, ex => failure ??= ex);
 		// Its own time (a request per 50 anime watched): its row shows up when it's ready, without holding up the page.
 		_ = LoadMissedAsync();
 		Trending = await trending;
 		Spotlight = [.. Trending.Where(x => !string.IsNullOrEmpty(x.BannerImage)).Take(SpotlightCount)];
 		AiringToday = await today;
 		NextSeason = await next;
+		// One empty row is just an empty row; all of them, with a failure, is the database not answering.
+		if (failure is not null && Trending.Count == 0 && AiringToday.Count == 0 && NextSeason.Count == 0)
+		{
+			Error = NetworkErrors.Describe(failure, database.Name);
+		}
 	}
 
-	private async Task<IReadOnlyList<AnimeModel>> LoadAsync(Func<CancellationToken, Task<List<AnimeModel>>> load)
+	private async Task<IReadOnlyList<AnimeModel>> LoadRowAsync(Func<CancellationToken, Task<List<AnimeModel>>> load, Action<Exception> failed)
 	{
 		try
 		{
@@ -64,6 +83,7 @@ public sealed partial class DiscoverViewModel(
 		catch (Exception ex)
 		{
 			logger.LogWarning(ex, "Couldn't load anime to discover");
+			failed(ex);
 			return [];
 		}
 	}

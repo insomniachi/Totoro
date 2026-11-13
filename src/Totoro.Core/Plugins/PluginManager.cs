@@ -100,18 +100,20 @@ public sealed class PluginManager : IPluginManager
 		try
 		{
 			using var response = await _httpClient.GetAsync(catalogUrl);
-			if (response.IsSuccessStatusCode)
-			{
-				_catalogJson = await response.Content.ReadAsStringAsync();
-				// Its versions can mean new updates (the Plugins item's badge).
-				WeakReferenceMessenger.Default.Send(new PluginsChangedMessage(_requiresRestart));
-			}
+			response.EnsureSuccessStatusCode();
+			_catalogJson = await response.Content.ReadAsStringAsync();
+			CatalogError = null;
+			// Its versions can mean new updates (the Plugins item's badge).
+			WeakReferenceMessenger.Default.Send(new PluginsChangedMessage(_requiresRestart));
 		}
 		catch (Exception ex)
 		{
 			_logger.LogWarning(ex, "Failed to fetch remote plugin catalog from {Url}", catalogUrl);
+			CatalogError = NetworkErrors.Describe(ex, "the plugin catalog");
 		}
 	}
+
+	public string? CatalogError { get; private set; }
 
 	public void Annotate(PluginCatalogItem item)
 	{
