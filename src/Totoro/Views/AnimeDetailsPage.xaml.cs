@@ -8,7 +8,7 @@ using Totoro.ViewModels;
 namespace Totoro.Views;
 
 /// <summary>
-/// Shows a shimmer skeleton until the details and the banner and cover images have all loaded, then reveals everything at
+/// Shows a shimmer of the page until the details and the banner and cover images have all loaded, then reveals everything at
 /// once, so nothing visibly changes after the content appears.
 /// </summary>
 public sealed partial class AnimeDetailsPage : Page
@@ -97,9 +97,7 @@ public sealed partial class AnimeDetailsPage : Page
 
 		_revealed = true;
 		_imageTimeout?.Stop();
-		DetailsContent.Opacity = 1;
-		DetailsContent.IsHitTestVisible = true;
-		LoadingSkeleton.Visibility = Visibility.Collapsed;
+		LoadingShimmer.IsLoading = false;
 	}
 
 	private void OnTabSelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)

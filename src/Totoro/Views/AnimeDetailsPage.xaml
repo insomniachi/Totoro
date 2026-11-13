@@ -8,33 +8,33 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI.Controls"
     Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
     mc:Ignorable="d">
 
 
-    <Grid>
-        <!--
-            Hidden until everything has loaded, details and images alike (see the code-behind), so it appears all at once.
-            Opacity rather than Visibility: a collapsed Image never loads, so it would never report being ready.
-        -->
-        <ScrollView
-            x:Name="DetailsContent"
-            IsHitTestVisible="False"
-            Opacity="0">
+    <!--
+        Placeholders mirroring the page until everything has loaded, details and images alike (see the code-behind), so it
+        appears all at once. The content stays in the tree meanwhile, hidden, so its images load.
+    -->
+    <ui:ShimmerView x:Name="LoadingShimmer">
+        <ScrollView>
             <StackPanel Padding="0,0,0,32" Spacing="24">
 
                 <!--  Header: banner fading into the page, with the cover and title over it  -->
                 <Grid Height="320">
+                    <!--  No placeholder: the cover's and title's stand out on the plain page, rather than doubling up over one  -->
                     <Image
                         x:Name="BannerImageElement"
                         VerticalAlignment="Center"
+                        ui:ShimmerView.Ignore="True"
                         ImageFailed="OnImageDone"
                         ImageOpened="OnImageDone"
                         Source="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.BannerImage), Mode=OneWay}"
                         Stretch="UniformToFill" />
                     <!--  Fades the banner into the page; reaches the page colour just before the bottom and overhangs by
                           a pixel, so the banner's antialiased bottom row doesn't show as a line  -->
-                    <Rectangle Margin="0,0,0,-1">
+                    <Rectangle Margin="0,0,0,-1" ui:ShimmerView.Ignore="True">
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
                                 <GradientStop Offset="0.3" Color="Transparent" />
@@ -65,13 +65,18 @@
                             Grid.Column="1"
                             VerticalAlignment="Bottom"
                             Spacing="4">
+                            <!--  Left with a least width, so their placeholders are title-like lines rather than the column's width  -->
                             <TextBlock
+                                MinWidth="320"
+                                HorizontalAlignment="Left"
                                 MaxLines="3"
                                 Style="{ThemeResource SubtitleTextBlockStyle}"
                                 Text="{x:Bind ViewModel.Title, Mode=OneWay}"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="Wrap" />
                             <TextBlock
+                                MinWidth="200"
+                                HorizontalAlignment="Left"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind ViewModel.Subtitle, Mode=OneWay}"
                                 TextTrimming="CharacterEllipsis"
@@ -92,6 +97,8 @@
                                     Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsAiring), Mode=OneWay}" />
                                 <TextBlock
                                     Grid.Column="1"
+                                    MinWidth="260"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Style="{ThemeResource CaptionTextBlockStyle}"
@@ -102,10 +109,11 @@
                     </Grid>
                 </Grid>
 
-                <!--  Tab keys must match AnimeDetailsViewModel's *Tab constants  -->
+                <!--  Tab keys must match AnimeDetailsViewModel's *Tab constants. Shown while loading: they don't wait on anything.  -->
                 <SelectorBar
                     x:Name="Tabs"
                     Margin="16,-8,16,0"
+                    ui:ShimmerView.Ignore="True"
                     SelectionChanged="OnTabSelectionChanged">
                     <SelectorBarItem
                         IsSelected="True"
@@ -136,87 +144,5 @@
                 </toolkit:SwitchPresenter>
             </StackPanel>
         </ScrollView>
-
-        <!--  Shown until the content is revealed; mirrors the page's layout so the switch keeps the same shapes  -->
-        <StackPanel
-            x:Name="LoadingSkeleton"
-            IsHitTestVisible="False"
-            Spacing="24">
-            <Grid Height="320">
-                <toolkit:Shimmer CornerRadius="0" />
-                <!--  Same fade as the real banner, so the poster and title placeholders stand out from it  -->
-                <Rectangle Margin="0,0,0,-1">
-                    <Rectangle.Fill>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Offset="0.3" Color="Transparent" />
-                            <GradientStop Offset="0.95" Color="{ThemeResource SolidBackgroundFillColorBase}" />
-                        </LinearGradientBrush>
-                    </Rectangle.Fill>
-                </Rectangle>
-                <Grid
-                    Padding="24,0"
-                    VerticalAlignment="Bottom"
-                    ColumnSpacing="24">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <!--  On a page-coloured background, so it looks like the other placeholders rather than the banner's  -->
-                    <Border
-                        Width="170"
-                        Height="240"
-                        Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
-                        CornerRadius="8">
-                        <toolkit:Shimmer CornerRadius="8" />
-                    </Border>
-                    <StackPanel
-                        Grid.Column="1"
-                        VerticalAlignment="Bottom"
-                        Spacing="8">
-                        <toolkit:Shimmer
-                            Width="320"
-                            Height="24"
-                            HorizontalAlignment="Left"
-                            CornerRadius="4" />
-                        <toolkit:Shimmer
-                            Width="200"
-                            Height="16"
-                            HorizontalAlignment="Left"
-                            CornerRadius="4" />
-                        <toolkit:Shimmer
-                            Width="260"
-                            Height="16"
-                            HorizontalAlignment="Left"
-                            CornerRadius="4" />
-                    </StackPanel>
-                </Grid>
-            </Grid>
-
-            <StackPanel Padding="24,0" Spacing="24">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <toolkit:Shimmer Width="80" Height="24" CornerRadius="12" />
-                    <toolkit:Shimmer Width="64" Height="24" CornerRadius="12" />
-                    <toolkit:Shimmer Width="76" Height="24" CornerRadius="12" />
-                </StackPanel>
-
-                <toolkit:Shimmer Height="76" CornerRadius="8" />
-
-                <StackPanel Spacing="8">
-                    <toolkit:Shimmer
-                        Width="90"
-                        Height="16"
-                        HorizontalAlignment="Left"
-                        CornerRadius="4" />
-                    <toolkit:Shimmer Height="14" CornerRadius="4" />
-                    <toolkit:Shimmer Height="14" CornerRadius="4" />
-                    <toolkit:Shimmer Height="14" CornerRadius="4" />
-                    <toolkit:Shimmer
-                        Width="360"
-                        Height="14"
-                        HorizontalAlignment="Left"
-                        CornerRadius="4" />
-                </StackPanel>
-            </StackPanel>
-        </StackPanel>
-    </Grid>
+    </ui:ShimmerView>
 </Page>

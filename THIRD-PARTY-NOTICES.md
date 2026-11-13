@@ -11,6 +11,7 @@ given. This file is shipped with the app.
 | LibVLCSharp 3.10.1 (LibVLCSharp.WinUI) | LGPL-2.1-or-later | VideoLAN | https://code.videolan.org/videolan/LibVLCSharp |
 | Windows Community Toolkit (CommunityToolkit.WinUI.\*, CommunityToolkit.Labs.WinUI.\*) | MIT | .NET Foundation and Contributors | https://github.com/CommunityToolkit/Windows |
 | MVVM Toolkit (CommunityToolkit.Mvvm) | MIT | .NET Foundation and Contributors | https://github.com/CommunityToolkit/dotnet |
+| Uno Toolkit (SkeletonView, ported into Totoro.UI as ShimmerView) | MIT | Uno Platform | https://github.com/unoplatform/uno.toolkit.ui |
 | DevWinUI | MIT | Mahdi Hosseini | https://github.com/ghost1372/DevWinUI |
 | DynamicData | MIT | Roland Pheasant | https://github.com/reactivemarbles/DynamicData |
 | Flurl, Flurl.Http | MIT | Todd Menier | https://github.com/tmenier/Flurl |

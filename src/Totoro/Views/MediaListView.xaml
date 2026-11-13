@@ -363,50 +363,17 @@
             </ScrollView>
         </Border>
 
-        <toolkit:SwitchPresenter
-            Grid.Row="2"
-            TargetType="x:Boolean"
-            Value="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
-            <toolkit:Case Value="True">
-                <!--  Placeholder cards laid out like the real grid, so the page doesn't jump when the list arrives  -->
-                <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind PlaceholderCards, Mode=OneTime}">
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="x:Int32">
-                            <Grid RowSpacing="12">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <toolkit:Shimmer CornerRadius="8" />
-                                <toolkit:Shimmer
-                                    Grid.Row="1"
-                                    Height="20"
-                                    Margin="24,0"
-                                    CornerRadius="4" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                    <ItemsRepeater.Layout>
-                        <UniformGridLayout
-                            ItemsJustification="Start"
-                            ItemsStretch="Fill"
-                            MinColumnSpacing="32"
-                            MinItemHeight="400"
-                            MinItemWidth="250"
-                            MinRowSpacing="32" />
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
-            </toolkit:Case>
-            <toolkit:Case IsDefault="True" Value="False">
+        <!--  Placeholder cards from the card template while the list loads, so the page doesn't jump when it arrives  -->
+        <controls:ShimmerView Grid.Row="2" IsLoading="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
                 <Grid>
-                    <!--  No cards: why, and what to do about it (see UserListViewModel.Empty)  -->
+                    <!--  No cards: why, and what to do about it (see UserListViewModel.Empty); not while loading  -->
                     <StackPanel
                         MaxWidth="400"
                         Margin="16,0,16,64"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="8"
-                        Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay}">
+                        Visibility="{x:Bind local:MediaListView.VisibleIfEmpty(ViewModel.IsEmpty, ViewModel.IsBusy), Mode=OneWay}">
                         <FontIcon
                             Margin="0,0,0,8"
                             FontSize="48"
@@ -440,6 +407,9 @@
                     <ScrollView x:Name="ListScrollView" ViewChanged="OnListViewChanged">
                         <ItemsRepeater
                             Margin="16,8,16,16"
+                            controls:ShimmerView.FillView="True"
+                            controls:ShimmerView.PlaceholderCount="24"
+                            controls:ShimmerView.PlaceholderItem="{x:Bind local:MediaListView.PlaceholderCard}"
                             ItemTemplate="{StaticResource CardTemplate}"
                             ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}">
                             <ItemsRepeater.ItemTransitionProvider>
@@ -502,7 +472,6 @@
                         <FontIcon FontSize="18" Glyph="&#xE74A;" />
                     </Button>
                 </Grid>
-            </toolkit:Case>
-        </toolkit:SwitchPresenter>
+        </controls:ShimmerView>
     </Grid>
 </UserControl>

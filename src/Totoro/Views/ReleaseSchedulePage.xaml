@@ -8,6 +8,7 @@
     xmlns:local="using:Totoro.Views"
     xmlns:services="using:Totoro.Core.Services"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI.Controls"
     xmlns:vm="using:Totoro.ViewModels">
 
     <Page.Resources>
@@ -152,7 +153,9 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <ItemsControl Grid.Row="2" ItemsSource="{x:Bind ViewModel.Days, Mode=OneWay}">
+            <!--  The month laid out straight away, each day a placeholder (its bands' area) until the list arrives  -->
+            <ui:ShimmerView Grid.Row="2" IsLoading="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Days, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <toolkit:UniformGrid
@@ -170,7 +173,7 @@
                             CornerRadius="{ThemeResource ControlCornerRadius}"
                             Opacity="{x:Bind local:ReleaseSchedulePage.DayOpacity(IsInMonth), Mode=OneTime}">
                             <!--  A band for each show, with its cover behind its row  -->
-                            <ItemsControl ItemsSource="{x:Bind Bands, Mode=OneTime}">
+                            <ItemsControl ui:ShimmerView.Shape="Rectangle" ItemsSource="{x:Bind Bands, Mode=OneTime}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <toolkit:UniformGrid Columns="1" />
@@ -210,15 +213,15 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <toolkit:Shimmer CornerRadius="0" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(IsLoading), Mode=OneTime}" />
 
-                            <!--  The day; today's on an accent circle  -->
+                            <!--  The day; today's on an accent circle. Left showing while loading.  -->
                             <Grid
                                 Width="24"
                                 Height="24"
                                 Margin="8,8,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
+                                ui:ShimmerView.Ignore="True"
                                 Background="{x:Bind local:ReleaseSchedulePage.TodayBackground(IsToday), Mode=OneTime}"
                                 CornerRadius="12"
                                 IsHitTestVisible="False">
@@ -252,6 +255,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            </ui:ShimmerView>
         </Grid>
     </Grid>
 </Page>

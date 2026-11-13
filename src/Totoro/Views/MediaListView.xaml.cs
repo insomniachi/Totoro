@@ -1,6 +1,7 @@
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
 using Totoro.ViewModels;
 
@@ -17,8 +18,12 @@ public sealed partial class MediaListView : UserControl
 	[GeneratedDependencyProperty]
 	public partial MediaListViewModel? ViewModel { get; set; }
 
-	/// <summary>Number of shimmer cards shown while the list loads; enough to fill a large window.</summary>
-	public IReadOnlyList<int> PlaceholderCards { get; } = [.. Enumerable.Range(0, 12)];
+	/// <summary>What the shimmer's placeholder cards are built from, here and on Search and Discover.</summary>
+	// An image of the app's own: MediaCard binds Image straight to Image.Source, which throws for an empty string.
+	public static AnimeModel PlaceholderCard { get; } = new() { Title = "A title", Image = "ms-appx:///Assets/StoreLogo.png" };
+
+	/// <summary>The empty list's message: not while the list loads, when the placeholders stand in for the cards.</summary>
+	public static Visibility VisibleIfEmpty(bool isEmpty, bool isBusy) => isEmpty && !isBusy ? Visibility.Visible : Visibility.Collapsed;
 
 	private void OnListViewChanged(ScrollView sender, object args)
 	{

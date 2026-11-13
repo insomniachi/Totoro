@@ -5,25 +5,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI.Controls"
     xmlns:vm="using:Totoro.ViewModels.AnimeDetails">
 
-    <Grid Padding="24,0">
-        <toolkit:WrapPanel
-            HorizontalSpacing="16"
-            VerticalSpacing="16"
-            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-        </toolkit:WrapPanel>
-        <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
+    <!--  Placeholder cards from the ItemTemplate while loading  -->
+    <ui:ShimmerView Padding="24,0" IsLoading="{x:Bind helpers:CommonConverters.Not(ViewModel.IsLoaded), Mode=OneWay}">
+        <StackPanel Spacing="12">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{x:Bind ViewModel.Message, Mode=OneWay}"
                 Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
-            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}">
+            <ItemsRepeater
+                ui:ShimmerView.PlaceholderCount="5"
+                ui:ShimmerView.PlaceholderItem="{x:Bind vm:CharacterItem.Placeholder}"
+                ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}">
                 <ItemsRepeater.Layout>
                     <UniformGridLayout
                         ItemsJustification="Start"
@@ -56,5 +51,5 @@
                 </ItemsRepeater.ItemTemplate>
             </ItemsRepeater>
         </StackPanel>
-    </Grid>
+    </ui:ShimmerView>
 </UserControl>

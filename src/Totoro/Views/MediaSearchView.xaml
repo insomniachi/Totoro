@@ -101,41 +101,14 @@
         </Grid.ColumnDefinitions>
 
         <!--  Results: placeholders while searching, then the cards, or why there are none  -->
-        <toolkit:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
-            <toolkit:Case Value="True">
-                <ItemsRepeater Margin="16,8,16,16" ItemsSource="{x:Bind PlaceholderCards, Mode=OneTime}">
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="x:Int32">
-                            <Grid RowSpacing="12">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-                                <toolkit:Shimmer CornerRadius="8" />
-                                <toolkit:Shimmer
-                                    Grid.Row="1"
-                                    Height="20"
-                                    Margin="24,0"
-                                    CornerRadius="4" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                    <ItemsRepeater.Layout>
-                        <UniformGridLayout
-                            ItemsJustification="Start"
-                            ItemsStretch="Fill"
-                            MinColumnSpacing="32"
-                            MinItemHeight="400"
-                            MinItemWidth="250"
-                            MinRowSpacing="32" />
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
-            </toolkit:Case>
-            <toolkit:Case IsDefault="True" Value="False">
+        <controls:ShimmerView IsLoading="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
                 <Grid>
                     <ScrollView>
                         <ItemsRepeater
                             Margin="16,8,16,16"
+                            controls:ShimmerView.FillView="True"
+                            controls:ShimmerView.PlaceholderCount="24"
+                            controls:ShimmerView.PlaceholderItem="{x:Bind local:MediaListView.PlaceholderCard}"
                             ItemTemplate="{StaticResource CardTemplate}"
                             ItemsSource="{x:Bind ViewModel.Items, Mode=OneTime}">
                             <ItemsRepeater.ItemTransitionProvider>
@@ -168,8 +141,7 @@
                             TextAlignment="Center" />
                     </StackPanel>
                 </Grid>
-            </toolkit:Case>
-        </toolkit:SwitchPresenter>
+        </controls:ShimmerView>
 
         <!--
             Filters, on a raised surface so they read as one panel apart from the results (the theme's layer fill, like

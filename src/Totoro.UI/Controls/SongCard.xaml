@@ -10,8 +10,10 @@
         audio here and its creditless video in the media player. While its audio plays (or is paused), the spectrum, how
         far through it is, and the time, under them.
     -->
+    <!--  One placeholder for the whole card in a ShimmerView, rather than loose ones for its label, lines and buttons  -->
     <Grid
         Padding="12"
+        local:ShimmerView.Shape="Rectangle"
         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
         BorderThickness="1"

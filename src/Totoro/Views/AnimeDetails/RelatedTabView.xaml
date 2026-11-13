@@ -6,6 +6,7 @@
     xmlns:commands="using:Totoro.Commands"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI.Controls"
     xmlns:vm="using:Totoro.ViewModels.AnimeDetails">
 
     <UserControl.Resources>
@@ -51,27 +52,27 @@
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Text="{x:Bind ViewModel.Message, Mode=OneWay}"
             Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
-        <toolkit:WrapPanel
-            HorizontalSpacing="16"
-            VerticalSpacing="16"
-            Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-            <toolkit:Shimmer Width="110" Height="190" CornerRadius="8" />
-        </toolkit:WrapPanel>
-        <TextBlock
-            Style="{ThemeResource BodyStrongTextBlockStyle}"
-            Text="Series"
-            Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Series), Mode=OneWay}" />
-        <ItemsRepeater ItemTemplate="{StaticResource RelatedAnimeTemplate}" ItemsSource="{x:Bind ViewModel.Series, Mode=OneWay}">
-            <ItemsRepeater.Layout>
-                <UniformGridLayout
-                    ItemsJustification="Start"
-                    MinColumnSpacing="16"
-                    MinItemWidth="110"
-                    MinRowSpacing="16" />
-            </ItemsRepeater.Layout>
-        </ItemsRepeater>
+        <ui:ShimmerView IsLoading="{x:Bind helpers:CommonConverters.Not(ViewModel.IsLoaded), Mode=OneWay}">
+            <StackPanel Spacing="12">
+                <TextBlock
+                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                    Text="Series"
+                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Series), Mode=OneWay}" />
+                <ItemsRepeater
+                    ui:ShimmerView.PlaceholderCount="3"
+                    ui:ShimmerView.PlaceholderItem="{x:Bind vm:RelatedItem.Placeholder}"
+                    ItemTemplate="{StaticResource RelatedAnimeTemplate}"
+                    ItemsSource="{x:Bind ViewModel.Series, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsJustification="Start"
+                            MinColumnSpacing="16"
+                            MinItemWidth="110"
+                            MinRowSpacing="16" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+            </StackPanel>
+        </ui:ShimmerView>
         <TextBlock
             Margin="0,12,0,0"
             Style="{ThemeResource BodyStrongTextBlockStyle}"

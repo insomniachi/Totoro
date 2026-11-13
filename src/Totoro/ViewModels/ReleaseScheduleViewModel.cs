@@ -8,8 +8,7 @@ using Totoro.UI.Navigation;
 namespace Totoro.ViewModels;
 
 /// <summary>A day on the release calendar, with the episodes airing on it.</summary>
-/// <param name="IsLoading">True while the list it comes from is loading: it shows a placeholder.</param>
-public sealed record CalendarDay(DateTime Date, bool IsInMonth, IReadOnlyList<ScheduledEpisode> Episodes, bool IsLoading)
+public sealed record CalendarDay(DateTime Date, bool IsInMonth, IReadOnlyList<ScheduledEpisode> Episodes)
 {
 	public bool IsToday => Date == DateTime.Today;
 
@@ -51,7 +50,6 @@ public sealed record CalendarBand(IReadOnlyList<ScheduledEpisode> Episodes)
 public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService schedule, AnimeTrackingService tracking) : NavigatableViewModel
 {
 	private List<AnimeModel> _watching = [];
-	private bool _loading;
 
 	private static DateTime ThisMonth => new(DateTime.Today.Year, DateTime.Today.Month, 1);
 
@@ -62,6 +60,10 @@ public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService sche
 
 	[ObservableProperty]
 	public partial IReadOnlyList<CalendarDay> Days { get; set; } = [];
+
+	/// <summary>True while the list is loading: the days show placeholders.</summary>
+	[ObservableProperty]
+	public partial bool IsLoading { get; private set; }
 
 	public string Title => Month.ToString("Y", CultureInfo.CurrentCulture);
 
@@ -83,7 +85,7 @@ public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService sche
 	private async Task LoadWatchingAsync()
 	{
 		// The month laid out straight away, its days shimmering until the list arrives.
-		_loading = true;
+		IsLoading = true;
 		_watching = [];
 		UpdateDays();
 		try
@@ -92,7 +94,7 @@ public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService sche
 		}
 		finally
 		{
-			_loading = false;
+			IsLoading = false;
 			UpdateDays();
 		}
 	}
@@ -119,6 +121,6 @@ public sealed partial class ReleaseScheduleViewModel(ReleaseScheduleService sche
 		var start = Month.AddDays(-(((int)Month.DayOfWeek - (int)FirstDayOfWeek + 7) % 7));
 		var count = (int)Math.Ceiling((Month.AddMonths(1) - start).TotalDays / 7) * 7;
 		var episodes = ReleaseScheduleService.Between(_watching, start, start.AddDays(count)).ToLookup(x => x.AiringAt.Date);
-		Days = [.. Enumerable.Range(0, count).Select(i => start.AddDays(i)).Select(d => new CalendarDay(d, d.Month == Month.Month, [.. episodes[d]], _loading))];
+		Days = [.. Enumerable.Range(0, count).Select(i => start.AddDays(i)).Select(d => new CalendarDay(d, d.Month == Month.Month, [.. episodes[d]]))];
 	}
 }

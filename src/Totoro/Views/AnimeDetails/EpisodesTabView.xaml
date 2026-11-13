@@ -7,28 +7,29 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views.AnimeDetails"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI.Controls"
     xmlns:vm="using:Totoro.ViewModels.AnimeDetails">
 
-    <Grid Padding="24,0">
-        <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
-            <toolkit:Shimmer Height="90" CornerRadius="8" />
-            <toolkit:Shimmer Height="90" CornerRadius="8" />
-            <toolkit:Shimmer Height="90" CornerRadius="8" />
-        </StackPanel>
-        <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
+    <!--  Mirrors the episode cards as placeholders while loading (three empty rows from the ItemTemplate on first load)  -->
+    <ui:ShimmerView Padding="24,0" IsLoading="{x:Bind helpers:CommonConverters.Not(ViewModel.IsLoaded), Mode=OneWay}">
+        <StackPanel Spacing="12">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{x:Bind ViewModel.Message, Mode=OneWay}"
                 Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
-            <ItemsRepeater ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}">
+            <ItemsRepeater
+                ui:ShimmerView.PlaceholderCount="3"
+                ui:ShimmerView.PlaceholderItem="{x:Bind vm:EpisodeItem.Placeholder}"
+                ItemsSource="{x:Bind ViewModel.Episodes, Mode=OneWay}">
                 <ItemsRepeater.Layout>
                     <StackLayout Spacing="12" />
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="vm:EpisodeItem">
-                        <!--  A card per episode, so episodes are easy to tell apart; 12 inside, as between the cards  -->
+                        <!--  A card per episode, so episodes are easy to tell apart; 12 inside, as between the cards. One placeholder while loading.  -->
                         <Grid
                             Padding="12"
+                            ui:ShimmerView.Shape="Rectangle"
                             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
@@ -180,5 +181,5 @@
                 </ItemsRepeater.ItemTemplate>
             </ItemsRepeater>
         </StackPanel>
-    </Grid>
+    </ui:ShimmerView>
 </UserControl>

@@ -16,9 +16,6 @@ public sealed partial class MediaSearchView : UserControl
 	[GeneratedDependencyProperty]
 	public partial MediaSearchViewModel? ViewModel { get; set; }
 
-	/// <summary>Number of shimmer cards shown while searching; enough to fill a large window.</summary>
-	public IReadOnlyList<int> PlaceholderCards { get; } = [.. Enumerable.Range(0, 12)];
-
 	// For the sort order button's x:Bind function bindings (never given null: SortOrderText is always set).
 
 	/// <summary>Up arrow for ascending, down for descending.</summary>

@@ -7,6 +7,7 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:text="using:Totoro.UI.Text"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI.Controls"
     xmlns:vm="using:Totoro.ViewModels">
 
     <UserControl.Resources>
@@ -33,14 +34,17 @@
     <StackPanel Padding="24,0" Spacing="24">
         <!--  Genres; the other facts are a line under the title, in the page's header  -->
         <ItemsControl
+            ui:ShimmerView.PlaceholderCount="3"
+            ui:ShimmerView.PlaceholderItem="Genre"
             IsTabStop="False"
             ItemTemplate="{StaticResource ChipTemplate}"
             ItemsPanel="{StaticResource ChipPanel}"
             ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}" />
 
-        <!--  The user's list entry  -->
+        <!--  The user's list entry; one placeholder while loading  -->
         <Grid
             Padding="16"
+            ui:ShimmerView.Shape="Rectangle"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"

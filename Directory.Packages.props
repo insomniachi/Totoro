@@ -35,7 +35,8 @@
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.DependencyPropertyGenerator" Version="0.1.261027-build.2704" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.Shimmer" Version="0.1.260415-build.2574" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.250828-build.2223" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.2.251219" />
+    <!--  The Labs Shimmer needs this preview (through Animations); the app already ran it, Totoro.UI too now  -->
+    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.3.260402-preview2" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="11.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />

@@ -107,58 +107,25 @@
             <Setter Property="Height" Value="36" />
             <Setter Property="Padding" Value="0" />
         </Style>
-
-        <!--  A row still loading: its header (the content) over shimmering cards the size of CardTemplate's  -->
-        <DataTemplate x:Key="PlaceholderRowTemplate" x:DataType="x:String">
-            <StackPanel Spacing="12">
-                <TextBlock
-                    Height="36"
-                    Style="{StaticResource RowHeaderStyle}"
-                    Text="{x:Bind}" />
-                <ScrollView IsHitTestVisible="False" Style="{StaticResource RowScrollViewStyle}">
-                    <!--  The page's implicit ItemsRepeater style doesn't reach into this template  -->
-                    <ItemsRepeater Margin="8" ItemsSource="{x:Bind local:DiscoverPage.PlaceholderCards, Mode=OneTime}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="x:Int32">
-                                <toolkit:Shimmer
-                                    Width="190"
-                                    Height="320"
-                                    CornerRadius="8" />
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                        <ItemsRepeater.Layout>
-                            <StackLayout Orientation="Horizontal" Spacing="16" />
-                        </ItemsRepeater.Layout>
-                    </ItemsRepeater>
-                </ScrollView>
-            </StackPanel>
-        </DataTemplate>
-
-        <Style x:Key="PlaceholderRowStyle" TargetType="ContentControl">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="IsTabStop" Value="False" />
-            <Setter Property="ContentTemplate" Value="{StaticResource PlaceholderRowTemplate}" />
-        </Style>
     </Page.Resources>
 
     <ScrollView>
+        <!--
+            While it loads, every part of the page shows (see RowVisibility), as placeholders in its place: each row
+            placeholder cards from its card template
+        -->
+        <controls:ShimmerView IsLoading="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
         <StackPanel Padding="16" Spacing="12">
 
-            <!--  Placeholders (the toolkit:Shimmer ones) stand in for each part of the page while it loads, in its place  -->
-            <toolkit:Shimmer
-                Height="380"
-                AutomationProperties.Name="Loading"
-                CornerRadius="8"
-                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
-
-            <!--  Spotlight: trending anime with their banners, turning over by themselves (see the code-behind)  -->
+            <!--  Spotlight: trending anime with their banners, turning over by themselves (see the code-behind); one block while loading  -->
             <FlipView
                 x:Name="Spotlight"
                 Height="380"
+                controls:ShimmerView.Shape="Rectangle"
                 AutomationProperties.Name="Spotlight"
                 CornerRadius="8"
                 ItemsSource="{x:Bind ViewModel.Spotlight, Mode=OneWay}"
-                Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Spotlight), Mode=OneWay}">
+                Visibility="{x:Bind local:DiscoverPage.RowVisibility(ViewModel.Spotlight, ViewModel.IsBusy), Mode=OneWay}">
                 <FlipView.ItemTemplate>
                     <DataTemplate x:DataType="anime:AnimeModel">
                         <!--  Dark whatever the app's theme: light text over the darkened banner  -->
@@ -241,17 +208,11 @@
                 SelectedPageIndex="{x:Bind Spotlight.SelectedIndex, Mode=TwoWay}"
                 Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Spotlight), Mode=OneWay}" />
 
-            <ContentControl
-                Margin="0,12,0,0"
-                Content="Trending now"
-                Style="{StaticResource PlaceholderRowStyle}"
-                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
-
             <!--  Each row: a header with buttons paging it a screenful at a time (OnPreviousPage/OnNextPage take the row as Tag)  -->
             <StackPanel
                 Margin="0,12,0,0"
                 Spacing="12"
-                Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Trending), Mode=OneWay}">
+                Visibility="{x:Bind local:DiscoverPage.RowVisibility(ViewModel.Trending, ViewModel.IsBusy), Mode=OneWay}">
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -285,7 +246,12 @@
                     SizeChanged="OnRowChanged"
                     Style="{StaticResource RowScrollViewStyle}"
                     ViewChanged="OnRowChanged">
-                    <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.Trending, Mode=OneWay}">
+                    <ItemsRepeater
+                        controls:ShimmerView.FillView="True"
+                        controls:ShimmerView.PlaceholderCount="4"
+                        controls:ShimmerView.PlaceholderItem="{x:Bind local:MediaListView.PlaceholderCard}"
+                        ItemTemplate="{StaticResource CardTemplate}"
+                        ItemsSource="{x:Bind ViewModel.Trending, Mode=OneWay}">
                         <ItemsRepeater.Layout>
                             <StackLayout Orientation="Horizontal" Spacing="16" />
                         </ItemsRepeater.Layout>
@@ -293,16 +259,7 @@
                 </ScrollView>
             </StackPanel>
 
-            <ContentControl
-                Content="Airing today"
-                Style="{StaticResource PlaceholderRowStyle}"
-                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
-            <ContentControl
-                Content="{x:Bind ViewModel.NextSeasonTitle, Mode=OneTime}"
-                Style="{StaticResource PlaceholderRowStyle}"
-                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
-
-            <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.AiringToday), Mode=OneWay}">
+            <StackPanel Spacing="12" Visibility="{x:Bind local:DiscoverPage.RowVisibility(ViewModel.AiringToday, ViewModel.IsBusy), Mode=OneWay}">
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -336,7 +293,12 @@
                     SizeChanged="OnRowChanged"
                     Style="{StaticResource RowScrollViewStyle}"
                     ViewChanged="OnRowChanged">
-                    <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.AiringToday, Mode=OneWay}">
+                    <ItemsRepeater
+                        controls:ShimmerView.FillView="True"
+                        controls:ShimmerView.PlaceholderCount="4"
+                        controls:ShimmerView.PlaceholderItem="{x:Bind local:MediaListView.PlaceholderCard}"
+                        ItemTemplate="{StaticResource CardTemplate}"
+                        ItemsSource="{x:Bind ViewModel.AiringToday, Mode=OneWay}">
                         <ItemsRepeater.Layout>
                             <StackLayout Orientation="Horizontal" Spacing="16" />
                         </ItemsRepeater.Layout>
@@ -344,7 +306,7 @@
                 </ScrollView>
             </StackPanel>
 
-            <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.NextSeason), Mode=OneWay}">
+            <StackPanel Spacing="12" Visibility="{x:Bind local:DiscoverPage.RowVisibility(ViewModel.NextSeason, ViewModel.IsBusy), Mode=OneWay}">
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -378,7 +340,12 @@
                     SizeChanged="OnRowChanged"
                     Style="{StaticResource RowScrollViewStyle}"
                     ViewChanged="OnRowChanged">
-                    <ItemsRepeater ItemTemplate="{StaticResource UpcomingCardTemplate}" ItemsSource="{x:Bind ViewModel.NextSeason, Mode=OneWay}">
+                    <ItemsRepeater
+                        controls:ShimmerView.FillView="True"
+                        controls:ShimmerView.PlaceholderCount="4"
+                        controls:ShimmerView.PlaceholderItem="{x:Bind local:MediaListView.PlaceholderCard}"
+                        ItemTemplate="{StaticResource UpcomingCardTemplate}"
+                        ItemsSource="{x:Bind ViewModel.NextSeason, Mode=OneWay}">
                         <ItemsRepeater.Layout>
                             <StackLayout Orientation="Horizontal" Spacing="16" />
                         </ItemsRepeater.Layout>
@@ -386,14 +353,12 @@
                 </ScrollView>
             </StackPanel>
 
-            <!--  Missed takes far longer than the rest, so it shows it's coming rather than popping in later  -->
-            <ContentControl
-                Content="Sequels &amp; spin-offs you missed"
-                Style="{StaticResource PlaceholderRowStyle}"
-                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoadingMissed), Mode=OneWay}" />
-
-            <!--  Sequels and spin-offs of what the user watched, not on their list: the first few; See all has the rest  -->
-            <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Missed), Mode=OneWay}">
+            <!--
+                Sequels and spin-offs of what the user watched, not on their list: the first few; See all has the rest.
+                It takes far longer than the rest, so it has its own placeholders, to show it's coming rather than pop in later.
+            -->
+            <controls:ShimmerView IsLoading="{x:Bind ViewModel.IsLoadingMissed, Mode=OneWay}">
+            <StackPanel Spacing="12" Visibility="{x:Bind local:DiscoverPage.RowVisibility(ViewModel.Missed, ViewModel.IsLoadingMissed), Mode=OneWay}">
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -433,13 +398,20 @@
                     SizeChanged="OnRowChanged"
                     Style="{StaticResource RowScrollViewStyle}"
                     ViewChanged="OnRowChanged">
-                    <ItemsRepeater ItemTemplate="{StaticResource CardTemplate}" ItemsSource="{x:Bind ViewModel.Missed, Mode=OneWay}">
+                    <ItemsRepeater
+                        controls:ShimmerView.FillView="True"
+                        controls:ShimmerView.PlaceholderCount="4"
+                        controls:ShimmerView.PlaceholderItem="{x:Bind local:MediaListView.PlaceholderCard}"
+                        ItemTemplate="{StaticResource CardTemplate}"
+                        ItemsSource="{x:Bind ViewModel.Missed, Mode=OneWay}">
                         <ItemsRepeater.Layout>
                             <StackLayout Orientation="Horizontal" Spacing="16" />
                         </ItemsRepeater.Layout>
                     </ItemsRepeater>
                 </ScrollView>
             </StackPanel>
+            </controls:ShimmerView>
         </StackPanel>
+        </controls:ShimmerView>
     </ScrollView>
 </Page>

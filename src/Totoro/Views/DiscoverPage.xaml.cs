@@ -32,7 +32,9 @@ public sealed partial class DiscoverPage : Page
 	[GeneratedDependencyProperty]
 	public partial DiscoverViewModel? ViewModel { get; set; }
 
-	public static IReadOnlyList<int> PlaceholderCards { get; } = [.. Enumerable.Range(0, 8)];
+	/// <summary>A part of the page: shown with its anime, or while they load, as placeholders.</summary>
+	public static Visibility RowVisibility(IReadOnlyList<AnimeModel> items, bool isLoading) =>
+		isLoading || items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 	// A card and the gap after it, as in the XAML's CardTemplate (Width) and rows' StackLayout (Spacing).
 	private const double CardStride = 190 + 16;

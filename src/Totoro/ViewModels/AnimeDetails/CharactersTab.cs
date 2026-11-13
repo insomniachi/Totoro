@@ -4,7 +4,11 @@ using Totoro.Core.Modules.Anime;
 
 namespace Totoro.ViewModels.AnimeDetails;
 
-public sealed record CharacterItem(string Name, string? Image);
+public sealed record CharacterItem(string Name, string? Image)
+{
+	/// <summary>What the shimmer's placeholder cards are built from.</summary>
+	public static CharacterItem Placeholder { get; } = new("Character name", null);
+}
 
 /// <summary>The anime's characters: those with a picture (minor ones without are left out).</summary>
 public sealed partial class CharactersTab(Func<Task<List<CharacterModel>>> fetch, ILogger logger)

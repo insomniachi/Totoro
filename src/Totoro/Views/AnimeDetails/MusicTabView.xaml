@@ -6,23 +6,23 @@
     xmlns:controls="using:Totoro.UI.Controls"
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:services="using:Totoro.Core.Services"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:Totoro.UI.Controls"
     xmlns:vm="using:Totoro.ViewModels.AnimeDetails">
 
-    <Grid Padding="24,0">
-        <StackPanel Spacing="12" Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
-            <toolkit:Shimmer Height="64" CornerRadius="8" />
-            <toolkit:Shimmer Height="64" CornerRadius="8" />
-            <toolkit:Shimmer Height="64" CornerRadius="8" />
-        </StackPanel>
-        <StackPanel Spacing="24" Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoaded), Mode=OneWay}">
+    <!--  A placeholder group of songs from the ItemTemplate while loading  -->
+    <ui:ShimmerView Padding="24,0" IsLoading="{x:Bind helpers:CommonConverters.Not(ViewModel.IsLoaded), Mode=OneWay}">
+        <StackPanel Spacing="24">
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{x:Bind ViewModel.Message, Mode=OneWay}"
                 Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
 
             <!--  Openings, endings and insert songs, each under its heading  -->
-            <ItemsControl IsTabStop="False" ItemsSource="{x:Bind ViewModel.Groups, Mode=OneWay}">
+            <ItemsControl
+                ui:ShimmerView.PlaceholderCount="1"
+                ui:ShimmerView.PlaceholderItem="{x:Bind ViewModel.Placeholder, Mode=OneWay}"
+                IsTabStop="False"
+                ItemsSource="{x:Bind ViewModel.Groups, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Spacing="24" />
@@ -55,5 +55,5 @@
                 Text="From AnimeThemes."
                 Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotEmpty(ViewModel.Groups), Mode=OneWay}" />
         </StackPanel>
-    </Grid>
+    </ui:ShimmerView>
 </UserControl>

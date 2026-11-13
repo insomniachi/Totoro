@@ -31,6 +31,11 @@ public sealed record EpisodeItem(
 
 	/// <summary>The play button's accessible name.</summary>
 	public string PlayName => HasProgress ? $"Resume episode {Number}" : $"Play episode {Number}";
+
+	/// <summary>What the shimmer's placeholder rows are built from; its text sizes their lines.</summary>
+	public static EpisodeItem Placeholder { get; } = new("00", "An episode title of usual length", "24 min · Jan 1, 2026", "", null,
+		"An overview long enough to wrap onto a second line, as most episodes' do, so the placeholder shows a paragraph.",
+		false, false, null, 0);
 }
 
 /// <summary>The anime's episodes, with the ones already watched marked and unfinished ones' progress.</summary>

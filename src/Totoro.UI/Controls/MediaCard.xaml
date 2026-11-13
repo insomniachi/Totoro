@@ -11,8 +11,10 @@
     mc:Ignorable="d">
 
     <!--  EdgeLighting centers its content by default, sizing the card to the image: until the image loads, that's just the title.  -->
+    <!--  One placeholder for the whole card in a ShimmerView, rather than one each for its poster, icon and title  -->
     <devwinui:EdgeLighting
         x:Name="Lighting"
+        local:ShimmerView.Shape="Rectangle"
         HorizontalAlignment="Stretch"
         HorizontalContentAlignment="Stretch"
         VerticalContentAlignment="Stretch"

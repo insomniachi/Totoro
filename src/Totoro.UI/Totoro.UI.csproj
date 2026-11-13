@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Labs.WinUI.DependencyPropertyGenerator" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.Shimmer" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" />
     <PackageReference Include="CommunityToolkit.WinUI.Behaviors" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />

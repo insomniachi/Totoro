@@ -5,7 +5,11 @@ using Totoro.Core.Modules.Anime;
 namespace Totoro.ViewModels.AnimeDetails;
 
 // Keeps the model too, to open its details when clicked.
-public sealed record RelatedItem(string Title, string? Image, AnimeModel Anime);
+public sealed record RelatedItem(string Title, string? Image, AnimeModel Anime)
+{
+	/// <summary>What the shimmer's placeholder cards are built from.</summary>
+	public static RelatedItem Placeholder { get; } = new("A title of usual length", null, new AnimeModel());
+}
 
 /// <summary>
 /// The whole series the anime belongs to, in the order it aired (fetched, entry by entry), then its other related anime

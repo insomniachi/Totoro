@@ -20,6 +20,13 @@ public sealed partial class MusicTab(
 	[ObservableProperty]
 	public partial IReadOnlyList<SongGroup> Groups { get; private set; } = [];
 
+	/// <summary>What the shimmer's placeholder group is built from: three songs of usual length, with both buttons.</summary>
+	public SongGroup Placeholder => field ??= new("Openings",
+	[
+		.. Enumerable.Repeat(new AnimeSong(AnimeSongKind.Opening, 1, "A song title of usual length", "Artist name", "1–12",
+			new Uri("about:blank"), new Uri("about:blank")), 3).Select(toItem)
+	]);
+
 	/// <summary>Stops the song playing, e.g. when the tab is left.</summary>
 	public void StopAudio()
 	{
