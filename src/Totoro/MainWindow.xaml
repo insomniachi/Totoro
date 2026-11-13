@@ -21,7 +21,8 @@
     mc:Ignorable="d">
 
     <!--  Theme and backdrop come from the user's settings; see IAppearanceService  -->
-    <Grid>
+    <!--  Hidden: else WinUI shows an "F11" accelerator tooltip when hovering anywhere in the window  -->
+    <Grid KeyboardAcceleratorPlacementMode="Hidden">
         <!--  Window-wide: F11 toggles full screen, Esc only leaves it  -->
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="F11" Invoked="OnFullScreenInvoked" />
