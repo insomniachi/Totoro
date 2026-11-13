@@ -17,12 +17,12 @@
         <!--  The Search page's main card actions; each Command receives the card's AnimeModel  -->
         <overlays:CardActionCollection x:Key="CardActions">
             <overlays:CardAction
-                Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
+                Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand, Mode=OneTime}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Play}"
                 Label="Play"
                 ShowOnHover="True" />
             <overlays:CardAction
-                Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
+                Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand, Mode=OneTime}"
                 Icon="{toolkitui:SymbolIconSource Symbol=Edit}"
                 Label="Edit tracking"
                 OffListIcon="{toolkitui:SymbolIconSource Symbol=Add}"
@@ -78,7 +78,7 @@
                     <DataTemplate x:DataType="services:ImageMatch">
                         <Grid
                             Padding="0,8"
-                            AutomationProperties.Name="{x:Bind Anime.Title}"
+                            AutomationProperties.Name="{x:Bind Anime.Title, Mode=OneTime}"
                             ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -89,7 +89,7 @@
                                 Height="68"
                                 Background="{ThemeResource ControlFillColorSecondaryBrush}"
                                 CornerRadius="4">
-                                <Image Source="{x:Bind Anime.Image}" Stretch="UniformToFill" />
+                                <Image Source="{x:Bind Anime.Image, Mode=OneTime}" Stretch="UniformToFill" />
                             </Border>
                             <StackPanel
                                 Grid.Column="1"
@@ -98,12 +98,12 @@
                                 <TextBlock
                                     MaxLines="2"
                                     Style="{StaticResource BodyStrongTextBlockStyle}"
-                                    Text="{x:Bind Anime.Title}"
+                                    Text="{x:Bind Anime.Title, Mode=OneTime}"
                                     TextWrapping="Wrap" />
                                 <TextBlock
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Style="{StaticResource CaptionTextBlockStyle}"
-                                    Text="{x:Bind views:ImageSearchView.Where(Episode, At, Similarity)}" />
+                                    Text="{x:Bind views:ImageSearchView.Where(Episode, At, Similarity), Mode=OneTime}" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
@@ -140,7 +140,7 @@
             Visibility="{x:Bind views:ImageSearchView.VisibleIfAny(ViewModel.Selected), Mode=OneWay}">
             <controls:MediaCard
                 Height="400"
-                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
+                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
                 Media="{x:Bind ViewModel.Selected.Anime, Mode=OneWay}"
                 Overlays="{StaticResource CardOverlays}">
                 <Interactivity:Interaction.Behaviors>
@@ -160,7 +160,7 @@
                 HorizontalAlignment="Stretch"
                 AutomationProperties.AutomationId="PlaySceneButton"
                 AutomationProperties.Name="{x:Bind views:ImageSearchView.PlaySceneLabel(ViewModel.Selected), Mode=OneWay}"
-                Command="{x:Bind ViewModel.PlaySceneCommand}"
+                Command="{x:Bind ViewModel.PlaySceneCommand, Mode=OneTime}"
                 CommandParameter="{x:Bind ViewModel.Selected, Mode=OneWay}"
                 Style="{StaticResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal" Spacing="8">

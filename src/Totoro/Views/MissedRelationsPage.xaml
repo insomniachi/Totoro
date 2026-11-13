@@ -21,11 +21,11 @@
             <Border
                 Width="40"
                 Height="40"
-                AutomationProperties.Name="{x:Bind Title}"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
                 CornerRadius="20"
-                ToolTipService.ToolTip="{x:Bind Title}">
+                ToolTipService.ToolTip="{x:Bind Title, Mode=OneTime}">
                 <Border.Background>
-                    <ImageBrush ImageSource="{x:Bind Image}" Stretch="UniformToFill" />
+                    <ImageBrush ImageSource="{x:Bind Image, Mode=OneTime}" Stretch="UniformToFill" />
                 </Border.Background>
             </Border>
         </DataTemplate>
@@ -46,10 +46,10 @@
                     Padding="0"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Left"
-                    AutomationProperties.Name="{x:Bind Title}"
+                    AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
                     Background="Transparent"
                     BorderThickness="0"
-                    Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand}"
+                    Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
                     CommandParameter="{x:Bind}">
                     <StackPanel Orientation="Horizontal" Spacing="16">
                         <Border
@@ -57,10 +57,10 @@
                             Height="90"
                             Background="{ThemeResource ControlFillColorSecondaryBrush}"
                             CornerRadius="4">
-                            <Image Source="{x:Bind Image}" Stretch="UniformToFill" />
+                            <Image Source="{x:Bind Image, Mode=OneTime}" Stretch="UniformToFill" />
                         </Border>
                         <StackPanel VerticalAlignment="Center" Spacing="4">
-                            <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title}" TextWrapping="Wrap" />
+                            <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title, Mode=OneTime}" TextWrapping="Wrap" />
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Style="{StaticResource CaptionTextBlockStyle}"
@@ -72,7 +72,7 @@
                     Grid.Column="1"
                     VerticalAlignment="Center"
                     AutomationProperties.Name="Play"
-                    Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand}"
+                    Command="{x:Bind commands:AnimeCommands.Shared.WatchCommand, Mode=OneTime}"
                     CommandParameter="{x:Bind}"
                     ToolTipService.ToolTip="Play">
                     <SymbolIcon Symbol="Play" />
@@ -81,7 +81,7 @@
                     Grid.Column="2"
                     VerticalAlignment="Center"
                     AutomationProperties.Name="Add to list"
-                    Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"
+                    Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand, Mode=OneTime}"
                     CommandParameter="{x:Bind}"
                     ToolTipService.ToolTip="Add to list">
                     <SymbolIcon Symbol="Add" />
@@ -98,16 +98,16 @@
                 IsExpanded="True">
                 <Expander.Header>
                     <StackPanel Padding="0,8" Spacing="4">
-                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind Title}" />
+                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind Title, Mode=OneTime}" />
                         <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="Because you watched" />
-                        <ItemsRepeater ItemTemplate="{StaticResource WatchedTemplate}" ItemsSource="{x:Bind Watched}">
+                        <ItemsRepeater ItemTemplate="{StaticResource WatchedTemplate}" ItemsSource="{x:Bind Watched, Mode=OneTime}">
                             <ItemsRepeater.Layout>
                                 <StackLayout Orientation="Horizontal" Spacing="4" />
                             </ItemsRepeater.Layout>
                         </ItemsRepeater>
                     </StackPanel>
                 </Expander.Header>
-                <ItemsRepeater ItemTemplate="{StaticResource MissedTemplate}" ItemsSource="{x:Bind Missed}" />
+                <ItemsRepeater ItemTemplate="{StaticResource MissedTemplate}" ItemsSource="{x:Bind Missed, Mode=OneTime}" />
             </Expander>
         </DataTemplate>
     </Page.Resources>
@@ -170,7 +170,7 @@
                         VerticalAlignment="Bottom"
                         AutomationProperties.AutomationId="SortDirectionButton"
                         AutomationProperties.Name="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}"
-                        Command="{x:Bind ViewModel.ToggleSortDirectionCommand}"
+                        Command="{x:Bind ViewModel.ToggleSortDirectionCommand, Mode=OneTime}"
                         ToolTipService.ToolTip="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}">
                         <FontIcon FontSize="14" Glyph="{x:Bind ViewModel.SortDirectionGlyph, Mode=OneWay}" />
                     </Button>
