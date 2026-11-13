@@ -91,6 +91,10 @@ public partial class MangaReadViewModel : NavigatableViewModel
 	/// <summary>Whether a chapter is picked: its Read button shows then.</summary>
 	public bool HasChapter => SelectedChapter is not null;
 
+	/// <summary>Whether a search is under way: the cards shimmer then (the progress bar is for the chapters).</summary>
+	[ObservableProperty]
+	public partial bool IsSearching { get; private set; }
+
 	/// <summary>What's going on, or what went wrong; "" when there's nothing to say.</summary>
 	[ObservableProperty]
 	public partial string Message { get; set; } = "";
@@ -121,26 +125,33 @@ public partial class MangaReadViewModel : NavigatableViewModel
 	{
 		_search?.Cancel();
 		var search = _search = new CancellationTokenSource();
+		IsSearching = false;
 		if (Source is not { } source || Query.Trim().Length == 0)
 		{
 			return;
 		}
 
 		Message = "";
-		using (BeginBusy())
+		IsSearching = true;
+		try
 		{
-			try
+			var results = await source.SearchAsync(Query.Trim(), search.Token);
+			if (!search.IsCancellationRequested)
 			{
-				var results = await source.SearchAsync(Query.Trim(), search.Token);
-				if (!search.IsCancellationRequested)
-				{
-					Results = results;
-					Message = results.Count == 0 ? $"Nothing on {source.Name} matches \"{Query.Trim()}\"." : "";
-				}
+				Results = results;
+				Message = results.Count == 0 ? $"Nothing on {source.Name} matches \"{Query.Trim()}\"." : "";
 			}
-			catch (Exception ex) when (!search.IsCancellationRequested)
+		}
+		catch (Exception ex) when (!search.IsCancellationRequested)
+		{
+			Message = $"Couldn't search {source.Name}: {ex.Message}";
+		}
+		finally
+		{
+			// A newer search has its own
+			if (_search == search)
 			{
-				Message = $"Couldn't search {source.Name}: {ex.Message}";
+				IsSearching = false;
 			}
 		}
 	}

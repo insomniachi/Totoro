@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
+using Totoro.Core.Relations;
 using Totoro.ViewModels;
 
 namespace Totoro.Views;
@@ -16,6 +17,10 @@ public sealed partial class MissedRelationsPage : Page
 
 	[GeneratedDependencyProperty]
 	public partial MissedRelationsViewModel? ViewModel { get; set; }
+
+	/// <summary>The franchise the placeholders are built from while loading: one watched, two missed.</summary>
+	public static MissedRelationGroup PlaceholderGroup { get; } =
+		new([MediaListView.PlaceholderCard], [MediaListView.PlaceholderCard, MediaListView.PlaceholderCard]);
 
 	/// <summary>e.g. "Sequel · TV · Fall 2023 · 12 episodes · ★ 7.8"; what's unknown is left out.</summary>
 	public static string Details(AnimeRelationType? relation, AnimeMediaFormat format, Season? season, int? episodes, float? score) =>

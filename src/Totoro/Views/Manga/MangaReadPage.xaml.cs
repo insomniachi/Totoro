@@ -1,5 +1,6 @@
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml.Controls;
+using Totoro.Core.Modules.Manga;
 using Totoro.ViewModels.Manga;
 
 namespace Totoro.Views.Manga;
@@ -13,6 +14,9 @@ public sealed partial class MangaReadPage : Page
 
 	[GeneratedDependencyProperty]
 	public partial MangaReadViewModel? ViewModel { get; set; }
+
+	/// <summary>The item the result cards' placeholders are built from while searching.</summary>
+	public static ProviderManga PlaceholderCard { get; } = new("", "A manga title");
 
 	private void OnSearchSubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args) => ViewModel?.SearchCommand.Execute(null);
 

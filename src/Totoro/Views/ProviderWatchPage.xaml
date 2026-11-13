@@ -4,7 +4,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:anime="using:Totoro.Core.Modules.Anime"
+    xmlns:controls="using:Totoro.UI.Controls"
     xmlns:helpers="using:Totoro.Helpers"
+    xmlns:local="using:Totoro.Views"
     xmlns:streaming="using:Totoro.Core.Modules.Streaming"
     xmlns:vm="using:Totoro.ViewModels">
 
@@ -72,7 +74,7 @@
         </Grid>
 
         <StackPanel Grid.Row="2" Spacing="8">
-            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+            <ProgressBar IsIndeterminate="True" Visibility="{x:Bind ViewModel.ShowsProgress, Mode=OneWay}" />
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{x:Bind ViewModel.Message, Mode=OneWay}"
@@ -87,8 +89,12 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!--  Cards with the whole title under the cover: shows' titles often differ only at the end ("Season 2")  -->
+            <!--  Cards with the whole title under the cover: shows' titles often differ only at the end ("Season 2"); placeholders while searching  -->
+            <controls:ShimmerView IsLoading="{x:Bind ViewModel.IsSearching, Mode=OneWay}">
             <GridView
+                controls:ShimmerView.FillView="True"
+                controls:ShimmerView.PlaceholderCount="8"
+                controls:ShimmerView.PlaceholderItem="{x:Bind local:MediaListView.PlaceholderCard}"
                 AutomationProperties.Name="Shows"
                 ItemsSource="{x:Bind ViewModel.ShowCards, Mode=OneWay}"
                 SelectedItem="{x:Bind ViewModel.SelectedCard, Mode=TwoWay}"
@@ -108,6 +114,7 @@
                             Spacing="8">
                             <Border
                                 Height="256"
+                                controls:ShimmerView.Shape="Rectangle"
                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 CornerRadius="{ThemeResource OverlayCornerRadius}">
                                 <Grid>
@@ -130,6 +137,7 @@
                     </DataTemplate>
                 </GridView.ItemTemplate>
             </GridView>
+            </controls:ShimmerView>
 
             <!--  The picked anime's episodes, and the episode's stream and tracking  -->
             <Grid

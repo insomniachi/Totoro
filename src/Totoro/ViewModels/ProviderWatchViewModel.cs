@@ -117,7 +117,19 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	/// <summary>e.g. "Tracked as episode 1": which of <see cref="SelectedAnime"/>'s episodes the one picked is; empty, never null, until known.</summary>
 	[ObservableProperty] public partial string TrackedEpisode { get; private set; } = "";
 
-	[ObservableProperty] public partial bool IsLoading { get; private set; }
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(ShowsProgress))]
+	public partial bool IsLoading { get; private set; }
+
+	/// <summary>Whether a search is under way: the cards shimmer then.</summary>
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(ShowsProgress))]
+	public partial bool IsSearching { get; private set; }
+
+	/// <summary>Whether the progress bar shows: for the picked show's loads (episodes, streams), not a search.</summary>
+	public bool ShowsProgress => IsLoading && !IsSearching;
+
+	private int _searches;
 
 	/// <summary>What went wrong or found nothing; empty, never null (it's passed to x:Bind functions).</summary>
 	[ObservableProperty] public partial string Message { get; private set; }
@@ -225,12 +237,15 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 		ShowCards = [];
 		_cardShows.Clear();
 		SelectedCard = null;
+		var search = ++_searches;
+		IsSearching = false;
 		if (Provider is not { } provider || string.IsNullOrWhiteSpace(Query))
 		{
 			return;
 		}
 
 		var query = Query;
+		IsSearching = true;
 		await LoadAsync(() => provider.SearchAsync(query, CancellationToken.None), () => Provider == provider && Query == query, shows =>
 		{
 			List<AnimeModel> cards = [];
@@ -245,6 +260,12 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 			ShowCards = cards;
 			return shows.Count > 0 ? "" : $"No shows on {provider.Name} match. Try another title.";
 		});
+
+		// A newer search has its own
+		if (search == _searches)
+		{
+			IsSearching = false;
+		}
 	}
 
 	/// <summary>The database's anime for a search; none if it fails (they're only suggestions).</summary>

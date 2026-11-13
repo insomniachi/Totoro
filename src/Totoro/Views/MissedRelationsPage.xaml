@@ -175,18 +175,22 @@
                         <FontIcon FontSize="14" Glyph="{x:Bind ViewModel.SortDirectionGlyph, Mode=OneWay}" />
                     </Button>
                 </Grid>
-                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind ViewModel.Summary, Mode=OneWay}" TextWrapping="Wrap" />
-                <ItemsRepeater ItemTemplate="{StaticResource GroupTemplate}" ItemsSource="{x:Bind ViewModel.Shown, Mode=OneWay}">
-                    <ItemsRepeater.Layout>
-                        <StackLayout Spacing="16" />
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
+                <!--  Placeholder franchises while they load; the summary too, which reads "Nothing missed" until then  -->
+                <controls:ShimmerView IsLoading="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind ViewModel.Summary, Mode=OneWay}" TextWrapping="Wrap" />
+                        <ItemsRepeater
+                            controls:ShimmerView.PlaceholderCount="3"
+                            controls:ShimmerView.PlaceholderItem="{x:Bind views:MissedRelationsPage.PlaceholderGroup}"
+                            ItemTemplate="{StaticResource GroupTemplate}"
+                            ItemsSource="{x:Bind ViewModel.Shown, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Spacing="16" />
+                            </ItemsRepeater.Layout>
+                        </ItemsRepeater>
+                    </StackPanel>
+                </controls:ShimmerView>
             </StackPanel>
         </ScrollView>
-
-        <ProgressRing
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
     </Grid>
 </Page>

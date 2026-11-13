@@ -145,7 +145,7 @@ public sealed partial class ShimmerView
 				};
 
 			case ListViewBase listViewBase:
-				var listCopy = listViewBase is GridView ? new GridView() : (ListViewBase)new ListView();
+				var listCopy = listViewBase is GridView ? new StandInGridView() : (ListViewBase)new StandInListView();
 				listCopy.SelectionMode = ListViewSelectionMode.None;
 				listCopy.IsItemClickEnabled = false;
 				return CopyItemsControl(listViewBase, listCopy, count);
@@ -346,6 +346,23 @@ public sealed partial class ShimmerView
 		}
 		_listStandIns.Clear();
 		RemoveStandInHost();
+	}
+
+	// The ListView/GridView copies, unseen by UI Automation: walking a copy's items realizes its containers, which
+	// regenerates the overlay, which lays the copy out again, and the window hangs in that loop.
+	private sealed partial class StandInGridView : GridView
+	{
+		protected override AutomationPeer OnCreateAutomationPeer() => new StandInAutomationPeer(this);
+	}
+
+	private sealed partial class StandInListView : ListView
+	{
+		protected override AutomationPeer OnCreateAutomationPeer() => new StandInAutomationPeer(this);
+	}
+
+	private sealed partial class StandInAutomationPeer(FrameworkElement owner) : FrameworkElementAutomationPeer(owner)
+	{
+		protected override IList<AutomationPeer>? GetChildrenCore() => null;
 	}
 
 	private static bool IsClose(double value, double expected) => Math.Abs(value - expected) <= LayoutTolerance;
