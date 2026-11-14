@@ -81,9 +81,12 @@ public sealed partial class LyricsView : Grid
 		set => SetValue(IsActiveProperty, value);
 	}
 
-	private bool ShowsFurigana => Readings is not (LyricReadings.Romaji or LyricReadings.None);
+	// Readings only for lyrics in Japanese script: lyrics already in romaji (or English) have none, so no rows for them.
+	private bool _japanese;
 
-	private bool ShowsRomaji => Readings is not (LyricReadings.Furigana or LyricReadings.None);
+	private bool ShowsFurigana => _japanese && Readings is not (LyricReadings.Romaji or LyricReadings.None);
+
+	private bool ShowsRomaji => _japanese && Readings is not (LyricReadings.Furigana or LyricReadings.None);
 
 	/// <summary>A line's height: its text's, and its readings' rows'.</summary>
 	private double LineHeight => 26 + (ShowsFurigana ? 18 : 0) + (ShowsRomaji ? 18 : 0);
@@ -209,6 +212,7 @@ public sealed partial class LyricsView : Grid
 		_shown.Clear();
 		_leaving.Clear();
 		Children.Clear();
+		_japanese = Lines?.Any(x => x.Text.Any(Lyrics.IsJapanese)) == true;
 		Height = (LineHeight * 3) + (Gap * 2);
 	}
 

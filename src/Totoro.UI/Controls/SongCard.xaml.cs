@@ -16,13 +16,25 @@ public sealed partial class SongCard : UserControl
 	[GeneratedDependencyProperty]
 	public partial SongItem? Song { get; set; }
 
-	// The choice ticked, and English only where the song has English lyrics.
+	// The choice ticked, English only where the song has English lyrics, and readings only for lyrics in Japanese script
+	// (lyrics in romaji show as they are: "Original").
 	private void OnReadingsOpening(object sender, object e)
 	{
+		var japanese = Song?.HasJapanese == true;
 		foreach (var item in ((MenuFlyout)sender).Items.OfType<RadioMenuFlyoutItem>())
 		{
 			var choice = Enum.Parse<LyricReadings>((string)item.Tag);
-			item.IsEnabled = choice != LyricReadings.English || Song?.HasEnglish == true;
+			if (choice == LyricReadings.None)
+			{
+				item.Text = japanese ? "Japanese only" : "Original";
+			}
+
+			item.IsEnabled = choice switch
+			{
+				LyricReadings.English => Song?.HasEnglish == true,
+				LyricReadings.None => true,
+				_ => japanese,
+			};
 			item.IsChecked = item.Text == Song?.ReadingsName;
 		}
 	}

@@ -79,13 +79,17 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 
 	public bool HasEnglish => _lyrics.English.Count > 0;
 
+	/// <summary>Whether its lyrics are in Japanese script, which readings can be made for; not if they're in romaji already.</summary>
+	public bool HasJapanese => _lyrics.Lines.Any(x => x.Text.Any(Services.Lyrics.IsJapanese));
+
 	/// <summary>What its lyrics show, as the button that chooses it says.</summary>
 	public string ReadingsName => Readings switch
 	{
+		LyricReadings.English when HasEnglish => "English",
+		_ when !HasJapanese => "Original",
 		LyricReadings.Furigana => "Furigana",
 		LyricReadings.Romaji => "Romaji",
 		LyricReadings.None => "Japanese only",
-		LyricReadings.English when HasEnglish => "English",
 		_ => "Furigana + romaji",
 	};
 
