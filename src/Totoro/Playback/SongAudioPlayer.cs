@@ -46,6 +46,10 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	// libvlc reports the time about once a second; read more often, for the progress bar.
 	private DispatcherQueueTimer? _positionTimer;
 
+	// The time libvlc last reported, and how long ago: the position between its reports, for the lyrics' words.
+	private readonly System.Diagnostics.Stopwatch _sinceReported = new();
+	private TimeSpan _reported;
+
 	public SongAudioPlayer(IModuleSettings<Modules.MediaPlayers.Vlc.Settings> vlcSettings, ILogger<SongAudioPlayer> logger)
 	{
 		_vlcSettings = vlcSettings;
@@ -63,7 +67,14 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 	public bool IsLoading { get; private set; }
 
-	public TimeSpan Position { get; private set; }
+	public TimeSpan Position
+	{
+		get
+		{
+			var position = _reported + _sinceReported.Elapsed;
+			return Duration > TimeSpan.Zero && position > Duration ? Duration : position;
+		}
+	}
 
 	public TimeSpan Duration { get; private set; }
 
@@ -77,7 +88,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		Current = song;
 		IsPlaying = true;
 		IsLoading = true;
-		Position = Duration = TimeSpan.Zero;
+		ResetPosition();
 		Changed();
 
 		var player = await EnsureCreatedAsync();
@@ -106,6 +117,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 		_player?.SetPause(true);
 		_output?.Pause();
+		_sinceReported.Stop();
 		IsPlaying = false;
 		Changed();
 	}
@@ -119,6 +131,11 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 		_player?.SetPause(false);
 		_output?.Play();
+		if (_reported > TimeSpan.Zero)
+		{
+			_sinceReported.Start();
+		}
+
 		IsPlaying = true;
 		Changed();
 	}
@@ -133,7 +150,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		Current = null;
 		IsPlaying = false;
 		IsLoading = false;
-		Position = Duration = TimeSpan.Zero;
+		ResetPosition();
 		_positionTimer?.Stop();
 		_output?.Stop();
 		_buffer?.ClearBuffer();
@@ -269,15 +286,27 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 			{
 				if (_player is { } player && Current is not null && IsPlaying)
 				{
-					Position = TimeSpan.FromMilliseconds(Math.Max(0, player.Time));
+					var time = TimeSpan.FromMilliseconds(Math.Max(0, player.Time));
+					if (time != _reported)
+					{
+						_reported = time;
+						_sinceReported.Restart();
+					}
+
 					// The time moves once the audio's heard.
-					IsLoading &= Position == TimeSpan.Zero;
+					IsLoading &= time == TimeSpan.Zero;
 					Changed();
 				}
 			};
 		}
 
 		_positionTimer.Start();
+	}
+
+	private void ResetPosition()
+	{
+		_reported = Duration = TimeSpan.Zero;
+		_sinceReported.Reset();
 	}
 
 	private void Changed() => WeakReferenceMessenger.Default.Send(new SongPlayerChangedMessage(this));

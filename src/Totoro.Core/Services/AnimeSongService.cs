@@ -6,6 +6,7 @@ using Flurl.Http;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Settings;
 
 namespace Totoro.Core.Services;
 
@@ -83,12 +84,63 @@ public sealed record SongPlayerChangedMessage(ISongPlayer Player);
 /// MyAnimeList id; kept for as long as the app runs. A song plays in the app (its audio) or in the media player (its
 /// video).
 /// </summary>
-public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISongPlayer songPlayer)
+public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISongPlayer songPlayer, IPreferences preferences)
 {
 	// AnimeThemes refuses requests without one.
 	private const string UserAgent = "Totoro (anime tracker)";
 
 	private readonly ConcurrentDictionary<long, IReadOnlyList<AnimeSong>> _found = new();
+	private readonly ConcurrentDictionary<AnimeSong, SongLyrics> _lyrics = new();
+	private LyricReadings? _readings;
+
+	/// <summary>The readings shown with Japanese lyrics; remembered.</summary>
+	public LyricReadings Readings
+	{
+		get => _readings ??= preferences.LyricReadings;
+		set => preferences.LyricReadings = (_readings = value).Value;
+	}
+
+	/// <summary>
+	/// The song's lyrics with their times, from LRCLIB, for its audio of length <paramref name="duration"/>; none if
+	/// they aren't known. Kept for as long as the app runs.
+	/// </summary>
+	// shortcut: when LRCLIB has only the full song, assumes the TV cut starts where it does; add a per-song offset if lyrics run off.
+	public async Task<SongLyrics> GetLyricsAsync(AnimeSong song, TimeSpan duration, CancellationToken ct = default)
+	{
+		if (_lyrics.TryGetValue(song, out var known))
+		{
+			return known;
+		}
+
+		if (song.Title.Length == 0)
+		{
+			return SongLyrics.None;
+		}
+
+		try
+		{
+			var response = await "https://lrclib.net/api/search"
+								 .SetQueryParam("track_name", song.Title)
+								 // The first of them; none (null) leaves the parameter out.
+								 .SetQueryParam("artist_name", song.Artist.Length > 0 ? song.Artist.Split(", ")[0] : null)
+								 .WithHeader("User-Agent", UserAgent)
+								 .GetStringAsync(cancellationToken: ct);
+			var records = (JsonNode.Parse(response) as JsonArray ?? [])
+				.Where(x => x?["lyricsfile"] is not null)
+				.Select(x => (Seconds: x!["duration"]?.GetValue<double>() ?? 0, Lines: Lyrics.Parse(x["lyricsfile"]!.GetValue<string>())))
+				.Where(x => x.Lines.Count > 0)
+				.OrderByDescending(x => Lyrics.Score(x.Seconds, x.Lines, duration))
+				.ToList();
+			// The English ones time the song's English version, which may be sung a little apart from this one.
+			return _lyrics[song] = new SongLyrics(
+				records.FirstOrDefault().Lines ?? [],
+				records.FirstOrDefault(x => Lyrics.IsEnglish(x.Lines)).Lines ?? []);
+		}
+		catch (Exception ex) when (ex is FlurlHttpException or System.Text.Json.JsonException or InvalidOperationException)
+		{
+			return SongLyrics.None;
+		}
+	}
 
 	/// <summary>The anime's openings, then its endings, then its insert songs; none if they aren't known.</summary>
 	public async Task<IReadOnlyList<AnimeSong>> GetSongsAsync(AnimeModel anime, CancellationToken ct = default)

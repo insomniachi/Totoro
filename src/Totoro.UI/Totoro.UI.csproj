@@ -18,6 +18,8 @@
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
 	<PackageReference Include="CommunityToolkit.WinUI.Media" />
 	<PackageReference Include="DevWinUI" />
+    <!-- Japanese words and their readings (with its dictionary), for the lyrics' furigana and romaji -->
+    <PackageReference Include="LibNMeCab.IpaDicBin" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinUIAnalyzer" PrivateAssets="all" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />

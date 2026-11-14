@@ -13,6 +13,8 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 {
 	private readonly AnimeModel _anime;
 	private readonly AnimeSongService _songs;
+	private bool _lyricsAsked;
+	private SongLyrics _lyrics = SongLyrics.None;
 
 	public SongItem(AnimeModel anime, AnimeSong song, AnimeSongService songs, ISongPlayer player)
 	{
@@ -63,6 +65,42 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 
 	/// <summary>Why it couldn't be played; empty, never null, when it could.</summary>
 	[ObservableProperty] public partial string Error { get; private set; } = "";
+
+	/// <summary>
+	/// Its lyrics with their times, once it has played and they're found: the English ones if those are chosen and there
+	/// are any. Empty until then, and if there are none.
+	/// </summary>
+	public IReadOnlyList<LyricLine> Lyrics => Readings == LyricReadings.English && HasEnglish ? _lyrics.English : _lyrics.Lines;
+
+	/// <summary>What its lyrics show.</summary>
+	[ObservableProperty] public partial LyricReadings Readings { get; private set; }
+
+	public bool HasLyrics => _lyrics.Lines.Count > 0;
+
+	public bool HasEnglish => _lyrics.English.Count > 0;
+
+	/// <summary>What its lyrics show, as the button that chooses it says.</summary>
+	public string ReadingsName => Readings switch
+	{
+		LyricReadings.Furigana => "Furigana",
+		LyricReadings.Romaji => "Romaji",
+		LyricReadings.None => "Japanese only",
+		LyricReadings.English when HasEnglish => "English",
+		_ => "Furigana + romaji",
+	};
+
+	/// <summary>Chooses what lyrics show, for every song from now on.</summary>
+	public void SetReadings(LyricReadings value) => Readings = _songs.Readings = value;
+
+	partial void OnReadingsChanged(LyricReadings value) => LyricsChanged();
+
+	private void LyricsChanged()
+	{
+		OnPropertyChanged(nameof(Lyrics));
+		OnPropertyChanged(nameof(HasLyrics));
+		OnPropertyChanged(nameof(HasEnglish));
+		OnPropertyChanged(nameof(ReadingsName));
+	}
 
 	/// <summary>The audio button's glyph, name and tooltip: play, or pause while it plays.</summary>
 	public string AudioGlyph => IsPlaying ? "" : "";
@@ -122,6 +160,22 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 		IsAudible = IsPlaying && !IsLoading;
 		Progress = IsCurrent && Player.Duration > TimeSpan.Zero ? Math.Clamp(Player.Position / Player.Duration, 0, 1) : 0;
 		TimeText = IsCurrent && Player.Duration > TimeSpan.Zero ? $"{Player.Position:m\\:ss} / {Player.Duration:m\\:ss}" : "";
+		if (IsCurrent)
+		{
+			Readings = _songs.Readings;
+			// Once its length is known: the lyrics that fit it are picked by it.
+			if (!_lyricsAsked && Player.Duration > TimeSpan.Zero)
+			{
+				_lyricsAsked = true;
+				_ = LoadLyricsAsync(Player.Duration);
+			}
+		}
+	}
+
+	private async Task LoadLyricsAsync(TimeSpan duration)
+	{
+		_lyrics = await _songs.GetLyricsAsync(Song, duration);
+		LyricsChanged();
 	}
 
 	partial void OnIsPlayingChanged(bool value)

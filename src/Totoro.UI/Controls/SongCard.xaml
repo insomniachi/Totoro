@@ -93,11 +93,38 @@
                 IsActive="{x:Bind Song.IsAudible, Mode=OneWay}"
                 Source="{x:Bind Song.Player, Mode=OneWay}"
                 Visibility="{x:Bind Song.IsAudible, Mode=OneWay}" />
+            <!--  The line being sung, its words lighting up as they are  -->
+            <local:LyricsView
+                IsActive="{x:Bind Song.IsCurrent, Mode=OneWay}"
+                Lines="{x:Bind Song.Lyrics, Mode=OneWay}"
+                Readings="{x:Bind Song.Readings, Mode=OneWay}"
+                Source="{x:Bind Song.Player, Mode=OneWay}"
+                Visibility="{x:Bind Song.HasLyrics, Mode=OneWay}" />
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+                <!--  What the lyrics show; it says the choice  -->
+                <DropDownButton
+                    Grid.Column="2"
+                    Padding="8,2"
+                    AutomationProperties.Name="Lyrics"
+                    Content="{x:Bind Song.ReadingsName, Mode=OneWay}"
+                    FontSize="12"
+                    ToolTipService.ToolTip="What the lyrics show"
+                    Visibility="{x:Bind Song.HasLyrics, Mode=OneWay}">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Opening="OnReadingsOpening" Placement="BottomEdgeAlignedRight">
+                            <RadioMenuFlyoutItem Click="OnReadingsClick" Tag="Both" Text="Furigana + romaji" />
+                            <RadioMenuFlyoutItem Click="OnReadingsClick" Tag="Furigana" Text="Furigana" />
+                            <RadioMenuFlyoutItem Click="OnReadingsClick" Tag="Romaji" Text="Romaji" />
+                            <RadioMenuFlyoutItem Click="OnReadingsClick" Tag="None" Text="Japanese only" />
+                            <RadioMenuFlyoutItem Click="OnReadingsClick" Tag="English" Text="English" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
                 <ProgressBar
                     VerticalAlignment="Center"
                     AutomationProperties.Name="Song position"

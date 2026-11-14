@@ -38,9 +38,17 @@ public static class PlaybackPreferences
 	public const string SyncplayNameKey = "SyncplayName";
 	public const string SyncplayPasswordKey = "SyncplayPassword";
 	public const string SyncplayRejoinKey = "SyncplayRejoin";
+	public const string LyricReadingsKey = "LyricReadings";
 
 	extension(IPreferences preferences)
 	{
+		/// <summary>The readings shown with a song's Japanese lyrics.</summary>
+		public Services.LyricReadings LyricReadings
+		{
+			get => preferences.ReadKey(LyricReadingsKey, Services.LyricReadings.Both);
+			set => preferences.SaveKey(LyricReadingsKey, value);
+		}
+
 		public SkipMode OpeningSkipMode
 		{
 			get => preferences.ReadKey(OpeningSkipKey, SkipMode.Ask);
