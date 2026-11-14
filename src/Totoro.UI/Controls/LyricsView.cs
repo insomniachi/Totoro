@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using NMeCab.Specialized;
 using Totoro.Core.Services;
+using Windows.Media.Playback;
 
 namespace Totoro.UI.Controls;
 
@@ -66,6 +67,16 @@ public sealed partial class LyricsView : Grid
 	{
 		get => (ISongPlayer?)GetValue(SourceProperty);
 		set => SetValue(SourceProperty, value);
+	}
+
+	public static readonly DependencyProperty VideoProperty =
+		DependencyProperty.Register(nameof(Video), typeof(MediaPlayer), typeof(LyricsView), new PropertyMetadata(null));
+
+	/// <summary>A video playing the song, whose position the lyrics follow instead of <see cref="Source"/>'s.</summary>
+	public MediaPlayer? Video
+	{
+		get => (MediaPlayer?)GetValue(VideoProperty);
+		set => SetValue(VideoProperty, value);
 	}
 
 	public LyricReadings Readings
@@ -218,7 +229,7 @@ public sealed partial class LyricsView : Grid
 
 	private void OnRendering(object? sender, object e)
 	{
-		var position = Source?.Position ?? TimeSpan.Zero;
+		var position = Video?.PlaybackSession.Position ?? Source?.Position ?? TimeSpan.Zero;
 		var lines = Lines ?? [];
 		var index = -1;
 		while (index + 1 < lines.Count && lines[index + 1].Start <= position)

@@ -7,11 +7,12 @@
 
     <!--
         A song's card: its label (OP1, ED2, IN), title, who sings it and the episodes it's in, with buttons to play its
-        audio here and its creditless video in the media player. While its audio plays (or is paused), the spectrum, how
+        audio and its creditless video here. While its audio plays (or is paused), the spectrum, how
         far through it is, and the time, under them.
     -->
     <!--  One placeholder for the whole card in a ShimmerView, rather than loose ones for its label, lines and buttons  -->
     <Grid
+        x:Name="Card"
         Padding="12"
         local:ShimmerView.Shape="Rectangle"
         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -58,7 +59,7 @@
                 TextWrapping="Wrap"
                 Visibility="{x:Bind local:SongCard.VisibleIfAny(Song.Details), Mode=OneWay}" />
         </StackPanel>
-        <!--  Its audio, played here; its creditless video, in the media player  -->
+        <!--  Its audio and its creditless video, played here  -->
         <StackPanel
             Grid.Column="2"
             VerticalAlignment="Center"
@@ -77,6 +78,15 @@
                 ToolTipService.ToolTip="{x:Bind Song.VideoName, Mode=OneWay}"
                 Visibility="{x:Bind Song.HasVideo, Mode=OneWay}">
                 <FontIcon FontSize="14" Glyph="&#xE714;" />
+            </Button>
+            <!--  WinUI's transport controls have no working full window button on desktop  -->
+            <Button
+                x:Name="FullScreenButton"
+                AutomationProperties.Name="Full screen"
+                Click="OnFullScreenClick"
+                ToolTipService.ToolTip="Full screen (double-click the video; Esc leaves)"
+                Visibility="{x:Bind Song.IsVideoOpen, Mode=OneWay}">
+                <FontIcon FontSize="14" Glyph="&#xE740;" />
             </Button>
         </StackPanel>
 
@@ -139,7 +149,40 @@
             </Grid>
         </StackPanel>
 
-        <!--  Why it couldn't be played, e.g. the media player isn't set up  -->
+        <!--
+            Its creditless video, playing here, 16:9 across the card; the full screen button (or a double-click) takes it full screen.
+            In the audio's row: opening it stops the audio, and audio playing closes it.
+        -->
+        <StackPanel
+            x:Name="VideoPanel"
+            Grid.Row="1"
+            Grid.ColumnSpan="3"
+            Margin="0,12,0,0"
+            Spacing="8"
+            Visibility="{x:Bind Song.IsVideoOpen, Mode=OneWay}">
+            <MediaPlayerElement
+                x:Name="Video"
+                AreTransportControlsEnabled="True"
+                AutoPlay="True"
+                AutomationProperties.Name="{x:Bind Song.VideoName, Mode=OneWay}"
+                DoubleTapped="OnVideoDoubleTapped"
+                SizeChanged="OnVideoSizeChanged"
+                Source="{x:Bind VideoSource(Song.IsVideoOpen, Song.Song.Video), Mode=OneWay}"
+                Stretch="Uniform">
+                <MediaPlayerElement.TransportControls>
+                    <MediaTransportControls IsCompact="True" />
+                </MediaPlayerElement.TransportControls>
+            </MediaPlayerElement>
+            <!--  Its lyrics, following the video; not in full screen, where only the video goes  -->
+            <local:LyricsView
+                x:Name="VideoLyrics"
+                IsActive="{x:Bind Song.IsVideoOpen, Mode=OneWay}"
+                Lines="{x:Bind Song.Lyrics, Mode=OneWay}"
+                Readings="{x:Bind Song.Readings, Mode=OneWay}"
+                Visibility="{x:Bind Song.HasLyrics, Mode=OneWay}" />
+        </StackPanel>
+
+        <!--  Why it couldn't be played  -->
         <TextBlock
             Grid.Row="2"
             Grid.ColumnSpan="3"

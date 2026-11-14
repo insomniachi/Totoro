@@ -8,12 +8,11 @@ using Totoro.UI.Navigation;
 namespace Totoro.ViewModels;
 
 /// <summary>
-/// A song picked in the title bar's search, in the side pane: its card (audio with the spectrum and lyrics, or the video
-/// in the media player), and the anime it's from, which opens in the selected database.
+/// A song picked in the title bar's search, in the side pane: its card (audio with the spectrum and lyrics, or the video), and the anime it's from, which opens in the selected database.
 /// </summary>
 public sealed partial class SongViewModel(SongMatch match, AnimeSongService songs, ISongPlayer player, AnimeCommands commands) : NavigatableViewModel
 {
-	public SongItem Song { get; } = new(match.Anime, match.Song, songs, player);
+	public SongItem Song { get; } = new(match.Song, songs, player);
 
 	public AnimeModel Anime => match.Anime;
 

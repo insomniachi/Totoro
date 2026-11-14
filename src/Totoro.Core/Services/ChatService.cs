@@ -410,9 +410,9 @@ public sealed partial class ChatService(
 	/// <summary>A tool's result as cards: an anime's songs with their player, or anime (search results, the user's list...).</summary>
 	private ChatEntry? EntryFor(object? raw)
 	{
-		if (raw is IAgentSongs { Anime: { } owner, Songs.Count: > 0 } songList)
+		if (raw is IAgentSongs { Anime: not null, Songs.Count: > 0 } songList)
 		{
-			return new ChatSongEntry([.. songList.Songs.Select(x => new SongItem(owner, x, songs, songPlayer))]);
+			return new ChatSongEntry([.. songList.Songs.Select(x => new SongItem(x, songs, songPlayer))]);
 		}
 
 		var anime = AnimeIn(raw);

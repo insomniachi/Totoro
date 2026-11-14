@@ -6,19 +6,16 @@ using Totoro.Core.Modules.Anime;
 namespace Totoro.Core.Services;
 
 /// <summary>
-/// A song as its card shows it (in the Music tab, and in the chat): its audio plays in the card, its video in the media
-/// player. While its audio plays (or is paused), the card shows the spectrum, how far through it is, and the time.
+/// A song as its card shows it (in the Music tab, and in the chat): its audio and its video play in the card. While its audio plays (or is paused), the card shows the spectrum, how far through it is, and the time.
 /// </summary>
 public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerChangedMessage>
 {
-	private readonly AnimeModel _anime;
 	private readonly AnimeSongService _songs;
 	private bool _lyricsAsked;
 	private SongLyrics _lyrics = SongLyrics.None;
 
-	public SongItem(AnimeModel anime, AnimeSong song, AnimeSongService songs, ISongPlayer player)
+	public SongItem(AnimeSong song, AnimeSongService songs, ISongPlayer player)
 	{
-		_anime = anime;
 		_songs = songs;
 		Song = song;
 		Player = player;
@@ -134,13 +131,31 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 		await TryAsync(() => _songs.PlayAudioAsync(Song));
 	}
 
-	/// <summary>Plays its creditless video in the media player.</summary>
+	/// <summary>Whether its creditless video is open in the card.</summary>
+	[ObservableProperty] public partial bool IsVideoOpen { get; set; }
+
+	/// <summary>Opens its creditless video in the card, stopping the audio; closes it if it's open.</summary>
 	[RelayCommand]
-	private Task PlayVideoAsync() => TryAsync(() =>
+	private void PlayVideo()
 	{
-		_songs.PlayVideo(_anime, Song);
-		return Task.CompletedTask;
-	});
+		if (!IsVideoOpen)
+		{
+			Player.Stop();
+			Readings = _songs.Readings;
+		}
+
+		IsVideoOpen = !IsVideoOpen;
+	}
+
+	/// <summary>Its video has opened, <paramref name="duration"/> long: its lyrics are found by it, as by the audio's.</summary>
+	public void VideoOpened(TimeSpan duration)
+	{
+		if (!_lyricsAsked && duration > TimeSpan.Zero)
+		{
+			_lyricsAsked = true;
+			_ = LoadLyricsAsync(duration);
+		}
+	}
 
 	private async Task TryAsync(Func<Task> play)
 	{
@@ -162,6 +177,12 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 		IsPlaying = IsCurrent && Player.IsPlaying;
 		IsLoading = IsPlaying && Player.IsLoading;
 		IsAudible = IsPlaying && !IsLoading;
+		// Any song's audio starting closes the video, so the two don't play over each other.
+		if (Player.IsPlaying)
+		{
+			IsVideoOpen = false;
+		}
+
 		Progress = IsCurrent && Player.Duration > TimeSpan.Zero ? Math.Clamp(Player.Position / Player.Duration, 0, 1) : 0;
 		TimeText = IsCurrent && Player.Duration > TimeSpan.Zero ? $"{Player.Position:m\\:ss} / {Player.Duration:m\\:ss}" : "";
 		if (IsCurrent)
