@@ -68,6 +68,12 @@ public static class Icons
 		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
+	/// <summary>A page, for the manga being read (the reader); still, like <see cref="ReadAnimated"/>.</summary>
+	public static AnimatedIcon ReadingAnimated => new()
+	{
+		FallbackIconSource = new FontIconSource { Glyph = "" },
+	};
+
 	// The rest animate when clicked, not on hover (our own, from their Lottie files in AnimatedVisuals).
 
 	/// <summary>A download arrow dropping into its tray, which gives under it, as a new arrow slides in.</summary>

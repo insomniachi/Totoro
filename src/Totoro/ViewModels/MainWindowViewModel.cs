@@ -53,7 +53,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 			Label = "Reading",
 			Key = "Reading",
 			ViewModelType = typeof(Manga.ReaderViewModel),
-			AnimatedIcon = () => UI.Icons.ReadAnimated,
+			AnimatedIcon = () => UI.Icons.ReadingAnimated,
 			IsTransient = true,
 			IsVisible = false,
 		};
