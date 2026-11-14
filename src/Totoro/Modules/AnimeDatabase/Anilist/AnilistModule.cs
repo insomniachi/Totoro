@@ -38,6 +38,8 @@ internal class AnilistModule : IModule<Settings>
 		services.AddKeyedTransient<IMangaTracker, AnilistMangaTracker>(Descriptor.Id);
 		services.AddKeyedTransient<IMangaMetadataProvider, AnilistMangaMetadataProvider>(Descriptor.Id);
 		services.AddTransient<IAccount, AnilistAccount>();
+		// Characters and voice actors, for the title bar's search whichever database is selected.
+		services.AddTransient(sp => new AnilistPeople(sp.GetRequiredService<GraphQLHttpClient>(), sp.GetRequiredService<IModuleSettings<Settings>>(), sp.GetRequiredService<AnilistLocalList>()));
 
 		// The token is read each time a client is created, so clients created after signing in (or out) pick it up.
 		services.AddHttpClient(HttpClientName, (sp, client) =>

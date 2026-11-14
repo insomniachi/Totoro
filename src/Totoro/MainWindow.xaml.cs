@@ -36,9 +36,24 @@ public sealed partial class MainWindow : Window
 
 		// The "main" navigator is created when the NavigationView loads, after this constructor runs.
 		Navigators.NavigatorAdded += OnNavigatorAdded;
+		Navigators.NavigatorAdded += OnPaneNavigatorAdded;
 	}
 
 	private const string MainNavigatorKey = "main";
+
+	// The side pane's back button: there while it has a page to go back to (its history clears when it closes).
+	private void OnPaneNavigatorAdded(object? sender, NavigatorAddedEventArgs e)
+	{
+		if (e.Key != PaneNavigatorKey)
+		{
+			return;
+		}
+
+		Navigators.NavigatorAdded -= OnPaneNavigatorAdded;
+		var pane = e.Navigator;
+		pane.Navigated += (_, _) => PaneBackButton.Visibility = pane.CanGoBack ? Visibility.Visible : Visibility.Collapsed;
+		PaneBackButton.Click += async (_, _) => await pane.GoBackAsync();
+	}
 
 	private void OnNavigatorAdded(object? sender, NavigatorAddedEventArgs e)
 	{
@@ -104,7 +119,7 @@ public sealed partial class MainWindow : Window
 			// No target: in the middle of the window, with Totoro's picture.
 			new(() => null, "Welcome to Totoro", "Here's a quick look around. It takes a minute, and you can skip it any time."),
 			new(() => ModeSwitch, "Anime or manga", "Switch between your anime and your manga. The menu's pages change to match."),
-			new(() => SearchBox, "Search anything", "Find any anime or manga by name, and pick one to see its details."),
+			new(() => SearchBox, "Search anything", "Find anime, manga, characters, voice actors or songs by name. Pick what to search with the icon at its left, or type a:, m:, c:, v: or s: first."),
 			// Each page in the menu (the startup mode's), Settings last; its item is looked up when its tip shows.
 			.. viewModel.NavigationItems.Concat(viewModel.FooterNavigationItems)
 				.Where(x => x.IsVisible && s_pageTips.ContainsKey(x.Name))
@@ -186,23 +201,92 @@ public sealed partial class MainWindow : Window
 
 	private void OnSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 	{
-		if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+		if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput || ViewModel is not { } viewModel)
 		{
-			_ = ViewModel?.SearchAsync(sender.Text);
+			return;
 		}
+
+		// A prefix (e.g. "c:") picks the category, and goes: the box keeps only what's searched for.
+		var (category, query) = SearchCategories.Parse(sender.Text);
+		if (category is { } picked)
+		{
+			viewModel.SearchCategory = picked;
+			sender.Text = query;
+			if (sender.FindDescendant<TextBox>() is { } box)
+			{
+				box.SelectionStart = query.Length;
+			}
+		}
+
+		_ = viewModel.SearchAsync(sender.Text);
 	}
 
 	private async void OnSearchSubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
 	{
 		// A suggestion picked, or Enter with suggestions showing: the first one.
-		var media = (args.ChosenSuggestion as MediaSuggestion ?? ViewModel?.SearchResults.FirstOrDefault())?.Media;
-		if (media is not null && Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
+		var data = (args.ChosenSuggestion as SearchSuggestion ?? ViewModel?.SearchResults.FirstOrDefault())?.Data;
+		if (data is not null && Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
 		{
 			sender.Text = "";
 			ViewModel!.SearchResults = [];
-			await pane.NavigateToDataAsync(media);
+			await pane.NavigateToDataAsync(data);
+			// Opened from outside the pane: it starts afresh, with nothing to go back to (Back is for pages opened from it).
+			Pane.BackStack.Clear();
+			PaneBackButton.Visibility = Visibility.Collapsed;
 		}
 	}
+
+	// The box's text starts after the category icon over its left edge (its placeholder too: both follow its padding).
+	private void OnSearchBoxLoaded(object sender, RoutedEventArgs e)
+	{
+		if (SearchBox.FindDescendant<TextBox>() is { } box)
+		{
+			box.Padding = new Thickness(36, box.Padding.Top, box.Padding.Right, box.Padding.Bottom);
+		}
+	}
+
+	// The categories, the one searched for checked, each with its prefix at the right as a menu shows a shortcut.
+	private void OnSearchCategoryMenuOpening(object? sender, object e)
+	{
+		SearchCategoryMenu.Items.Clear();
+		foreach (var category in SearchCategories.All)
+		{
+			var item = new RadioMenuFlyoutItem
+			{
+				Text = SearchCategories.Name(category),
+				Icon = new FontIcon { Glyph = SearchCategoryGlyph(category) },
+				KeyboardAcceleratorTextOverride = SearchCategories.Prefix(category),
+				IsChecked = category == ViewModel?.SearchCategory,
+				GroupName = "SearchCategory",
+			};
+			item.Click += (_, _) =>
+			{
+				if (ViewModel is { } viewModel)
+				{
+					viewModel.SearchCategory = category;
+					_ = viewModel.SearchAsync(SearchBox.Text);
+					SearchBox.Focus(FocusState.Programmatic);
+				}
+			};
+			SearchCategoryMenu.Items.Add(item);
+		}
+	}
+
+	/// <summary>The category's icon: the mode switch's for anime and manga.</summary>
+	public static string SearchCategoryGlyph(SearchCategory category) => category switch
+	{
+		SearchCategory.Anime => "",
+		SearchCategory.Manga => "",
+		SearchCategory.Character => "",
+		SearchCategory.VoiceActor => "",
+		_ => "",
+	};
+
+	/// <summary>e.g. "Search voice actors".</summary>
+	public static string SearchPlaceholder(SearchCategory category) => $"Search {SearchCategories.Name(category).ToLowerInvariant()}";
+
+	public static string SearchCategoryTip(SearchCategory category) =>
+		$"Searching {SearchCategories.Name(category).ToLowerInvariant()}. Pick what to search, or type a:, m:, c:, v: or s: first.";
 
 	private const string PaneNavigatorKey = "pane";
 

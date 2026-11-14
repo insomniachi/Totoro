@@ -138,6 +138,7 @@ internal partial class AnilistMetadataProvider(
 		var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
 														  .WithCharacters(new CharacterConnectionQueryBuilder()
 																			  .WithNodes(new CharacterQueryBuilder()
+																						 .WithId()
 																						 .WithName(new CharacterNameQueryBuilder()
 																									   .WithFull())
 																						 .WithImage(new CharacterImageQueryBuilder()
@@ -167,6 +168,7 @@ internal partial class AnilistMetadataProvider(
 		[
 			.. characters.Where(x => x is not null).Select(x => new CharacterModel
 			{
+				Id = x.Id ?? 0,
 				Name = x.Name?.Full ?? "",
 				Image = Uri.TryCreate(x.Image?.Large, UriKind.Absolute, out var uri) && !IsPlaceholder(uri) ? uri : null,
 				Description = x.Description ?? "",
@@ -176,7 +178,7 @@ internal partial class AnilistMetadataProvider(
 	}
 
 	/// <summary>AniList's stand-in for a character without a picture (character/large/default.jpg): no image, really.</summary>
-	private static bool IsPlaceholder(Uri image) => image.AbsolutePath.EndsWith("/default.jpg", StringComparison.OrdinalIgnoreCase);
+	internal static bool IsPlaceholder(Uri image) => image.AbsolutePath.EndsWith("/default.jpg", StringComparison.OrdinalIgnoreCase);
 
 	public async Task<List<AnimeModel>> GetPopularAnimeAsync(CancellationToken ct)
 	{
@@ -409,7 +411,7 @@ internal partial class AnilistMetadataProvider(
 		return score is { } s ? (int)MathF.Round(s * 10) + widenBy : null;
 	}
 
-	private static string DescribeErrors(GraphQLError[]? errors)
+	internal static string DescribeErrors(GraphQLError[]? errors)
 	{
 		return errors is { Length: > 0 } ? string.Join("; ", errors.Select(x => x.Message)) : "no data returned";
 	}
@@ -442,7 +444,7 @@ internal partial class AnilistMetadataProvider(
 		return anime;
 	}
 
-	private static MediaQueryBuilder MediaQueryBuilder()
+	internal static MediaQueryBuilder MediaQueryBuilder()
 	{
 		return new MediaQueryBuilder()
 			   .WithId()

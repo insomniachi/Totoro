@@ -213,7 +213,8 @@ internal sealed partial class HtmlRenderer
 	{
 		if (closing)
 		{
-			if (_spans.TryPop(out var kind) && kind == SpanKind.Spoiler)
+			// Its spoiler may already be closed, with the paragraph it crossed the end of.
+			if (_spans.TryPop(out var kind) && kind == SpanKind.Spoiler && _spoilers.Count > 0)
 			{
 				EndSpoiler();
 			}

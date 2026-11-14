@@ -185,7 +185,9 @@ internal abstract class FrameBasedNavigator : INavigator, IRecipient<AnimeDataba
 
 			var type = e.SourcePageType;
 
-			if (viewRegistry.FindByView(type) is not { } map)
+			// A page shared by several kinds of data (e.g. a character's and a voice actor's) gets the view model for this one.
+			var dataMap = e.Parameter is null ? null : viewRegistry.FindByData(e.Parameter.GetType());
+			if ((dataMap?.View == type ? dataMap : viewRegistry.FindByView(type)) is not { } map)
 			{
 				return;
 			}

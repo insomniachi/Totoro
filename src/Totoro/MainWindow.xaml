@@ -377,68 +377,93 @@
                             Icon="{ui:FontIcon Glyph=&#xE736;}"
                             ToolTipService.ToolTip="Track and read manga" />
                     </controls:SelectableSegmented>
-                    <!--  Finds anime and manga in the selected databases, whatever the mode; choosing one opens its details in the side pane  -->
-                    <AutoSuggestBox
-                        x:Name="SearchBox"
-                        AutomationProperties.AutomationId="SearchBox"
+                    <!--
+                        Finds one kind of thing at a time (the mode's, until another is picked from the icon at the box's
+                        left or typed as a prefix, e.g. "c:"); choosing one opens it in the side pane
+                    -->
+                    <Grid
                         Grid.Column="1"
                         MaxWidth="360"
                         Margin="12,0"
-                        VerticalAlignment="Center"
-                        AutomationProperties.Name="Search anime and manga"
-                        ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
-                        PlaceholderText="Search anime and manga"
-                        QueryIcon="Find"
-                        QuerySubmitted="OnSearchSubmitted"
-                        TextChanged="OnSearchTextChanged"
-                        UpdateTextOnSelect="False">
-                        <AutoSuggestBox.Resources>
-                            <!--  The suggestions list's padding: room under the last cover, which otherwise touches the edge  -->
-                            <Thickness x:Key="AutoSuggestListMargin">0,4,0,8</Thickness>
-                        </AutoSuggestBox.Resources>
-                        <!--  Each as the chat's anime cards are: cover, title, what it is and facts, and where it is on the user's list  -->
-                        <AutoSuggestBox.ItemTemplate>
-                            <DataTemplate x:DataType="services:MediaSuggestion">
-                                <Grid
-                                    Padding="0,4"
-                                    AutomationProperties.Name="{x:Bind Media.Title, Mode=OneTime}"
-                                    ColumnSpacing="12"
-                                    ToolTipService.ToolTip="{x:Bind FullTitle, Mode=OneTime}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border
-                                        Width="40"
-                                        Height="56"
-                                        Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                        CornerRadius="4">
-                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Media.Image), Mode=OneTime}" Stretch="UniformToFill" />
-                                    </Border>
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock
-                                            Style="{ThemeResource BodyStrongTextBlockStyle}"
-                                            Text="{x:Bind Media.Title, Mode=OneTime}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap" />
-                                        <TextBlock
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind Facts, Mode=OneTime}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap" />
-                                        <TextBlock
-                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                            Style="{ThemeResource CaptionTextBlockStyle}"
-                                            Text="{x:Bind ListStatus, Mode=OneTime}"
-                                            TextTrimming="CharacterEllipsis"
-                                            TextWrapping="NoWrap"
-                                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ListStatus), Mode=OneTime}" />
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </AutoSuggestBox.ItemTemplate>
-                    </AutoSuggestBox>
+                        VerticalAlignment="Center">
+                        <AutoSuggestBox
+                            x:Name="SearchBox"
+                            AutomationProperties.AutomationId="SearchBox"
+                            AutomationProperties.Name="{x:Bind local:MainWindow.SearchPlaceholder(ViewModel.SearchCategory), Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
+                            Loaded="OnSearchBoxLoaded"
+                            PlaceholderText="{x:Bind local:MainWindow.SearchPlaceholder(ViewModel.SearchCategory), Mode=OneWay}"
+                            QueryIcon="Find"
+                            QuerySubmitted="OnSearchSubmitted"
+                            TextChanged="OnSearchTextChanged"
+                            UpdateTextOnSelect="False">
+                            <AutoSuggestBox.Resources>
+                                <!--  The suggestions list's padding: room under the last cover, which otherwise touches the edge  -->
+                                <Thickness x:Key="AutoSuggestListMargin">0,4,0,8</Thickness>
+                            </AutoSuggestBox.Resources>
+                            <!--  Each as the chat's anime cards are: picture, title, what it is and facts, and where it is on the user's list  -->
+                            <AutoSuggestBox.ItemTemplate>
+                                <DataTemplate x:DataType="services:SearchSuggestion">
+                                    <Grid
+                                        Padding="0,4"
+                                        AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
+                                        ColumnSpacing="12"
+                                        ToolTipService.ToolTip="{x:Bind Tooltip, Mode=OneTime}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Width="40"
+                                            Height="56"
+                                            Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                            CornerRadius="4">
+                                            <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock
+                                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                Text="{x:Bind Title, Mode=OneTime}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind Facts, Mode=OneTime}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ListStatus, Mode=OneTime}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap"
+                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ListStatus), Mode=OneTime}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </AutoSuggestBox.ItemTemplate>
+                        </AutoSuggestBox>
+                        <!--  What's searched for, as an icon inside the box at its left (the text starts after it); clicking picks another  -->
+                        <Button
+                            x:Name="SearchCategoryButton"
+                            Width="28"
+                            Height="24"
+                            Margin="4,0,0,0"
+                            Padding="0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            AutomationProperties.AutomationId="SearchCategoryButton"
+                            AutomationProperties.Name="{x:Bind local:MainWindow.SearchCategoryTip(ViewModel.SearchCategory), Mode=OneWay}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            ToolTipService.ToolTip="{x:Bind local:MainWindow.SearchCategoryTip(ViewModel.SearchCategory), Mode=OneWay}">
+                            <FontIcon FontSize="14" Glyph="{x:Bind local:MainWindow.SearchCategoryGlyph(ViewModel.SearchCategory), Mode=OneWay}" />
+                            <Button.Flyout>
+                                <MenuFlyout x:Name="SearchCategoryMenu" Opening="OnSearchCategoryMenuOpening" Placement="BottomEdgeAlignedLeft" />
+                            </Button.Flyout>
+                        </Button>
+                    </Grid>
                 </Grid>
             </TitleBar.Content>
             <TitleBar.RightHeader>
@@ -683,8 +708,25 @@
                     <uiNavigation:RegisterForNavigationBehavior NavigatorKey="pane" />
                 </Interactivity:Interaction.Behaviors>
                 <SplitView.Pane>
+                    <!--  Back to the pane's previous page (e.g. the anime, from a character's page); shown only when there is one  -->
                     <Grid>
-                        <Frame x:Name="Pane" />
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Button
+                            x:Name="PaneBackButton"
+                            Margin="12,8,0,0"
+                            AutomationProperties.AutomationId="PaneBackButton"
+                            AutomationProperties.Name="Back"
+                            Style="{ThemeResource NavigationBackButtonSmallStyle}"
+                            ToolTipService.ToolTip="Back (Alt+Left)"
+                            Visibility="Collapsed">
+                            <Button.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Left" Modifiers="Menu" />
+                            </Button.KeyboardAccelerators>
+                        </Button>
+                        <Frame x:Name="Pane" Grid.Row="1" />
                     </Grid>
                 </SplitView.Pane>
                 <Grid Padding="36">

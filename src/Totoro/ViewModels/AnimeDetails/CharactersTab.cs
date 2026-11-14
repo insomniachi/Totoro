@@ -4,10 +4,11 @@ using Totoro.Core.Modules.Anime;
 
 namespace Totoro.ViewModels.AnimeDetails;
 
-public sealed record CharacterItem(string Name, string? Image)
+/// <param name="Character">What clicking it opens in the side pane.</param>
+public sealed record CharacterItem(string Name, string? Image, CharacterModel Character)
 {
 	/// <summary>What the shimmer's placeholder cards are built from.</summary>
-	public static CharacterItem Placeholder { get; } = new("Character name", null);
+	public static CharacterItem Placeholder { get; } = new("Character name", null, new CharacterModel());
 }
 
 /// <summary>The anime's characters: those with a picture (minor ones without are left out).</summary>
@@ -19,7 +20,7 @@ public sealed partial class CharactersTab(Func<Task<List<CharacterModel>>> fetch
 
 	protected override async Task<int> LoadAsync()
 	{
-		Characters = [.. (await fetch()).Where(x => x.Image is not null).Select(x => new CharacterItem(x.Name, x.Image!.AbsoluteUri))];
+		Characters = [.. (await fetch()).Where(x => x.Image is not null).Select(x => new CharacterItem(x.Name, x.Image!.AbsoluteUri, x))];
 		return Characters.Count;
 	}
 }

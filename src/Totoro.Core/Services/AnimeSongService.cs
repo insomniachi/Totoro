@@ -41,6 +41,9 @@ public sealed record AnimeSong(
 	};
 }
 
+/// <summary>A song found by the title bar's search, and the anime it's from (its title, cover and database ids only).</summary>
+public sealed record SongMatch(AnimeSong Song, AnimeModel Anime);
+
 /// <summary>
 /// Plays a song's audio within the app (e.g. in the Music tab's card of it), with its spectrum for a visualization.
 /// One song at a time; playing another replaces it.
@@ -190,9 +193,7 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISong
 	{
 		// The GraphQL API, as the REST one (api.animethemes.moe) is down.
 		var query = $$"""
-			{ findAnimeByExternalSite(site: MAL, id: {{malId}}) { animethemes { type sequence
-			  song { title { romaji } performances { artist { ... on Artist { name { main } } } } }
-			  animethemeentries { episodes videos { nodes { link audio { link } } } } } } }
+			{ findAnimeByExternalSite(site: MAL, id: {{malId}}) { animethemes { {{ThemeFields}} } } }
 			""";
 		var response = await "https://graphql.animethemes.moe/"
 							 .WithHeader("User-Agent", UserAgent)
@@ -203,36 +204,112 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISong
 			return [];
 		}
 
-		List<AnimeSong> songs = [];
+		return [.. themes.Select(ToSong).OfType<AnimeSong>()];
+	}
+
+	// What a song search, and an anime's songs, ask for each song.
+	private const string ThemeFields = """
+		type sequence
+		song { title { romaji } performances { artist { ... on Artist { name { main } } } } }
+		animethemeentries { episodes videos { nodes { link audio { link } } } }
+		""";
+
+	/// <summary>
+	/// Songs whose title (or singer, or anime) matches <paramref name="query"/>, from AnimeThemes, each with the anime
+	/// it's from: its title, cover and database ids. None if the search fails.
+	/// </summary>
+	public async Task<IReadOnlyList<SongMatch>> SearchSongsAsync(string query, int count, CancellationToken ct = default)
+	{
+		var graphQl = $$"""
+			query ($search: String!, $first: Int) { search(search: $search, first: $first) { animethemes { {{ThemeFields}}
+			  anime { title { romaji } resources { nodes { site externalId } } images { nodes { facet link } } } } } }
+			""";
+		try
+		{
+			var response = await "https://graphql.animethemes.moe/"
+								 .WithHeader("User-Agent", UserAgent)
+								 .PostJsonAsync(new { query = graphQl, variables = new { search = query, first = count } }, cancellationToken: ct)
+								 .ReceiveString();
+			return ParseSongMatches(response);
+		}
+		catch (Exception ex) when (ex is FlurlHttpException or System.Text.Json.JsonException or InvalidOperationException)
+		{
+			return [];
+		}
+	}
+
+	/// <summary>A song search's response as its songs, each with its anime; songs of no known kind are left out.</summary>
+	public static IReadOnlyList<SongMatch> ParseSongMatches(string response)
+	{
+		if (JsonNode.Parse(response)?["data"]?["search"]?["animethemes"] is not JsonArray themes)
+		{
+			return [];
+		}
+
+		List<SongMatch> matches = [];
 		foreach (var theme in themes)
 		{
-			var kind = theme?["type"]?.GetValue<string>() switch
-			{
-				"OP" => AnimeSongKind.Opening,
-				"ED" => AnimeSongKind.Ending,
-				"IN" => AnimeSongKind.Insert,
-				_ => (AnimeSongKind?)null,
-			};
-			if (kind is null || theme?["song"] is not { } song)
+			if (ToSong(theme) is not { } song || theme?["anime"] is not { } anime)
 			{
 				continue;
 			}
 
-			var artists = song["performances"] is JsonArray list ? string.Join(", ", list.Select(x => x?["artist"]?["name"]?["main"]?.GetValue<string>()).OfType<string>()) : "";
-			var entry = theme["animethemeentries"]?[0];
-			var video = entry?["videos"]?["nodes"]?[0];
-			songs.Add(new AnimeSong(
-				kind.Value,
-				theme["sequence"]?.GetValue<int?>(),
-				song["title"]?["romaji"]?.GetValue<string>() ?? "",
-				artists,
-				entry?["episodes"]?.GetValue<string>()?.Replace("-", "–") ?? "",
-				ToUri(video?["link"]),
-				ToUri(video?["audio"]?["link"])));
+			var ids = new AnimeId();
+			foreach (var resource in anime["resources"]?["nodes"] as JsonArray ?? [])
+			{
+				var id = resource?["externalId"]?.GetValue<long?>() ?? 0;
+				switch (resource?["site"]?.GetValue<string>())
+				{
+					case "MAL": ids.MyAnimeList = id; break;
+					case "ANILIST": ids.Anilist = id; break;
+					case "KITSU": ids.Kitsu = id; break;
+					case "ANIDB": ids.AniDb = id; break;
+				}
+			}
+
+			var images = anime["images"]?["nodes"] as JsonArray ?? [];
+			var cover = images.FirstOrDefault(x => x?["facet"]?.GetValue<string>() == "LARGE_COVER") ?? images.FirstOrDefault();
+			matches.Add(new SongMatch(song, new AnimeModel
+			{
+				Title = anime["title"]?["romaji"]?.GetValue<string>() ?? "",
+				ExternalIds = ids,
+				Image = cover?["link"]?.GetValue<string>() ?? "",
+			}));
 		}
 
-		return songs;
+		return matches;
 	}
+
+	/// <summary>One of AnimeThemes' themes as a song, with its first version's episodes, video and audio; null if it's of no known kind.</summary>
+	private static AnimeSong? ToSong(JsonNode? theme)
+	{
+		var kind = theme?["type"]?.GetValue<string>() switch
+		{
+			"OP" => AnimeSongKind.Opening,
+			"ED" => AnimeSongKind.Ending,
+			"IN" => AnimeSongKind.Insert,
+			_ => (AnimeSongKind?)null,
+		};
+		if (kind is null || theme?["song"] is not { } song)
+		{
+			return null;
+		}
+
+		var artists = song["performances"] is JsonArray list ? string.Join(", ", list.Select(x => x?["artist"]?["name"]?["main"]?.GetValue<string>()).OfType<string>()) : "";
+		var entry = First(theme["animethemeentries"]);
+		var video = First(entry?["videos"]?["nodes"]);
+		return new AnimeSong(
+			kind.Value,
+			theme["sequence"]?.GetValue<int?>(),
+			song["title"]?["romaji"]?.GetValue<string>() ?? "",
+			artists,
+			entry?["episodes"]?.GetValue<string>()?.Replace("-", "–") ?? "",
+			ToUri(video?["link"]),
+			ToUri(video?["audio"]?["link"]));
+	}
+
+	// A JSON array's [0] throws when it's empty (a song with no video yet), rather than giving null.
+	private static JsonNode? First(JsonNode? list) => list is JsonArray { Count: > 0 } array ? array[0] : null;
 
 	private static Uri? ToUri(JsonNode? link) => Uri.TryCreate(link?.GetValue<string>(), UriKind.Absolute, out var uri) ? uri : null;
 }

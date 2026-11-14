@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Totoro.Core;
 using Totoro.Core.Dialogs;
+using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
 using Totoro.Core.Relations;
@@ -18,7 +19,7 @@ namespace Totoro.Commands;
 /// <c>Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"</c>.
 /// </summary>
 public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService tracking, WatchService watch, DownloadService downloads,
-						   DownloadNotifier notifier, ILogger<AnimeCommands> logger)
+						   DownloadNotifier notifier, IFactory<IAnimeMetadataProvider, Guid> databases, ILogger<AnimeCommands> logger)
 {
 	/// <summary>The app-wide instance (registered as a singleton), for x:Bind from XAML.</summary>
 	public static AnimeCommands Shared => Locator.GetRequiredService<AnimeCommands>();
@@ -34,6 +35,39 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 		{
 			await pane.NavigateToDataAsync(anime);
 		}
+	}
+
+	/// <summary>
+	/// Shows the details of an anime that came from another database (e.g. AniList's, on a character's page) as the
+	/// selected database has it, so its list entry and tracking are the user's own; see <see cref="InDatabaseAsync"/>.
+	/// </summary>
+	[RelayCommand]
+	private async Task ShowInDatabaseAsync(AnimeModel anime) => await ShowDetailsAsync(await InDatabaseAsync(anime));
+
+	/// <summary>
+	/// The anime as the selected database has it, looked up by its id there; the anime as given if it's from that
+	/// database already, or that database hasn't it (or can't be reached).
+	/// </summary>
+	public async Task<AnimeModel> InDatabaseAsync(AnimeModel anime)
+	{
+		if (databases.CreateDefault() is not { } database || anime.ServiceId == database.Id)
+		{
+			return anime;
+		}
+
+		try
+		{
+			if (await anime.FindIdAsync(database.Name) is { } id)
+			{
+				return await database.GetAnimeAsync(id);
+			}
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			logger.LogWarning(ex, "Couldn't find {Anime} on {Database}", anime.Title, database.Name);
+		}
+
+		return anime;
 	}
 
 	/// <summary>Plays the next episode to watch (after the last one watched); see <see cref="WatchService"/>.</summary>

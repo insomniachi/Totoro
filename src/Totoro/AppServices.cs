@@ -124,6 +124,10 @@ internal static class AppServices
 		services.AddDataViewMap<MangaDetailsPage, MangaDetailsViewModel, MangaModel>();
 		services.AddDialog<MangaTrackingDialog, MangaTrackingDialogViewModel>();
 		services.AddDataViewMap<ReaderPage, ReaderViewModel, ReaderRequest>();
+		// What the title bar's search opens besides anime and manga.
+		services.AddDataViewMap<PersonPage, CharacterViewModel, CharacterModel>();
+		services.AddDataViewMap<PersonPage, VoiceActorViewModel, VoiceActorModel>();
+		services.AddDataViewMap<SongPage, SongViewModel, SongMatch>();
 		// First, so it's where the app starts until the user picks another startup page (see StartupPagePreferences).
 		services.AddMainNavigationItem<DiscoverPage, DiscoverViewModel>("Discover", x =>
 		{

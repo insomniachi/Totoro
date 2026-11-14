@@ -7,6 +7,7 @@ using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
+using Totoro.Modules.AnimeDatabase.Anilist;
 using Totoro.Playback;
 using Totoro.ViewModels.Chat;
 
@@ -19,6 +20,8 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
 	private readonly IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> _mangaDatabases;
 	private readonly IReadOnlyList<NavigationItemViewModel> _allItems;
+	private readonly AnilistPeople _people;
+	private readonly AnimeSongService _songs;
 	private CancellationTokenSource? _search;
 	private readonly IPreferences _preferences;
 	private const string TourSeenKey = "TourSeen";
@@ -28,8 +31,10 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	public void FinishTour() => _preferences.SaveKey(TourSeenKey, true);
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules, AnilistPeople people, AnimeSongService songs)
 	{
+		_people = people;
+		_songs = songs;
 		_dialogs = dialogs;
 		_databases = databases;
 		_mangaDatabases = mangaDatabases;
@@ -69,6 +74,8 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 		NavigationItems = ItemsFor(Mode, footer: false);
 		FooterNavigationItems = ItemsFor(Mode, footer: true);
+		// The mode's kind: Anime and Manga are the first two, in the same order as MediaMode's.
+		SearchCategory = (SearchCategory)Mode;
 
 		StartupItem = startup is not null && NavigationItems.Contains(startup) ? startup
 			: NavigationItems.FirstOrDefault(x => x.Label == startup?.Label) ?? NavigationItems.FirstOrDefault();
@@ -86,7 +93,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	[ObservableProperty]
 	public partial List<NavigationItemViewModel> NavigationItems { get; set; }
 
-	/// <summary>Anime or manga: which of the menu's pages show, and which kind the title bar's search lists first.</summary>
+	/// <summary>Anime or manga: which of the menu's pages show, and what the title bar's search looks for (until another kind is picked).</summary>
 	[ObservableProperty]
 	[NotifyPropertyChangedFor(nameof(ModeIndex))]
 	public partial MediaMode Mode { get; private set; }
@@ -119,6 +126,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 		current ??= CurrentItem;
 		Mode = mode;
+		SearchCategory = (SearchCategory)mode;
 		NavigationItems = ItemsFor(mode, footer: false);
 		FooterNavigationItems = ItemsFor(mode, footer: true);
 		ModeSwitchItem = current is { Mode: null } ? current
@@ -236,14 +244,18 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		IsSyncWarningOpen = true;
 	}
 
-	/// <summary>The title bar's search: anime and manga matching what's typed, whatever the mode (its own kind first).</summary>
+	/// <summary>What the title bar's search looks for: the mode's kind, until another is picked (or typed, e.g. "c:").</summary>
 	[ObservableProperty]
-	public partial List<MediaSuggestion> SearchResults { get; set; } = [];
+	public partial SearchCategory SearchCategory { get; set; }
 
-	// Of each kind, at most.
-	private const int SuggestionsPerKind = 6;
+	/// <summary>The title bar's search: what matches what's typed, of <see cref="SearchCategory"/>.</summary>
+	[ObservableProperty]
+	public partial List<SearchSuggestion> SearchResults { get; set; } = [];
 
-	/// <summary>Searches the selected anime and manga databases, as the user types in the title bar.</summary>
+	// At most.
+	private const int SuggestionCount = 10;
+
+	/// <summary>Searches for <see cref="SearchCategory"/> as the user types in the title bar.</summary>
 	public async Task SearchAsync(string query)
 	{
 		_search?.Cancel();
@@ -259,16 +271,10 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		{
 			// Searches after typing pauses.
 			await Task.Delay(300, search.Token);
-			var anime = SearchOrNoneAsync(async () => _databases.CreateDefault() is { } database ? [.. await database.SearchAnimeAsync(query)] : []);
-			var manga = SearchOrNoneAsync(async () => _mangaDatabases.CreateDefault() is { } database ? [.. await database.SearchMangaAsync(query, search.Token)] : []);
-			List<IMediaModel>[] kinds = Mode == MediaMode.Manga ? [await manga, await anime] : [await anime, await manga];
+			var results = await SearchOrNoneAsync(SearchCategory, query, search.Token);
 			if (!search.IsCancellationRequested)
 			{
-				// Taking turns, the mode's kind first, so both are in sight before the list has to scroll.
-				SearchResults = [.. Enumerable.Range(0, SuggestionsPerKind)
-											  .SelectMany(i => kinds.Select(x => x.ElementAtOrDefault(i)))
-											  .OfType<IMediaModel>()
-											  .Select(x => new MediaSuggestion(x))];
+				SearchResults = results;
 			}
 		}
 		catch (OperationCanceledException)
@@ -276,18 +282,39 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		}
 	}
 
-	// Offline, or a database is down: none of its kind rather than a crash from the title bar.
-	private static async Task<List<IMediaModel>> SearchOrNoneAsync(Func<Task<List<IMediaModel>>> search)
+	// Offline, or a database is down: nothing found rather than a crash from the title bar.
+	private async Task<List<SearchSuggestion>> SearchOrNoneAsync(SearchCategory category, string query, CancellationToken ct)
 	{
 		try
 		{
-			return await search();
+			return category switch
+			{
+				SearchCategory.Anime => _databases.CreateDefault() is { } database
+					? [.. (await database.SearchAnimeAsync(query)).Take(SuggestionCount).Select(x => SearchSuggestion.From(new MediaSuggestion(x)))]
+					: [],
+				SearchCategory.Manga => _mangaDatabases.CreateDefault() is { } database
+					? [.. (await database.SearchMangaAsync(query, ct)).Take(SuggestionCount).Select(x => SearchSuggestion.From(new MediaSuggestion(x)))]
+					: [],
+				SearchCategory.Character => [.. (await _people.SearchCharactersAsync(query, SuggestionCount, ct)).Select(x => new SearchSuggestion(
+					x.Name, x.Image?.AbsoluteUri, Join("Character", x.Anime.FirstOrDefault()?.Title), "", Lines(x.Name, x.NativeName), x))],
+				SearchCategory.VoiceActor => [.. (await _people.SearchVoiceActorsAsync(query, SuggestionCount, ct)).Select(x => new SearchSuggestion(
+					x.Name, x.Image?.AbsoluteUri,
+					Join("Voice actor", x.Language, x.Roles.FirstOrDefault() is { } role ? $"{role.Character.Name} in {role.Anime.Title}" : null),
+					"", Lines(x.Name, x.NativeName), x))],
+				_ => [.. (await _songs.SearchSongsAsync(query, SuggestionCount, ct)).Select(x => new SearchSuggestion(
+					x.Song.Title, x.Anime.Image, Join(x.Song.Label, x.Song.Artist, x.Anime.Title), "", Lines(x.Song.Title, x.Song.Artist), x))],
+			};
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			return [];
 		}
 	}
+
+	private static string Join(params string?[] parts) => string.Join(" · ", parts.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+	// For the tooltip: a name, and the native one (or the singer) under it.
+	private static string Lines(string first, string second) => second.Length > 0 ? $"{first}\n{second}" : first;
 
 	private void ShowAccount(Guid databaseId)
 	{

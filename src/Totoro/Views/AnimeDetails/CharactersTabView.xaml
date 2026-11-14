@@ -27,26 +27,37 @@
                         MinRowSpacing="16" />
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
+                    <!--  Clicking one opens the character's page in the side pane, as the Related tab's anime do  -->
                     <DataTemplate x:DataType="vm:CharacterItem">
-                        <StackPanel Width="110" Spacing="8">
-                            <Border
-                                Height="150"
-                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                                CornerRadius="8">
-                                <Grid>
-                                    <!--  Shimmers until the image loads over it; only when there is an image to load  -->
-                                    <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image), Mode=OneTime}" />
-                                    <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
-                                </Grid>
-                            </Border>
-                            <TextBlock
-                                MaxLines="2"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Name, Mode=OneTime}"
-                                TextAlignment="Center"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
+                        <Button
+                            Width="110"
+                            Padding="0"
+                            HorizontalContentAlignment="Stretch"
+                            AutomationProperties.Name="{x:Bind Name, Mode=OneTime}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Click="OnCharacterClick"
+                            Tag="{x:Bind Character, Mode=OneTime}">
+                            <StackPanel Spacing="8">
+                                <Border
+                                    Height="150"
+                                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                    CornerRadius="8">
+                                    <Grid>
+                                        <!--  Shimmers until the image loads over it; only when there is an image to load  -->
+                                        <toolkit:Shimmer CornerRadius="8" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image), Mode=OneTime}" />
+                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
+                                    </Grid>
+                                </Border>
+                                <TextBlock
+                                    MaxLines="2"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind Name, Mode=OneTime}"
+                                    TextAlignment="Center"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Button>
                     </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
             </ItemsRepeater>
