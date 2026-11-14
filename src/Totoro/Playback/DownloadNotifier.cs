@@ -14,10 +14,6 @@ namespace Totoro.Playback;
 /// </summary>
 public sealed class DownloadNotifier(WatchService watch, ILogger<DownloadNotifier> logger)
 {
-	// Notifications only show images from this PC: the anime's banner is saved here for them.
-	private static readonly string s_images = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "Notifications");
-	private static readonly HttpClient s_http = new();
-
 	// The anime notified of this session, by id, for the Play button; a notification from an earlier session only opens the app.
 	private readonly Dictionary<long, AnimeModel> _anime = [];
 
@@ -47,16 +43,19 @@ public sealed class DownloadNotifier(WatchService watch, ILogger<DownloadNotifie
 		try
 		{
 			var builder = new AppNotificationBuilder();
-			// The cover the download saved with the episodes.
-			if (Directory.Exists(folder) && Directory.EnumerateFiles(folder, DownloadNames.CoverFile + ".*").FirstOrDefault() is { } cover)
+			// The cover and banner the download saved with the episodes (notifications only show images from this PC).
+			if (Directory.Exists(folder))
 			{
-				builder.SetAppLogoOverride(new Uri(cover));
-			}
+				if (Directory.EnumerateFiles(folder, DownloadNames.CoverFile + ".*").FirstOrDefault() is { } cover)
+				{
+					builder.SetAppLogoOverride(new Uri(cover));
+				}
 
-			if (await SaveBannerAsync(anime) is { } banner)
-			{
-				// Inline, not the hero: that crops to 2:1, and banners are much wider.
-				builder.SetInlineImage(new Uri(banner));
+				if (Directory.EnumerateFiles(folder, DownloadNames.BannerFile + ".*").FirstOrDefault() is { } banner)
+				{
+					// Inline, not the hero: that crops to 2:1, and banners are much wider.
+					builder.SetInlineImage(new Uri(banner));
+				}
 			}
 
 			AppNotificationManager.Default.Show(builder
@@ -86,33 +85,6 @@ public sealed class DownloadNotifier(WatchService watch, ILogger<DownloadNotifie
 				return true;
 			default:
 				return true;
-		}
-	}
-
-	/// <summary>The anime's banner, saved for notifications; null if it has none, or it couldn't be.</summary>
-	private async Task<string?> SaveBannerAsync(AnimeModel anime)
-	{
-		if (!Uri.TryCreate(anime.BannerImage, UriKind.Absolute, out var url))
-		{
-			return null;
-		}
-
-		var file = Path.Combine(s_images, anime.Id + (Path.GetExtension(url.AbsolutePath) is { Length: > 0 } ext ? ext : ".jpg"));
-		try
-		{
-			if (!File.Exists(file))
-			{
-				Directory.CreateDirectory(s_images);
-				await File.WriteAllBytesAsync(file, await s_http.GetByteArrayAsync(url));
-			}
-
-			return file;
-		}
-		catch (Exception ex)
-		{
-			// Shown without it.
-			logger.LogWarning(ex, "Couldn't save {Anime}'s banner for its notification", anime.Title);
-			return null;
 		}
 	}
 

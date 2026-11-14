@@ -17,6 +17,9 @@ public static partial class DownloadNames
 	/// <summary>The anime's cover in its folder, without the extension (the image's own).</summary>
 	public const string CoverFile = "cover";
 
+	/// <summary>The anime's banner in its folder, without the extension (the image's own); for its notifications.</summary>
+	public const string BannerFile = "banner";
+
 	/// <summary>The anime's folder name.</summary>
 	public static string Folder(string title) => Clean(title);
 

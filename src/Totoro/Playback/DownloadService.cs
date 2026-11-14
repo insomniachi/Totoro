@@ -576,7 +576,7 @@ public sealed class DownloadService(
 
 	/// <summary>
 	/// Keeps what the Downloads provider shows of the anime in its folder, unless it's there already: its titles, to find
-	/// it by any of them, its AniList and MyAnimeList ids, and its cover. The episode downloads without them if they can't
+	/// it by any of them, its AniList and MyAnimeList ids, and its cover and banner. The episode downloads without them if they can't
 	/// be had.
 	/// </summary>
 	private async Task SaveInfoAsync(AnimeModel? anime, string title, string folder, CancellationToken ct)
@@ -601,11 +601,13 @@ public sealed class DownloadService(
 				await File.WriteAllTextAsync(info, JsonSerializer.Serialize(new DownloadInfo(title, others, anilist, mal)), ct);
 			}
 
-			if (anime is { Image.Length: > 0 } && !Directory.EnumerateFiles(folder, DownloadNames.CoverFile + ".*").Any())
+			foreach (var (name, url) in new[] { (DownloadNames.CoverFile, anime?.Image), (DownloadNames.BannerFile, anime?.BannerImage) })
 			{
-				var image = new Uri(anime.Image);
-				var extension = Path.GetExtension(image.AbsolutePath) is { Length: > 0 } ext ? ext : ".jpg";
-				await File.WriteAllBytesAsync(Path.Combine(folder, DownloadNames.CoverFile + extension), await _http.GetByteArrayAsync(image, ct), ct);
+				if (Uri.TryCreate(url, UriKind.Absolute, out var image) && !Directory.EnumerateFiles(folder, name + ".*").Any())
+				{
+					var extension = Path.GetExtension(image.AbsolutePath) is { Length: > 0 } ext ? ext : ".jpg";
+					await File.WriteAllBytesAsync(Path.Combine(folder, name + extension), await _http.GetByteArrayAsync(image, ct), ct);
+				}
 			}
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
