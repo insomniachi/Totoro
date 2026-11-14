@@ -38,4 +38,15 @@ public sealed partial class SongViewModel(SongMatch match, AnimeSongService song
 		Message = "";
 		await commands.ShowDetailsCommand.ExecuteAsync(anime);
 	}
+
+	// Closing the pane takes away the only controls for this song: don't leave it playing.
+	protected override Task OnNavigatedFromInternalAsync()
+	{
+		if (Song.IsCurrent)
+		{
+			player.Stop();
+		}
+
+		return Task.CompletedTask;
+	}
 }
