@@ -463,6 +463,31 @@
                                 <MenuFlyout x:Name="SearchCategoryMenu" Opening="OnSearchCategoryMenuOpening" Placement="BottomEdgeAlignedLeft" />
                             </Button.Flyout>
                         </Button>
+                        <!--  Names the song playing on the PC and finds its anime, at the box's right before its search icon; a ring while listening, when clicking stops  -->
+                        <Button
+                            Width="28"
+                            Height="24"
+                            Margin="0,0,36,0"
+                            Padding="0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            AutomationProperties.AutomationId="ListenButton"
+                            AutomationProperties.Name="{x:Bind local:MainWindow.ListenTip(ViewModel.IsListening), Mode=OneWay}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Click="OnListenClicked"
+                            ToolTipService.ToolTip="{x:Bind local:MainWindow.ListenTip(ViewModel.IsListening), Mode=OneWay}">
+                            <Grid>
+                                <FontIcon
+                                    FontSize="14"
+                                    Glyph="&#xEC71;"
+                                    Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsListening), Mode=OneWay}" />
+                                <ProgressRing
+                                    Width="14"
+                                    Height="14"
+                                    IsActive="{x:Bind ViewModel.IsListening, Mode=OneWay}" />
+                            </Grid>
+                        </Button>
                     </Grid>
                 </Grid>
             </TitleBar.Content>
@@ -816,7 +841,7 @@
                     BorderThickness="1"
                     CornerRadius="{ThemeResource ControlCornerRadius}">
                     <InfoBar
-                        Title="Your other list wasn't updated"
+                        Title="{x:Bind ViewModel.SyncWarningTitle, Mode=OneWay}"
                         IsOpen="{x:Bind ViewModel.IsSyncWarningOpen, Mode=TwoWay}"
                         Message="{x:Bind ViewModel.SyncWarning, Mode=OneWay}"
                         Severity="Warning" />

@@ -238,13 +238,65 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISong
 		}
 	}
 
-	/// <summary>A song search's response as its songs, each with its anime; songs of no known kind are left out.</summary>
-	public static IReadOnlyList<SongMatch> ParseSongMatches(string response)
+	/// <summary>
+	/// The song Shazam named <paramref name="title"/> (<paramref name="romanised"/> in Latin letters, if it's Japanese) by
+	/// <paramref name="artist"/>, and its anime, by name: the first song of that title, from a search for it, else among the
+	/// artist's songs. Not found, the candidates to pick from: the artist's songs, or what the title search found.
+	/// </summary>
+	public async Task<(SongMatch? Found, IReadOnlyList<SongMatch> Candidates)> FindSongAsync(string title, string romanised, string artist, CancellationToken ct = default)
 	{
-		if (JsonNode.Parse(response)?["data"]?["search"]?["animethemes"] is not JsonArray themes)
+		string[] names = [.. new[] { title, romanised }.Select(NormaliseTitle).Where(x => x.Length > 0)];
+		var artistName = NormaliseTitle(artist);
+		// Of those titled so, one by that singer first.
+		SongMatch? Pick(IReadOnlyList<SongMatch> songs) => songs
+			.Where(x => names.Contains(NormaliseTitle(x.Song.Title)))
+			.OrderByDescending(x => NormaliseTitle(x.Song.Artist).Contains(artistName))
+			.FirstOrDefault();
+
+		IReadOnlyList<SongMatch> byTitle = [.. await SearchSongsAsync(title, 10, ct), .. romanised != title && romanised.Length > 0 ? await SearchSongsAsync(romanised, 10, ct) : []];
+		if (Pick(byTitle) is { } found)
+		{
+			return (found, byTitle);
+		}
+
+		var byArtist = artist.Length > 0 ? await SongsByAsync(artist, ct) : [];
+		return (Pick(byArtist), byArtist.Count > 0 ? byArtist : byTitle);
+	}
+
+	/// <summary>A title as it's compared: its letters and digits only, in lower case (e.g. "Gurenge!" as "gurenge").</summary>
+	public static string NormaliseTitle(string title) => string.Concat(title.Where(char.IsLetterOrDigit)).ToLowerInvariant();
+
+	/// <summary>The songs of the artist AnimeThemes finds first for <paramref name="artist"/>, each with its anime; none if the search fails.</summary>
+	private static async Task<IReadOnlyList<SongMatch>> SongsByAsync(string artist, CancellationToken ct)
+	{
+		var graphQl = $$"""
+			query ($search: String!) { search(search: $search, first: 1) { artists { performances { song { animethemes { {{ThemeFields}}
+			  anime { title { romaji } resources { nodes { site externalId } } images { nodes { facet link } } } } } } } } }
+			""";
+		try
+		{
+			var response = await "https://graphql.animethemes.moe/"
+								 .WithHeader("User-Agent", UserAgent)
+								 .PostJsonAsync(new { query = graphQl, variables = new { search = artist } }, cancellationToken: ct)
+								 .ReceiveString();
+			return ParseSongMatches(response);
+		}
+		catch (Exception ex) when (ex is FlurlHttpException or System.Text.Json.JsonException or InvalidOperationException)
 		{
 			return [];
 		}
+	}
+
+	/// <summary>
+	/// A song search's response (or an artist search's: each artist's songs) as its songs, each with its anime; songs of no
+	/// known kind are left out.
+	/// </summary>
+	public static IReadOnlyList<SongMatch> ParseSongMatches(string response)
+	{
+		var search = JsonNode.Parse(response)?["data"]?["search"];
+		var themes = search?["animethemes"] as JsonArray ?? (search?["artists"] as JsonArray ?? [])
+			.SelectMany(x => x?["performances"] as JsonArray ?? [])
+			.SelectMany(x => x?["song"]?["animethemes"] as JsonArray ?? []);
 
 		List<SongMatch> matches = [];
 		foreach (var theme in themes)

@@ -14,6 +14,7 @@ given. This file is shipped with the app.
 | Windows Community Toolkit (CommunityToolkit.WinUI.\*, CommunityToolkit.Labs.WinUI.\*) | MIT | .NET Foundation and Contributors | https://github.com/CommunityToolkit/Windows |
 | MVVM Toolkit (CommunityToolkit.Mvvm) | MIT | .NET Foundation and Contributors | https://github.com/CommunityToolkit/dotnet |
 | Uno Toolkit (SkeletonView, ported into Totoro.UI as ShimmerView) | MIT | Uno Platform | https://github.com/unoplatform/uno.toolkit.ui |
+| shazam-for-real (its signature code, ported into Totoro as ShazamSignature) | ISC | Aleksey Martynov | https://github.com/AlekseyMartynov/shazam-for-real |
 | DevWinUI | MIT | Mahdi Hosseini | https://github.com/ghost1372/DevWinUI |
 | DynamicData | MIT | Roland Pheasant | https://github.com/reactivemarbles/DynamicData |
 | Flurl, Flurl.Http | MIT | Todd Menier | https://github.com/tmenier/Flurl |
@@ -63,6 +64,19 @@ The software above listed as MIT is under this license, each with its own copyri
 > WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 > COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 > OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## The ISC License (shazam-for-real)
+
+> Copyright (c) Aleksey Martynov
+>
+> Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
+> granted, provided that the above copyright notice and this permission notice appear in all copies.
+>
+> THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
+> IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+> INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+> ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+> THIS SOFTWARE.
 
 ## The BSD 3-Clause License (Polly)
 

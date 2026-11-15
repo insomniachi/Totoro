@@ -20,7 +20,7 @@ internal static class AudioFingerprint
 	// Where the song is, at most this share of the bits differ; anywhere else, about half do.
 	private const double MaxErrorRate = 0.35;
 
-	private static readonly double[] s_hann = [.. Enumerable.Range(0, FrameSize).Select(i => 0.5 - 0.5 * Math.Cos(2 * Math.PI * i / (FrameSize - 1)))];
+	internal static readonly double[] s_hann = [.. Enumerable.Range(0, FrameSize).Select(i => 0.5 - 0.5 * Math.Cos(2 * Math.PI * i / (FrameSize - 1)))];
 
 	// The bands' edges as FFT bins, spaced evenly in pitch.
 	private static readonly int[] s_edges = [.. Enumerable.Range(0, Bands + 1).Select(i => (int)(300 * Math.Pow(2000.0 / 300, (double)i / Bands) * FrameSize / SampleRate))];
@@ -225,7 +225,7 @@ internal static class AudioFingerprint
 	}
 
 	/// <summary>In-place radix-2 FFT of a <see cref="FrameSize"/>-long frame.</summary>
-	private static void Fft(double[] re, double[] im)
+	internal static void Fft(double[] re, double[] im)
 	{
 		var n = re.Length;
 		for (int i = 1, j = 0; i < n; i++)

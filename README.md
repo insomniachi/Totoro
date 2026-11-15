@@ -12,7 +12,7 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 - **Read manga.** Chapters open in the in-app reader, which tracks your progress.
 - **Schedule.** A calendar of when the episodes of what you're watching air.
 - **Episode numbering.** For sources that number episodes across seasons, it uses anime-relations, plus rules of your own.
-- **Music.** Each anime's openings and endings, from AnimeThemes, to listen to or watch, with their lyrics (from LRCLIB) lit up as they're sung, and Japanese shown with furigana and romaji.
+- **Music.** Each anime's openings and endings, from AnimeThemes, to listen to or watch, with their lyrics (from LRCLIB) lit up as they're sung, and Japanese shown with furigana and romaji. Hear one playing somewhere else on your PC? The listen button in the search box names it, and the anime it's from.
 - **Find an anime from a screenshot.** trace.moe finds which anime a picture is from.
 - **Discord.** It can show the episode you're watching as your Discord status.
 - **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "play the opening of Frieren"); it answers with the app's own cards. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (its settings are on the Plugins page).
@@ -88,7 +88,7 @@ their source, ship with the app.
 
 - [rqbit](https://github.com/ikatson/rqbit) (Apache-2.0) streams torrents.
 - [libvlc](https://www.videolan.org/vlc/libvlc.html) and [LibVLCSharp](https://code.videolan.org/videolan/LibVLCSharp) (LGPL-2.1) play video.
-- [NAudio](https://github.com/naudio/NAudio) plays songs' audio.
+- [NAudio](https://github.com/naudio/NAudio) plays songs' audio, and hears what the PC plays for [Shazam](https://www.shazam.com) to name, as [shazam-for-real](https://github.com/AlekseyMartynov/shazam-for-real) (ISC) does.
 - Anime data comes from [AniList](https://anilist.co), [MyAnimeList](https://myanimelist.net) and [Jikan](https://jikan.moe).
 - Episode details and id mappings come from [ani.zip](https://ani.zip) and [tenrai](https://tenrai.org).
 - Skip times come from [Aniskip](https://aniskip.com), episode numbering from [anime-relations](https://github.com/erengy/anime-relations), and songs from [AnimeThemes](https://animethemes.moe).

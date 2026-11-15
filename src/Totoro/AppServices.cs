@@ -73,6 +73,7 @@ internal static class AppServices
 		services.AddSingleton<DownloadNotifier>();
 		// Songs' audio, played in the Music tab.
 		services.AddSingleton<ISongPlayer, SongAudioPlayer>();
+		services.AddSingleton<SongRecognizer>();
 		services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();
 
 		services.AddCoreServices();

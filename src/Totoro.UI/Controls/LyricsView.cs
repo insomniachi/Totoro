@@ -106,7 +106,7 @@ public sealed partial class LyricsView : Grid
 	/// The line as what's shown of it, in order: each Japanese word with its reading in hiragana, anything else word by
 	/// word with none.
 	/// </summary>
-	internal static IEnumerable<(string Text, string? Reading)> Split(string line)
+	public static IEnumerable<(string Text, string? Reading)> Split(string line)
 	{
 		foreach (Match run in JapaneseOrNot().Matches(line))
 		{

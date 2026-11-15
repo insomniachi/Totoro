@@ -22,6 +22,8 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	private readonly IReadOnlyList<NavigationItemViewModel> _allItems;
 	private readonly AnilistPeople _people;
 	private readonly AnimeSongService _songs;
+	private readonly SongRecognizer _recognizer;
+	private CancellationTokenSource? _listen;
 	private CancellationTokenSource? _search;
 	private readonly IPreferences _preferences;
 	private const string TourSeenKey = "TourSeen";
@@ -31,10 +33,11 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	public void FinishTour() => _preferences.SaveKey(TourSeenKey, true);
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules, AnilistPeople people, AnimeSongService songs)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules, AnilistPeople people, AnimeSongService songs, SongRecognizer recognizer)
 	{
 		_people = people;
 		_songs = songs;
+		_recognizer = recognizer;
 		_dialogs = dialogs;
 		_databases = databases;
 		_mangaDatabases = mangaDatabases;
@@ -238,10 +241,13 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	[ObservableProperty]
 	public partial bool IsSyncWarningOpen { get; set; }
 
+	/// <summary>The warning bar's title: it also says what listening for a song found (see <see cref="ListenAsync"/>).</summary>
+	[ObservableProperty]
+	public partial string SyncWarningTitle { get; private set; } = "";
+
 	public void Receive(OtherListSyncFailedMessage message)
 	{
-		SyncWarning = message.Message;
-		IsSyncWarningOpen = true;
+		Warn("Your other list wasn't updated", message.Message);
 	}
 
 	/// <summary>What the title bar's search looks for: the mode's kind, until another is picked (or typed, e.g. "c:").</summary>
@@ -301,14 +307,87 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 					x.Name, x.Image?.AbsoluteUri,
 					Join("Voice actor", x.Language, x.Roles.FirstOrDefault() is { } role ? $"{role.Character.Name} in {role.Anime.Title}" : null),
 					"", Lines(x.Name, x.NativeName), x))],
-				_ => [.. (await _songs.SearchSongsAsync(query, SuggestionCount, ct)).Select(x => new SearchSuggestion(
-					x.Song.Title, x.Anime.Image, Join(x.Song.Label, x.Song.Artist, x.Anime.Title), "", Lines(x.Song.Title, x.Song.Artist), x))],
+				_ => [.. (await _songs.SearchSongsAsync(query, SuggestionCount, ct)).Select(ToSuggestion)],
 			};
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			return [];
 		}
+	}
+
+	private static SearchSuggestion ToSuggestion(SongMatch x) => new(
+		x.Song.Title, x.Anime.Image, Join(x.Song.Label, x.Song.Artist, x.Anime.Title), "", Lines(x.Song.Title, x.Song.Artist), x);
+
+	/// <summary>Whether the title bar is listening for the song playing on the PC.</summary>
+	[ObservableProperty]
+	public partial bool IsListening { get; private set; }
+
+	/// <summary>
+	/// Names the song playing on the PC and finds its anime. Found, the song (to open); else its title, with the songs it
+	/// may be as <see cref="SearchResults"/>; null when there's nothing to show (said in the warning bar), or listening
+	/// was stopped. Called while listening, stops it.
+	/// </summary>
+	public async Task<(string Title, SongMatch? Found)?> ListenAsync()
+	{
+		if (_listen is { } listening)
+		{
+			listening.Cancel();
+			return null;
+		}
+
+		using var listen = _listen = new CancellationTokenSource();
+		IsListening = true;
+		try
+		{
+			if (await _recognizer.RecognizeAsync(listen.Token) is not { } heard)
+			{
+				Warn("Song not recognised", "Nothing that Shazam knows was heard playing.");
+				return null;
+			}
+
+			var named = heard.Artist.Length > 0 ? $"\"{heard.Title}\" by {heard.Artist}" : $"\"{heard.Title}\"";
+			var (found, candidates) = await _songs.FindSongAsync(heard.Title, Romanise(heard.Title), heard.Artist, listen.Token);
+			if (found is null && candidates.Count == 0)
+			{
+				Warn("Song not found on AnimeThemes", $"It's {named}, which AnimeThemes doesn't have.");
+				return null;
+			}
+
+			SearchCategory = SearchCategory.Song;
+			SearchResults = [.. candidates.Select(ToSuggestion)];
+			if (found is null)
+			{
+				Warn("Which anime is it from?", $"It's {named}: pick it from the songs below, if it's one of them.");
+			}
+
+			return (heard.Title, found);
+		}
+		catch (OperationCanceledException)
+		{
+			return null;
+		}
+		catch (Exception ex)
+		{
+			Warn("Couldn't listen", ex.Message);
+			return null;
+		}
+		finally
+		{
+			_listen = null;
+			IsListening = false;
+		}
+	}
+
+	// Japanese in Latin letters as AnimeThemes writes titles (e.g. 紅蓮の弓矢 as "guren no yumiya"); anything else as it is.
+	internal static string Romanise(string title) =>
+		string.Join(" ", UI.Controls.LyricsView.Split(title).Select(x => x.Reading is { } reading ? Romaji.FromKana(reading) : x.Text));
+
+	private void Warn(string title, string message)
+	{
+		SyncWarningTitle = title;
+		SyncWarning = message;
+		IsSyncWarningOpen = true;
 	}
 
 	private static string Join(params string?[] parts) => string.Join(" · ", parts.Where(x => !string.IsNullOrWhiteSpace(x)));

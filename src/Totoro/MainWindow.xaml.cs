@@ -225,9 +225,18 @@ public sealed partial class MainWindow : Window
 	{
 		// A suggestion picked, or Enter with suggestions showing: the first one.
 		var data = (args.ChosenSuggestion as SearchSuggestion ?? ViewModel?.SearchResults.FirstOrDefault())?.Data;
-		if (data is not null && Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
+		if (data is not null)
 		{
-			sender.Text = "";
+			await OpenFoundAsync(data);
+		}
+	}
+
+	// What the search (or listening) found, in the side pane.
+	private async Task OpenFoundAsync(object data)
+	{
+		if (Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
+		{
+			SearchBox.Text = "";
 			ViewModel!.SearchResults = [];
 			await pane.NavigateToDataAsync(data);
 			// Opened from outside the pane: it starts afresh, with nothing to go back to (Back is for pages opened from it).
@@ -236,12 +245,34 @@ public sealed partial class MainWindow : Window
 		}
 	}
 
-	// The box's text starts after the category icon over its left edge (its placeholder too: both follow its padding).
+	// The song heard: opened when its anime's known, else its title in the box over the songs it may be.
+	private async void OnListenClicked(object sender, RoutedEventArgs e)
+	{
+		if (await ViewModel!.ListenAsync() is not { } heard)
+		{
+			return;
+		}
+
+		if (heard.Found is { } found)
+		{
+			await OpenFoundAsync(found);
+			return;
+		}
+
+		SearchBox.Text = heard.Title;
+		SearchBox.Focus(FocusState.Programmatic);
+		SearchBox.IsSuggestionListOpen = true;
+	}
+
+	public static string ListenTip(bool listening) => listening ? "Stop listening" : "What's this song? Listen to what's playing";
+
+	// The box's text starts after the category icon over its left edge (its placeholder too: both follow its padding), and
+	// ends before the listen button at its right.
 	private void OnSearchBoxLoaded(object sender, RoutedEventArgs e)
 	{
 		if (SearchBox.FindDescendant<TextBox>() is { } box)
 		{
-			box.Padding = new Thickness(36, box.Padding.Top, box.Padding.Right, box.Padding.Bottom);
+			box.Padding = new Thickness(36, box.Padding.Top, box.Padding.Right + 28, box.Padding.Bottom);
 		}
 	}
 
