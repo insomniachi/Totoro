@@ -95,13 +95,13 @@ public sealed partial class MainWindow : Window
 	{
 		["Discover"] = "Find something new to watch: what's trending, what airs today, what starts next season, and sequels you missed.",
 		["Library"] = "Your anime list, by status: watching, plan to watch, completed, on hold and dropped. Pick one to see its details and play its episodes.",
-		["Search"] = "Find anime by title, season, year, score and genre, or paste a screenshot (Ctrl+V) to find which anime, episode and moment it's from.",
+		["Search"] = "Find anime by title, season, year, score, genre and tag, or paste a screenshot (Ctrl+V) to find which anime, episode and moment it's from.",
 		["Schedule"] = "When the next episodes of the anime airing now come out.",
 		["Watch"] = "Search a plugin directly, pick a show, an episode and a stream, and play it. Handy for anything that isn't on your list.",
 		["Downloads"] = "Episodes downloading and downloaded, to watch offline. The number on it is how many are downloading.",
 		["Discover (manga)"] = "Find something new to read: popular and new manga.",
 		["Library (manga)"] = "Your manga list, by status: reading, plan to read, completed, on hold and dropped.",
-		["Search (manga)"] = "Find manga by title, year, score and genre.",
+		["Search (manga)"] = "Find manga by title, year, score, genre and tag.",
 		["Read (manga)"] = "Search a plugin directly, pick a manga and a chapter, and read it. Handy for anything that isn't on your list.",
 		["Plugins"] = "Add, update and remove plugins: where Totoro finds anime to watch and manga to read. The number on it is how many have an update.",
 		["Settings"] = "Set the page Totoro opens on, your accounts, your player, playback and downloads.",
@@ -119,12 +119,12 @@ public sealed partial class MainWindow : Window
 			// No target: in the middle of the window, with Totoro's picture.
 			new(() => null, "Welcome to Totoro", "Here's a quick look around. It takes a minute, and you can skip it any time."),
 			new(() => ModeSwitch, "Anime or manga", "Switch between your anime and your manga. The menu's pages change to match."),
-			new(() => SearchBox, "Search anything", "Find anime, manga, characters, voice actors or songs by name. Pick what to search with the icon at its left, or type a:, m:, c:, v: or s: first."),
+			new(() => SearchBox, "Search anything", "Find anime, manga, characters, voice actors or songs by name. Pick what to search with the icon at its left, or type a:, m:, c:, v: or s: first. The note at its right names the song playing and finds its anime."),
 			// Each page in the menu (the startup mode's), Settings last; its item is looked up when its tip shows.
 			.. viewModel.NavigationItems.Concat(viewModel.FooterNavigationItems)
 				.Where(x => x.IsVisible && s_pageTips.ContainsKey(x.Name))
 				.Select(x => new TourStep(() => NavView.ContainerFromMenuItem(x) as FrameworkElement, x.Label, s_pageTips[x.Name])),
-			new(() => AccountButton, "Your account", "Sign in to keep your list in sync as you watch and read. Watch together with friends from here too."),
+			new(() => AccountButton, "Your account", "Sign in to keep your list in sync as you watch and read, or pick the anime database to browse without signing in. Watch together with friends from here too."),
 			// Collapsed when there's no assistant: no tip pointing at nothing.
 			.. viewModel.Chat.IsAvailable
 				? [new TourStep(() => AssistantButton, "Ask the assistant", "Ask for recommendations, or to find, play or update something for you.")]
