@@ -273,6 +273,12 @@ public sealed partial class MainWindow : Window
 		if (SearchBox.FindDescendant<TextBox>() is { } box)
 		{
 			box.Padding = new Thickness(36, box.Padding.Top, box.Padding.Right + 28, box.Padding.Bottom);
+
+			// The clear button sits just before the search icon, where the listen button is: it moves left of it.
+			if (box.FindDescendant("DeleteButton") is FrameworkElement clear)
+			{
+				clear.Margin = new Thickness(clear.Margin.Left, clear.Margin.Top, clear.Margin.Right + 28, clear.Margin.Bottom);
+			}
 		}
 	}
 
