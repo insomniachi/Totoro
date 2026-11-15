@@ -47,32 +47,34 @@ internal sealed class AniskipSegmentsProvider(IModuleSettings<Settings> settings
 		{
 			// Submissions are tied to a cut of the episode (its length); with the length, only matching ones come back.
 			// If none match, any cut's are close enough to be useful.
-			return await GetAsync(duration) is { Count: > 0 } segments ? segments : await GetAsync(TimeSpan.Zero);
+			return await GetAsync(myAnimeListId, episode, duration, ct) is { Count: > 0 } segments
+				? segments
+				: await GetAsync(myAnimeListId, episode, TimeSpan.Zero, ct);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
 		{
 			logger.LogWarning(ex, "Couldn't get skip times for MAL {Id} episode {Episode}", myAnimeListId, episode);
 			return [];
 		}
+	}
 
-		async Task<List<MediaSegment>> GetAsync(TimeSpan length)
-		{
-			var response = await $"https://api.aniskip.com/v2/skip-times/{myAnimeListId}/{episode}"
-								 .AppendQueryParam("types", new[] { "op", "ed", "recap" })
-								 .AppendQueryParam("episodeLength", ((int)length.TotalSeconds).ToString(CultureInfo.InvariantCulture))
-								 .AllowHttpStatus(404)
-								 .GetJsonAsync<Response>(cancellationToken: ct);
+	private static async Task<List<MediaSegment>> GetAsync(long myAnimeListId, int episode, TimeSpan length, CancellationToken ct)
+	{
+		var response = await $"https://api.aniskip.com/v2/skip-times/{myAnimeListId}/{episode}"
+							 .AppendQueryParam("types", new[] { "op", "ed", "recap" })
+							 .AppendQueryParam("episodeLength", ((int)length.TotalSeconds).ToString(CultureInfo.InvariantCulture))
+							 .AllowHttpStatus(404)
+							 .GetJsonAsync<Response>(cancellationToken: ct);
 
-			return
-			[
-				.. response.Results
-						   .Select(x => (Type: ToType(x.SkipType), x.Interval))
-						   .Where(x => x.Type is not null)
-						   .Select(x => new MediaSegment(x.Type!.Value, TimeSpan.FromSeconds(x.Interval.StartTime),
-														 TimeSpan.FromSeconds(x.Interval.EndTime)))
-						   .OrderBy(x => x.Start)
-			];
-		}
+		return
+		[
+			.. response.Results
+					   .Select(x => (Type: ToType(x.SkipType), x.Interval))
+					   .Where(x => x.Type is not null)
+					   .Select(x => new MediaSegment(x.Type!.Value, TimeSpan.FromSeconds(x.Interval.StartTime),
+													 TimeSpan.FromSeconds(x.Interval.EndTime)))
+					   .OrderBy(x => x.Start)
+		];
 	}
 
 	public async Task SubmitSegmentsAsync(long myAnimeListId, int episode, TimeSpan duration, IReadOnlyList<MediaSegment> segments)
@@ -83,17 +85,35 @@ internal sealed class AniskipSegmentsProvider(IModuleSettings<Settings> settings
 			return;
 		}
 
+		// Aniskip already having (nearly) the same times for this cut means a submission adds nothing.
+		List<MediaSegment> existing;
+		try
+		{
+			existing = await GetAsync(myAnimeListId, episode, duration, CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			logger.LogWarning(ex, "Couldn't check MAL {Id} episode {Episode}'s skip times on Aniskip; not submitting", myAnimeListId, episode);
+			return;
+		}
+
 		foreach (var segment in segments.Where(x => x.Type is MediaSegmentType.Opening or MediaSegmentType.Ending))
 		{
+			// A song's full length can run past the episode's end (an ending cut short).
+			var end = segment.End < duration ? segment.End : duration;
+			if (existing.Any(x => x.Type == segment.Type && IsNear(x.Start, segment.Start) && IsNear(x.End, end)))
+			{
+				continue;
+			}
+
 			try
 			{
-				// A song's full length can run past the episode's end (an ending cut short).
 				await $"https://api.aniskip.com/v2/skip-times/{myAnimeListId}/{episode}".PostJsonAsync(new
 				{
 					skipType = segment.Type == MediaSegmentType.Opening ? "op" : "ed",
 					providerName = "Totoro",
 					startTime = segment.Start.TotalSeconds,
-					endTime = Math.Min(segment.End.TotalSeconds, duration.TotalSeconds),
+					endTime = end.TotalSeconds,
 					episodeLength = duration.TotalSeconds,
 					submitterId = options.SubmitterId,
 				});
@@ -110,6 +130,8 @@ internal sealed class AniskipSegmentsProvider(IModuleSettings<Settings> settings
 			}
 		}
 	}
+
+	private static bool IsNear(TimeSpan a, TimeSpan b) => (a - b).Duration() <= TimeSpan.FromSeconds(2);
 
 	private static MediaSegmentType? ToType(string type) => type switch
 	{
