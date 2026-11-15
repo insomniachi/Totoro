@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
+using System.Net;
 using System.Net.Http.Headers;
+using Polly;
 using System.Runtime.Serialization;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
@@ -49,7 +51,13 @@ internal class AnilistModule : IModule<Settings>
 			{
 				client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.Value.Token);
 			}
-		});
+		})
+		// Rate limited anyway (a burst, or another app on the same account): wait as long as AniList says and try again,
+		// rather than lose the rest of a many-page fetch such as the missed sequels'. Inside it, each try is paced.
+		.AddPolicyHandler(Policy.HandleResult<HttpResponseMessage>(r => r.StatusCode == HttpStatusCode.TooManyRequests)
+								.WaitAndRetryAsync(2, (_, r, _) => r.Result?.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(60),
+												   (_, _, _, _) => Task.CompletedTask))
+		.AddHttpMessageHandler(() => new AnilistRateLimitHandler());
 
 		services.AddTransient(sp => CreateClient(sp.GetRequiredService<IHttpClientFactory>()));
 	}

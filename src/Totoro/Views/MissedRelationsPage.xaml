@@ -16,18 +16,23 @@
             <Setter Property="Margin" Value="0,0,8,0" />
         </Style>
 
-        <!--  A watched anime that's why its franchise is here: its poster in a circle  -->
+        <!--  A watched anime that's why its franchise is here: its poster in a circle, which opens its details  -->
         <DataTemplate x:Key="WatchedTemplate" x:DataType="anime:AnimeModel">
-            <Border
-                Width="40"
-                Height="40"
+            <Button
+                Padding="0"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneTime}"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
+                CommandParameter="{x:Bind}"
                 CornerRadius="20"
                 ToolTipService.ToolTip="{x:Bind Title, Mode=OneTime}">
-                <Border.Background>
-                    <ImageBrush ImageSource="{x:Bind Image, Mode=OneTime}" Stretch="UniformToFill" />
-                </Border.Background>
-            </Border>
+                <Border Width="40" Height="40" CornerRadius="20">
+                    <Border.Background>
+                        <ImageBrush ImageSource="{x:Bind Image, Mode=OneTime}" Stretch="UniformToFill" />
+                    </Border.Background>
+                </Border>
+            </Button>
         </DataTemplate>
 
         <!--  A missed anime: its poster, title and what it is, which opens its details; and play and add to list  -->
@@ -95,7 +100,7 @@
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
                 Padding="0"
-                IsExpanded="True">
+                IsExpanded="{x:Bind IsExpanded, Mode=OneTime}">
                 <Expander.Header>
                     <StackPanel Padding="0,8" Spacing="4">
                         <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind Title, Mode=OneTime}" />
@@ -119,6 +124,8 @@
                 <Grid ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
@@ -155,9 +162,18 @@
                             <labs:TokenItem Content="Music" Tag="Music" />
                         </controls:SelectableTokenView>
                     </Grid>
+                    <!--  Any of a missed anime's titles, or of the watched ones behind its franchise, as the Library's title filter  -->
+                    <TextBox
+                        Grid.Column="1"
+                        MinWidth="220"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="MissedSearchBox"
+                        Header="Search"
+                        PlaceholderText="Any title"
+                        Text="{x:Bind ViewModel.Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <!--  As the Library's sorting: the order, and a button that reverses it  -->
                     <ComboBox
-                        Grid.Column="1"
+                        Grid.Column="2"
                         MinWidth="180"
                         VerticalAlignment="Center"
                         AutomationProperties.Name="Sort by"
@@ -165,7 +181,7 @@
                         ItemsSource="{x:Bind ViewModel.SortOptions, Mode=OneTime}"
                         SelectedItem="{x:Bind ViewModel.Sort, Mode=TwoWay}" />
                     <Button
-                        Grid.Column="2"
+                        Grid.Column="3"
                         MinHeight="{ThemeResource ComboBoxMinHeight}"
                         VerticalAlignment="Bottom"
                         AutomationProperties.AutomationId="SortDirectionButton"
@@ -174,9 +190,16 @@
                         ToolTipService.ToolTip="{x:Bind ViewModel.SortDirectionName, Mode=OneWay}">
                         <FontIcon FontSize="14" Glyph="{x:Bind ViewModel.SortDirectionGlyph, Mode=OneWay}" />
                     </Button>
+                    <Button
+                        Grid.Column="4"
+                        MinHeight="{ThemeResource ComboBoxMinHeight}"
+                        VerticalAlignment="Bottom"
+                        AutomationProperties.AutomationId="ExpandAllButton"
+                        Command="{x:Bind ViewModel.ToggleExpandAllCommand, Mode=OneTime}"
+                        Content="{x:Bind ViewModel.ExpandAllText, Mode=OneWay}" />
                 </Grid>
-                <!--  Placeholder franchises while they load; the summary too, which reads "Nothing missed" until then  -->
-                <controls:ShimmerView IsLoading="{x:Bind ViewModel.IsBusy, Mode=OneWay}">
+                <!--  Placeholder franchises until the first are found; then they show as they come, the summary saying it is still looking  -->
+                <controls:ShimmerView IsLoading="{x:Bind ViewModel.ShowPlaceholders, Mode=OneWay}">
                     <StackPanel Spacing="12">
                         <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Text="{x:Bind ViewModel.Summary, Mode=OneWay}" TextWrapping="Wrap" />
                         <ItemsRepeater

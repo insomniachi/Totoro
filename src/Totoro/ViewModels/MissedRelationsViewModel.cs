@@ -53,11 +53,21 @@ public sealed partial class MissedRelationsViewModel(MissedRelationsService miss
 	protected override async Task OnNavigatedToInternalAsync()
 	{
 		WeakReferenceMessenger.Default.Register(this);
-		Sort ??= SortOptions[0];
+		// By title, A to Z (OnSortChanged makes a title sort ascending).
+		Sort ??= SortOptions.First(x => x.Value == ListSort.Title);
+		_finding = true;
+		Show();
 		try
 		{
-			_groups = await missedRelations.GetGroupsAsync();
-			_groupOf = _groups.SelectMany(g => g.Missed.Select(x => (x.Id, g))).ToDictionary();
+			// Progress reports on this (the UI) thread; one posted after the load finished is ignored.
+			SetGroups(await missedRelations.GetGroupsAsync(new Progress<IReadOnlyList<MissedRelationGroup>>(found =>
+			{
+				if (_finding)
+				{
+					SetGroups(found);
+					Show();
+				}
+			})));
 		}
 		catch (Exception ex)
 		{
@@ -65,8 +75,24 @@ public sealed partial class MissedRelationsViewModel(MissedRelationsService miss
 			Summary = "Couldn't load your list or its related anime. Try again later.";
 			return;
 		}
+		finally
+		{
+			_finding = false;
+		}
 
 		Show();
+	}
+
+	// Still finding more: what's found so far shows, with placeholders only until there's some.
+	private bool _finding;
+
+	/// <summary>Placeholder franchises, while nothing's been found yet.</summary>
+	[ObservableProperty] public partial bool ShowPlaceholders { get; private set; }
+
+	private void SetGroups(IReadOnlyList<MissedRelationGroup> groups)
+	{
+		_groups = groups;
+		_groupOf = groups.SelectMany(g => g.Missed.Select(x => (x.Id, g))).ToDictionary();
 	}
 
 	public void Refresh() => Show();
@@ -83,14 +109,38 @@ public sealed partial class MissedRelationsViewModel(MissedRelationsService miss
 	[RelayCommand]
 	private void ToggleSortDirection() => SortDescending = !SortDescending;
 
+	/// <summary>Every franchise open, or every one closed (at first); one opened or closed by hand stays until the next sort, filter or update.</summary>
+	[ObservableProperty]
+	[NotifyPropertyChangedFor(nameof(ExpandAllText))]
+	public partial bool AllExpanded { get; set; }
+
+	public string ExpandAllText => AllExpanded ? "Collapse all" : "Expand all";
+
+	partial void OnAllExpandedChanged(bool value) => Show();
+
+	[RelayCommand]
+	private void ToggleExpandAll() => AllExpanded = !AllExpanded;
+
+	/// <summary>
+	/// Any title of the missed anime to show, or of a watched one behind its franchise (which shows all of the
+	/// franchise's); empty for every one.
+	/// </summary>
+	[ObservableProperty] public partial string Query { get; set; } = "";
+
+	partial void OnQueryChanged(string value) => Show();
+
 	private void Show()
 	{
+		var searching = !string.IsNullOrWhiteSpace(Query);
 		var filtered = _groups.SelectMany(g => g.Missed).Where(x => x.Relation is not { } relation || !HiddenRelations.Contains(relation))
-							 .Where(x => !HiddenFormats.Contains(x.MediaFormat));
-		// A franchise goes where its first anime sorts, with its anime in that order.
+							 .Where(x => !HiddenFormats.Contains(x.MediaFormat))
+							 .Where(x => !searching || UserListQuery.MatchesTitle(x, Query) || _groupOf[x.Id].Watched.Any(w => UserListQuery.MatchesTitle(w, Query)));
+		// A franchise goes where its first anime sorts, with its anime in that order. What's searched for shows open.
 		var sorted = UserListQuery.Sort(filtered, Sort?.Value ?? ListSort.Popularity, SortDescending);
-		Shown = [.. sorted.GroupBy(x => _groupOf[x.Id]).Select(g => g.Key with { Missed = [.. g] })];
-		Summary = _groups.Count == 0 ? "Nothing missed: you've seen every sequel, prequel, side story and spin-off of what you watched, or there's no list to check."
+		Shown = [.. sorted.GroupBy(x => _groupOf[x.Id]).Select(g => g.Key with { Missed = [.. g], IsExpanded = AllExpanded || searching })];
+		ShowPlaceholders = _finding && _groups.Count == 0;
+		Summary = _finding ? $"{sorted.Count} missed in {Shown.Count} franchises so far, still looking…"
+			: _groups.Count == 0 ? "Nothing missed: you've seen every sequel, prequel, side story and spin-off of what you watched, or there's no list to check."
 			: $"{sorted.Count} missed in {Shown.Count} franchises";
 	}
 

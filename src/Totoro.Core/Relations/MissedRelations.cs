@@ -15,6 +15,42 @@ public static class MissedRelations
 		anime.Tracking?.Status is ListItemStatus.Completed or ListItemStatus.Watching or ListItemStatus.Rewatching;
 
 	/// <summary>
+	/// The watched anime of <paramref name="list"/> with their relations, from <paramref name="fetch"/>; and down each
+	/// sequel and prequel chain from them, the seasons not watched (missed, planned or on hold) with theirs, so every
+	/// season past a gap is found too, not just the next one. A fetch per 50 anime per step down the chains, after each of which
+	/// <paramref name="onStep"/> gets what's been fetched so far.
+	/// </summary>
+	public static async Task<List<AnimeModel>> WithRelationsAsync(IReadOnlyCollection<AnimeModel> list,
+		Func<IReadOnlyCollection<long>, Task<List<AnimeModel>>> fetch, Action<IReadOnlyCollection<AnimeModel>>? onStep = null)
+	{
+		var status = list.DistinctBy(x => x.Id).ToDictionary(x => x.Id, x => x.Tracking?.Status);
+		var seen = list.Where(IsWatched).Select(x => x.Id).ToHashSet();
+		List<AnimeModel> all = [];
+		// shortcut: at most 30 seasons down a chain, raise it if a franchise is cut short.
+		IReadOnlyCollection<long> next = [.. seen];
+		for (var round = 0; next.Count > 0 && round < 30; round++)
+		{
+			List<AnimeModel> fetched = [];
+			// 50 at a time, a request each, so what's found shows as it comes.
+			foreach (var chunk in next.Chunk(50))
+			{
+				fetched.AddRange(await fetch(chunk));
+				onStep?.Invoke([.. all, .. fetched]);
+			}
+
+			all.AddRange(fetched);
+			next = [.. fetched.SelectMany(x => x.Related)
+							  .Where(x => x.Relation is AnimeRelationType.Sequel or AnimeRelationType.Prequel && x.Id > 0
+										  && x.AiringStatus is not AiringStatus.NotYetAired
+										  && status.GetValueOrDefault(x.Id) is null or ListItemStatus.PlanToWatch or ListItemStatus.OnHold)
+							  .Select(x => x.Id)
+							  .Where(seen.Add)];
+		}
+
+		return all;
+	}
+
+	/// <summary>
 	/// The related anime of <paramref name="withRelations"/> (watched anime, with <see cref="AnimeModel.Related"/>) that
 	/// aren't anywhere on <paramref name="list"/> and have aired, once each, most popular first.
 	/// </summary>
@@ -77,4 +113,7 @@ public sealed record MissedRelationGroup(IReadOnlyList<AnimeModel> Watched, IRea
 {
 	/// <summary>Its most popular watched entry's title, usually the franchise's first.</summary>
 	public string Title => Watched.FirstOrDefault()?.Title ?? Missed[0].Title;
+
+	/// <summary>Whether the page shows it open, its missed anime under it.</summary>
+	public bool IsExpanded { get; init; } = true;
 }

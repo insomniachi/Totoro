@@ -63,6 +63,34 @@ public class MissedRelationsTests
 	}
 
 	[Fact]
+	public async Task WithRelations_WalksPastGapsInASeasonChain()
+	{
+		// 1 watched → 2 planned → 3 missed → 4 missed; 1 → 5 dropped → 6 not followed.
+		var db = new Dictionary<long, AnimeModel>
+		{
+			[1] = new() { Id = 1, Related = [Related(2, AnimeRelationType.Sequel), Related(5, AnimeRelationType.Prequel)] },
+			[2] = new() { Id = 2, Related = [Related(1, AnimeRelationType.Prequel), Related(3, AnimeRelationType.Sequel)] },
+			[3] = new() { Id = 3, Related = [Related(2, AnimeRelationType.Prequel), Related(4, AnimeRelationType.Sequel)] },
+			[4] = new() { Id = 4, Related = [Related(3, AnimeRelationType.Prequel)] },
+			[5] = new() { Id = 5, Related = [Related(6, AnimeRelationType.Prequel)] },
+		};
+		var list = new[]
+		{
+			new AnimeModel { Id = 1, Tracking = new Tracking { Status = ListItemStatus.Completed } },
+			new AnimeModel { Id = 2, Tracking = new Tracking { Status = ListItemStatus.PlanToWatch } },
+			new AnimeModel { Id = 5, Tracking = new Tracking { Status = ListItemStatus.Dropped } },
+		};
+
+		List<long[]> steps = [];
+		var withRelations = await MissedRelations.WithRelationsAsync(list, ids => Task.FromResult(ids.Select(x => db[x]).ToList()),
+																	 soFar => steps.Add([.. soFar.Select(x => x.Id)]));
+
+		Assert.Equal([1, 2, 3, 4], withRelations.Select(x => x.Id));
+		Assert.Equal<long[]>([[1], [1, 2], [1, 2, 3], [1, 2, 3, 4]], steps);
+		Assert.Equal([3, 4], MissedRelations.Find(list, withRelations).Select(x => x.Id).Order());
+	}
+
+	[Fact]
 	public void IsWatched_CountsCompletedWatchingAndRewatching()
 	{
 		Assert.True(MissedRelations.IsWatched(new AnimeModel { Tracking = new Tracking { Status = ListItemStatus.Rewatching } }));
