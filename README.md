@@ -6,6 +6,7 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 
 - **Your lists, from AniList or MyAnimeList.** Browse and search anime and manga, and track what you watch and read. When you're signed in to both, changes are made on both; signed out, your AniList list is kept on your PC.
 - **Discover.** What's trending, what airs today, what starts next season, and the sequels, prequels, side stories and spin-offs of what you've watched that aren't on your list.
+- **Search by genre, tag or theme.** Pick the genres, tags or themes an anime or manga must have, or must not, along with its year and score.
 - **Plugins.** Where episodes and chapters come from is up to plugins, which anyone can write; install them from the Plugins page. Plugins can also add anime databases, debrid services and more.
 - **Watch episodes.** They play in the built-in player (libvlc) or in mpv, streamed or downloaded, with torrents streamed through rqbit. It can download the next episode while you watch, and tracks episodes you watch in your browser too.
 - **Skips openings and endings.** Using Aniskip's times, or found by their sound in downloaded episodes, it offers to skip them or skips them for you. It offers the next episode, and marks episodes watched when you finish them.
@@ -89,7 +90,7 @@ their source, ship with the app.
 - [rqbit](https://github.com/ikatson/rqbit) (Apache-2.0) streams torrents.
 - [libvlc](https://www.videolan.org/vlc/libvlc.html) and [LibVLCSharp](https://code.videolan.org/videolan/LibVLCSharp) (LGPL-2.1) play video.
 - [NAudio](https://github.com/naudio/NAudio) plays songs' audio, and hears what the PC plays for [Shazam](https://www.shazam.com) to name, as [shazam-for-real](https://github.com/AlekseyMartynov/shazam-for-real) (ISC) does.
-- Anime data comes from [AniList](https://anilist.co), [MyAnimeList](https://myanimelist.net) and [Jikan](https://jikan.moe).
+- Anime data comes from [AniList](https://anilist.co), [MyAnimeList](https://myanimelist.net) (its search, genres and schedule through [tenrai](https://tenrai.org), which serves the [Jikan](https://jikan.moe) API).
 - Episode details and id mappings come from [ani.zip](https://ani.zip) and [tenrai](https://tenrai.org).
 - Skip times come from [Aniskip](https://aniskip.com), episode numbering from [anime-relations](https://github.com/erengy/anime-relations), and songs from [AnimeThemes](https://animethemes.moe).
 - Lyrics come from [LRCLIB](https://lrclib.net), with Japanese read by [NMeCab](https://github.com/komutan/NMeCab) (LGPL-2.1).

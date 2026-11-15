@@ -68,6 +68,7 @@ internal partial class AnilistMetadataProvider(
 		try
 		{
 			var (startedAfter, startedBefore, seasonYear) = GetDateFilters(request);
+			var (with, without) = await SplitAsync(client, request, settings.Value.IncludeNsfw);
 
 			var response = await client.SendQueryAsync<Query>(new GraphQLRequest
 			{
@@ -79,8 +80,10 @@ internal partial class AnilistMetadataProvider(
 																		startDateGreater: startedAfter,
 																		startDateLesser: startedBefore,
 																		source: AniListModelToAnimeModelConverter.ConvertSource(request.Source),
-																		genreIn: request.IncludedGenres,
-																		genreNotIn: request.ExcludedGenres,
+																		genreIn: with.Genres,
+																		genreNotIn: without.Genres,
+																		tagIn: with.Tags,
+																		tagNotIn: without.Tags,
 																		averageScoreGreater: ToAverageScoreBound(request.MinimumScore, -1),
 																		averageScoreLesser: ToAverageScoreBound(request.MaximumScore, +1),
 																		sort: new List<MediaSort?> { MediaSort.PopularityDesc, MediaSort.ScoreDesc },
@@ -101,9 +104,17 @@ internal partial class AnilistMetadataProvider(
 		}
 	}
 
-	public async Task<List<string>> GetGenresAsync()
+	public Task<List<string>> GetGenresAsync() => FetchGenresAndTagsAsync(client, settings.Value.IncludeNsfw);
+
+	// Every AniList tag name, adult ones too, to tell tags from genres in a search; loaded with the genres.
+	private static HashSet<string>? s_tagNames;
+
+	/// <summary>The genres, then the tag names (adult tags only with <paramref name="includeNsfw"/>). Also used by its manga.</summary>
+	internal static async Task<List<string>> FetchGenresAndTagsAsync(GraphQLHttpClient client, bool includeNsfw)
 	{
-		var query = new QueryQueryBuilder().WithGenreCollection().Build();
+		var query = new QueryQueryBuilder().WithGenreCollection()
+										   .WithMediaTagCollection(new MediaTagQueryBuilder().WithName().WithIsAdult())
+										   .Build();
 
 		var response = await client.SendQueryAsync<Query>(new GraphQLRequest
 		{
@@ -115,7 +126,46 @@ internal partial class AnilistMetadataProvider(
 			throw new InvalidOperationException($"AniList couldn't load genres: {DescribeErrors(response.Errors)}");
 		}
 
-		return [.. response.Data.GenreCollection.Where(x => !string.IsNullOrEmpty(x))];
+		var tags = response.Data.MediaTagCollection?.Where(x => !string.IsNullOrEmpty(x?.Name)).ToList() ?? [];
+		s_tagNames = [.. tags.Select(x => x.Name)];
+		return
+		[
+			.. response.Data.GenreCollection.Where(x => !string.IsNullOrEmpty(x)),
+			.. tags.Where(x => includeNsfw || x.IsAdult != true).Select(x => x.Name)
+		];
+	}
+
+	/// <summary>The tag names, loaded first if the genres haven't been (e.g. the agent searches before the view opened).</summary>
+	internal static async Task<IReadOnlySet<string>> GetTagNamesAsync(GraphQLHttpClient client, bool includeNsfw)
+	{
+		if (s_tagNames is null)
+		{
+			await FetchGenresAndTagsAsync(client, includeNsfw);
+		}
+
+		return s_tagNames!;
+	}
+
+	/// <summary>Splits names from the genre list into AniList genres and tags; an empty half is null, so it isn't filtered on.</summary>
+	internal static (List<string>? Genres, List<string>? Tags) SplitGenresAndTags(IEnumerable<string>? names, IReadOnlySet<string> tagNames)
+	{
+		var lookup = (names ?? []).ToLookup(tagNames.Contains);
+		List<string> genres = [.. lookup[false]];
+		List<string> tags = [.. lookup[true]];
+		return (genres.Count > 0 ? genres : null, tags.Count > 0 ? tags : null);
+	}
+
+	/// <summary>The request's included and excluded names, split into genres and tags.</summary>
+	internal static async Task<((List<string>? Genres, List<string>? Tags) With, (List<string>? Genres, List<string>? Tags) Without)> SplitAsync(
+		GraphQLHttpClient client, AdvancedSearchRequest request, bool includeNsfw)
+	{
+		if (request.IncludedGenres is not { Count: > 0 } && request.ExcludedGenres is not { Count: > 0 })
+		{
+			return default;
+		}
+
+		var tagNames = await GetTagNamesAsync(client, includeNsfw);
+		return (SplitGenresAndTags(request.IncludedGenres, tagNames), SplitGenresAndTags(request.ExcludedGenres, tagNames));
 	}
 
 	public Task<List<EpisodeInfo>> GetEpisodesAsync(AnimeModel anime)

@@ -2,6 +2,7 @@ using Flurl;
 using Flurl.Http;
 using GraphQL.Client.Http;
 using JikanDotNet;
+using JikanDotNet.Config;
 using MalApi;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Helpers;
@@ -15,7 +16,7 @@ namespace Totoro.Modules.AnimeDatabase.MyAnimeList;
 
 /// <summary>
 /// Anime information from MyAnimeList. MAL's own API has no advanced search, schedule or characters, so those come
-/// from Jikan (an unofficial MAL API) and AniList (looked up by MAL id).
+/// from Tenrai (which serves Jikan's unofficial MAL API) and AniList (looked up by MAL id).
 /// </summary>
 internal class MyAnimeListMetadataProvider(
 	MyAnimeListSession session,
@@ -25,9 +26,10 @@ internal class MyAnimeListMetadataProvider(
 	// Fields of the related and recommended anime in the full details.
 	private const string NestedFields = $"my_list_status,status,{AnimeFieldNames.TotalEpisodes},{AnimeFieldNames.Mean},{AnimeFieldNames.MediaType}";
 
-	private static readonly Jikan s_jikan = new();
+	// shortcut: no Jikan fallback, and the search calls have no rate limiter (Tenrai allows 4 requests a second without a key), add them if searches start failing.
+	private static readonly Jikan s_jikan = new(new JikanClientConfiguration(), new HttpClient { BaseAddress = new Uri("https://api.tenrai.org/v1/") });
 
-	// Jikan filters genres by id; loaded on first use.
+	// Tenrai filters genres by id; loaded on first use.
 	private static List<Genre>? s_genres;
 
 	public Guid Id => MyAnimeListModule.Id;
@@ -76,13 +78,13 @@ internal class MyAnimeListMetadataProvider(
 	{
 		try
 		{
-			var url = new Url("https://api.jikan.moe/v4/anime");
+			var url = new Url("https://api.tenrai.org/v1/anime");
 			if (!string.IsNullOrWhiteSpace(request.Title))
 			{
 				url.AppendQueryParam("q", request.Title);
 			}
 
-			// Jikan's score bounds are inclusive and on MAL's 0-10 scale, like the request's.
+			// Tenrai's score bounds are inclusive and on MAL's 0-10 scale, like the request's.
 			if (request.MinimumScore is { } minScore)
 			{
 				url.AppendQueryParam("min_score", minScore);
@@ -126,7 +128,7 @@ internal class MyAnimeListMetadataProvider(
 		}
 		catch (Exception ex)
 		{
-			logger.LogWarning(ex, "Jikan search failed");
+			logger.LogWarning(ex, "Tenrai search failed");
 			return [];
 		}
 	}
@@ -195,7 +197,7 @@ internal class MyAnimeListMetadataProvider(
 	{
 		try
 		{
-			// Jikan's schedule is by Japanese broadcast day; the user's local day is the closest match we can ask for.
+			// Tenrai's schedule is by Japanese broadcast day; the user's local day is the closest match we can ask for.
 			var response = await s_jikan.GetScheduleAsync(ConvertDay(DateTime.Now.DayOfWeek), ct);
 			return
 			[
@@ -207,7 +209,7 @@ internal class MyAnimeListMetadataProvider(
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException && !NetworkErrors.IsConnectionFailure(ex))
 		{
-			logger.LogWarning(ex, "Jikan schedule request failed");
+			logger.LogWarning(ex, "Tenrai schedule request failed");
 			return [];
 		}
 	}

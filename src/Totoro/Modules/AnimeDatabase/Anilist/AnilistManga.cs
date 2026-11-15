@@ -33,22 +33,18 @@ internal class AnilistMangaMetadataProvider(GraphQLHttpClient client, IModuleSet
 	public Task<List<MangaModel>> GetTrendingMangaAsync(CancellationToken ct) =>
 		GetPageAsync(sort: [MediaSort.TrendingDesc, MediaSort.PopularityDesc], ct: ct);
 
-	/// <summary>The same genres as its anime.</summary>
-	public async Task<List<string>> GetGenresAsync()
-	{
-		var response = await client.SendQueryAsync<Query>(new GraphQLRequest { Query = new QueryQueryBuilder().WithGenreCollection().Build() });
-		AnilistMangaConverter.ThrowIfFailed(response);
-		return [.. response.Data.GenreCollection.Where(x => !string.IsNullOrEmpty(x))];
-	}
+	/// <summary>The same genres and tags as its anime.</summary>
+	public Task<List<string>> GetGenresAsync() => AnilistMetadataProvider.FetchGenresAndTagsAsync(client, settings.Value.IncludeNsfw);
 
-	public Task<List<MangaModel>> SearchMangaAsync(AdvancedSearchRequest request, CancellationToken ct)
+	public async Task<List<MangaModel>> SearchMangaAsync(AdvancedSearchRequest request, CancellationToken ct)
 	{
 		// Fuzzy dates are yyyymmdd and the bounds exclusive: from 1 Jan of the first year to 31 Dec of the last.
 		var from = request.MinYear is > 1950 and var min ? min * 10000 : (int?)null;
 		var to = request.MaxYear is > 1950 and var max ? (max + 1) * 10000 : (int?)null;
-		return GetPageAsync([MediaSort.PopularityDesc, MediaSort.ScoreDesc], ct,
+		var (with, without) = await AnilistMetadataProvider.SplitAsync(client, request, settings.Value.IncludeNsfw);
+		return await GetPageAsync([MediaSort.PopularityDesc, MediaSort.ScoreDesc], ct,
 			search: string.IsNullOrWhiteSpace(request.Title) ? null : request.Title,
-			genres: request.IncludedGenres, excludedGenres: request.ExcludedGenres,
+			genres: with.Genres, excludedGenres: without.Genres, tags: with.Tags, excludedTags: without.Tags,
 			// Out of 100, and exclusive: widened by one to keep the request's bounds.
 			minimumScore: request.MinimumScore is { } low ? (int)MathF.Round(low * 10) - 1 : null,
 			maximumScore: request.MaximumScore is { } high ? (int)MathF.Round(high * 10) + 1 : null,
@@ -56,15 +52,15 @@ internal class AnilistMangaMetadataProvider(GraphQLHttpClient client, IModuleSet
 	}
 
 	private async Task<List<MangaModel>> GetPageAsync(List<MediaSort?> sort, CancellationToken ct, string? search = null,
-		List<string>? genres = null, List<string>? excludedGenres = null, int? minimumScore = null, int? maximumScore = null,
-		int? startedAfter = null, int? startedBefore = null, int? pageSize = null)
+		List<string>? genres = null, List<string>? excludedGenres = null, List<string>? tags = null, List<string>? excludedTags = null,
+		int? minimumScore = null, int? maximumScore = null, int? startedAfter = null, int? startedBefore = null, int? pageSize = null)
 	{
 		var response = await client.SendQueryAsync<Query>(new GraphQLRequest
 		{
 			Query = new QueryQueryBuilder().WithPage(new PageQueryBuilder()
 				.WithMedia(AnilistMangaConverter.MediaBuilder(), search: search, sort: sort, type: MediaType.Manga,
 					isAdult: settings.Value.IncludeNsfw ? null : false,
-					genreIn: genres, genreNotIn: excludedGenres,
+					genreIn: genres, genreNotIn: excludedGenres, tagIn: tags, tagNotIn: excludedTags,
 					averageScoreGreater: minimumScore, averageScoreLesser: maximumScore,
 					startDateGreater: startedAfter, startDateLesser: startedBefore),
 				1, pageSize ?? (int)settings.Value.SearchLimit).Build()

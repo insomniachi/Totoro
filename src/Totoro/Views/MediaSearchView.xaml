@@ -298,20 +298,20 @@
                             StepFrequency="0.5" />
                     </StackPanel>
 
-                    <!--  Type to find a genre; the suggestions only offer genres the database knows (see the code-behind)  -->
+                    <!--  Type to find a genre or tag; the suggestions only offer names the database knows (see the code-behind)  -->
                     <toolkit:TokenizingTextBox
                         x:Name="IncludedGenresBox"
-                        Header="With genres"
+                        Header="With genres or tags"
                         ItemsSource="{x:Bind ViewModel.IncludedGenres, Mode=OneTime}"
-                        PlaceholderText="Add a genre"
+                        PlaceholderText="Add a genre or tag"
                         QueryIcon="{toolkitui:SymbolIconSource Symbol=Add}"
                         TextChanged="OnGenreTextChanged"
                         TokenItemAdding="OnGenreAdding" />
                     <toolkit:TokenizingTextBox
                         x:Name="ExcludedGenresBox"
-                        Header="Without genres"
+                        Header="Without genres or tags"
                         ItemsSource="{x:Bind ViewModel.ExcludedGenres, Mode=OneTime}"
-                        PlaceholderText="Add a genre"
+                        PlaceholderText="Add a genre or tag"
                         QueryIcon="{toolkitui:SymbolIconSource Symbol=Add}"
                         TextChanged="OnGenreTextChanged"
                         TokenItemAdding="OnGenreAdding" />

@@ -2,6 +2,7 @@ using System.Net;
 using Flurl;
 using Flurl.Http;
 using JikanDotNet;
+using JikanDotNet.Config;
 using MalApi;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
@@ -47,9 +48,10 @@ internal class MyAnimeListMangaMetadataProvider(MyAnimeListSession session) : IM
 		return [.. ranked.Data.Select(x => MalMangaConverter.ToModel(x.Manga))];
 	}
 
-	private static readonly Jikan s_jikan = new();
+	// shortcut: no Jikan fallback, and the search calls have no rate limiter (Tenrai allows 4 requests a second without a key), add them if searches start failing.
+	private static readonly Jikan s_jikan = new(new JikanClientConfiguration(), new HttpClient { BaseAddress = new Uri("https://api.tenrai.org/v1/") });
 
-	// Jikan filters genres by id; loaded on first use.
+	// Tenrai filters genres by id; loaded on first use.
 	private static List<JikanDotNet.Genre>? s_genres;
 
 	private static async Task<List<JikanDotNet.Genre>> LoadGenresAsync() =>
@@ -57,10 +59,10 @@ internal class MyAnimeListMangaMetadataProvider(MyAnimeListSession session) : IM
 
 	public async Task<List<string>> GetGenresAsync() => [.. (await LoadGenresAsync()).Select(x => x.Name).Distinct().Order()];
 
-	/// <summary>Through Jikan (an unofficial MAL API), as MAL's own API has no filters; its results have no list entry.</summary>
+	/// <summary>Through Tenrai (which serves Jikan's unofficial MAL API), as MAL's own API has no filters; its results have no list entry.</summary>
 	public async Task<List<MangaModel>> SearchMangaAsync(AdvancedSearchRequest request, CancellationToken ct)
 	{
-		var url = new Url("https://api.jikan.moe/v4/manga");
+		var url = new Url("https://api.tenrai.org/v1/manga");
 		if (!string.IsNullOrWhiteSpace(request.Title))
 		{
 			url.AppendQueryParam("q", request.Title);

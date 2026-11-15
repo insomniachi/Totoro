@@ -102,7 +102,7 @@ The software above listed as MIT is under this license, each with its own copyri
 
 ## Data
 
-Anime data comes from AniList, MyAnimeList (with Jikan), ani.zip, tenrai, Aniskip, anime-relations and AnimeThemes,
+Anime data comes from AniList, MyAnimeList (through tenrai's Jikan API), ani.zip, tenrai, Aniskip, anime-relations and AnimeThemes,
 lyrics from LRCLIB, and screenshot search from trace.moe, under their own terms; see the README.
 
 ## The IPADIC license

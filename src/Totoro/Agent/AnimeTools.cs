@@ -39,8 +39,8 @@ public sealed class AnimeTools(
 	[Description("Searches the anime database. Give at least one filter; results are best match first.")]
 	public async Task<IReadOnlyList<AnimeSummary>> SearchAnimeAsync(
 		[Description("Words from its title, in English or Japanese (romaji), as the user wrote them: typos are forgiven.")] string? title = null,
-		[Description("Genres it must have, from get_genres.")] string[]? genres = null,
-		[Description("Genres it must not have.")] string[]? excludedGenres = null,
+		[Description("Genres it must have, from get_genres (tags and themes too, where the database has them).")] string[]? genres = null,
+		[Description("Genres it must not have (tags and themes too).")] string[]? excludedGenres = null,
 		[Description("The season it aired in; use with a year.")] AnimeSeason? season = null,
 		[Description("The earliest year it started airing.")] int? fromYear = null,
 		[Description("The latest year it started airing.")] int? toYear = null,
@@ -92,7 +92,7 @@ public sealed class AnimeTools(
 	private static bool IsOnList(AnimeModel anime) => anime.Tracking?.Status is not null;
 
 	[AgentTool("get_genres")]
-	[Description("The genres search_anime accepts.")]
+	[Description("The genres search_anime accepts, with tags and themes where the database has them.")]
 	public Task<List<string>> GetGenresAsync() => lookup.Database.GetGenresAsync();
 
 	[AgentTool("get_user_list")]
