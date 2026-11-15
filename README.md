@@ -21,14 +21,20 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 
 ## Screenshots
 
+![The built-in player during an episode's opening, offering to skip it, with the opening and ending marked on the seek bar](docs/screenshots/player.jpg)
+
+**Watching**: the built-in player offers to skip the opening, and marks it and the ending on the seek bar
+
 | | |
 |---|---|
 | ![Library: the anime being watched, with countdowns to their next episodes and progress](docs/screenshots/library.jpg) | ![An anime's details: its facts, synopsis and videos, with tabs for episodes, characters, music and related anime](docs/screenshots/details.jpg) |
 | **Library**: your list, with countdowns to the next episodes | **Details**: an anime's episodes, characters, music and related anime |
 | ![Sequels and spin-offs missed: a grid of related anime not on the list, with filters and sorting](docs/screenshots/missed.jpg) | ![Release schedule: a month's calendar of when watched anime air](docs/screenshots/schedule.jpg) |
 | **Missed sequels and spin-offs**, filtered and sorted | **Schedule**: when what you're watching airs |
-| ![Manga Discover: trending and all-time popular manga](docs/screenshots/manga-discover.jpg) | |
-| **Manga**: discover, track and read | |
+| ![Manga Discover: trending and all-time popular manga](docs/screenshots/manga-discover.jpg) | ![The manga reader showing the first page of a chapter](docs/screenshots/manga-reader.jpg) |
+| **Manga**: discover, track and read | **Reader**: chapters open in the app |
+| ![An anime's openings and endings, one playing with its Japanese lyrics shown with furigana and romaji](docs/screenshots/music.jpg) | ![The Plugins page, filtered to the built-in plugins](docs/screenshots/plugins.jpg) |
+| **Music**: openings and endings, with lyrics as they're sung | **Plugins**: install sources, players and services, and change their settings |
 
 ## Building
 
