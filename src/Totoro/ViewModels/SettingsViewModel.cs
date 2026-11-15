@@ -94,6 +94,7 @@ public partial class SettingsViewModel : ObservableObject
 	private readonly IPreferences _preferences;
 	private readonly DownloadService _downloads;
 	private readonly IAppearanceService _appearance;
+	private readonly Playback.DownloadNotifier _notifier;
 
 	public SettingsViewModel(
 		IEnumerable<NavigationItemViewModel> navigationItems,
@@ -108,8 +109,10 @@ public partial class SettingsViewModel : ObservableObject
 		IEnumerable<IAccount> accounts,
 		IAppearanceService appearance,
 		UpdateService updates,
-		DownloadService downloads)
+		DownloadService downloads,
+		Playback.DownloadNotifier notifier)
 	{
+		_notifier = notifier;
 		_preferences = preferences;
 		_downloads = downloads;
 		_appearance = appearance;
@@ -117,6 +120,7 @@ public partial class SettingsViewModel : ObservableObject
 		YtDlpPath = preferences.YtDlpPath;
 		PlayDownloadsFirst = preferences.PlayDownloadsFirst;
 		AutoDownloadNext = preferences.AutoDownloadNext;
+		NotifyNewEpisodes = preferences.NotifyNewEpisodes;
 		Updates = updates;
 		Updates.PropertyChanged += (_, _) =>
 		{
@@ -475,6 +479,15 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool AutoDownloadNext { get; set; }
 
 	partial void OnAutoDownloadNextChanged(bool value) => _preferences.AutoDownloadNext = value;
+
+	/// <summary>Whether the user's told when the next episode of an anime they're watching is out.</summary>
+	[ObservableProperty]
+	public partial bool NotifyNewEpisodes { get; set; }
+
+	partial void OnNotifyNewEpisodesChanged(bool value) => _preferences.NotifyNewEpisodes = value;
+
+	[RelayCommand]
+	private Task TestNotificationAsync() => _notifier.NotifyTestAsync();
 
 	public IReadOnlyList<NavigationItemViewModel> StartupPages { get; }
 

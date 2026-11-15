@@ -53,6 +53,15 @@ public class AutoDownloadTests
 	}
 
 	[Fact]
+	public void WasNotified_OnlyUpToTheLastEpisodeNotified()
+	{
+		var notified = new Dictionary<long, int> { [1] = 6 };
+		Assert.True(AutoDownloader.WasNotified(notified, 1, 6));
+		Assert.False(AutoDownloader.WasNotified(notified, 1, 7));
+		Assert.False(AutoDownloader.WasNotified(notified, 2, 6));
+	}
+
+	[Fact]
 	public void CreateStreaming_NeverDownloads()
 	{
 		var downloads = new Provider(DownloadsModule.Id);

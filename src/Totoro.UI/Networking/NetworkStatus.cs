@@ -21,8 +21,11 @@ public sealed partial class NetworkStatus : ObservableObject
 		NetworkInformation.NetworkStatusChanged += _ => _dispatcher.TryEnqueue(Update);
 	}
 
-	/// <summary>Raised on the UI thread when the PC gets internet access back.</summary>
-	public event EventHandler? Restored;
+	/// <summary>
+	/// Raised on the UI thread when the PC gets internet access back. Static, so subscribing doesn't create
+	/// <see cref="Current"/>: that needs a UI thread, which view models under test don't have.
+	/// </summary>
+	public static event EventHandler? Restored;
 
 	[ObservableProperty]
 	public partial bool IsOffline { get; private set; }

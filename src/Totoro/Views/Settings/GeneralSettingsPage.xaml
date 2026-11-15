@@ -80,6 +80,16 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="While Totoro is open, a Windows notification when the next episode of an anime you're watching is on its provider. With downloading the next episode on, you're told once it's downloaded instead." Header="Tell me when a new episode is available">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xEA8F;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button Command="{x:Bind ViewModel.TestNotificationCommand}" Content="Send a test" />
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.NotifyNewEpisodes, Mode=TwoWay}" />
+                </StackPanel>
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard Description="Light, dark, or follow your Windows setting." Header="App theme">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE790;" />

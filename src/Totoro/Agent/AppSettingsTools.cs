@@ -44,7 +44,9 @@ public sealed record AppSettings(
 	[property: Description("Where episodes are downloaded to, a folder for each anime named with its title.")]
 	string DownloadFolder,
 	[property: Description("yt-dlp.exe, which downloads HLS streams; empty when it's found on the PATH.")]
-	string YtDlpPath);
+	string YtDlpPath,
+	[property: Description("Whether the user gets a Windows notification when the next episode of an anime they're watching is out (while the app's open).")]
+	bool NotifyNewEpisodes);
 
 [Description("A module (an anime database, provider, media player...) and its settings.")]
 public sealed record ModuleSettingsInfo(string Module, IReadOnlyList<ModuleSettingInfo> Settings);
@@ -72,10 +74,11 @@ public sealed class AppSettingsTools(
 	IEnumerable<Descriptor> modules,
 	IEnumerable<IModuleSettings> moduleSettings,
 	IEnumerable<NavigationItemViewModel> pages,
-	IEnumerable<IAccount> accounts)
+	IEnumerable<IAccount> accounts,
+	Playback.DownloadNotifier notifier)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page and mode (anime or manga), download folder.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page and mode (anime or manga), download folder, new-episode notifications.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
@@ -104,7 +107,8 @@ public sealed class AppSettingsTools(
 			[.. startupPages.Select(x => x.Name)],
 			preferences.StartupMode,
 			preferences.DownloadFolder,
-			preferences.YtDlpPath);
+			preferences.YtDlpPath,
+			preferences.NotifyNewEpisodes);
 	}
 
 	[AgentTool("update_app_settings")]
@@ -124,7 +128,8 @@ public sealed class AppSettingsTools(
 		[Description("One of startupPages from get_app_settings.")] string? startupPage = null,
 		[Description("Whether the app opens on anime or manga.")] MediaMode? startupMode = null,
 		[Description("A folder to download episodes to; empty for the default (Videos\\Totoro).")] string? downloadFolder = null,
-		[Description("The path of yt-dlp.exe, which downloads HLS streams; empty to find it on the PATH.")] string? ytDlpPath = null)
+		[Description("The path of yt-dlp.exe, which downloads HLS streams; empty to find it on the PATH.")] string? ytDlpPath = null,
+		[Description("Whether the user's notified when a new episode of an anime they're watching is out.")] bool? notifyNewEpisodes = null)
 	{
 		if (animeDatabase is not null)
 		{
@@ -220,8 +225,18 @@ public sealed class AppSettingsTools(
 			preferences.YtDlpPath = ytDlpPath;
 		}
 
+		if (notifyNewEpisodes is { } notifyNew)
+		{
+			preferences.NotifyNewEpisodes = notifyNew;
+		}
+
 		return GetAppSettings();
 	}
+
+	[AgentTool("send_test_notification")]
+	[Description("Shows a Windows notification like a new episode's, for the user to check that they get them.")]
+	public async Task<string> SendTestNotification() =>
+		await notifier.NotifyTestAsync() ? "Sent." : throw new AgentToolException("Windows didn't take it: notifications may be turned off for Totoro in Windows' settings.");
 
 	[AgentTool("get_module_settings")]
 	[Description("The settings of the app's modules: anime databases, anime providers, media players, torrent streaming...")]

@@ -480,7 +480,7 @@
                             <Grid>
                                 <FontIcon
                                     FontSize="14"
-                                    Glyph="&#xEC71;"
+                                    Glyph="&#xEC4F;"
                                     Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.IsListening), Mode=OneWay}" />
                                 <ProgressRing
                                     Width="14"

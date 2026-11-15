@@ -9,8 +9,8 @@ using Totoro.Core.Settings;
 namespace Totoro.Playback;
 
 /// <summary>
-/// Downloads the next episode of each anime the user is watching (if it's turned on, see <see cref="DownloadPreferences"/>),
-/// from its own provider, while the app's open. The provider's only asked once the episode has aired by the anime's
+/// Downloads the next episode of each anime the user is watching from its own provider, or tells the user it's out (whichever's
+/// turned on, see <see cref="DownloadPreferences"/>), while the app's open. The provider's only asked once the episode has aired by the anime's
 /// schedule, then less and less often until it has it: providers put episodes up a while after they air.
 /// </summary>
 public sealed class AutoDownloader : IDisposable
@@ -86,9 +86,13 @@ public sealed class AutoDownloader : IDisposable
 	/// <summary>How long to wait before asking the provider again, after it didn't have the episode <paramref name="misses"/> times.</summary>
 	internal static TimeSpan RetryDelay(int misses) => TimeSpan.FromMinutes(15 * Math.Pow(2, Math.Clamp(misses, 1, 5) - 1));
 
+	/// <summary>Whether the user's already been told about episode <paramref name="number"/> (or a later one) of anime <paramref name="id"/>.</summary>
+	internal static bool WasNotified(IReadOnlyDictionary<long, int> notified, long id, int number) =>
+		notified.TryGetValue(id, out var last) && last >= number;
+
 	private async Task CheckAsync()
 	{
-		if (_checking || !_preferences.AutoDownloadNext)
+		if (_checking || !(_preferences.AutoDownloadNext || _preferences.NotifyNewEpisodes))
 		{
 			return;
 		}
@@ -142,6 +146,13 @@ public sealed class AutoDownloader : IDisposable
 			return;
 		}
 
+		// Only telling the user: the provider isn't asked about an episode that isn't new, or that they've been told of.
+		// Not claimed, so it's downloaded if downloading is turned on later.
+		if (!_preferences.AutoDownloadNext && (!notify || WasNotified(_preferences.NotifiedEpisodes, anime.Id, number)))
+		{
+			return;
+		}
+
 		if (_watch.GetProvider(anime) is not { } provider)
 		{
 			return;
@@ -153,10 +164,20 @@ public sealed class AutoDownloader : IDisposable
 		{
 			if (await HasEpisodeAsync(provider, anime, number))
 			{
-				var items = await _downloads.DownloadEpisodesAsync(anime, number, number, provider);
-				if (notify)
+				if (_preferences.AutoDownloadNext)
 				{
-					_ = _notifier.NotifyWhenDoneAsync(anime, number, items);
+					var items = await _downloads.DownloadEpisodesAsync(anime, number, number, provider);
+					if (notify)
+					{
+						_ = _notifier.NotifyWhenDoneAsync(anime, number, items);
+					}
+				}
+				else
+				{
+					_notifier.NotifyAvailable(anime, number);
+					var notified = _preferences.NotifiedEpisodes;
+					notified[anime.Id] = number;
+					_preferences.NotifiedEpisodes = notified;
 				}
 
 				_retries.Remove(key);

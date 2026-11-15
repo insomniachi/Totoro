@@ -6,6 +6,8 @@ public static class DownloadPreferences
 	public const string YtDlpPathKey = "YtDlpPath";
 	public const string PlayDownloadsFirstKey = "PlayDownloadsFirst";
 	public const string AutoDownloadNextKey = "AutoDownloadNext";
+	public const string NotifyNewEpisodesKey = "NotifyNewEpisodes";
+	public const string NotifiedEpisodesKey = "NotifiedEpisodes";
 
 	/// <summary>Where downloaded episodes go unless the user picks a folder: Videos\Totoro.</summary>
 	public static string DefaultDownloadFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Totoro");
@@ -38,6 +40,20 @@ public static class DownloadPreferences
 		{
 			get => preferences.ReadKey(AutoDownloadNextKey, false);
 			set => preferences.SaveKey(AutoDownloadNextKey, value);
+		}
+
+		/// <summary>Whether the user's told when the next episode of an anime they're watching is out, if it isn't downloaded (see AutoDownloader).</summary>
+		public bool NotifyNewEpisodes
+		{
+			get => preferences.ReadKey(NotifyNewEpisodesKey, false);
+			set => preferences.SaveKey(NotifyNewEpisodesKey, value);
+		}
+
+		/// <summary>The last episode the user was told is out, by anime id, so they aren't told again after a restart.</summary>
+		public Dictionary<long, int> NotifiedEpisodes
+		{
+			get => preferences.ReadKey<Dictionary<long, int>>(NotifiedEpisodesKey) ?? [];
+			set => preferences.SaveKey(NotifiedEpisodesKey, value);
 		}
 	}
 }

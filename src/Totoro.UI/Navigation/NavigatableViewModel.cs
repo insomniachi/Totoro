@@ -18,13 +18,13 @@ public abstract class NavigatableViewModel : ObservableObject, INavigationAware
 
 	public async Task OnNavigatedFromAsync()
 	{
-		NetworkStatus.Current.Restored -= OnNetworkRestored;
+		NetworkStatus.Restored -= OnNetworkRestored;
 		await OnNavigatedFromInternalAsync();
 	}
 
 	public async Task OnNavigatedToAsync()
 	{
-		NetworkStatus.Current.Restored += OnNetworkRestored;
+		NetworkStatus.Restored += OnNetworkRestored;
 		using (BeginBusy())
 		{
 			await OnNavigatedToInternalAsync();
