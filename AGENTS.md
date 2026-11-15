@@ -33,6 +33,7 @@ Also:
 - **UI layout:** follow the Windows spacing guidelines: 8 between buttons and from a header to its control, 12 between content areas, 16 for a surface's padding. Line sections up with each other.
 - **Toolkit choice:** prefer CommunityToolkit controls over DevWinUI's when both have one.
 - **x:Bind:** it doesn't call a function while something along its argument's path is null (`ViewModel` not set yet), leaving the old value; but it does call it with an argument that is null itself. So strings passed to x:Bind functions are never null (use `""`), and functions taking an object that can be null take it as nullable and handle null.
+- **Docs stay current:** a new feature or package updates `README.md` in the same change (and `THIRD-PARTY-NOTICES.md` for a package whose license asks for a notice). Name no provider sites in it; say "plugins".
 - **Processes the app starts** (media players, rqbit...) end with it: pass them to `ChildProcesses.Add`. Without the app, nothing tracks what's watched.
 
 ## Everything the app does is available to AI agents
