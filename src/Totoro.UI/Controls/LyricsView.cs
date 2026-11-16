@@ -21,6 +21,8 @@ public sealed partial class LyricsView : Grid
 	// How dim the words not sung yet are, and the lines before and after the one sung.
 	private const double Unsung = 0.6;
 	private const double Aside = 0.4;
+	// How big the lines before and after are, next to the one sung: shrunk, not it grown, so it never spills past the edges.
+	private const float AsideScale = 0.88f;
 	// The place of the line sung: the middle one of three (0 to 2); a line comes in from 3 and leaves to -1.
 	private const int Middle = 1;
 	private const double Gap = 6;
@@ -287,6 +289,7 @@ public sealed partial class LyricsView : Grid
 		var from = shown.Place;
 		shown.Place = place;
 		shown.Element.Opacity = opacity;
+		shown.Element.Scale = ScaleAt(place);
 		shown.Element.Translation = new Vector3(0, Top(place), 0);
 		if (!slides || from == place)
 		{
@@ -350,12 +353,18 @@ public sealed partial class LyricsView : Grid
 			HorizontalAlignment = HorizontalAlignment.Center,
 			VerticalAlignment = VerticalAlignment.Top,
 			Opacity = 0,
+			Scale = ScaleAt(place),
 			Translation = new Vector3(0, (float)(place * (LineHeight + Gap)), 0),
 		};
-		// After its first opacity, so that it fades in from nothing.
+		// Grows and shrinks about its middle.
+		element.SizeChanged += (_, e) => element.CenterPoint = new Vector3((float)e.NewSize.Width / 2, (float)e.NewSize.Height / 2, 0);
+		// After its first opacity and size, so that it fades in from nothing and grows from an aside's size.
 		element.OpacityTransition = new ScalarTransition { Duration = s_move };
+		element.ScaleTransition = new Vector3Transition { Duration = s_move };
 		return new Shown(element, cells) { Place = place };
 	}
+
+	private static Vector3 ScaleAt(int place) => place == Middle ? Vector3.One : new Vector3(AsideScale, AsideScale, 1);
 
 	// A space when there's nothing to show, so it's as tall as the others.
 	private static TextBlock Small(string text) => new()
