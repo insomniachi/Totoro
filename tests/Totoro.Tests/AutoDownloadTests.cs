@@ -89,6 +89,5 @@ public class AutoDownloadTests
 		public IAnimeProvider? Create(Guid id) => items.FirstOrDefault(x => x.Id == id);
 		public IAnimeProvider? CreateDefault() => Create(defaultId);
 		public IEnumerable<IAnimeProvider> CreateAll() => items;
-		public Guid GetDefaultId() => defaultId;
 	}
 }

@@ -350,7 +350,6 @@ public class MangaTests
 		public T? Create(Guid id) => item;
 		public T? CreateDefault() => item;
 		public IEnumerable<T> CreateAll() => [item];
-		public Guid GetDefaultId() => Guid.Empty;
 	}
 
 	private sealed class HttpClients : IHttpClientFactory

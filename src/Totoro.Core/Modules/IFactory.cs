@@ -3,18 +3,19 @@ using Totoro.Core.Settings;
 
 namespace Totoro.Core.Modules;
 
+/// <summary>
+/// Resolves the module services registered under an id. "Create" may hand back a shared singleton
+/// (media players, torrent streamers), so callers must not dispose what they get.
+/// </summary>
 public interface IFactory<out TService, TId>
 	where TService : notnull
 {
-	TService? Create(TId? id);
+	TService? Create(TId id);
 
 	TService? CreateDefault();
 
 	IEnumerable<TService> CreateAll();
-
-	TId? GetDefaultId();
 }
-
 
 /// <summary>
 /// Resolves services from the provider the factory itself was resolved from.
@@ -27,22 +28,7 @@ public class Factory<TService, TId>(
 	string defaultKey) : IFactory<TService, TId>
 	where TService : notnull
 {
-	public TService? Create(TId? id)
-	{
-		if (id is null)
-		{
-			return default;
-		}
-
-		var service = serviceProvider.GetKeyedService<TService>(id);
-		if (service is not null)
-		{
-			return service;
-		}
-
-		return serviceProvider.GetKeyedService<TService>(default(TId)!);
-	}
-
+	public TService? Create(TId id) => serviceProvider.GetKeyedService<TService>(id);
 
 	public TService? CreateDefault()
 	{
@@ -51,15 +37,5 @@ public class Factory<TService, TId>(
 			   serviceProvider.GetKeyedServices<TService>(KeyedService.AnyKey).FirstOrDefault();
 	}
 
-	public TId? GetDefaultId() => preferences.ReadKey<TId>(defaultKey);
-
-	public IEnumerable<TService> CreateAll()
-	{
-		return serviceProvider.GetKeyedServices<TService>(KeyedService.AnyKey);
-	}
-
-	public bool CanCreate()
-	{
-		return CreateAll().Any();
-	}
+	public IEnumerable<TService> CreateAll() => serviceProvider.GetKeyedServices<TService>(KeyedService.AnyKey);
 }

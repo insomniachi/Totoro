@@ -33,7 +33,6 @@ public class AnimePluginTesterTests
 		public TService? Create(Guid id) => items.FirstOrDefault();
 		public TService? CreateDefault() => items.FirstOrDefault();
 		public IEnumerable<TService> CreateAll() => items;
-		public Guid GetDefaultId() => Guid.Empty;
 	}
 
 	[Fact]

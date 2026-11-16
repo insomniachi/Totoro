@@ -56,7 +56,7 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 		Providers = [.. _providers.Values.Select(x => new ProviderChoice(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))];
 		Message = Providers.Count == 0 ? "There's no anime provider: install one from the Plugins page." : "";
 
-		var selected = providers.GetDefaultId();
+		var selected = providers.CreateDefault()?.Id;
 		SelectedProvider = Providers.FirstOrDefault(x => x.Id == selected) ?? Providers.FirstOrDefault();
 	}
 
