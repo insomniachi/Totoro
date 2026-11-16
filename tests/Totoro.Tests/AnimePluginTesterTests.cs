@@ -27,7 +27,7 @@ public class AnimePluginTesterTests
 			OnGetServers?.Invoke(episode) ?? Task.FromResult<List<VideoServer>>([new("1080p Direct", new Uri("https://example.com/stream.mp4"), VideoServerKind.Direct)]);
 	}
 
-	private sealed class MockFactory<TService>(params TService[] items) : IFactory<TService, Guid>
+	private sealed class MockFactory<TService>(params TService[] items) : IFactory<TService>
 		where TService : notnull
 	{
 		public TService? Create(Guid id) => items.FirstOrDefault();

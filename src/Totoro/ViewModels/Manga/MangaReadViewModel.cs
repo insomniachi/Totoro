@@ -24,11 +24,11 @@ public partial class MangaReadViewModel : NavigatableViewModel
 	private readonly Dictionary<Guid, IMangaProvider> _sources;
 	private readonly IDialogService _dialogs;
 	private readonly List<IModuleSettings> _moduleSettings;
-	private readonly IFactory<IMangaMetadataProvider, Guid> _databases;
+	private readonly IFactory<IMangaMetadataProvider> _databases;
 	private CancellationTokenSource? _search;
 
 	public MangaReadViewModel(MangaReadingService reading, IDialogService dialogs, IEnumerable<IModuleSettings> moduleSettings, IEnumerable<Descriptor> modules,
-		IFactory<IMangaMetadataProvider, Guid> databases)
+		IFactory<IMangaMetadataProvider> databases)
 	{
 		_dialogs = dialogs;
 		_databases = databases;

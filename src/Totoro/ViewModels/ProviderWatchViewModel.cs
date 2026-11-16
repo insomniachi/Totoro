@@ -32,7 +32,7 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 {
 	private readonly WatchService _watch;
 	private readonly DownloadService _downloads;
-	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
+	private readonly IFactory<IAnimeMetadataProvider> _databases;
 	private readonly IAnimeSettingsStore _animeSettings;
 	private readonly IDialogService _dialogs;
 	private readonly List<IModuleSettings> _moduleSettings;
@@ -41,7 +41,7 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	// The show each card is for: a card is the provider's title with the database's cover.
 	private readonly Dictionary<AnimeModel, ProviderShow> _cardShows = [];
 
-	public ProviderWatchViewModel(WatchService watch, DownloadService downloads, IFactory<IAnimeProvider, Guid> providers, IFactory<IAnimeMetadataProvider, Guid> databases,
+	public ProviderWatchViewModel(WatchService watch, DownloadService downloads, IFactory<IAnimeProvider> providers, IFactory<IAnimeMetadataProvider> databases,
 								  IAnimeSettingsStore animeSettings, IDialogService dialogs, IEnumerable<IModuleSettings> moduleSettings,
 								  IEnumerable<Descriptor> modules)
 	{

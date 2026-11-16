@@ -15,8 +15,8 @@ namespace Totoro.ViewModels.Manga;
 /// which selects a database and so already loads its genres.
 /// </remarks>
 public sealed class MangaSearchViewModel(
-	IFactory<IMangaMetadataProvider, Guid> providers,
-	IFactory<IMangaTracker, Guid> trackers,
+	IFactory<IMangaMetadataProvider> providers,
+	IFactory<IMangaTracker> trackers,
 	IPreferences preferences,
 	IEnumerable<Descriptor> modules,
 	ILogger<MangaSearchViewModel> logger)
@@ -24,8 +24,8 @@ public sealed class MangaSearchViewModel(
 		[.. providers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))],
 		preferences.SelectedMangaDatabase, logger), IRecipient<MangaTrackingChangedMessage>
 {
-	private readonly IFactory<IMangaMetadataProvider, Guid> _providers = providers;
-	private readonly IFactory<IMangaTracker, Guid> _trackers = trackers;
+	private readonly IFactory<IMangaMetadataProvider> _providers = providers;
+	private readonly IFactory<IMangaTracker> _trackers = trackers;
 	private Task<List<MangaModel>>? _userList;
 
 	// A primary constructor has no body: changes elsewhere are followed from arriving on the page.

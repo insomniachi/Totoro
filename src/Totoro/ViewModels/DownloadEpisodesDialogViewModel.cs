@@ -23,7 +23,7 @@ public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<Do
 {
 	private readonly AnimeModel _anime;
 	private readonly WatchService _watch;
-	private readonly IFactory<IAnimeProvider, Guid> _providers;
+	private readonly IFactory<IAnimeProvider> _providers;
 
 	// Each provider's settings as edited, by provider id, so switching provider and back keeps the edits.
 	private readonly Dictionary<Guid, (DataContainerConfig Config, DataContainer Container)?> _drafts = [];
@@ -31,7 +31,7 @@ public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<Do
 	// The provider it was said to have nothing for: Download again searches it by hand (the show picker) anyway.
 	private Guid? _warnedProvider;
 
-	public DownloadEpisodesDialogViewModel(AnimeModel anime, WatchService watch, IFactory<IAnimeProvider, Guid> providers, IEnumerable<Descriptor> modules)
+	public DownloadEpisodesDialogViewModel(AnimeModel anime, WatchService watch, IFactory<IAnimeProvider> providers, IEnumerable<Descriptor> modules)
 	{
 		_anime = anime;
 		_watch = watch;

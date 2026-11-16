@@ -34,7 +34,7 @@ internal static class StreamingProviders
 	/// The provider to stream (and download) from: <paramref name="id"/>'s, else the selected one, else the first installed;
 	/// never Downloads, which is played from first instead of being picked (an old setting naming it is passed over).
 	/// </summary>
-	public static IAnimeProvider? CreateStreaming(this IFactory<IAnimeProvider, Guid> providers, Guid? id = null) =>
+	public static IAnimeProvider? CreateStreaming(this IFactory<IAnimeProvider> providers, Guid? id = null) =>
 		new[] { id is { } own ? providers.Create(own) : null, providers.CreateDefault() }
 			.Concat(providers.CreateAll())
 			.FirstOrDefault(x => x is not null && x.Id != DownloadsModule.Id);

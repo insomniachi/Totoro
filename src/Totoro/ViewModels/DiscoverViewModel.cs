@@ -16,7 +16,7 @@ namespace Totoro.ViewModels;
 /// that they missed (the first few; See all has the rest). The agent gets the same lists with discover_anime.
 /// </summary>
 public sealed partial class DiscoverViewModel(
-	IFactory<IAnimeMetadataProvider, Guid> providers,
+	IFactory<IAnimeMetadataProvider> providers,
 	MissedRelationsService missedRelations,
 	ILogger<DiscoverViewModel> logger)
 	: NavigatableViewModel, IRecipient<AnimeTrackingChangedMessage>, Core.Navigation.IAnimeDatabaseView

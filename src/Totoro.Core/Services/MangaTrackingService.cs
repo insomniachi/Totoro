@@ -9,7 +9,7 @@ namespace Totoro.Core.Services;
 /// Changes the user's manga list, for the UI and agent tools alike: saves to the tracker of the database the manga came
 /// from, updates the manga, and sends a <see cref="MangaTrackingChangedMessage"/> so every view showing it follows.
 /// </summary>
-public sealed class MangaTrackingService(IFactory<IMangaTracker, Guid> trackers)
+public sealed class MangaTrackingService(IFactory<IMangaTracker> trackers)
 {
 	/// <summary>Saves the fields set in <paramref name="changes"/> (adding the manga to the list if it isn't on it); returns the whole entry as it is now.</summary>
 	public async Task<MangaTracking> UpdateAsync(MangaModel manga, MangaTracking changes)

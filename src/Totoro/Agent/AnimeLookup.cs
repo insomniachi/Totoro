@@ -5,7 +5,7 @@ using Totoro.Core.Modules.Anime;
 namespace Totoro.Agent;
 
 /// <summary>Finds anime by the ids agent tools are given: ids in the selected anime database.</summary>
-public sealed class AnimeLookup(IFactory<IAnimeMetadataProvider, Guid> providers)
+public sealed class AnimeLookup(IFactory<IAnimeMetadataProvider> providers)
 {
 	/// <summary>The selected anime database.</summary>
 	public IAnimeMetadataProvider Database => providers.CreateDefault() ?? throw new AgentToolException("No anime database is set up.");

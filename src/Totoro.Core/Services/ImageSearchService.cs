@@ -16,7 +16,7 @@ public sealed record ImageMatch(AnimeModel Anime, int? Episode, TimeSpan At, dou
 
 /// <summary>Finds which anime a screenshot is from, with trace.moe, as anime of the selected database.</summary>
 /// <remarks>trace.moe's free use is 100 searches a month per IP address.</remarks>
-public sealed class ImageSearchService(IFactory<IAnimeMetadataProvider, Guid> databases, IHttpClientFactory httpClients)
+public sealed class ImageSearchService(IFactory<IAnimeMetadataProvider> databases, IHttpClientFactory httpClients)
 {
 	// trace.moe's advice: matches below 90% are usually wrong.
 	private const double MinSimilarity = 0.9;

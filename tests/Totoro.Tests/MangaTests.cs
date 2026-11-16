@@ -345,7 +345,7 @@ public class MangaTests
 		}
 	}
 
-	private sealed class Factory<T>(T item) : IFactory<T, Guid> where T : notnull
+	private sealed class Factory<T>(T item) : IFactory<T> where T : notnull
 	{
 		public T? Create(Guid id) => item;
 		public T? CreateDefault() => item;

@@ -18,8 +18,8 @@ public sealed record MangaSummary(long Id, string Title, string Format, int? Tot
 
 /// <summary>Agent tools for manga: finding them in the manga database, the user's manga list, and reading.</summary>
 public sealed class MangaTools(
-	IFactory<IMangaMetadataProvider, Guid> databases,
-	IFactory<IMangaTracker, Guid> trackers,
+	IFactory<IMangaMetadataProvider> databases,
+	IFactory<IMangaTracker> trackers,
 	MangaTrackingService tracking,
 	MangaReadingService reading)
 {

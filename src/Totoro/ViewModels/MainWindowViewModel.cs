@@ -17,8 +17,8 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
 	private readonly IDialogService _dialogs;
-	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
-	private readonly IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> _mangaDatabases;
+	private readonly IFactory<IAnimeMetadataProvider> _databases;
+	private readonly IFactory<Core.Modules.Manga.IMangaMetadataProvider> _mangaDatabases;
 	private readonly IReadOnlyList<NavigationItemViewModel> _allItems;
 	private readonly AnilistPeople _people;
 	private readonly AnimeSongService _songs;
@@ -33,7 +33,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	public void FinishTour() => _preferences.SaveKey(TourSeenKey, true);
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider, Guid> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules, AnilistPeople people, AnimeSongService songs, SongRecognizer recognizer)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules, AnilistPeople people, AnimeSongService songs, SongRecognizer recognizer)
 	{
 		_people = people;
 		_songs = songs;

@@ -24,8 +24,8 @@ public sealed class BrowserWatchTracker : IDisposable
 
 	private readonly WatchService _watch;
 	private readonly IPreferences _preferences;
-	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
-	private readonly IFactory<IAnimeTracker, Guid> _trackers;
+	private readonly IFactory<IAnimeMetadataProvider> _databases;
+	private readonly IFactory<IAnimeTracker> _trackers;
 	private readonly ILogger<BrowserWatchTracker> _logger;
 	private readonly DispatcherQueueTimer _check;
 	private readonly HashSet<(string Title, int Episode)> _done = [];
@@ -33,8 +33,8 @@ public sealed class BrowserWatchTracker : IDisposable
 	private GlobalSystemMediaTransportControlsSessionManager? _sessions;
 	private bool _checking;
 
-	public BrowserWatchTracker(WatchService watch, IPreferences preferences, IFactory<IAnimeMetadataProvider, Guid> databases,
-							   IFactory<IAnimeTracker, Guid> trackers, ILogger<BrowserWatchTracker> logger)
+	public BrowserWatchTracker(WatchService watch, IPreferences preferences, IFactory<IAnimeMetadataProvider> databases,
+							   IFactory<IAnimeTracker> trackers, ILogger<BrowserWatchTracker> logger)
 	{
 		_watch = watch;
 		_preferences = preferences;

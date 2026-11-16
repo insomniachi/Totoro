@@ -165,7 +165,7 @@ public sealed partial class ChatAnimeItem : ObservableObject
 /// the user (<see cref="AnswerAsync"/>). Used on the UI thread.
 /// </summary>
 public sealed partial class ChatService(
-	IFactory<IChatModel, Guid> models,
+	IFactory<IChatModel> models,
 	IAgentTools tools,
 	AnimeSongService songs,
 	ISongPlayer songPlayer,

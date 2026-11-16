@@ -8,12 +8,12 @@ using Totoro.Core.Settings;
 namespace Totoro.ViewModels.Manga;
 
 /// <summary>Manga mode's Library: the user's manga list, as the anime one (see <see cref="MediaListViewModel"/>).</summary>
-public sealed class MangaLibraryViewModel(IFactory<IMangaTracker, Guid> trackers, IEnumerable<IAccount> accounts, IPreferences preferences)
+public sealed class MangaLibraryViewModel(IFactory<IMangaTracker> trackers, IEnumerable<IAccount> accounts, IPreferences preferences)
 	: MediaListViewModel(MediaMode.Manga, preferences, () => SignedOutAccount(trackers, accounts)),
 	  IRecipient<MangaTrackingChangedMessage>, IRecipient<MangaDatabaseChangedMessage>
 {
 	// Manga lists aren't kept on this PC: without an account there's none.
-	private static IAccount? SignedOutAccount(IFactory<IMangaTracker, Guid> trackers, IEnumerable<IAccount> accounts) =>
+	private static IAccount? SignedOutAccount(IFactory<IMangaTracker> trackers, IEnumerable<IAccount> accounts) =>
 		trackers.CreateDefault() is { } tracker ? accounts.FirstOrDefault(x => x.Id == tracker.Id && !x.IsSignedIn) : null;
 
 	protected override async Task<(Guid TrackerId, IReadOnlyList<IMediaModel> Items)?> GetListAsync()

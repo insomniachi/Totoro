@@ -84,7 +84,7 @@ public class AutoDownloadTests
 		public Task<List<VideoServer>> GetServersAsync(ProviderEpisode episode, CancellationToken ct) => Task.FromResult<List<VideoServer>>([]);
 	}
 
-	private sealed class Factory(IAnimeProvider[] items, Guid defaultId) : IFactory<IAnimeProvider, Guid>
+	private sealed class Factory(IAnimeProvider[] items, Guid defaultId) : IFactory<IAnimeProvider>
 	{
 		public IAnimeProvider? Create(Guid id) => items.FirstOrDefault(x => x.Id == id);
 		public IAnimeProvider? CreateDefault() => Create(defaultId);

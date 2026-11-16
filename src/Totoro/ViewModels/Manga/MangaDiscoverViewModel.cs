@@ -8,7 +8,7 @@ using Totoro.UI.Navigation;
 namespace Totoro.ViewModels.Manga;
 
 /// <summary>Manga mode's Discover: what's trending and what's popular in the manga database.</summary>
-public partial class MangaDiscoverViewModel(IFactory<IMangaMetadataProvider, Guid> databases) : NavigatableViewModel
+public partial class MangaDiscoverViewModel(IFactory<IMangaMetadataProvider> databases) : NavigatableViewModel
 {
 	[ObservableProperty]
 	public partial List<MangaModel> Trending { get; set; } = [];

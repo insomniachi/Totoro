@@ -19,7 +19,7 @@ namespace Totoro.ViewModels;
 /// they go is in Settings.
 /// </summary>
 public sealed partial class DownloadsViewModel(DownloadService downloads, IDialogService dialogs, WatchService watch,
-											   IFactory<IAnimeMetadataProvider, Guid> databases, IFactory<IAnimeProvider, Guid> providers,
+											   IFactory<IAnimeMetadataProvider> databases, IFactory<IAnimeProvider> providers,
 											   ILogger<DownloadsViewModel> logger) : NavigatableViewModel
 {
 	/// <summary>

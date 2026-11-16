@@ -18,7 +18,7 @@ public sealed record ScheduledEpisode(AnimeModel Anime, int Number, DateTime Air
 }
 
 /// <summary>When the episodes of the anime the user is watching air, for the release calendar and agent tools alike.</summary>
-public sealed class ReleaseScheduleService(IFactory<IAnimeTracker, Guid> trackers)
+public sealed class ReleaseScheduleService(IFactory<IAnimeTracker> trackers)
 {
 	/// <summary>The anime the user is watching (or rewatching), from their list in the selected database.</summary>
 	public async Task<List<AnimeModel>> GetWatchingAsync()

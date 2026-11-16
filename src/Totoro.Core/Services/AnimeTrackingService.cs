@@ -14,7 +14,7 @@ namespace Totoro.Core.Services;
 /// <see cref="OtherListSyncFailedMessage"/> rather than failing the change.
 /// </summary>
 public sealed class AnimeTrackingService(
-	IFactory<IAnimeTracker, Guid> trackers,
+	IFactory<IAnimeTracker> trackers,
 	IEnumerable<IAccount> accounts,
 	IPreferences preferences,
 	ILogger<AnimeTrackingService> logger)

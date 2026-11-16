@@ -41,7 +41,7 @@ public sealed partial class SyncplayClient : ObservableObject
 	private readonly WatchService _watch;
 	private readonly IPreferences _preferences;
 	private readonly ILogger<SyncplayClient> _logger;
-	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
+	private readonly IFactory<IAnimeMetadataProvider> _databases;
 	private readonly DispatcherQueueTimer _timer;
 
 	// After an episode starts here, others' for a while aren't followed: two started at once would otherwise swap back and forth.
@@ -106,7 +106,7 @@ public sealed partial class SyncplayClient : ObservableObject
 	// The room as the server last said it is, to say back while nothing's playing here (see SendStateAsync).
 	private (double Position, bool Paused, double At)? _roomState;
 
-	public SyncplayClient(WatchService watch, IPreferences preferences, IFactory<IAnimeMetadataProvider, Guid> databases, ILogger<SyncplayClient> logger)
+	public SyncplayClient(WatchService watch, IPreferences preferences, IFactory<IAnimeMetadataProvider> databases, ILogger<SyncplayClient> logger)
 	{
 		_watch = watch;
 		_preferences = preferences;

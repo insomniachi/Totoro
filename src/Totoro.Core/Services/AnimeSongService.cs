@@ -87,7 +87,7 @@ public sealed record SongPlayerChangedMessage(ISongPlayer Player);
 /// MyAnimeList id; kept for as long as the app runs. A song plays in the app (its audio) or in the media player (its
 /// video).
 /// </summary>
-public sealed class AnimeSongService(IFactory<IMediaPlayer, Guid> players, ISongPlayer songPlayer, IPreferences preferences)
+public sealed class AnimeSongService(IFactory<IMediaPlayer> players, ISongPlayer songPlayer, IPreferences preferences)
 {
 	// AnimeThemes refuses requests without one.
 	private const string UserAgent = "Totoro (anime tracker)";

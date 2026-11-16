@@ -19,7 +19,7 @@ namespace Totoro.Commands;
 /// <c>Command="{x:Bind commands:AnimeCommands.Shared.EditTrackingCommand}"</c>.
 /// </summary>
 public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService tracking, WatchService watch, DownloadService downloads,
-						   DownloadNotifier notifier, IFactory<IAnimeMetadataProvider, Guid> databases, ILogger<AnimeCommands> logger)
+						   DownloadNotifier notifier, IFactory<IAnimeMetadataProvider> databases, ILogger<AnimeCommands> logger)
 {
 	/// <summary>The app-wide instance (registered as a singleton), for x:Bind from XAML.</summary>
 	public static AnimeCommands Shared => Locator.GetRequiredService<AnimeCommands>();

@@ -68,9 +68,9 @@ public sealed record AccountInfo(string Service, bool IsSignedIn, string? UserNa
 public sealed class AppSettingsTools(
 	IPreferences preferences,
 	IAppearanceService appearance,
-	IFactory<IAnimeTracker, Guid> trackers,
-	IFactory<IAnimeProvider, Guid> providers,
-	IFactory<IMediaPlayer, Guid> players,
+	IFactory<IAnimeTracker> trackers,
+	IFactory<IAnimeProvider> providers,
+	IFactory<IMediaPlayer> players,
 	IEnumerable<Descriptor> modules,
 	IEnumerable<IModuleSettings> moduleSettings,
 	IEnumerable<NavigationItemViewModel> pages,

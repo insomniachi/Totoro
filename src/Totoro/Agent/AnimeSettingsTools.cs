@@ -26,7 +26,7 @@ public sealed record AnimeWatchSettings(
 	bool HideFromDiscord);
 
 /// <summary>Agent tools for an anime's own settings (see <see cref="AnimeSettings"/>).</summary>
-public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore store, IFactory<IAnimeProvider, Guid> providers)
+public sealed class AnimeSettingsTools(AnimeLookup lookup, IAnimeSettingsStore store, IFactory<IAnimeProvider> providers)
 {
 	[AgentTool("get_anime_settings")]
 	[Description("An anime's own settings for watching it: its provider, how its openings and endings are skipped, and whether it's hidden from Discord.")]

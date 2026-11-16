@@ -11,11 +11,11 @@ namespace Totoro.Core.Services;
 /// </summary>
 public sealed class MissedRelationsService : IRecipient<AnimeTrackingChangedMessage>
 {
-	private readonly IFactory<IAnimeTracker, Guid> _trackers;
-	private readonly IFactory<IAnimeMetadataProvider, Guid> _databases;
+	private readonly IFactory<IAnimeTracker> _trackers;
+	private readonly IFactory<IAnimeMetadataProvider> _databases;
 	private (Guid Tracker, Task<IReadOnlyList<MissedRelationGroup>> Missed)? _cached;
 
-	public MissedRelationsService(IFactory<IAnimeTracker, Guid> trackers, IFactory<IAnimeMetadataProvider, Guid> databases)
+	public MissedRelationsService(IFactory<IAnimeTracker> trackers, IFactory<IAnimeMetadataProvider> databases)
 	{
 		_trackers = trackers;
 		_databases = databases;

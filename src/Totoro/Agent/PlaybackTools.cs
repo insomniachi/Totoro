@@ -79,7 +79,7 @@ public sealed record DownloadedAnimeInfo(
 
 /// <summary>Agent tools for watching and downloading anime (see <see cref="WatchService"/> and <see cref="DownloadService"/>).</summary>
 public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, DownloadService downloads, IPreferences preferences,
-								  IFactory<IAnimeProvider, Guid> providers)
+								  IFactory<IAnimeProvider> providers)
 {
 	// Long enough for a torrent to find peers.
 	private static readonly TimeSpan s_startTimeout = TimeSpan.FromSeconds(90);

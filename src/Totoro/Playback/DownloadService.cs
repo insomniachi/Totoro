@@ -168,7 +168,7 @@ public sealed class DownloadException(string message, Exception? innerException 
 /// </summary>
 public sealed class DownloadService(
 	WatchService watch,
-	IFactory<ITorrentStreamer, Guid> torrentStreamers,
+	IFactory<ITorrentStreamer> torrentStreamers,
 	IAnimeSettingsStore animeSettings,
 	IAnimeRelations relations,
 	IPreferences preferences,

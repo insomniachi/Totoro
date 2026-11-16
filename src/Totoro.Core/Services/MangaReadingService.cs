@@ -8,7 +8,7 @@ namespace Totoro.Core.Services;
 /// Finds a database's manga on the selected source and lists its chapters, for the UI and agent tools alike. A match
 /// the user picked by hand (the automatic one was wrong) is kept, per source and manga.
 /// </summary>
-public sealed class MangaReadingService(IFactory<IMangaProvider, Guid> providers, IPreferences preferences)
+public sealed class MangaReadingService(IFactory<IMangaProvider> providers, IPreferences preferences)
 {
 	private const string MatchesKey = "MangaSourceMatches";
 

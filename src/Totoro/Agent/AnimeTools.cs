@@ -29,7 +29,7 @@ public enum ListGrouping
 /// <summary>Agent tools for finding anime and managing the user's list.</summary>
 public sealed class AnimeTools(
 	AnimeLookup lookup,
-	IFactory<IAnimeTracker, Guid> trackers,
+	IFactory<IAnimeTracker> trackers,
 	AnimeTrackingService tracking,
 	IPlaybackProgressStore progress,
 	AnimeSongService songs,

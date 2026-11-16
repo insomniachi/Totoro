@@ -60,8 +60,8 @@ public sealed partial class AnimeSettingsDialogViewModel : DialogViewModel<bool>
 	public AnimeSettingsDialogViewModel(
 		AnimeModel anime,
 		IAnimeSettingsStore store,
-		IFactory<IAnimeProvider, Guid> providers,
-		IFactory<IAnimeMetadataProvider, Guid> databases,
+		IFactory<IAnimeProvider> providers,
+		IFactory<IAnimeMetadataProvider> databases,
 		IAnimeRelations relations,
 		IEnumerable<IModuleSettings> moduleSettings,
 		IEnumerable<Descriptor> modules,

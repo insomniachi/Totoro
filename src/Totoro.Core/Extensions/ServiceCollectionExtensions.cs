@@ -131,11 +131,11 @@ public static class ServiceCollectionExtensions
 		public IServiceCollection RegisterFactory<TService>(string key)
 			   where TService : notnull
 		{
-			services.AddTransient<IFactory<TService, Guid>, Factory<TService, Guid>>(sp =>
+			services.AddTransient<IFactory<TService>, Factory<TService>>(sp =>
 			{
 				// sp is the provider doing the resolving (the navigation scope for view models)
 				var settings = sp.GetRequiredService<IPreferences>();
-				return new Factory<TService, Guid>(sp, settings, key);
+				return new Factory<TService>(sp, settings, key);
 			});
 
 			return services;

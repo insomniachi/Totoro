@@ -17,8 +17,8 @@ namespace Totoro.ViewModels;
 /// which selects a database and so already loads its genres.
 /// </remarks>
 public sealed class AdvancedSearchViewModel(
-	IFactory<IAnimeMetadataProvider, Guid> providers,
-	IFactory<IAnimeTracker, Guid> trackers,
+	IFactory<IAnimeMetadataProvider> providers,
+	IFactory<IAnimeTracker> trackers,
 	IPreferences preferences,
 	IEnumerable<Descriptor> modules,
 	ImageSearchViewModel imageSearch,
@@ -27,8 +27,8 @@ public sealed class AdvancedSearchViewModel(
 		[.. providers.CreateAll().Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))],
 		preferences.SelectedAnimeDatabase, logger), IRecipient<AnimeTrackingChangedMessage>, IAnimeDatabaseView
 {
-	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers = providers;
-	private readonly IFactory<IAnimeTracker, Guid> _trackers = trackers;
+	private readonly IFactory<IAnimeMetadataProvider> _providers = providers;
+	private readonly IFactory<IAnimeTracker> _trackers = trackers;
 
 	/// <summary>The page's Image tab: which anime a screenshot is from.</summary>
 	public ImageSearchViewModel ImageSearch { get; } = imageSearch;

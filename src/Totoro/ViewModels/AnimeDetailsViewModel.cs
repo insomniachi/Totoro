@@ -21,7 +21,7 @@ namespace Totoro.ViewModels;
 public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<PlaybackProgressChangedMessage>,
 	IRecipient<AnimeTrackingChangedMessage>, Core.Navigation.IAnimeDatabaseView
 {
-	private readonly IFactory<IAnimeMetadataProvider, Guid> _providers;
+	private readonly IFactory<IAnimeMetadataProvider> _providers;
 	private readonly ILogger<AnimeDetailsViewModel> _logger;
 	private readonly IPlaybackProgressStore _progress;
 	// The anime databases installed, and their icons (see Links).
@@ -33,7 +33,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 
 	public AnimeDetailsViewModel(
 		AnimeModel anime,
-		IFactory<IAnimeMetadataProvider, Guid> providers,
+		IFactory<IAnimeMetadataProvider> providers,
 		IPlaybackProgressStore progress,
 		AnimeSongService songs,
 		ISongPlayer songPlayer,

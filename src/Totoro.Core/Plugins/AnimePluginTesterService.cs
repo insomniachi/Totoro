@@ -8,7 +8,7 @@ using Totoro.Core.Web;
 namespace Totoro.Core.Plugins;
 
 public sealed class AnimePluginTesterService(
-	IFactory<IAnimeProvider, Guid> providers,
+	IFactory<IAnimeProvider> providers,
 	IWebPageLoader? pages = null,
 	ILogger<AnimePluginTesterService>? logger = null) : IAnimePluginTesterService
 {

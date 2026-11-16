@@ -54,9 +54,9 @@ public sealed record PlaybackProgressChangedMessage(string AnimeKey);
 /// at a time.
 /// </summary>
 public sealed partial class WatchService(
-	IFactory<IAnimeProvider, Guid> providers,
-	IFactory<IMediaPlayer, Guid> players,
-	IFactory<ITorrentStreamer, Guid> torrentStreamers,
+	IFactory<IAnimeProvider> providers,
+	IFactory<IMediaPlayer> players,
+	IFactory<ITorrentStreamer> torrentStreamers,
 	AnimeTrackingService tracking,
 	IEnumerable<IMediaSegmentsProvider> segmentProviders,
 	IPlaybackProgressStore progressStore,

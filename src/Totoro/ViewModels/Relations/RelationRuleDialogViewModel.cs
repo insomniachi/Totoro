@@ -12,7 +12,7 @@ public sealed record RelationRuleRequest(AnimeRelationRule? Rule = null, AnimeMo
 /// <summary>Adds or edits one of the user's anime-relations rules. Returns the rule; saving it is up to the caller.</summary>
 public sealed class RelationRuleDialogViewModel : DialogViewModel<AnimeRelationRule>
 {
-	public RelationRuleDialogViewModel(RelationRuleRequest request, IFactory<IAnimeMetadataProvider, Guid> databases)
+	public RelationRuleDialogViewModel(RelationRuleRequest request, IFactory<IAnimeMetadataProvider> databases)
 	{
 		var database = databases.CreateDefault();
 		Editor = request.Rule is { } rule ? new RelationRuleEditorViewModel(database, rule) : new RelationRuleEditorViewModel(database, request.Season);
