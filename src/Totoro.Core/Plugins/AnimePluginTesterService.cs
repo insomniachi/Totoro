@@ -20,7 +20,8 @@ public sealed class AnimePluginTesterService(
 
 	public IReadOnlyList<IAnimeProvider> GetAvailableProviders()
 	{
-		return [.. providers.CreateAll().GroupBy(p => p.Id).Select(g => g.First())];
+		// Downloads plays local files; there's nothing online to test.
+		return [.. providers.CreateAll().Where(p => p.Id != DownloadNames.ProviderId).GroupBy(p => p.Id).Select(g => g.First())];
 	}
 
 	public async Task<AnimePluginTestResult> TestProviderAsync(

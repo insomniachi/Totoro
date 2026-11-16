@@ -10,7 +10,7 @@ namespace Totoro.Modules.AnimeProviders.Downloads;
 
 internal class DownloadsModule : IModule
 {
-	public static Guid Id { get; } = new("8d3f6b2a-41c7-4e5b-9a0d-7c2e1f8b6d43");
+	public static Guid Id => DownloadNames.ProviderId;
 
 	public Descriptor Descriptor { get; } = new()
 	{

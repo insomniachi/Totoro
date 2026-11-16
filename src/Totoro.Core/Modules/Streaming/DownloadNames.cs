@@ -11,6 +11,9 @@ namespace Totoro.Core.Modules.Streaming;
 /// </summary>
 public static partial class DownloadNames
 {
+	/// <summary>The id of the app's own provider that plays these files back (its Downloads module).</summary>
+	public static Guid ProviderId { get; } = new("8d3f6b2a-41c7-4e5b-9a0d-7c2e1f8b6d43");
+
 	/// <summary>The anime's <see cref="DownloadInfo"/>, as JSON, in its folder.</summary>
 	public const string InfoFile = "info.json";
 

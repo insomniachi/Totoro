@@ -59,6 +59,15 @@ public class AnimePluginTesterTests
 	}
 
 	[Fact]
+	public void GetAvailableProviders_LeavesOutDownloads()
+	{
+		var online = new MockAnimeProvider();
+		var service = new AnimePluginTesterService(new MockFactory<IAnimeProvider>(new MockAnimeProvider { Id = DownloadNames.ProviderId }, online));
+
+		Assert.Same(online, Assert.Single(service.GetAvailableProviders()));
+	}
+
+	[Fact]
 	public async Task TestProvider_SearchReturnsZeroShows_FailsAtSearchAndSkipsSubsequent()
 	{
 		var provider = new MockAnimeProvider
