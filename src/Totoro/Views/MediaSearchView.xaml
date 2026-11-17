@@ -243,7 +243,7 @@
                             <toolkit:Case Value="Year">
                                 <NumberBox
                                     AutomationProperties.Name="Year"
-                                    Maximum="{x:Bind ViewModel.CurrentYear, Mode=OneTime}"
+                                    Maximum="{x:Bind ViewModel.LatestYear, Mode=OneTime}"
                                     Minimum="1940"
                                     PlaceholderText="e.g. 2016"
                                     SpinButtonPlacementMode="Compact"
@@ -258,7 +258,7 @@
                                     </Grid.ColumnDefinitions>
                                     <NumberBox
                                         AutomationProperties.Name="From year"
-                                        Maximum="{x:Bind ViewModel.CurrentYear, Mode=OneTime}"
+                                        Maximum="{x:Bind ViewModel.LatestYear, Mode=OneTime}"
                                         Minimum="1940"
                                         PlaceholderText="Any"
                                         SpinButtonPlacementMode="Compact"
@@ -270,7 +270,7 @@
                                     <NumberBox
                                         Grid.Column="2"
                                         AutomationProperties.Name="To year"
-                                        Maximum="{x:Bind ViewModel.CurrentYear, Mode=OneTime}"
+                                        Maximum="{x:Bind ViewModel.LatestYear, Mode=OneTime}"
                                         Minimum="1940"
                                         PlaceholderText="Any"
                                         SpinButtonPlacementMode="Compact"

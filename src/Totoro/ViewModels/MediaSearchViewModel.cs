@@ -240,7 +240,8 @@ public abstract partial class MediaSearchViewModel : NavigatableViewModel
 
 	partial void OnMaximumScoreChanged(float? value) => OnPropertyChanged(nameof(ScoreRangeText));
 
-	public int CurrentYear { get; } = DateTime.Now.Year;
+	/// <summary>Latest year the filter allows: next year, so announced shows can be found.</summary>
+	public int LatestYear { get; } = DateTime.Now.Year + 1;
 
 	protected override Task OnNavigatedFromInternalAsync()
 	{
