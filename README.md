@@ -61,7 +61,7 @@ Or open `Totoro.slnx` in Visual Studio and run the `Totoro` project. libvlc come
 
 publishes the app self-contained (with .NET and the Windows App SDK's runtime) and builds `installer/output/Totoro-2.1.0-setup-x64.exe` with [Inno Setup 6](https://jrsoftware.org/isinfo.php). It installs for the current user, without admin rights.
 
-GitHub Actions builds the installer for every push and pull request (download it from the run). Pushing a tag such as `v2.1.0` builds that version and attaches it to a GitHub release.
+GitHub Actions builds the installer only when run by hand (Actions > Installer > Run workflow). It takes a version, or uses the last release's with the patch number incremented, sets the project to that version, and publishes a GitHub release tagged with it (such as `v2.1.0`) with the installer attached.
 
 Installed copies update themselves from those releases: Totoro looks for a newer one when it starts (Settings > About), offers it, and installs it on a click, checking the download against GitHub's SHA-256. It closes for the installer, which starts it again.
 
