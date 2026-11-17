@@ -11,9 +11,6 @@ namespace Totoro.Core.Plugins;
 
 public sealed class PluginManager : IPluginManager
 {
-	private const string CatalogUrlKey = "PluginCatalogUrl";
-	private const string DefaultCatalogUrl = "https://raw.githubusercontent.com/insomniachi/Totoro.Plugins/main/plugins.json";
-
 	private readonly IPluginLoader _pluginLoader;
 	private readonly IPreferences _preferences;
 	private readonly HttpClient _httpClient;
@@ -55,7 +52,7 @@ public sealed class PluginManager : IPluginManager
 
 	public async Task<IReadOnlyList<PluginCatalogItem>> GetCatalogAsync(bool refresh = false, CancellationToken ct = default)
 	{
-		var catalogUrl = _preferences.ReadKey(CatalogUrlKey, DefaultCatalogUrl) ?? DefaultCatalogUrl;
+		var catalogUrl = _preferences.PluginCatalogUrl;
 
 		// Callers share one download (e.g. the page opened while the startup one is still going); a failed one is retried.
 		if (refresh || _catalogFetch is null || (_catalogFetch.IsCompleted && _catalogJson is null))

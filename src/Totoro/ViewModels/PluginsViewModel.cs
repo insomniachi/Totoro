@@ -189,6 +189,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 {
 	private readonly IPluginLoader _pluginLoader;
 	private readonly IPluginManager _pluginManager;
+	private readonly IPreferences _preferences;
 	private readonly Dictionary<Guid, ModuleSettingsItem> _settings;
 	private readonly List<PluginItemViewModel> _allCatalogItems = [];
 	private readonly List<PluginItemViewModel> _builtInItems;
@@ -210,10 +211,13 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 		IEnumerable<IModuleSettings> moduleSettings,
 		IEnumerable<Descriptor> modules,
 		IServiceProviderIsKeyedService services,
-		IDialogService dialogs)
+		IDialogService dialogs,
+		IPreferences preferences)
 	{
 		_pluginLoader = pluginLoader;
 		_pluginManager = pluginManager;
+		_preferences = preferences;
+		CatalogUrl = CustomCatalogUrl();
 		// A plugin's id is its module's (the loader gives the module's descriptor the manifest's id).
 		_settings = moduleSettings
 			.Select(x => new ModuleSettingsItem(x, dialogs))
@@ -292,6 +296,23 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 
 	[ObservableProperty]
 	public partial string StatusMessage { get; set; } = "";
+
+	/// <summary>The plugins.json the catalog comes from; empty goes back to the official one.</summary>
+	[ObservableProperty]
+	public partial string CatalogUrl { get; set; } = "";
+
+	partial void OnCatalogUrlChanged(string value)
+	{
+		if (CustomCatalogUrl() == value.Trim()) return;
+
+		_preferences.PluginCatalogUrl = value;
+		CatalogUrl = CustomCatalogUrl();
+		_ = LoadCatalogAsync(refresh: true);
+	}
+
+	/// <summary>The catalog's address, empty for the official one (the box shows that as its placeholder).</summary>
+	private string CustomCatalogUrl() =>
+		_preferences.PluginCatalogUrl is var url && url == PluginPreferences.DefaultCatalogUrl ? "" : url;
 
 	public void Receive(PluginsChangedMessage message)
 	{

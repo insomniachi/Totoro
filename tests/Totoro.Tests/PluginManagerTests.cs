@@ -5,6 +5,7 @@ using System.Text.Json;
 using Totoro.Core;
 using Totoro.Core.Helpers;
 using Totoro.Core.Plugins;
+using Totoro.Core.Settings;
 using Xunit;
 
 namespace Totoro.Tests;
@@ -40,6 +41,19 @@ public class PluginManagerTests
 		EntryPoint = "Test.dll",
 		MinAppVersion = minAppVersion,
 	};
+
+	[Fact]
+	public void PluginCatalogUrl_DefaultsToOfficial_AndEmptyGoesBack()
+	{
+		IPreferences prefs = new PluginLoaderTests.FakePreferences();
+		Assert.Equal(PluginPreferences.DefaultCatalogUrl, prefs.PluginCatalogUrl);
+
+		prefs.PluginCatalogUrl = " https://example.com/plugins.json ";
+		Assert.Equal("https://example.com/plugins.json", prefs.PluginCatalogUrl);
+
+		prefs.PluginCatalogUrl = "";
+		Assert.Equal(PluginPreferences.DefaultCatalogUrl, prefs.PluginCatalogUrl);
+	}
 
 	[Fact]
 	public async Task InstallFromFile_RejectsPluginNeedingNewerApp()

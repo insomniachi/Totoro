@@ -84,6 +84,27 @@
                             <TextBlock Text="Install from file" />
                         </StackPanel>
                     </Button>
+                    <!--  Out of the way: almost everyone uses the official catalog  -->
+                    <Button AutomationProperties.Name="Plugin repository" ToolTipService.ToolTip="Plugin repository">
+                        <FontIcon FontSize="16" Glyph="&#xE719;" />
+                        <Button.Flyout>
+                            <Flyout>
+                                <!--  Applies when the box loses focus (a refresh per keystroke would fetch half-typed URLs)  -->
+                                <StackPanel Width="420" Spacing="8">
+                                    <TextBox
+                                        AutomationProperties.Name="Plugin repository"
+                                        Header="Plugin repository"
+                                        PlaceholderText="Official repository"
+                                        Text="{x:Bind ViewModel.CatalogUrl, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Text="The address of a plugins.json to list plugins from. Leave it empty for the official repository."
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </StackPanel>
             </Grid>
 
