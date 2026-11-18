@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Net;
 using System.Net.Http.Headers;
 
@@ -185,8 +186,8 @@ internal sealed class ReadAheadStream : Stream
 				if (Array.Find(_windows, x => x.Download is not null && _position >= x.Start && _position < x.End) is { } have)
 				{
 					var count = (int)Math.Min(buffer.Length, have.End - _position);
-					var at = (int)(_position % have.Ring.Length);
-					var first = Math.Min(count, have.Ring.Length - at);
+					var at = (int)(_position % have.Size);
+					var first = Math.Min(count, have.Size - at);
 					have.Ring.AsSpan(at, first).CopyTo(buffer);
 					have.Ring.AsSpan(0, count - first).CopyTo(buffer[first..]);
 					_position += count;
@@ -236,6 +237,8 @@ internal sealed class ReadAheadStream : Stream
 				foreach (var window in _windows)
 				{
 					window.Download?.Cancel();
+					// Nothing touches a ring once disposed (reads and downloads check under this lock first).
+					window.ReturnRing();
 				}
 
 				Monitor.PulseAll(_gate);
@@ -413,7 +416,6 @@ internal sealed class ReadAheadStream : Stream
 
 			lock (_gate)
 			{
-				var ring = window.Ring;
 				var copied = 0;
 				while (copied < read)
 				{
@@ -434,16 +436,18 @@ internal sealed class ReadAheadStream : Stream
 						window.Start = Math.Max(window.Start, Math.Min(window.End, window.ReadTo - _keepBehind));
 					}
 
-					var room = ring.Length - (int)(window.End - window.Start);
+					var room = window.Size - (int)(window.End - window.Start);
 					if (room == 0)
 					{
 						Monitor.Wait(_gate);
 						continue;
 					}
 
+					// Only after the cancellation check: once disposed, the ring's gone back to the pool.
+					var ring = window.Ring;
 					var count = Math.Min(room, read - copied);
-					var at = (int)(window.End % ring.Length);
-					var first = Math.Min(count, ring.Length - at);
+					var at = (int)(window.End % window.Size);
+					var first = Math.Min(count, window.Size - at);
 					chunk.AsSpan(copied, first).CopyTo(ring.AsSpan(at));
 					chunk.AsSpan(copied + first, count - first).CopyTo(ring);
 					ReadSubtitles(window, chunk.AsSpan(copied, count), cues);
@@ -486,11 +490,14 @@ internal sealed class ReadAheadStream : Stream
 		};
 	}
 
-	/// <summary>Part of the file downloaded, [Start, End), each byte at its offset % its size in Ring.</summary>
+	/// <summary>Part of the file downloaded, [Start, End), each byte at its offset % Size in Ring.</summary>
 	private sealed class Window(int size)
 	{
-		// Made as it's first used (under the lock): a short video, or one played straight through, needs only one or two.
-		public byte[] Ring => field ??= new byte[size];
+		// Rented as it's first used (under the lock): a short video, or one played straight through, needs only one or two.
+		// Pooled, so the next video reuses it rather than allocating (and zeroing) it again. It may be longer than Size.
+		private byte[]? _ring;
+		public byte[] Ring => _ring ??= ArrayPool<byte>.Shared.Rent(size);
+		public int Size => size;
 		public long Start;
 		public long End;
 		// Where it was last read up to: what's well behind it can go.
@@ -505,5 +512,14 @@ internal sealed class ReadAheadStream : Stream
 		public MatroskaSubtitleParser? Subtitles;
 
 		public bool IsFull => End - Start == size;
+
+		public void ReturnRing()
+		{
+			if (_ring is { } ring)
+			{
+				_ring = null;
+				ArrayPool<byte>.Shared.Return(ring);
+			}
+		}
 	}
 }
