@@ -16,7 +16,7 @@ The projects are in `src/`; the solution (`Totoro.slnx`) and the build settings 
 - `Totoro.Core/Services`: shared logic the UI and agent tools both call, e.g. `AnimeTrackingService`.
 - `Totoro.Core/Agent`: the agent tool infrastructure (`IAgentTools`, `[AgentTool]`).
 - `Totoro.UI/AnimatedVisuals`: our own animated icons (in `Icons`), as Lottie files and the code LottieGen generates from them: change a `.json` and run `Generate.ps1` there.
-- `Totoro/Modules/<Kind>/<Name>`: a module, e.g. `AnimeDatabase/Anilist`, `TorrentStreamers/Rqbit`. Code generated from a schema goes in a subfolder with its own namespace (`Anilist/GraphQl`). A module's window or pages go with the others in `Views` and `ViewModels`, e.g. the built-in players' (`MediaPlayers/Vlc` and `MediaPlayers/MediaFoundation`, one window with an engine each: `VlcPlayerViewModel`, `MediaFoundationPlayerViewModel`) in `Player/`.
+- `Totoro/Modules/<Kind>/<Name>`: a module, e.g. `AnimeDatabase/Anilist`, `TorrentStreamers/Rqbit`. Code generated from a schema goes in a subfolder with its own namespace (`Anilist/GraphQl`). A module's window or pages go with the others in `Views` and `ViewModels`, e.g. the built-in players' (`MediaPlayers/Vlc`, `MediaPlayers/MediaFoundation`, and `MediaPlayers/Mpv` when it plays in the app's window, one window with an engine each: `VlcPlayerViewModel`, `MediaFoundationPlayerViewModel`, `MpvPlayerViewModel`) in `Player/`.
 - `Totoro/Agent`: the app's agent tools.
 - `Totoro/ViewModels` and `Totoro/Views`: pages and dialogs, side by side by name (`AnimeSettingsDialogViewModel` and `AnimeSettingsDialog`). A page's parts go in a subfolder (`AnimeDetails/`).
 - `Totoro/Playback`: watching an episode (`WatchService`), and downloading one (`DownloadService`, into folders named by `DownloadNames` after the anime, with its AniList and MAL ids in their `info.json`).
@@ -54,6 +54,11 @@ The app has an assistant: a chat panel (the title bar's Assistant button) whose 
 Try the tools in the app on the **Agent tools** page. It lists every tool with the schema the agent sees, and calls a tool with JSON arguments.
 
 Run and drive the app with the `winapp ui` CLI (UI Automation), not desktop control: `.claude/skills/run-totoro` has the commands, and what new UI needs to stay drivable (names, automation peers).
+
+- **Everything interactive is drivable by `winapp ui`.** Any control a mouse, keyboard, touch or pen can interact with (buttons, list items, sliders, flyout and menu items, custom controls) must be found and invoked through `winapp ui`, so tests can automate it: give it an `AutomationProperties.Name` (or `AutomationId`) and, for custom controls, an automation peer with the right patterns. Check new UI with `winapp ui` before calling it done.
+- **Test through agent tools first.** When the UI interaction isn't what you're testing, test with the agent tools (the **Agent tools** page, or the tool through the chat) first; fall back to driving the UI with `winapp ui` only when that fails or no tool covers it.
+
+To test the video player (anything not about the user's list or tracking), play from the **Watch** page, not the Library: the Library takes a while to load its cards.
 
 ## Finding your way around: graphify
 
