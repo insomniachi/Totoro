@@ -28,56 +28,63 @@
             VerticalAlignment="Top"
             AutomationProperties.Name="Loading accounts"
             IsActive="True" />
+        <InfoBar
+            x:Name="Error"
+            Grid.Row="2"
+            VerticalAlignment="Top"
+            IsClosable="False"
+            Message="Couldn't load your accounts. You can sign in later in Settings."
+            Severity="Error" />
         <ScrollView Grid.Row="2">
-        <StackPanel
-            x:Name="Body"
-            Spacing="4"
-            Visibility="Collapsed">
-            <toolkit:SettingsCard Description="Where your anime list and anime details come from." Header="Anime database">
-                <toolkit:SettingsCard.HeaderIcon>
-                    <FontIcon Glyph="&#xE8F1;" />
-                </toolkit:SettingsCard.HeaderIcon>
-                <ComboBox
-                    x:Name="DatabaseBox"
-                    MinWidth="200"
-                    AutomationProperties.Name="Anime database"
-                    SelectionChanged="OnDatabaseChanged">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:AnimeDatabaseOption">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Image
-                                    Width="16"
-                                    Height="16"
-                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
-                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </toolkit:SettingsCard>
+            <StackPanel
+                x:Name="Body"
+                Spacing="4"
+                Visibility="Collapsed">
+                <toolkit:SettingsCard Description="Where your anime list and anime details come from." Header="Anime database">
+                    <toolkit:SettingsCard.HeaderIcon>
+                        <FontIcon Glyph="&#xE8F1;" />
+                    </toolkit:SettingsCard.HeaderIcon>
+                    <ComboBox
+                        x:Name="DatabaseBox"
+                        MinWidth="200"
+                        AutomationProperties.Name="Anime database"
+                        SelectionChanged="OnDatabaseChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:AnimeDatabaseOption">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Image
+                                        Width="16"
+                                        Height="16"
+                                        Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                    <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </toolkit:SettingsCard>
 
-            <ItemsControl x:Name="AccountsList" IsTabStop="False">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Spacing="4" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:AccountViewModel">
-                        <toolkit:SettingsCard
-                            Description="{x:Bind Status, Mode=OneWay}"
-                            Header="{x:Bind Name, Mode=OneTime}"
-                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE77B;'), Mode=OneTime}">
-                            <Button
-                                MinWidth="120"
-                                AutomationProperties.Name="{x:Bind ActionName, Mode=OneWay}"
-                                Command="{x:Bind SignInOrOutCommand}"
-                                Content="{x:Bind ActionText, Mode=OneWay}" />
-                        </toolkit:SettingsCard>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
+                <ItemsControl x:Name="AccountsList" IsTabStop="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AccountViewModel">
+                            <toolkit:SettingsCard
+                                Description="{x:Bind Status, Mode=OneWay}"
+                                Header="{x:Bind Name, Mode=OneTime}"
+                                HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE77B;'), Mode=OneTime}">
+                                <Button
+                                    MinWidth="120"
+                                    AutomationProperties.Name="{x:Bind ActionName, Mode=OneWay}"
+                                    Command="{x:Bind SignInOrOutCommand}"
+                                    Content="{x:Bind ActionText, Mode=OneWay}" />
+                            </toolkit:SettingsCard>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
         </ScrollView>
     </Grid>
 </UserControl>

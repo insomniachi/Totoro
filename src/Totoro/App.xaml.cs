@@ -121,20 +121,28 @@ public partial class App : Application
 		};
 	}
 
-	/// <summary>Builds the host (loading the plugins), once.</summary>
-	private IServiceProvider BuildHost()
-	{
-		_host ??= Host.CreateDefaultBuilder()
-			.ConfigureLogging(x => x.AddSerilog(s_fileLogs))
-			.ConfigureServices((context, services) =>
-			{
-				AddModules(services);
+	private Task<IServiceProvider>? _building;
 
-				services.AddTotoroServices(() => _window);
-			})
-			.Build();
-		Locator.SetServiceProvider(_host.Services);
-		return _host.Services;
+	/// <summary>
+	/// Builds the host (loading the plugins), once, off the UI thread so the setup wizard doesn't freeze. Only registering
+	/// happens there: services are made when they're first asked for, on the UI thread.
+	/// </summary>
+	private Task<IServiceProvider> BuildHostAsync()
+	{
+		return _building ??= Task.Run(() =>
+		{
+			_host = Host.CreateDefaultBuilder()
+				.ConfigureLogging(x => x.AddSerilog(s_fileLogs))
+				.ConfigureServices((context, services) =>
+				{
+					AddModules(services);
+
+					services.AddTotoroServices(() => _window);
+				})
+				.Build();
+			Locator.SetServiceProvider(_host.Services);
+			return _host.Services;
+		});
 	}
 
 	protected override async void OnLaunched(LaunchActivatedEventArgs args)
@@ -144,13 +152,13 @@ public partial class App : Application
 		{
 			// Its plugin steps run before the host exists (a plugin manager of their own); its later steps build the host,
 			// and show dialogs and sign-in over it, as the window until the main one opens.
-			setup = new SetupWindow(new PluginManager(_pluginLoader, new Preferences()), BuildHost);
+			setup = new SetupWindow(new PluginManager(_pluginLoader, new Preferences()), BuildHostAsync);
 			_window = setup;
 			setup.Activate();
 			await setup.Completion;
 		}
 
-		BuildHost();
+		await BuildHostAsync();
 		_window = new MainWindow()
 		{
 			ViewModel = _host.Services.GetRequiredService<MainWindowViewModel>(),
@@ -343,6 +351,8 @@ public partial class App : Application
 		if (preferences.StartInTray && Helpers.WindowsStartup.Launched)
 		{
 			manager.IsVisibleInTray = true;
+			// The tray keeps the app going without a window.
+			setup?.Close();
 			await RunStartupAsync(null);
 		}
 		else

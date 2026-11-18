@@ -11,10 +11,10 @@ namespace Totoro.Setup;
 public sealed partial class SetupWindow : Window
 {
 	private readonly TaskCompletionSource _completion = new();
-	private readonly Func<IServiceProvider> _buildServices;
+	private readonly Func<Task<IServiceProvider>> _buildServices;
 
-	/// <param name="buildServices">Builds the app's services (loading the plugins), once.</param>
-	public SetupWindow(IPluginManager plugins, Func<IServiceProvider> buildServices)
+	/// <param name="buildServices">Builds the app's services (loading the plugins), once, off the UI thread.</param>
+	public SetupWindow(IPluginManager plugins, Func<Task<IServiceProvider>> buildServices)
 	{
 		InitializeComponent();
 		_buildServices = buildServices;
@@ -61,10 +61,25 @@ public sealed partial class SetupWindow : Window
 			return;
 		}
 
-		await Installing();
-		// Installed from here on, a plugin would need a restart: the Plugins page does that.
+		// Locked before waiting, so no download starts that the wait misses. Installed from here on, a plugin would need a
+		// restart: the Plugins page does that.
 		DatabasesStep.Lock();
 		ProvidersStep.Lock();
-		AccountsStep.Load(_buildServices());
+		await Installing();
+		try
+		{
+			var services = await _buildServices();
+			// Stepping back and forward again while waiting runs this again: the first one loads it.
+			if (!AccountsStep.IsReady)
+			{
+				AccountsStep.Load(services);
+			}
+		}
+		catch (Exception)
+		{
+			// Said on the step rather than its ring spinning for ever; thrown on for the app's handler to log.
+			AccountsStep.ShowError();
+			throw;
+		}
 	}
 }

@@ -36,44 +36,45 @@
             AutomationProperties.Name="Loading plugins"
             IsActive="True" />
         <ScrollView Grid.Row="3">
-        <ItemsControl x:Name="List" IsTabStop="False">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Spacing="4" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:PluginItemViewModel">
-                    <toolkit:SettingsCard
-                        Description="{x:Bind Description, Mode=OneTime}"
-                        Header="{x:Bind Name, Mode=OneTime}"
-                        HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xEA86;'), Mode=OneTime}">
-                        <StackPanel
-                            MinWidth="120"
-                            HorizontalAlignment="Right"
-                            Spacing="4">
-                            <Button
+            <ItemsControl x:Name="List" IsTabStop="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PluginItemViewModel">
+                        <toolkit:SettingsCard
+                            Description="{x:Bind Description, Mode=OneTime}"
+                            Header="{x:Bind Name, Mode=OneTime}"
+                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xEA86;'), Mode=OneTime}">
+                            <StackPanel
+                                MinWidth="120"
                                 HorizontalAlignment="Right"
-                                AutomationProperties.Name="{x:Bind setup:PluginStep.DownloadName(Name), Mode=OneTime}"
-                                Click="OnDownload"
-                                Content="Download"
-                                IsEnabled="{x:Bind setup:PluginStep.Not(IsBusy), Mode=OneWay}"
-                                Visibility="{x:Bind ShowsNotInstalled, Mode=OneWay}" />
-                            <ProgressBar
-                                Maximum="100"
-                                Visibility="{x:Bind IsBusy, Mode=OneWay}"
-                                Value="{x:Bind Progress, Mode=OneWay}" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind setup:PluginStep.State(IsBuiltIn, IsInstalled, StatusText), Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </toolkit:SettingsCard>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                                Spacing="4">
+                                <Button
+                                    HorizontalAlignment="Right"
+                                    AutomationProperties.Name="{x:Bind setup:PluginStep.DownloadName(Name), Mode=OneTime}"
+                                    Click="OnDownload"
+                                    Content="Download"
+                                    IsEnabled="{x:Bind setup:PluginStep.Not(IsBusy), Mode=OneWay}"
+                                    Visibility="{x:Bind ShowsNotInstalled, Mode=OneWay}" />
+                                <ProgressBar
+                                    AutomationProperties.Name="{x:Bind setup:PluginStep.DownloadName(Name), Mode=OneTime}"
+                                    Maximum="100"
+                                    Visibility="{x:Bind IsBusy, Mode=OneWay}"
+                                    Value="{x:Bind Progress, Mode=OneWay}" />
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind setup:PluginStep.State(IsBuiltIn, IsInstalled, StatusText), Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                        </toolkit:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollView>
     </Grid>
 </UserControl>

@@ -26,16 +26,25 @@ public sealed partial class AccountsStep : UserControl
 		_preferences = services.GetRequiredService<IPreferences>();
 		// As the title bar's account flyout lists them (MainWindowViewModel).
 		var modules = services.GetServices<Descriptor>().ToList();
+		string IconOf(Guid id) => modules.FirstOrDefault(m => m.Id == id)?.Image ?? "";
 		List<AnimeDatabaseOption> databases = [.. services.GetRequiredService<IFactory<IAnimeMetadataProvider>>().CreateAll()
-			.Select(x => new AnimeDatabaseOption(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))];
+			.Select(x => new AnimeDatabaseOption(x.Id, x.Name, IconOf(x.Id)))];
 		DatabaseBox.ItemsSource = databases;
 		// Unset means the first, as in the database factory.
 		DatabaseBox.SelectedItem = databases.FirstOrDefault(x => x.Id == _preferences.SelectedAnimeDatabase) ?? databases.FirstOrDefault();
-		AccountsList.ItemsSource = services.GetServices<IAccount>().Select(x => new AccountViewModel(x)).ToList();
+		AccountsList.ItemsSource = services.GetServices<IAccount>().Select(x => new AccountViewModel(x) { Icon = IconOf(x.Id) }).ToList();
 
 		LoadingRing.IsActive = false;
 		LoadingRing.Visibility = Visibility.Collapsed;
 		Body.Visibility = Visibility.Visible;
+	}
+
+	/// <summary>The app's services couldn't be built: there are no accounts to show.</summary>
+	public void ShowError()
+	{
+		LoadingRing.IsActive = false;
+		LoadingRing.Visibility = Visibility.Collapsed;
+		Error.IsOpen = true;
 	}
 
 	private void OnDatabaseChanged(object sender, SelectionChangedEventArgs e)
