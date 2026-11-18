@@ -69,8 +69,8 @@ public sealed class Settings : PlayerSettings
 
 	[DisplayName("Anime4K GPU")]
 	[Parent(nameof(Download))]
-	[Description("Lower-end (e.g. GTX 1060, RX 570) plays its fast shaders; higher-end (e.g. RTX 3060, RX 6600 XT) its high-quality ones.")]
-	public Anime4KGpu Anime4KGpu { get; set; } = Anime4KGpu.LowerEnd;
+	[Description("Auto picks from the graphics card's memory (8 GB or more is higher-end). Lower-end (e.g. GTX 1060, RX 570) plays its fast shaders; higher-end (e.g. RTX 3060, RX 6600 XT) its high-quality ones.")]
+	public Anime4KGpu Anime4KGpu { get; set; } = Anime4KGpu.Auto;
 
 	[DisplayName("Add to Open with")]
 	[Parent(nameof(Download))]
@@ -87,5 +87,7 @@ public sealed class Settings : PlayerSettings
 public enum Anime4KGpu
 {
 	LowerEnd,
-	HigherEnd
+	HigherEnd,
+	// Last, so settings saved as numbers keep their meaning.
+	Auto
 }

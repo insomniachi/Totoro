@@ -240,6 +240,12 @@ internal sealed partial class MpvInstaller
 	private async Task ApplyAnime4KAsync(string folder, CancellationToken ct)
 	{
 		var gpu = _settings.Value.InstallAnime4K ? _settings.Value.Anime4KGpu : (Anime4KGpu?)null;
+		if (gpu == Anime4KGpu.Auto)
+		{
+			gpu = DetectGpu();
+			_logger.LogInformation("Anime4K: picked the {Gpu} template for this graphics card", gpu);
+		}
+
 		string[] confs = [Path.Combine(ConfigFolder, "input.conf"), Path.Combine(ConfigFolder, "mpv.conf")];
 		var texts = confs.Select(x => File.Exists(x) ? File.ReadAllText(x) : "").ToArray();
 		var shaders = Path.Combine(ConfigFolder, "shaders");
@@ -285,6 +291,41 @@ internal sealed partial class MpvInstaller
 			}
 		}
 	}
+
+	/// <summary>The template for the graphics card with the most memory; lower-end if it can't be read.</summary>
+	internal static Anime4KGpu DetectGpu()
+	{
+		try
+		{
+			// Display adapters' class key. WMI's AdapterRAM stops at 4 GB; this QWORD is the card's real memory.
+			using var adapters = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}");
+			var most = 0L;
+			foreach (var name in adapters?.GetSubKeyNames() ?? [])
+			{
+				try
+				{
+					using var adapter = adapters!.OpenSubKey(name);
+					if (adapter?.GetValue("HardwareInformation.qwMemorySize") is long bytes)
+					{
+						most = Math.Max(most, bytes);
+					}
+				}
+				catch (System.Security.SecurityException)
+				{
+					// "Properties" and the like aren't readable; they aren't adapters.
+				}
+			}
+
+			return FromVram(most);
+		}
+		catch (Exception)
+		{
+			return Anime4KGpu.LowerEnd;
+		}
+	}
+
+	// shortcut: memory stands in for shader speed (an 8 GB RX 580 counts as higher-end); use a table of cards if that stutters.
+	internal static Anime4KGpu FromVram(long bytes) => bytes >= 8L << 30 ? Anime4KGpu.HigherEnd : Anime4KGpu.LowerEnd;
 
 	/// <summary>Whether a config has the lines added for this GPU, or Anime4K lines of the user's own (left alone).</summary>
 	internal static bool HasAnime4K(string conf, Anime4KGpu gpu)
