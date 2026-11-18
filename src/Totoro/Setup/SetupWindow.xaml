@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Window
+    x:Class="Totoro.Setup.SetupWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dev="using:DevWinUI"
+    xmlns:setup="using:Totoro.Setup"
+    Title="Set up Totoro">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <!--
+        The window is the wizard's card. The steps, in order: one that doesn't need the app's services goes before
+        Accounts (it runs before they exist); one that does goes after it. Each step is the same height and scrolls its
+        own list, so the wizard keeps its size. Continue without doing anything skips a step.
+    -->
+    <dev:MorphingWizard
+        x:Name="Wizard"
+        Background="Transparent"
+        BorderThickness="0"
+        CornerRadius="0"
+        FinishText="Done">
+        <dev:MorphingWizard.Steps>
+            <dev:MorphingWizardStep Id="databases" Label="Anime databases">
+                <setup:PluginStep
+                    x:Name="DatabasesStep"
+                    Title="Anime databases"
+                    Height="440"
+                    Description="Where your anime list and anime details come from. AniList and MyAnimeList are built in; add another if you use it." />
+            </dev:MorphingWizardStep>
+            <dev:MorphingWizardStep Id="providers" Label="Anime providers">
+                <setup:PluginStep
+                    x:Name="ProvidersStep"
+                    Title="Anime providers"
+                    Height="440"
+                    Description="Plugins that find episodes to watch. Add as many as you like; you can add more later from the Plugins page." />
+            </dev:MorphingWizardStep>
+            <dev:MorphingWizardStep
+                x:Name="AccountsItem"
+                Id="accounts"
+                Label="Accounts">
+                <setup:AccountsStep x:Name="AccountsStep" Height="440" />
+            </dev:MorphingWizardStep>
+        </dev:MorphingWizard.Steps>
+    </dev:MorphingWizard>
+</Window>

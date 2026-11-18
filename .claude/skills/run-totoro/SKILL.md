@@ -32,6 +32,7 @@ Installs the ReAnime plugin and makes images load (WinINet's revocation check ha
 prints the PID. Add `--on sandbox` to every `winapp ui` command. In-app restart doesn't work in the sandbox.
 
 - It also marks the first-run tour seen, so its teaching tips don't cover the window. Pass `-Tour` only to test the tour.
+- That writes settings.json, so the first-run setup wizard doesn't show. Pass `-FirstRun` to test the wizard: it deletes settings.json instead (the tour follows the wizard).
 - **Don't pipe it** (or `winapp run`) through `Select-Object -Last N`, `tail` or anything that waits for the end: that
   holds back every line, the PID included, so the app sits launched while you wait. Run it with plain output. Lost
   track? `winapp ui list-windows --on sandbox | Select-String 'Totoro, PID (\d+)'` tells you whether it's up, and its PID.

@@ -1,7 +1,8 @@
 # Launches Totoro in Windows Sandbox as a fresh install, with the ReAnime plugin installed and posters working.
-# Usage: pwsh .claude/skills/run-totoro/sandbox.ps1 [-Tour]   (prints the app's PID last)
+# Usage: pwsh .claude/skills/run-totoro/sandbox.ps1 [-Tour] [-FirstRun]   (prints the app's PID last)
 # The first-run tour's teaching tips are marked seen, so they don't cover the window; -Tour keeps them, to test the tour.
-param([switch]$Tour)
+# -FirstRun deletes settings.json instead, so the setup wizard shows (as on a fresh install), then the tour.
+param([switch]$Tour, [switch]$FirstRun)
 $ErrorActionPreference = 'Stop'
 $repo = Resolve-Path "$PSScriptRoot\..\..\.."
 $plugin = 'ReAnime'
@@ -29,6 +30,7 @@ Remove-Item `$dir -Recurse -Force -ErrorAction SilentlyContinue
 Expand-Archive '$($pushed.targetPath)' `$dir -Force
 '$plugin installed.'
 `$settings = Join-Path `$env:LOCALAPPDATA 'Totoro\settings.json'
+if (`$$FirstRun) { if (Test-Path `$settings) { Remove-Item `$settings }; return }
 `$json = if (Test-Path `$settings) { Get-Content `$settings -Raw | ConvertFrom-Json } else { [pscustomobject]@{} }
 `$json | Add-Member TourSeen (`$$(-not $Tour)) -Force
 New-Item -ItemType Directory (Split-Path `$settings) -Force | Out-Null

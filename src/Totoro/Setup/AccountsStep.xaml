@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Setup.AccountsStep"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <!-- The heading stays put; the accounts scroll in what's left of the step's height. -->
+    <Grid RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Style="{ThemeResource SubtitleTextBlockStyle}" Text="Accounts" />
+        <TextBlock
+            Grid.Row="1"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="Pick where your anime list comes from, and sign in to keep it in sync as you watch. You can change these later in Settings."
+            TextWrapping="Wrap" />
+        <ProgressRing
+            x:Name="LoadingRing"
+            Grid.Row="2"
+            Width="24"
+            Height="24"
+            VerticalAlignment="Top"
+            AutomationProperties.Name="Loading accounts"
+            IsActive="True" />
+        <ScrollView Grid.Row="2">
+        <StackPanel
+            x:Name="Body"
+            Spacing="4"
+            Visibility="Collapsed">
+            <toolkit:SettingsCard Description="Where your anime list and anime details come from." Header="Anime database">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE8F1;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    x:Name="DatabaseBox"
+                    MinWidth="200"
+                    AutomationProperties.Name="Anime database"
+                    SelectionChanged="OnDatabaseChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:AnimeDatabaseOption">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Image
+                                    Width="16"
+                                    Height="16"
+                                    Source="{x:Bind helpers:CommonConverters.ToImageSource(Icon), Mode=OneTime}" />
+                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </toolkit:SettingsCard>
+
+            <ItemsControl x:Name="AccountsList" IsTabStop="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AccountViewModel">
+                        <toolkit:SettingsCard
+                            Description="{x:Bind Status, Mode=OneWay}"
+                            Header="{x:Bind Name, Mode=OneTime}"
+                            HeaderIcon="{x:Bind helpers:CommonConverters.ToIcon(Icon, '&#xE77B;'), Mode=OneTime}">
+                            <Button
+                                MinWidth="120"
+                                AutomationProperties.Name="{x:Bind ActionName, Mode=OneWay}"
+                                Command="{x:Bind SignInOrOutCommand}"
+                                Content="{x:Bind ActionText, Mode=OneWay}" />
+                        </toolkit:SettingsCard>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+        </ScrollView>
+    </Grid>
+</UserControl>

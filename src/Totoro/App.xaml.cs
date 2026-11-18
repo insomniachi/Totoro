@@ -40,6 +40,7 @@ using Totoro.Views;
 using Totoro.Views.Manga;
 using Totoro.Views.Relations;
 using Totoro.Views.Settings;
+using Totoro.Setup;
 
 
 namespace Totoro;
@@ -50,7 +51,10 @@ namespace Totoro;
 public partial class App : Application
 {
 	private Window? _window;
-	private IHost _host;
+	// Built in OnLaunched, after the setup wizard's plugin steps, so the plugins it installs load without a restart.
+	private IHost _host = null!;
+	// Before anything reads a setting (which writes the file): no settings yet means a fresh install, which gets the setup wizard.
+	private readonly bool _firstRun = !File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Totoro", "settings.json"));
 	// A file a day in %LocalAppData%\Totoro\Logs, the last week's kept. Shared by the host and the plugin loader's own
 	// logger, so one writer appends to the file.
 	private static readonly Serilog.Core.Logger s_fileLogs = new Serilog.LoggerConfiguration()
@@ -102,7 +106,25 @@ public partial class App : Application
 		}
 
 		InitializeComponent();
-		_host = Host.CreateDefaultBuilder()
+
+		// A throw in an event handler (async void ones included) would otherwise close the app without a trace. The file
+		// logger directly: the host isn't built yet while the setup wizard shows.
+		UnhandledException += (_, e) =>
+		{
+			s_fileLogs.Error(e.Exception, "Unhandled exception");
+			e.Handled = true;
+		};
+		TaskScheduler.UnobservedTaskException += (_, e) =>
+		{
+			s_fileLogs.Error(e.Exception, "Unobserved task exception");
+			e.SetObserved();
+		};
+	}
+
+	/// <summary>Builds the host (loading the plugins), once.</summary>
+	private IServiceProvider BuildHost()
+	{
+		_host ??= Host.CreateDefaultBuilder()
 			.ConfigureLogging(x => x.AddSerilog(s_fileLogs))
 			.ConfigureServices((context, services) =>
 			{
@@ -111,24 +133,24 @@ public partial class App : Application
 				services.AddTotoroServices(() => _window);
 			})
 			.Build();
-
-		// A throw in an event handler (async void ones included) would otherwise close the app without a trace.
-		var logger = _host.Services.GetRequiredService<ILogger<App>>();
-		UnhandledException += (_, e) =>
-		{
-			logger.LogError(e.Exception, "Unhandled exception");
-			e.Handled = true;
-		};
-		TaskScheduler.UnobservedTaskException += (_, e) =>
-		{
-			logger.LogError(e.Exception, "Unobserved task exception");
-			e.SetObserved();
-		};
+		Locator.SetServiceProvider(_host.Services);
+		return _host.Services;
 	}
 
 	protected override async void OnLaunched(LaunchActivatedEventArgs args)
 	{
-		Locator.SetServiceProvider(_host.Services);
+		SetupWindow? setup = null;
+		if (_firstRun)
+		{
+			// Its plugin steps run before the host exists (a plugin manager of their own); its later steps build the host,
+			// and show dialogs and sign-in over it, as the window until the main one opens.
+			setup = new SetupWindow(new PluginManager(_pluginLoader, new Preferences()), BuildHost);
+			_window = setup;
+			setup.Activate();
+			await setup.Completion;
+		}
+
+		BuildHost();
 		_window = new MainWindow()
 		{
 			ViewModel = _host.Services.GetRequiredService<MainWindowViewModel>(),
@@ -327,6 +349,8 @@ public partial class App : Application
 		{
 			var splash = new SplashWindow();
 			splash.Activate();
+			// After the splash opens: the app ends when its last window closes.
+			setup?.Close();
 			await RunStartupAsync(splash);
 			// Shown before the splash closes, so the app always has a window open.
 			Show();
