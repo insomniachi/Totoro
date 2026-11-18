@@ -47,7 +47,7 @@ public sealed class Settings : PlayerSettings
 
 	[DisplayName("Play in Totoro's window")]
 	[Description("Play in Totoro's own window, with its controls, skipping and the next episode over the video, still with mpv's engine and config (Anime4K too). Off: mpv's own window. Needs mpv downloaded here.")]
-	public bool PlayInApp { get; set; }
+	public bool PlayInApp { get; set; } = true;
 
 	// The settings are made by the JSON serializer, not the container: the installer is found when they're shown.
 	// Its description is the build installed, once there is one (see MpvInstaller).
@@ -56,6 +56,11 @@ public sealed class Settings : PlayerSettings
 	[Editor(DataContainerEditors.Button, "")]
 	[JsonIgnore]
 	public SettingsAction Download => Locator.GetRequiredService<MpvInstaller>().Action;
+
+	[DisplayName("Check for updates")]
+	[Parent(nameof(Download))]
+	[Description("How often Totoro looks for a newer mpv as it starts (it's downloaded the first time Totoro starts).")]
+	public UpdateInterval UpdateInterval { get; set; } = UpdateInterval.Weekly;
 
 	[DisplayName("Install Anime4K")]
 	[Parent(nameof(Download))]

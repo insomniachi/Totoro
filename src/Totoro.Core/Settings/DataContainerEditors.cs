@@ -74,4 +74,7 @@ public sealed partial class SettingsAction(ICommand command) : ObservableObject
 
 	/// <summary>While it runs: the button shows a progress ring instead of its label, and can't be pressed.</summary>
 	[ObservableProperty] public partial bool IsBusy { get; set; }
+
+	/// <summary>How far a download it runs has got, 0 to 1; null when it isn't downloading (e.g. the splash's ring spins).</summary>
+	[ObservableProperty] public partial double? Progress { get; set; }
 }

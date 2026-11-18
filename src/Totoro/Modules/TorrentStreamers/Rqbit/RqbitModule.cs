@@ -40,10 +40,15 @@ public sealed class Settings : DataContainerConfig
 	// The settings are made by the JSON serializer, not the container: the installer is found when they're shown.
 	// Its description is the release installed, once there is one (see RqbitInstaller).
 	[DisplayName("rqbit Build")]
-	[Description("rqbit, downloaded the first time a torrent is played")]
+	[Description("rqbit, downloaded the first time Totoro starts")]
 	[Editor(DataContainerEditors.Button, "")]
 	[JsonIgnore]
 	public SettingsAction Download => Locator.GetRequiredService<RqbitInstaller>().Action;
+
+	[DisplayName("Check for updates")]
+	[Parent(nameof(Download))]
+	[Description("How often Totoro looks for a newer rqbit as it starts.")]
+	public UpdateInterval UpdateInterval { get; set; } = UpdateInterval.Weekly;
 
 	[DisplayName("Keep downloaded episodes")]
 	[Description(@"In %LOCALAPPDATA%\Totoro\Torrents. Otherwise they're deleted when you stop watching.")]

@@ -14,7 +14,7 @@ internal sealed record RqbitInstallInfo(
 internal sealed class RqbitTools(RqbitInstaller installer)
 {
 	[AgentTool("download_rqbit", RequiresApproval = true)]
-	[Description("Downloads rqbit, which streams and downloads torrents; when it's already there, updates it to the latest release. It's also downloaded by itself the first time a torrent is played.")]
+	[Description("Downloads rqbit, which streams and downloads torrents; when it's already there, updates it to the latest release. It's also downloaded by itself as Totoro first starts, and updated as its settings say.")]
 	public async Task<RqbitInstallInfo> DownloadRqbitAsync()
 	{
 		await installer.InstallAsync();

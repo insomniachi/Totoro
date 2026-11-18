@@ -66,7 +66,11 @@ internal sealed partial class MpvInstaller
 	/// <summary>The release installed (its tag, e.g. 20261020); empty if none is.</summary>
 	public static string InstalledVersion => IsInstalled && File.Exists(VersionFile) ? File.ReadAllText(VersionFile).Trim() : "";
 
+	// Its write time is when the last check for an update succeeded.
 	private static string VersionFile => Path.Combine(Folder, "version.txt");
+
+	/// <summary>Whether mpv is downloaded here and the settings' interval since the last check has passed.</summary>
+	public bool IsUpdateDue => IsInstalled && _settings.Value.UpdateInterval.IsDue(File.GetLastWriteTime(VersionFile), DateTime.Now);
 
 	/// <summary>mpv's config folder, where Anime4K's guide installs it, so an mpv of the user's own gets it as well.</summary>
 	public static string ConfigFolder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "mpv");
@@ -106,11 +110,27 @@ internal sealed partial class MpvInstaller
 
 				Directory.CreateDirectory(folder);
 				List<string> archives = [];
+				// One progress over all the archives, by size. Reports are posted, so late ones are dropped once downloads end.
+				Action.Description = "Downloading mpv…";
+				var total = (double)assets.Sum(x => x.Size);
+				var done = 0L;
+				var downloading = true;
 				foreach (var asset in assets)
 				{
 					var path = Path.Combine(folder, asset.Name);
-					await GitHubReleases.DownloadAsync(asset, path, null, ct);
+					var before = done;
+					await GitHubReleases.DownloadAsync(asset, path, new Progress<double>(x => Action.Progress = downloading ? (before + x * asset.Size) / total : null), ct);
+					done += asset.Size;
 					archives.Add(path);
+				}
+
+				downloading = false;
+				Action.Progress = null;
+				Action.Description = "Setting up mpv…";
+				// In-app playback may have loaded libmpv while this downloaded: it can't be replaced then.
+				if (LibMpvNative.IsLoaded)
+				{
+					archives.RemoveAll(x => LibMpvAsset().IsMatch(Path.GetFileName(x)));
 				}
 
 				Directory.CreateDirectory(Folder);
@@ -142,6 +162,7 @@ internal sealed partial class MpvInstaller
 				await ApplyOpenWithAsync(always: true);
 			}
 
+			File.SetLastWriteTime(VersionFile, DateTime.Now);
 			ShowInstalled();
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
@@ -153,6 +174,7 @@ internal sealed partial class MpvInstaller
 		finally
 		{
 			Action.IsBusy = false;
+			Action.Progress = null;
 			try
 			{
 				Directory.Delete(folder, true);

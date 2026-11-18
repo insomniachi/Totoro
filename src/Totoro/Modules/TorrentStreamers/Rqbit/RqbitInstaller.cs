@@ -13,10 +13,12 @@ internal sealed partial class RqbitInstaller
 {
 	private const string Repository = "ikatson/rqbit";
 
+	private readonly IModuleSettings<Settings> _settings;
 	private readonly ILogger<RqbitInstaller> _logger;
 
-	public RqbitInstaller(ILogger<RqbitInstaller> logger)
+	public RqbitInstaller(IModuleSettings<Settings> settings, ILogger<RqbitInstaller> logger)
 	{
+		_settings = settings;
 		_logger = logger;
 		Action = new SettingsAction(InstallCommand);
 		ShowInstalled();
@@ -33,7 +35,11 @@ internal sealed partial class RqbitInstaller
 	/// <summary>The release installed (its tag, e.g. v9.0.1); empty if none is.</summary>
 	public static string InstalledVersion => IsInstalled && File.Exists(VersionFile) ? File.ReadAllText(VersionFile).Trim() : "";
 
+	// Its write time is when the last check for an update succeeded.
 	private static string VersionFile => Path.Combine(Folder, "version.txt");
+
+	/// <summary>Whether rqbit is downloaded here and the settings' interval since the last check has passed.</summary>
+	public bool IsUpdateDue => IsInstalled && _settings.Value.UpdateInterval.IsDue(File.GetLastWriteTime(VersionFile), DateTime.Now);
 
 	/// <summary>The settings' Download/Update button, with how it's going.</summary>
 	public SettingsAction Action { get; }
@@ -60,11 +66,17 @@ internal sealed partial class RqbitInstaller
 				var asset = release.Assets.FirstOrDefault(x => x.Name == "rqbit.exe") ?? throw new InvalidOperationException($"rqbit's release {release.Tag} has no rqbit.exe.");
 				Directory.CreateDirectory(Folder);
 				var download = Exe + ".download";
-				await GitHubReleases.DownloadAsync(asset, download, null, ct);
+				Action.Description = "Downloading rqbit…";
+				// Reports are posted, so late ones are dropped once it's downloaded.
+				var downloading = true;
+				await GitHubReleases.DownloadAsync(asset, download, new Progress<double>(x => Action.Progress = downloading ? x : null), ct);
+				downloading = false;
+				Action.Progress = null;
 				Replace(download);
 				await File.WriteAllTextAsync(VersionFile, release.Tag, ct);
 			}
 
+			File.SetLastWriteTime(VersionFile, DateTime.Now);
 			ShowInstalled();
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException)
@@ -76,6 +88,7 @@ internal sealed partial class RqbitInstaller
 		finally
 		{
 			Action.IsBusy = false;
+			Action.Progress = null;
 		}
 	}
 

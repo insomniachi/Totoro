@@ -321,13 +321,13 @@ public partial class App : Application
 		if (preferences.StartInTray && Helpers.WindowsStartup.Launched)
 		{
 			manager.IsVisibleInTray = true;
-			await RunStartupAsync(_ => { });
+			await RunStartupAsync(null);
 		}
 		else
 		{
 			var splash = new SplashWindow();
 			splash.Activate();
-			await RunStartupAsync(status => splash.Status = status);
+			await RunStartupAsync(splash);
 			// Shown before the splash closes, so the app always has a window open.
 			Show();
 			splash.Close();
@@ -335,17 +335,106 @@ public partial class App : Application
 	}
 
 	/// <summary>The work done before the window opens, while the splash shows. Each step reports what it's doing.</summary>
-	private async Task RunStartupAsync(Action<string> status)
+	private async Task RunStartupAsync(SplashWindow? splash)
 	{
+		void Status(string text) => splash?.Status = text;
+
+		var services = _host.Services;
+		UseMpvAsDefaultOnce(services);
+
+		// The default player and torrent streamer are downloaded before the window opens, so the first video just plays.
+		if (services.GetRequiredService<IFactory<IMediaPlayer>>().CreateDefault() is { } player &&
+			player is Modules.MediaPlayers.Mpv.MpvMediaPlayer or Modules.MediaPlayers.Mpv.MpvWindowMediaPlayer && !player.IsAvailable())
+		{
+			var mpv = services.GetRequiredService<Modules.MediaPlayers.Mpv.MpvInstaller>();
+			await DownloadToolAsync("mpv", mpv.Action, mpv.InstallAsync(), splash);
+		}
+
+		if (services.GetRequiredService<IFactory<ITorrentStreamer>>().CreateDefault() is Modules.TorrentStreamers.Rqbit.RqbitStreamer &&
+			!Modules.TorrentStreamers.Rqbit.RqbitInstaller.IsInstalled)
+		{
+			var rqbit = services.GetRequiredService<Modules.TorrentStreamers.Rqbit.RqbitInstaller>();
+			await DownloadToolAsync("rqbit", rqbit.Action, rqbit.InstallAsync(), splash);
+		}
+
 		// The Plugins page lists the catalog (and its item the updates) as soon as it opens.
-		status("Checking for plugin updates…");		try
+		Status("Checking for plugin updates…");
+		try
 		{
 			// Capped: a slow connection doesn't keep the window from opening (the page fetches it then).
-			await _host.Services.GetRequiredService<IPluginManager>().GetCatalogAsync().WaitAsync(TimeSpan.FromSeconds(10));
+			await services.GetRequiredService<IPluginManager>().GetCatalogAsync().WaitAsync(TimeSpan.FromSeconds(10));
 		}
 		catch (TimeoutException)
 		{
-		}	}
+		}
+
+		// Not awaited: an update doesn't hold up the window, and nothing plays yet, so mpv isn't in use. Each catches its own errors.
+		if (services.GetRequiredService<Modules.MediaPlayers.Mpv.MpvInstaller>() is { IsUpdateDue: true } mpvUpdate)
+		{
+			_ = mpvUpdate.InstallAsync();
+		}
+
+		if (services.GetRequiredService<Modules.TorrentStreamers.Rqbit.RqbitInstaller>() is { IsUpdateDue: true } rqbitUpdate)
+		{
+			_ = rqbitUpdate.InstallAsync();
+		}
+	}
+
+	/// <summary>
+	/// Waits for a tool's download while the splash shows how it's going. A failure only shows in its settings; playing
+	/// offers it again. Capped generously: past that the window opens and the download goes on behind it.
+	/// </summary>
+	private static async Task DownloadToolAsync(string name, SettingsAction action, Task install, SplashWindow? splash)
+	{
+		splash?.Status = $"Downloading {name}…";
+		void OnChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (splash is not null && action.IsBusy && action.Description != "")
+			{
+				splash.Status = action.Description;
+				splash.Progress = action.Progress;
+			}
+		}
+
+		action.PropertyChanged += OnChanged;
+		try
+		{
+			await install.WaitAsync(TimeSpan.FromMinutes(5));
+		}
+		catch (TimeoutException)
+		{
+		}
+		finally
+		{
+			action.PropertyChanged -= OnChanged;
+			splash?.Progress = null;
+		}
+	}
+
+	/// <summary>
+	/// Once: mpv in Totoro's window became the default player. Opening Settings saved the first player (VLC then) even when
+	/// none was picked, so a stored VLC can't be told from no choice: both move to mpv. Other choices stay.
+	/// </summary>
+	private static void UseMpvAsDefaultOnce(IServiceProvider services)
+	{
+		const string Key = "MpvDefaultApplied";
+		var preferences = services.GetRequiredService<IPreferences>();
+		if (preferences.ReadKey(Key, false))
+		{
+			return;
+		}
+
+		if (preferences.SelectedMediaPlayer == Guid.Empty || preferences.SelectedMediaPlayer == Modules.MediaPlayers.Vlc.VlcModule.Id)
+		{
+			preferences.SelectedMediaPlayer = Modules.MediaPlayers.Mpv.MpvModule.Id;
+			// They weren't playing in mpv, so its stored window choice was never theirs.
+			var mpv = services.GetRequiredService<IModuleSettings<Modules.MediaPlayers.Mpv.Settings>>();
+			mpv.Value.PlayInApp = true;
+			mpv.Save();
+		}
+
+		preferences.SaveKey(Key, true);
+	}
 
 	private void AddModules(IServiceCollection services)
 	{
@@ -469,13 +558,13 @@ public partial class App : Application
 	{
 		return
 		[
-			// The first of each kind is what a fresh install uses: AniList, and the built-in player (it comes with the app; mpv
-			// has to be downloaded).
+			// The first of each kind is what a fresh install uses: AniList, and mpv in Totoro's window (downloaded as the app
+			// first starts, see RunStartupAsync).
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
+			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.MediaPlayers.Vlc.VlcModule(),
 			new Modules.MediaPlayers.MediaFoundation.MediaFoundationModule(),
-			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
 			new Modules.MediaSegments.Aniskip.AniskipModule(),
 			new Modules.ChatModels.Ollama.OllamaModule()

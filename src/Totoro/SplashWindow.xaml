@@ -23,6 +23,7 @@
             Style="{ThemeResource SubtitleTextBlockStyle}"
             Text="Totoro" />
         <ProgressRing
+            x:Name="Ring"
             Width="24"
             Height="24"
             AutomationProperties.Name="Loading"

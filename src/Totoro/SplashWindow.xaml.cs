@@ -28,4 +28,15 @@ public sealed partial class SplashWindow : Window
 		get => StatusText.Text;
 		set => StatusText.Text = value;
 	}
+
+	/// <summary>How far a download has got, 0 to 1, filling the ring; null spins it.</summary>
+	public double? Progress
+	{
+		get => Ring.IsIndeterminate ? null : Ring.Value / 100;
+		set
+		{
+			Ring.IsIndeterminate = value is null;
+			Ring.Value = (value ?? 0) * 100;
+		}
+	}
 }
