@@ -106,6 +106,43 @@ public class ReadAheadStreamTests
 		Assert.Throws<IOException>(() => stream.ReadByte());
 	}
 
+	[Fact]
+	public async Task Read_GoesOn_WhenADownloadStallsOrDrops()
+	{
+		var opened = new ConcurrentBag<long>();
+		using var stream = new ReadAheadStream(s_file.Length, (offset, _) =>
+		{
+			opened.Add(offset);
+			// The first connection hangs after 1000 bytes, the next drops after 2000 more; then the rest comes.
+			return Task.FromResult<Stream>(opened.Count switch
+			{
+				1 => new StallingStream(s_file[(int)offset..(int)(offset + 1000)], stalls: true),
+				2 => new StallingStream(s_file[(int)offset..(int)(offset + 2000)], stalls: false),
+				_ => new MemoryStream(s_file, (int)offset, s_file.Length - (int)offset),
+			});
+		}, capacity: 40_000, readTimeout: TimeSpan.FromMilliseconds(300));
+
+		// Times out (failing the test) rather than waiting for good.
+		var read = await Task.Run(() => ReadToEnd(stream)).WaitAsync(TimeSpan.FromSeconds(10));
+		Assert.Equal(s_file, read);
+		Assert.Equal([0L, 1000L, 3000L], opened.Order());
+	}
+
+	/// <summary>Gives its bytes, then hangs until cancelled (stalls) or ends early (a dropped connection).</summary>
+	private sealed class StallingStream(byte[] data, bool stalls) : MemoryStream(data)
+	{
+		public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken ct = default)
+		{
+			var read = await base.ReadAsync(buffer, ct);
+			if (read == 0 && stalls)
+			{
+				await Task.Delay(Timeout.Infinite, ct);
+			}
+
+			return read;
+		}
+	}
+
 	private static byte[] ReadToEnd(Stream stream)
 	{
 		using var copy = new MemoryStream();

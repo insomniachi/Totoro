@@ -17,6 +17,9 @@ internal sealed class ReadAheadStream : Stream
 {
 	public const int DefaultCapacity = 128 * 1024 * 1024;
 	private const int WindowCount = 4;
+	// A download that fails (or stalls) goes on from where it got to, this many times in all, before the read fails.
+	private const int MaxAttempts = 3;
+	private static readonly TimeSpan s_defaultReadTimeout = TimeSpan.FromSeconds(20);
 
 	private static readonly HttpClient s_client = new();
 
@@ -25,6 +28,9 @@ internal sealed class ReadAheadStream : Stream
 	private readonly long _keepBehind;
 	// A read this far past what a window has downloaded is a seek, not worth waiting for.
 	private readonly long _maxWait;
+	// How long a download may go without getting anything before it's taken to have stalled (HttpClient's own timeout
+	// stops at the response's headers).
+	private readonly TimeSpan _readTimeout;
 	private readonly object _gate = new();
 	private long _position;
 	private long _uses;
@@ -39,10 +45,13 @@ internal sealed class ReadAheadStream : Stream
 	/// <param name="capacity">How much is kept in memory, across the windows.</param>
 	/// <param name="first">The body from the start, if it's already been asked for.</param>
 	/// <param name="readSubtitles">It's a Matroska file whose subtitles are read as it downloads.</param>
-	internal ReadAheadStream(long length, Func<long, CancellationToken, Task<Stream>> open, int capacity = DefaultCapacity, Stream? first = null, bool readSubtitles = false)
+	/// <param name="readTimeout">How long a download may get nothing before it's started again from where it got to.</param>
+	internal ReadAheadStream(long length, Func<long, CancellationToken, Task<Stream>> open, int capacity = DefaultCapacity, Stream? first = null, bool readSubtitles = false,
+		TimeSpan? readTimeout = null)
 	{
 		Length = length;
 		_open = open;
+		_readTimeout = readTimeout ?? s_defaultReadTimeout;
 		_matroska = readSubtitles ? new MatroskaHeader() : null;
 		var size = (int)Math.Max(1, Math.Min(capacity / WindowCount, length));
 		_windows = [.. Enumerable.Range(0, WindowCount).Select(_ => new Window(size))];
@@ -305,15 +314,58 @@ internal sealed class ReadAheadStream : Stream
 
 	private async Task DownloadAsync(Window window, long from, Stream? body, CancellationToken ct)
 	{
-		try
+		var chunk = new byte[64 * 1024];
+		List<MatroskaCue> cues = [];
+		for (var attempt = 1; ; attempt++)
 		{
-			body ??= await _open(from, ct);
-			await using var _ = body;
-			var chunk = new byte[64 * 1024];
-			List<MatroskaCue> cues = [];
 			try
 			{
-				await DownloadIntoAsync(window, from, body, chunk, cues, ct);
+				if (attempt > 1)
+				{
+					// On from what the window has (it's contiguous, so its subtitles' reader goes on too). One that got
+					// somewhere before failing starts its count again: hiccups far apart don't add up.
+					lock (_gate)
+					{
+						if (window.End > from)
+						{
+							attempt = 2;
+						}
+
+						from = window.End;
+					}
+
+					// A moment for the connection to come back.
+					await Task.Delay(TimeSpan.FromMilliseconds(500 * (attempt - 1)), ct);
+				}
+
+				body ??= await _open(from, ct);
+				await using (body)
+				{
+					await DownloadIntoAsync(window, from, body, chunk, cues, ct);
+				}
+
+				return;
+			}
+			catch (OperationCanceledException) when (ct.IsCancellationRequested)
+			{
+				return;
+			}
+			catch (Exception) when (attempt < MaxAttempts)
+			{
+				body = null;
+			}
+			catch (Exception ex)
+			{
+				lock (_gate)
+				{
+					if (!ct.IsCancellationRequested)
+					{
+						window.Error = ex;
+						Monitor.PulseAll(_gate);
+					}
+				}
+
+				return;
 			}
 			finally
 			{
@@ -323,25 +375,12 @@ internal sealed class ReadAheadStream : Stream
 				}
 			}
 		}
-		catch (OperationCanceledException) when (ct.IsCancellationRequested)
-		{
-		}
-		catch (Exception ex)
-		{
-			lock (_gate)
-			{
-				if (!ct.IsCancellationRequested)
-				{
-					window.Error = ex;
-					Monitor.PulseAll(_gate);
-				}
-			}
-		}
 	}
 
 	/// <summary>Downloads <paramref name="body"/> (from <paramref name="from"/>) into <paramref name="window"/> as there's room.</summary>
 	private async Task DownloadIntoAsync(Window window, long from, Stream body, byte[] chunk, List<MatroskaCue> cues, CancellationToken ct)
 	{
+		using var stalled = CancellationTokenSource.CreateLinkedTokenSource(ct);
 		while (true)
 		{
 			if (cues.Count > 0)
@@ -349,7 +388,19 @@ internal sealed class ReadAheadStream : Stream
 				Notify(cues);
 			}
 
-			var read = await body.ReadAsync(chunk, ct);
+			// Timed only while reading: waiting for room (the reader not reading on) isn't a stall.
+			stalled.CancelAfter(_readTimeout);
+			int read;
+			try
+			{
+				read = await body.ReadAsync(chunk, stalled.Token);
+			}
+			catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+			{
+				throw new TimeoutException($"The video's download got nothing for {_readTimeout.TotalSeconds:0} seconds.");
+			}
+
+			stalled.CancelAfter(Timeout.InfiniteTimeSpan);
 			if (read == 0)
 			{
 				if (from < Length)
@@ -438,7 +489,8 @@ internal sealed class ReadAheadStream : Stream
 	/// <summary>Part of the file downloaded, [Start, End), each byte at its offset % its size in Ring.</summary>
 	private sealed class Window(int size)
 	{
-		public readonly byte[] Ring = new byte[size];
+		// Made as it's first used (under the lock): a short video, or one played straight through, needs only one or two.
+		public byte[] Ring => field ??= new byte[size];
 		public long Start;
 		public long End;
 		// Where it was last read up to: what's well behind it can go.
@@ -452,6 +504,6 @@ internal sealed class ReadAheadStream : Stream
 		// Reads the subtitles of a Matroska file in what it downloads.
 		public MatroskaSubtitleParser? Subtitles;
 
-		public bool IsFull => End - Start == Ring.Length;
+		public bool IsFull => End - Start == size;
 	}
 }

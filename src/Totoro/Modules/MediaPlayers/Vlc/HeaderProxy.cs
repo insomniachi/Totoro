@@ -18,6 +18,8 @@ internal sealed partial class HeaderProxy(ILogger logger) : IDisposable
 
 	// What each local path fetches.
 	private readonly ConcurrentDictionary<string, Target> _targets = new();
+	// Each address's local path, so a live playlist fetched again and again doesn't add its segments again each time.
+	private readonly ConcurrentDictionary<string, string> _ids = new();
 	private TcpListener? _listener;
 	private CancellationTokenSource? _stopping;
 
@@ -27,14 +29,19 @@ internal sealed partial class HeaderProxy(ILogger logger) : IDisposable
 	public Uri Serve(Uri uri, IReadOnlyDictionary<string, string> headers)
 	{
 		var port = Start();
-		var id = Guid.NewGuid().ToString("N");
+		// shortcut: keyed by address alone, as one video's requests all send the same headers; key by headers too if that changes.
+		var id = _ids.GetOrAdd(uri.AbsoluteUri, _ => Guid.NewGuid().ToString("N"));
 		_targets[id] = new Target(uri, headers);
 		// The file name stays at the end, so VLC can tell the format from it.
 		return new Uri($"http://127.0.0.1:{port}/{id}/{Uri.EscapeDataString(Path.GetFileName(uri.AbsolutePath))}");
 	}
 
 	/// <summary>Forgets the URLs served so far (what was playing).</summary>
-	public void Clear() => _targets.Clear();
+	public void Clear()
+	{
+		_targets.Clear();
+		_ids.Clear();
+	}
 
 	public void Dispose()
 	{
@@ -89,6 +96,13 @@ internal sealed partial class HeaderProxy(ILogger logger) : IDisposable
 			using var request = new HttpRequestMessage(method == "HEAD" ? HttpMethod.Head : HttpMethod.Get, target.Uri);
 			foreach (var (name, value) in target.Headers)
 			{
+				// The body's passed on as it comes, without its Content-Encoding (and a playlist's read as text): it mustn't
+				// come compressed.
+				if (name.Equals("Accept-Encoding", StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+
 				if (!request.Headers.TryAddWithoutValidation(name, value))
 				{
 					logger.LogDebug("Can't send the header {Header}", name);
