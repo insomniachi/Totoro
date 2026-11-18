@@ -238,6 +238,8 @@
                     <StackPanel Spacing="8">
                         <Button
                             HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="PlayButton"
+                            AutomationProperties.Name="Play"
                             Command="{x:Bind ViewModel.PlayCommand}"
                             Style="{ThemeResource AccentButtonStyle}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -246,7 +248,11 @@
                             </StackPanel>
                         </Button>
                         <!--  To the download folder; tracked, as the anime's episode, with its ids  -->
-                        <Button HorizontalAlignment="Stretch" Command="{x:Bind ViewModel.DownloadCommand}">
+                        <Button
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="DownloadButton"
+                            AutomationProperties.Name="Download"
+                            Command="{x:Bind ViewModel.DownloadCommand}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon FontSize="14" Glyph="&#xE896;" />
                                 <TextBlock Text="Download" />

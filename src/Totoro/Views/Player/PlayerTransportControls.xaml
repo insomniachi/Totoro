@@ -37,6 +37,10 @@
             <Setter Property="AllowFocusOnInteraction" Value="True" />
             <Setter Property="LabelPosition" Value="Collapsed" />
         </Style>
+        <!--  MediaTransportControls' overrides, so the icon and hover square sit centred in the 40x40 button  -->
+        <x:Double x:Key="AppBarThemeMinHeight">40</x:Double>
+        <Thickness x:Key="AppBarButtonInnerBorderMargin">5</Thickness>
+        <Thickness x:Key="AppBarButtonContentViewboxCollapsedMargin">0,12</Thickness>
         <!--  High-opacity background for flyouts like the episode list, ensuring text and details are completely legible  -->
         <SolidColorBrush
             x:Key="FlyoutBackgroundBrush"
@@ -174,6 +178,18 @@
                 </AppBarButton.Icon>
                 <AppBarButton.Flyout>
                     <MenuFlyout Opening="OnTracksMenuOpening" Placement="Top" />
+                </AppBarButton.Flyout>
+            </AppBarButton>
+            <!--  Anime4K's modes: only mpv has them (its shaders), as its config binds them to keys  -->
+            <AppBarButton Style="{StaticResource TransportButtonStyle}"
+                AutomationProperties.Name="Anime4K"
+                ToolTipService.ToolTip="Anime4K upscaling"
+                Visibility="{x:Bind local:PlayerTransportControls.VisibleIfAny(ViewModel.ShaderModes), Mode=OneTime}">
+                <AppBarButton.Icon>
+                    <FontIcon Glyph="&#xE790;" />
+                </AppBarButton.Icon>
+                <AppBarButton.Flyout>
+                    <MenuFlyout Opening="OnShaderMenuOpening" Placement="Top" />
                 </AppBarButton.Flyout>
             </AppBarButton>
         </StackPanel>

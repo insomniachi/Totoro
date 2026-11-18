@@ -1,5 +1,8 @@
+using System.Numerics;
+using CommunityToolkit.WinUI;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Totoro.Core.Modules.Media;
@@ -383,6 +386,20 @@ public sealed partial class MediaFoundationPlayerViewModel : PlayerViewModel
 		{
 			_player.Play();
 		}
+	}
+
+	// Windows draws the cues in the element's TimedTextSourcePresenter part: it's slid up, less any gap under the element
+	// (centred, it's shorter than the area with a ratio of its own).
+	public override void SetSubtitleLift(double fraction)
+	{
+		if (_element?.FindDescendant("TimedTextSourcePresenter") is not UIElement presenter)
+		{
+			return;
+		}
+
+		presenter.TranslationTransition ??= new Vector3Transition();
+		var lift = fraction * ViewportHeight - (ViewportHeight - _element.ActualHeight) / 2;
+		presenter.Translation = new Vector3(0, -(float)Math.Max(0, lift), 0);
 	}
 
 	public override void ApplyAspectRatio()

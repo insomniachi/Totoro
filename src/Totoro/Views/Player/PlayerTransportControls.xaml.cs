@@ -263,6 +263,21 @@ public sealed partial class PlayerTransportControls : UserControl
 		}
 	}
 
+	public static Visibility VisibleIfAny(IReadOnlyList<string> items) => items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+	private void OnShaderMenuOpening(object sender, object e)
+	{
+		var menu = (MenuFlyout)sender;
+		menu.Items.Clear();
+		var current = ViewModel.GetShaderMode();
+		foreach (var (name, i) in ViewModel.ShaderModes.Select((x, i) => (x, i)))
+		{
+			var item = new RadioMenuFlyoutItem { Text = name, IsChecked = i == current, GroupName = "ShaderMode" };
+			item.Click += (_, _) => ViewModel.SelectShaderMode(i);
+			menu.Items.Add(item);
+		}
+	}
+
 	private void OnAspectRatioMenuOpening(object sender, object e)
 	{
 		var menu = (MenuFlyout)sender;

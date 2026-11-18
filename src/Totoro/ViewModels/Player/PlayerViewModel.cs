@@ -202,6 +202,19 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 	/// <summary>The chapters in the video file itself (<see cref="Chapters"/> are the ones set from outside).</summary>
 	public abstract IReadOnlyList<MediaChapter> GetFileChapters();
 
+	/// <summary>
+	/// The upscaling modes to pick from (Anime4K's), "Off" first; none when the engine has none (only mpv's shaders do).
+	/// </summary>
+	public virtual IReadOnlyList<string> ShaderModes => [];
+
+	/// <summary>The index in <see cref="ShaderModes"/> of the one in use; -1 if it's none of them.</summary>
+	public virtual int GetShaderMode() => -1;
+
+	public virtual void SelectShaderMode(int index) { }
+
+	/// <summary>Raises the subtitles by <paramref name="fraction"/> of the video area's height, clear of the controls (0: back down).</summary>
+	public virtual void SetSubtitleLift(double fraction) { }
+
 	/// <summary>Plays or pauses; played to the end, plays it again from the start.</summary>
 	protected abstract void TogglePlayPause();
 

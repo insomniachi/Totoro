@@ -92,9 +92,16 @@ internal sealed partial class MpvInstaller
 		try
 		{
 			var release = await GitHubReleases.GetLatestAsync(Repository, ct) ?? throw new InvalidOperationException("mpv's builds have no release on GitHub.");
-			if (release.Tag != InstalledVersion)
+			// Again for libmpv alone when an mpv downloaded before the built-in mpv player has none; not while that player has
+			// it loaded (it's replaced at the next update after a restart).
+			if (release.Tag != InstalledVersion || (!File.Exists(LibMpvNative.FilePath) && !LibMpvNative.IsLoaded))
 			{
 				var assets = PickAssets(release.Assets) ?? throw new InvalidOperationException($"mpv's release {release.Tag} has no 64-bit mpv and FFmpeg.");
+				if (LibMpvNative.IsLoaded)
+				{
+					assets = [.. assets.Where(x => !LibMpvAsset().IsMatch(x.Name))];
+				}
+
 				EnsureNotRunning();
 
 				Directory.CreateDirectory(folder);
@@ -109,9 +116,19 @@ internal sealed partial class MpvInstaller
 				Directory.CreateDirectory(Folder);
 				await Task.Run(() =>
 				{
+					var options = new ExtractionOptions { ExtractFullPath = true, Overwrite = true };
 					foreach (var archive in archives)
 					{
-						ArchiveFactory.WriteToDirectory(archive, Folder, new ExtractionOptions { ExtractFullPath = true, Overwrite = true });
+						if (LibMpvAsset().IsMatch(Path.GetFileName(archive)))
+						{
+							// mpv-dev also has headers and an import library, which only building against it needs.
+							using var dev = ArchiveFactory.OpenArchive(archive);
+							dev.Entries.First(x => x.Key == "libmpv-2.dll").WriteToDirectory(Folder, options);
+						}
+						else
+						{
+							ArchiveFactory.WriteToDirectory(archive, Folder, options);
+						}
 					}
 				}, ct);
 				await File.WriteAllTextAsync(VersionFile, release.Tag, ct);
@@ -146,13 +163,17 @@ internal sealed partial class MpvInstaller
 		}
 	}
 
-	/// <summary>The 64-bit mpv and FFmpeg builds among a release's files (not the -v3 builds for newer CPUs, nor mpv-dev); null if one's missing.</summary>
+	/// <summary>
+	/// The 64-bit mpv and FFmpeg builds among a release's files (not the -v3 builds for newer CPUs), and mpv-dev's for
+	/// libmpv (the built-in mpv player's) if it's there; null if mpv or FFmpeg is missing.
+	/// </summary>
 	internal static IReadOnlyList<GitHubAsset>? PickAssets(IEnumerable<GitHubAsset> assets)
 	{
 		var list = assets.ToList();
 		var mpv = list.FirstOrDefault(x => MpvAsset().IsMatch(x.Name));
 		var ffmpeg = list.FirstOrDefault(x => FfmpegAsset().IsMatch(x.Name));
-		return mpv is null || ffmpeg is null ? null : [mpv, ffmpeg];
+		var dev = list.FirstOrDefault(x => LibMpvAsset().IsMatch(x.Name));
+		return mpv is null || ffmpeg is null ? null : dev is null ? [mpv, ffmpeg] : [mpv, ffmpeg, dev];
 	}
 
 	private void ShowInstalled()
@@ -301,4 +322,7 @@ internal sealed partial class MpvInstaller
 
 	[GeneratedRegex(@"^ffmpeg-x86_64-git-[0-9a-f]+\.7z$", RegexOptions.IgnoreCase)]
 	private static partial Regex FfmpegAsset();
+
+	[GeneratedRegex(@"^mpv-dev-x86_64-\d{8}-git-[0-9a-f]+\.7z$", RegexOptions.IgnoreCase)]
+	private static partial Regex LibMpvAsset();
 }

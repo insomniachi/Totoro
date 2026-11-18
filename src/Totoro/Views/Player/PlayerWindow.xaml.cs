@@ -135,6 +135,15 @@ public sealed partial class PlayerWindow : Window
 			};
 			view = video;
 		}
+		else if (ViewModel is MpvPlayerViewModel mpv)
+		{
+			// mpv draws in a window of its own inside this one, under the XAML: the window and the video area are see-through
+			// over it (they're otherwise painted over it, whatever the windows' order).
+			VideoArea.Background = null;
+			SystemBackdrop = new WinUIEx.TransparentTintBackdrop();
+			_ = mpv.InitializeAsync(Win32Interop.GetWindowFromWindowId(AppWindow.Id));
+			return;
+		}
 		else
 		{
 			var element = new MediaPlayerElement();
@@ -243,8 +252,11 @@ public sealed partial class PlayerWindow : Window
 
 	private void OnPointerMoved(object sender, PointerRoutedEventArgs e) => ShowControls();
 
-	private void OnVideoAreaSizeChanged(object sender, SizeChangedEventArgs e) =>
+	private void OnVideoAreaSizeChanged(object sender, SizeChangedEventArgs e)
+	{
 		ViewModel.UpdateViewportSize(e.NewSize.Width, e.NewSize.Height);
+		LiftSubtitles(_areControlsShown);
+	}
 
 	private void OnVideoTapped(object sender, TappedRoutedEventArgs e) => ViewModel.PlayPauseCommand.Execute(null);
 
@@ -301,6 +313,7 @@ public sealed partial class PlayerWindow : Window
 		TitleBarArea.Translation = shown ? Vector3.Zero : new Vector3(0, -ChromeSlide, 0);
 		// Down to 24 from the bottom: it sits 12 above the controls.
 		Offers.Translation = shown ? Vector3.Zero : new Vector3(0, controlsSpace - 12, 0);
+		LiftSubtitles(shown);
 
 		// The window's own buttons (minimise, maximise, close) go too: drawn see-through.
 		var titleBar = AppWindow.TitleBar;
@@ -312,7 +325,12 @@ public sealed partial class PlayerWindow : Window
 	private void OnControlsSizeChanged(object sender, SizeChangedEventArgs e)
 	{
 		Offers.Margin = new Thickness(0, 16, 0, ControlsSpace + 12);
+		LiftSubtitles(_areControlsShown);
 	}
+
+	// The subtitles sit above the controls while they show, else they'd be under them.
+	private void LiftSubtitles(bool shown) =>
+		ViewModel.SetSubtitleLift(shown && VideoArea.ActualHeight > 0 ? ControlsSpace / VideoArea.ActualHeight : 0);
 
 	// How much of the bottom of the video the floating controls take: their height and the gap under them.
 	private double ControlsSpace => Controls.ActualHeight + Controls.Margin.Bottom;
@@ -340,5 +358,4 @@ public sealed partial class PlayerWindow : Window
 	}
 
 	[LibraryImport("user32.dll")]
-	private static partial int ShowCursor([MarshalAs(UnmanagedType.Bool)] bool show);
-}
+	private static partial int ShowCursor([MarshalAs(UnmanagedType.Bool)] bool show);}

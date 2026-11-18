@@ -41,6 +41,7 @@ prints the PID. Add `--on sandbox` to every `winapp ui` command. In-app restart 
 | Open an anime from a card | `winapp ui invoke "<title>" --type Button -a <pid>` (cards are buttons named after their title) |
 | A card's actions (its hover buttons and right-click menu) | `winapp ui invoke "<title>" --type Button --action expand -a <pid>`, then `winapp ui invoke "Play" --type MenuItem -a <pid>` (Play, Binge, Edit tracking, Download, Settings; `--action collapse` closes it) |
 | Play the next episode | `winapp ui invoke WatchButton -a <pid>` (named "Play episode N" or "Resume episode N"; read it with `get-property WatchButton`) |
+| Play from the Watch page (for player tests: no Library load) | `winapp ui invoke "Watch" --type ListItem`, `set-value "Search the provider" "<title>" --type Edit`, `send-keys enter --target <the Edit's slug>`, invoke the result's ListItem, then an "Episode N" ListItem (the Play panel shows once one's picked), then `winapp ui invoke PlayButton -a <pid>` |
 | Search | `winapp ui set-value TextBox "<text>" -a <pid>` (the mode's kind; start with `a:` `m:` `c:` `v:` or `s:` for anime, manga, characters, voice actors or songs) |
 | Find anything | `winapp ui search "<text>" -a <pid>`; `winapp ui inspect -a <pid> -i` lists what can be acted on |
 | See it | `winapp ui screenshot -a <pid> -o <scratchpad>/shot.png`, then Read the png |

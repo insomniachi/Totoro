@@ -9,7 +9,7 @@ public class MpvInstallerTests
 	private static GitHubAsset Asset(string name) => new(name, new Uri($"https://example.com/{name}"), 1, null);
 
 	[Fact]
-	public void PickAssets_TakesThe64BitMpvAndFfmpeg()
+	public void PickAssets_TakesThe64BitMpvFfmpegAndLibMpv()
 	{
 		// The files of shinchiro's release 20261020.
 		string[] names =
@@ -22,7 +22,15 @@ public class MpvInstallerTests
 
 		var picked = MpvInstaller.PickAssets(names.Select(Asset));
 
-		Assert.Equal(["mpv-x86_64-20261020-git-6a262d11f6.7z", "ffmpeg-x86_64-git-38ac3a923.7z"], picked!.Select(x => x.Name));
+		Assert.Equal(["mpv-x86_64-20261020-git-6a262d11f6.7z", "ffmpeg-x86_64-git-38ac3a923.7z", "mpv-dev-x86_64-20261020-git-6a262d11f6.7z"], picked!.Select(x => x.Name));
+	}
+
+	[Fact]
+	public void PickAssets_WithoutLibMpvWhenThereIsNone()
+	{
+		var picked = MpvInstaller.PickAssets([Asset("mpv-x86_64-20261020-git-6a262d11f6.7z"), Asset("ffmpeg-x86_64-git-38ac3a923.7z")]);
+
+		Assert.Equal(2, picked!.Count);
 	}
 
 	[Fact]

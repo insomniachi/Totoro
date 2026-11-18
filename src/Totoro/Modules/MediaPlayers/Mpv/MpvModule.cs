@@ -18,7 +18,7 @@ internal class MpvModule : IModule<Settings>
 	{
 		Id = Id,
 		Name = "MPV",
-		Description = "Plays videos in mpv, a free and open-source media player.",
+		Description = "Plays videos in mpv, a free and open-source media player: in mpv's own window, or in Totoro's with its controls over the video.",
 		DataFolder = "Mpv",
 		Image = @"Assets\Modules\Mpv.png"
 	};
@@ -27,15 +27,28 @@ internal class MpvModule : IModule<Settings>
 	{
 		services.AddTransient(_ => Descriptor);
 		services.AddModuleSettings(this);
-		// One player app-wide: it owns the mpv process, so a second Play replaces what's playing.
-		services.AddKeyedSingleton<IMediaPlayer, MpvMediaPlayer>(Id);
+		// One of each app-wide: each owns its mpv (process or window), so a second Play replaces what's playing. Which one
+		// plays is the setting's at the time: the player is asked for as each video starts.
+		services.AddSingleton<MpvMediaPlayer>();
+		services.AddSingleton<MpvWindowMediaPlayer>();
+		services.AddKeyedTransient<IMediaPlayer>(Id, (sp, _) => sp.GetRequiredService<IModuleSettings<Settings>>().Value.PlayInApp
+			? sp.GetRequiredService<MpvWindowMediaPlayer>()
+			: sp.GetRequiredService<MpvMediaPlayer>());
 		services.AddSingleton<MpvInstaller>();
 		services.AddAgentTools<MpvTools>();
 	}
 }
 
-public sealed class Settings : DataContainerConfig
+/// <summary>A built-in player's settings too: the shortcuts, languages... are for playing in Totoro's window.</summary>
+public sealed class Settings : PlayerSettings
 {
+	// mpv's own window has always started full screen.
+	public Settings() => LaunchFullScreen = true;
+
+	[DisplayName("Play in Totoro's window")]
+	[Description("Play in Totoro's own window, with its controls, skipping and the next episode over the video, still with mpv's engine and config (Anime4K too). Off: mpv's own window. Needs mpv downloaded here.")]
+	public bool PlayInApp { get; set; }
+
 	// The settings are made by the JSON serializer, not the container: the installer is found when they're shown.
 	// Its description is the build installed, once there is one (see MpvInstaller).
 	[DisplayName("Mpv Build")]
@@ -63,15 +76,6 @@ public sealed class Settings : DataContainerConfig
 	[Description("Leave empty to use the downloaded or installed mpv.")]
 	[Editor(DataContainerEditors.FileBrowser, "")]
 	public string FileName { get; set; } = "";
-
-	[DisplayName("Start in full screen")]
-	public bool LaunchFullScreen { get; set; } = true;
-
-	[DisplayName("Volume")]
-	[Description("mpv's volume (up to 130); changing it in mpv changes it here too.")]
-	[Range(0, 130)]
-	[Editor(DataContainerEditors.Slider, "")]
-	public int Volume { get; set; } = 100;
 }
 
 /// <summary>Which of Anime4K's templates to install: its fast shaders, or its high-quality ones.</summary>

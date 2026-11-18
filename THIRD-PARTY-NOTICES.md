@@ -44,7 +44,7 @@ in `libvlc\win-x64\COPYING.LIB`, with where their source is in `libvlc\win-x64\N
 NMeCab is likewise a separate library (`LibNMeCab.dll`), used under the LGPL-2.1 (the same text, in
 `libvlc\win-x64\COPYING.LIB`); you may replace it with your own build. Its source is at https://github.com/komutan/NMeCab.
 
-mpv, FFmpeg and yt-dlp aren't shipped: the MPV module's settings download them from their own releases
+mpv (libmpv included), FFmpeg and yt-dlp aren't shipped: the MPV module's settings download them from their own releases
 (shinchiro/mpv-winbuild-cmake, yt-dlp/yt-dlp) when the user asks, under their own licenses. Nor is rqbit: the rqbit
 module downloads it from its own releases (ikatson/rqbit) the first time a torrent is played, or when the user asks.
 
