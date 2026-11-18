@@ -15,9 +15,9 @@ namespace Totoro.ViewModels.Player;
 /// </summary>
 public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio aspectRatio, ILogger logger) : PlayerViewModel(volume, aspectRatio, logger)
 {
-	// 0 until InitializeAsync, and again once closing.
 	private readonly ILogger _logger = logger;
-	private nint _mpv;
+	// Null until InitializeAsync, and again once closing.
+	private MpvHandle? _mpv;
 	private Task? _events;
 	private nint _window;
 	private volatile bool _paused;
@@ -49,50 +49,22 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 		}
 
 		_window = window;
-		nint started;
+		MpvHandle started;
 		try
 		{
 			started = await Task.Run(() =>
 			{
 				LibMpvNative.Load();
 				var mpv = Create();
-				SetOptionString(mpv, "wid", window.ToString(CultureInfo.InvariantCulture));
-				// mpv's own config, where Anime4K's lines are installed (see MpvInstaller), but not the user's scripts: one
-				// drawing its own controls would show over the app's.
-				SetOptionString(mpv, "config", "yes");
-				SetOptionString(mpv, "config-dir", MpvInstaller.ConfigFolder);
-				SetOptionString(mpv, "load-scripts", "no");
-				SetOptionString(mpv, "vo", "gpu-next");
-				SetOptionString(mpv, "hwdec", "auto-safe");
-				// A flip-model swap chain is shown over the XAML whatever the windows' order; blitted, it's under it.
-				SetOptionString(mpv, "d3d11-flip", "no");
-				// Its (black) window straight away: the player's window is see-through where the video goes.
-				SetOptionString(mpv, "force-window", "yes");
-				SetOptionString(mpv, "volume",((int)Volume).ToString(CultureInfo.InvariantCulture));
-				if (Initialize(mpv) < 0)
+				try
 				{
-					TerminateDestroy(mpv);
-					throw new InvalidOperationException("mpv didn't start.");
+					return Start(mpv, window);
 				}
-
-				// After the config, which mustn't change them: the app's controls and keys are the ones used, and the last
-				// frame stays at the end (eof-reached says it ended) rather than mpv going idle.
-				SetPropertyString(mpv, "osc", "no");
-				SetPropertyString(mpv, "input-default-bindings", "no");
-				SetPropertyString(mpv, "input-vo-keyboard", "no");
-				SetPropertyString(mpv, "input-cursor", "no");
-				SetPropertyString(mpv, "cursor-autohide", "no");
-				SetPropertyString(mpv, "keep-open", "yes");
-				SetPropertyString(mpv, "idle", "yes");
-				SetPropertyString(mpv, "sub-pos", _subPos);
-
-				ObserveProperty(mpv, "time-pos", FormatDouble);
-				ObserveProperty(mpv, "duration", FormatDouble);
-				ObserveProperty(mpv, "pause", FormatFlag);
-				ObserveProperty(mpv, "paused-for-cache", FormatFlag);
-				ObserveProperty(mpv, "eof-reached", FormatFlag);
-				ObserveProperty(mpv, "osd-height", FormatDouble);
-				return mpv;
+				catch
+				{
+					mpv.Dispose();
+					throw;
+				}
 			});
 		}
 		catch (Exception ex)
@@ -107,7 +79,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 		// Closed while mpv started: closing found no mpv to end, so it's ended here.
 		if (IsClosed)
 		{
-			await Task.Run(() => TerminateDestroy(started));
+			await Task.Run(started.Dispose);
 			Initialized.TrySetResult();
 			return;
 		}
@@ -119,10 +91,50 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 		Initialized.TrySetResult();
 	}
 
+	/// <summary>Sets <paramref name="mpv"/>'s options and starts it, drawing in <paramref name="window"/>.</summary>
+	private MpvHandle Start(MpvHandle mpv, nint window)
+	{
+		SetOptionString(mpv, "wid", window.ToString(CultureInfo.InvariantCulture));
+		// mpv's own config, where Anime4K's lines are installed (see MpvInstaller), but not the user's scripts: one
+		// drawing its own controls would show over the app's.
+		SetOptionString(mpv, "config", "yes");
+		SetOptionString(mpv, "config-dir", MpvInstaller.ConfigFolder);
+		SetOptionString(mpv, "load-scripts", "no");
+		SetOptionString(mpv, "vo", "gpu-next");
+		SetOptionString(mpv, "hwdec", "auto-safe");
+		// A flip-model swap chain is shown over the XAML whatever the windows' order; blitted, it's under it.
+		SetOptionString(mpv, "d3d11-flip", "no");
+		// Its (black) window straight away: the player's window is see-through where the video goes.
+		SetOptionString(mpv, "force-window", "yes");
+		SetOptionString(mpv, "volume", ((int)Volume).ToString(CultureInfo.InvariantCulture));
+		if (Initialize(mpv) < 0)
+		{
+			throw new InvalidOperationException("mpv didn't start.");
+		}
+
+		// After the config, which mustn't change them: the app's controls and keys are the ones used, and the last
+		// frame stays at the end (eof-reached says it ended) rather than mpv going idle.
+		SetPropertyString(mpv, "osc", "no");
+		SetPropertyString(mpv, "input-default-bindings", "no");
+		SetPropertyString(mpv, "input-vo-keyboard", "no");
+		SetPropertyString(mpv, "input-cursor", "no");
+		SetPropertyString(mpv, "cursor-autohide", "no");
+		SetPropertyString(mpv, "keep-open", "yes");
+		SetPropertyString(mpv, "idle", "yes");
+		SetPropertyString(mpv, "sub-pos", _subPos);
+
+		ObserveProperty(mpv, "time-pos", MpvFormat.Double);
+		ObserveProperty(mpv, "duration", MpvFormat.Double);
+		ObserveProperty(mpv, "pause", MpvFormat.Flag);
+		ObserveProperty(mpv, "paused-for-cache", MpvFormat.Flag);
+		ObserveProperty(mpv, "eof-reached", MpvFormat.Flag);
+		ObserveProperty(mpv, "osd-height", MpvFormat.Double);
+		return mpv;
+	}
+
 	protected override Task PlayCoreAsync(Uri uri, IEnumerable<string> options, TimeSpan start)
 	{
-		var mpv = _mpv;
-		if (mpv == 0)
+		if (_mpv is not { } mpv)
 		{
 			return Task.CompletedTask;
 		}
@@ -143,7 +155,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	public override Task SeekAsync(TimeSpan position)
 	{
 		var mpv = _mpv;
-		if (mpv == 0 || !_loaded)
+		if (mpv is null || !_loaded)
 		{
 			OnTime(position, report: false);
 			return Task.CompletedTask;
@@ -173,7 +185,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	public override IReadOnlyList<MediaTrack> GetTracks()
 	{
 		var mpv = _mpv;
-		if (mpv == 0)
+		if (mpv is null)
 		{
 			return [];
 		}
@@ -207,7 +219,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	public override IReadOnlyList<MediaChapter> GetFileChapters()
 	{
 		var mpv = _mpv;
-		if (mpv == 0)
+		if (mpv is null)
 		{
 			return [];
 		}
@@ -226,7 +238,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	public override int GetShaderMode()
 	{
 		var mpv = _mpv;
-		if (mpv == 0 || _modes.Count == 0)
+		if (mpv is null || _modes.Count == 0)
 		{
 			return -1;
 		}
@@ -244,7 +256,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	public override void SelectShaderMode(int index)
 	{
 		var mpv = _mpv;
-		if (mpv == 0 || index < 0 || index > _modes.Count)
+		if (mpv is null || index < 0 || index > _modes.Count)
 		{
 			return;
 		}
@@ -302,7 +314,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	protected override void TogglePlayPause()
 	{
 		var mpv = _mpv;
-		if (mpv == 0)
+		if (mpv is null)
 		{
 			return;
 		}
@@ -339,44 +351,45 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	protected override async Task CloseEngineAsync()
 	{
 		var mpv = _mpv;
-		if (mpv == 0)
+		if (mpv is null)
 		{
 			return;
 		}
 
-		_mpv = 0;
-		// Quitting ends the event loop (a shutdown event); mpv is freed once it's out of mpv_wait_event.
+		_mpv = null;
+		// Quitting ends the event loop (a shutdown event). The handle frees mpv once nothing's using it, a wait for an event
+		// or a command still running included; freeing can take a moment, so it's off the UI thread.
 		Command(mpv, "quit");
 		if (_events is { } events)
 		{
 			await events;
 		}
 
-		await Task.Run(() => TerminateDestroy(mpv));
+		await Task.Run(mpv.Dispose);
 	}
 
 	private void Set(string name, string value)
 	{
-		if (_mpv is var mpv && mpv != 0)
+		if (_mpv is { } mpv)
 		{
 			SetPropertyString(mpv, name, value);
 		}
 	}
 
 	// On its own thread until mpv shuts down: events are brought to the UI thread, as libvlc's are.
-	private unsafe void FollowEvents(nint mpv)
+	private unsafe void FollowEvents(MpvHandle mpv)
 	{
 		while (true)
 		{
 			var e = WaitEvent(mpv);
 			switch (e->Id)
 			{
-				case EventShutdown:
+				case MpvEventId.Shutdown:
 					return;
-				case EventStartFile:
+				case MpvEventId.StartFile:
 					_loaded = false;
 					break;
-				case EventFileLoaded:
+				case MpvEventId.FileLoaded:
 					_loaded = true;
 					// With their names and languages; the first is shown. Fetched with the video's headers (its per-file options).
 					foreach (var (subtitle, i) in Subtitles.Select((x, i) => (x, i)))
@@ -386,10 +399,10 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 					}
 
 					break;
-				case EventVideoReconfig:
+				case MpvEventId.VideoReconfig:
 					OnUi(() => MoveBehindXaml(_window));
 					break;
-				case EventPlaybackRestart:
+				case MpvEventId.PlaybackRestart:
 					OnUi(() =>
 					{
 						if (_paused)
@@ -402,30 +415,30 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 						}
 					});
 					break;
-				case EventEndFile when ((EndFileData*)e->Data)->Reason == EndFileReasonError:
+				case MpvEventId.EndFile when ((EndFileData*)e->Data)->Reason == MpvEndFileReason.Error:
 					OnUi(() =>
 					{
 						ShowStatus("Couldn't play the video.", isError: true);
 						OnEnded();
 					});
 					break;
-				case EventPropertyChange:
+				case MpvEventId.PropertyChange:
 					OnPropertyChange(mpv, (PropertyData*)e->Data);
 					break;
 			}
 		}
 	}
 
-	// mpv is the loop's own handle: _mpv is zeroed as closing starts, before the loop has ended.
-	private unsafe void OnPropertyChange(nint mpv, PropertyData* property)
+	// mpv is the loop's own handle: _mpv is cleared as closing starts, before the loop has ended.
+	private unsafe void OnPropertyChange(MpvHandle mpv, PropertyData* property)
 	{
-		if (property->Format == FormatNone)
+		if (property->Format == MpvFormat.None)
 		{
 			return;
 		}
 
 		var name = Marshal.PtrToStringUTF8((nint)property->Name);
-		if (property->Format == FormatDouble)
+		if (property->Format == MpvFormat.Double)
 		{
 			var value = *(double*)property->Data;
 			// The XAML starts 1px below the window's top (WinUI keeps it, full screen too), so the title bar's shade doesn't
