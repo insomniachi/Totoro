@@ -358,4 +358,5 @@ public sealed partial class PlayerWindow : Window
 	}
 
 	[LibraryImport("user32.dll")]
-	private static partial int ShowCursor([MarshalAs(UnmanagedType.Bool)] bool show);}
+	private static partial int ShowCursor([MarshalAs(UnmanagedType.Bool)] bool show);
+}

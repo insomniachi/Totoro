@@ -37,6 +37,9 @@ internal abstract class WindowMediaPlayer(IModuleSettings<PlayerSettings> settin
 
 	public bool IsOpen => _window is not null;
 
+	/// <summary>The open window's view model; null while it isn't open.</summary>
+	protected PlayerViewModel? ViewModel => _window?.ViewModel;
+
 	public bool IsPaused => _window?.ViewModel.IsPaused ?? false;
 
 	public abstract bool IsAvailable();

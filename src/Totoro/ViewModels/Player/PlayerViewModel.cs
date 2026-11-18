@@ -32,6 +32,9 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 	private CancellationTokenSource? _message;
 	private bool _isClosed;
 
+	/// <summary>Whether <see cref="CloseAsync"/> has been called.</summary>
+	protected bool IsClosed => _isClosed;
+
 	// The subtitle files given with what's playing, to name their tracks.
 	private IReadOnlyList<SubtitleTrack> _subtitles = [];
 

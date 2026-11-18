@@ -49,9 +49,10 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 		}
 
 		_window = window;
+		nint started;
 		try
 		{
-			_mpv = await Task.Run(() =>
+			started = await Task.Run(() =>
 			{
 				LibMpvNative.Load();
 				var mpv = Create();
@@ -98,10 +99,20 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 		{
 			_logger.LogError(ex, "Couldn't start mpv");
 			ShowStatus("Couldn't start mpv: download it again in the MPV player's settings.", isError: true);
+			// Plays waiting on it go on (and do nothing, there being no mpv) rather than waiting for ever.
+			Initialized.TrySetResult();
 			return;
 		}
 
-		var started = _mpv;
+		// Closed while mpv started: closing found no mpv to end, so it's ended here.
+		if (IsClosed)
+		{
+			await Task.Run(() => TerminateDestroy(started));
+			Initialized.TrySetResult();
+			return;
+		}
+
+		_mpv = started;
 		MoveBehindXaml(window);
 		_events = Task.Run(() => FollowEvents(started));
 		ApplyAspectRatio();
@@ -399,13 +410,14 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 					});
 					break;
 				case EventPropertyChange:
-					OnPropertyChange((PropertyData*)e->Data);
+					OnPropertyChange(mpv, (PropertyData*)e->Data);
 					break;
 			}
 		}
 	}
 
-	private unsafe void OnPropertyChange(PropertyData* property)
+	// mpv is the loop's own handle: _mpv is zeroed as closing starts, before the loop has ended.
+	private unsafe void OnPropertyChange(nint mpv, PropertyData* property)
 	{
 		if (property->Format == FormatNone)
 		{
@@ -420,7 +432,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 			// reach the top row: the video stays off it (black, as under the other players), not a bright line over the shade.
 			if (name == "osd-height" && value > 0)
 			{
-				SetPropertyString(_mpv, "video-margin-ratio-top", (1 / value).ToString(CultureInfo.InvariantCulture));
+				SetPropertyString(mpv, "video-margin-ratio-top", (1 / value).ToString(CultureInfo.InvariantCulture));
 			}
 			else if (name == "duration")
 			{

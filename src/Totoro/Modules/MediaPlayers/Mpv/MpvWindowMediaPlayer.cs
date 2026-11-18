@@ -19,6 +19,14 @@ internal sealed class MpvWindowMediaPlayer(IModuleSettings<Settings> settings, I
 	/// <summary>Whether libmpv was downloaded with mpv (see <see cref="MpvInstaller"/>).</summary>
 	public override bool IsAvailable() => File.Exists(LibMpvNative.FilePath);
 
+	/// <summary>Anime4K's modes, "Off" first, as the window's Anime4K button offers them; none while it isn't open.</summary>
+	public IReadOnlyList<string> ShaderModes => ViewModel?.ShaderModes ?? [];
+
+	/// <summary>The index in <see cref="ShaderModes"/> of the one in use; -1 if it's none of them.</summary>
+	public int GetShaderMode() => ViewModel?.GetShaderMode() ?? -1;
+
+	public void SelectShaderMode(int index) => ViewModel?.SelectShaderMode(index);
+
 	protected override PlayerViewModel CreateViewModel() => new MpvPlayerViewModel(Settings.Volume, Preferences.PlayerAspectRatio, Logger);
 
 	public override void Play(MediaItem media, TimeSpan startPosition)
