@@ -1,25 +1,21 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LibVLCSharp.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using Totoro.Core.Modules.Media;
-using Totoro.Modules.MediaPlayers.Vlc;
 using MediaTrack = Totoro.Core.Modules.Media.MediaTrack;
 using SubtitleTrack = Totoro.Core.Modules.Streaming.SubtitleTrack;
 
 namespace Totoro.ViewModels.Player;
 
 /// <summary>
-/// The built-in player's window: plays a video with libvlc and holds what its controls and overlays show (the seek bar
-/// with the opening and ending marked, the skip button, the next episode...). Created on the UI thread; libvlc's
-/// events are brought to it, so properties and events change there.
+/// The built-in players' window: plays a video and holds what its controls and overlays show (the seek bar with the
+/// opening and ending marked, the skip button, the next episode...). What plays the video is the derived class's (libvlc,
+/// or Windows' own). Created on the UI thread; the engine's events are brought to it, so properties and events change there.
 /// </summary>
-public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspectRatio, ILogger logger) : ObservableObject
+public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspectRatio, ILogger logger) : ObservableObject
 {
-	public PlayerViewModel(int volume, ILogger logger) : this(volume, PlayerAspectRatio.Fit, logger) { }
-
 	// An opening's length, give or take: what the "skip ahead" button skips.
 	public static readonly TimeSpan OpeningLength = TimeSpan.FromSeconds(85);
 
@@ -28,9 +24,9 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	private static readonly TimeSpan s_offerTick = TimeSpan.FromMilliseconds(30);
 
 	private readonly DispatcherQueue? _ui = TryGetDispatcherQueue();
-	private readonly TaskCompletionSource _initialized = new(TaskCreationOptions.RunContinuationsAsynchronously);
+	// Set once the engine can play: playing waits for it.
+	protected readonly TaskCompletionSource Initialized = new(TaskCreationOptions.RunContinuationsAsynchronously);
 	private readonly SemaphoreSlim _loading = new(1, 1);
-	private LibVLC? _libVlc;
 	private TaskCompletionSource<bool>? _offer;
 	private TaskCompletionSource<bool>? _next;
 	private CancellationTokenSource? _message;
@@ -38,7 +34,8 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 
 	// The subtitle files given with what's playing, to name their tracks.
 	private IReadOnlyList<SubtitleTrack> _subtitles = [];
-	private bool _isStarting;
+
+	protected IReadOnlyList<SubtitleTrack> Subtitles => _subtitles;
 
 	public event EventHandler<TimeSpan>? DurationChanged;
 
@@ -47,18 +44,15 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	/// <summary>Raised when the video ends, or can't be played.</summary>
 	public event EventHandler? Ended;
 
-	/// <summary>libvlc's player, for the video view; null until <see cref="Initialize"/>.</summary>
-	[ObservableProperty] public partial MediaPlayer? MediaPlayer { get; private set; }
-
 	[ObservableProperty] public partial string Title { get; private set; } = "";
 
-	[ObservableProperty] public partial bool IsPlaying { get; private set; }
+	[ObservableProperty] public partial bool IsPlaying { get; protected set; }
 
 	// Made when playback first starts, on the UI thread: it can't be activated off one (as in tests), and isn't needed before.
 	private Windows.System.Display.DisplayRequest? _displayRequest;
 
 	/// <summary>Whether it's waiting for the video (starting, or after seeking).</summary>
-	[ObservableProperty] public partial bool IsBuffering { get; private set; }
+	[ObservableProperty] public partial bool IsBuffering { get; protected set; }
 
 	/// <summary>The video's length, in seconds; 0 until it's known.</summary>
 	[ObservableProperty] public partial double Duration { get; private set; }
@@ -147,52 +141,8 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 
 	[ObservableProperty] public partial bool IsStatusError { get; private set; }
 
-	/// <summary>
-	/// Creates libvlc to draw into the video view's swap chain (from its Initialized event). Off the UI thread: loading
-	/// libvlc the first time can take seconds (see <see cref="LibVlcLoader"/>).
-	/// </summary>
-	public async Task InitializeAsync(string[] swapChainOptions)
-	{
-		if (_libVlc is not null || _isStarting)
-		{
-			return;
-		}
-
-		_isStarting = true;
-		if (!LibVlcLoader.IsLoaded)
-		{
-			ShowStatus("Starting the player…");
-		}
-
-		(_libVlc, var player) = await Task.Run(() =>
-		{
-			LibVlcLoader.Load();
-			var libVlc = new LibVLC(enableDebugLogs: false, [.. swapChainOptions, "--no-video-title-show"]);
-			return (libVlc, new MediaPlayer(libVlc));
-		});
-		if (Status == "Starting the player…")
-		{
-			ShowStatus(null);
-		}
-
-		player.TimeChanged += (_, e) => OnUi(() => OnTime(TimeSpan.FromMilliseconds(e.Time)));
-		player.LengthChanged += (_, e) => OnUi(() => OnLength(TimeSpan.FromMilliseconds(e.Length)));
-		player.Playing += (_, _) => OnUi(OnPlaying);
-		player.Paused += (_, _) => OnUi(() => IsPlaying = false);
-		player.Buffering += (_, e) => OnUi(() => IsBuffering = e.Cache < 100);
-		player.EndReached += (_, _) => OnUi(OnEnded);
-		player.EncounteredError += (_, _) => OnUi(() =>
-		{
-			ShowStatus("Couldn't play the video.", isError: true);
-			OnEnded();
-		});
-		MediaPlayer = player;
-		ApplyAspectRatio();
-		_initialized.TrySetResult();
-	}
-
 	/// <summary>Plays <paramref name="uri"/> from <paramref name="start"/>, replacing what's playing.</summary>
-	/// <param name="options">libvlc media options, e.g. ":http-referrer=...".</param>
+	/// <param name="options">libvlc media options, e.g. ":http-referrer=..."; ignored by other engines.</param>
 	/// <param name="isClip">A short video (e.g. an opening) rather than an episode: only the simple controls show, and no episodes.</param>
 	/// <param name="subtitles">Subtitle files to load beside it, the first one shown.</param>
 	public async Task PlayAsync(Uri uri, string title, IEnumerable<string> options, TimeSpan start, bool isClip = false, IReadOnlyList<SubtitleTrack>? subtitles = null)
@@ -208,24 +158,16 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 
 		IsBuffering = true;
 
-		await _initialized.Task;
+		await Initialized.Task;
 		await _loading.WaitAsync();
 		try
 		{
-			if (_isClosed || MediaPlayer is not { } player)
+			if (_isClosed)
 			{
 				return;
 			}
 
-			using var media = new Media(_libVlc!, uri, [.. options, $":start-time={start.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}"]);
-			foreach (var (subtitle, i) in _subtitles.Select((x, i) => (x, i)))
-			{
-				// The highest priority (4) is selected when it loads; the rest are there to pick.
-				media.AddSlave(MediaSlaveType.Subtitle, i == 0 ? 4u : 0u, subtitle.Url.AbsoluteUri);
-			}
-
-			// Replacing the video stops the last one, which can take a moment (a stream closing): not on the UI thread.
-			await Task.Run(() => player.Play(media));
+			await PlayCoreAsync(uri, options, start);
 		}
 		catch (Exception ex)
 		{
@@ -238,80 +180,45 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		}
 	}
 
-	public Task SeekAsync(TimeSpan position)
-	{
-		if (MediaPlayer is { IsSeekable: true } player)
-		{
-			var time = Math.Clamp((long)position.TotalMilliseconds, 0, Math.Max(0, player.Length - 1000));
-			player.Time = time;
-			// Shown and reported straight away rather than when libvlc next reports it, which it doesn't while paused (watching
-			// together would tell the room the old position).
-			OnTime(TimeSpan.FromMilliseconds(time));
-		}
-		else if (MediaPlayer is null)
-		{
-			OnTime(position, report: false);
-		}
+	/// <summary>Has the engine play <paramref name="uri"/> from <paramref name="start"/>, with <see cref="Subtitles"/>.</summary>
+	protected abstract Task PlayCoreAsync(Uri uri, IEnumerable<string> options, TimeSpan start);
 
-		return Task.CompletedTask;
-	}
+	/// <summary>
+	/// Seeks, and shows and reports the new position straight away rather than when the engine next reports it, which it
+	/// may not while paused (watching together would tell the room the old position). Before there's a video, it's only shown.
+	/// </summary>
+	public abstract Task SeekAsync(TimeSpan position);
 
-	public bool IsPaused => MediaPlayer?.State == VLCState.Paused;
+	public abstract bool IsPaused { get; }
 
-	public Task SetPausedAsync(bool paused)
-	{
-		MediaPlayer?.SetPause(paused);
-		return Task.CompletedTask;
-	}
+	public abstract Task SetPausedAsync(bool paused);
 
-	public Task SetSpeedAsync(double speed)
-	{
-		MediaPlayer?.SetRate((float)speed);
-		return Task.CompletedTask;
-	}
+	public abstract Task SetSpeedAsync(double speed);
 
-	public IReadOnlyList<MediaTrack> GetTracks()
-	{
-		if (MediaPlayer is not { } player)
-		{
-			return [];
-		}
+	public abstract IReadOnlyList<MediaTrack> GetTracks();
 
-		var audio = player.AudioTrack;
-		var subtitle = player.Spu;
-		var spus = player.SpuDescription;
-		// libvlc calls the subtitle files it was given "Track N"; they're its last subtitle tracks, in the order given.
-		// shortcut: assumes the video's own subtitle tracks are all listed before them, true of files and HLS once loaded;
-		// match by libvlc's media tracks if a stream ever adds its own later.
-		var firstFile = spus.Count(x => x.Id >= 0) - _subtitles.Count;
-		return
-		[
-			.. player.AudioTrackDescription.Where(x => x.Id >= 0).Select(x => new MediaTrack(MediaTrackKind.Audio, x.Id, x.Name ?? $"Track {x.Id}", x.Id == audio)),
-			.. spus.Where(x => x.Id < 0).Select(x => new MediaTrack(MediaTrackKind.Subtitle, x.Id, "Off", x.Id == subtitle)),
-			.. spus.Where(x => x.Id >= 0).Select((x, i) => new MediaTrack(MediaTrackKind.Subtitle, x.Id,
-				firstFile >= 0 && i >= firstFile ? _subtitles[i - firstFile].Name : x.Name ?? $"Track {x.Id}", x.Id == subtitle)),
-		];
-	}
+	public abstract Task SelectTrackAsync(MediaTrackKind kind, int id);
 
-	public Task SelectTrackAsync(MediaTrackKind kind, int id)
-	{
-		_ = kind == MediaTrackKind.Audio ? MediaPlayer?.SetAudioTrack(id) : MediaPlayer?.SetSpu(id);
-		return Task.CompletedTask;
-	}
+	/// <summary>The chapters in the video file itself (<see cref="Chapters"/> are the ones set from outside).</summary>
+	public abstract IReadOnlyList<MediaChapter> GetFileChapters();
+
+	/// <summary>Plays or pauses; played to the end, plays it again from the start.</summary>
+	protected abstract void TogglePlayPause();
+
+	/// <summary>Has the engine show the video at <see cref="AspectRatio"/>.</summary>
+	public abstract void ApplyAspectRatio();
+
+	/// <summary>Has the engine play at <see cref="Volume"/>, muted if <see cref="IsMuted"/>.</summary>
+	protected abstract void ApplyVolume();
+
+	/// <summary>Stops playing and lets go of the engine.</summary>
+	protected abstract Task CloseEngineAsync();
 
 	public Task SetChaptersAsync(IReadOnlyList<MediaChapter> chapters)
 	{
 		Chapters = chapters;
 		UpdateSkipButtonState();
 		return Task.CompletedTask;
-	}
-
-	/// <summary>The chapters in the video file itself (<see cref="Chapters"/> are the ones set from outside).</summary>
-	public IReadOnlyList<MediaChapter> GetFileChapters()
-	{
-		return MediaPlayer?.FullChapterDescriptions() is { } chapters
-			? [.. chapters.Select(x => new MediaChapter(x.Name ?? "", TimeSpan.FromMilliseconds(x.TimeOffset)))]
-			: [];
 	}
 
 	public async Task ShowMessageAsync(string text, TimeSpan duration)
@@ -422,7 +329,7 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		IsStatusVisible = text is not null;
 	}
 
-	/// <summary>Stops playing and lets go of libvlc, when the window closes.</summary>
+	/// <summary>Stops playing and lets go of the engine, when the window closes.</summary>
 	public async Task CloseAsync()
 	{
 		_isClosed = true;
@@ -430,44 +337,13 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		_next?.TrySetResult(false);
 		_message?.Cancel();
 		IsPlaying = false;
-		if (MediaPlayer is not { } player)
-		{
-			return;
-		}
-
-		MediaPlayer = null;
-		var libVlc = _libVlc;
-		_libVlc = null;
+		// Not while a video is being started.
 		await _loading.WaitAsync();
-		await Task.Run(() =>
-		{
-			player.Stop();
-			player.Dispose();
-			libVlc?.Dispose();
-		});
+		await CloseEngineAsync();
 	}
 
 	[RelayCommand]
-	private void PlayPause()
-	{
-		if (MediaPlayer is not { } player)
-		{
-			return;
-		}
-
-		// Played to the end: play it again from the start.
-		if (player.State == VLCState.Ended)
-		{
-			_ = Task.Run(() =>
-			{
-				player.Stop();
-				player.Play();
-			});
-			return;
-		}
-
-		player.SetPause(player.IsPlaying);
-	}
+	private void PlayPause() => TogglePlayPause();
 
 	/// <summary>Jumps by a number of seconds (negative to go back).</summary>
 	[RelayCommand]
@@ -530,7 +406,8 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		ViewportWidth = width;
 		ViewportHeight = height;
 
-		if (AspectRatio == PlayerAspectRatio.Stretch)
+		// Stretching fills the new size; a fixed ratio is sized to it (Windows' player sizes its element).
+		if (AspectRatio != PlayerAspectRatio.Fit)
 		{
 			ApplyAspectRatio();
 		}
@@ -539,47 +416,6 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 	partial void OnAspectRatioChanged(PlayerAspectRatio value)
 	{
 		ApplyAspectRatio();
-	}
-
-	public void ApplyAspectRatio()
-	{
-		if (MediaPlayer is not { } player)
-		{
-			return;
-		}
-
-		switch (AspectRatio)
-		{
-			case PlayerAspectRatio.Fit:
-				player.Scale = 0;
-				player.AspectRatio = null;
-				break;
-			case PlayerAspectRatio.Stretch:
-				player.Scale = 0;
-				if (ViewportWidth > 0 && ViewportHeight > 0)
-				{
-					var w = Math.Max(1, (int)Math.Round(ViewportWidth));
-					var h = Math.Max(1, (int)Math.Round(ViewportHeight));
-					player.AspectRatio = $"{w}:{h}";
-				}
-				else
-				{
-					player.AspectRatio = null;
-				}
-				break;
-			case PlayerAspectRatio.Ratio16_9:
-				player.Scale = 0;
-				player.AspectRatio = "16:9";
-				break;
-			case PlayerAspectRatio.Ratio4_3:
-				player.Scale = 0;
-				player.AspectRatio = "4:3";
-				break;
-			case PlayerAspectRatio.Ratio21_9:
-				player.Scale = 0;
-				player.AspectRatio = "21:9";
-				break;
-		}
 	}
 
 	[RelayCommand]
@@ -648,26 +484,16 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 
 	partial void OnVolumeChanged(double value)
 	{
-		if (MediaPlayer is { } player)
-		{
-			player.Volume = (int)value;
-		}
-
+		ApplyVolume();
 		if (value > 0)
 		{
 			IsMuted = false;
 		}
 	}
 
-	partial void OnIsMutedChanged(bool value)
-	{
-		if (MediaPlayer is { } player)
-		{
-			player.Mute = value;
-		}
-	}
+	partial void OnIsMutedChanged(bool value) => ApplyVolume();
 
-	// The video renders into a swap chain, so libvlc never stops the display from sleeping itself.
+	// libvlc renders into a swap chain, so never stops the display from sleeping itself; a request is harmless for the other.
 	partial void OnIsPlayingChanged(bool value)
 	{
 		if (value)
@@ -680,20 +506,16 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		}
 	}
 
-	private void OnPlaying()
+	protected void OnPlaying()
 	{
 		IsPlaying = true;
 		IsBuffering = false;
 		ApplyAspectRatio();
 		// The volume only applies once there's audio.
-		if (MediaPlayer is { } player)
-		{
-			player.Volume = (int)Volume;
-			player.Mute = IsMuted;
-		}
+		ApplyVolume();
 	}
 
-	internal void OnTime(TimeSpan time, bool report = true)
+	protected internal void OnTime(TimeSpan time, bool report = true)
 	{
 		Position = time.TotalSeconds;
 		IsBuffering = false;
@@ -705,14 +527,14 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		}
 	}
 
-	private void OnLength(TimeSpan length)
+	protected void OnLength(TimeSpan length)
 	{
 		Duration = length.TotalSeconds;
 		UpdateTimeText();
 		DurationChanged?.Invoke(this, length);
 	}
 
-	private void OnEnded()
+	protected void OnEnded()
 	{
 		IsPlaying = false;
 		IsBuffering = false;
@@ -794,25 +616,32 @@ public sealed partial class PlayerViewModel(int volume, PlayerAspectRatio aspect
 		return time.ToString(duration.TotalHours >= 1 ? @"h\:mm\:ss" : @"m\:ss");
 	}
 
-	// libvlc raises its events on its own threads, which mustn't call back into it either.
-	private void OnUi(Action action)
+	// Engines raise their events on their own threads, which mustn't call back into libvlc either.
+	protected void OnUi(Action action)
 	{
 		if (_ui is null)
 		{
-			if (!_isClosed)
-			{
-				action();
-			}
+			Run();
 		}
 		else
 		{
-			_ui.TryEnqueue(() =>
+			_ui.TryEnqueue(Run);
+		}
+
+		// What throws here would close the app (the app's own handler doesn't see it): it's logged, as that handler does.
+		void Run()
+		{
+			try
 			{
 				if (!_isClosed)
 				{
 					action();
 				}
-			});
+			}
+			catch (Exception ex)
+			{
+				logger.LogError(ex, "Unhandled exception in the player");
+			}
 		}
 	}
 

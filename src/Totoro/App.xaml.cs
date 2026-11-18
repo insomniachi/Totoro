@@ -474,6 +474,7 @@ public partial class App : Application
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
 			new Modules.MediaPlayers.Vlc.VlcModule(),
+			new Modules.MediaPlayers.MediaFoundation.MediaFoundationModule(),
 			new Modules.MediaPlayers.Mpv.MpvModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
 			new Modules.MediaSegments.Aniskip.AniskipModule(),

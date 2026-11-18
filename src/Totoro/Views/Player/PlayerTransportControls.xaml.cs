@@ -9,7 +9,7 @@ using Windows.System;
 using Totoro.Core.Modules.Media;
 using Totoro.UI.Input;
 using Totoro.ViewModels.Player;
-using VlcSettings = Totoro.Modules.MediaPlayers.Vlc.Settings;
+using Totoro.Modules.MediaPlayers;
 
 namespace Totoro.Views.Player;
 
@@ -36,7 +36,7 @@ public sealed partial class PlayerTransportControls : UserControl
 	public PlayerViewModel ViewModel { get; private set; } = null!;
 
 	/// <summary>The player's settings, for the keys in the buttons' tooltips.</summary>
-	public VlcSettings Shortcuts { get; private set; } = null!;
+	public PlayerSettings Shortcuts { get; private set; } = null!;
 
 	/// <summary>Shows the seek bar's seconds as a time and the section it's in, e.g. "1:23 · Opening".</summary>
 	public IValueConverter TimeConverter { get; }
@@ -45,7 +45,7 @@ public sealed partial class PlayerTransportControls : UserControl
 	public bool IsBusy => _isPointerOver || _isDraggingSeekBar;
 
 	/// <summary>Starts showing <paramref name="viewModel"/>: before it's loaded, so its bindings start with it.</summary>
-	public void Attach(PlayerViewModel viewModel, VlcSettings shortcuts)
+	public void Attach(PlayerViewModel viewModel, PlayerSettings shortcuts)
 	{
 		ViewModel = viewModel;
 		Shortcuts = shortcuts;

@@ -6,8 +6,7 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views.Player"
     xmlns:media="using:Totoro.Core.Modules.Media"
-    xmlns:player="using:Totoro.ViewModels.Player"
-    xmlns:vlc="using:LibVLCSharp.Platforms.Windows">
+    xmlns:player="using:Totoro.ViewModels.Player">
 
     <!--
         Laid out like Windows' Media Player: the video fills the window, title bar included, with the title bar and the
@@ -67,10 +66,7 @@
             x:Name="VideoArea"
             Background="Black"
             SizeChanged="OnVideoAreaSizeChanged">
-            <vlc:VideoView
-                x:Name="Video"
-                Initialized="OnVideoInitialized"
-                MediaPlayer="{x:Bind ViewModel.MediaPlayer, Mode=OneWay}" />
+            <!--  The video goes first here, in code: libvlc's view or Windows' element, by the player (see AddVideoView)  -->
 
             <!--  Clicking the video plays or pauses it; double-clicking goes full screen  -->
             <Grid

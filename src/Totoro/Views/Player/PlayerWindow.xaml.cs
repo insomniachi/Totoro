@@ -16,7 +16,7 @@ using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
 using Totoro.Core.Modules.Media;
-using VlcSettings = Totoro.Modules.MediaPlayers.Vlc.Settings;
+using Totoro.Modules.MediaPlayers;
 using Totoro.UI.Input;
 using Totoro.ViewModels.Player;
 
@@ -38,11 +38,12 @@ public sealed partial class PlayerWindow : Window
 	// How far the title bar and the controls slide as they hide.
 	private const float ChromeSlide = 24;
 
-	public PlayerWindow(PlayerViewModel viewModel, VlcSettings shortcuts)
+	public PlayerWindow(PlayerViewModel viewModel, PlayerSettings shortcuts)
 	{
 		ViewModel = viewModel;
 		Shortcuts = shortcuts;
 		InitializeComponent();
+		AddVideoView();
 		Controls.Attach(viewModel, shortcuts);
 
 		// Its own title bar, on Mica like the controls.
@@ -97,7 +98,7 @@ public sealed partial class PlayerWindow : Window
 	public PlayerViewModel ViewModel { get; }
 
 	/// <summary>The player's settings, read for its keys as they're pressed, so a change applies straight away.</summary>
-	public VlcSettings Shortcuts { get; }
+	public PlayerSettings Shortcuts { get; }
 
 	// For x:Bind function bindings.
 
@@ -117,7 +118,32 @@ public sealed partial class PlayerWindow : Window
 
 	public static Visibility VisibleIfAny(string text) => text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-	private void OnVideoInitialized(object? sender, InitializedEventArgs e) => _ = ViewModel.InitializeAsync(e.SwapChainOptions);
+	// Only the player's own view is made: libvlc's starts loading libvlc as it's initialized.
+	private void AddVideoView()
+	{
+		UIElement view;
+		if (ViewModel is VlcPlayerViewModel vlc)
+		{
+			var video = new VideoView();
+			video.Initialized += (_, e) => _ = vlc.InitializeAsync(e.SwapChainOptions);
+			vlc.PropertyChanged += (_, e) =>
+			{
+				if (e.PropertyName == nameof(vlc.MediaPlayer))
+				{
+					video.MediaPlayer = vlc.MediaPlayer;
+				}
+			};
+			view = video;
+		}
+		else
+		{
+			var element = new MediaPlayerElement();
+			((MediaFoundationPlayerViewModel)ViewModel).Attach(element);
+			view = element;
+		}
+
+		VideoArea.Children.Insert(0, view);
+	}
 
 	private void OnFirstActivated(object sender, WindowActivatedEventArgs args)
 	{

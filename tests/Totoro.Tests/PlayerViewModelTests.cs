@@ -9,13 +9,13 @@ public class PlayerViewModelTests
 {
 	private static PlayerViewModel CreateViewModel(PlayerAspectRatio ratio = PlayerAspectRatio.Fit)
 	{
-		return new PlayerViewModel(volume: 100, aspectRatio: ratio, logger: NullLogger.Instance);
+		return new VlcPlayerViewModel(volume: 100, aspectRatio: ratio, logger: NullLogger.Instance);
 	}
 
 	[Fact]
 	public void AspectRatio_DefaultsToFitOrSpecifiedInitialValue()
 	{
-		var defaultVm = new PlayerViewModel(100, NullLogger.Instance);
+		var defaultVm = new VlcPlayerViewModel(100, NullLogger.Instance);
 		Assert.Equal(PlayerAspectRatio.Fit, defaultVm.AspectRatio);
 
 		var customVm = CreateViewModel(PlayerAspectRatio.Stretch);
@@ -207,5 +207,15 @@ public class PlayerViewModelTests
 		Assert.Equal(15 + 85, vm.Position);
 		Assert.True(vm.IsSkipButtonVisible);
 		Assert.Equal("+85s", vm.SkipButtonText);
+	}
+
+	[Theory]
+	[InlineData("jpn,ja", 1)]      // the first code that matches wins, wherever its track is
+	[InlineData("eng,en", 0)]      // region subtags match their language ("en-US")
+	[InlineData("fre", -1)]
+	[InlineData("", -1)]
+	public void MediaFoundationLanguagePick_FollowsPreferenceOrder(string preference, int expected)
+	{
+		Assert.Equal(expected, MediaFoundationPlayerViewModel.IndexOf(["en-US", "jpn", null, "ja"], preference));
 	}
 }

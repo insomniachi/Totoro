@@ -8,7 +8,7 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 - **Discover.** What's trending, what airs today, what starts next season, and the sequels, prequels, side stories and spin-offs of what you've watched that aren't on your list.
 - **Search by genre, tag or theme.** Pick the genres, tags or themes an anime or manga must have, or must not, along with its year and score.
 - **Plugins.** Where episodes and chapters come from is up to plugins, which anyone can write; install them from the Plugins page. Plugins can also add anime databases, debrid services and more.
-- **Watch episodes.** They play in the built-in player (libvlc) or in mpv, streamed or downloaded, with torrents streamed through rqbit. It can download the next episode while you watch, and tracks episodes you watch in your browser too.
+- **Watch episodes.** They play in a built-in player (with libvlc, or with Windows' own media engine) or in mpv, streamed or downloaded, with torrents streamed through rqbit. It can download the next episode while you watch, and tracks episodes you watch in your browser too.
 - **Skips openings and endings.** Using Aniskip's times, or found by their sound in downloaded episodes, it offers to skip them or skips them for you. It offers the next episode, and marks episodes watched when you finish them.
 - **Read manga.** Chapters open in the in-app reader, which tracks your progress.
 - **Schedule.** A calendar of when the episodes of what you're watching air.
