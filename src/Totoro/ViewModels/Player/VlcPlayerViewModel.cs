@@ -12,8 +12,11 @@ public sealed partial class VlcPlayerViewModel(int volume, PlayerAspectRatio asp
 {
 	public VlcPlayerViewModel(int volume, ILogger logger) : this(volume, PlayerAspectRatio.Fit, logger) { }
 
+	private readonly ILogger _logger = logger;
 	private LibVLC? _libVlc;
 	private bool _isStarting;
+	// Playing again from the end, off the UI thread: closing waits for it before freeing the player.
+	private Task _replaying = Task.CompletedTask;
 
 	/// <summary>libvlc's player, for the video view; null until <see cref="InitializeAsync"/>.</summary>
 	[ObservableProperty] public partial MediaPlayer? MediaPlayer { get; private set; }
@@ -35,12 +38,39 @@ public sealed partial class VlcPlayerViewModel(int volume, PlayerAspectRatio asp
 			ShowStatus("Starting the player…");
 		}
 
-		(_libVlc, var player) = await Task.Run(() =>
+		LibVLC libVlc;
+		MediaPlayer player;
+		try
 		{
-			LibVlcLoader.Load();
-			var libVlc = new LibVLC(enableDebugLogs: false, [.. swapChainOptions, "--no-video-title-show"]);
-			return (libVlc, new MediaPlayer(libVlc));
-		});
+			(libVlc, player) = await Task.Run(() =>
+			{
+				LibVlcLoader.Load();
+				var libVlc = new LibVLC(enableDebugLogs: false, [.. swapChainOptions, "--no-video-title-show"]);
+				return (libVlc, new MediaPlayer(libVlc));
+			});
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Couldn't start libvlc");
+			ShowStatus("Couldn't start the player.", isError: true);
+			// Plays waiting on it go on (and do nothing, there being no player) rather than waiting for ever.
+			Initialized.TrySetResult();
+			return;
+		}
+
+		// Closed while libvlc started: closing found no player to end, so it's ended here.
+		if (IsClosed)
+		{
+			await Task.Run(() =>
+			{
+				player.Dispose();
+				libVlc.Dispose();
+			});
+			Initialized.TrySetResult();
+			return;
+		}
+
+		_libVlc = libVlc;
 		if (Status == "Starting the player…")
 		{
 			ShowStatus(null);
@@ -155,7 +185,7 @@ public sealed partial class VlcPlayerViewModel(int volume, PlayerAspectRatio asp
 
 		if (player.State == VLCState.Ended)
 		{
-			_ = Task.Run(() =>
+			_replaying = Task.Run(() =>
 			{
 				player.Stop();
 				player.Play();
@@ -204,6 +234,8 @@ public sealed partial class VlcPlayerViewModel(int volume, PlayerAspectRatio asp
 		MediaPlayer = null;
 		var libVlc = _libVlc;
 		_libVlc = null;
+		// No new replay starts now (MediaPlayer is null); one under way finishes before the player's freed.
+		await _replaying;
 		await Task.Run(() =>
 		{
 			player.Stop();
