@@ -76,6 +76,8 @@ internal abstract class WindowMediaPlayer(IModuleSettings<PlayerSettings> settin
 
 	public void SetWatchedMark(TimeSpan? countsAt, bool isWatched) => _window?.ViewModel.SetWatchedMark(countsAt, isWatched);
 
+	public void ShowSaving(Task saving) => _ = _window?.ViewModel.ShowSavingAsync(saving);
+
 	public void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes) => _window?.ViewModel.EpisodeList.SetEpisodes(episodes);
 
 	public void SetRoomPeople(IReadOnlyList<RoomPerson>? people) => _window?.ViewModel.Room.SetRoomPeople(people);

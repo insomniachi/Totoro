@@ -176,6 +176,56 @@
                         <EntranceThemeTransition FromHorizontalOffset="40" FromVerticalOffset="0" />
                     </TransitionCollection>
                 </StackPanel.ChildrenTransitions>
+                <!--
+                    Saving the episode as watched to the lists: a ring while it's sent to them all, which turns into a tick
+                    once they're saved, then fades. Above the skip button, which may show at the same time.
+                -->
+                <StackPanel
+                    Height="40"
+                    Margin="0,0,0,8"
+                    Padding="8,0,16,0"
+                    HorizontalAlignment="Right"
+                    AutomationProperties.AutomationId="SaveIndicator"
+                    AutomationProperties.LiveSetting="Polite"
+                    AutomationProperties.Name="{x:Bind local:PlayerWindow.SavingText(ViewModel.IsSaving, ViewModel.IsSaved), Mode=OneWay}"
+                    Background="{StaticResource OverlayBackgroundBrush}"
+                    CornerRadius="20"
+                    IsHitTestVisible="False"
+                    Opacity="{x:Bind local:PlayerWindow.Opaque(ViewModel.IsSaveIndicatorVisible), Mode=OneWay}"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <StackPanel.OpacityTransition>
+                        <ScalarTransition Duration="0:0:0.4" />
+                    </StackPanel.OpacityTransition>
+                    <Grid Width="24" VerticalAlignment="Center">
+                        <ProgressRing
+                            Width="24"
+                            Height="24"
+                            IsActive="{x:Bind ViewModel.IsSaving, Mode=OneWay}"
+                            Opacity="{x:Bind local:PlayerWindow.Opaque(ViewModel.IsSaving), Mode=OneWay}">
+                            <ProgressRing.OpacityTransition>
+                                <ScalarTransition />
+                            </ProgressRing.OpacityTransition>
+                        </ProgressRing>
+                        <FontIcon
+                            Width="20"
+                            Height="20"
+                            CenterPoint="10,10,0"
+                            FontSize="20"
+                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                            Glyph="&#xE73E;"
+                            Opacity="{x:Bind local:PlayerWindow.Opaque(ViewModel.IsSaved), Mode=OneWay}"
+                            Scale="{x:Bind local:PlayerWindow.TickScale(ViewModel.IsSaved), Mode=OneWay}">
+                            <FontIcon.OpacityTransition>
+                                <ScalarTransition />
+                            </FontIcon.OpacityTransition>
+                            <FontIcon.ScaleTransition>
+                                <Vector3Transition />
+                            </FontIcon.ScaleTransition>
+                        </FontIcon>
+                    </Grid>
+                    <TextBlock VerticalAlignment="Center" Text="{x:Bind local:PlayerWindow.SavingText(ViewModel.IsSaving, ViewModel.IsSaved), Mode=OneWay}" />
+                </StackPanel>
                 <!--  Its bar along the bottom fills until it goes  -->
                 <Button
                     Padding="0"

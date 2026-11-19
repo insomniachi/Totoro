@@ -116,6 +116,14 @@ public sealed partial class PlayerWindow : Window
 	/// <summary>The "Up next" card: 16:9 with a thumbnail (its details over it); as tall as its details without one.</summary>
 	public static double NextCardHeight(string image) => image.Length > 0 ? 360 * 9 / 16.0 : double.NaN;
 
+	public static double Opaque(bool shown) => shown ? 1 : 0;
+
+	// The tick grows in as the ring fades: the ring turning into it.
+	public static Vector3 TickScale(bool isSaved) => isSaved ? Vector3.One : new(0.4f, 0.4f, 1);
+
+	// Empty after a failed save: it fades out without a word (the failure is said elsewhere).
+	public static string SavingText(bool isSaving, bool isSaved) => isSaving ? "Updating your lists…" : isSaved ? "Marked as watched" : "";
+
 	public static Visibility VisibleIfAny(string text) => text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 	// Only the player's own view is made: libvlc's starts loading libvlc as it's initialized.

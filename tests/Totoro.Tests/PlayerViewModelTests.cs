@@ -23,6 +23,38 @@ public class PlayerViewModelTests
 	}
 
 	[Fact]
+	public async Task ShowSaving_SpinsUntilSaved_ThenTicks_ThenHides()
+	{
+		var vm = CreateViewModel();
+		var save = new TaskCompletionSource();
+
+		var showing = vm.ShowSavingAsync(save.Task);
+		Assert.True(vm.IsSaveIndicatorVisible);
+		Assert.True(vm.IsSaving);
+		Assert.False(vm.IsSaved);
+
+		save.SetResult();
+		await Task.Yield();
+		Assert.False(vm.IsSaving);
+		Assert.True(vm.IsSaved);
+		Assert.True(vm.IsSaveIndicatorVisible);
+
+		await showing;
+		Assert.False(vm.IsSaveIndicatorVisible);
+	}
+
+	[Fact]
+	public async Task ShowSaving_WhenSaveFails_HidesWithoutTick()
+	{
+		var vm = CreateViewModel();
+
+		await vm.ShowSavingAsync(Task.FromException(new InvalidOperationException()));
+
+		Assert.False(vm.IsSaved);
+		Assert.False(vm.IsSaveIndicatorVisible);
+	}
+
+	[Fact]
 	public void CycleAspectRatio_CyclesInExpectedSequence()
 	{
 		var vm = CreateViewModel(PlayerAspectRatio.Fit);

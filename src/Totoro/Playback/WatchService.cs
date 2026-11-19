@@ -771,7 +771,7 @@ public sealed partial class WatchService(
 			bool marked;
 			try
 			{
-				message = await MarkWatchedAsync(anime, number)
+				message = await MarkWatchedAsync(anime, number, x => (player as IInteractiveMediaPlayer)?.ShowSaving(x))
 					? $"Marked episode {number} as watched."
 					: $"Episode {number} was already marked as watched.";
 				marked = true;
@@ -880,7 +880,8 @@ public sealed partial class WatchService(
 	/// Marks the anime watched up to the episode. False when it already was: watching an earlier episode again doesn't
 	/// take the list back to it, unless the anime is being rewatched (then it's how far the rewatch has got).
 	/// </summary>
-	internal async Task<bool> MarkWatchedAsync(AnimeModel anime, int number)
+	/// <param name="saving">Given the save to the lists (all of them), once it's started: e.g. to show it's going on.</param>
+	internal async Task<bool> MarkWatchedAsync(AnimeModel anime, int number, Action<Task>? saving = null)
 	{
 		var current = anime.Tracking;
 		if (current is { } tracked && tracked.WatchedEpisodes >= number && tracked.Status != ListItemStatus.Rewatching)
@@ -889,7 +890,7 @@ public sealed partial class WatchService(
 		}
 
 		var completed = anime.TotalEpisodes == number;
-		await tracking.UpdateAsync(anime, new Tracking
+		var update = tracking.UpdateAsync(anime, new Tracking
 		{
 			WatchedEpisodes = number,
 			Status = completed ? ListItemStatus.Completed
@@ -898,6 +899,8 @@ public sealed partial class WatchService(
 			StartDate = current?.StartDate ?? DateTime.Today,
 			FinishDate = completed ? DateTime.Today : current?.FinishDate,
 		});
+		saving?.Invoke(update);
+		await update;
 		if (completed && current?.Score is not > 0)
 		{
 			// Not awaited: it waits on the user, and playback (or the browser tracker) carries on meanwhile.

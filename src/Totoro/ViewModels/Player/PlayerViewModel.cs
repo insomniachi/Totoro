@@ -82,6 +82,57 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 		IsWatched = isWatched;
 	}
 
+	// How long the tick stays once the lists are saved.
+	private static readonly TimeSpan s_savedDuration = TimeSpan.FromSeconds(1.5);
+	// Which save the indicator shows: one started meanwhile takes it over.
+	private int _saving;
+
+	/// <summary>Whether the save indicator (top right) shows: while saving to the lists, and briefly after.</summary>
+	[ObservableProperty] public partial bool IsSaveIndicatorVisible { get; private set; }
+
+	/// <summary>Whether it's saving to the lists: a spinning ring, which turns into a tick when it's done.</summary>
+	[ObservableProperty] public partial bool IsSaving { get; private set; }
+
+	/// <summary>Whether the lists have been saved to: the tick the ring turns into.</summary>
+	[ObservableProperty] public partial bool IsSaved { get; private set; }
+
+	/// <inheritdoc cref="IInteractiveMediaPlayer.ShowSaving"/>
+	public async Task ShowSavingAsync(Task saving)
+	{
+		var id = ++_saving;
+		IsSaved = false;
+		IsSaving = true;
+		IsSaveIndicatorVisible = true;
+		bool saved;
+		try
+		{
+			await saving;
+			saved = true;
+		}
+		catch
+		{
+			// Said by whoever saved; it just goes.
+			saved = false;
+		}
+
+		if (id != _saving)
+		{
+			return;
+		}
+
+		IsSaving = false;
+		IsSaved = saved;
+		if (saved)
+		{
+			await Task.Delay(s_savedDuration);
+		}
+
+		if (id == _saving)
+		{
+			IsSaveIndicatorVisible = false;
+		}
+	}
+
 	/// <summary>From 0 to 100.</summary>
 	[ObservableProperty] public partial double Volume { get; set; } = volume;
 

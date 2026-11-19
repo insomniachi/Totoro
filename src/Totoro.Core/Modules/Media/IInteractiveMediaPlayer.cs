@@ -40,6 +40,12 @@ public interface IInteractiveMediaPlayer : IMediaPlayer
 	/// </summary>
 	void SetWatchedMark(TimeSpan? countsAt, bool isWatched);
 
+	/// <summary>
+	/// Shows that the user's lists are being saved to, at the top right, until <paramref name="saving"/> ends: then a
+	/// tick, if it succeeded, and it goes.
+	/// </summary>
+	void ShowSaving(Task saving);
+
 	/// <summary>The episodes of what's playing, for the player's episode list and its previous and next buttons.</summary>
 	void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes);
 
