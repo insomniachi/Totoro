@@ -1,20 +1,22 @@
 using System.Numerics;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
-using LibVLCSharp.Shared;
+using Concentus;
+using Concentus.Oggfile;
+using Flurl.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using NAudio.Wave;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
-using Totoro.Modules.MediaPlayers.Vlc;
 
 namespace Totoro.Playback;
 
 /// <summary>
-/// Plays songs' audio in the app (see <see cref="ISongPlayer"/>): libvlc decodes it (Opus, from AnimeThemes) and hands
-/// over the samples, which play through WASAPI (NAudio). The samples are tapped as WASAPI takes them, so the spectrum
-/// shows what's heard, not what's decoded ahead of it. Uses the built-in player's volume.
+/// Plays songs' audio in the app (see <see cref="ISongPlayer"/>): the audio (Opus in Ogg, from AnimeThemes, which
+/// Windows' own decoders don't read) is downloaded, decoded with Concentus and played through WASAPI (NAudio). The
+/// samples are tapped as WASAPI takes them, so the spectrum shows what's heard, not what's decoded ahead of it. Uses
+/// mpv's player volume (mpv being the default player).
 /// </summary>
 internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 {
@@ -22,43 +24,33 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	private const int Channels = 2;
 	// Samples the spectrum is taken over: about 43 ms.
 	private const int FftSize = 2048;
+	// How far ahead of what's heard it decodes.
+	private static readonly TimeSpan s_decodeAhead = TimeSpan.FromSeconds(2);
+	// AnimeThemes refuses requests without one.
+	private const string UserAgent = "Totoro (anime tracker)";
 
-	private readonly IModuleSettings<Modules.MediaPlayers.Vlc.Settings> _vlcSettings;
+	private readonly IModuleSettings<Modules.MediaPlayers.Mpv.Settings> _playerSettings;
 	private readonly ILogger<SongAudioPlayer> _logger;
 	private readonly DispatcherQueue _ui = DispatcherQueue.GetForCurrentThread();
 	private readonly Lock _tapLock = new();
 	private readonly float[] _tap = new float[FftSize];
 	private int _tapPosition;
 
-	// libvlc's callbacks; kept, so the delegates libvlc holds aren't collected.
-	private readonly MediaPlayer.LibVLCAudioPlayCb _onPlay;
-	private readonly MediaPlayer.LibVLCAudioPauseCb _onPause;
-	private readonly MediaPlayer.LibVLCAudioResumeCb _onResume;
-	private readonly MediaPlayer.LibVLCAudioFlushCb _onFlush;
-	private readonly MediaPlayer.LibVLCAudioDrainCb _onDrain;
-
-	private LibVLC? _libVlc;
-	private MediaPlayer? _player;
 	private BufferedWaveProvider? _buffer;
 	private WasapiPlayer? _output;
-	private byte[] _samples = [];
+	// The song playing's download and decoding, cancelled when it's stopped or replaced.
+	private CancellationTokenSource? _song;
 
-	// libvlc reports the time about once a second; read more often, for the progress bar.
+	// Read more often than it changes much, for the progress bar.
 	private DispatcherQueueTimer? _positionTimer;
 
-	// The time libvlc last reported, and how long ago: the position between its reports, for the lyrics' words.
-	private readonly System.Diagnostics.Stopwatch _sinceReported = new();
-	private TimeSpan _reported;
+	// Frames (a sample per channel) WASAPI has taken of the song: where it is.
+	private long _playedFrames;
 
-	public SongAudioPlayer(IModuleSettings<Modules.MediaPlayers.Vlc.Settings> vlcSettings, ILogger<SongAudioPlayer> logger)
+	public SongAudioPlayer(IModuleSettings<Modules.MediaPlayers.Mpv.Settings> playerSettings, ILogger<SongAudioPlayer> logger)
 	{
-		_vlcSettings = vlcSettings;
+		_playerSettings = playerSettings;
 		_logger = logger;
-		_onPlay = OnSamples;
-		_onPause = (_, _) => _output?.Pause();
-		_onResume = (_, _) => _output?.Play();
-		_onFlush = (_, _) => _buffer?.ClearBuffer();
-		_onDrain = _ => { };
 	}
 
 	public AnimeSong? Current { get; private set; }
@@ -71,7 +63,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	{
 		get
 		{
-			var position = _reported + _sinceReported.Elapsed;
+			var position = TimeSpan.FromSeconds(Interlocked.Read(ref _playedFrames) / (double)SampleRate);
 			return Duration > TimeSpan.Zero && position > Duration ? Duration : position;
 		}
 	}
@@ -85,27 +77,56 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 			return;
 		}
 
+		_song?.Cancel();
+		var cts = _song = new CancellationTokenSource();
 		Current = song;
 		IsPlaying = true;
 		IsLoading = true;
-		ResetPosition();
+		Duration = TimeSpan.Zero;
+		EnsureCreated();
+		_output!.Stop();
+		_buffer!.ClearBuffer();
+		ClearTap();
+		Interlocked.Exchange(ref _playedFrames, 0);
 		Changed();
 
-		var player = await EnsureCreatedAsync();
-		if (!ReferenceEquals(Current, song))
+		OpusOggReadStream reader;
+		try
 		{
-			// Another song was played meanwhile.
+			// Concentus reads Ogg from a seekable stream only: the whole file (a few MB), then.
+			var bytes = await audio.WithHeader("User-Agent", UserAgent).GetBytesAsync(cancellationToken: cts.Token);
+			reader = new OpusOggReadStream(OpusCodecFactory.CreateDecoder(SampleRate, Channels), new MemoryStream(bytes));
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException || !cts.IsCancellationRequested)
+		{
+			_logger.LogWarning(ex, "Couldn't play {Song}", audio);
+			if (ReferenceEquals(_song, cts))
+			{
+				Stop();
+			}
+
+			return;
+		}
+		catch (OperationCanceledException)
+		{
 			return;
 		}
 
-		_buffer!.ClearBuffer();
-		ClearTap();
-		_output!.Volume = Math.Clamp(_vlcSettings.Value.Volume / 100f, 0, 1);
-		using var media = new Media(_libVlc!, audio);
-		// Replacing what's playing stops it, which can take a moment: not on the UI thread.
-		await Task.Run(() => player.Play(media));
-		_output.Play();
+		if (cts.IsCancellationRequested)
+		{
+			return;
+		}
+
+		Duration = reader.TotalTime;
+		_output.Volume = Math.Clamp(_playerSettings.Value.Volume / 100f, 0, 1);
+		_ = Task.Run(() => Decode(reader, cts.Token));
+		if (IsPlaying)
+		{
+			_output.Play();
+		}
+
 		StartPositionTimer();
+		Changed();
 	}
 
 	public void Pause()
@@ -115,9 +136,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 			return;
 		}
 
-		_player?.SetPause(true);
 		_output?.Pause();
-		_sinceReported.Stop();
 		IsPlaying = false;
 		Changed();
 	}
@@ -129,13 +148,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 			return;
 		}
 
-		_player?.SetPause(false);
 		_output?.Play();
-		if (_reported > TimeSpan.Zero)
-		{
-			_sinceReported.Start();
-		}
-
 		IsPlaying = true;
 		Changed();
 	}
@@ -147,19 +160,17 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 			return;
 		}
 
+		_song?.Cancel();
+		_song = null;
 		Current = null;
 		IsPlaying = false;
 		IsLoading = false;
-		ResetPosition();
+		Duration = TimeSpan.Zero;
+		Interlocked.Exchange(ref _playedFrames, 0);
 		_positionTimer?.Stop();
 		_output?.Stop();
 		_buffer?.ClearBuffer();
 		ClearTap();
-		if (_player is { } player)
-		{
-			_ = Task.Run(player.Stop);
-		}
-
 		Changed();
 	}
 
@@ -200,64 +211,80 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 	public void Dispose()
 	{
+		_song?.Cancel();
 		_output?.Dispose();
-		_player?.Dispose();
-		_libVlc?.Dispose();
 	}
 
-	private async Task<MediaPlayer> EnsureCreatedAsync()
+	private void EnsureCreated()
 	{
-		if (_player is { } existing)
+		if (_output is not null)
 		{
-			return existing;
+			return;
 		}
 
-		var (libVlc, player) = await Task.Run(() =>
-		{
-			LibVlcLoader.Load();
-			var libVlc = new LibVLC(enableDebugLogs: false, "--no-video");
-			return (libVlc, new MediaPlayer(libVlc));
-		});
-		_libVlc = libVlc;
-		// The callbacks first: the format only applies to them.
-		player.SetAudioCallbacks(_onPlay, _onPause, _onResume, _onFlush, _onDrain);
-		player.SetAudioFormat("S16N", SampleRate, Channels);
-		player.LengthChanged += (_, e) => OnUi(() =>
-		{
-			Duration = TimeSpan.FromMilliseconds(e.Length);
-			Changed();
-		});
-		player.EndReached += (_, _) => OnUi(Stop);
-		player.EncounteredError += (_, _) => OnUi(() =>
-		{
-			_logger.LogWarning("Couldn't play {Song}", Current?.Audio);
-			Stop();
-		});
-
-		_buffer = new BufferedWaveProvider(new WaveFormat(SampleRate, 16, Channels), TimeSpan.FromSeconds(5)) { DiscardOnBufferOverflow = true };
+		_buffer = new BufferedWaveProvider(new WaveFormat(SampleRate, 16, Channels), s_decodeAhead * 2) { DiscardOnBufferOverflow = true };
 		_output = new WasapiPlayerBuilder().WithSharedMode().WithLatency(100).Build();
 		_output.Init(new TappedProvider(_buffer, this));
-		_player = player;
-		return player;
 	}
 
-	/// <summary>libvlc's decoded samples (16-bit, interleaved stereo), queued for WASAPI.</summary>
-	private void OnSamples(IntPtr data, IntPtr samples, uint count, long pts)
+	/// <summary>Decodes the song into the buffer, keeping a little ahead of what's heard, then stops once it's all heard.</summary>
+	private async Task Decode(OpusOggReadStream reader, CancellationToken ct)
 	{
-		var bytes = (int)count * Channels * sizeof(short);
-		if (_samples.Length < bytes)
+		var buffer = _buffer!;
+		try
 		{
-			_samples = new byte[bytes];
-		}
+			while (reader.HasNextPacket && !ct.IsCancellationRequested)
+			{
+				while (buffer.BufferedDuration > s_decodeAhead)
+				{
+					await Task.Delay(50, ct);
+				}
 
-		Marshal.Copy(samples, _samples, 0, bytes);
-		_buffer?.AddSamples(_samples, 0, bytes);
+				if (reader.DecodeNextPacket() is { Length: > 0 } samples)
+				{
+					var bytes = MemoryMarshal.AsBytes(samples.AsSpan());
+					buffer.AddSamples(bytes.ToArray(), 0, bytes.Length);
+				}
+			}
+
+			while (buffer.BufferedBytes > 0)
+			{
+				await Task.Delay(50, ct);
+			}
+
+			OnUi(() =>
+			{
+				if (!ct.IsCancellationRequested)
+				{
+					Stop();
+				}
+			});
+		}
+		catch (OperationCanceledException)
+		{
+		}
+		catch (Exception ex)
+		{
+			_logger.LogWarning(ex, "Couldn't decode {Song}", Current?.Audio);
+			OnUi(() =>
+			{
+				if (!ct.IsCancellationRequested)
+				{
+					Stop();
+				}
+			});
+		}
 	}
 
-	/// <summary>Keeps the last samples WASAPI took (as mono), for the spectrum.</summary>
+	/// <summary>Keeps the last samples WASAPI took (as mono), for the spectrum, and counts them for the position.</summary>
 	private void Tap(ReadOnlySpan<byte> played)
 	{
 		var frames = MemoryMarshal.Cast<byte, short>(played);
+		if (Current is not null && IsPlaying)
+		{
+			Interlocked.Add(ref _playedFrames, frames.Length / Channels);
+		}
+
 		lock (_tapLock)
 		{
 			for (var i = 0; i + 1 < frames.Length; i += Channels)
@@ -284,17 +311,10 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 			_positionTimer.Interval = TimeSpan.FromMilliseconds(250);
 			_positionTimer.Tick += (_, _) =>
 			{
-				if (_player is { } player && Current is not null && IsPlaying)
+				if (Current is not null && IsPlaying)
 				{
-					var time = TimeSpan.FromMilliseconds(Math.Max(0, player.Time));
-					if (time != _reported)
-					{
-						_reported = time;
-						_sinceReported.Restart();
-					}
-
-					// The time moves once the audio's heard.
-					IsLoading &= time == TimeSpan.Zero;
+					// The position moves once the audio's heard.
+					IsLoading &= Position == TimeSpan.Zero;
 					Changed();
 				}
 			};
@@ -303,15 +323,8 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		_positionTimer.Start();
 	}
 
-	private void ResetPosition()
-	{
-		_reported = Duration = TimeSpan.Zero;
-		_sinceReported.Reset();
-	}
-
 	private void Changed() => WeakReferenceMessenger.Default.Send(new SongPlayerChangedMessage(this));
 
-	// libvlc raises its events on its own threads, which mustn't call back into it either.
 	private void OnUi(Action action) => _ui.TryEnqueue(() => action());
 
 	/// <summary>The buffered samples, tapped for the spectrum as WASAPI reads them.</summary>

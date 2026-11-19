@@ -1,7 +1,5 @@
 using System.ComponentModel;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using LibVLCSharp.Platforms.Windows;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -16,11 +14,17 @@ using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
 using Totoro.Core.Modules.Media;
-using Totoro.Modules.MediaPlayers;
 using Totoro.UI.Input;
+using Totoro.UI.Player;
 using Totoro.ViewModels.Player;
 
 namespace Totoro.Views.Player;
+
+/// <summary>Makes <see cref="PlayerWindow"/>s, for the players that play in it (plugins' too).</summary>
+internal sealed class PlayerWindowFactory : IPlayerWindowFactory
+{
+	public Window Create(PlayerViewModel viewModel, PlayerSettings settings) => new PlayerWindow(viewModel, settings);
+}
 
 /// <summary>
 /// The built-in player's window: the video with the app's own controls over it, which hide (with the pointer) while
@@ -32,7 +36,7 @@ public sealed partial class PlayerWindow : Window
 	private static readonly TimeSpan s_arrowSeek = TimeSpan.FromSeconds(5);
 
 	private readonly DispatcherTimer _hideTimer = new() { Interval = s_hideControlsAfter };
-	private bool _isCursorHidden;
+	private CursorHider? _cursorHider;
 	private bool _areControlsShown = true;
 
 	// How far the title bar and the controls slide as they hide.
@@ -85,7 +89,7 @@ public sealed partial class PlayerWindow : Window
 		Closed += (_, _) =>
 		{
 			_hideTimer.Stop();
-			SetCursorHidden(false);
+			_cursorHider?.Dispose();
 			ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
 			ViewModel.EpisodeList.PropertyChanged -= OnEpisodeListPropertyChanged;
 			Controls.Detach();
@@ -126,22 +130,13 @@ public sealed partial class PlayerWindow : Window
 
 	public static Visibility VisibleIfAny(string text) => text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-	// Only the player's own view is made: libvlc's starts loading libvlc as it's initialized.
+	// Only the player's own view is made: a plugin engine's may start loading the engine as it's initialized.
 	private void AddVideoView()
 	{
 		UIElement view;
-		if (ViewModel is VlcPlayerViewModel vlc)
+		if (ViewModel.CreateVideoView() is { } own)
 		{
-			var video = new VideoView();
-			video.Initialized += (_, e) => _ = vlc.InitializeAsync(e.SwapChainOptions);
-			vlc.PropertyChanged += (_, e) =>
-			{
-				if (e.PropertyName == nameof(vlc.MediaPlayer))
-				{
-					video.MediaPlayer = vlc.MediaPlayer;
-				}
-			};
-			view = video;
+			view = own;
 		}
 		else if (ViewModel is MpvPlayerViewModel mpv)
 		{
@@ -264,6 +259,7 @@ public sealed partial class PlayerWindow : Window
 	{
 		ViewModel.UpdateViewportSize(e.NewSize.Width, e.NewSize.Height);
 		LiftSubtitles(_areControlsShown);
+		PlaceCursorHider();
 	}
 
 	private void OnVideoTapped(object sender, TappedRoutedEventArgs e) => ViewModel.PlayPauseCommand.Execute(null);
@@ -343,14 +339,32 @@ public sealed partial class PlayerWindow : Window
 	// How much of the bottom of the video the floating controls take: their height and the gap under them.
 	private double ControlsSpace => Controls.ActualHeight + Controls.Margin.Bottom;
 
+	/// <summary>Hides the pointer over the video (not the title bar, which still drags the window), or shows it again.</summary>
 	private void SetCursorHidden(bool hidden)
 	{
-		// ShowCursor keeps a count: only change it when it changes.
-		if (_isCursorHidden != hidden)
+		if (_cursorHider is { } hider)
 		{
-			_isCursorHidden = hidden;
-			ShowCursor(!hidden);
+			hider.IsHidingCursor = hidden;
 		}
+	}
+
+	// The overlay that hides the cursor stays over the video (see CursorHider), sized with it.
+	private void PlaceCursorHider()
+	{
+		if (Content.XamlRoot is not { } root)
+		{
+			return;
+		}
+
+		if (_cursorHider is null)
+		{
+			_cursorHider = new CursorHider(Win32Interop.GetWindowFromWindowId(AppWindow.Id));
+			_cursorHider.Used += (_, _) => ShowControls();
+		}
+
+		var size = AppWindow.ClientSize;
+		var titleBar = (int)(TitleBarArea.ActualHeight * root.RasterizationScale);
+		_cursorHider.Place(0, titleBar, size.Width, Math.Max(0, size.Height - titleBar));
 	}
 
 	private void UpdateTitle() => Title = ViewModel.Title.Length > 0 ? $"{ViewModel.Title} - Totoro" : "Totoro";
@@ -364,7 +378,4 @@ public sealed partial class PlayerWindow : Window
 		var size = AppWindow.Size;
 		AppWindow.Move(new PointInt32(area.X + (area.Width - size.Width) / 2, area.Y + (area.Height - size.Height) / 2));
 	}
-
-	[LibraryImport("user32.dll")]
-	private static partial int ShowCursor([MarshalAs(UnmanagedType.Bool)] bool show);
 }

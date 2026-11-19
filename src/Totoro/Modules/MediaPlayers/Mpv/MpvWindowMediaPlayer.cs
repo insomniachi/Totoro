@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Settings;
+using Totoro.UI.Player;
 using Totoro.ViewModels.Player;
 
 namespace Totoro.Modules.MediaPlayers.Mpv;
@@ -9,8 +10,8 @@ namespace Totoro.Modules.MediaPlayers.Mpv;
 /// The MPV module's player when it plays in the app's own window (<see cref="Settings.PlayInApp"/>): libmpv, mpv's engine,
 /// with mpv's config, the app's controls over it.
 /// </summary>
-internal sealed class MpvWindowMediaPlayer(IModuleSettings<Settings> settings, IPreferences preferences, ILogger<MpvWindowMediaPlayer> logger)
-	: WindowMediaPlayer(settings, preferences, logger)
+internal sealed class MpvWindowMediaPlayer(IPlayerWindowFactory windows, IModuleSettings<Settings> settings, IPreferences preferences, ILogger<MpvWindowMediaPlayer> logger)
+	: WindowMediaPlayer(windows, settings, preferences, logger)
 {
 	public override Guid Id => MpvModule.Id;
 

@@ -8,8 +8,7 @@ using Windows.Foundation;
 using Windows.System;
 using Totoro.Core.Modules.Media;
 using Totoro.UI.Input;
-using Totoro.ViewModels.Player;
-using Totoro.Modules.MediaPlayers;
+using Totoro.UI.Player;
 
 namespace Totoro.Views.Player;
 

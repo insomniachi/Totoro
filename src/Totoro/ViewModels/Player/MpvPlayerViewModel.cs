@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules.Media;
 using Totoro.Modules.MediaPlayers.Mpv;
+using Totoro.UI.Player;
 using static Totoro.Modules.MediaPlayers.Mpv.LibMpvNative;
 using MediaTrack = Totoro.Core.Modules.Media.MediaTrack;
 

@@ -1,3 +1,4 @@
+using Microsoft.UI.Xaml;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -7,11 +8,11 @@ using Totoro.Core.Modules.Media;
 using MediaTrack = Totoro.Core.Modules.Media.MediaTrack;
 using SubtitleTrack = Totoro.Core.Modules.Streaming.SubtitleTrack;
 
-namespace Totoro.ViewModels.Player;
+namespace Totoro.UI.Player;
 
 /// <summary>
 /// The built-in players' window: plays a video and holds what its controls and overlays show (the seek bar with the
-/// opening and ending marked, the skip button, the next episode...). What plays the video is the derived class's (libvlc,
+/// opening and ending marked, the skip button, the next episode...). What plays the video is the derived class's (mpv,
 /// or Windows' own). Created on the UI thread; the engine's events are brought to it, so properties and events change there.
 /// </summary>
 public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspectRatio, ILogger logger) : ObservableObject
@@ -185,10 +186,10 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 
 	[ObservableProperty] public partial bool IsNextVisible { get; private set; }
 
-	/// <summary>e.g. "Playing in 5…"; empty when it waits to be asked.</summary>
+	/// <summary>e.g. "Playing in 5â€¦"; empty when it waits to be asked.</summary>
 	[ObservableProperty] public partial string NextCountdown { get; private set; } = "";
 
-	/// <summary>What's happening while there's no video, e.g. "Getting episode 6…".</summary>
+	/// <summary>What's happening while there's no video, e.g. "Getting episode 6â€¦".</summary>
 	[ObservableProperty] public partial string Status { get; private set; } = "";
 
 	[ObservableProperty] public partial bool IsStatusVisible { get; private set; }
@@ -196,7 +197,7 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 	[ObservableProperty] public partial bool IsStatusError { get; private set; }
 
 	/// <summary>Plays <paramref name="uri"/> from <paramref name="start"/>, replacing what's playing.</summary>
-	/// <param name="options">libvlc media options, e.g. ":http-referrer=..."; ignored by other engines.</param>
+	/// <param name="options">Engine-specific options (libvlc's media options, e.g. ":http-referrer=..."); ignored by engines without them.</param>
 	/// <param name="isClip">A short video (e.g. an opening) rather than an episode: only the simple controls show, and no episodes.</param>
 	/// <param name="subtitles">Subtitle files to load beside it, the first one shown.</param>
 	public async Task PlayAsync(Uri uri, string title, IEnumerable<string> options, TimeSpan start, bool isClip = false, IReadOnlyList<SubtitleTrack>? subtitles = null)
@@ -268,6 +269,12 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 
 	/// <summary>Raises the subtitles by <paramref name="fraction"/> of the video area's height, clear of the controls (0: back down).</summary>
 	public virtual void SetSubtitleLift(double fraction) { }
+
+	/// <summary>
+	/// The view the engine draws the video in, put under the window's controls; null for the app's own engines, whose
+	/// views the window makes itself. Called once, on the UI thread, as the window opens.
+	/// </summary>
+	public virtual UIElement? CreateVideoView() => null;
 
 	/// <summary>Plays or pauses; played to the end, plays it again from the start.</summary>
 	protected abstract void TogglePlayPause();
@@ -372,7 +379,7 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 					break;
 				}
 
-				NextCountdown = $"Playing in {left.TotalSeconds:0}…";
+				NextCountdown = $"Playing in {left.TotalSeconds:0}â€¦";
 				await Task.WhenAny(next.Task, Task.Delay(TimeSpan.FromSeconds(1), CancellationToken.None));
 			}
 
@@ -431,7 +438,7 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 		await SeekBy(OpeningLength.TotalSeconds);
 	}
 
-	internal (TimeSpan End, string Name)? CurrentSegmentEnd()
+	public (TimeSpan End, string Name)? CurrentSegmentEnd()
 	{
 		var seconds = Position;
 		for (var i = Chapters.Count - 1; i >= 0; i--)

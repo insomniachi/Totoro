@@ -7,8 +7,6 @@ given. This file is shipped with the app.
 
 | Software | License | Copyright | Source |
 |---|---|---|---|
-| libvlc 3.0.24 (VideoLAN.LibVLC.Windows) | LGPL-2.1-or-later | the VideoLAN team and VLC authors | https://code.videolan.org/videolan/vlc |
-| LibVLCSharp 3.10.2 (LibVLCSharp.WinUI) | LGPL-2.1-or-later | VideoLAN | https://code.videolan.org/videolan/LibVLCSharp |
 | NMeCab 0.10.0 (LibNMeCab) | LGPL-2.1-or-later (or GPL-2.0-or-later) | Tsuyoshi Komuta | https://github.com/komutan/NMeCab |
 | IPADIC (LibNMeCab.IpaDicBin, the dictionary NMeCab reads) | IPADIC license (below) | Nara Institute of Science and Technology | https://github.com/komutan/NMeCab/tree/master/dic/ipadic |
 | Windows Community Toolkit (CommunityToolkit.WinUI.\*, CommunityToolkit.Labs.WinUI.\*) | MIT | .NET Foundation and Contributors | https://github.com/CommunityToolkit/Windows |
@@ -23,6 +21,8 @@ given. This file is shipped with the app.
 | Jikan.net (JikanDotNet) | MIT | Bartłomiej Buchała | https://github.com/Ervie/jikan.net |
 | MalApi.V2 | MIT | athulrajts | https://github.com/athulrajts/MyAnimeListApi-v2-Wrapper |
 | NAudio (NAudio.Core, NAudio.Wasapi) | MIT | Mark Heath | https://github.com/naudio/NAudio |
+| Concentus | BSD-3-Clause | Xiph.Org Foundation, Skype Limited, CSIRO, Microsoft Corporation, Logan Stromberg and others | https://github.com/lostromb/concentus |
+| Concentus.OggFile | MIT | Logan Stromberg, Andrew Ward | https://github.com/lostromb/concentus.oggfile |
 | Newtonsoft.Json | MIT | James Newton-King | https://github.com/JamesNK/Newtonsoft.Json |
 | OllamaSharp | MIT | Andreas Wäscher | https://github.com/awaescher/OllamaSharp |
 | SharpCompress | MIT | Adam Hathcock | https://github.com/adamhathcock/sharpcompress |
@@ -33,16 +33,11 @@ given. This file is shipped with the app.
 | WinUIEx | MIT | Morten Nielsen | https://github.com/dotMorten/WinUIEx |
 | XAML Behaviors (Microsoft.Xaml.Behaviors.WinUI.Managed) | MIT | Microsoft | https://github.com/microsoft/XamlBehaviors |
 | Microsoft.Extensions.\* | MIT | .NET Foundation and Contributors | https://github.com/dotnet/extensions, https://github.com/dotnet/runtime |
-| SharpDX (used by LibVLCSharp) | MIT | Alexandre Mutel | https://github.com/sharpdx/SharpDX |
 | Fluent UI System Icons (FluentSystemIcons-Regular.ttf) | MIT | Microsoft Corporation | https://github.com/microsoft/fluentui-system-icons |
 | Win2D (Microsoft.Graphics.Win2D) | MIT | Microsoft Corporation | https://github.com/microsoft/Win2D |
 | Windows App SDK, WebView2 | Microsoft Software License Terms | Microsoft Corporation | https://github.com/microsoft/WindowsAppSDK |
 
-libvlc and LibVLCSharp are separate libraries the app loads; you may replace them with your own builds. Their license is
-in `libvlc\win-x64\COPYING.LIB`, with where their source is in `libvlc\win-x64\NOTICE.txt`.
-
-NMeCab is likewise a separate library (`LibNMeCab.dll`), used under the LGPL-2.1 (the same text, in
-`libvlc\win-x64\COPYING.LIB`); you may replace it with your own build. Its source is at https://github.com/komutan/NMeCab.
+NMeCab is a separate library (`LibNMeCab.dll`) the app loads, used under the LGPL-2.1 (its text is in `COPYING.LIB`); you may replace it with your own build. Its source is at https://github.com/komutan/NMeCab.
 
 mpv (libmpv included), FFmpeg and yt-dlp aren't shipped: the MPV module downloads them from their own releases
 (shinchiro/mpv-winbuild-cmake, yt-dlp/yt-dlp) as the app first starts, on its update interval, or when the user asks,
@@ -99,6 +94,46 @@ The software above listed as MIT is under this license, each with its own copyri
 > SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 > WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 > OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+## Concentus's license (BSD 3-Clause)
+
+Copyright (c) by various holding parties, including (but not limited to): 
+Skype Limited, Xiph.Org Foundation, CSIRO, Microsoft Corporation,
+Jean-Marc Valin, Gregory Maxwell, Mark Borgerding, Timothy B. Terriberry,
+Logan Stromberg. All rights are reserved by their respective holders.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of Internet Society, IETF or IETF Trust, nor the
+   names of specific contributors, may be used to endorse or promote
+   products derived from this software without specific prior written
+   permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+This repository and its redistributable packages contain independently compiled
+versions of the Opus C reference library, which is maintained by Xiph.org and the
+Opus open-source contributors. The source code for these libraries is freely available
+at https://gitlab.xiph.org/xiph/opus/-/tags/v1.5.2, and all binaries are being
+redistributed to you under the same terms of the general Opus license dictated above.
 
 ## Data
 

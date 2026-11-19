@@ -1,18 +1,18 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
-namespace Totoro.Modules.MediaPlayers.Vlc;
+namespace Totoro.UI.Player;
 
 /// <summary>
 /// Serves videos on localhost, fetching them with HTTP headers VLC can't send itself (it only sends a user agent and a
 /// referrer): VLC plays the local URL, and each request (with its range, for seeking) is passed on with the headers. An
 /// HLS playlist's own URLs are rewritten to go through it too, so its segments get the headers.
 /// </summary>
-internal sealed partial class HeaderProxy(ILogger logger) : IDisposable
+public sealed partial class HeaderProxy(ILogger logger) : IDisposable
 {
 	private static readonly HttpClient s_client = new(new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.None });
 

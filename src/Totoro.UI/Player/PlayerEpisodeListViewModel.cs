@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Totoro.Core.Modules.Media;
 
-namespace Totoro.ViewModels.Player;
+namespace Totoro.UI.Player;
 
 /// <summary>The built-in player's episode list, and moving to the previous or next episode.</summary>
 public sealed partial class PlayerEpisodeListViewModel : ObservableObject

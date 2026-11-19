@@ -1,13 +1,14 @@
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Settings;
+using Totoro.UI.Player;
 using Totoro.ViewModels.Player;
 
 namespace Totoro.Modules.MediaPlayers.MediaFoundation;
 
 /// <summary>The built-in player that plays with Windows' own media engine, in the app's own window.</summary>
-internal sealed class MediaFoundationMediaPlayer(IModuleSettings<Settings> settings, IPreferences preferences, ILogger<MediaFoundationMediaPlayer> logger)
-	: WindowMediaPlayer(settings, preferences, logger)
+internal sealed class MediaFoundationMediaPlayer(IPlayerWindowFactory windows, IModuleSettings<Settings> settings, IPreferences preferences, ILogger<MediaFoundationMediaPlayer> logger)
+	: WindowMediaPlayer(windows, settings, preferences, logger)
 {
 	public override Guid Id => MediaFoundationModule.Id;
 

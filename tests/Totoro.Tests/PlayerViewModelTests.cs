@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Totoro.Core.Modules.Media;
+using Totoro.UI.Player;
 using Totoro.ViewModels.Player;
 using Xunit;
 
@@ -9,13 +10,13 @@ public class PlayerViewModelTests
 {
 	private static PlayerViewModel CreateViewModel(PlayerAspectRatio ratio = PlayerAspectRatio.Fit)
 	{
-		return new VlcPlayerViewModel(volume: 100, aspectRatio: ratio, logger: NullLogger.Instance);
+		return new MpvPlayerViewModel(volume: 100, aspectRatio: ratio, logger: NullLogger.Instance);
 	}
 
 	[Fact]
 	public void AspectRatio_DefaultsToFitOrSpecifiedInitialValue()
 	{
-		var defaultVm = new VlcPlayerViewModel(100, NullLogger.Instance);
+		var defaultVm = new MpvPlayerViewModel(100, PlayerAspectRatio.Fit, NullLogger.Instance);
 		Assert.Equal(PlayerAspectRatio.Fit, defaultVm.AspectRatio);
 
 		var customVm = CreateViewModel(PlayerAspectRatio.Stretch);

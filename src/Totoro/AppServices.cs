@@ -63,6 +63,8 @@ internal static class AppServices
 
 		// Watching: the watch service drives a playback from a card's Play.
 		services.AddSingleton<WatchService>();
+		// The built-in players' window, which plugins' players play in too.
+		services.AddSingleton<Totoro.UI.Player.IPlayerWindowFactory, Views.Player.PlayerWindowFactory>();
 		// What the provider has of an anime's new episodes, for the cards' badges.
 		services.AddSingleton<IProviderEpisodes, ProviderEpisodes>();
 		services.AddSingleton<DownloadService>();

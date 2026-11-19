@@ -11,7 +11,7 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views.Player"
     xmlns:media="using:Totoro.Core.Modules.Media"
-    xmlns:player="using:Totoro.ViewModels.Player"
+    xmlns:player="using:Totoro.UI.Player"
     PointerEntered="OnPointerEntered"
     PointerExited="OnPointerExited">
     <UserControl.Resources>

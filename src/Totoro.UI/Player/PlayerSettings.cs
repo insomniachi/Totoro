@@ -2,10 +2,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Totoro.Core.Settings;
 
-namespace Totoro.Modules.MediaPlayers;
+namespace Totoro.UI.Player;
 
 /// <summary>
-/// The settings of a player that plays in the app's own window (<see cref="Views.Player.PlayerWindow"/>). Each such player
+/// The settings of a player that plays in the app's own window (see <see cref="WindowMediaPlayer"/>). Each such player
 /// derives its own type from it: module settings are kept by type.
 /// </summary>
 public abstract class PlayerSettings : DataContainerConfig

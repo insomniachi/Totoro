@@ -64,11 +64,12 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.TokenizingTextBox" />
     <PackageReference Include="CommunityToolkit.WinUI.Media" />
+    <PackageReference Include="Concentus" />
+    <PackageReference Include="Concentus.OggFile" />
     <PackageReference Include="DevWinUI" />
     <PackageReference Include="DiscordRichPresence" />
     <PackageReference Include="HtmlAgilityPack" />
     <PackageReference Include="JikanDotNet" />
-    <PackageReference Include="LibVLCSharp.WinUI" />
     <PackageReference Include="MalApi.V2" />
     <PackageReference Include="NAudio.Wasapi" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
@@ -77,7 +78,6 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="SharpCompress" />
-    <PackageReference Include="VideoLAN.LibVLC.Windows" />
     <PackageReference Include="WinUIEx" />
   </ItemGroup>
   <!-- The self-contained runtime leaves out this DLL, without which registering for notifications fails; it's in the runtime's MSIX -->
@@ -126,17 +126,10 @@
   <ItemGroup>
     <Content Include="..\..\LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The LGPL-2.1, for NMeCab -->
+    <Content Include="..\..\COPYING.LIB" Link="COPYING.LIB" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-  <!--
-    libvlc (VideoLAN.LibVLC.Windows), for the built-in player (Modules\MediaPlayers\Vlc): without what playing doesn't need
-    (import libraries, encoding and streaming out, visualizations, network discovery). Its license (LGPL-2.1) and where
-    its source is go with it, as the LGPL asks; the package has neither.
-  -->
   <ItemGroup>
     <InternalsVisibleTo Include="Totoro.Tests" />
-    <VlcWindowsX64ExcludeFiles Include="libvlc.lib;libvlccore.lib;plugins\access_output\%2A;plugins\stream_out\%2A;plugins\mux\%2A;plugins\visualization\%2A;plugins\services_discovery\%2A;plugins\video_splitter\%2A" />
-    <None Remove="Modules\MediaPlayers\Vlc\COPYING.LIB;Modules\MediaPlayers\Vlc\NOTICE.txt" />
-    <Content Include="Modules\MediaPlayers\Vlc\COPYING.LIB" Link="libvlc\win-x64\COPYING.LIB" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Modules\MediaPlayers\Vlc\NOTICE.txt" Link="libvlc\win-x64\NOTICE.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

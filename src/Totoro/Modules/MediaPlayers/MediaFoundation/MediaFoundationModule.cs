@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Media;
+using Totoro.UI.Player;
 
 namespace Totoro.Modules.MediaPlayers.MediaFoundation;
 
@@ -13,7 +14,7 @@ internal class MediaFoundationModule : IModule<Settings>
 	{
 		Id = Id,
 		Name = "Built-in player (Windows)",
-		Description = "Plays videos in Totoro's own window, with Windows' own media engine (MediaPlayerElement), with the same controls as the libVLC one. "
+		Description = "Plays videos in Totoro's own window, with Windows' own media engine (MediaPlayerElement), with the same controls as mpv in Totoro's window. "
 			+ "Plays what Windows has codecs for: subtitles in SRT, WebVTT or TTML, not ASS.",
 		DataFolder = "MediaFoundation",
 		Image = @"Assets\Modules\WindowsMediaPlayer.png"

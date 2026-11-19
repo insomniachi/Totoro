@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Totoro.Core.Modules.Media;
 using Totoro.Modules.MediaPlayers.MediaFoundation;
+using Totoro.UI.Player;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using MediaTrack = Totoro.Core.Modules.Media.MediaTrack;

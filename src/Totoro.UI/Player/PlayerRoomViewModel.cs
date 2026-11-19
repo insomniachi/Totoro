@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Totoro.Core.Modules.Media;
 
-namespace Totoro.ViewModels.Player;
+namespace Totoro.UI.Player;
 
 /// <summary>The built-in player's watch-together room: who's in it, notices about them, and chat to send it.</summary>
 public sealed partial class PlayerRoomViewModel : ObservableObject

@@ -29,8 +29,7 @@ AppSupportURL=https://github.com/insomniachi/Totoro/issues
 AppUpdatesURL=https://github.com/insomniachi/Totoro/releases
 VersionInfoVersion={#AppVersion}
 
-; For the current user, in %LocalAppData%\Programs: no admin rights needed, and the app can write next to itself
-; (libvlc keeps its plugin cache there). The user's settings and data are elsewhere (%LocalAppData%\Totoro), and stay
+; For the current user, in %LocalAppData%\Programs: no admin rights needed. The user's settings and data are elsewhere (%LocalAppData%\Totoro), and stay
 ; when it's uninstalled.
 PrivilegesRequired=lowest
 DefaultDirName={autopf}\{#AppName}
@@ -64,8 +63,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [InstallDelete]
-; libvlc loads every plugin in its folder: ones an earlier version had and this one leaves out would be left behind
-; otherwise, and loaded.
+; libvlc, which came with earlier versions: the VLC player is a plugin now.
 Type: filesandordirs; Name: "{app}\libvlc"
 ; rqbit, which came with earlier versions: it's downloaded into the app's data now.
 Type: filesandordirs; Name: "{app}\Tools\rqbit"
@@ -82,7 +80,3 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; AppUserModelID: "
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
 ; Installed silently, it's an update from the app (UpdateService), which closed for it: start it again.
 Filename: "{app}\{#AppExe}"; Flags: nowait runasoriginaluser; Check: WizardSilent
-
-[UninstallDelete]
-; What the app wrote next to itself: libvlc's plugin cache.
-Type: files; Name: "{app}\libvlc\win-x64\plugins\plugins.dat"

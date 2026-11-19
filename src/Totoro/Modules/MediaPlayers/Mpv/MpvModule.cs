@@ -7,6 +7,7 @@ using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Settings;
+using Totoro.UI.Player;
 
 namespace Totoro.Modules.MediaPlayers.Mpv;
 
@@ -39,7 +40,10 @@ internal class MpvModule : IModule<Settings>
 	}
 }
 
-/// <summary>A built-in player's settings too: the shortcuts, languages... are for playing in Totoro's window.</summary>
+/// <summary>
+/// A built-in player's settings too: the shortcuts, languages... are for playing in Totoro's window. Songs play at its
+/// volume too.
+/// </summary>
 public sealed class Settings : PlayerSettings
 {
 	// mpv's own window has always started full screen.

@@ -445,6 +445,9 @@ public partial class App : Application
 		}
 	}
 
+	// The libVLC player's, built in then (a plugin now).
+	private static readonly Guid s_vlcModuleId = new("5e0a7c1f-3b9d-4e62-8a4f-2d7c9b1e6f30");
+
 	/// <summary>
 	/// Once: mpv in Totoro's window became the default player. Opening Settings saved the first player (VLC then) even when
 	/// none was picked, so a stored VLC can't be told from no choice: both move to mpv. Other choices stay.
@@ -458,7 +461,7 @@ public partial class App : Application
 			return;
 		}
 
-		if (preferences.SelectedMediaPlayer == Guid.Empty || preferences.SelectedMediaPlayer == Modules.MediaPlayers.Vlc.VlcModule.Id)
+		if (preferences.SelectedMediaPlayer == Guid.Empty || preferences.SelectedMediaPlayer == s_vlcModuleId)
 		{
 			preferences.SelectedMediaPlayer = Modules.MediaPlayers.Mpv.MpvModule.Id;
 			// They weren't playing in mpv, so its stored window choice was never theirs.
@@ -597,7 +600,6 @@ public partial class App : Application
 			new Modules.AnimeDatabase.Anilist.AnilistModule(),
 			new Modules.AnimeDatabase.MyAnimeList.MyAnimeListModule(),
 			new Modules.MediaPlayers.Mpv.MpvModule(),
-			new Modules.MediaPlayers.Vlc.VlcModule(),
 			new Modules.MediaPlayers.MediaFoundation.MediaFoundationModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
 			new Modules.MediaSegments.Aniskip.AniskipModule(),

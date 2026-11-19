@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="Totoro.Views.Player.PlayerWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,7 +6,7 @@
     xmlns:helpers="using:Totoro.Helpers"
     xmlns:local="using:Totoro.Views.Player"
     xmlns:media="using:Totoro.Core.Modules.Media"
-    xmlns:player="using:Totoro.ViewModels.Player">
+    xmlns:player="using:Totoro.UI.Player">
 
     <!--
         Laid out like Windows' Media Player: the video fills the window, title bar included, with the title bar and the
@@ -176,13 +176,44 @@
                         <EntranceThemeTransition FromHorizontalOffset="40" FromVerticalOffset="0" />
                     </TransitionCollection>
                 </StackPanel.ChildrenTransitions>
+                <!--  Its bar along the bottom fills until it goes  -->
+                <Button
+                    Padding="0"
+                    HorizontalAlignment="Right"
+                    AutomationProperties.AutomationId="OfferButton"
+                    AutomationProperties.Name="{x:Bind ViewModel.OfferText, Mode=OneWay}"
+                    Background="{StaticResource OverlayBackgroundBrush}"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
+                    Command="{x:Bind ViewModel.AcceptOfferCommand}"
+                    ToolTipService.ToolTip="Page Up"
+                    Visibility="{x:Bind ViewModel.IsOfferVisible, Mode=OneWay}">
+                    <Grid>
+                        <StackPanel
+                            Padding="16,10"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE893;" />
+                            <TextBlock Text="{x:Bind ViewModel.OfferText, Mode=OneWay}" />
+                        </StackPanel>
+                        <Rectangle
+                            Height="3"
+                            VerticalAlignment="Bottom"
+                            Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                            RenderTransformOrigin="0,0.5">
+                            <Rectangle.RenderTransform>
+                                <ScaleTransform ScaleX="{x:Bind ViewModel.OfferProgress, Mode=OneWay}" />
+                            </Rectangle.RenderTransform>
+                        </Rectangle>
+                    </Grid>
+                </Button>
                 <!--
                     Saving the episode as watched to the lists: a ring while it's sent to them all, which turns into a tick
-                    once they're saved, then fades. Above the skip button, which may show at the same time.
+                    once they're saved, then fades. Below the skip button, which may show at the same time: it fades rather than
+                    collapses, so it keeps its place while hidden, and above the button it would push it down.
                 -->
                 <StackPanel
                     Height="40"
-                    Margin="0,0,0,8"
+                    Margin="0,8,0,0"
                     Padding="8,0,16,0"
                     HorizontalAlignment="Right"
                     AutomationProperties.AutomationId="SaveIndicator"
@@ -226,36 +257,6 @@
                     </Grid>
                     <TextBlock VerticalAlignment="Center" Text="{x:Bind local:PlayerWindow.SavingText(ViewModel.IsSaving, ViewModel.IsSaved), Mode=OneWay}" />
                 </StackPanel>
-                <!--  Its bar along the bottom fills until it goes  -->
-                <Button
-                    Padding="0"
-                    HorizontalAlignment="Right"
-                    AutomationProperties.AutomationId="OfferButton"
-                    AutomationProperties.Name="{x:Bind ViewModel.OfferText, Mode=OneWay}"
-                    Background="{StaticResource OverlayBackgroundBrush}"
-                    BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
-                    Command="{x:Bind ViewModel.AcceptOfferCommand}"
-                    ToolTipService.ToolTip="Page Up"
-                    Visibility="{x:Bind ViewModel.IsOfferVisible, Mode=OneWay}">
-                    <Grid>
-                        <StackPanel
-                            Padding="16,10"
-                            Orientation="Horizontal"
-                            Spacing="8">
-                            <FontIcon FontSize="16" Glyph="&#xE893;" />
-                            <TextBlock Text="{x:Bind ViewModel.OfferText, Mode=OneWay}" />
-                        </StackPanel>
-                        <Rectangle
-                            Height="3"
-                            VerticalAlignment="Bottom"
-                            Fill="{ThemeResource AccentFillColorDefaultBrush}"
-                            RenderTransformOrigin="0,0.5">
-                            <Rectangle.RenderTransform>
-                                <ScaleTransform ScaleX="{x:Bind ViewModel.OfferProgress, Mode=OneWay}" />
-                            </Rectangle.RenderTransform>
-                        </Rectangle>
-                    </Grid>
-                </Button>
             </StackPanel>
 
             <!--
