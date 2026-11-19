@@ -276,13 +276,16 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		}
 	}
 
-	/// <summary>Keeps the last samples WASAPI took (as mono), for the spectrum, and counts them for the position.</summary>
-	private void Tap(ReadOnlySpan<byte> played)
+	/// <summary>
+	/// Keeps the last samples WASAPI took (as mono), for the spectrum, and counts the song's own among them (the first
+	/// <paramref name="decoded"/> bytes: the rest is silence, while it's still being decoded) for the position.
+	/// </summary>
+	private void Tap(ReadOnlySpan<byte> played, int decoded)
 	{
 		var frames = MemoryMarshal.Cast<byte, short>(played);
 		if (Current is not null && IsPlaying)
 		{
-			Interlocked.Add(ref _playedFrames, frames.Length / Channels);
+			Interlocked.Add(ref _playedFrames, Math.Min(played.Length, decoded) / sizeof(short) / Channels);
 		}
 
 		lock (_tapLock)
@@ -328,14 +331,16 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	private void OnUi(Action action) => _ui.TryEnqueue(() => action());
 
 	/// <summary>The buffered samples, tapped for the spectrum as WASAPI reads them.</summary>
-	private sealed class TappedProvider(IWaveProvider source, SongAudioPlayer player) : IWaveProvider
+	private sealed class TappedProvider(BufferedWaveProvider source, SongAudioPlayer player) : IWaveProvider
 	{
 		public WaveFormat WaveFormat => source.WaveFormat;
 
 		public int Read(Span<byte> buffer)
 		{
+			// What's decoded, before the read pads it out with silence.
+			var decoded = source.BufferedBytes;
 			var read = source.Read(buffer);
-			player.Tap(buffer[..read]);
+			player.Tap(buffer[..read], decoded);
 			return read;
 		}
 	}
