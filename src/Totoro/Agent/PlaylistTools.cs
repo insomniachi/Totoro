@@ -73,6 +73,42 @@ public sealed class PlaylistTools(SongPlaylistService playlists, ISongPlayer pla
 		return $"Deleted {list.Name}.";
 	}
 
+	[AgentTool("export_playlist")]
+	[Description("Saves a playlist to a file (JSON), which import_playlist adds back, e.g. on another PC.")]
+	public async Task<string> ExportPlaylistAsync(
+		string playlist,
+		[Description("The full path of the file to write, e.g. C:\\Users\\me\\Music\\Openings.json. Ask the user where if they didn't say.")] string file)
+	{
+		var list = Get(playlist);
+		try
+		{
+			await File.WriteAllTextAsync(file, SongPlaylistService.Export(list));
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+		{
+			throw new AgentToolException($"Couldn't save to {file}: {ex.Message}");
+		}
+
+		return $"Saved {list.Name} ({list.Songs.Count} songs) to {file}.";
+	}
+
+	[AgentTool("import_playlist")]
+	[Description("Adds the playlist saved in a file (by export_playlist, or the Playlists page's Export) as a new playlist.")]
+	public async Task<PlaylistSummary> ImportPlaylistAsync([Description("The full path of the file.")] string file)
+	{
+		string text;
+		try
+		{
+			text = await File.ReadAllTextAsync(file);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+		{
+			throw new AgentToolException($"Couldn't read {file}: {ex.Message}");
+		}
+
+		return Summarise(Try(() => playlists.Import(text)));
+	}
+
 	[AgentTool("play_playlist")]
 	[Description("Plays a playlist's songs' audio in the app, one after another; it plays on whatever page the user goes to, with controls at the bottom of the window.")]
 	public async Task<PlaylistPlaying> PlayPlaylistAsync(

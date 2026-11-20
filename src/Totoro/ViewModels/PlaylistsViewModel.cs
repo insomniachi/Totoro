@@ -106,6 +106,42 @@ public sealed partial class PlaylistsViewModel : NavigatableViewModel, IRecipien
 		}
 	});
 
+	/// <summary>Saves the selected playlist to <paramref name="file"/>, to import elsewhere.</summary>
+	public async Task ExportAsync(string file)
+	{
+		if (Selected is null)
+		{
+			return;
+		}
+
+		try
+		{
+			await File.WriteAllTextAsync(file, SongPlaylistService.Export(Selected));
+			Error = "";
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			Error = $"Couldn't save the playlist: {ex.Message}";
+		}
+	}
+
+	/// <summary>Adds the playlist saved in <paramref name="file"/> (by Export), and selects it.</summary>
+	public async Task ImportAsync(string file)
+	{
+		string text;
+		try
+		{
+			text = await File.ReadAllTextAsync(file);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			Error = $"Couldn't read the playlist: {ex.Message}";
+			return;
+		}
+
+		Try(() => Selected = _playlists.Import(text));
+	}
+
 	/// <summary>The list was reordered by dragging <paramref name="song"/> to where it is in <see cref="Songs"/> now.</summary>
 	public void Moved(PlaylistSong song)
 	{

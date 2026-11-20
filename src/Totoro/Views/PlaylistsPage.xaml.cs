@@ -63,6 +63,34 @@ public sealed partial class PlaylistsPage : Page
 
 	private void OnRemoveClick(object sender, RoutedEventArgs e) => ViewModel?.Remove((PlaylistSong)((FrameworkElement)sender).Tag);
 
+	private async void OnExportClick(object sender, RoutedEventArgs e)
+	{
+		if (ViewModel?.Selected is not { } playlist)
+		{
+			return;
+		}
+
+		var picker = new Microsoft.Windows.Storage.Pickers.FileSavePicker(XamlRoot.ContentIslandEnvironment.AppWindowId)
+		{
+			SuggestedFileName = playlist.Name,
+		};
+		picker.FileTypeChoices.Add("Totoro playlist", [".json"]);
+		if (await picker.PickSaveFileAsync() is { } file)
+		{
+			await ViewModel.ExportAsync(file.Path);
+		}
+	}
+
+	private async void OnImportClick(object sender, RoutedEventArgs e)
+	{
+		var picker = new Microsoft.Windows.Storage.Pickers.FileOpenPicker(XamlRoot.ContentIslandEnvironment.AppWindowId);
+		picker.FileTypeFilter.Add(".json");
+		if (await picker.PickSingleFileAsync() is { } file && ViewModel is not null)
+		{
+			await ViewModel.ImportAsync(file.Path);
+		}
+	}
+
 	private void OnAddSongTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 	{
 		if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)

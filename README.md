@@ -15,7 +15,7 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 - **Schedule.** A calendar of when the episodes of what you're watching air.
 - **Episode numbering.** For sources that number episodes across seasons, it uses anime-relations, plus rules of your own.
 - **Music.** Each anime's openings and endings, from AnimeThemes, to listen to or watch, with their lyrics (from LRCLIB) lit up as they're sung, and Japanese shown with furigana and romaji. Hear one playing somewhere else on your PC? The listen button in the search box names it, and the anime it's from.
-- **Playlists.** Keep the openings and endings you like in playlists, and play one whenever you want, in order or shuffled, looping the playlist or one song. It plays on as you go round the app, with its controls at the bottom of the window, on every page.
+- **Playlists.** Keep the openings and endings you like in playlists, and play one whenever you want, in order or shuffled, looping the playlist or one song, and export them to a file to import on another PC. It plays on as you go round the app, with its controls at the bottom of the window, on every page.
 - **Find an anime from a screenshot.** trace.moe finds which anime a picture is from.
 - **Discord.** It can show the episode you're watching as your Discord status.
 - **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "play the opening of Frieren"); it answers with the app's own cards. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (its settings are on the Plugins page).

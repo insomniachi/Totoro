@@ -143,6 +143,52 @@ public sealed class SongPlaylistService : IRecipient<SongPlayerChangedMessage>
 		return renamed;
 	}
 
+	/// <summary>The playlist as a file's text (JSON), to import elsewhere (another PC, or after a reinstall).</summary>
+	public static string Export(SongPlaylist playlist) => JsonSerializer.Serialize(playlist, s_exportOptions);
+
+	/// <summary>
+	/// Adds the playlist in a file's text (from <see cref="Export"/>) as a new one, as "Name (2)" if the name's taken.
+	/// Songs it can't play (no audio, or not over the web) and repeats are left out. Throws
+	/// <see cref="InvalidOperationException"/> if the text isn't a playlist.
+	/// </summary>
+	public SongPlaylist Import(string text)
+	{
+		SongPlaylist? read;
+		try
+		{
+			read = JsonSerializer.Deserialize<SongPlaylist>(text);
+		}
+		catch (JsonException)
+		{
+			read = null;
+		}
+
+		// From a file anyone could have written: every value checked, as JSON's nulls get past non-nullable types.
+		if (read?.Songs is not { } songs)
+		{
+			throw new InvalidOperationException("That file isn't a Totoro playlist.");
+		}
+
+		List<PlaylistSong> kept =
+		[
+			.. songs.Where(x => x is { Anime: not null, Image: not null, Song: { Title: not null, Artist: not null, Episodes: not null, Audio.Scheme: "https" or "http" } })
+					.DistinctBy(x => x.Song),
+		];
+		var name = string.IsNullOrWhiteSpace(read.Name) ? "Imported" : read.Name.Trim();
+		var unique = name;
+		for (var i = 2; Find(unique) is not null; i++)
+		{
+			unique = $"{name} ({i})";
+		}
+
+		var playlist = new SongPlaylist(unique, kept);
+		_playlists.Add(playlist);
+		Save();
+		return playlist;
+	}
+
+	private static readonly JsonSerializerOptions s_exportOptions = new() { WriteIndented = true };
+
 	/// <summary>Deletes the playlist, stopping it if it's playing.</summary>
 	public void Delete(SongPlaylist playlist)
 	{

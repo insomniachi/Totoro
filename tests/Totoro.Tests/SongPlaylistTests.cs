@@ -176,6 +176,43 @@ public sealed class SongPlaylistTests : IDisposable
 	}
 
 	[Fact]
+	public void Export_ThenImport_AddsACopyUnderAFreeName()
+	{
+		var (service, playlist) = Make(2);
+		var copy = service.Import(SongPlaylistService.Export(playlist));
+
+		Assert.Equal("Test (2)", copy.Name);
+		Assert.Equal(playlist.Songs.Select(x => x.Song), copy.Songs.Select(x => x.Song));
+		Assert.Equal(playlist.Songs[0].Ids?.Anilist, copy.Songs[0].Ids?.Anilist);
+		Assert.NotSame(playlist.Songs, copy.Songs);
+		Assert.Equal(2, new SongPlaylistService(new FakeSongPlayer(), _file).Playlists.Count);
+	}
+
+	[Fact]
+	public void Import_LeavesOutSongsItCantPlay_AndRejectsWhatIsntAPlaylist()
+	{
+		var (service, playlist) = Make(1);
+		var good = playlist.Songs[0];
+		var file = SongPlaylistService.Export(playlist with
+		{
+			Name = "Other",
+			Songs =
+			[
+				good,
+				good,
+				good with { Song = good.Song with { Number = 2, Audio = null } },
+				good with { Song = good.Song with { Number = 3, Audio = new Uri("file:///C:/Windows/win.ini") } },
+				null!,
+			],
+		});
+
+		Assert.Equal([good.Song], service.Import(file).Songs.Select(x => x.Song));
+		Assert.Throws<InvalidOperationException>(() => service.Import("{ not json"));
+		Assert.Throws<InvalidOperationException>(() => service.Import("[1, 2]"));
+		Assert.Throws<InvalidOperationException>(() => service.Import("""{ "Name": "x" }"""));
+	}
+
+	[Fact]
 	public void DamagedFile_StartsEmpty()
 	{
 		File.WriteAllText(_file, "{ not json");
