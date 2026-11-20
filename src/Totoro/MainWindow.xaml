@@ -29,6 +29,16 @@
             <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
         </Grid.KeyboardAccelerators>
         <Grid.Resources>
+            <!--  The now-playing bar's round, flat buttons  -->
+            <Style
+                x:Key="NowPlayingButtonStyle"
+                BasedOn="{StaticResource SubtleButtonStyle}"
+                TargetType="Button">
+                <Setter Property="Width" Value="36" />
+                <Setter Property="Height" Value="36" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="CornerRadius" Value="18" />
+            </Style>
             <helpers:StringToImageSourceConverter x:Key="StringToImageSourceConverter" />
             <helpers:VisibleIfAnyConverter x:Key="VisibleIfAnyConverter" />
             <helpers:VisibleIfNoneConverter x:Key="VisibleIfNoneConverter" />
@@ -723,6 +733,12 @@
                     </NavigationViewItem>
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
+            <!--  The pages (and the details pane over them), with the now-playing bar under them while a song plays  -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
             <SplitView
                 DisplayMode="Overlay"
                 LightDismissOverlayMode="On"
@@ -758,6 +774,239 @@
                     <Frame x:Name="Main" Background="Transparent" />
                 </Grid>
             </SplitView>
+
+            <!--  The song playing, e.g. a playlist (see NowPlaying): on every page, so it's controlled from any of them  -->
+            <Grid
+                Grid.Row="1"
+                AutomationProperties.LandmarkType="Custom"
+                AutomationProperties.LocalizedLandmarkType="Now playing"
+                AutomationProperties.Name="Now playing"
+                Loaded="OnNowPlayingLoaded"
+                Visibility="{x:Bind ViewModel.Songs.IsOpen, Mode=OneWay}">
+            <Grid
+                Height="84"
+                Margin="16,4,16,16"
+                Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}"
+                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{ThemeResource OverlayCornerRadius}">
+                <Grid.Resources>
+                    <ResourceDictionary>
+                        <!--  Over the blurred cover, enough that the text on it stays readable  -->
+                        <ResourceDictionary.ThemeDictionaries>
+                            <ResourceDictionary x:Key="Default">
+                                <SolidColorBrush x:Key="NowPlayingTintBrush" Color="#991C1C1C" />
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="Light">
+                                <SolidColorBrush x:Key="NowPlayingTintBrush" Color="#A6FCFCFC" />
+                            </ResourceDictionary>
+                        </ResourceDictionary.ThemeDictionaries>
+                    </ResourceDictionary>
+                </Grid.Resources>
+                <!--  The anime's cover, blurred, as its background: the last song's, under the new one fading in (see CrossFade)  -->
+                <Image
+                    x:Name="PlayingBackdropOld"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    Stretch="UniformToFill" />
+                <Image
+                    x:Name="PlayingBackdrop"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    ImageOpened="OnPlayingImageOpened"
+                    Stretch="UniformToFill" />
+                <!--  Lighter than acrylic's blur (30), so the cover shows through more  -->
+                <Border>
+                    <Border.Background>
+                        <media:BackdropBlurBrush Amount="18" />
+                    </Border.Background>
+                </Border>
+                <Border Background="{ThemeResource NowPlayingTintBrush}" />
+
+            <Grid Padding="12,0,16,0" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" MaxWidth="560" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  What it is  -->
+                <Grid VerticalAlignment="Center" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!--  Room for the cover, which stands up out of the bar (below); a note where there's none  -->
+                    <Grid Width="92">
+                        <Border
+                            Width="56"
+                            Height="56"
+                            HorizontalAlignment="Left"
+                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                            CornerRadius="{ThemeResource ControlCornerRadius}"
+                            Visibility="{x:Bind ViewModel.Songs.HasNoImage, Mode=OneWay}">
+                            <FontIcon
+                                FontSize="20"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Glyph="&#xE8D6;" />
+                        </Border>
+                    </Grid>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Spacing="2">
+                        <TextBlock
+                            Style="{ThemeResource BodyStrongTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Songs.Title, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Songs.Details, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Grid>
+
+                <!--  Its controls, over how far through it is  -->
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Spacing="4">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            AutomationProperties.Name="Shuffle"
+                            Command="{x:Bind ViewModel.Songs.ToggleShuffleCommand}"
+                            IsEnabled="{x:Bind ViewModel.Songs.HasPlaylist, Mode=OneWay}"
+                            Style="{StaticResource NowPlayingButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.Songs.ShuffleName, Mode=OneWay}">
+                            <FontIcon
+                                FontSize="14"
+                                Opacity="{x:Bind local:MainWindow.OnOpacity(ViewModel.Songs.Shuffle), Mode=OneWay}"
+                                Glyph="&#xE8B1;" />
+                        </Button>
+                        <Button
+                            AutomationProperties.Name="Previous"
+                            Command="{x:Bind ViewModel.Songs.PreviousCommand}"
+                            IsEnabled="{x:Bind ViewModel.Songs.HasPlaylist, Mode=OneWay}"
+                            Style="{StaticResource NowPlayingButtonStyle}"
+                            ToolTipService.ToolTip="Previous">
+                            <FontIcon FontSize="16" Glyph="&#xE892;" />
+                        </Button>
+                        <Button
+                            Width="40"
+                            Height="40"
+                            Padding="0"
+                            AutomationProperties.Name="{x:Bind ViewModel.Songs.PlayName, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.Songs.TogglePlayCommand}"
+                            CornerRadius="20"
+                            Style="{ThemeResource AccentButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.Songs.PlayName, Mode=OneWay}">
+                            <FontIcon FontSize="16" Glyph="{x:Bind ViewModel.Songs.PlayGlyph, Mode=OneWay}" />
+                        </Button>
+                        <Button
+                            AutomationProperties.Name="Next"
+                            Command="{x:Bind ViewModel.Songs.NextCommand}"
+                            IsEnabled="{x:Bind ViewModel.Songs.HasPlaylist, Mode=OneWay}"
+                            Style="{StaticResource NowPlayingButtonStyle}"
+                            ToolTipService.ToolTip="Next">
+                            <FontIcon FontSize="16" Glyph="&#xE893;" />
+                        </Button>
+                        <!--  A button, not a toggle: it goes round three states (off, the playlist, this song)  -->
+                        <Button
+                            AutomationProperties.Name="{x:Bind ViewModel.Songs.LoopName, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.Songs.CycleLoopCommand}"
+                            IsEnabled="{x:Bind ViewModel.Songs.HasPlaylist, Mode=OneWay}"
+                            Style="{StaticResource NowPlayingButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.Songs.LoopName, Mode=OneWay}">
+                            <FontIcon
+                                FontSize="14"
+                                Opacity="{x:Bind local:MainWindow.OnOpacity(ViewModel.Songs.IsLooping), Mode=OneWay}"
+                                Glyph="{x:Bind ViewModel.Songs.LoopGlyph, Mode=OneWay}" />
+                        </Button>
+                    </StackPanel>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="40" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Songs.PositionText, Mode=OneWay}" />
+                        <ProgressBar
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Song progress"
+                            Maximum="100"
+                            Value="{x:Bind ViewModel.Songs.Progress, Mode=OneWay}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Songs.DurationText, Mode=OneWay}" />
+                    </Grid>
+                </StackPanel>
+
+                <!--  Close  -->
+                <Button
+                    Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="Stop"
+                    Command="{x:Bind ViewModel.Songs.StopCommand}"
+                    Style="{StaticResource NowPlayingButtonStyle}"
+                    ToolTipService.ToolTip="Stop">
+                    <FontIcon FontSize="14" Glyph="&#xE711;" />
+                </Button>
+            </Grid>
+            </Grid>
+
+            <!--
+                The anime's cover, as it is (portrait), standing up out of the bar: as far in from the bar's bottom as from its left, the rest over the
+                page. In a canvas, so it neither makes the bar's row taller nor is clipped by it. Opens the anime.
+            -->
+            <Canvas
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Visibility="{x:Bind ViewModel.Songs.HasImage, Mode=OneWay}">
+                <Button
+                    Canvas.Left="28"
+                    Canvas.Top="-54"
+                    Width="92"
+                    Height="130"
+                    Padding="0"
+                    AutomationProperties.Name="{x:Bind ViewModel.Songs.OpenName, Mode=OneWay}"
+                    BorderThickness="0"
+                    Click="OnPlayingCoverClick"
+                    CornerRadius="{ThemeResource OverlayCornerRadius}"
+                    IsEnabled="{x:Bind ViewModel.Songs.CanOpen, Mode=OneWay}"
+                    ToolTipService.ToolTip="{x:Bind ViewModel.Songs.OpenName, Mode=OneWay}">
+                    <ui:Effects.Shadow>
+                        <media:AttachedCardShadow
+                            BlurRadius="16"
+                            CornerRadius="8"
+                            Opacity="0.5"
+                            Offset="0,6"
+                            Color="Black" />
+                    </ui:Effects.Shadow>
+                    <Grid>
+                        <Image x:Name="PlayingCoverOld" Stretch="UniformToFill" />
+                        <Image
+                            x:Name="PlayingCover"
+                            ImageOpened="OnPlayingImageOpened"
+                            Stretch="UniformToFill" />
+                    </Grid>
+                </Button>
+            </Canvas>
+            </Grid>
+            </Grid>
         </NavigationView>
 
         <!--  The assistant (see ChatService): beside the pages rather than over them, so what it does shows as it does it  -->

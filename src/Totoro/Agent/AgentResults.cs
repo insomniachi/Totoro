@@ -243,3 +243,19 @@ public sealed record AnimePluginProviderReport(
 	[property: Description("Error message if the plugin failed, otherwise null.")]
 	string? Error);
 
+
+[Description("One of the user's playlists of anime songs.")]
+public sealed record PlaylistSummary(
+	string Name,
+	[property: Description("Its songs in order, e.g. \"OP2: Bling-Bang-Bang-Born (Mashle)\".")]
+	IReadOnlyList<string> Songs,
+	[property: Description("Whether it's the one playing.")]
+	bool IsPlaying);
+
+[Description("What's playing from a playlist.")]
+public sealed record PlaylistPlaying(
+	string Playlist,
+	[property: Description("e.g. \"OP2: Bling-Bang-Bang-Born (Mashle)\"; empty if nothing's playing.")]
+	string Song,
+	bool Shuffle,
+	PlaylistLoop Loop);

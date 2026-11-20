@@ -66,6 +66,7 @@ public sealed partial class WatchService(
 	IEnumerable<Descriptor> modules,
 	IDialogService dialogs,
 	IPreferences preferences,
+	ISongPlayer songPlayer,
 	ILogger<WatchService> logger) : ObservableObject
 {
 	// Progress is only worth keeping (and resuming) past the first moments.
@@ -652,6 +653,8 @@ public sealed partial class WatchService(
 		try
 		{
 			_player = player;
+			// A song (e.g. a playlist) plays on across pages: paused, not stopped, so it can carry on after.
+			Post(songPlayer.Pause);
 			player.Play(media, start);
 			if (player is IInteractiveMediaPlayer interactive)
 			{

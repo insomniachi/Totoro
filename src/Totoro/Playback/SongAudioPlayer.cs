@@ -70,6 +70,10 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 	public TimeSpan Duration { get; private set; }
 
+	public event EventHandler? Ended;
+
+	public event EventHandler? Failed;
+
 	public async Task PlayAsync(AnimeSong song)
 	{
 		if (song.Audio is not { } audio)
@@ -83,8 +87,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		IsPlaying = true;
 		IsLoading = true;
 		Duration = TimeSpan.Zero;
-		EnsureCreated();
-		_output!.Stop();
+		CreateOutput();
 		_buffer!.ClearBuffer();
 		ClearTap();
 		Interlocked.Exchange(ref _playedFrames, 0);
@@ -100,10 +103,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		catch (Exception ex) when (ex is not OperationCanceledException || !cts.IsCancellationRequested)
 		{
 			_logger.LogWarning(ex, "Couldn't play {Song}", audio);
-			if (ReferenceEquals(_song, cts))
-			{
-				Stop();
-			}
+			FinishWith(Failed, cts);
 
 			return;
 		}
@@ -119,7 +119,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 		Duration = reader.TotalTime;
 		_output.Volume = Math.Clamp(_playerSettings.Value.Volume / 100f, 0, 1);
-		_ = Task.Run(() => Decode(reader, cts.Token));
+		_ = Task.Run(() => Decode(reader, cts));
 		if (IsPlaying)
 		{
 			_output.Play();
@@ -215,21 +215,23 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		_output?.Dispose();
 	}
 
-	private void EnsureCreated()
+	/// <summary>
+	/// A new output for each song, on the device that's the default now: an output stays on the device it was made on, and
+	/// goes silent for good once that device goes (e.g. headphones disconnecting, or another device made the default).
+	/// </summary>
+	// shortcut: a device lost mid-song stays silent until the next song; follow device changes if that's a problem.
+	private void CreateOutput()
 	{
-		if (_output is not null)
-		{
-			return;
-		}
-
-		_buffer = new BufferedWaveProvider(new WaveFormat(SampleRate, 16, Channels), s_decodeAhead * 2) { DiscardOnBufferOverflow = true };
+		_output?.Dispose();
+		_buffer ??= new BufferedWaveProvider(new WaveFormat(SampleRate, 16, Channels), s_decodeAhead * 2) { DiscardOnBufferOverflow = true };
 		_output = new WasapiPlayerBuilder().WithSharedMode().WithLatency(100).Build();
 		_output.Init(new TappedProvider(_buffer, this));
 	}
 
 	/// <summary>Decodes the song into the buffer, keeping a little ahead of what's heard, then stops once it's all heard.</summary>
-	private async Task Decode(OpusOggReadStream reader, CancellationToken ct)
+	private async Task Decode(OpusOggReadStream reader, CancellationTokenSource cts)
 	{
+		var ct = cts.Token;
 		var buffer = _buffer!;
 		try
 		{
@@ -252,13 +254,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 				await Task.Delay(50, ct);
 			}
 
-			OnUi(() =>
-			{
-				if (!ct.IsCancellationRequested)
-				{
-					Stop();
-				}
-			});
+			OnUi(() => FinishWith(Ended, cts));
 		}
 		catch (OperationCanceledException)
 		{
@@ -266,13 +262,25 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		catch (Exception ex)
 		{
 			_logger.LogWarning(ex, "Couldn't decode {Song}", Current?.Audio);
-			OnUi(() =>
-			{
-				if (!ct.IsCancellationRequested)
-				{
-					Stop();
-				}
-			});
+			OnUi(() => FinishWith(Failed, cts));
+		}
+	}
+
+	/// <summary>
+	/// The song of <paramref name="cts"/> ended or failed: raises <paramref name="finished"/>, then stops, unless a handler
+	/// played another song (or it was replaced or stopped already).
+	/// </summary>
+	private void FinishWith(EventHandler? finished, CancellationTokenSource cts)
+	{
+		if (!ReferenceEquals(_song, cts))
+		{
+			return;
+		}
+
+		finished?.Invoke(this, EventArgs.Empty);
+		if (ReferenceEquals(_song, cts))
+		{
+			Stop();
 		}
 	}
 

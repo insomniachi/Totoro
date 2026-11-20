@@ -14,7 +14,6 @@ public sealed record SongGroup(string Header, IReadOnlyList<SongItem> Songs);
 public sealed partial class MusicTab(
 	Func<Task<IReadOnlyList<AnimeSong>>> fetch,
 	Func<AnimeSong, SongItem> toItem,
-	ISongPlayer player,
 	ILogger logger) : LazyDetailsTab("No songs listed.", logger)
 {
 	[ObservableProperty]
@@ -26,15 +25,6 @@ public sealed partial class MusicTab(
 		.. Enumerable.Repeat(new AnimeSong(AnimeSongKind.Opening, 1, "A song title of usual length", "Artist name", "1–12",
 			new Uri("about:blank"), new Uri("about:blank")), 3).Select(toItem)
 	]);
-
-	/// <summary>Stops the song playing, e.g. when the tab is left.</summary>
-	public void StopAudio()
-	{
-		if (Groups.SelectMany(x => x.Songs).Any(x => x.IsCurrent))
-		{
-			player.Stop();
-		}
-	}
 
 	protected override async Task<int> LoadAsync()
 	{

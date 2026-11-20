@@ -10,9 +10,9 @@ namespace Totoro.ViewModels;
 /// <summary>
 /// A song picked in the title bar's search, in the side pane: its card (audio with the spectrum and lyrics, or the video), and the anime it's from, which opens in the selected database.
 /// </summary>
-public sealed partial class SongViewModel(SongMatch match, AnimeSongService songs, ISongPlayer player, AnimeCommands commands) : NavigatableViewModel
+public sealed partial class SongViewModel(SongMatch match, AnimeSongService songs, ISongPlayer player, SongPlaylistService playlists, AnimeCommands commands) : NavigatableViewModel
 {
-	public SongItem Song { get; } = new(match.Song, songs, player);
+	public SongItem Song { get; } = new(match.Song, songs, player, playlists, match.Anime);
 
 	public AnimeModel Anime => match.Anime;
 
@@ -36,16 +36,5 @@ public sealed partial class SongViewModel(SongMatch match, AnimeSongService song
 
 		Message = "";
 		await commands.ShowDetailsCommand.ExecuteAsync(anime);
-	}
-
-	// Closing the pane takes away the only controls for this song: don't leave it playing.
-	protected override Task OnNavigatedFromInternalAsync()
-	{
-		if (Song.IsCurrent)
-		{
-			player.Stop();
-		}
-
-		return Task.CompletedTask;
 	}
 }

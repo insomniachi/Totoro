@@ -4,13 +4,12 @@ using Totoro.ViewModels.AnimeDetails;
 
 namespace Totoro.Views.AnimeDetails;
 
-/// <summary>The Music tab. Leaving it (another tab, or closing the details) stops the song playing.</summary>
+/// <summary>The Music tab. A song played in it plays on after it's left, with the main window's now-playing bar to control it.</summary>
 public sealed partial class MusicTabView : UserControl
 {
 	public MusicTabView()
 	{
 		InitializeComponent();
-		Unloaded += (_, _) => ViewModel?.StopAudio();
 	}
 
 	[GeneratedDependencyProperty]

@@ -255,7 +255,7 @@ public sealed class AnimeTools(
 	/// The song of that kind with that number; without a number, the first. A lone song has no number, so "opening 1" is
 	/// it too.
 	/// </summary>
-	private static AnimeSong FindSong(AnimeModel anime, IReadOnlyList<AnimeSong> all, AnimeSongKind kind, int? number)
+	internal static AnimeSong FindSong(AnimeModel anime, IReadOnlyList<AnimeSong> all, AnimeSongKind kind, int? number)
 	{
 		var ofKind = all.Where(x => x.Kind == kind).ToList();
 		return (number is null ? ofKind.FirstOrDefault() : ofKind.FirstOrDefault(x => x.Number == number))

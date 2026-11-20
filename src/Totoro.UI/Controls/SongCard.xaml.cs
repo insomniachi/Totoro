@@ -202,5 +202,43 @@ public sealed partial class SongCard : UserControl
 		Song?.SetReadings(Enum.Parse<LyricReadings>((string)((FrameworkElement)sender).Tag));
 	}
 
+	/// <summary>The playlists, a tick on those it's in already, and a new one.</summary>
+	private void OnPlaylistsOpening(object sender, object e)
+	{
+		var menu = (MenuFlyout)sender;
+		menu.Items.Clear();
+		foreach (var (name, hasIt) in Song?.Playlists ?? [])
+		{
+			var item = new ToggleMenuFlyoutItem { Text = name, IsChecked = hasIt, IsEnabled = !hasIt };
+			item.Click += (_, _) => Song?.AddToPlaylist(name);
+			menu.Items.Add(item);
+		}
+
+		if (menu.Items.Count > 0)
+		{
+			menu.Items.Add(new MenuFlyoutSeparator());
+		}
+
+		var create = new MenuFlyoutItem { Text = "New playlist…", Icon = new FontIcon { Glyph = "" } };
+		create.Click += async (_, _) =>
+		{
+			var name = new TextBox { PlaceholderText = "Name" };
+			var dialog = new ContentDialog
+			{
+				XamlRoot = XamlRoot,
+				Title = "New playlist",
+				Content = name,
+				PrimaryButtonText = "Create",
+				CloseButtonText = "Cancel",
+				DefaultButton = ContentDialogButton.Primary,
+			};
+			if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+			{
+				Song?.AddToPlaylist(name.Text);
+			}
+		};
+		menu.Items.Add(create);
+	}
+
 	public static Visibility VisibleIfAny(string text) => string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
 }

@@ -386,6 +386,68 @@ public sealed partial class MainWindow : Window
 
 	public static IconElement? CreateIcon(Func<object>? icon) => icon?.Invoke() as IconElement;
 
+	private void OnNowPlayingLoaded(object sender, RoutedEventArgs e)
+	{
+		if (ViewModel is null || _followingSongs)
+		{
+			return;
+		}
+
+		_followingSongs = true;
+		CrossFade(ViewModel.Songs.Image);
+		ViewModel.Songs.PropertyChanged += (_, args) =>
+		{
+			if (args.PropertyName == nameof(NowPlaying.Image))
+			{
+				CrossFade(ViewModel.Songs.Image);
+			}
+		};
+	}
+
+	private bool _followingSongs;
+
+	/// <summary>
+	/// Shows the now-playing bar's new cover (and its blurred background): the last one stays until the new one's loaded,
+	/// which then fades in over it.
+	/// </summary>
+	private void CrossFade(string image)
+	{
+		foreach (var (shown, old) in new[] { (PlayingCover, PlayingCoverOld), (PlayingBackdrop, PlayingBackdropOld) })
+		{
+			old.Source = image.Length > 0 ? shown.Source : null;
+			shown.Opacity = 0;
+			shown.Source = Helpers.CommonConverters.ToImageSource(image);
+		}
+	}
+
+	/// <summary>A new cover's loaded: it fades in over the last one.</summary>
+	private void OnPlayingImageOpened(object sender, RoutedEventArgs e)
+	{
+		var fade = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+		{
+			To = 1,
+			Duration = TimeSpan.FromMilliseconds(500),
+			EasingFunction = new Microsoft.UI.Xaml.Media.Animation.CubicEase(),
+		};
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fade, (Image)sender);
+		Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fade, nameof(UIElement.Opacity));
+		var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+		storyboard.Children.Add(fade);
+		storyboard.Begin();
+	}
+
+	/// <summary>The now-playing bar's cover: opens its anime in the side pane, as the selected database has it.</summary>
+	private void OnPlayingCoverClick(object sender, RoutedEventArgs e)
+	{
+		if (ViewModel?.Songs.Item?.ToAnime() is { } anime)
+		{
+			Commands.AnimeCommands.Shared.ShowInDatabaseCommand.Execute(anime);
+		}
+	}
+
+	/// <summary>The now-playing bar's shuffle and loop icons: faint while they're off.</summary>
+	public static double OnOpacity(bool on) => on ? 1 : 0.45;
+
 	public static Visibility VisibleIfPositive(int count) => count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 	public static InfoBarSeverity UpdateSeverity(UpdateState state) => state == UpdateState.Failed ? InfoBarSeverity.Error : InfoBarSeverity.Informational;

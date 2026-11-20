@@ -79,6 +79,15 @@
                 Visibility="{x:Bind Song.HasVideo, Mode=OneWay}">
                 <FontIcon FontSize="14" Glyph="&#xE714;" />
             </Button>
+            <Button
+                AutomationProperties.Name="Add to playlist"
+                ToolTipService.ToolTip="Add to playlist"
+                Visibility="{x:Bind Song.CanAddToPlaylist, Mode=OneWay}">
+                <FontIcon FontSize="14" Glyph="&#xE710;" />
+                <Button.Flyout>
+                    <MenuFlyout Opening="OnPlaylistsOpening" Placement="BottomEdgeAlignedRight" />
+                </Button.Flyout>
+            </Button>
             <!--  WinUI's transport controls have no working full window button on desktop  -->
             <Button
                 x:Name="FullScreenButton"

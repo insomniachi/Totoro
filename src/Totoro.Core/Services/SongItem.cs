@@ -11,12 +11,17 @@ namespace Totoro.Core.Services;
 public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerChangedMessage>
 {
 	private readonly AnimeSongService _songs;
+	private readonly SongPlaylistService _playlists;
+	private readonly AnimeModel? _anime;
 	private bool _lyricsAsked;
 	private SongLyrics _lyrics = SongLyrics.None;
 
-	public SongItem(AnimeSong song, AnimeSongService songs, ISongPlayer player)
+	/// <param name="anime">The anime it's from, to show it with in a playlist; without it, it can't be added to one.</param>
+	public SongItem(AnimeSong song, AnimeSongService songs, ISongPlayer player, SongPlaylistService playlists, AnimeModel? anime)
 	{
 		_songs = songs;
+		_playlists = playlists;
+		_anime = anime;
 		Song = song;
 		Player = player;
 		Details = DetailsOf(song);
@@ -129,6 +134,31 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 		}
 
 		await TryAsync(() => _songs.PlayAudioAsync(Song));
+	}
+
+	/// <summary>Whether it can be added to a playlist: its audio is what playlists play.</summary>
+	public bool CanAddToPlaylist => HasAudio && _anime is not null;
+
+	/// <summary>The user's playlists, by name, and whether it's in each.</summary>
+	public IReadOnlyList<(string Name, bool HasIt)> Playlists => [.. _playlists.Playlists.Select(x => (x.Name, x.Songs.Any(s => s.Song == Song)))];
+
+	/// <summary>Adds it to the playlist of that name, making the playlist if there's none; sets <see cref="Error"/> if it can't.</summary>
+	public void AddToPlaylist(string name)
+	{
+		if (_anime is null)
+		{
+			return;
+		}
+
+		try
+		{
+			_playlists.Add(_playlists.Find(name) ?? _playlists.Create(name), Song, _anime);
+			Error = "";
+		}
+		catch (InvalidOperationException ex)
+		{
+			Error = ex.Message;
+		}
 	}
 
 	/// <summary>Whether its creditless video is open in the card.</summary>

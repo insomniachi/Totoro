@@ -169,6 +169,7 @@ public sealed partial class ChatService(
 	IAgentTools tools,
 	AnimeSongService songs,
 	ISongPlayer songPlayer,
+	SongPlaylistService playlists,
 	ILogger<ChatService> logger) : ObservableObject
 {
 	// The most cards shown for one tool's result, the best scored (a whole list would bury the conversation).
@@ -412,7 +413,7 @@ public sealed partial class ChatService(
 	{
 		if (raw is IAgentSongs { Anime: not null, Songs.Count: > 0 } songList)
 		{
-			return new ChatSongEntry([.. songList.Songs.Select(x => new SongItem(x, songs, songPlayer))]);
+			return new ChatSongEntry([.. songList.Songs.Select(x => new SongItem(x, songs, songPlayer, playlists, songList.Anime))]);
 		}
 
 		var anime = AnimeIn(raw);

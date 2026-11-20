@@ -107,7 +107,8 @@ internal static class AppServices
 				.AddAgentTools<PluginTools>()
 				.AddAgentTools<ReleaseScheduleTools>()
 				.AddAgentTools<MangaTools>()
-				.AddAgentTools<ImageSearchTools>();
+				.AddAgentTools<ImageSearchTools>()
+				.AddAgentTools<PlaylistTools>();
 		// The assistant: a chat that calls those tools (see ChatService).
 		services.AddSingleton<ChatViewModel>();
 
@@ -184,6 +185,11 @@ internal static class AppServices
 		{
 			x.Mode = MediaMode.Anime;
 			x.AnimatedIcon = () => Icons.DownloadAnimated;
+		});
+		services.AddMainNavigationItem<PlaylistsPage, PlaylistsViewModel>("Playlists", x =>
+		{
+			x.Mode = MediaMode.Anime;
+			x.AnimatedIcon = () => Icons.Music;
 		});
 		services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
 		{

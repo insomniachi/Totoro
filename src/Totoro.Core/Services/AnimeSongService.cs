@@ -73,6 +73,15 @@ public interface ISongPlayer
 
 	/// <summary>The loudness of the sound playing in each of <paramref name="bands"/>' frequency bands (low to high), from 0 to 1.</summary>
 	void GetLevels(Span<float> bands);
+
+	/// <summary>
+	/// The song played to its end (on the UI thread). Raised before the player stops, so a handler that plays the next song
+	/// keeps it playing rather than stopped in between.
+	/// </summary>
+	event EventHandler? Ended;
+
+	/// <summary>The song couldn't be played (on the UI thread), before the player stops.</summary>
+	event EventHandler? Failed;
 }
 
 /// <summary>

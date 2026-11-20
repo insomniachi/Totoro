@@ -90,6 +90,8 @@ public static class ServiceCollectionExtensions
 								   .AddSingleton<Services.MangaTrackingService>()
 								   .AddSingleton<Services.MangaReadingService>()
 							   .AddSingleton<Services.AnimeSongService>()
+							   .AddSingleton<Services.SongPlaylistService>()
+							   .AddSingleton<Services.NowPlaying>()
 							   .AddSingleton<Services.ReleaseScheduleService>()
 							   .AddSingleton<Services.MissedRelationsService>()
 							   .AddSingleton<Services.ImageSearchService>()

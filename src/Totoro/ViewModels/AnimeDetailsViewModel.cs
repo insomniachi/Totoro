@@ -37,6 +37,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		IPlaybackProgressStore progress,
 		AnimeSongService songs,
 		ISongPlayer songPlayer,
+		SongPlaylistService playlists,
 		IEnumerable<Descriptor> modules,
 		ILogger<AnimeDetailsViewModel> logger)
 	{
@@ -55,7 +56,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Characters = new CharactersTab(
 			() => _provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>()),
 			logger);
-		Music = new MusicTab(() => songs.GetSongsAsync(_details), song => new SongItem(song, songs, songPlayer), songPlayer, logger);
+		Music = new MusicTab(() => songs.GetSongsAsync(_details), song => new SongItem(song, songs, songPlayer, playlists, _details), logger);
 		Related = new RelatedTab(
 			() => _details,
 			details => _provider is null ? Task.FromResult<IReadOnlyList<AnimeModel>>([details]) : SeasonMap.GetSeriesAsync(_provider, details, CancellationToken.None),

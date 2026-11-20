@@ -9,6 +9,8 @@ public static class Icons
 	public static FontIcon HomeFilled => new() { Glyph = "\uEA8A" };
 	public static SymbolIcon Settings => new(Symbol.Setting);
 	public static SymbolIcon Search => new(Symbol.Find);
+	// A music note: there's no animated one.
+	public static FontIcon Music => new() { Glyph = "" };
 
 	// Animated icons, from WinUI's built-in animations or our own (AnimatedVisuals). Use one wherever there is one
 	// (there's no home, for instance). They animate with their container's AnimatedIcon.State, which must be one of the

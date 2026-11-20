@@ -33,7 +33,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	public void FinishTour() => _preferences.SaveKey(TourSeenKey, true);
 
-	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules, AnilistPeople people, AnimeSongService songs, SongRecognizer recognizer)
+	public MainWindowViewModel(IEnumerable<NavigationItemViewModel> navigationItems, IEnumerable<IAccount> accounts, IPreferences preferences, WatchService playback, ChatViewModel chat, UpdateService updates, IFactory<IAnimeMetadataProvider> databases, IFactory<Core.Modules.Manga.IMangaMetadataProvider> mangaDatabases, SyncplayClient syncplay, IDialogService dialogs, IEnumerable<Descriptor> modules, AnilistPeople people, AnimeSongService songs, SongRecognizer recognizer, NowPlaying nowPlaying)
 	{
 		_people = people;
 		_songs = songs;
@@ -42,6 +42,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		_databases = databases;
 		_mangaDatabases = mangaDatabases;
 		Playback = playback;
+		Songs = nowPlaying;
 		Syncplay = syncplay;
 		Chat = chat;
 		Updates = updates;
@@ -147,6 +148,9 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 
 	/// <summary>What playing an episode is up to, for the status bar.</summary>
 	public WatchService Playback { get; }
+
+	/// <summary>The song playing (e.g. a playlist), for the now-playing bar.</summary>
+	public NowPlaying Songs { get; }
 
 	/// <summary>The assistant, in a panel beside the pages.</summary>
 	public ChatViewModel Chat { get; }

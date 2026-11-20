@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.PlaylistsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:local="using:Totoro.Views"
+    xmlns:services="using:Totoro.Core.Services">
+
+    <!--  Spacing per the Windows guidelines: 16 padding, 12 between content areas, 8 between buttons and from a header to its control.  -->
+    <Grid
+        MaxWidth="1000"
+        Margin="16"
+        ColumnSpacing="12"
+        RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Spacing="8">
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="Playlists" />
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Openings and endings you like, to play whenever you want. Find a song to add here, or add one from its card's + button in an anime's Music tab. A playlist plays on as you go round the app, with its controls at the bottom of the window."
+                TextWrapping="Wrap" />
+            <InfoBar
+                IsClosable="False"
+                IsOpen="{x:Bind helpers:CommonConverters.IsAny(ViewModel.Error), Mode=OneWay}"
+                Message="{x:Bind ViewModel.Error, Mode=OneWay}"
+                Severity="Error" />
+        </StackPanel>
+
+        <!--  The playlists  -->
+        <Grid Grid.Row="1" RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button HorizontalAlignment="Stretch" AutomationProperties.Name="New playlist">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="16" Glyph="&#xE710;" />
+                    <TextBlock Text="New playlist" />
+                </StackPanel>
+                <Button.Flyout>
+                    <Flyout x:Name="CreateFlyout">
+                        <StackPanel Width="240" Spacing="8">
+                            <TextBox
+                                x:Name="CreateName"
+                                AutomationProperties.Name="Playlist name"
+                                KeyDown="OnCreateKeyDown"
+                                PlaceholderText="Name" />
+                            <Button
+                                Click="OnCreateClick"
+                                Content="Create"
+                                Style="{ThemeResource AccentButtonStyle}" />
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+            <ListView
+                Grid.Row="1"
+                AutomationProperties.Name="Playlists"
+                ItemsSource="{x:Bind ViewModel.Playlists, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="services:SongPlaylist">
+                        <StackPanel Padding="0,8" AutomationProperties.Name="{x:Bind Name}">
+                            <TextBlock
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind Name}"
+                                TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind local:PlaylistsPage.SongCount(Songs.Count)}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <!--  The selected playlist's songs  -->
+        <Grid
+            Grid.Row="1"
+            Grid.Column="1"
+            RowSpacing="8"
+            Visibility="{x:Bind ViewModel.HasSelected, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    Text="{x:Bind ViewModel.Selected.Name, Mode=OneWay, FallbackValue=''}"
+                    TextTrimming="CharacterEllipsis" />
+                <Button
+                    Grid.Column="1"
+                    AutomationProperties.Name="Play"
+                    Click="OnPlayClick"
+                    Style="{ThemeResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE768;" />
+                        <TextBlock Text="Play" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    Grid.Column="2"
+                    AutomationProperties.Name="Shuffle play"
+                    Click="OnShuffleClick">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE8B1;" />
+                        <TextBlock Text="Shuffle" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    Grid.Column="3"
+                    AutomationProperties.Name="Rename playlist"
+                    ToolTipService.ToolTip="Rename">
+                    <FontIcon FontSize="16" Glyph="&#xE8AC;" />
+                    <Button.Flyout>
+                        <Flyout x:Name="RenameFlyout" Opening="OnRenameOpening">
+                            <StackPanel Width="240" Spacing="8">
+                                <TextBox
+                                    x:Name="RenameName"
+                                    AutomationProperties.Name="New name"
+                                    KeyDown="OnRenameKeyDown" />
+                                <Button
+                                    Click="OnRenameClick"
+                                    Content="Rename"
+                                    Style="{ThemeResource AccentButtonStyle}" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button
+                    Grid.Column="4"
+                    AutomationProperties.Name="Delete playlist"
+                    ToolTipService.ToolTip="Delete">
+                    <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                    <Button.Flyout>
+                        <Flyout x:Name="DeleteFlyout">
+                            <StackPanel MaxWidth="320" Spacing="12">
+                                <TextBlock Text="Delete this playlist? Its songs stay in their anime's Music tab." TextWrapping="Wrap" />
+                                <Button
+                                    Click="OnDeleteClick"
+                                    Content="Delete"
+                                    Style="{ThemeResource AccentButtonStyle}" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
+
+            <!--  Songs to add, by title, singer or anime  -->
+            <AutoSuggestBox
+                Grid.Row="1"
+                AutomationProperties.Name="Add a song"
+                ItemsSource="{x:Bind ViewModel.Found, Mode=OneWay}"
+                PlaceholderText="Add a song: search by title, singer or anime"
+                QueryIcon="Find"
+                QuerySubmitted="OnAddSongSubmitted"
+                TextChanged="OnAddSongTextChanged"
+                UpdateTextOnSelect="False">
+                <AutoSuggestBox.ItemTemplate>
+                    <DataTemplate x:DataType="services:SongMatch">
+                        <Grid
+                            Padding="0,6"
+                            AutomationProperties.Name="{x:Bind local:PlaylistsPage.SongName(Song.Label, Song.Title, Anime.Title)}"
+                            ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border
+                                Width="32"
+                                Height="45"
+                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                CornerRadius="{ThemeResource ControlCornerRadius}">
+                                <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Anime.Image)}" Stretch="UniformToFill" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{x:Bind Song.Title}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind local:PlaylistsPage.SongDetails(Song.Label, Anime.Title, Song.Artist)}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </AutoSuggestBox.ItemTemplate>
+            </AutoSuggestBox>
+
+            <TextBlock
+                Grid.Row="2"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="No songs yet. Find one to add above, or add one from its card's + button in an anime's Music tab."
+                TextWrapping="Wrap"
+                Visibility="{x:Bind local:PlaylistsPage.VisibleIfNone(ViewModel.Songs.Count), Mode=OneWay}" />
+            <!--  Click a song to play from it; drag songs to reorder them.  -->
+            <ListView
+                x:Name="SongList"
+                Grid.Row="2"
+                AllowDrop="True"
+                AutomationProperties.Name="Songs"
+                CanDragItems="True"
+                CanReorderItems="True"
+                DragItemsCompleted="OnDragItemsCompleted"
+                IsItemClickEnabled="True"
+                ItemClick="OnSongClick"
+                ItemsSource="{x:Bind ViewModel.Songs, Mode=OneTime}"
+                SelectionMode="None">
+                <!--  Songs slide into their new places when one's dragged, and fade in and out as they're added or removed  -->
+                <ListView.ItemContainerTransitions>
+                    <TransitionCollection>
+                        <AddDeleteThemeTransition />
+                        <ReorderThemeTransition />
+                    </TransitionCollection>
+                </ListView.ItemContainerTransitions>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="services:PlaylistSong">
+                        <Grid
+                            Padding="0,6"
+                            AutomationProperties.Name="{x:Bind local:PlaylistsPage.SongName(Song.Label, Song.Title, Anime)}"
+                            ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border
+                                Width="36"
+                                Height="50"
+                                Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                CornerRadius="{ThemeResource ControlCornerRadius}">
+                                <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image)}" Stretch="UniformToFill" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock
+                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind Song.Title}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind local:PlaylistsPage.SongDetails(Song.Label, Anime, Song.Artist)}"
+                                    TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="Remove from playlist"
+                                Click="OnRemoveClick"
+                                Style="{ThemeResource SubtleButtonStyle}"
+                                Tag="{x:Bind}"
+                                ToolTipService.ToolTip="Remove from playlist">
+                                <FontIcon
+                                    FontSize="14"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Glyph="&#xE711;" />
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</Page>
