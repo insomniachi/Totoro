@@ -406,10 +406,29 @@ public sealed partial class MainWindow : Window
 			{
 				CrossFade(ViewModel.Songs.Image);
 			}
+			else if (args.PropertyName == nameof(NowPlaying.IsOpen))
+			{
+				SyncNowPlaying();
+			}
 		};
+		SyncNowPlaying();
 	}
 
 	private bool _followingSongs;
+
+	private void OnPaneClosed(SplitView sender, object args) => SyncNowPlaying();
+
+	/// <summary>
+	/// Shows the now-playing bar while a song plays, but not while the details pane is open: its song card (with the lyrics)
+	/// is the song's controls there, and the bar showing or going resizes the split view, which closes the pane.
+	/// </summary>
+	private void SyncNowPlaying()
+	{
+		if (ViewModel is not null && !Details.IsPaneOpen)
+		{
+			NowPlayingBar.Visibility = ViewModel.Songs.IsOpen ? Visibility.Visible : Visibility.Collapsed;
+		}
+	}
 
 	/// <summary>
 	/// Shows the now-playing bar's new cover (and its blurred background): the last one stays until the new one's loaded,

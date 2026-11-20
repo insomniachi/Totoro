@@ -740,9 +740,11 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
             <SplitView
+                x:Name="Details"
                 DisplayMode="Overlay"
                 LightDismissOverlayMode="On"
                 OpenPaneLength="700"
+                PaneClosed="OnPaneClosed"
                 PaneOpened="OnPaneOpened"
                 PanePlacement="Right">
                 <Interactivity:Interaction.Behaviors>
@@ -775,14 +777,18 @@
                 </Grid>
             </SplitView>
 
-            <!--  The song playing, e.g. a playlist (see NowPlaying): on every page, so it's controlled from any of them  -->
+            <!--
+                The song playing, e.g. a playlist (see NowPlaying): on every page, so it's controlled from any of them. Shows or
+                goes only while the details pane is closed (see SyncNowPlaying).
+            -->
             <Grid
+                x:Name="NowPlayingBar"
                 Grid.Row="1"
                 AutomationProperties.LandmarkType="Custom"
                 AutomationProperties.LocalizedLandmarkType="Now playing"
                 AutomationProperties.Name="Now playing"
                 Loaded="OnNowPlayingLoaded"
-                Visibility="{x:Bind ViewModel.Songs.IsOpen, Mode=OneWay}">
+                Visibility="Collapsed">
             <Grid
                 Height="84"
                 Margin="16,4,16,16"
