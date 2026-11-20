@@ -27,6 +27,10 @@ public static class CommonConverters
 			? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb))
 			: null;
 
+	/// <summary>A search box's query icon: blank while searching (keeping its button's size), so a ring can show in its place.</summary>
+	public static Microsoft.UI.Xaml.Controls.IconElement SearchIcon(bool searching) =>
+		searching ? new Microsoft.UI.Xaml.Controls.FontIcon { Glyph = " " } : new Microsoft.UI.Xaml.Controls.SymbolIcon(Microsoft.UI.Xaml.Controls.Symbol.Find);
+
 	/// <summary>A module's icon (its file or URL), or the glyph when it has none: for a settings card's HeaderIcon.</summary>
 	public static Microsoft.UI.Xaml.Controls.IconElement ToIcon(string image, string glyph) =>
 		ToImageSource(image) is { } source

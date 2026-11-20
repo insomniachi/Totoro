@@ -44,6 +44,9 @@ public sealed partial class PlaylistsViewModel : NavigatableViewModel, IRecipien
 	/// <summary>Songs whose title, singer or anime matches the search, to add: those with audio only, as that's what plays.</summary>
 	[ObservableProperty] public partial IReadOnlyList<SongMatch> Found { get; private set; } = [];
 
+	/// <summary>A search is waiting on its results, for the bar under the box.</summary>
+	[ObservableProperty] public partial bool IsSearching { get; private set; }
+
 	public void Receive(SongQueueChangedMessage message) => Refresh();
 
 	/// <summary>Finds songs to add, once typing settles; under two letters, none.</summary>
@@ -54,12 +57,14 @@ public sealed partial class PlaylistsViewModel : NavigatableViewModel, IRecipien
 		if (query.Trim().Length < 2)
 		{
 			Found = [];
+			IsSearching = false;
 			return;
 		}
 
 		try
 		{
 			await Task.Delay(s_searchDelay, cts.Token);
+			IsSearching = true;
 			var found = await _songs.SearchSongsAsync(query.Trim(), 10, cts.Token);
 			if (!cts.IsCancellationRequested)
 			{
@@ -73,6 +78,14 @@ public sealed partial class PlaylistsViewModel : NavigatableViewModel, IRecipien
 		{
 			// The page calls this fire-and-forget: show what went wrong rather than lose it.
 			Error = $"Couldn't search for songs: {ex.Message}";
+		}
+		finally
+		{
+			// A newer search owns the bar now.
+			if (_search == cts)
+			{
+				IsSearching = false;
+			}
 		}
 	}
 

@@ -262,6 +262,10 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	[ObservableProperty]
 	public partial List<SearchSuggestion> SearchResults { get; set; } = [];
 
+	/// <summary>A title bar search is waiting on its results, for the bar under the box.</summary>
+	[ObservableProperty]
+	public partial bool IsSearching { get; private set; }
+
 	// At most.
 	private const int SuggestionCount = 10;
 
@@ -274,6 +278,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		if (query.Length < 2)
 		{
 			SearchResults = [];
+			IsSearching = false;
 			return;
 		}
 
@@ -281,6 +286,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		{
 			// Searches after typing pauses.
 			await Task.Delay(300, search.Token);
+			IsSearching = true;
 			var results = await SearchOrNoneAsync(SearchCategory, query, search.Token);
 			if (!search.IsCancellationRequested)
 			{
@@ -289,6 +295,14 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		}
 		catch (OperationCanceledException)
 		{
+		}
+		finally
+		{
+			// A newer search owns the bar now.
+			if (_search == search)
+			{
+				IsSearching = false;
+			}
 		}
 	}
 

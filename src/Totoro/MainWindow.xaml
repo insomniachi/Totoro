@@ -403,7 +403,7 @@
                             ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
                             Loaded="OnSearchBoxLoaded"
                             PlaceholderText="{x:Bind local:MainWindow.SearchPlaceholder(ViewModel.SearchCategory), Mode=OneWay}"
-                            QueryIcon="Find"
+                            QueryIcon="{x:Bind helpers:CommonConverters.SearchIcon(ViewModel.IsSearching), Mode=OneWay}"
                             QuerySubmitted="OnSearchSubmitted"
                             TextChanged="OnSearchTextChanged"
                             UpdateTextOnSelect="False">
@@ -454,6 +454,16 @@
                                 </DataTemplate>
                             </AutoSuggestBox.ItemTemplate>
                         </AutoSuggestBox>
+                        <!--  In the search icon's place while a search waits on its results  -->
+                        <ProgressRing
+                            Width="16"
+                            Height="16"
+                            Margin="0,0,8,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Searching"
+                            IsActive="{x:Bind ViewModel.IsSearching, Mode=OneWay}"
+                            IsHitTestVisible="False" />
                         <!--  What's searched for, as an icon inside the box at its left (the text starts after it); clicking picks another  -->
                         <Button
                             x:Name="SearchCategoryButton"
