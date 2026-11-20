@@ -71,6 +71,9 @@ public interface ISongPlayer
 
 	void Stop();
 
+	/// <summary>Moves the song playing or paused to <paramref name="position"/>; nothing until its length is known.</summary>
+	void Seek(TimeSpan position);
+
 	/// <summary>The loudness of the sound playing in each of <paramref name="bands"/>' frequency bands (low to high), from 0 to 1.</summary>
 	void GetLevels(Span<float> bands);
 

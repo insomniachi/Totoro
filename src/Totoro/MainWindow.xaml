@@ -943,12 +943,16 @@
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{ThemeResource CaptionTextBlockStyle}"
                             Text="{x:Bind ViewModel.Songs.PositionText, Mode=OneWay}" />
-                        <ProgressBar
+                        <Slider
                             Grid.Column="1"
+                            Margin="8,0"
                             VerticalAlignment="Center"
+                            AutomationProperties.AutomationId="SongProgress"
                             AutomationProperties.Name="Song progress"
+                            IsThumbToolTipEnabled="False"
                             Maximum="100"
-                            Value="{x:Bind ViewModel.Songs.Progress, Mode=OneWay}" />
+                            StepFrequency="0.1"
+                            Value="{x:Bind ViewModel.Songs.SeekProgress, Mode=TwoWay}" />
                         <TextBlock
                             Grid.Column="2"
                             VerticalAlignment="Center"

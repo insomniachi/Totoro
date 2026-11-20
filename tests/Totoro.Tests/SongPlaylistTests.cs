@@ -282,6 +282,10 @@ public sealed class SongPlaylistTests : IDisposable
 			Changed();
 		}
 
+		public void Seek(TimeSpan position)
+		{
+		}
+
 		public void GetLevels(Span<float> bands)
 		{
 		}

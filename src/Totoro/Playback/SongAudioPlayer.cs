@@ -47,6 +47,9 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	// Frames (a sample per channel) WASAPI has taken of the song: where it is.
 	private long _playedFrames;
 
+	// Where to seek the song to, in frames, for the decoder to take up; -1 when not seeking.
+	private long _seekTo = -1;
+
 	public SongAudioPlayer(IModuleSettings<Modules.MediaPlayers.Mpv.Settings> playerSettings, ILogger<SongAudioPlayer> logger)
 	{
 		_playerSettings = playerSettings;
@@ -91,14 +94,16 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		_buffer!.ClearBuffer();
 		ClearTap();
 		Interlocked.Exchange(ref _playedFrames, 0);
+		Interlocked.Exchange(ref _seekTo, -1);
 		Changed();
 
+		byte[] bytes;
 		OpusOggReadStream reader;
 		try
 		{
 			// Concentus reads Ogg from a seekable stream only: the whole file (a few MB), then.
-			var bytes = await audio.WithHeader("User-Agent", UserAgent).GetBytesAsync(cancellationToken: cts.Token);
-			reader = new OpusOggReadStream(OpusCodecFactory.CreateDecoder(SampleRate, Channels), new MemoryStream(bytes));
+			bytes = await audio.WithHeader("User-Agent", UserAgent).GetBytesAsync(cancellationToken: cts.Token);
+			reader = Read(bytes);
 		}
 		catch (Exception ex) when (ex is not OperationCanceledException || !cts.IsCancellationRequested)
 		{
@@ -119,7 +124,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 		Duration = reader.TotalTime;
 		_output.Volume = Math.Clamp(_playerSettings.Value.Volume / 100f, 0, 1);
-		_ = Task.Run(() => Decode(reader, cts));
+		_ = Task.Run(() => Decode(bytes, reader, cts));
 		if (IsPlaying)
 		{
 			_output.Play();
@@ -171,6 +176,20 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		_output?.Stop();
 		_buffer?.ClearBuffer();
 		ClearTap();
+		Changed();
+	}
+
+	public void Seek(TimeSpan position)
+	{
+		if (Current is null || Duration <= TimeSpan.Zero)
+		{
+			return;
+		}
+
+		var frames = (long)(Math.Clamp(position / Duration, 0, 1) * Duration.TotalSeconds * SampleRate);
+		Interlocked.Exchange(ref _seekTo, frames);
+		// Shown at once; the decoder sets it again once the old audio's gone.
+		Interlocked.Exchange(ref _playedFrames, frames);
 		Changed();
 	}
 
@@ -228,32 +247,48 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		_output.Init(new TappedProvider(_buffer, this));
 	}
 
-	/// <summary>Decodes the song into the buffer, keeping a little ahead of what's heard, then stops once it's all heard.</summary>
-	private async Task Decode(OpusOggReadStream reader, CancellationTokenSource cts)
+	private static OpusOggReadStream Read(byte[] song) => new(OpusCodecFactory.CreateDecoder(SampleRate, Channels), new MemoryStream(song));
+
+	/// <summary>
+	/// Decodes the song into the buffer, keeping a little ahead of what's heard, then stops once it's all heard; seeks when
+	/// asked (see <see cref="Seek"/>), even after it's all decoded.
+	/// </summary>
+	private async Task Decode(byte[] song, OpusOggReadStream reader, CancellationTokenSource cts)
 	{
 		var ct = cts.Token;
 		var buffer = _buffer!;
 		try
 		{
-			while (reader.HasNextPacket && !ct.IsCancellationRequested)
+			while (!ct.IsCancellationRequested)
 			{
-				while (buffer.BufferedDuration > s_decodeAhead)
+				if (Interlocked.Exchange(ref _seekTo, -1) is var seekTo and >= 0)
+				{
+					// A new reader, since one that's read to its end may not read again.
+					reader = Read(song);
+					reader.SeekTo(TimeSpan.FromSeconds(seekTo / (double)SampleRate));
+					buffer.ClearBuffer();
+					Interlocked.Exchange(ref _playedFrames, seekTo);
+				}
+
+				if (reader.HasNextPacket && buffer.BufferedDuration <= s_decodeAhead)
+				{
+					if (reader.DecodeNextPacket() is { Length: > 0 } samples)
+					{
+						var bytes = MemoryMarshal.AsBytes(samples.AsSpan());
+						buffer.AddSamples(bytes.ToArray(), 0, bytes.Length);
+					}
+				}
+				else if (reader.HasNextPacket || buffer.BufferedBytes > 0)
 				{
 					await Task.Delay(50, ct);
 				}
-
-				if (reader.DecodeNextPacket() is { Length: > 0 } samples)
+				else
 				{
-					var bytes = MemoryMarshal.AsBytes(samples.AsSpan());
-					buffer.AddSamples(bytes.ToArray(), 0, bytes.Length);
+					break;
 				}
 			}
 
-			while (buffer.BufferedBytes > 0)
-			{
-				await Task.Delay(50, ct);
-			}
-
+			ct.ThrowIfCancellationRequested();
 			OnUi(() => FinishWith(Ended, cts));
 		}
 		catch (OperationCanceledException)

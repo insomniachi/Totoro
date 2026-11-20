@@ -62,6 +62,22 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 	/// <summary>How far through it, from 0 to 100.</summary>
 	[ObservableProperty] public partial double Progress { get; private set; }
 
+	/// <summary><see cref="Progress"/>, for the bar's slider: setting it seeks there.</summary>
+	public double SeekProgress
+	{
+		get => Progress;
+		set
+		{
+			// Ignores the slider echoing back (or snapping) the progress it was just given.
+			if (Math.Abs(value - Progress) > 0.5)
+			{
+				_player.Seek(_player.Duration * (value / 100));
+			}
+		}
+	}
+
+	partial void OnProgressChanged(double value) => OnPropertyChanged(nameof(SeekProgress));
+
 	/// <summary>e.g. "0:42"; empty until its length is known.</summary>
 	[ObservableProperty] public partial string PositionText { get; private set; } = "";
 
