@@ -239,10 +239,15 @@ public sealed partial class MainWindow : Window
 			SearchBox.Text = "";
 			ViewModel!.SearchResults = [];
 			await pane.NavigateToDataAsync(data);
-			// Opened from outside the pane: it starts afresh, with nothing to go back to (Back is for pages opened from it).
-			Pane.BackStack.Clear();
-			PaneBackButton.Visibility = Visibility.Collapsed;
+			ClearPaneHistory();
 		}
+	}
+
+	// Opened from outside the pane: it starts afresh, with nothing to go back to (Back is for pages opened from it).
+	private void ClearPaneHistory()
+	{
+		Pane.BackStack.Clear();
+		PaneBackButton.Visibility = Visibility.Collapsed;
 	}
 
 	// The song heard: opened when its anime's known, else its title in the box over the songs it may be.
@@ -436,12 +441,22 @@ public sealed partial class MainWindow : Window
 		storyboard.Begin();
 	}
 
-	/// <summary>The now-playing bar's cover: opens its anime in the side pane, as the selected database has it.</summary>
-	private void OnPlayingCoverClick(object sender, RoutedEventArgs e)
+	/// <summary>
+	/// The now-playing bar's cover: opens its anime in the side pane, as the selected database has it; found by its title
+	/// for songs added to a playlist before their anime's ids were kept.
+	/// </summary>
+	private async void OnPlayingCoverClick(object sender, RoutedEventArgs e)
 	{
-		if (ViewModel?.Songs.Item?.ToAnime() is { } anime)
+		if (ViewModel?.Songs.Item is not { } item)
 		{
-			Commands.AnimeCommands.Shared.ShowInDatabaseCommand.Execute(anime);
+			return;
+		}
+
+		var commands = Commands.AnimeCommands.Shared;
+		if ((item.ToAnime() ?? await commands.FindByTitleAsync(item.Anime)) is { } anime)
+		{
+			await commands.ShowInDatabaseCommand.ExecuteAsync(anime);
+			ClearPaneHistory();
 		}
 	}
 

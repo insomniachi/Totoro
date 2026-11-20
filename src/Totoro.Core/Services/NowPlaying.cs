@@ -48,14 +48,7 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 		OnPropertyChanged(nameof(HasNoImage));
 	}
 
-	/// <summary>Whether its anime can be opened: songs added before their anime's ids were kept can't.</summary>
-	public bool CanOpen => Item?.Ids is not null;
-
-	partial void OnItemChanged(PlaylistSong? value)
-	{
-		OnPropertyChanged(nameof(OpenName));
-		OnPropertyChanged(nameof(CanOpen));
-	}
+	partial void OnItemChanged(PlaylistSong? value) => OnPropertyChanged(nameof(OpenName));
 
 	[ObservableProperty] public partial bool IsPlaying { get; private set; }
 

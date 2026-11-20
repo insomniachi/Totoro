@@ -994,7 +994,6 @@
                     BorderThickness="0"
                     Click="OnPlayingCoverClick"
                     CornerRadius="{ThemeResource OverlayCornerRadius}"
-                    IsEnabled="{x:Bind ViewModel.Songs.CanOpen, Mode=OneWay}"
                     ToolTipService.ToolTip="{x:Bind ViewModel.Songs.OpenName, Mode=OneWay}">
                     <ui:Effects.Shadow>
                         <media:AttachedCardShadow

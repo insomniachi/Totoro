@@ -45,6 +45,28 @@ public partial class AnimeCommands(IDialogService dialogs, AnimeTrackingService 
 	private async Task ShowInDatabaseAsync(AnimeModel anime) => await ShowDetailsAsync(await InDatabaseAsync(anime));
 
 	/// <summary>
+	/// The anime with this title in the selected database, for when only its title is known: the one titled so, else the
+	/// first found; null when none is (or the database can't be reached).
+	/// </summary>
+	public async Task<AnimeModel?> FindByTitleAsync(string title)
+	{
+		try
+		{
+			if (databases.CreateDefault() is { } database)
+			{
+				var found = await database.SearchAnimeAsync(title);
+				return found.FirstOrDefault(x => string.Equals(x.Title, title, StringComparison.OrdinalIgnoreCase)) ?? found.FirstOrDefault();
+			}
+		}
+		catch (Exception ex) when (ex is not OperationCanceledException)
+		{
+			logger.LogWarning(ex, "Couldn't find {Anime}", title);
+		}
+
+		return null;
+	}
+
+	/// <summary>
 	/// The anime as the selected database has it, looked up by its id there; the anime as given if it's from that
 	/// database already, or that database hasn't it (or can't be reached).
 	/// </summary>
