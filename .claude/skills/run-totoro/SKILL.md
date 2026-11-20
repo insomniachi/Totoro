@@ -59,7 +59,16 @@ elements are recreated; labels and AutomationIds don't.
 
 ## Call an agent tool (any feature, no navigating)
 
-Every feature is an agent tool (see AGENTS.md), and the Agent tools page calls them:
+Every feature is an agent tool (see AGENTS.md). A Debug build (what `winapp run` builds) serves them on localhost,
+so call them directly, no page needed:
+
+```powershell
+curl.exe -s http://localhost:47700/tools                                          # every tool, with its schema
+curl.exe -s -X POST http://localhost:47700/tools/search_anime -d '{\"title\":\"frieren\"}'   # the JSON result
+```
+
+Always send a body (`-d '{}'` for no arguments): a bodyless POST gets http.sys's 411. A failure comes back as
+`{"error": "..."}`. Not from the host into the sandbox (its localhost is the guest's): there, use the Agent tools page:
 
 ```bash
 winapp ui invoke "Agent tools" --type ListItem -a <pid>

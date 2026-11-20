@@ -172,6 +172,10 @@ public partial class App : Application
 		_host.Services.GetRequiredService<BrowserWatchTracker>();
 		// Downloads the next episode of anime being watched, if that's turned on.
 		_host.Services.GetRequiredService<AutoDownloader>();
+#if DEBUG
+		// The agent tools at http://localhost:47700/tools, for coding agents (see the run-totoro skill).
+		AgentToolServer.Start(_host.Services.GetRequiredService<IAgentTools>(), _host.Services.GetRequiredService<ILogger<App>>());
+#endif
 		// The Downloads item in the navigation shows how many downloads are going.
 		var downloads = _host.Services.GetRequiredService<DownloadService>();
 		var downloadsItem = _host.Services.GetServices<NavigationItemViewModel>().First(x => x.ViewModelType == typeof(DownloadsViewModel));

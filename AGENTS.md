@@ -51,12 +51,12 @@ The app has an assistant: a chat panel (the title bar's Assistant button) whose 
    - **Threading:** tools run on the UI thread, so they can change state the UI is bound to.
 3. **The UI follows changes made elsewhere.** Changes go out as messages (`AnimeTrackingChangedMessage`, `PlaybackProgressChangedMessage`...) that views apply, so a change made by an agent shows straight away.
 
-Try the tools in the app on the **Agent tools** page. It lists every tool with the schema the agent sees, and calls a tool with JSON arguments.
+Try the tools in the app on the **Agent tools** page. It lists every tool with the schema the agent sees, and calls a tool with JSON arguments. A Debug build also serves them over HTTP on localhost (`AgentToolServer`): `GET http://localhost:47700/tools` lists them, `POST /tools/{name}` with JSON arguments calls one.
 
 Run and drive the app with the `winapp ui` CLI (UI Automation), not desktop control: `.claude/skills/run-totoro` has the commands, and what new UI needs to stay drivable (names, automation peers).
 
 - **Everything interactive is drivable by `winapp ui`.** Any control a mouse, keyboard, touch or pen can interact with (buttons, list items, sliders, flyout and menu items, custom controls) must be found and invoked through `winapp ui`, so tests can automate it: give it an `AutomationProperties.Name` (or `AutomationId`) and, for custom controls, an automation peer with the right patterns. Check new UI with `winapp ui` before calling it done.
-- **Test through agent tools first.** When the UI interaction isn't what you're testing, test with the agent tools (the **Agent tools** page, or the tool through the chat) first; fall back to driving the UI with `winapp ui` only when that fails or no tool covers it.
+- **Test through agent tools first.** When the UI interaction isn't what you're testing, test with the agent tools (over HTTP from a Debug build, the **Agent tools** page, or the tool through the chat) first; fall back to driving the UI with `winapp ui` only when that fails or no tool covers it.
 
 To test the video player (anything not about the user's list or tracking), play from the **Watch** page, not the Library: the Library takes a while to load its cards.
 
