@@ -36,6 +36,8 @@
     <!--  The modules' icons (their descriptors' Image), read from beside the exe  -->
     <Content Include="Assets\Modules\*.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\Fonts\FluentSystemIcons-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <!--  The song buttons under the taskbar button's thumbnail, white and black (for a dark or light taskbar)  -->
+    <Content Include="Assets\Taskbar\*.ico" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
 

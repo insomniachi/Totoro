@@ -75,6 +75,12 @@ internal static class AppServices
 		services.AddSingleton<DownloadNotifier>();
 		// Songs' audio, played in the Music tab.
 		services.AddSingleton<ISongPlayer, SongAudioPlayer>();
+		// Their controls in Windows' (media keys, the volume flyout), for the main window: resolved once it's open.
+		services.AddSingleton(sp => new SongMediaControls(
+			sp.GetRequiredService<ISongPlayer>(),
+			sp.GetRequiredService<SongPlaylistService>(),
+			WinRT.Interop.WindowNative.GetWindowHandle(window()),
+			sp.GetRequiredService<ILogger<SongMediaControls>>()));
 		services.AddSingleton<SongRecognizer>();
 		services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();
 

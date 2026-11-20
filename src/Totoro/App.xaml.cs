@@ -172,6 +172,8 @@ public partial class App : Application
 		_host.Services.GetRequiredService<BrowserWatchTracker>();
 		// Downloads the next episode of anime being watched, if that's turned on.
 		_host.Services.GetRequiredService<AutoDownloader>();
+		// Songs can be played, paused and skipped from Windows' media controls, with the app minimised.
+		_host.Services.GetRequiredService<SongMediaControls>();
 #if DEBUG
 		// The agent tools at http://localhost:47700/tools, for coding agents (see the run-totoro skill).
 		AgentToolServer.Start(_host.Services.GetRequiredService<IAgentTools>(), _host.Services.GetRequiredService<ILogger<App>>());
