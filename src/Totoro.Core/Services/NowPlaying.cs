@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
@@ -77,12 +77,7 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 
 	[ObservableProperty] public partial PlaylistLoop Loop { get; private set; }
 
-	public string PlayGlyph => IsPlaying ? "" : "";
-
 	public string PlayName => IsPlaying ? "Pause" : "Play";
-
-	// RepeatOne, RepeatAll.
-	public string LoopGlyph => Loop == PlaylistLoop.One ? "" : "";
 
 	public string LoopName => Loop switch
 	{
@@ -129,15 +124,10 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 
 	partial void OnShuffleChanged(bool value) => OnPropertyChanged(nameof(ShuffleName));
 
-	partial void OnIsPlayingChanged(bool value)
-	{
-		OnPropertyChanged(nameof(PlayGlyph));
-		OnPropertyChanged(nameof(PlayName));
-	}
+	partial void OnIsPlayingChanged(bool value) => OnPropertyChanged(nameof(PlayName));
 
 	partial void OnLoopChanged(PlaylistLoop value)
 	{
-		OnPropertyChanged(nameof(LoopGlyph));
 		OnPropertyChanged(nameof(LoopName));
 		OnPropertyChanged(nameof(IsLooping));
 	}

@@ -448,6 +448,12 @@ public sealed partial class MainWindow : Window
 	/// <summary>The now-playing bar's shuffle and loop icons: faint while they're off.</summary>
 	public static double OnOpacity(bool on) => on ? 1 : 0.45;
 
+	/// <summary>The now-playing bar's play button: Pause while playing, else Play.</summary>
+	public static string PlayGlyph(bool isPlaying) => isPlaying ? "" : "";
+
+	/// <summary>The now-playing bar's loop button: RepeatOne for this song, else RepeatAll.</summary>
+	public static string LoopGlyph(PlaylistLoop loop) => loop == PlaylistLoop.One ? "" : "";
+
 	public static Visibility VisibleIfPositive(int count) => count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
 	public static InfoBarSeverity UpdateSeverity(UpdateState state) => state == UpdateState.Failed ? InfoBarSeverity.Error : InfoBarSeverity.Informational;

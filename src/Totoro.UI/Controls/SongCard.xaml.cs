@@ -222,6 +222,12 @@ public sealed partial class SongCard : UserControl
 		var create = new MenuFlyoutItem { Text = "New playlist…", Icon = new FontIcon { Glyph = "" } };
 		create.Click += async (_, _) =>
 		{
+			// Only one ContentDialog can be open at a time: ShowAsync throws if another is.
+			if (Microsoft.UI.Xaml.Media.VisualTreeHelper.GetOpenPopupsForXamlRoot(XamlRoot).Any(x => x.Child is ContentDialog))
+			{
+				return;
+			}
+
 			var name = new TextBox { PlaceholderText = "Name" };
 			var dialog = new ContentDialog
 			{

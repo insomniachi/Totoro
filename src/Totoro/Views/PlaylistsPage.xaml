@@ -177,10 +177,8 @@
                         <Flyout x:Name="DeleteFlyout">
                             <StackPanel MaxWidth="320" Spacing="12">
                                 <TextBlock Text="Delete this playlist? Its songs stay in their anime's Music tab." TextWrapping="Wrap" />
-                                <Button
-                                    Click="OnDeleteClick"
-                                    Content="Delete"
-                                    Style="{ThemeResource AccentButtonStyle}" />
+                                <!--  Not the accent style: that's for the action to take, not a destructive one  -->
+                                <Button Click="OnDeleteClick" Content="Delete" />
                             </StackPanel>
                         </Flyout>
                     </Button.Flyout>
@@ -200,7 +198,7 @@
                 <AutoSuggestBox.ItemTemplate>
                     <DataTemplate x:DataType="services:SongMatch">
                         <Grid
-                            Padding="0,6"
+                            Padding="0,8"
                             AutomationProperties.Name="{x:Bind local:PlaylistsPage.SongName(Song.Label, Song.Title, Anime.Title)}"
                             ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
@@ -256,7 +254,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="services:PlaylistSong">
                         <Grid
-                            Padding="0,6"
+                            Padding="0,8"
                             AutomationProperties.Name="{x:Bind local:PlaylistsPage.SongName(Song.Label, Song.Title, Anime)}"
                             ColumnSpacing="12">
                             <Grid.ColumnDefinitions>

@@ -69,6 +69,11 @@ public sealed partial class PlaylistsViewModel : NavigatableViewModel, IRecipien
 		catch (OperationCanceledException)
 		{
 		}
+		catch (Exception ex)
+		{
+			// The page calls this fire-and-forget: show what went wrong rather than lose it.
+			Error = $"Couldn't search for songs: {ex.Message}";
+		}
 	}
 
 	/// <summary>Adds a found song to the end of the selected playlist.</summary>

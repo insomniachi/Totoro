@@ -800,6 +800,10 @@
                             <ResourceDictionary x:Key="Light">
                                 <SolidColorBrush x:Key="NowPlayingTintBrush" Color="#A6FCFCFC" />
                             </ResourceDictionary>
+                            <!--  Opaque, in the user's own colors: no cover showing through  -->
+                            <ResourceDictionary x:Key="HighContrast">
+                                <StaticResource x:Key="NowPlayingTintBrush" ResourceKey="SystemColorWindowBrush" />
+                            </ResourceDictionary>
                         </ResourceDictionary.ThemeDictionaries>
                     </ResourceDictionary>
                 </Grid.Resources>
@@ -904,7 +908,7 @@
                             CornerRadius="20"
                             Style="{ThemeResource AccentButtonStyle}"
                             ToolTipService.ToolTip="{x:Bind ViewModel.Songs.PlayName, Mode=OneWay}">
-                            <FontIcon FontSize="16" Glyph="{x:Bind ViewModel.Songs.PlayGlyph, Mode=OneWay}" />
+                            <FontIcon FontSize="16" Glyph="{x:Bind local:MainWindow.PlayGlyph(ViewModel.Songs.IsPlaying), Mode=OneWay}" />
                         </Button>
                         <Button
                             AutomationProperties.Name="Next"
@@ -924,7 +928,7 @@
                             <FontIcon
                                 FontSize="14"
                                 Opacity="{x:Bind local:MainWindow.OnOpacity(ViewModel.Songs.IsLooping), Mode=OneWay}"
-                                Glyph="{x:Bind ViewModel.Songs.LoopGlyph, Mode=OneWay}" />
+                                Glyph="{x:Bind local:MainWindow.LoopGlyph(ViewModel.Songs.Loop), Mode=OneWay}" />
                         </Button>
                     </StackPanel>
                     <Grid ColumnSpacing="8">

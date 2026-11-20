@@ -64,9 +64,9 @@ public sealed class SongPlaylistService : IRecipient<SongPlayerChangedMessage>
 		{
 			_playlists = File.Exists(file) ? JsonSerializer.Deserialize<List<SongPlaylist>>(File.ReadAllText(file)) ?? [] : [];
 		}
-		catch (JsonException)
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
 		{
-			// A damaged file: start over rather than fail.
+			// A damaged or unreadable file: start over rather than fail.
 			_playlists = [];
 		}
 
@@ -172,7 +172,9 @@ public sealed class SongPlaylistService : IRecipient<SongPlayerChangedMessage>
 		List<PlaylistSong> kept =
 		[
 			.. songs.Where(x => x is { Anime: not null, Image: not null, Song: { Title: not null, Artist: not null, Episodes: not null, Audio.Scheme: "https" or "http" } })
-					.DistinctBy(x => x.Song),
+					.DistinctBy(x => x.Song)
+					// The cover as the audio: from the web only, never a local or network (UNC) path that the app would open.
+					.Select(x => IsWebUrl(x.Image) ? x : x with { Image = "" }),
 		];
 		var name = string.IsNullOrWhiteSpace(read.Name) ? "Imported" : read.Name.Trim();
 		var unique = name;
@@ -188,6 +190,8 @@ public sealed class SongPlaylistService : IRecipient<SongPlayerChangedMessage>
 	}
 
 	private static readonly JsonSerializerOptions s_exportOptions = new() { WriteIndented = true };
+
+	private static bool IsWebUrl(string url) => Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "https" or "http";
 
 	/// <summary>Deletes the playlist, stopping it if it's playing.</summary>
 	public void Delete(SongPlaylist playlist)
@@ -428,12 +432,21 @@ public sealed class SongPlaylistService : IRecipient<SongPlayerChangedMessage>
 
 	private void Save()
 	{
-		Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
-		// Written aside, then swapped in: a crash mid-write leaves the old file whole, not a damaged one read as empty.
-		var temp = _file + ".tmp";
-		File.WriteAllText(temp, JsonSerializer.Serialize(_playlists));
-		File.Move(temp, _file, overwrite: true);
+		// Changed first: the change stands in memory (and shows) even if it can't be kept.
 		Changed();
+		try
+		{
+			Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
+			// Written aside, then swapped in: a crash mid-write leaves the old file whole, not a damaged one read as empty.
+			var temp = _file + ".tmp";
+			File.WriteAllText(temp, JsonSerializer.Serialize(_playlists));
+			File.Move(temp, _file, overwrite: true);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			// Callers already show an InvalidOperationException's message (e.g. the Playlists page's error bar).
+			throw new InvalidOperationException($"Couldn't save the playlists: {ex.Message}", ex);
+		}
 	}
 
 	private void Changed() => WeakReferenceMessenger.Default.Send(new SongQueueChangedMessage(this));

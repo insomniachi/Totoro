@@ -64,8 +64,8 @@ public sealed class PlaylistTools(SongPlaylistService playlists, ISongPlayer pla
 		return Summarise(list);
 	}
 
-	[AgentTool("delete_playlist")]
-	[Description("Deletes a playlist. Ask the user first.")]
+	[AgentTool("delete_playlist", RequiresApproval = true)]
+	[Description("Deletes a playlist.")]
 	public string DeletePlaylist(string playlist)
 	{
 		var list = Get(playlist);
@@ -73,13 +73,19 @@ public sealed class PlaylistTools(SongPlaylistService playlists, ISongPlayer pla
 		return $"Deleted {list.Name}.";
 	}
 
-	[AgentTool("export_playlist")]
+	// Approval: it writes (or overwrites) a file at a path the model picks.
+	[AgentTool("export_playlist", RequiresApproval = true)]
 	[Description("Saves a playlist to a file (JSON), which import_playlist adds back, e.g. on another PC.")]
 	public async Task<string> ExportPlaylistAsync(
 		string playlist,
-		[Description("The full path of the file to write, e.g. C:\\Users\\me\\Music\\Openings.json. Ask the user where if they didn't say.")] string file)
+		[Description("The full path of the .json file to write, e.g. C:\\Users\\me\\Music\\Openings.json. Ask the user where if they didn't say.")] string file)
 	{
 		var list = Get(playlist);
+		if (!string.Equals(Path.GetExtension(file), ".json", StringComparison.OrdinalIgnoreCase))
+		{
+			throw new AgentToolException($"A playlist is saved as a .json file, not {file}.");
+		}
+
 		try
 		{
 			await File.WriteAllTextAsync(file, SongPlaylistService.Export(list));

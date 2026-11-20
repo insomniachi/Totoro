@@ -213,6 +213,20 @@ public sealed class SongPlaylistTests : IDisposable
 	}
 
 	[Fact]
+	public void Import_KeepsOnlyWebCovers()
+	{
+		var (service, playlist) = Make(2);
+		var file = SongPlaylistService.Export(playlist with
+		{
+			Songs = [playlist.Songs[0] with { Image = @"\\attacker\share\cover.png" }, playlist.Songs[1]],
+		});
+
+		var imported = service.Import(file).Songs;
+		Assert.Equal("", imported[0].Image);
+		Assert.Equal(playlist.Songs[1].Image, imported[1].Image);
+	}
+
+	[Fact]
 	public void DamagedFile_StartsEmpty()
 	{
 		File.WriteAllText(_file, "{ not json");
