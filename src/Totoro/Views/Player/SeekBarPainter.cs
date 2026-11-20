@@ -128,6 +128,9 @@ internal sealed class SeekBarPainter(FrameworkElement track, Canvas trackSection
 	// each end.
 	private static double ToTrackX(double fraction, double width) => ThumbWidth / 2 + fraction * (width - ThumbWidth);
 
+	/// <summary>The fraction of the video at <paramref name="x"/> on a track <paramref name="width"/> wide: the inverse of where it's drawn.</summary>
+	public static double ToFraction(double x, double width) => width > ThumbWidth ? Math.Clamp((x - ThumbWidth / 2) / (width - ThumbWidth), 0, 1) : 0;
+
 	private static Color SectionColor(MediaSegmentType? type, bool isPlayed)
 	{
 		var color = type switch

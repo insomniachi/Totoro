@@ -80,6 +80,10 @@
                 AutomationProperties.Name="Seek"
                 ThumbToolTipValueConverter="{x:Bind TimeConverter, Mode=OneTime}"
                 ValueChanged="OnSeekBarValueChanged">
+                <!--  Hovering says what's there, e.g. "1:23 · Opening", over the pointer (dragging, the thumb's own says it)  -->
+                <ToolTipService.ToolTip>
+                    <ToolTip x:Name="SeekHoverTip" Placement="Top" />
+                </ToolTipService.ToolTip>
                 <!--  Its own track is hidden: the sections under it are the track  -->
                 <Slider.Resources>
                     <SolidColorBrush x:Key="SliderTrackFill" Color="Transparent" />

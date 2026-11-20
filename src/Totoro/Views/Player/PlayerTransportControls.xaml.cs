@@ -27,7 +27,13 @@ public sealed partial class PlayerTransportControls : UserControl
 		TimeConverter = new SecondsConverter(this);
 		InitializeComponent();
 		// The slider handles the pointer itself; dragging it seeks when let go, not on every step.
-		SeekBar.AddHandler(PointerPressedEvent, new PointerEventHandler((_, _) => _isDraggingSeekBar = true), true);
+		SeekBar.AddHandler(PointerPressedEvent, new PointerEventHandler((_, _) =>
+		{
+			_isDraggingSeekBar = true;
+			SeekHoverTip.IsOpen = false;
+		}), true);
+		SeekBar.AddHandler(PointerMovedEvent, new PointerEventHandler(OnSeekBarPointerMoved), true);
+		SeekBar.AddHandler(PointerExitedEvent, new PointerEventHandler((_, _) => SeekHoverTip.IsOpen = false), true);
 		SeekBar.AddHandler(PointerReleasedEvent, new PointerEventHandler((_, _) => EndSeekBarDrag()), true);
 		SeekBar.AddHandler(PointerCaptureLostEvent, new PointerEventHandler((_, _) => EndSeekBarDrag()), true);
 	}
@@ -188,6 +194,21 @@ public sealed partial class PlayerTransportControls : UserControl
 		{
 			_ = ViewModel.SeekAsync(TimeSpan.FromSeconds(e.NewValue));
 		}
+	}
+
+	private void OnSeekBarPointerMoved(object sender, PointerRoutedEventArgs e)
+	{
+		if (_isDraggingSeekBar || ViewModel is not { Duration: > 0 } viewModel)
+		{
+			SeekHoverTip.IsOpen = false;
+			return;
+		}
+
+		var x = e.GetCurrentPoint(SeekBar).Position.X;
+		var seconds = SeekBarPainter.ToFraction(x, SeekBar.ActualWidth) * viewModel.Duration;
+		SeekHoverTip.Content = TimeConverter.Convert(seconds, typeof(string), null!, "");
+		SeekHoverTip.PlacementRect = new Rect(x, 0, 0, SeekBar.ActualHeight);
+		SeekHoverTip.IsOpen = true;
 	}
 
 	private void EndSeekBarDrag()
