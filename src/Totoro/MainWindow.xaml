@@ -800,7 +800,7 @@
                 Loaded="OnNowPlayingLoaded"
                 Visibility="Collapsed">
             <Grid
-                Height="84"
+                Height="92"
                 Margin="16,4,16,16"
                 Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}"
                 BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
@@ -887,9 +887,10 @@
                     </StackPanel>
                 </Grid>
 
-                <!--  Its controls, over how far through it is  -->
+                <!--  Its controls, over how far through it is; the slider's empty space under its thumb is matched above the buttons  -->
                 <StackPanel
                     Grid.Column="1"
+                    Margin="0,8,0,0"
                     VerticalAlignment="Center"
                     Spacing="4">
                     <StackPanel
@@ -1002,7 +1003,7 @@
                 Visibility="{x:Bind ViewModel.Songs.HasImage, Mode=OneWay}">
                 <Button
                     Canvas.Left="28"
-                    Canvas.Top="-54"
+                    Canvas.Top="-46"
                     Width="92"
                     Height="130"
                     Padding="0"
