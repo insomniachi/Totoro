@@ -50,6 +50,9 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 
 	[ObservableProperty] public partial string Title { get; private set; } = "";
 
+	/// <summary>The anime's title logo's URL, under the title bar; empty (never null, for x:Bind) when there's none.</summary>
+	[ObservableProperty] public partial string Logo { get; set; } = "";
+
 	[ObservableProperty] public partial bool IsPlaying { get; protected set; }
 
 	// Made when playback first starts, on the UI thread: it can't be activated off one (as in tests), and isn't needed before.

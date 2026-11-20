@@ -80,6 +80,29 @@ public static class AnimeEpisodesExtensions
 			}
 		}
 
+		/// <summary>The URL of the anime's title logo (a see-through PNG) from ani.zip; null if it has none or it couldn't be fetched.</summary>
+		public async Task<string?> GetLogoAsync(CancellationToken ct = default)
+		{
+			try
+			{
+				if (anime.AniZipKey is not { } serviceType)
+				{
+					return null;
+				}
+
+				var response = await "https://api.ani.zip/mappings".SetQueryParam(serviceType, anime.Id).GetStringAsync(cancellationToken: ct);
+				var url = JsonNode.Parse(response)?["images"]?.AsArray()
+								  .FirstOrDefault(x => x?["coverType"]?.GetValue<string>() == "Clearlogo")?["url"]?.GetValue<string>();
+				// ani.zip's "Clearlogo" is often TheTVDB's square icon (a picture, not the title): only its clear logos are.
+				return url?.Contains("/clearlogo/", StringComparison.OrdinalIgnoreCase) == true ? url : null;
+			}
+			catch (Exception e) when (e is not OperationCanceledException)
+			{
+				Debug.WriteLine(e);
+				return null;
+			}
+		}
+
 		/// <summary>
 		/// The numbers of the anime's filler episodes, from MyAnimeList's episode list (through Tenrai, which has Jikan's API), numbered from 1 like
 		/// <see cref="GetEpisodesAsync"/>'s. Empty if it has none, isn't on MyAnimeList, or they couldn't be fetched.

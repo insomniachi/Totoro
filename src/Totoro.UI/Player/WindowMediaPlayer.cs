@@ -80,6 +80,8 @@ public abstract class WindowMediaPlayer(IPlayerWindowFactory windows, IModuleSet
 
 	public void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes) => _viewModel?.EpisodeList.SetEpisodes(episodes);
 
+	public void SetLogo(string? url) => _viewModel?.Logo = url ?? "";
+
 	public void SetRoomPeople(IReadOnlyList<RoomPerson>? people) => _viewModel?.Room.SetRoomPeople(people);
 
 	public void ShowRoomNotice(string person, string text) => _ = _viewModel?.Room.ShowRoomNoticeAsync(person, text);

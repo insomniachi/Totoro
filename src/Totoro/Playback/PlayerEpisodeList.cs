@@ -17,6 +17,9 @@ internal sealed class PlayerEpisodeList(IPlaybackProgressStore progressStore, Ac
 	// Episode details (titles, thumbnails) from ani.zip, by anime: fetched once while watching it.
 	private readonly Dictionary<string, List<EpisodeInfo>> _episodeDetails = [];
 
+	// Title logos' URLs (null: none), by anime: fetched once while watching it.
+	private readonly Dictionary<string, string?> _logos = [];
+
 	/// <summary>The episode's title, if its details were fetched already.</summary>
 	public string? CachedTitle(AnimeModel anime, int number) =>
 		_episodeDetails.TryGetValue(anime.StoreKey, out var cached) && cached.FirstOrDefault(x => x.EpisodeNumber == number) is { } info ? EpisodeTitle(info) : null;
@@ -37,6 +40,7 @@ internal sealed class PlayerEpisodeList(IPlaybackProgressStore progressStore, Ac
 
 		try
 		{
+			_ = ShowLogoAsync(interactive, anime, ct);
 			if (!_episodeDetails.TryGetValue(anime.StoreKey, out var details))
 			{
 				details = [.. (await anime.GetEpisodesAsync(ct)).Where(x => !x.IsSpecial)];
@@ -78,6 +82,29 @@ internal sealed class PlayerEpisodeList(IPlaybackProgressStore progressStore, Ac
 		catch (OperationCanceledException)
 		{
 			// Another episode was started meanwhile; it lists them.
+		}
+	}
+
+	private async Task ShowLogoAsync(IInteractiveMediaPlayer interactive, AnimeModel anime, CancellationToken ct)
+	{
+		if (!_logos.TryGetValue(anime.StoreKey, out var logo))
+		{
+			// An earlier anime's logo goes while this one's is fetched.
+			interactive.SetLogo(null);
+			try
+			{
+				// shortcut: a failed fetch counts as no logo until the app restarts; retry failures if that shows up.
+				logo = _logos[anime.StoreKey] = await anime.GetLogoAsync(ct);
+			}
+			catch (OperationCanceledException)
+			{
+				return;
+			}
+		}
+
+		if (ReferenceEquals(_listedAnime, anime))
+		{
+			interactive.SetLogo(logo);
 		}
 	}
 

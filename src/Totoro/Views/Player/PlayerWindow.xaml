@@ -336,6 +336,25 @@
 
         </Grid>
 
+        <!--  The anime's title logo, when it has one: under the title bar, coming and going with it  -->
+        <Image
+            x:Name="TitleLogo"
+            MaxWidth="320"
+            MaxHeight="96"
+            Margin="24,56,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            IsHitTestVisible="False"
+            Source="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Logo), Mode=OneWay}"
+            Stretch="Uniform">
+            <Image.OpacityTransition>
+                <ScalarTransition />
+            </Image.OpacityTransition>
+            <Image.TranslationTransition>
+                <Vector3Transition />
+            </Image.TranslationTransition>
+        </Image>
+
         <!--  The controls: a panel floating over the bottom of the video, as wide as MediaTransportControls at most  -->
         <local:PlayerTransportControls
             x:Name="Controls"

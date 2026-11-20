@@ -49,6 +49,9 @@ public interface IInteractiveMediaPlayer : IMediaPlayer
 	/// <summary>The episodes of what's playing, for the player's episode list and its previous and next buttons.</summary>
 	void SetEpisodes(IReadOnlyList<PlayerEpisode> episodes);
 
+	/// <summary>The playing anime's title logo's URL, shown under the title bar; null for none.</summary>
+	void SetLogo(string? url);
+
 	/// <summary>Raised when the user picks an episode (from <see cref="SetEpisodes"/>) to play, by its number.</summary>
 	event EventHandler<int>? EpisodeRequested;
 

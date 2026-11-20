@@ -315,6 +315,8 @@ public sealed partial class PlayerWindow : Window
 		Controls.IsHitTestVisible = shown;
 		TitleBarArea.Opacity = shown ? 1 : 0;
 		TitleBarArea.Translation = shown ? Vector3.Zero : new Vector3(0, -ChromeSlide, 0);
+		TitleLogo.Opacity = TitleBarArea.Opacity;
+		TitleLogo.Translation = TitleBarArea.Translation;
 		// Down to 24 from the bottom: it sits 12 above the controls.
 		Offers.Translation = shown ? Vector3.Zero : new Vector3(0, controlsSpace - 12, 0);
 		LiftSubtitles(shown);

@@ -667,6 +667,7 @@ public sealed partial class WatchService(
 					// An earlier anime's list would play from its own provider.
 					EpisodeList.Forget();
 					interactive.SetEpisodes([]);
+					interactive.SetLogo(null);
 				}
 			}
 
