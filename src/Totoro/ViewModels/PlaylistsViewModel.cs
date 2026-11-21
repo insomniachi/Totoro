@@ -44,7 +44,7 @@ public sealed partial class PlaylistsViewModel : NavigatableViewModel, IRecipien
 	/// <summary>Songs whose title, singer or anime matches the search, to add: those with audio only, as that's what plays.</summary>
 	[ObservableProperty] public partial IReadOnlyList<SongMatch> Found { get; private set; } = [];
 
-	/// <summary>A search is waiting on its results, for the bar under the box.</summary>
+	/// <summary>A search is waiting on its results, for the ring in place of the box's search icon.</summary>
 	[ObservableProperty] public partial bool IsSearching { get; private set; }
 
 	public void Receive(SongQueueChangedMessage message) => Refresh();

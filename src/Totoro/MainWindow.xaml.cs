@@ -406,29 +406,10 @@ public sealed partial class MainWindow : Window
 			{
 				CrossFade(ViewModel.Songs.Image);
 			}
-			else if (args.PropertyName == nameof(NowPlaying.IsOpen))
-			{
-				SyncNowPlaying();
-			}
 		};
-		SyncNowPlaying();
 	}
 
 	private bool _followingSongs;
-
-	private void OnPaneClosed(SplitView sender, object args) => SyncNowPlaying();
-
-	/// <summary>
-	/// Shows the now-playing bar while a song plays, but not while the details pane is open: its song card (with the lyrics)
-	/// is the song's controls there, and the bar showing or going resizes the split view, which closes the pane.
-	/// </summary>
-	private void SyncNowPlaying()
-	{
-		if (ViewModel is not null && !Details.IsPaneOpen)
-		{
-			NowPlayingBar.Visibility = ViewModel.Songs.IsOpen ? Visibility.Visible : Visibility.Collapsed;
-		}
-	}
 
 	/// <summary>
 	/// Shows the now-playing bar's new cover (and its blurred background): the last one stays until the new one's loaded,
@@ -466,18 +447,21 @@ public sealed partial class MainWindow : Window
 	/// </summary>
 	private async void OnPlayingCoverClick(object sender, RoutedEventArgs e)
 	{
-		if (ViewModel?.Songs.Item is not { } item)
+		if (ViewModel?.Songs is not { } songs || (songs.Item is null && songs.Anime is null))
 		{
 			return;
 		}
 
 		var commands = Commands.AnimeCommands.Shared;
-		if ((item.ToAnime() ?? await commands.FindByTitleAsync(item.Anime)) is { } anime)
+		if ((songs.Anime ?? songs.Item!.ToAnime() ?? await commands.FindByTitleAsync(songs.Item!.Anime)) is { } anime)
 		{
 			await commands.ShowInDatabaseCommand.ExecuteAsync(anime);
 			ClearPaneHistory();
 		}
 	}
+
+	/// <summary>The now-playing bar: while a song plays, and the details pane's closed.</summary>
+	public static Visibility NowPlayingVisibility(bool open, bool paneOpen) => open && !paneOpen ? Visibility.Visible : Visibility.Collapsed;
 
 	/// <summary>The now-playing bar's shuffle and loop icons: faint while they're off.</summary>
 	public static double OnOpacity(bool on) => on ? 1 : 0.45;

@@ -133,7 +133,7 @@ public sealed partial class SongItem : ObservableObject, IRecipient<SongPlayerCh
 			return;
 		}
 
-		await TryAsync(() => _songs.PlayAudioAsync(Song));
+		await TryAsync(() => _songs.PlayAudioAsync(Song, _anime));
 	}
 
 	/// <summary>Whether it can be added to a playlist: its audio is what playlists play.</summary>

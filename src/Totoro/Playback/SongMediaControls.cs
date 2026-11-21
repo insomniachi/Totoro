@@ -26,6 +26,9 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 	private readonly SystemMediaTransportControls? _controls;
 	// What the controls show, to change it (and fetch the cover) only when it changes, not on every pause.
 	private (AnimeSong? Song, PlaylistSong? Item) _shown;
+	// What the controls and buttons were last set to: the position timer sends a change 4 times a second, with none of it changed.
+	private (AnimeSong? Song, PlaylistSong? Item, bool Playing) _last;
+	private readonly ILogger _logger;
 
 	private readonly IntPtr _window;
 	private readonly ITaskbarList3? _taskbar;
@@ -35,12 +38,15 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 	private readonly uint _taskbarButtonCreated = RegisterWindowMessage("TaskbarButtonCreated");
 	private bool _buttonsAdded;
 	private readonly Dictionary<string, IntPtr> _icons = [];
+	// The taskbar's light or dark: read again when a setting changes only.
+	private bool _lightTaskbar = IsLightTaskbar();
 
 	public SongMediaControls(ISongPlayer player, SongPlaylistService playlists, IntPtr window, ILogger<SongMediaControls> logger)
 	{
 		_player = player;
 		_playlists = playlists;
 		_window = window;
+		_logger = logger;
 		// Each on its own: without one the songs still play, they just can't be controlled from there.
 		try
 		{
@@ -68,17 +74,23 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 		}
 
 		WeakReferenceMessenger.Default.RegisterAll(this);
-		Update();
+		Update(force: true);
 	}
 
 	public void Receive(SongPlayerChangedMessage message) => Update();
 
 	public void Receive(SongQueueChangedMessage message) => Update();
 
-	private void Update()
+	private void Update(bool force = false)
 	{
 		var song = _player.Current;
 		var item = _playlists.Current is { } current && ReferenceEquals(current.Song, song) ? current : null;
+		if (!force && _last == (song, item, _player.IsPlaying))
+		{
+			return;
+		}
+
+		_last = (song, item, _player.IsPlaying);
 		UpdateButtons(song is not null, item is not null);
 		if (_controls is null)
 		{
@@ -101,8 +113,8 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 			display.Type = MediaPlaybackType.Music;
 			display.MusicProperties.Title = song.Title;
 			display.MusicProperties.Artist = song.Artist;
-			display.MusicProperties.AlbumTitle = item?.Anime ?? song.Label;
-			if (Uri.TryCreate(item?.Image, UriKind.Absolute, out var cover) && cover.Scheme is "https" or "http")
+			display.MusicProperties.AlbumTitle = item?.Anime ?? _player.Anime?.Title ?? song.Label;
+			if (Uri.TryCreate(item?.Image ?? _player.Anime?.Image, UriKind.Absolute, out var cover) && cover.Scheme is "https" or "http")
 			{
 				display.Thumbnail = RandomAccessStreamReference.CreateFromUri(cover);
 			}
@@ -171,15 +183,27 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 		Flags = flags,
 	};
 
-	// White on a dark taskbar, black on a light one; loaded once each.
+	private static bool IsLightTaskbar() =>
+		Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 0) is 1;
+
+	// White on a dark taskbar, black on a light one, at the window's monitor's DPI; loaded once each.
 	private IntPtr Icon(string name)
 	{
-		var light = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "SystemUsesLightTheme", 0) is 1;
-		var file = $"{name}.{(light ? "Black" : "White")}.ico";
-		if (!_icons.TryGetValue(file, out var icon))
+		var file = $"{name}.{(_lightTaskbar ? "Black" : "White")}.ico";
+		var size = GetSystemMetricsForDpi(SmallIconWidth, GetDpiForWindow(_window));
+		var key = $"{file}@{size}";
+		if (!_icons.TryGetValue(key, out var icon))
 		{
-			var size = GetSystemMetrics(SmallIconWidth);
-			_icons[file] = icon = LoadImage(IntPtr.Zero, Path.Combine(AppContext.BaseDirectory, "Assets", "Taskbar", file), ImageIcon, size, size, LoadFromFile);
+			icon = LoadImage(IntPtr.Zero, Path.Combine(AppContext.BaseDirectory, "Assets", "Taskbar", file), ImageIcon, size, size, LoadFromFile);
+			if (icon == IntPtr.Zero)
+			{
+				// Not cached: tried again on the next change.
+				_logger.LogWarning("Couldn't load the taskbar icon {File} (error {Error})", file, Marshal.GetLastPInvokeError());
+			}
+			else
+			{
+				_icons[key] = icon;
+			}
 		}
 
 		return icon;
@@ -187,16 +211,22 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 
 	private void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 	{
-		const uint command = 0x0111, settingChange = 0x001A, clicked = 0x1800;
+		const uint command = 0x0111, settingChange = 0x001A, dpiChanged = 0x02E0, clicked = 0x1800;
 		if (e.Message.MessageId == _taskbarButtonCreated)
 		{
 			_buttonsAdded = false;
-			Update();
+			Update(force: true);
 		}
 		else if (e.Message.MessageId == settingChange)
 		{
 			// The taskbar may have gone light or dark.
-			Update();
+			_lightTaskbar = IsLightTaskbar();
+			Update(force: true);
+		}
+		else if (e.Message.MessageId == dpiChanged)
+		{
+			// Moved to a monitor at another scale: icons at its size.
+			Update(force: true);
 		}
 		else if (e.Message.MessageId == command && (e.Message.WParam >> 16 & 0xFFFF) == clicked)
 		{
@@ -225,9 +255,12 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 	private static partial uint RegisterWindowMessage(string name);
 
 	[LibraryImport("user32.dll")]
-	private static partial int GetSystemMetrics(int index);
+	private static partial int GetSystemMetricsForDpi(int index, uint dpi);
 
-	[LibraryImport("user32.dll", EntryPoint = "LoadImageW", StringMarshalling = StringMarshalling.Utf16)]
+	[LibraryImport("user32.dll")]
+	private static partial uint GetDpiForWindow(IntPtr window);
+
+	[LibraryImport("user32.dll", EntryPoint = "LoadImageW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
 	private static partial IntPtr LoadImage(IntPtr instance, string name, uint type, int width, int height, uint load);
 
 	[Flags]

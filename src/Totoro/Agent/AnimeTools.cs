@@ -240,7 +240,7 @@ public sealed class AnimeTools(
 			}
 			else
 			{
-				await songs.PlayAudioAsync(song);
+				await songs.PlayAudioAsync(song, anime);
 			}
 		}
 		catch (InvalidOperationException ex)

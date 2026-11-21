@@ -79,7 +79,8 @@ internal static class AppServices
 		services.AddSingleton(sp => new SongMediaControls(
 			sp.GetRequiredService<ISongPlayer>(),
 			sp.GetRequiredService<SongPlaylistService>(),
-			WinRT.Interop.WindowNative.GetWindowHandle(window()),
+			// Bound to this window for good, so never the setup window that's open before it.
+			WinRT.Interop.WindowNative.GetWindowHandle(window() as MainWindow ?? throw new InvalidOperationException("Resolve SongMediaControls once the main window is open.")),
 			sp.GetRequiredService<ILogger<SongMediaControls>>()));
 		services.AddSingleton<SongRecognizer>();
 		services.AddDialog<ShowPickerDialog, ShowPickerDialogViewModel>();

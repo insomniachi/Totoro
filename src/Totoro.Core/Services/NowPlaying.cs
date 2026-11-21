@@ -29,7 +29,7 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 	/// <summary>e.g. "OP2 · Oshi no Ko · YOASOBI".</summary>
 	[ObservableProperty] public partial string Details { get; private set; } = "";
 
-	/// <summary>Its anime's cover, when it's from a playlist; empty otherwise.</summary>
+	/// <summary>Its anime's cover, when it's from a playlist or was played from its anime; empty otherwise.</summary>
 	[ObservableProperty] public partial string Image { get; private set; } = "";
 
 	public bool HasImage => Image.Length > 0;
@@ -39,8 +39,11 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 	/// <summary>The playlist's song playing, whose anime the cover opens; null when it isn't from a playlist.</summary>
 	[ObservableProperty] public partial PlaylistSong? Item { get; private set; }
 
+	/// <summary>The anime the song's from, when it was played from it (not a playlist): the cover opens it.</summary>
+	[ObservableProperty] public partial Modules.Anime.AnimeModel? Anime { get; private set; }
+
 	/// <summary>e.g. "Open Frieren"; the cover's name.</summary>
-	public string OpenName => $"Open {Item?.Anime}";
+	public string OpenName => $"Open {Item?.Anime ?? Anime?.Title}";
 
 	partial void OnImageChanged(string value)
 	{
@@ -49,6 +52,8 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 	}
 
 	partial void OnItemChanged(PlaylistSong? value) => OnPropertyChanged(nameof(OpenName));
+
+	partial void OnAnimeChanged(Modules.Anime.AnimeModel? value) => OnPropertyChanged(nameof(OpenName));
 
 	[ObservableProperty] public partial bool IsPlaying { get; private set; }
 
@@ -147,9 +152,11 @@ public sealed partial class NowPlaying : ObservableObject, IRecipient<SongPlayer
 		var item = _playlists.Current is { } current && ReferenceEquals(current.Song, song) ? current : null;
 		IsOpen = song is not null;
 		Title = song?.Title ?? "";
-		Details = song is null ? "" : string.Join(" · ", new[] { song.Label, item?.Anime ?? "", song.Artist }.Where(x => x.Length > 0));
-		Image = item?.Image ?? "";
+		var anime = item is null && song is not null ? _player.Anime : null;
+		Details = song is null ? "" : string.Join(" · ", new[] { song.Label, item?.Anime ?? anime?.Title ?? "", song.Artist }.Where(x => x.Length > 0));
+		Image = item?.Image ?? anime?.Image ?? "";
 		Item = item;
+		Anime = anime;
 		IsPlaying = _player.IsPlaying;
 		Progress = _player.Duration > TimeSpan.Zero ? Math.Clamp(_player.Position / _player.Duration, 0, 1) * 100 : 0;
 		var known = _player.Duration > TimeSpan.Zero;

@@ -260,7 +260,9 @@ public sealed class SongPlaylistTests : IDisposable
 
 		public event EventHandler? Failed;
 
-		public Task PlayAsync(AnimeSong song)
+		public AnimeModel? Anime => null;
+
+		public Task PlayAsync(AnimeSong song, AnimeModel? anime = null)
 		{
 			Current = song;
 			Plays++;

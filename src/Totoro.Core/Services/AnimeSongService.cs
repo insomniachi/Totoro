@@ -63,7 +63,10 @@ public interface ISongPlayer
 	/// <summary>The song's length; zero until it's known.</summary>
 	TimeSpan Duration { get; }
 
-	Task PlayAsync(AnimeSong song);
+	/// <summary>The anime the song playing is from, when whoever played it knew it: for its cover in the now-playing bar.</summary>
+	AnimeModel? Anime { get; }
+
+	Task PlayAsync(AnimeSong song, AnimeModel? anime = null);
 
 	void Pause();
 
@@ -176,11 +179,11 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer> players, ISongPlayer
 	}
 
 	/// <summary>Plays the song's audio in the app.</summary>
-	public Task PlayAudioAsync(AnimeSong song)
+	public Task PlayAudioAsync(AnimeSong song, AnimeModel? anime = null)
 	{
 		return song.Audio is null
 			? throw new InvalidOperationException($"There's no audio of {song.Title}.")
-			: songPlayer.PlayAsync(song);
+			: songPlayer.PlayAsync(song, anime);
 	}
 
 	/// <summary>Plays the song's creditless video in the selected media player.</summary>

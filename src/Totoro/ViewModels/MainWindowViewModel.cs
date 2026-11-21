@@ -262,7 +262,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	[ObservableProperty]
 	public partial List<SearchSuggestion> SearchResults { get; set; } = [];
 
-	/// <summary>A title bar search is waiting on its results, for the bar under the box.</summary>
+	/// <summary>A title bar search is waiting on its results, for the ring in place of the box's search icon.</summary>
 	[ObservableProperty]
 	public partial bool IsSearching { get; private set; }
 

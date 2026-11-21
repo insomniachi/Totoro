@@ -454,16 +454,7 @@
                                 </DataTemplate>
                             </AutoSuggestBox.ItemTemplate>
                         </AutoSuggestBox>
-                        <!--  In the search icon's place while a search waits on its results  -->
-                        <ProgressRing
-                            Width="16"
-                            Height="16"
-                            Margin="0,0,8,0"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="Searching"
-                            IsActive="{x:Bind ViewModel.IsSearching, Mode=OneWay}"
-                            IsHitTestVisible="False" />
+                        <ProgressRing IsActive="{x:Bind ViewModel.IsSearching, Mode=OneWay}" Style="{StaticResource SearchProgressRing}" />
                         <!--  What's searched for, as an icon inside the box at its left (the text starts after it); clicking picks another  -->
                         <Button
                             x:Name="SearchCategoryButton"
@@ -743,18 +734,15 @@
                     </NavigationViewItem>
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
-            <!--  The pages (and the details pane over them), with the now-playing bar under them while a song plays  -->
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <!--
+                The pages, with the now-playing bar under them while a song plays, and the details pane over both: the bar's in
+                the split view's content so its showing or going never resizes the split view (which closes the pane).
+            -->
             <SplitView
                 x:Name="Details"
                 DisplayMode="Overlay"
                 LightDismissOverlayMode="On"
                 OpenPaneLength="700"
-                PaneClosed="OnPaneClosed"
                 PaneOpened="OnPaneOpened"
                 PanePlacement="Right">
                 <Interactivity:Interaction.Behaviors>
@@ -782,23 +770,26 @@
                         <Frame x:Name="Pane" Grid.Row="1" />
                     </Grid>
                 </SplitView.Pane>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
                 <Grid Padding="36">
                     <Frame x:Name="Main" Background="Transparent" />
                 </Grid>
-            </SplitView>
 
             <!--
-                The song playing, e.g. a playlist (see NowPlaying): on every page, so it's controlled from any of them. Shows or
-                goes only while the details pane is closed (see SyncNowPlaying).
+                The song playing, e.g. a playlist (see NowPlaying): on every page, so it's controlled from any of them; not while
+                the details pane is open, whose song cards control it there
             -->
             <Grid
-                x:Name="NowPlayingBar"
                 Grid.Row="1"
                 AutomationProperties.LandmarkType="Custom"
                 AutomationProperties.LocalizedLandmarkType="Now playing"
                 AutomationProperties.Name="Now playing"
                 Loaded="OnNowPlayingLoaded"
-                Visibility="Collapsed">
+                Visibility="{x:Bind local:MainWindow.NowPlayingVisibility(ViewModel.Songs.IsOpen, Details.IsPaneOpen), Mode=OneWay}">
             <Grid
                 Height="92"
                 Margin="16,4,16,16"
@@ -1031,6 +1022,7 @@
             </Canvas>
             </Grid>
             </Grid>
+            </SplitView>
         </NavigationView>
 
         <!--  The assistant (see ChatService): beside the pages rather than over them, so what it does shows as it does it  -->

@@ -224,17 +224,10 @@
                     </DataTemplate>
                 </AutoSuggestBox.ItemTemplate>
             </AutoSuggestBox>
-            <!--  In the search icon's place while a search waits on its results  -->
             <ProgressRing
                 Grid.Row="1"
-                Width="16"
-                Height="16"
-                Margin="0,0,8,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                AutomationProperties.Name="Searching"
                 IsActive="{x:Bind ViewModel.IsSearching, Mode=OneWay}"
-                IsHitTestVisible="False" />
+                Style="{StaticResource SearchProgressRing}" />
 
             <TextBlock
                 Grid.Row="2"

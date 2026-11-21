@@ -7,6 +7,7 @@ using Flurl.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Dispatching;
 using NAudio.Wave;
+using Totoro.Core.Modules.Anime;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
 
@@ -77,7 +78,9 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 
 	public event EventHandler? Failed;
 
-	public async Task PlayAsync(AnimeSong song)
+	public AnimeModel? Anime { get; private set; }
+
+	public async Task PlayAsync(AnimeSong song, AnimeModel? anime = null)
 	{
 		if (song.Audio is not { } audio)
 		{
@@ -87,6 +90,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		_song?.Cancel();
 		var cts = _song = new CancellationTokenSource();
 		Current = song;
+		Anime = anime;
 		IsPlaying = true;
 		IsLoading = true;
 		Duration = TimeSpan.Zero;
@@ -168,6 +172,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		_song?.Cancel();
 		_song = null;
 		Current = null;
+		Anime = null;
 		IsPlaying = false;
 		IsLoading = false;
 		Duration = TimeSpan.Zero;
