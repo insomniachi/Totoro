@@ -189,6 +189,12 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 		}
 	}
 
+	private static bool IsWithin(string directory, string relative)
+	{
+		var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)) + Path.DirectorySeparatorChar;
+		return !Path.IsPathRooted(relative) && Path.GetFullPath(Path.Combine(root, relative)).StartsWith(root, StringComparison.OrdinalIgnoreCase);
+	}
+
 	private static bool IsPluginDirectory(string dir)
 	{
 		return File.Exists(Path.Combine(dir, "plugin.json"))
@@ -244,7 +250,8 @@ public sealed class PluginLoader(ILogger<PluginLoader>? logger = null) : IPlugin
 
 		// Find the entry point DLL
 		string? assemblyPath = null;
-		if (manifest is not null && !string.IsNullOrWhiteSpace(manifest.EntryPoint))
+		// Only a file in the plugin's own folder: not a rooted or "..\" path to an assembly elsewhere.
+		if (manifest is not null && !string.IsNullOrWhiteSpace(manifest.EntryPoint) && IsWithin(directory, manifest.EntryPoint))
 		{
 			string candidate = Path.Combine(directory, manifest.EntryPoint);
 			if (File.Exists(candidate))

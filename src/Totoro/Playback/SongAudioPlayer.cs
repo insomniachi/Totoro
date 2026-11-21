@@ -34,6 +34,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	private readonly ILogger<SongAudioPlayer> _logger;
 	private readonly DispatcherQueue _ui = DispatcherQueue.GetForCurrentThread();
 	private readonly Lock _tapLock = new();
+	private readonly Lock _seekLock = new();
 	private readonly float[] _tap = new float[FftSize];
 	private int _tapPosition;
 
@@ -87,24 +88,31 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 			return;
 		}
 
-		_song?.Cancel();
-		var cts = _song = new CancellationTokenSource();
+		CancellationTokenSource cts;
+		// With the old song's decoder, so it can't take a seek meant for this one once it's cancelled.
+		lock (_seekLock)
+		{
+			_song?.Cancel();
+			cts = _song = new CancellationTokenSource();
+			Interlocked.Exchange(ref _seekTo, -1);
+		}
+
 		Current = song;
 		Anime = anime;
 		IsPlaying = true;
 		IsLoading = true;
 		Duration = TimeSpan.Zero;
-		CreateOutput();
-		_buffer!.ClearBuffer();
 		ClearTap();
 		Interlocked.Exchange(ref _playedFrames, 0);
-		Interlocked.Exchange(ref _seekTo, -1);
 		Changed();
 
 		byte[] bytes;
 		OpusOggReadStream reader;
+		BufferedWaveProvider buffer;
 		try
 		{
+			// Fails with no audio device: said like a song that can't be played.
+			buffer = CreateOutput();
 			// Concentus reads Ogg from a seekable stream only: the whole file (a few MB), then.
 			bytes = await audio.WithHeader("User-Agent", UserAgent).GetBytesAsync(cancellationToken: cts.Token);
 			reader = Read(bytes);
@@ -127,8 +135,8 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 		}
 
 		Duration = reader.TotalTime;
-		_output.Volume = Math.Clamp(_playerSettings.Value.Volume / 100f, 0, 1);
-		_ = Task.Run(() => Decode(bytes, reader, cts));
+		_output!.Volume = Math.Clamp(_playerSettings.Value.Volume / 100f, 0, 1);
+		_ = Task.Run(() => Decode(bytes, reader, buffer, cts));
 		if (IsPlaying)
 		{
 			_output.Play();
@@ -244,12 +252,16 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	/// goes silent for good once that device goes (e.g. headphones disconnecting, or another device made the default).
 	/// </summary>
 	// shortcut: a device lost mid-song stays silent until the next song; follow device changes if that's a problem.
-	private void CreateOutput()
+	// A new buffer too: a replaced song's decoder, still finishing a packet, writes into its own.
+	private BufferedWaveProvider CreateOutput()
 	{
 		_output?.Dispose();
-		_buffer ??= new BufferedWaveProvider(new WaveFormat(SampleRate, 16, Channels), s_decodeAhead * 2) { DiscardOnBufferOverflow = true };
-		_output = new WasapiPlayerBuilder().WithSharedMode().WithLatency(100).Build();
-		_output.Init(new TappedProvider(_buffer, this));
+		_output = null;
+		_buffer = new BufferedWaveProvider(new WaveFormat(SampleRate, 16, Channels), s_decodeAhead * 2) { DiscardOnBufferOverflow = true };
+		var output = new WasapiPlayerBuilder().WithSharedMode().WithLatency(100).Build();
+		output.Init(new TappedProvider(_buffer, this));
+		_output = output;
+		return _buffer;
 	}
 
 	private static OpusOggReadStream Read(byte[] song) => new(OpusCodecFactory.CreateDecoder(SampleRate, Channels), new MemoryStream(song));
@@ -258,15 +270,20 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	/// Decodes the song into the buffer, keeping a little ahead of what's heard, then stops once it's all heard; seeks when
 	/// asked (see <see cref="Seek"/>), even after it's all decoded.
 	/// </summary>
-	private async Task Decode(byte[] song, OpusOggReadStream reader, CancellationTokenSource cts)
+	private async Task Decode(byte[] song, OpusOggReadStream reader, BufferedWaveProvider buffer, CancellationTokenSource cts)
 	{
 		var ct = cts.Token;
-		var buffer = _buffer!;
 		try
 		{
 			while (!ct.IsCancellationRequested)
 			{
-				if (Interlocked.Exchange(ref _seekTo, -1) is var seekTo and >= 0)
+				long seekTo;
+				lock (_seekLock)
+				{
+					seekTo = ct.IsCancellationRequested ? -1 : Interlocked.Exchange(ref _seekTo, -1);
+				}
+
+				if (seekTo >= 0)
 				{
 					// A new reader, since one that's read to its end may not read again.
 					reader = Read(song);

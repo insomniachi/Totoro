@@ -366,12 +366,23 @@ public sealed class PluginManager : IPluginManager
 	}
 
 	/// <summary>
-	/// The plugin's folder in the Plugins folder, named after it. A name that isn't a plain folder name (empty, "..", or
-	/// with a path separator) would put the plugin, and the delete of its old version, somewhere else, so the id is used
-	/// instead.
+	/// The plugin's folder in the Plugins folder: the one it's installed in already (by its id, though it may have been
+	/// renamed since), else one named after it. A name that isn't a plain folder name (empty, "..", or with a path
+	/// separator) would put the plugin, and the delete of its old version, somewhere else, and one another plugin has
+	/// would replace that plugin, so the id is used instead.
 	/// </summary>
-	private static string GetInstallDirectory(PluginManifest manifest)
+	private string GetInstallDirectory(PluginManifest manifest)
 	{
+		if (_installedThisSession.TryGetValue(manifest.Id, out var installed))
+		{
+			return installed.Directory;
+		}
+
+		if (InstalledPlugins.FirstOrDefault(p => p.Id == manifest.Id && !p.IsDev && IsInPluginsDirectory(p.DirectoryPath)) is { } same)
+		{
+			return Path.GetFullPath(same.DirectoryPath);
+		}
+
 		var pluginsDir = Path.GetFullPath(FileHelper.GetPath("Plugins"));
 		var name = manifest.Name?.Trim() ?? "";
 		var isPlainName = name.Length > 0
@@ -379,7 +390,7 @@ public sealed class PluginManager : IPluginManager
 			&& !name.EndsWith(PluginLoader.PendingSuffix, StringComparison.OrdinalIgnoreCase)
 			&& !name.EndsWith(PluginLoader.OldSuffix, StringComparison.OrdinalIgnoreCase)
 			&& name.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
-		if (!isPlainName)
+		if (!isPlainName || IsTakenByAnother(Path.Combine(pluginsDir, name), manifest.Id))
 		{
 			if (manifest.Id == Guid.Empty)
 			{
@@ -397,6 +408,10 @@ public sealed class PluginManager : IPluginManager
 
 		return targetDir;
 	}
+
+	private bool IsTakenByAnother(string directory, Guid id) =>
+		InstalledPlugins.Any(p => p.Id != id && IsSameDirectory(p.DirectoryPath, directory))
+		|| _installedThisSession.Any(x => x.Key != id && IsSameDirectory(x.Value.Directory, directory));
 
 	private static bool IsInPluginsDirectory(string directory)
 	{

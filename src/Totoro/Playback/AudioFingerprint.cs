@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Totoro.Helpers;
 
 namespace Totoro.Playback;
 
@@ -54,6 +55,7 @@ internal static class AudioFingerprint
 		}
 
 		using var process = Process.Start(start) ?? throw new InvalidOperationException("ffmpeg didn't start.");
+		ChildProcesses.Add(process);
 		try
 		{
 			process.PriorityClass = ProcessPriorityClass.BelowNormal;

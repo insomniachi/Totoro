@@ -209,6 +209,18 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 		return icon;
 	}
 
+	// The buttons get new icons; the old ones are freed once they're replaced.
+	private void ReloadIcons()
+	{
+		var old = _icons.Values.ToArray();
+		_icons.Clear();
+		Update(force: true);
+		foreach (var icon in old)
+		{
+			DestroyIcon(icon);
+		}
+	}
+
 	private void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 	{
 		const uint command = 0x0111, settingChange = 0x001A, dpiChanged = 0x02E0, clicked = 0x1800;
@@ -217,16 +229,16 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 			_buttonsAdded = false;
 			Update(force: true);
 		}
-		else if (e.Message.MessageId == settingChange)
+		else if (e.Message.MessageId == settingChange && IsLightTaskbar() != _lightTaskbar)
 		{
-			// The taskbar may have gone light or dark.
-			_lightTaskbar = IsLightTaskbar();
-			Update(force: true);
+			// The taskbar went light or dark.
+			_lightTaskbar = !_lightTaskbar;
+			ReloadIcons();
 		}
 		else if (e.Message.MessageId == dpiChanged)
 		{
 			// Moved to a monitor at another scale: icons at its size.
-			Update(force: true);
+			ReloadIcons();
 		}
 		else if (e.Message.MessageId == command && (e.Message.WParam >> 16 & 0xFFFF) == clicked)
 		{
@@ -262,6 +274,10 @@ internal sealed partial class SongMediaControls : IRecipient<SongPlayerChangedMe
 
 	[LibraryImport("user32.dll", EntryPoint = "LoadImageW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
 	private static partial IntPtr LoadImage(IntPtr instance, string name, uint type, int width, int height, uint load);
+
+	[LibraryImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool DestroyIcon(IntPtr icon);
 
 	[Flags]
 	private enum ThumbButtonMask : uint { Icon = 0x2, Tooltip = 0x4, Flags = 0x8 }

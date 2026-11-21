@@ -619,7 +619,8 @@ public sealed partial class WatchService(
 			segments.OnPosition(value);
 			if (track && CountsAt(duration, segments.EndingStart, credits) is { } countsAt && !marking)
 			{
-				if (value >= countsAt && played >= (countsAt - start) * PlayedToCount)
+				// Started past it (e.g. at a scene in the ending): nothing was watched to count.
+				if (value >= countsAt && start < countsAt && played >= (countsAt - start) * PlayedToCount)
 				{
 					marking = true;
 					Post(() => _ = MarkWatchedWhilePlayingAsync(player, anime, number));

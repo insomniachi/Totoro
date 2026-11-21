@@ -5,13 +5,24 @@
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 	  <TargetFramework>net11.0</TargetFramework>
+	  <!-- x64 only, every project (new ones too), built alone or in the solution. Outputs stay in bin\<Configuration>\
+	       (no x64 folder), where the installer looks. -->
 	  <Platforms>x64</Platforms>
+	  <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
+	  <PlatformTarget>x64</PlatformTarget>
+	  <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
 	  <!-- Report .editorconfig code-style rules (the naming conventions, IDE1006) when building, not only in the editor -->
 	  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	  <!-- CsWinRT1032: collection expressions are only a problem for trimmed/AOT builds, and the app isn't trimmed.
 	       WFO2000: getters that return a new object each time do so on purpose (XAML icons can't share a parent; snapshots). -->
 	  <NoWarn>$(NoWarn);CsWinRT1032;WFO2000</NoWarn>
   </PropertyGroup>
+  <ItemDefinitionGroup>
+	  <!-- Referenced projects build x64 as well -->
+	  <ProjectReference>
+		  <AdditionalProperties>Platform=x64</AdditionalProperties>
+	  </ProjectReference>
+  </ItemDefinitionGroup>
   <ItemGroup>
 	  <!-- The namespace-matches-folder rule (IDE0130) needs these to run at build time -->
 	  <CompilerVisibleProperty Include="RootNamespace" />

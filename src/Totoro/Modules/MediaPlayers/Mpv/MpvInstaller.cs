@@ -8,6 +8,7 @@ using SharpCompress.Archives;
 using SharpCompress.Common;
 using Totoro.Core.Helpers;
 using Totoro.Core.Settings;
+using Totoro.Helpers;
 
 namespace Totoro.Modules.MediaPlayers.Mpv;
 
@@ -376,7 +377,9 @@ internal sealed partial class MpvInstaller
 
 	private static async Task RunAsync(string fileName, string arguments, CancellationToken ct)
 	{
-		using var process = Process.Start(new ProcessStartInfo(fileName, arguments) { CreateNoWindow = true, UseShellExecute = false })!;
+		using var process = Process.Start(new ProcessStartInfo(fileName, arguments) { CreateNoWindow = true, UseShellExecute = false })
+			?? throw new InvalidOperationException($"{fileName} didn't start.");
+		ChildProcesses.Add(process);
 		await process.WaitForExitAsync(ct);
 	}
 

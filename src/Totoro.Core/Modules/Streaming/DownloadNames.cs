@@ -89,8 +89,13 @@ public static partial class DownloadNames
 		var invalid = Path.GetInvalidFileNameChars();
 		var clean = new string([.. title.Select(x => invalid.Contains(x) ? ' ' : x)]);
 		// Windows trims trailing dots and spaces from names.
-		return Spaces().Replace(clean, " ").Trim().TrimEnd('.');
+		clean = Spaces().Replace(clean, " ").Trim().TrimEnd('.');
+		// Nothing left (the folder would be the download folder itself), or a device name Windows reserves (CON, AUX...).
+		return clean.Length == 0 || ReservedName().IsMatch(clean) ? clean + "_" : clean;
 	}
+
+	[GeneratedRegex(@"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", RegexOptions.IgnoreCase)]
+	private static partial Regex ReservedName();
 
 	[GeneratedRegex(@" - (\d+)$")]
 	private static partial Regex EpisodePattern();
