@@ -1,4 +1,5 @@
-# Launches Totoro in Windows Sandbox as a fresh install, with the ReAnime plugin installed and posters working.
+# Launches Totoro in Windows Sandbox as a fresh install, with the ReAnime plugin installed and posters working, and the
+# host's own mpv and rqbit copied in (so the app doesn't download them each time).
 # Usage: pwsh .claude/skills/run-totoro/sandbox.ps1 [-Tour] [-FirstRun]   (prints the app's PID last)
 # The first-run tour's teaching tips are marked seen, so they don't cover the window; -Tour keeps them, to test the tour.
 # -FirstRun deletes settings.json instead, so the setup wizard shows (as on a fresh install), then the tour.
@@ -21,11 +22,27 @@ Write-Host "$plugin $($entry.version) downloaded."
 # leaves every image blank; and the plugin goes where Totoro installs plugins, before it starts, so no restart is needed.
 $pushed = winapp target push sandbox $package "Setup\$plugin.zip" --json | ConvertFrom-Json
 if (-not $pushed.targetPath) { throw "Couldn't copy the plugin into the sandbox." }
+
+# The host's mpv and rqbit (and mpv's config, with Anime4K), so the app doesn't download them on every launch.
+# Push skips unchanged files, so only the first run copies them all.
+$tools = foreach ($t in @(
+	@{ Src = "$env:LOCALAPPDATA\Totoro\Tools\mpv"; Dest = 'Setup\Tools\mpv'; Guest = '$env:LOCALAPPDATA\Totoro\Tools\mpv' },
+	@{ Src = "$env:LOCALAPPDATA\Totoro\Tools\rqbit"; Dest = 'Setup\Tools\rqbit'; Guest = '$env:LOCALAPPDATA\Totoro\Tools\rqbit' },
+	@{ Src = "$env:APPDATA\mpv"; Dest = 'Setup\Tools\mpv-config'; Guest = '$env:APPDATA\mpv' })) {
+	if (-not (Test-Path $t.Src)) { Write-Warning "$($t.Src) isn't on this machine; the app will download it."; continue }
+	$p = winapp target push sandbox $t.Src $t.Dest --json | ConvertFrom-Json
+	if (-not $p.targetPath) { throw "Couldn't copy $($t.Src) into the sandbox." }
+	"robocopy '$($p.targetPath)' `"$($t.Guest)`" /E /NFL /NDL /NJH /NJS /NP | Out-Null"
+}
+Write-Host 'mpv and rqbit copied.'
 $setup = @"
 Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name CertificateRevocation -Value 0 -Type DWord
 `$dir = Join-Path `$env:LOCALAPPDATA 'Totoro\Plugins\$plugin'
-# winapp run replaces a running Totoro anyway; stopped first, so it doesn't hold the plugin's files.
-Get-Process Totoro -ErrorAction SilentlyContinue | Stop-Process -Force -PassThru | Wait-Process
+# winapp run replaces a running Totoro anyway; stopped first, so it doesn't hold the plugin's or mpv's files.
+Get-Process Totoro, mpv, rqbit -ErrorAction SilentlyContinue | Stop-Process -Force -PassThru | Wait-Process
+$($tools -join "`n")
+# Fresh version.txt, so the app's background update check isn't due.
+Get-Item "`$env:LOCALAPPDATA\Totoro\Tools\*\version.txt" -ErrorAction SilentlyContinue | % { `$_.LastWriteTime = Get-Date }
 Remove-Item `$dir -Recurse -Force -ErrorAction SilentlyContinue
 Expand-Archive '$($pushed.targetPath)' `$dir -Force
 '$plugin installed.'
