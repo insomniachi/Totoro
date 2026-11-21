@@ -39,7 +39,7 @@ New-Item -ItemType Directory (Split-Path `$settings) -Force | Out-Null
 winapp target exec sandbox -- powershell -NoProfile -Command $setup
 if ($LASTEXITCODE) { throw 'Sandbox setup failed.' }
 
-winapp run "$repo\src\Totoro\Totoro.csproj" --on sandbox --detach --devtools off --quiet
+winapp run "$repo\src\Totoro\Totoro.csproj" --on sandbox --detach --devtools on --quiet
 if ($LASTEXITCODE) { throw 'winapp run failed.' }
 Start-Sleep 10
 $window = winapp ui list-windows --on sandbox 2>&1 | Select-String 'Totoro, PID (\d+)'

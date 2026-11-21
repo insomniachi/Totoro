@@ -10,7 +10,7 @@ Everything here goes through `winapp ui` (UI Automation): no mouse, no focus nee
 ## Launch
 
 ```bash
-winapp run src/Totoro/Totoro.csproj --detach --devtools off
+winapp run src/Totoro/Totoro.csproj --detach --devtools on
 ```
 
 It builds (about 60s), launches, and prints the app's **PID** as its last line. Give that PID to every later
@@ -20,7 +20,7 @@ and does so silently when the app isn't running. Wait about 10s after launch bef
 - Rebuilding: stop the app first (`taskkill //PID <pid> //F`): it locks its output.
 - `NETSDK1047 ... doesn't have a target for ... win-x64` means a plain `dotnet build` restored without the runtime:
   `dotnet restore src/Totoro/Totoro.csproj -r win-x64`, then run again.
-- `--devtools on` (the default) adds an in-app XAML toolbar; you need it only for `winapp devtools`.
+- Always launch with `--devtools on` (in-app XAML toolbar, needed for `winapp devtools`); the user wants it.
 
 ### In Windows Sandbox (a fresh install)
 
@@ -36,7 +36,7 @@ prints the PID. Add `--on sandbox` to every `winapp ui` command. In-app restart 
 - **Don't pipe it** (or `winapp run`) through `Select-Object -Last N`, `tail` or anything that waits for the end: that
   holds back every line, the PID included, so the app sits launched while you wait. Run it with plain output. Lost
   track? `winapp ui list-windows --on sandbox | Select-String 'Totoro, PID (\d+)'` tells you whether it's up, and its PID.
-- Launching again yourself: `winapp run src/Totoro/Totoro.csproj --on sandbox --detach --devtools off --quiet`, then poll
+- Launching again yourself: `winapp run src/Totoro/Totoro.csproj --on sandbox --detach --devtools on --quiet`, then poll
   `list-windows` (as above) every second or two until Totoro shows; it's up within seconds of "Starting the application".
 
 ## Drive

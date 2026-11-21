@@ -197,7 +197,7 @@ internal static class AppServices
 		services.AddMainNavigationItem<PlaylistsPage, PlaylistsViewModel>("Playlists", x =>
 		{
 			x.Mode = MediaMode.Anime;
-			x.AnimatedIcon = () => Icons.Music;
+			x.AnimatedIcon = () => Icons.MusicAnimated;
 		});
 		services.AddMainNavigationItem<PluginsPage, PluginsViewModel>("Plugins", x =>
 		{

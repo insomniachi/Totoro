@@ -4,24 +4,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:devwinui="using:DevWinUI"
     xmlns:local="using:Totoro.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:media="using:CommunityToolkit.WinUI.Media"
     mc:Ignorable="d">
 
-    <!--  EdgeLighting centers its content by default, sizing the card to the image: until the image loads, that's just the title.  -->
     <!--  One placeholder for the whole card in a ShimmerView, rather than one each for its poster, icon and title  -->
-    <devwinui:EdgeLighting
-        x:Name="Lighting"
-        local:ShimmerView.Shape="Rectangle"
-        HorizontalAlignment="Stretch"
-        HorizontalContentAlignment="Stretch"
-        VerticalContentAlignment="Stretch"
-        FadeOffset="1"
-        IsLighting="false"
-        MidOffset="0.5"
-        StrokeThickness="0">
+    <Border local:ShimmerView.Shape="Rectangle" CornerRadius="8">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -39,7 +28,7 @@
                 Glyph="&#xE91B;" />
 
             <!--
-                EdgeLighting clips the card to an 8px radius. At the bottom corners both the image and the title bar sit on
+                The outer Border clips the card to an 8px radius. At the bottom corners both the image and the title bar sit on
                 that curve, and the clip's antialiased edge pixels let the image show through the title bar as a 1px fringe.
                 Rounding the image's bottom corners a little more keeps it just inside the curve there; the title bar
                 covers the difference.
@@ -74,6 +63,15 @@
 
             <Grid x:Name="OverlayLayer" Background="Transparent" />
 
+            <!--  On top of everything so posters with dark or light edges still stand apart from the page; HoverEffectsBehavior thickens it on hover  -->
+            <Border
+                x:Name="Stroke"
+                Grid.RowSpan="2"
+                BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                IsHitTestVisible="False" />
+
         </Grid>
-    </devwinui:EdgeLighting>
+    </Border>
 </UserControl>

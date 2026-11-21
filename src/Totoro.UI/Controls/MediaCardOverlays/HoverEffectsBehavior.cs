@@ -2,7 +2,6 @@
 using CommunityToolkit.WinUI.Animations;
 using CommunityToolkit.WinUI.Behaviors;
 using CommunityToolkit.WinUI.Media.Pipelines;
-using DevWinUI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -14,7 +13,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 namespace Totoro.UI.Controls.MediaCardOverlays;
 
 /// <summary>
-/// On hover, the card grows slightly and its edge lights up in the accent color, while its image zooms in from its
+/// On hover, the card grows slightly and its border thickens, while its image zooms in from its
 /// center and blurs, so the actions over it stand out.
 /// </summary>
 /// <remarks>The blur is a backdrop brush, which the compositor redraws every frame, so it only exists while the card is hovered: on every card it slows scrolling.</remarks>
@@ -24,7 +23,7 @@ public class HoverEffectsBehavior : BehaviorBase<MediaCard>
 	private static readonly TimeSpan s_imageDuration = TimeSpan.FromMilliseconds(250);
 
 	private Grid? _canvas;
-	private EdgeLighting? _lighting;
+	private Border? _stroke;
 	private Image? _image;
 	private SpriteVisual? _blurVisual;
 	private EffectAnimation<float>? _blurAnimation;
@@ -53,18 +52,12 @@ public class HoverEffectsBehavior : BehaviorBase<MediaCard>
 		// FindName works as soon as InitializeComponent has run. FindDescendant needs the
 		// visual tree, which may not exist yet when the card comes from a DataTemplate.
 		_canvas = AssociatedObject.FindName("OverlayLayer") as Grid;
-		_lighting = AssociatedObject.FindName("Lighting") as EdgeLighting;
 		_image = AssociatedObject.FindName("PosterImage") as Image;
+		_stroke = AssociatedObject.FindName("Stroke") as Border;
 
 		if (_canvas is null)
 		{
 			return;
-		}
-
-		if (_lighting is not null &&
-			Application.Current.Resources.TryGetValue("SystemControlBackgroundAccentBrush", out var brushObj) && brushObj is SolidColorBrush brush)
-		{
-			_lighting.MidColor = brush.Color;
 		}
 
 		CommunityToolkit.WinUI.VisualExtensions.SetNormalizedCenterPoint(AssociatedObject, "0.5, 0.5");
@@ -95,7 +88,7 @@ public class HoverEffectsBehavior : BehaviorBase<MediaCard>
 		RemoveBlur();
 		_onCaptureLost = null;
 		_canvas = null;
-		_lighting = null;
+		_stroke = null;
 		_image = null;
 	}
 
@@ -111,10 +104,9 @@ public class HoverEffectsBehavior : BehaviorBase<MediaCard>
 	{
 		var version = ++_hoverVersion;
 		s_enterAnimation.Start(AssociatedObject);
-		if (_lighting is not null)
+		if (_stroke is not null)
 		{
-			_lighting.StrokeThickness = 5;
-			_lighting.IsLighting = true;
+			_stroke.BorderThickness = new Thickness(3);
 		}
 
 		if (_image is null)
@@ -144,10 +136,9 @@ public class HoverEffectsBehavior : BehaviorBase<MediaCard>
 	{
 		var version = ++_hoverVersion;
 		s_exitAnimation.Start(AssociatedObject);
-		if (_lighting is not null)
+		if (_stroke is not null)
 		{
-			_lighting.StrokeThickness = 0;
-			_lighting.IsLighting = false;
+			_stroke.BorderThickness = new Thickness(1);
 		}
 
 		if (_image is null)
