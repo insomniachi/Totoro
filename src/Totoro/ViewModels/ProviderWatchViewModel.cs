@@ -31,6 +31,7 @@ public sealed record EpisodeChoice(ProviderEpisode Episode)
 public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 {
 	private readonly WatchService _watch;
+	private readonly ShowResolver _shows;
 	private readonly DownloadService _downloads;
 	private readonly IFactory<IAnimeMetadataProvider> _databases;
 	private readonly IAnimeSettingsStore _animeSettings;
@@ -41,11 +42,12 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	// The show each card is for: a card is the provider's title with the database's cover.
 	private readonly Dictionary<AnimeModel, ProviderShow> _cardShows = [];
 
-	public ProviderWatchViewModel(WatchService watch, DownloadService downloads, IFactory<IAnimeProvider> providers, IFactory<IAnimeMetadataProvider> databases,
+	public ProviderWatchViewModel(WatchService watch, ShowResolver shows, DownloadService downloads, IFactory<IAnimeProvider> providers, IFactory<IAnimeMetadataProvider> databases,
 								  IAnimeSettingsStore animeSettings, IDialogService dialogs, IEnumerable<IModuleSettings> moduleSettings,
 								  IEnumerable<Descriptor> modules)
 	{
 		_watch = watch;
+		_shows = shows;
 		_downloads = downloads;
 		_databases = databases;
 		_animeSettings = animeSettings;
@@ -212,7 +214,7 @@ public sealed partial class ProviderWatchViewModel : NavigatableViewModel
 	}
 
 	private Task<int> AnimeEpisodeAsync(AnimeModel anime, EpisodeChoice episode) =>
-		_watch.GetAnimeEpisodeAsync(anime, [.. Episodes.Select(x => x.Episode)], episode.Episode, Numbering.Value, CancellationToken.None);
+		_shows.GetAnimeEpisodeAsync(anime, [.. Episodes.Select(x => x.Episode)], episode.Episode, Numbering.Value, CancellationToken.None);
 
 	partial void OnSelectedEpisodeChanged(EpisodeChoice? value)
 	{

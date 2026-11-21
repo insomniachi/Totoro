@@ -22,6 +22,7 @@ public sealed class AutoDownloader : IDisposable
 	private static readonly TimeSpan s_listAge = TimeSpan.FromMinutes(30);
 
 	private readonly WatchService _watch;
+	private readonly ShowResolver _shows;
 	private readonly DownloadService _downloads;
 	private readonly ReleaseScheduleService _schedule;
 	private readonly IAnimeSettingsStore _animeSettings;
@@ -40,10 +41,11 @@ public sealed class AutoDownloader : IDisposable
 	private DateTime _listAt;
 	private bool _checking;
 
-	public AutoDownloader(WatchService watch, DownloadService downloads, ReleaseScheduleService schedule, IAnimeSettingsStore animeSettings,
+	public AutoDownloader(WatchService watch, ShowResolver shows, DownloadService downloads, ReleaseScheduleService schedule, IAnimeSettingsStore animeSettings,
 						  IAnimeRelations relations, IPreferences preferences, DownloadNotifier notifier, ILogger<AutoDownloader> logger)
 	{
 		_watch = watch;
+		_shows = shows;
 		_downloads = downloads;
 		_schedule = schedule;
 		_animeSettings = animeSettings;
@@ -153,7 +155,7 @@ public sealed class AutoDownloader : IDisposable
 			return;
 		}
 
-		if (_watch.GetProvider(anime) is not { } provider)
+		if (_shows.GetProvider(anime) is not { } provider)
 		{
 			return;
 		}
@@ -200,14 +202,14 @@ public sealed class AutoDownloader : IDisposable
 	/// </summary>
 	private async Task<bool> HasEpisodeAsync(IAnimeProvider provider, AnimeModel anime, int number)
 	{
-		if ((await _watch.FindShowAsync(provider, anime, CancellationToken.None)).Show is not { } show)
+		if ((await _shows.FindShowAsync(provider, anime, CancellationToken.None)).Show is not { } show)
 		{
 			return false;
 		}
 
 		await _relations.EnsureAvailableAsync(CancellationToken.None);
 		var episodes = await provider.GetEpisodesAsync(show.Id, CancellationToken.None);
-		return _watch.PickEpisode(episodes, anime, number, _animeSettings.Get(anime).EpisodeNumbering) is not null;
+		return _shows.PickEpisode(episodes, anime, number, _animeSettings.Get(anime).EpisodeNumbering) is not null;
 	}
 
 	public void Dispose() => _check.Stop();

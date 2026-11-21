@@ -9,7 +9,7 @@ namespace Totoro.Playback;
 /// Asks an anime's provider (the one it's watched from) for its episodes, remembering what it has for a while. Used from
 /// cards on the UI thread only, so it needs no locks.
 /// </summary>
-public sealed class ProviderEpisodes(WatchService watch, IAnimeSettingsStore animeSettings, IAnimeRelations relations,
+public sealed class ProviderEpisodes(ShowResolver shows, IAnimeSettingsStore animeSettings, IAnimeRelations relations,
 									 ILogger<ProviderEpisodes> logger) : IProviderEpisodes
 {
 	// An episode that's aired may reach the provider later, so it's asked again after this.
@@ -56,7 +56,7 @@ public sealed class ProviderEpisodes(WatchService watch, IAnimeSettingsStore ani
 	private async Task<int?> GetLatestAsync(AnimeModel anime, CancellationToken ct)
 	{
 		var watched = anime.Tracking?.WatchedEpisodes ?? 0;
-		if (EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is not { } aired || watch.GetProvider(anime) is not { } provider)
+		if (EpisodeAvailability.AiredEpisodes(anime, DateTime.Now) is not { } aired || shows.GetProvider(anime) is not { } provider)
 		{
 			return null;
 		}
@@ -64,7 +64,7 @@ public sealed class ProviderEpisodes(WatchService watch, IAnimeSettingsStore ani
 		try
 		{
 			// No picker: this runs unasked, so a show that isn't matched yet stays unknown.
-			if ((await watch.FindShowAsync(provider, anime, ct)).Show is not { } show)
+			if ((await shows.FindShowAsync(provider, anime, ct)).Show is not { } show)
 			{
 				return null;
 			}

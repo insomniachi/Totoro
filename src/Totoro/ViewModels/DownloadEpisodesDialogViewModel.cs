@@ -22,7 +22,7 @@ public sealed record DownloadRequest(EpisodeRange Episodes, IAnimeProvider Provi
 public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<DownloadRequest>
 {
 	private readonly AnimeModel _anime;
-	private readonly WatchService _watch;
+	private readonly ShowResolver _shows;
 	private readonly IFactory<IAnimeProvider> _providers;
 
 	// Each provider's settings as edited, by provider id, so switching provider and back keeps the edits.
@@ -31,10 +31,10 @@ public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<Do
 	// The provider it was said to have nothing for: Download again searches it by hand (the show picker) anyway.
 	private Guid? _warnedProvider;
 
-	public DownloadEpisodesDialogViewModel(AnimeModel anime, WatchService watch, IFactory<IAnimeProvider> providers, IEnumerable<Descriptor> modules)
+	public DownloadEpisodesDialogViewModel(AnimeModel anime, ShowResolver shows, IFactory<IAnimeProvider> providers, IEnumerable<Descriptor> modules)
 	{
 		_anime = anime;
-		_watch = watch;
+		_shows = shows;
 		_providers = providers;
 		Title = $"Download {anime.Title}";
 		PrimaryButtonText = "Download";
@@ -50,7 +50,7 @@ public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<Do
 		Providers = [.. providers.CreateAll().Where(x => x.Id != DownloadsModule.Id)
 								 .Select(x => new ProviderChoice(x.Id, x.Name, modules.FirstOrDefault(m => m.Id == x.Id)?.Image ?? ""))];
 		HasProviders = Providers.Count > 0;
-		var own = watch.GetProvider(anime)?.Id;
+		var own = shows.GetProvider(anime)?.Id;
 		SelectedProvider = Providers.FirstOrDefault(x => x.Id == own) ?? Providers.FirstOrDefault();
 		Validate();
 	}
@@ -107,7 +107,7 @@ public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<Do
 	{
 		if (!_drafts.TryGetValue(id, out var draft))
 		{
-			var config = _watch.CopyProviderSettings(_anime, id);
+			var config = _shows.CopyProviderSettings(_anime, id);
 			var container = config?.ToDataContainer();
 			_drafts[id] = draft = config is not null && container is { Count: > 0 } ? (config, container) : null;
 		}
@@ -146,7 +146,7 @@ public sealed partial class DownloadEpisodesDialogViewModel : DialogViewModel<Do
 		Validate();
 		try
 		{
-			var (show, candidates) = await _watch.FindShowAsync(provider, _anime, CancellationToken.None);
+			var (show, candidates) = await _shows.FindShowAsync(provider, _anime, CancellationToken.None);
 			if (show is null && candidates.Count == 0 && _warnedProvider != id)
 			{
 				_warnedProvider = id;

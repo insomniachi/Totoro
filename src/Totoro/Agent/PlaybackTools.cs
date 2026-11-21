@@ -78,7 +78,7 @@ public sealed record DownloadedAnimeInfo(
 	string Size);
 
 /// <summary>Agent tools for watching and downloading anime (see <see cref="WatchService"/> and <see cref="DownloadService"/>).</summary>
-public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, DownloadService downloads, IPreferences preferences,
+public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, ShowResolver shows, DownloadService downloads, IPreferences preferences,
 								  IFactory<IAnimeProvider> providers)
 {
 	// Long enough for a torrent to find peers.
@@ -97,13 +97,13 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	{
 		var anime = await lookup.GetAsync(animeId);
 		var number = episode ?? await watch.NextToWatchAsync(anime);
-		if (watch.GetProvider(anime) is not { } provider)
+		if (shows.GetProvider(anime) is not { } provider)
 		{
 			throw new AgentToolException("There's no anime provider to watch from.");
 		}
 
 		// The UI asks the user to pick the show when it's unclear; the agent picks instead (or asks them).
-		var (show, candidates) = await watch.FindShowAsync(provider, anime, CancellationToken.None);
+		var (show, candidates) = await shows.FindShowAsync(provider, anime, CancellationToken.None);
 		if (show is null)
 		{
 			return new PlayResult(false, $"It isn't clear which {provider.Name} show {anime.Title} is.", [.. candidates.Select(ToCandidate)]);
@@ -183,7 +183,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 		var candidates = string.IsNullOrWhiteSpace(query)
 			? await ShowMatching.SearchShowsAsync(source, anime, CancellationToken.None)
 			: await source.SearchAsync(query, CancellationToken.None);
-		var (matched, _) = await watch.FindShowAsync(source, anime, CancellationToken.None);
+		var (matched, _) = await shows.FindShowAsync(source, anime, CancellationToken.None);
 		return new ProviderShows(source.Name, matched is null ? null : ToCandidate(matched), [.. candidates.Select(ToCandidate)]);
 	}
 
@@ -197,7 +197,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	{
 		var anime = await lookup.GetAsync(animeId);
 		var source = GetProvider(anime, provider);
-		watch.SetShow(anime, source, new ProviderShow(showId, showTitle, 1));
+		shows.SetShow(anime, source, new ProviderShow(showId, showTitle, 1));
 		return $"{anime.Title} is \"{showTitle}\" on {source.Name}.";
 	}
 
@@ -268,12 +268,12 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 		var source = GetProvider(anime, provider);
 		if (providerSettings is not null)
 		{
-			var settings = watch.CopyProviderSettings(anime, source.Id) ?? throw new AgentToolException($"{source.Name} has no settings.");
+			var settings = shows.CopyProviderSettings(anime, source.Id) ?? throw new AgentToolException($"{source.Name} has no settings.");
 			ApplySettings(settings, providerSettings);
 			source.UseSettings(settings);
 		}
 
-		var (show, candidates) = await watch.FindShowAsync(source, anime, CancellationToken.None);
+		var (show, candidates) = await shows.FindShowAsync(source, anime, CancellationToken.None);
 		if (show is null)
 		{
 			throw new AgentToolException(candidates.Count == 0
@@ -417,7 +417,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 						 : $"There's no stream called {stream}; they are {string.Join(", ", servers.Select(x => x.Name))}.");
 		var number = anime is null
 			? (int)episodeNumber
-			: await watch.GetAnimeEpisodeAsync(anime, await source.GetEpisodesAsync(showId, CancellationToken.None), episode, numbering, CancellationToken.None);
+			: await shows.GetAnimeEpisodeAsync(anime, await source.GetEpisodesAsync(showId, CancellationToken.None), episode, numbering, CancellationToken.None);
 		return (source, episode, server, number);
 	}
 
@@ -433,11 +433,11 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, Downlo
 	{
 		if (name is null)
 		{
-			return watch.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to watch from.");
+			return shows.GetProvider(anime) ?? throw new AgentToolException("There's no anime provider to watch from.");
 		}
 
 		var provider = GetProvider(name);
-		if (watch.CopyProviderSettings(anime, provider.Id) is { } settings)
+		if (shows.CopyProviderSettings(anime, provider.Id) is { } settings)
 		{
 			provider.UseSettings(settings);
 		}

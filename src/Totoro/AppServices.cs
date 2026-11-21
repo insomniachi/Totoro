@@ -62,6 +62,7 @@ internal static class AppServices
 		services.RegisterFactory<IMangaProvider>(MangaPreferences.ProviderKey);
 
 		// Watching: the watch service drives a playback from a card's Play.
+		services.AddSingleton<ShowResolver>();
 		services.AddSingleton<WatchService>();
 		// The built-in players' window, which plugins' players play in too.
 		services.AddSingleton<Totoro.UI.Player.IPlayerWindowFactory, Views.Player.PlayerWindowFactory>();

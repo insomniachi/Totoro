@@ -167,7 +167,7 @@ public sealed class DownloadException(string message, Exception? innerException 
 /// Downloads run in the background; <see cref="Downloads"/> lists them, and changes as they go.
 /// </summary>
 public sealed class DownloadService(
-	WatchService watch,
+	ShowResolver shows,
 	IFactory<ITorrentStreamer> torrentStreamers,
 	IAnimeSettingsStore animeSettings,
 	IAnimeRelations relations,
@@ -223,8 +223,8 @@ public sealed class DownloadService(
 		List<ProviderEpisode> episodes;
 		try
 		{
-			provider ??= watch.GetProvider(anime) ?? throw new DownloadException("There's no anime provider to download from: install one from the Plugins page.");
-			if (await watch.FindOrPickShowAsync(provider, anime, CancellationToken.None) is not { } show)
+			provider ??= shows.GetProvider(anime) ?? throw new DownloadException("There's no anime provider to download from: install one from the Plugins page.");
+			if (await shows.FindOrPickShowAsync(provider, anime, CancellationToken.None) is not { } show)
 			{
 				return [];
 			}
@@ -251,7 +251,7 @@ public sealed class DownloadService(
 			// The stream is found when its turn comes: a provider's links may not last while others download.
 			_ = RunAsync(item, anime, number, title, async ct =>
 			{
-				var episode = watch.PickEpisode(episodes, anime, episodeNumber, numbering)
+				var episode = shows.PickEpisode(episodes, anime, episodeNumber, numbering)
 							  ?? throw new DownloadException($"Episode {episodeNumber} isn't on {provider.Name} yet.");
 				return (await provider.GetServersAsync(episode, ct)).FirstOrDefault()
 					   ?? throw new DownloadException($"{provider.Name} has no video for episode {episodeNumber}.");
@@ -729,7 +729,7 @@ public sealed class DownloadService(
 	/// <summary>The torrent streamer to download a torrent with, which the item then says it's downloaded by.</summary>
 	private ITorrentStreamer GetTorrentStreamer(DownloadItem item)
 	{
-		if (torrentStreamers.CreateDefault() is not { } streamer || !streamer.IsAvailable())
+		if (torrentStreamers.CreateAvailable() is not { } streamer)
 		{
 			throw new DownloadException("Downloading a torrent needs a torrent streamer, e.g. rqbit: set one up in Settings.");
 		}

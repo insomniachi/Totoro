@@ -61,7 +61,7 @@ public static class ShowMatching
 		};
 	}
 
-	/// <summary>The anime's episode that's the provider's <paramref name="episode"/>; see <see cref="WatchService.GetAnimeEpisodeAsync"/>.</summary>
+	/// <summary>The anime's episode that's the provider's <paramref name="episode"/>; see <see cref="ShowResolver.GetAnimeEpisodeAsync"/>.</summary>
 	internal static int AnimeEpisode(List<ProviderEpisode> episodes, AnimeModel anime, ProviderEpisode episode, EpisodeNumbering? numbering,
 									 IAnimeRelations relations)
 	{

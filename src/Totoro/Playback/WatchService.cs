@@ -57,6 +57,7 @@ public sealed partial class WatchService(
 	IFactory<IAnimeProvider> providers,
 	IFactory<IMediaPlayer> players,
 	IFactory<ITorrentStreamer> torrentStreamers,
+	ShowResolver shows,
 	AnimeTrackingService tracking,
 	IEnumerable<IMediaSegmentsProvider> segmentProviders,
 	IPlaybackProgressStore progressStore,
@@ -336,7 +337,7 @@ public sealed partial class WatchService(
 			return;
 		}
 
-		if (GetProvider(settings) is not { } provider)
+		if (shows.GetProvider(settings) is not { } provider)
 		{
 			Show(PlaybackStatusKind.Error, "There's no anime provider to watch from: install one from the Plugins page.", "Plugins", () =>
 			{
@@ -351,7 +352,7 @@ public sealed partial class WatchService(
 		ProviderName = provider.Name;
 
 		Show(PlaybackStatusKind.Progress, $"Finding the show on {provider.Name}…", "Cancel", Cancel);
-		if (await FindOrPickShowAsync(provider, anime, ct) is not { } show)
+		if (await shows.FindOrPickShowAsync(provider, anime, ct) is not { } show)
 		{
 			Hide();
 			return;
@@ -359,7 +360,7 @@ public sealed partial class WatchService(
 
 		Show(PlaybackStatusKind.Progress, $"Getting episode {number}…", "Cancel", Cancel);
 		await relations.EnsureAvailableAsync(ct);
-		if (PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), anime, number, settings.EpisodeNumbering) is not { } episode)
+		if (shows.PickEpisode(await provider.GetEpisodesAsync(show.Id, ct), anime, number, settings.EpisodeNumbering) is not { } episode)
 		{
 			// Perhaps the provider uses absolute numbering, and there's no rule for it yet.
 			Show(PlaybackStatusKind.Error,
@@ -394,7 +395,7 @@ public sealed partial class WatchService(
 		}
 
 		// By its ids or exact title only: no show picker for a folder that may not be there.
-		if ((await FindShowAsync(downloads, anime, ct)).Show is not { } show)
+		if ((await shows.FindShowAsync(downloads, anime, ct)).Show is not { } show)
 		{
 			return false;
 		}
@@ -432,19 +433,6 @@ public sealed partial class WatchService(
 		});
 	}
 
-	/// <summary>
-	/// The anime's episode that's the provider's <paramref name="episode"/>, numbered as <paramref name="numbering"/> says:
-	/// the one playing the anime from that show would find it as (see <see cref="PickEpisode(List{ProviderEpisode}, AnimeModel, int, EpisodeNumbering?)"/>),
-	/// so a later season a provider numbers on from the first (29 for its 1) is its own episode. The provider's number when
-	/// none of the anime's episodes is that one.
-	/// </summary>
-	public async Task<int> GetAnimeEpisodeAsync(AnimeModel anime, IReadOnlyList<ProviderEpisode> episodes, ProviderEpisode episode,
-												EpisodeNumbering? numbering, CancellationToken ct)
-	{
-		await relations.EnsureAvailableAsync(ct);
-		return ShowMatching.AnimeEpisode([.. episodes], anime, episode, numbering, relations);
-	}
-
 	/// <summary>A one-part movie, where "Episode 1" says nothing.</summary>
 	private static bool IsMovie(AnimeModel anime) => anime.MediaFormat == AnimeMediaFormat.Movie && anime.TotalEpisodes is null or <= 1;
 
@@ -456,7 +444,7 @@ public sealed partial class WatchService(
 	{
 		// A torrent is streamed to the player over HTTP, until playback ends.
 		await using var stream = server.Kind == VideoServerKind.Torrent ? await StreamTorrentAsync(server, ct) : null;
-		var media = new MediaItem(stream?.Url ?? server.Url, IsMovie(anime) ? anime.Title : $"{anime.Title} - Episode {number}",stream?.Headers ?? server.Headers) { Subtitles = server.Subtitles };
+		var media = new MediaItem(stream?.Url ?? server.Url, PlayingTitle(anime, number), stream?.Headers ?? server.Headers) { Subtitles = server.Subtitles };
 		await PlayAsync(player, anime, number, media, server.Segments, settings, track, offerEpisodes, ct);
 	}
 
@@ -987,93 +975,6 @@ public sealed partial class WatchService(
 		}
 	}
 
-	/// <summary>
-	/// The provider to watch the anime from: its own (see <see cref="AnimeSettings"/>), or the selected one; set to use
-	/// the anime's own settings for it, if it has any.
-	/// </summary>
-	public IAnimeProvider? GetProvider(AnimeModel anime) => GetProvider(animeSettings.Get(anime));
-
-	/// <summary>Matches the anime with a show on the provider: it's watched from that show from now on.</summary>
-	public void SetShow(AnimeModel anime, IAnimeProvider provider, ProviderShow show)
-	{
-		var settings = animeSettings.Get(anime);
-		settings.Shows[provider.Id] = show;
-		animeSettings.Save(anime, settings);
-	}
-
-	/// <summary>
-	/// The show to watch the anime from on the provider: the one it's matched with, or else the only exact title match
-	/// (which becomes its match). Otherwise no show, and the shows it may be, best match first, to choose from.
-	/// </summary>
-	public async Task<(ProviderShow? Show, IReadOnlyList<ProviderShow> Candidates)> FindShowAsync(IAnimeProvider provider, AnimeModel anime,
-																							   CancellationToken ct)
-	{
-		if (animeSettings.Get(anime).Shows.TryGetValue(provider.Id, out var known))
-		{
-			// A download's folder is renamed when its naming changes: one its ids find now replaces the old match.
-			if (provider.Id != DownloadsModule.Id || await provider.FindShowAsync(anime.ExternalIds, ct) is not { } byId || byId.Id == known.Id)
-			{
-				return (known, [known]);
-			}
-		}
-
-		var results = await ShowMatching.SearchShowsAsync(provider, anime, ct);
-		var exact = results.Where(x => x.Score >= 1).ToList();
-		if (exact.Count != 1)
-		{
-			return (null, results);
-		}
-
-		SetShow(anime, provider, exact[0]);
-		return (exact[0], results);
-	}
-
-	/// <summary>The provider's show for the anime: as <see cref="FindShowAsync"/> finds it, or else one the user picks.</summary>
-	internal async Task<ProviderShow?> FindOrPickShowAsync(IAnimeProvider provider, AnimeModel anime, CancellationToken ct)
-	{
-		var (show, candidates) = await FindShowAsync(provider, anime, ct);
-		if (show is not null)
-		{
-			return show;
-		}
-
-		var picked = await dialogs.ShowAsync<ShowPickerDialogViewModel, ProviderShow>(new ShowPickerRequest(provider, anime.Title, candidates));
-		if (picked is not null)
-		{
-			SetShow(anime, provider, picked);
-		}
-
-		return picked;
-	}
-
-	/// <summary>
-	/// A copy of the provider's settings for the anime, to change for once (e.g. for a download) and pass to
-	/// <see cref="IAnimeProvider.UseSettings"/>: its own, or else the module's. Null if the provider has none.
-	/// </summary>
-	public DataContainerConfig? CopyProviderSettings(AnimeModel anime, Guid providerId) =>
-		moduleSettings.FirstOrDefault(x => x.Descriptor.Id == providerId)?.CreateCopy(animeSettings.Get(anime).ProviderSettings.GetValueOrDefault(providerId));
-
-	private IAnimeProvider? GetProvider(AnimeSettings settings)
-	{
-		var provider = providers.CreateStreaming(settings.ProviderId);
-		if (provider is not null && settings.ProviderSettings.TryGetValue(provider.Id, out var own) &&
-			moduleSettings.FirstOrDefault(x => x.Descriptor.Id == provider.Id) is { } module)
-		{
-			provider.UseSettings(module.CreateCopy(own));
-		}
-
-		return provider;
-	}
-
-	/// <summary>
-	/// The provider's episode for the anime's episode <paramref name="number"/>, skipping specials like 12.5. Providers may
-	/// use absolute numbering, carrying on across seasons (one show for both seasons, the second from 13): then
-	/// anime-relations (and the user's rules) say where the episode is. <paramref name="numbering"/> is the anime's
-	/// setting: by season, absolute, or (null) worked out from the provider's episode numbers.
-	/// </summary>
-	internal ProviderEpisode? PickEpisode(List<ProviderEpisode> episodes, AnimeModel anime, int number, EpisodeNumbering? numbering) =>
-		ShowMatching.PickEpisode(episodes, anime, number, numbering, relations);
-
 	/// <summary>Edits the anime's settings (its episode numbering, a rule for it), then plays the episode again if saved.</summary>
 	private async Task EditNumberingAsync(AnimeModel anime, int number)
 	{
@@ -1089,7 +990,7 @@ public sealed partial class WatchService(
 	/// </summary>
 	private async Task<TorrentStream?> StreamTorrentAsync(VideoServer server, CancellationToken ct)
 	{
-		if (torrentStreamers.CreateDefault() is not { } streamer || !streamer.IsAvailable())
+		if (torrentStreamers.CreateAvailable() is not { } streamer)
 		{
 			logger.LogWarning("No torrent streamer is available; the player gets the torrent itself");
 			return null;

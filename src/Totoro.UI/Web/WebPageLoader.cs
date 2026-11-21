@@ -19,19 +19,6 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 	private static readonly TimeSpan s_automaticCheck = TimeSpan.FromSeconds(10);
 	private static readonly TimeSpan s_loadTimeout = TimeSpan.FromSeconds(30);
 
-	// Reads what the page is: Cloudflare's check ("Just a moment..."), its block, or the page itself (its text for a
-	// JSON or text response, which the browser shows as text, or its markup).
-	private const string ReadScript = """
-		JSON.stringify({
-			url: location.href,
-			type: document.contentType,
-			title: document.title,
-			check: document.title === 'Just a moment...' || !!document.getElementById('challenge-form'),
-			blocked: document.title.startsWith('Attention Required!'),
-			content: document.contentType === 'text/html' ? document.documentElement.outerHTML : (document.body ? document.body.innerText : '')
-		})
-		""";
-
 	private readonly SemaphoreSlim _gate = new(1, 1);
 	private CoreWebView2Environment? _environment;
 	private CoreWebView2Controller? _controller;
@@ -307,16 +294,7 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 
 	private static async Task<PageState> ReadAsync(CoreWebView2 browser)
 	{
-		// The script returns a JSON string, which ExecuteScriptAsync returns as JSON again.
-		var json = JsonSerializer.Deserialize<string>(await browser.ExecuteScriptAsync(ReadScript)) ?? "{}";
-		using var document = JsonDocument.Parse(json);
-		var root = document.RootElement;
-		return new PageState(
-			root.GetProperty("url").GetString() ?? "",
-			root.GetProperty("type").GetString() ?? "",
-			root.GetProperty("check").GetBoolean(),
-			root.GetProperty("blocked").GetBoolean(),
-			root.GetProperty("content").GetString() ?? "");
+		return PageReader.Parse(await browser.ExecuteScriptAsync(PageReader.Script));
 	}
 
 	/// <summary>
@@ -391,8 +369,4 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 
 		return passed;
 	}
-
-	/// <param name="Check">Whether it's Cloudflare's bot check rather than the page.</param>
-	/// <param name="Blocked">Whether Cloudflare refused it outright.</param>
-	private sealed record PageState(string Url, string Type, bool Check, bool Blocked, string Content);
 }
