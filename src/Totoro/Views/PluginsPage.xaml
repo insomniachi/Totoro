@@ -63,6 +63,13 @@
                         PlaceholderText="Search plugins"
                         QueryIcon="Find"
                         Text="{x:Bind ViewModel.SearchFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <controls:BusyButton
+                        AutomationProperties.Name="Update all"
+                        Command="{x:Bind ViewModel.UpdateAllCommand}"
+                        Content="Update all"
+                        IsBusy="{x:Bind ViewModel.UpdateAllCommand.IsRunning, Mode=OneWay}"
+                        Style="{ThemeResource AccentButtonStyle}"
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.HasUpdates), Mode=OneWay}" />
                     <Button
                         AutomationProperties.Name="Refresh"
                         Command="{x:Bind ViewModel.RefreshCatalogCommand}"

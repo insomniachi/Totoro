@@ -321,6 +321,25 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 		{
 			item.Refresh();
 		}
+		OnPropertyChanged(nameof(HasUpdates));
+	}
+
+	/// <summary>Whether Update all shows: an update the Plugins item's badge counts.</summary>
+	// Not a count in the button's text: BusyButton can't take new content while busy (WinUI throws E_INVALIDARG).
+	public bool HasUpdates => UpdatableItems().Any();
+
+	private IEnumerable<PluginItemViewModel> UpdatableItems() =>
+		_allCatalogItems.Where(x => x.ShowsUpdate && x.IsCompatible && !string.IsNullOrWhiteSpace(x.DownloadUrl));
+
+	/// <summary>Updates every plugin with an update, one at a time; each card shows its own progress and error.</summary>
+	[RelayCommand]
+	public async Task UpdateAllAsync()
+	{
+		foreach (var item in UpdatableItems().ToList())
+		{
+			await item.InstallOrUpdateCommand.ExecuteAsync(null);
+		}
+		OnPropertyChanged(nameof(HasUpdates));
 	}
 
 	/// <summary>Downloads the catalog again (opening the page reuses the one already fetched).</summary>
@@ -355,6 +374,7 @@ public partial class PluginsViewModel : ObservableObject, IRecipient<PluginsChan
 		{
 			// Built-ins show even when the catalog doesn't load.
 			ApplyFilter();
+			OnPropertyChanged(nameof(HasUpdates));
 			IsLoadingCatalog = false;
 			RequiresRestart = _pluginManager.RequiresRestart;
 			InstalledPlugins = [.. _pluginLoader.Plugins];
