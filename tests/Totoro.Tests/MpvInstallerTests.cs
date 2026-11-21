@@ -57,11 +57,13 @@ public class MpvInstallerTests
 
 	[Theory]
 	[InlineData(0L, Anime4KGpu.LowerEnd)]
-	[InlineData(512L << 20, Anime4KGpu.LowerEnd)]
+	[InlineData(512L << 20, null)]
+	[InlineData((4L << 30) - 1, null)]
+	[InlineData(4L << 30, Anime4KGpu.LowerEnd)]
 	[InlineData(6L << 30, Anime4KGpu.LowerEnd)]
 	[InlineData(8L << 30, Anime4KGpu.HigherEnd)]
 	[InlineData(12L << 30, Anime4KGpu.HigherEnd)]
-	public void FromVram_HigherEndFrom8GB(long bytes, Anime4KGpu expected)
+	public void FromVram_NoneUnder4GB_HigherEndFrom8GB(long bytes, Anime4KGpu? expected)
 	{
 		Assert.Equal(expected, MpvInstaller.FromVram(bytes));
 	}

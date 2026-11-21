@@ -290,9 +290,17 @@ public sealed partial class PlayerTransportControls : UserControl
 		var menu = (MenuFlyout)sender;
 		menu.Items.Clear();
 		var current = ViewModel.GetShaderMode();
+		// A hint for touch, where there are no tooltips: each mode's tooltip says more.
+		menu.Items.Add(new MenuFlyoutItem { Text = "Pick the resolution of the episode you're watching", IsEnabled = false });
+		menu.Items.Add(new MenuFlyoutSeparator());
 		foreach (var (name, i) in ViewModel.ShaderModes.Select((x, i) => (x, i)))
 		{
 			var item = new RadioMenuFlyoutItem { Text = name, IsChecked = i == current, GroupName = "ShaderMode" };
+			if (ViewModel.GetShaderModeDescription(i) is { } description)
+			{
+				ToolTipService.SetToolTip(item, description);
+			}
+
 			item.Click += (_, _) => ViewModel.SelectShaderMode(i);
 			menu.Items.Add(item);
 		}

@@ -12,7 +12,7 @@ internal sealed record MpvInstallInfo(
 
 [Description("Anime4K's upscaling modes for the video playing in mpv in Totoro's window.")]
 internal sealed record Anime4KModes(
-	[property: Description("The modes, by index: 0 is Off, the rest are Anime4K's (e.g. \"Mode A (HQ)\").")]
+	[property: Description("The modes, by index: 0 is Off, the rest are Anime4K's (e.g. \"From 1080p\", Anime4K's Mode A).")]
 	IReadOnlyList<string> Modes,
 	[property: Description("The index of the mode in use; -1 if it's none of them (shaders of the user's own).")]
 	int Current);
@@ -49,7 +49,7 @@ internal sealed class MpvTools(MpvInstaller installer, MpvWindowMediaPlayer play
 	}
 
 	[AgentTool("download_mpv", RequiresApproval = true)]
-	[Description("Downloads mpv, with FFmpeg and yt-dlp, for the MPV media player; when they're already there, updates them to the latest builds. Also adds Anime4K's upscaling to mpv's config, or takes it out, as the module's InstallAnime4K and Anime4KGpu settings say (Anime4KGpu Auto picks from the graphics card's memory; in mpv, Ctrl+1 to 6 pick a mode, Ctrl+0 turns it off).")]
+	[Description("Downloads mpv, with FFmpeg and yt-dlp, for the MPV media player; when they're already there, updates them to the latest builds. Also adds Anime4K's upscaling to mpv's config, or takes it out, as the module's InstallAnime4K and Anime4KGpu settings say (Anime4KGpu Auto picks from the graphics card's memory, and skips Anime4K under 4 GB; in mpv, Ctrl+1 to 6 pick a mode, Ctrl+0 turns it off).")]
 	public async Task<MpvInstallInfo> DownloadMpvAsync()
 	{
 		await installer.InstallAsync();

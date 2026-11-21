@@ -244,7 +244,7 @@ internal sealed partial class MpvInstaller
 		if (gpu == Anime4KGpu.Auto)
 		{
 			gpu = DetectGpu();
-			_logger.LogInformation("Anime4K: picked the {Gpu} template for this graphics card", gpu);
+			_logger.LogInformation("Anime4K: picked {Gpu} for this graphics card", gpu?.ToString() ?? "none (too little memory)");
 		}
 
 		string[] confs = [Path.Combine(ConfigFolder, "input.conf"), Path.Combine(ConfigFolder, "mpv.conf")];
@@ -275,6 +275,7 @@ internal sealed partial class MpvInstaller
 		var zip = Path.Combine(folder, "anime4k.zip");
 		await File.WriteAllBytesAsync(zip, bytes, ct);
 		var template = Path.Combine(folder, "anime4k");
+		Directory.CreateDirectory(template);
 		await Task.Run(() => ArchiveFactory.WriteToDirectory(zip, template, new ExtractionOptions { ExtractFullPath = true, Overwrite = true }), ct);
 
 		Directory.CreateDirectory(shaders);
@@ -293,8 +294,8 @@ internal sealed partial class MpvInstaller
 		}
 	}
 
-	/// <summary>The template for the graphics card with the most memory; lower-end if it can't be read.</summary>
-	internal static Anime4KGpu DetectGpu()
+	/// <summary>The template for the graphics card with the most memory, none if it's too weak; lower-end if it can't be read.</summary>
+	internal static Anime4KGpu? DetectGpu()
 	{
 		try
 		{
@@ -326,7 +327,13 @@ internal sealed partial class MpvInstaller
 	}
 
 	// shortcut: memory stands in for shader speed (an 8 GB RX 580 counts as higher-end); use a table of cards if that stutters.
-	internal static Anime4KGpu FromVram(long bytes) => bytes >= 8L << 30 ? Anime4KGpu.HigherEnd : Anime4KGpu.LowerEnd;
+	// Under 4 GB (most integrated graphics) gets none: even the fast shaders stutter there. 0 is unread, not weak.
+	internal static Anime4KGpu? FromVram(long bytes) => bytes switch
+	{
+		>= 8L << 30 => Anime4KGpu.HigherEnd,
+		> 0 and < 4L << 30 => null,
+		_ => Anime4KGpu.LowerEnd,
+	};
 
 	/// <summary>Whether a config has the lines added for this GPU, or Anime4K lines of the user's own (left alone).</summary>
 	internal static bool HasAnime4K(string conf, Anime4KGpu gpu)

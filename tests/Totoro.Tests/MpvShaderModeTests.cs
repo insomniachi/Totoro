@@ -20,9 +20,20 @@ public class MpvShaderModeTests
 
 		var modes = MpvPlayerViewModel.ParseShaderModes(conf);
 
-		Assert.Equal(["Mode A (HQ)", "Mode B (HQ)"], modes.Select(x => x.Name));
+		Assert.Equal(["From 1080p", "From 720p"], modes.Select(x => x.Name));
 		Assert.Equal("~~/shaders/A.glsl;~~/shaders/B.glsl", modes[0].Shaders);
 		Assert.Equal("Anime4K: Mode A (HQ)", modes[0].Label);
+	}
+
+	[Theory]
+	[InlineData("Anime4K: Mode C (HQ)", "From 480p / DVD")]
+	[InlineData("Anime4K: Mode A+A (Fast)", "From 1080p, stronger")]
+	[InlineData("Anime4K: Mode C+A (HQ)", "From 480p / DVD, stronger")]
+	[InlineData("My shaders", "My shaders")]
+	public void ShaderModeName_SaysWhatVideoItsFor(string label, string name)
+	{
+		Assert.Equal(name, new MpvPlayerViewModel.ShaderMode(label, "x.glsl").Name);
+		Assert.Equal(label.StartsWith("Anime4K"), new MpvPlayerViewModel.ShaderMode(label, "x.glsl").Description is not null);
 	}
 
 	[Fact]

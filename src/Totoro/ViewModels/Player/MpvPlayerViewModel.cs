@@ -30,13 +30,42 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	// Anime4K's modes, as mpv's input.conf binds them to keys (see MpvInstaller), which don't reach mpv here.
 	private readonly IReadOnlyList<ShaderMode> _modes = ReadShaderModes(Path.Combine(MpvInstaller.ConfigFolder, "input.conf"));
 
-	/// <param name="Label">What mpv shows as it's picked, e.g. "Anime4K: Mode A (HQ)".</param>
+	/// <param name="Label">What input.conf has mpv show as it's picked, e.g. "Anime4K: Mode A (HQ)".</param>
 	/// <param name="Shaders">mpv's glsl-shaders, separated by semicolons.</param>
 	internal sealed record ShaderMode(string Label, string Shaders)
 	{
-		/// <summary>Its name in the menu, e.g. "Mode A (HQ)".</summary>
-		public string Name => Label.StartsWith("Anime4K:", StringComparison.OrdinalIgnoreCase) ? Label["Anime4K:".Length..].Trim() : Label;
+		/// <summary>
+		/// Its name in the menu: Anime4K's modes by the video they're made for (its guide: A for 1080p, B 720p, C 480p; a
+		/// second letter adds a second restore pass), e.g. "Mode A+A (HQ)" is "From 1080p, stronger". Other labels as they are.
+		/// </summary>
+		public string Name => Describe().Name;
+
+		/// <summary>What it does and when to use it; null for a mode of the user's own.</summary>
+		public string? Description => Describe().Description;
+
+		private (string Name, string? Description) Describe()
+		{
+			var name = Label.StartsWith("Anime4K:", StringComparison.OrdinalIgnoreCase) ? Label["Anime4K:".Length..].Trim() : Label;
+			var mode = Anime4KMode().Match(name);
+			if (!mode.Success)
+			{
+				return (name, null);
+			}
+
+			var (video, description) = char.ToUpperInvariant(mode.Groups["mode"].Value[0]) switch
+			{
+				'A' => ("1080p", "For 1080p episodes, the usual kind, which are often a little blurry: removes the blur and compression artifacts, then upscales to your screen."),
+				'B' => ("720p", "For 720p episodes: a gentler clean-up that keeps more of the original detail, then upscales to your screen."),
+				_ => ("480p / DVD", "For 480p and DVD episodes: removes noise and upscales to your screen, without sharpening."),
+			};
+			return mode.Groups["second"].Success
+				? ($"From {video}, stronger", description + " Stronger adds a second clean-up pass: sharper, but it can add artifacts and needs a faster graphics card.")
+				: ($"From {video}", description);
+		}
 	}
+
+	[System.Text.RegularExpressions.GeneratedRegex(@"^Mode\s+(?<mode>[ABC])(?:\s*\+\s*(?<second>[ABC]))?\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+	private static partial System.Text.RegularExpressions.Regex Anime4KMode();
 
 	/// <summary>
 	/// Creates mpv to draw in <paramref name="window"/> (the player's). Off the UI thread: loading libmpv and starting it
@@ -236,6 +265,9 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 
 	public override IReadOnlyList<string> ShaderModes => _modes.Count == 0 ? [] : ["Off", .. _modes.Select(x => x.Name)];
 
+	public override string? GetShaderModeDescription(int index) =>
+		index == 0 ? "Plays the video as it is." : index > 0 && index <= _modes.Count ? _modes[index - 1].Description : null;
+
 	public override int GetShaderMode()
 	{
 		var mpv = _mpv;
@@ -271,7 +303,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 
 		var mode = _modes[index - 1];
 		Command(mpv, "change-list", "glsl-shaders", "set", mode.Shaders);
-		_ = ShowMessageAsync(mode.Label, TimeSpan.FromSeconds(2));
+		_ = ShowMessageAsync($"Anime4K: {mode.Name}", TimeSpan.FromSeconds(2));
 	}
 
 	/// <summary>The shader modes bound in an input.conf: each "change-list glsl-shaders set" with the text it shows.</summary>

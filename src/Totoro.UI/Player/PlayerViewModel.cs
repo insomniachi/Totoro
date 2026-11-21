@@ -265,6 +265,9 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 	/// </summary>
 	public virtual IReadOnlyList<string> ShaderModes => [];
 
+	/// <summary>What the mode at <paramref name="index"/> in <see cref="ShaderModes"/> does and when to use it; null if unknown.</summary>
+	public virtual string? GetShaderModeDescription(int index) => null;
+
 	/// <summary>The index in <see cref="ShaderModes"/> of the one in use; -1 if it's none of them.</summary>
 	public virtual int GetShaderMode() => -1;
 

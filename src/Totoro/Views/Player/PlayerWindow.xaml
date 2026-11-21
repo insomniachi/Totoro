@@ -108,19 +108,6 @@
                 </StackPanel>
             </Grid>
 
-            <!--  A short message, e.g. "Skipped the opening"  -->
-            <Border
-                Margin="16"
-                Padding="12,8"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Background="#CC000000"
-                CornerRadius="{ThemeResource OverlayCornerRadius}"
-                IsHitTestVisible="False"
-                Visibility="{x:Bind ViewModel.IsMessageVisible, Mode=OneWay}">
-                <TextBlock Text="{x:Bind ViewModel.Message, Mode=OneWay}" TextWrapping="Wrap" />
-            </Border>
-
             <!--  Watching together: someone joining or leaving the room, at the top in the middle, below the title bar  -->
             <ItemsControl
                 Margin="0,56,0,0"
@@ -336,24 +323,36 @@
 
         </Grid>
 
-        <!--  The anime's title logo, when it has one: under the title bar, coming and going with it  -->
-        <Image
-            x:Name="TitleLogo"
-            MaxWidth="320"
-            MaxHeight="96"
+        <!--  Under the title bar: the anime's title logo, when it has one, coming and going with it; then a short message, e.g. "Skipped the opening", which stays  -->
+        <StackPanel
             Margin="24,56,0,0"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             IsHitTestVisible="False"
-            Source="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Logo), Mode=OneWay}"
-            Stretch="Uniform">
-            <Image.OpacityTransition>
-                <ScalarTransition />
-            </Image.OpacityTransition>
-            <Image.TranslationTransition>
-                <Vector3Transition />
-            </Image.TranslationTransition>
-        </Image>
+            Spacing="8">
+            <Image
+                x:Name="TitleLogo"
+                MaxWidth="320"
+                MaxHeight="96"
+                HorizontalAlignment="Left"
+                Source="{x:Bind helpers:CommonConverters.ToImageSource(ViewModel.Logo), Mode=OneWay}"
+                Stretch="Uniform">
+                <Image.OpacityTransition>
+                    <ScalarTransition />
+                </Image.OpacityTransition>
+                <Image.TranslationTransition>
+                    <Vector3Transition />
+                </Image.TranslationTransition>
+            </Image>
+            <Border
+                Padding="12,8"
+                HorizontalAlignment="Left"
+                Background="#CC000000"
+                CornerRadius="{ThemeResource OverlayCornerRadius}"
+                Visibility="{x:Bind ViewModel.IsMessageVisible, Mode=OneWay}">
+                <TextBlock Text="{x:Bind ViewModel.Message, Mode=OneWay}" TextWrapping="Wrap" />
+            </Border>
+        </StackPanel>
 
         <!--  The controls: a panel floating over the bottom of the video, as wide as MediaTransportControls at most  -->
         <local:PlayerTransportControls
