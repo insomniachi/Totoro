@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations;
 using CommunityToolkit.WinUI.Behaviors;
 using CommunityToolkit.WinUI.Media.Pipelines;
@@ -106,7 +106,7 @@ public class HoverEffectsBehavior : BehaviorBase<MediaCard>
 		s_enterAnimation.Start(AssociatedObject);
 		if (_stroke is not null)
 		{
-			_stroke.BorderThickness = new Thickness(3);
+			_stroke.BorderThickness = new Thickness(2);
 		}
 
 		if (_image is null)
