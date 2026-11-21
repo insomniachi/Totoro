@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Totoro.Core.Services;
+using Totoro.UI.Dialogs;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.System;
@@ -238,7 +239,7 @@ public sealed partial class SongCard : UserControl
 				CloseButtonText = "Cancel",
 				DefaultButton = ContentDialogButton.Primary,
 			};
-			if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+			if (await dialog.ShowThemedAsync() == ContentDialogResult.Primary)
 			{
 				Song?.AddToPlaylist(name.Text);
 			}

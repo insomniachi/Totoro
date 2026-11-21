@@ -5,6 +5,7 @@ using Microsoft.Web.WebView2.Core;
 using Totoro.Core.Agent;
 using Totoro.Core.Helpers;
 using Totoro.Core.Web;
+using Totoro.UI.Dialogs;
 
 namespace Totoro.UI.Web;
 
@@ -358,7 +359,7 @@ public sealed class WebPageLoader(Func<nint> windowHandle, Func<XamlRoot?> xamlR
 			IsWaitingForUser = true;
 			try
 			{
-				await dialog.ShowAsync();
+				await dialog.ShowThemedAsync();
 			}
 			finally
 			{

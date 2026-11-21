@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.Core.Authentication;
+using Totoro.UI.Dialogs;
 
 namespace Totoro.UI.Authentication;
 
@@ -66,7 +67,7 @@ public sealed class WebAuthenticator(Func<XamlRoot?> xamlRoot) : IWebAuthenticat
 
 		try
 		{
-			await dialog.ShowAsync();
+			await dialog.ShowThemedAsync();
 		}
 		finally
 		{

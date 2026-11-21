@@ -101,7 +101,7 @@ public sealed class DialogService(IViewRegistry viewRegistry, IServiceScopeFacto
 
 		try
 		{
-			return await dialog.ShowAsync() == ContentDialogResult.Primary ? viewModel.Result : default;
+			return await dialog.ShowThemedAsync() == ContentDialogResult.Primary ? viewModel.Result : default;
 		}
 		finally
 		{

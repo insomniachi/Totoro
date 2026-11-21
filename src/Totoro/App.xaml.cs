@@ -248,7 +248,7 @@ public partial class App : Application
 				};
 				try
 				{
-					if (await dialog.ShowAsync() != Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+					if (await dialog.ShowThemedAsync() != Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
 					{
 						return;
 					}
