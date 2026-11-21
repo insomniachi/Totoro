@@ -24,6 +24,20 @@ public class PlayerViewModelTests
 	}
 
 	[Fact]
+	public async Task ShowMessage_Stacks_ReplacesSameKind_ThenEachGoes()
+	{
+		var vm = CreateViewModel();
+
+		_ = vm.ShowMessageAsync("Anime4K: From 1080p", TimeSpan.FromSeconds(10));
+		var skipped = vm.ShowMessageAsync("Skipped the opening", TimeSpan.FromMilliseconds(50));
+		_ = vm.ShowMessageAsync("Anime4K: From 720p", TimeSpan.FromSeconds(10));
+		Assert.Equal(["Skipped the opening", "Anime4K: From 720p"], vm.Messages.Select(x => x.Text));
+
+		await skipped;
+		Assert.Equal(["Anime4K: From 720p"], vm.Messages.Select(x => x.Text));
+	}
+
+	[Fact]
 	public async Task ShowSaving_SpinsUntilSaved_ThenTicks_ThenHides()
 	{
 		var vm = CreateViewModel();

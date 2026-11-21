@@ -30,7 +30,6 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 	private readonly SemaphoreSlim _loading = new(1, 1);
 	private TaskCompletionSource<bool>? _offer;
 	private TaskCompletionSource<bool>? _next;
-	private CancellationTokenSource? _message;
 	private bool _isClosed;
 
 	/// <summary>Whether <see cref="CloseAsync"/> has been called.</summary>
@@ -165,10 +164,8 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 	/// <summary>The opening, ending... as chapters, marked on the seek bar.</summary>
 	[ObservableProperty] public partial IReadOnlyList<MediaChapter> Chapters { get; private set; } = [];
 
-	/// <summary>A short message over the video, e.g. "Skipped the opening".</summary>
-	[ObservableProperty] public partial string Message { get; private set; } = "";
-
-	[ObservableProperty] public partial bool IsMessageVisible { get; private set; }
+	/// <summary>Short messages over the video, e.g. "Skipped the opening", oldest first: each goes after its time.</summary>
+	public ObservableCollection<PlayerMessage> Messages { get; } = [];
 
 	/// <summary>The button over the video, e.g. "Skip opening".</summary>
 	[ObservableProperty] public partial string OfferText { get; private set; } = "";
@@ -303,20 +300,21 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 
 	public async Task ShowMessageAsync(string text, TimeSpan duration)
 	{
-		_message?.Cancel();
-		var message = _message = new CancellationTokenSource();
-		Message = text;
-		IsMessageVisible = true;
-		try
+		// Stacked under the others, but one of the same kind ("Anime4K: ...") replaces the last.
+		var kind = MessageKind(text);
+		foreach (var old in Messages.Where(x => MessageKind(x.Text) == kind).ToList())
 		{
-			await Task.Delay(duration, message.Token);
-			IsMessageVisible = false;
+			Messages.Remove(old);
 		}
-		catch (OperationCanceledException)
-		{
-			// Replaced by another message.
-		}
+
+		var message = new PlayerMessage(text);
+		Messages.Add(message);
+		await Task.Delay(duration);
+		Messages.Remove(message);
 	}
+
+	/// <summary>What a message is about: the words before its colon, e.g. "Anime4K"; the whole of it without one.</summary>
+	internal static string MessageKind(string text) => text.IndexOf(':') is var i and > 0 ? text[..i] : text;
 
 	/// <inheritdoc cref="IInteractiveMediaPlayer.OfferAsync"/>
 	public async Task<bool> OfferAsync(string text, CancellationToken ct)
@@ -415,7 +413,7 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 		_isClosed = true;
 		_offer?.TrySetResult(false);
 		_next?.TrySetResult(false);
-		_message?.Cancel();
+		Messages.Clear();
 		IsPlaying = false;
 		// Not while a video is being started.
 		await _loading.WaitAsync();
@@ -765,4 +763,10 @@ public sealed record EpisodeListItem(PlayerEpisode Episode)
 
 	/// <summary>Its accessible name, e.g. "Episode 5, Title, playing".</summary>
 	public string Name => $"Episode {Number}, {Title}{(IsCurrent ? ", playing" : IsWatched ? ", watched" : "")}";
+}
+
+/// <summary>A message over the video; a class, so two with the same words are still told apart as each goes.</summary>
+public sealed class PlayerMessage(string text)
+{
+	public string Text { get; } = text;
 }

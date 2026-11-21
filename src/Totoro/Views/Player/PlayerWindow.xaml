@@ -323,7 +323,7 @@
 
         </Grid>
 
-        <!--  Under the title bar: the anime's title logo, when it has one, coming and going with it; then a short message, e.g. "Skipped the opening", which stays  -->
+        <!--  Under the title bar: the anime's title logo, when it has one, coming and going with it; then short messages, e.g. "Skipped the opening", which stay, each under the one before  -->
         <StackPanel
             Margin="24,56,0,0"
             HorizontalAlignment="Left"
@@ -344,14 +344,24 @@
                     <Vector3Transition />
                 </Image.TranslationTransition>
             </Image>
-            <Border
-                Padding="12,8"
-                HorizontalAlignment="Left"
-                Background="#CC000000"
-                CornerRadius="{ThemeResource OverlayCornerRadius}"
-                Visibility="{x:Bind ViewModel.IsMessageVisible, Mode=OneWay}">
-                <TextBlock Text="{x:Bind ViewModel.Message, Mode=OneWay}" TextWrapping="Wrap" />
-            </Border>
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Messages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="8" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="player:PlayerMessage">
+                        <Border
+                            Padding="12,8"
+                            HorizontalAlignment="Left"
+                            Background="#CC000000"
+                            CornerRadius="{ThemeResource OverlayCornerRadius}">
+                            <TextBlock Text="{x:Bind Text}" TextWrapping="Wrap" />
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
 
         <!--  The controls: a panel floating over the bottom of the video, as wide as MediaTransportControls at most  -->
