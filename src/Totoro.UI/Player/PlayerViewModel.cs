@@ -136,8 +136,11 @@ public abstract partial class PlayerViewModel(int volume, PlayerAspectRatio aspe
 		}
 	}
 
-	/// <summary>From 0 to 100.</summary>
+	/// <summary>From 0 to <see cref="MaxVolume"/>.</summary>
 	[ObservableProperty] public partial double Volume { get; set; } = volume;
+
+	/// <summary>The loudest the engine plays: 100, the source's own level, unless it amplifies.</summary>
+	public virtual double MaxVolume => 100;
 
 	[ObservableProperty] public partial bool IsMuted { get; set; }
 

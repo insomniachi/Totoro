@@ -219,7 +219,7 @@ public sealed partial class PlayerWindow : Window
 				_ = ViewModel.SeekAsync(TimeSpan.FromSeconds(ViewModel.Position) + s_arrowSeek);
 				break;
 			case var key when KeyboardShortcuts.IsPressed(keys.VolumeUpKeys, key):
-				ViewModel.Volume = Math.Min(100, ViewModel.Volume + 5);
+				ViewModel.Volume = Math.Min(ViewModel.MaxVolume, ViewModel.Volume + 5);
 				break;
 			case var key when KeyboardShortcuts.IsPressed(keys.VolumeDownKeys, key):
 				ViewModel.Volume = Math.Max(0, ViewModel.Volume - 5);

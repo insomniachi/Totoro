@@ -27,6 +27,9 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 	private double _reported = -1;
 	private string _subPos = "100";
 
+	// mpv's volume-max default.
+	public override double MaxVolume => 130;
+
 	// Anime4K's modes, as mpv's input.conf binds them to keys (see MpvInstaller), which don't reach mpv here.
 	private readonly IReadOnlyList<ShaderMode> _modes = ReadShaderModes(Path.Combine(MpvInstaller.ConfigFolder, "input.conf"));
 

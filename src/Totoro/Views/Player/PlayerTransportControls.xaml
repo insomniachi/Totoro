@@ -160,7 +160,7 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.Name="Volume"
                                 IsThumbToolTipEnabled="False"
-                                Maximum="100"
+                                Maximum="{x:Bind ViewModel.MaxVolume}"
                                 Value="{x:Bind ViewModel.Volume, Mode=TwoWay}" />
                             <TextBlock
                                 Width="28"

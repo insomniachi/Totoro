@@ -85,6 +85,15 @@ public sealed class Settings : PlayerSettings
 	[Description("Leave empty to use the downloaded or installed mpv.")]
 	[Editor(DataContainerEditors.FileBrowser, "")]
 	public string FileName { get; set; } = "";
+
+	// mpv amplifies up to its volume-max, 130 by default; the other players stop at 100.
+	protected override void ConfigureProperty(DataContainerPropertyBuilder propertyBuilder, System.Reflection.PropertyInfo info)
+	{
+		if (info.Name == nameof(Volume))
+		{
+			propertyBuilder.WithRange(0, 130);
+		}
+	}
 }
 
 /// <summary>Which of Anime4K's templates to install: its fast shaders, or its high-quality ones.</summary>
