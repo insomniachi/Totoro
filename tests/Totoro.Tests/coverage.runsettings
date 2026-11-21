@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Coverage of Totoro's own code: dotnet test -c Release -s tests\Totoro.Tests\coverage.runsettings -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <CodeCoverage>
+            <!-- Only the app's assemblies: not the tests, third-party libraries or plugins loaded while testing. -->
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*\\Totoro\.dll$</ModulePath>
+                <ModulePath>.*\\Totoro\.Core\.dll$</ModulePath>
+                <ModulePath>.*\\Totoro\.UI\.dll$</ModulePath>
+              </Include>
+            </ModulePaths>
+            <!-- Generated code: XAML, source generators, the AniList GraphQL client, Lottie visuals. -->
+            <Sources>
+              <Exclude>
+                <Source>.*\.g\.cs$</Source>
+                <Source>.*\.g\.i\.cs$</Source>
+                <Source>.*\\obj\\.*</Source>
+                <Source>.*\\Anilist\\GraphQl\\AnilistClient\.cs$</Source>
+                <Source>.*\\AnimatedVisuals\\.*</Source>
+              </Exclude>
+            </Sources>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
