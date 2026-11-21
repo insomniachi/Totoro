@@ -22,6 +22,16 @@ public sealed partial class ImageSearchView : UserControl
 
 	public static Visibility VisibleIfAny(object? value) => value is null ? Visibility.Collapsed : Visibility.Visible;
 
+	public static Visibility VisibleIfItems(IReadOnlyList<CharacterMatch>? items) => items is { Count: > 0 } ? Visibility.Visible : Visibility.Collapsed;
+
+	public static bool IsAny(object? value) => value is not null;
+
+	/// <summary>A character's name, marked when AnimeTrace wasn't sure.</summary>
+	public static string CharacterLabel(string character, bool notConfident) => notConfident ? $"{character} (not sure)" : character;
+
+	/// <summary>What a character is from: the anime's title in the database, else the work as AnimeTrace named it.</summary>
+	public static string WorkLabel(string work, Core.Modules.Anime.AnimeModel? anime) => anime?.Title ?? (work.Length > 0 ? work : "Unknown");
+
 	/// <summary>Where in the anime the image is, e.g. "Episode 1 at 14:17 · 97% alike".</summary>
 	public static string Where(int? episode, TimeSpan at, double similarity)
 	{

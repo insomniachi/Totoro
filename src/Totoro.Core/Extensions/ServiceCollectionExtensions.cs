@@ -95,6 +95,7 @@ public static class ServiceCollectionExtensions
 							   .AddSingleton<Services.ReleaseScheduleService>()
 							   .AddSingleton<Services.MissedRelationsService>()
 							   .AddSingleton<Services.ImageSearchService>()
+							   .AddSingleton<Services.CharacterSearchService>()
 							   .AddSingleton<Services.ChatService>()
 							   .AddSingleton<Services.UpdateService>()
 							   .AddSingleton<Plugins.IPluginManager, Plugins.PluginManager>()

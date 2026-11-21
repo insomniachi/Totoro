@@ -190,7 +190,8 @@ internal partial class AnilistMetadataProvider(
 																			  .WithNodes(new CharacterQueryBuilder()
 																						 .WithId()
 																						 .WithName(new CharacterNameQueryBuilder()
-																									   .WithFull())
+																									   .WithFull()
+																									   .WithNative())
 																						 .WithImage(new CharacterImageQueryBuilder()
 																										.WithLarge())
 																						 .WithDescription(true)
@@ -220,6 +221,7 @@ internal partial class AnilistMetadataProvider(
 			{
 				Id = x.Id ?? 0,
 				Name = x.Name?.Full ?? "",
+				NativeName = x.Name?.Native ?? "",
 				Image = Uri.TryCreate(x.Image?.Large, UriKind.Absolute, out var uri) && !IsPlaceholder(uri) ? uri : null,
 				Description = x.Description ?? "",
 				Gender = x.Gender ?? "",

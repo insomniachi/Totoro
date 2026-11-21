@@ -53,6 +53,8 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="Your image" />
@@ -63,13 +65,45 @@
                     Source="{x:Bind ViewModel.Pasted, Mode=OneWay}"
                     Stretch="Uniform" />
             </Border>
+
+            <!--  Who's in it, left to right, and what each is from (opens the anime when the database has it)  -->
             <TextBlock
                 Grid.Row="2"
                 Margin="0,8,0,0"
                 Style="{StaticResource BodyStrongTextBlockStyle}"
-                Text="Matches" />
-            <ListView
+                Text="Characters"
+                Visibility="{x:Bind views:ImageSearchView.VisibleIfItems(ViewModel.Characters), Mode=OneWay}" />
+            <ItemsControl
                 Grid.Row="3"
+                AutomationProperties.AutomationId="Characters"
+                AutomationProperties.Name="Characters"
+                ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="services:CharacterMatch">
+                        <StackPanel Padding="0,4" AutomationProperties.Name="{x:Bind Character, Mode=OneTime}">
+                            <TextBlock
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind views:ImageSearchView.CharacterLabel(Character, NotConfident), Mode=OneTime}"
+                                TextWrapping="Wrap" />
+                            <HyperlinkButton
+                                Margin="-12,0,0,0"
+                                Command="{x:Bind commands:AnimeCommands.Shared.ShowDetailsCommand, Mode=OneTime}"
+                                CommandParameter="{x:Bind Anime, Mode=OneTime}"
+                                Content="{x:Bind views:ImageSearchView.WorkLabel(Work, Anime), Mode=OneTime}"
+                                IsEnabled="{x:Bind views:ImageSearchView.IsAny(Anime), Mode=OneTime}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock
+                Grid.Row="4"
+                Margin="0,8,0,0"
+                Style="{StaticResource BodyStrongTextBlockStyle}"
+                Text="Matches"
+                Visibility="{x:Bind views:ImageSearchView.VisibleIfAny(ViewModel.Selected), Mode=OneWay}" />
+            <ListView
+                Grid.Row="5"
                 Margin="-16,0,0,0"
                 AutomationProperties.Name="Matches"
                 ItemsSource="{x:Bind ViewModel.Matches, Mode=OneWay}"

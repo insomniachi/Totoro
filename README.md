@@ -17,6 +17,7 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 - **Music.** Each anime's openings and endings, from AnimeThemes, to listen to or watch, with their lyrics (from LRCLIB) lit up as they're sung, and Japanese shown with furigana and romaji. Hear one playing somewhere else on your PC? The listen button in the search box names it, and the anime it's from.
 - **Playlists.** Keep the openings and endings you like in playlists, and play one whenever you want, in order or shuffled, looping the playlist or one song, and export them to a file to import on another PC. It plays on as you go round the app, with its controls at the bottom of the window, on every page, where you can drag to any part of the song, or click its cover to open its anime. With the app minimised, the media keys, Windows' media controls and the buttons under the app's taskbar thumbnail play, pause and skip it.
 - **Find an anime from a screenshot.** trace.moe finds which anime a picture is from.
+- **Name the characters in a picture.** Paste fan art or a collage on the Search page's Image tab (or ask the assistant) and AnimeTrace names each character, left to right, and the anime they're from.
 - **Discord.** It can show the episode you're watching as your Discord status.
 - **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "play the opening of Frieren"); it answers with the app's own cards. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (its settings are on the Plugins page).
 - **AI-agent friendly.** Everything the app does is also an agent tool (see [AGENTS.md](AGENTS.md)).
@@ -94,4 +95,4 @@ Totoro is MIT licensed; see [LICENSE](LICENSE). What it includes, and their lice
 - Episode details and id mappings come from [ani.zip](https://ani.zip) and [tenrai](https://tenrai.org).
 - Skip times come from [Aniskip](https://aniskip.com), episode numbering from [anime-relations](https://github.com/erengy/anime-relations), and songs from [AnimeThemes](https://animethemes.moe).
 - Lyrics come from [LRCLIB](https://lrclib.net), with Japanese read by [NMeCab](https://github.com/komutan/NMeCab) (LGPL-2.1).
-- [trace.moe](https://trace.moe) finds anime from screenshots.
+- [trace.moe](https://trace.moe) finds anime from screenshots, and [AnimeTrace](https://www.animetrace.com) names the characters in pictures.

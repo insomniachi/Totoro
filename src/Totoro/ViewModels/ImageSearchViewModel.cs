@@ -13,7 +13,7 @@ using Totoro.UI.Navigation;
 namespace Totoro.ViewModels;
 
 /// <summary>The anime Search page's Image tab: the anime a screenshot pasted from the clipboard is from.</summary>
-public sealed partial class ImageSearchViewModel(ImageSearchService search, WatchService watch, ILogger<ImageSearchViewModel> logger) : NavigatableViewModel
+public sealed partial class ImageSearchViewModel(ImageSearchService search, CharacterSearchService characters, WatchService watch, ILogger<ImageSearchViewModel> logger) : NavigatableViewModel
 {
 	/// <summary>Plays the match's episode from just before its scene (the first, for a movie).</summary>
 	[RelayCommand]
@@ -22,6 +22,10 @@ public sealed partial class ImageSearchViewModel(ImageSearchService search, Watc
 
 	[ObservableProperty]
 	public partial IReadOnlyList<ImageMatch> Matches { get; private set; } = [];
+
+	/// <summary>The characters in the image and what they're from, left to right.</summary>
+	[ObservableProperty]
+	public partial IReadOnlyList<CharacterMatch> Characters { get; private set; } = [];
 
 	/// <summary>The match shown in detail: the best one, until another is picked.</summary>
 	[ObservableProperty]
@@ -62,7 +66,7 @@ public sealed partial class ImageSearchViewModel(ImageSearchService search, Watc
 
 	/// <summary>What to do, or why there are no matches; empty while there are.</summary>
 	[ObservableProperty]
-	public partial string Message { get; private set; } = "Copy a screenshot of an anime, then press Ctrl+V here.";
+	public partial string Message { get; private set; } = "Copy a screenshot or a picture of anime characters, then press Ctrl+V here.";
 
 	[RelayCommand]
 	private async Task PasteAsync()
@@ -79,6 +83,7 @@ public sealed partial class ImageSearchViewModel(ImageSearchService search, Watc
 				if (await ClipboardImage.OpenAsync() is not var (image, contentType))
 				{
 					Matches = [];
+					Characters = [];
 					Pasted = null;
 					Message = "There's no image in the clipboard. Copy a screenshot, then press Ctrl+V.";
 					return;
@@ -86,23 +91,49 @@ public sealed partial class ImageSearchViewModel(ImageSearchService search, Watc
 
 				Message = "";
 				Matches = [];
+				Characters = [];
+				byte[] bytes;
 				using (image)
 				{
-					var preview = new BitmapImage();
-					await preview.SetSourceAsync(image.AsRandomAccessStream());
-					image.Position = 0;
-					Pasted = preview;
-					Matches = await search.FindAsync(image, contentType);
-					// After the list has them: picked before, the list would reject it and clear it.
-					Selected = Matches.FirstOrDefault();
+					bytes = new byte[image.Length];
+					await image.ReadExactlyAsync(bytes);
 				}
 
-				Message = Matches.Count == 0 ? "No anime matched this image. Try a full, uncropped frame of the episode." : "";
+				var preview = new BitmapImage();
+				await preview.SetSourceAsync(new MemoryStream(bytes).AsRandomAccessStream());
+				Pasted = preview;
+
+				// The scene (trace.moe) and the characters (AnimeTrace) at once, each from its own copy: one failing
+				// doesn't hide what the other found.
+				var scenes = search.FindAsync(new MemoryStream(bytes), contentType);
+				var people = characters.FindAsync(new MemoryStream(bytes), contentType);
+				try
+				{
+					await Task.WhenAll(scenes, people);
+				}
+				catch (Exception)
+				{
+					// Each is looked at below.
+				}
+
+				Matches = scenes.IsCompletedSuccessfully ? scenes.Result : [];
+				// After the list has them: picked before, the list would reject it and clear it.
+				Selected = Matches.FirstOrDefault();
+				Characters = people.IsCompletedSuccessfully ? people.Result : [];
+				foreach (var failed in new Task[] { scenes, people }.Where(x => x.IsFaulted))
+				{
+					logger.LogWarning(failed.Exception, "Image search failed");
+				}
+
+				Message = Matches.Count > 0 || Characters.Count > 0 ? ""
+					: (scenes.Exception ?? people.Exception)?.InnerException?.Message
+					  ?? "Nothing matched this image. For the scene, try a full, uncropped frame of the episode.";
 			}
 			catch (Exception ex)
 			{
 				logger.LogWarning(ex, "Image search failed");
 				Matches = [];
+				Characters = [];
 				Message = ex.Message;
 			}
 		}
