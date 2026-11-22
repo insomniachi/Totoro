@@ -245,6 +245,9 @@ public sealed partial class PlayerWindow : Window
 			case var key when KeyboardShortcuts.IsPressed(keys.NextEpisodeKeys, key):
 				ViewModel.NextEpisodeCommand.Execute(null);
 				break;
+			case var key when KeyboardShortcuts.IsPressed(keys.CloseKeys, key):
+				Close();
+				return;
 			default:
 				e.Handled = false;
 				return;

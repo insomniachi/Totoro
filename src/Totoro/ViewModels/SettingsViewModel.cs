@@ -88,6 +88,7 @@ public partial class SettingsViewModel : ObservableObject
 	public const string GeneralKey = "Settings.General";
 	public const string AccountsKey = "Settings.Accounts";
 	public const string PlaybackKey = "Settings.Playback";
+	public const string PlayerKey = "Settings.Player";
 	public const string DownloadsKey = "Settings.Downloads";
 	public const string AboutKey = "Settings.About";
 
@@ -110,8 +111,16 @@ public partial class SettingsViewModel : ObservableObject
 		IAppearanceService appearance,
 		UpdateService updates,
 		DownloadService downloads,
-		Playback.DownloadNotifier notifier)
+		Playback.DownloadNotifier notifier,
+		IModuleSettings<UI.Player.PlayerSettings> playerSettings)
 	{
+		// Bound to the settings, saved as each changes, like the rest of the settings pages.
+		PlayerSettings = playerSettings.Value.ToDataContainer();
+		foreach (var property in PlayerSettings)
+		{
+			property.PropertyChanged += (_, _) => playerSettings.Save();
+		}
+
 		_notifier = notifier;
 		_preferences = preferences;
 		_downloads = downloads;
@@ -257,6 +266,9 @@ public partial class SettingsViewModel : ObservableObject
 	}
 
 	public IReadOnlyList<MediaPlayerOption> MediaPlayers { get; }
+
+	/// <summary>What every player shares (shortcuts, languages, volume...), on a page of their own.</summary>
+	public DataContainer PlayerSettings { get; }
 
 	/// <summary>The media player episodes play in.</summary>
 	[ObservableProperty]

@@ -239,7 +239,7 @@ public sealed class AppSettingsTools(
 		await notifier.NotifyTestAsync() ? "Sent." : throw new AgentToolException("Windows didn't take it: notifications may be turned off for Totoro in Windows' settings.");
 
 	[AgentTool("get_module_settings")]
-	[Description("The settings of the app's modules: anime databases, anime providers, media players, torrent streaming...")]
+	[Description("The settings of the app's modules: anime databases, anime providers, media players, torrent streaming... \"Player\" holds what every player shares: keyboard shortcuts, audio and subtitle languages, volume, starting full screen.")]
 	public IReadOnlyList<ModuleSettingsInfo> GetModuleSettings([Description("Only this module's.")] string? module = null)
 	{
 		return

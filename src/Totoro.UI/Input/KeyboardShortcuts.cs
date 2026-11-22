@@ -13,9 +13,9 @@ public static class KeyboardShortcuts
 	// In the order they're written in.
 	private static readonly (VirtualKeyModifiers Modifier, string Name, VirtualKey[] Keys)[] s_modifiers =
 	[
-		(VirtualKeyModifiers.Control, "Ctrl", [VirtualKey.Control]),
-		(VirtualKeyModifiers.Shift, "Shift", [VirtualKey.Shift]),
-		(VirtualKeyModifiers.Menu, "Alt", [VirtualKey.Menu]),
+		(VirtualKeyModifiers.Control, "Ctrl", [VirtualKey.Control, VirtualKey.LeftControl, VirtualKey.RightControl]),
+		(VirtualKeyModifiers.Shift, "Shift", [VirtualKey.Shift, VirtualKey.LeftShift, VirtualKey.RightShift]),
+		(VirtualKeyModifiers.Menu, "Alt", [VirtualKey.Menu, VirtualKey.LeftMenu, VirtualKey.RightMenu]),
 		(VirtualKeyModifiers.Windows, "Win", [VirtualKey.LeftWindows, VirtualKey.RightWindows]),
 	];
 
@@ -29,10 +29,23 @@ public static class KeyboardShortcuts
 	public static string Format(VirtualKey key) =>
 		string.Join("+", s_modifiers.Where(x => GetModifiers().HasFlag(x.Modifier)).Select(x => x.Name).Append(key.ToString()));
 
+	/// <summary>
+	/// Keys held together as a shortcut, modifiers in the order they're written, e.g. [Shift, Control, K] is "Ctrl+Shift+K";
+	/// null unless exactly one of them isn't a modifier.
+	/// </summary>
+	public static string? Format(IReadOnlyCollection<VirtualKey> keys)
+	{
+		var main = keys.Where(x => !IsModifier(x)).ToList();
+		return main.Count == 1
+			? string.Join("+", s_modifiers.Where(x => keys.Any(x.Keys.Contains)).Select(x => x.Name).Append(main[0].ToString()))
+			: null;
+	}
+
+	/// <summary>A modifier's name as it's written, e.g. "Ctrl" for LeftControl; the key's own name if it isn't one.</summary>
+	public static string ModifierName(VirtualKey key) => s_modifiers.FirstOrDefault(x => x.Keys.Contains(key)).Name ?? key.ToString();
+
 	/// <summary>Whether it's a modifier, which makes a shortcut only with another key.</summary>
-	public static bool IsModifier(VirtualKey key) =>
-		key is VirtualKey.LeftShift or VirtualKey.RightShift or VirtualKey.LeftControl or VirtualKey.RightControl or
-			VirtualKey.LeftMenu or VirtualKey.RightMenu || s_modifiers.Any(x => x.Keys.Contains(key));
+	public static bool IsModifier(VirtualKey key) => s_modifiers.Any(x => x.Keys.Contains(key));
 
 	/// <summary>Whether a key pressed now, with the modifiers held, is one of the shortcuts (modifiers in any order or case).</summary>
 	public static bool IsPressed(string shortcuts, VirtualKey key) => IsMatch(shortcuts, key, GetModifiers());

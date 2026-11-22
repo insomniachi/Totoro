@@ -30,7 +30,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	// AnimeThemes refuses requests without one.
 	private const string UserAgent = "Totoro (anime tracker)";
 
-	private readonly IModuleSettings<Modules.MediaPlayers.Mpv.Settings> _playerSettings;
+	private readonly IModuleSettings<UI.Player.PlayerSettings> _playerSettings;
 	private readonly ILogger<SongAudioPlayer> _logger;
 	private readonly DispatcherQueue _ui = DispatcherQueue.GetForCurrentThread();
 	private readonly Lock _tapLock = new();
@@ -52,7 +52,7 @@ internal sealed class SongAudioPlayer : ISongPlayer, IDisposable
 	// Where to seek the song to, in frames, for the decoder to take up; -1 when not seeking.
 	private long _seekTo = -1;
 
-	public SongAudioPlayer(IModuleSettings<Modules.MediaPlayers.Mpv.Settings> playerSettings, ILogger<SongAudioPlayer> logger)
+	public SongAudioPlayer(IModuleSettings<UI.Player.PlayerSettings> playerSettings, ILogger<SongAudioPlayer> logger)
 	{
 		_playerSettings = playerSettings;
 		_logger = logger;

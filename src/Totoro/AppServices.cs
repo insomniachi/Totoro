@@ -54,6 +54,7 @@ internal static class AppServices
 		services.RegisterFactory<IAnimeMetadataProvider>(AnimeDatabasePreferences.Key);
 		services.RegisterFactory<IAnimeProvider>(PlaybackPreferences.AnimeProviderKey);
 		services.RegisterFactory<IMediaPlayer>(PlaybackPreferences.MediaPlayerKey);
+		AddPlayerSettings(services);
 		services.RegisterFactory<ITorrentStreamer>(PlaybackPreferences.TorrentStreamerKey);
 		services.RegisterFactory<IChatModel>("SelectedChatModel");
 		// Manga: a database (chosen apart from the anime one) and a source to read from.
@@ -220,9 +221,38 @@ internal static class AppServices
 		services.AddKeyedViewMap<GeneralSettingsPage, SettingsViewModel>(SettingsViewModel.GeneralKey);
 		services.AddKeyedViewMap<AccountsSettingsPage, SettingsViewModel>(SettingsViewModel.AccountsKey);
 		services.AddKeyedViewMap<PlaybackSettingsPage, SettingsViewModel>(SettingsViewModel.PlaybackKey);
+		services.AddKeyedViewMap<PlayerSettingsPage, SettingsViewModel>(SettingsViewModel.PlayerKey);
 		services.AddKeyedViewMap<DownloadsSettingsPage, SettingsViewModel>(SettingsViewModel.DownloadsKey);
 		services.AddKeyedViewMap<AboutSettingsPage, SettingsViewModel>(SettingsViewModel.AboutKey);
 
 		return services;
+	}
+
+	/// <summary>The settings every player shares: edited on their own settings page, and by agents as the "Player" module's.</summary>
+	private static void AddPlayerSettings(IServiceCollection services)
+	{
+		var descriptor = new Descriptor { Id = new("0f6d2a8e-5b47-4c1d-9e3a-7c2b8d4f1e65"), Name = "Player", DataFolder = "Player" };
+		services.AddSingleton<IModuleSettings<UI.Player.PlayerSettings>>(sp =>
+		{
+			// Each player kept its own before: start from the chosen one's, else any's (their own settings in the file are ignored).
+			var path = Core.Helpers.FileHelper.GetModulePath(descriptor, "settings.json");
+			var selected = sp.GetRequiredService<IPreferences>().SelectedMediaPlayer;
+			var keyed = sp.GetRequiredService<IServiceProviderIsKeyedService>();
+			if (!File.Exists(path) && sp.GetServices<Descriptor>()
+					.Where(x => keyed.IsKeyedService(typeof(IMediaPlayer), x.Id))
+					.OrderByDescending(x => x.Id == selected)
+					.Select(x => Core.Helpers.FileHelper.GetModulePath(x, "settings.json"))
+					.FirstOrDefault(File.Exists) is { } old)
+			{
+				Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+				File.Copy(old, path);
+			}
+
+			var settings = new ModuleSettings<UI.Player.PlayerSettings>(descriptor);
+			// mpv's could be boosted past 100 when they were its own.
+			settings.Value.Volume = Math.Min(settings.Value.Volume, 100);
+			return settings;
+		});
+		services.AddSingleton<IModuleSettings>(sp => sp.GetRequiredService<IModuleSettings<UI.Player.PlayerSettings>>());
 	}
 }

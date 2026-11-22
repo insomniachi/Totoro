@@ -40,15 +40,9 @@ internal class MpvModule : IModule<Settings>
 	}
 }
 
-/// <summary>
-/// A built-in player's settings too: the shortcuts, languages... are for playing in Totoro's window. Songs play at its
-/// volume too.
-/// </summary>
-public sealed class Settings : PlayerSettings
+/// <summary>mpv's own settings; the shortcuts, languages, volume... every player shares are <see cref="PlayerSettings"/>.</summary>
+public sealed class Settings : DataContainerConfig
 {
-	// mpv's own window has always started full screen.
-	public Settings() => LaunchFullScreen = true;
-
 	[DisplayName("Play in Totoro's window")]
 	[Description("Play in Totoro's own window, with its controls, skipping and the next episode over the video, still with mpv's engine and config (Anime4K too). Off: mpv's own window. Needs mpv downloaded here.")]
 	public bool PlayInApp { get; set; } = true;
@@ -85,15 +79,6 @@ public sealed class Settings : PlayerSettings
 	[Description("Leave empty to use the downloaded or installed mpv.")]
 	[Editor(DataContainerEditors.FileBrowser, "")]
 	public string FileName { get; set; } = "";
-
-	// mpv amplifies up to its volume-max, 130 by default; the other players stop at 100.
-	protected override void ConfigureProperty(DataContainerPropertyBuilder propertyBuilder, System.Reflection.PropertyInfo info)
-	{
-		if (info.Name == nameof(Volume))
-		{
-			propertyBuilder.WithRange(0, 130);
-		}
-	}
 }
 
 /// <summary>Which of Anime4K's templates to install: its fast shaders, or its high-quality ones.</summary>

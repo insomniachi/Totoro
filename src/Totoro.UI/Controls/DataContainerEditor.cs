@@ -5,6 +5,8 @@ using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
@@ -41,6 +43,15 @@ public sealed partial class DataContainerEditor : UserControl
 	[GeneratedDependencyProperty]
 	public partial IEnumerable<DataContainerProperty>? Properties { get; set; }
 
+	/// <summary>
+	/// Whether shortcuts are edited with DevWinUI's Shortcut, one per shortcut, each recording its keys in a dialog of its
+	/// own. Only where the editor isn't in a dialog (a page): a second dialog can't open over one.
+	/// </summary>
+	[GeneratedDependencyProperty]
+	public partial bool ShortcutDialogs { get; set; }
+
+	partial void OnShortcutDialogsChanged(bool newValue) => OnPropertiesChanged(Properties);
+
 	partial void OnPropertiesChanged(IEnumerable<DataContainerProperty>? newValue)
 	{
 		_cards.Children.Clear();
@@ -50,14 +61,14 @@ public sealed partial class DataContainerEditor : UserControl
 		var byParent = properties.ToLookup(x => x.Parent is { } parent && parent != x.Name && names.Contains(parent) ? parent : "");
 		foreach (var property in byParent[""])
 		{
-			_cards.Children.Add(CreateCard(property, byParent));
+			_cards.Children.Add(CreateCard(property, byParent, ShortcutDialogs));
 		}
 	}
 
-	private static FrameworkElement CreateCard(DataContainerProperty property, ILookup<string, DataContainerProperty> byParent)
+	private static FrameworkElement CreateCard(DataContainerProperty property, ILookup<string, DataContainerProperty> byParent, bool shortcutDialogs)
 	{
 		var header = GetHeader(property);
-		var editor = CreateEditor(property);
+		var editor = shortcutDialogs && property.EditorType == DataContainerEditors.Shortcut ? CreateShortcutDialogs(property) : CreateEditor(property);
 		// A panel isn't what a screen reader lands on: editors made of several controls name their own.
 		if (editor is not Panel)
 		{
@@ -76,7 +87,7 @@ public sealed partial class DataContainerEditor : UserControl
 		expander.Resources["SettingsCardWrapThreshold"] = 400d;
 		foreach (var child in byParent[property.Name])
 		{
-			expander.Items.Add(CreateCard(child, byParent));
+			expander.Items.Add(CreateCard(child, byParent, shortcutDialogs));
 		}
 
 		Describe(expander, property, editor, x => expander.Description = x, x => expander.HeaderIcon = x);
@@ -550,6 +561,111 @@ public sealed partial class DataContainerEditor : UserControl
 		grid.Children.Add(textBox);
 		grid.Children.Add(browse);
 		return grid;
+	}
+
+	/// <summary>
+	/// A DevWinUI Shortcut for each shortcut, "or" between them, each recording its own keys in a dialog (whose Remove
+	/// removes it), and a button adding one.
+	/// </summary>
+	private static StackPanel CreateShortcutDialogs(DataContainerProperty property)
+	{
+		var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+		var header = GetHeader(property);
+		string[] shortcuts = [];
+
+		void Set(IEnumerable<string> changed) => property.TrySetValue(string.Join(", ", changed.Distinct(StringComparer.OrdinalIgnoreCase)));
+
+		// Null shortcut: a new one, added once it's recorded and saved.
+		DevWinUI.Shortcut CreateControl(string? shortcut, int index)
+		{
+			var control = new DevWinUI.Shortcut
+			{
+				Keys = shortcut is null ? [] : [.. KeyboardShortcuts.GetKeys(shortcut).Select(KeyboardShortcuts.KeyLabel)],
+				ContentDialogTitle = header,
+				KeyNameProvider = key => KeyboardShortcuts.Format([key]) is { } name ? KeyboardShortcuts.KeyLabel(name) : KeyboardShortcuts.ModifierName(key),
+				// Its own validation warns about every key without a modifier, which most of the player's are.
+				UseAutoValidation = false,
+				IsInfo = true,
+				InfoTitle = "A key, with Ctrl, Shift, Alt or Win if you like.",
+				// In place of resetting to the keys it had (Cancel does that): there's no other way to remove one. None for a new one.
+				SecondaryButtonText = shortcut is null ? "" : "Remove",
+			};
+			var name = shortcut is null ? $"New {header}" : $"{header}: {KeyboardShortcuts.Label(shortcut)}";
+			AutomationProperties.SetName(control, name);
+			// What's acted on is the button in its template, which is named after its part ("PART_OpenDialog") otherwise.
+			control.Loaded += (_, _) =>
+			{
+				control.ApplyTemplate();
+				if (control.FindDescendant<Button>() is { } open)
+				{
+					AutomationProperties.SetName(open, $"Change {name}");
+				}
+			};
+			control.ValidateShortcut += (_, e) => e.ContentDialog.IsPrimaryButtonEnabled = Recorded(e.KeysInfo) is not null;
+			control.PrimaryButtonClick += (_, _) =>
+			{
+				control.UpdatePreviewKeys();
+				control.CloseContentDialog();
+				// Null when nothing was pressed: the keys it had, which are text, not recorded keys.
+				if (Recorded(control.Keys?.OfType<DevWinUI.KeyVisualInfo>().ToList() ?? []) is { } recorded)
+				{
+					Set(index < 0 ? [.. shortcuts, recorded] : shortcuts.Select((x, i) => i == index ? recorded : x));
+				}
+			};
+			control.SecondaryButtonClick += (_, _) =>
+			{
+				control.CloseContentDialog();
+				Set(shortcuts.Where((_, i) => i != index));
+			};
+			return control;
+		}
+
+		var add = new Button { Content = new FontIcon { Glyph = "", FontSize = 14 }, Padding = new Thickness(8), VerticalAlignment = VerticalAlignment.Center };
+		AutomationProperties.SetName(add, $"Add {header}");
+		ToolTipService.SetToolTip(add, "Add a shortcut");
+		add.Click += (_, _) =>
+		{
+			// A new one in place of the button, its dialog opened as if it were clicked; gone again if it isn't saved.
+			var pending = CreateControl(null, -1);
+			pending.ClosedContentDialog += (_, _) => Show();
+			pending.Loaded += (_, _) =>
+			{
+				if (pending.FindDescendant<Button>() is { } open && FrameworkElementAutomationPeer.CreatePeerForElement(open) is IInvokeProvider invoke)
+				{
+					invoke.Invoke();
+				}
+			};
+			panel.Children.Remove(add);
+			if (shortcuts.Length > 0)
+			{
+				panel.Children.Add((TextBlock)XamlReader.Load(OrXaml));
+			}
+
+			panel.Children.Add(pending);
+		};
+
+		void Show()
+		{
+			panel.Children.Clear();
+			shortcuts = KeyboardShortcuts.Split(property.Value?.ToString() ?? "");
+			for (var i = 0; i < shortcuts.Length; i++)
+			{
+				if (i > 0)
+				{
+					panel.Children.Add((TextBlock)XamlReader.Load(OrXaml));
+				}
+
+				panel.Children.Add(CreateControl(shortcuts[i], i));
+			}
+
+			panel.Children.Add(add);
+		}
+
+		static string? Recorded(IReadOnlyCollection<DevWinUI.KeyVisualInfo> keys) =>
+			keys.Count > 0 && keys.All(x => x.Key is not null) ? KeyboardShortcuts.Format([.. keys.Select(x => x.Key!.Value)]) : null;
+
+		Sync(panel, property, Show);
+		return panel;
 	}
 
 	/// <summary>

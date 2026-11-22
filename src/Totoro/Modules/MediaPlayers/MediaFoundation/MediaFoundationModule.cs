@@ -6,7 +6,7 @@ using Totoro.UI.Player;
 
 namespace Totoro.Modules.MediaPlayers.MediaFoundation;
 
-internal class MediaFoundationModule : IModule<Settings>
+internal class MediaFoundationModule : IModule
 {
 	public static Guid Id { get; } = new("9d4b2e71-6c3a-4f85-b0e9-1a7f3c5d8e42");
 
@@ -23,10 +23,7 @@ internal class MediaFoundationModule : IModule<Settings>
 	public void ConfigureServices(IServiceCollection services)
 	{
 		services.AddTransient(_ => Descriptor);
-		services.AddModuleSettings(this);
 		// One player app-wide: it owns the window, so a second Play replaces what's playing.
 		services.AddKeyedSingleton<IMediaPlayer, MediaFoundationMediaPlayer>(Id);
 	}
 }
-
-public sealed class Settings : PlayerSettings;

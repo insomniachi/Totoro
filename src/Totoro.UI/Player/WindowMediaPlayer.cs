@@ -109,7 +109,8 @@ public abstract class WindowMediaPlayer(IPlayerWindowFactory windows, IModuleSet
 			_window = null;
 			_viewModel = null;
 			Proxy.Clear();
-			Settings.Volume = (int)viewModel.Volume;
+			// mpv's boost past 100 lasts the window: the setting's the level every player plays at unboosted.
+			Settings.Volume = Math.Min((int)viewModel.Volume, 100);
 			settings.Save();
 			preferences.PlayerAspectRatio = viewModel.AspectRatio;
 			PlaybackStopped?.Invoke(this, EventArgs.Empty);

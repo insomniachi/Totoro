@@ -10,13 +10,14 @@ using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Settings;
 using Totoro.Helpers;
+using Totoro.UI.Player;
 
 namespace Totoro.Modules.MediaPlayers.Mpv;
 
 /// <summary>
 /// Plays in mpv as a separate process, following its position and duration over mpv's JSON IPC (a named pipe).
 /// </summary>
-internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger<MpvMediaPlayer> logger) : IMediaPlayer
+internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, IModuleSettings<PlayerSettings> playerSettings, ILogger<MpvMediaPlayer> logger) : IMediaPlayer
 {
 	// mpv's pause as last reported (or set).
 	private volatile bool _paused;
@@ -120,11 +121,11 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 				// Stays open (window and all) once idle, so a binge's next episode can play in it; see Handle.
 				"--idle=yes",
 				"--force-window=yes",
-				$"--volume={settings.Value.Volume}",
+				$"--volume={playerSettings.Value.Volume}",
 			}
 		};
 
-		if (settings.Value.LaunchFullScreen)
+		if (playerSettings.Value.LaunchFullScreen)
 		{
 			startInfo.ArgumentList.Add("--fullscreen");
 		}
@@ -310,16 +311,17 @@ internal sealed class MpvMediaPlayer(IModuleSettings<Settings> settings, ILogger
 		}
 		finally
 		{
-			if (_volume is { } volume && volume != settings.Value.Volume)
+			// mpv's boost past 100 lasts the window: the setting's the level every player plays at unboosted.
+			if (_volume is { } boosted && Math.Min(boosted, 100) is var volume && volume != playerSettings.Value.Volume)
 			{
-				settings.Value.Volume = volume;
+				playerSettings.Value.Volume = volume;
 				if (_ui is { } ui)
 				{
-					ui.Post(_ => settings.Save(), null);
+					ui.Post(_ => playerSettings.Save(), null);
 				}
 				else
 				{
-					settings.Save();
+					playerSettings.Save();
 				}
 			}
 		}

@@ -75,6 +75,18 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard
+                AutomationProperties.Name="Player settings"
+                Command="{x:Bind ViewModel.OpenCommand, Mode=OneTime}"
+                CommandParameter="Settings.Player"
+                Description="Shared by every player: keyboard shortcuts, audio and subtitle languages, volume, starting full screen."
+                Header="Player settings"
+                IsClickEnabled="True">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE765;" />
+                </toolkit:SettingsCard.HeaderIcon>
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard Description="How torrent episodes play: rqbit downloads them on this PC; a debrid service like TorBox downloads them on its servers and streams its copy." Header="Torrent streamer">
                 <toolkit:SettingsCard.HeaderIcon>
                     <FontIcon Style="{StaticResource FluentFontIcon}" Glyph="&#xF4FD;" />

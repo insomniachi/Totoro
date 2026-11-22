@@ -5,10 +5,11 @@ using Totoro.Core.Settings;
 namespace Totoro.UI.Player;
 
 /// <summary>
-/// The settings of a player that plays in the app's own window (see <see cref="WindowMediaPlayer"/>). Each such player
-/// derives its own type from it: module settings are kept by type.
+/// The settings every player shares (shortcuts and languages for the app's own window, see <see cref="WindowMediaPlayer"/>;
+/// volume and full screen for mpv's own window too): one set, registered by the app, on a settings page of its own (Settings › Playback › Player settings).
 /// </summary>
-public abstract class PlayerSettings : DataContainerConfig
+// Not sealed: a plugin built before these were shared derives its own settings from it.
+public class PlayerSettings : DataContainerConfig
 {
 	[DisplayName("Start in full screen")]
 	public bool LaunchFullScreen { get; set; }
@@ -23,15 +24,15 @@ public abstract class PlayerSettings : DataContainerConfig
 
 	[DisplayName("Play or pause shortcut")]
 	[Editor(DataContainerEditors.Shortcut, "")]
-	public string PlayPauseKeys { get; set; } = "Space, K";
+	public string PlayPauseKeys { get; set; } = "Space";
 
 	[DisplayName("Back 5 seconds shortcut")]
 	[Editor(DataContainerEditors.Shortcut, "")]
-	public string SeekBackKeys { get; set; } = "Left, J";
+	public string SeekBackKeys { get; set; } = "Left";
 
 	[DisplayName("Forward 5 seconds shortcut")]
 	[Editor(DataContainerEditors.Shortcut, "")]
-	public string SeekForwardKeys { get; set; } = "Right, L";
+	public string SeekForwardKeys { get; set; } = "Right";
 
 	[DisplayName("Volume up shortcut")]
 	[Editor(DataContainerEditors.Shortcut, "")]
@@ -48,12 +49,12 @@ public abstract class PlayerSettings : DataContainerConfig
 	[DisplayName("Full screen shortcut")]
 	[Description("Esc always leaves full screen.")]
 	[Editor(DataContainerEditors.Shortcut, "")]
-	public string FullScreenKeys { get; set; } = "F, F11";
+	public string FullScreenKeys { get; set; } = "F";
 
 	[DisplayName("Skip shortcut")]
 	[Description("Skips the opening or ending, or takes what's offered over the video.")]
 	[Editor(DataContainerEditors.Shortcut, "")]
-	public string SkipKeys { get; set; } = "PageUp, S";
+	public string SkipKeys { get; set; } = "S";
 
 	[DisplayName("Next episode shortcut")]
 	[Editor(DataContainerEditors.Shortcut, "")]
@@ -66,6 +67,10 @@ public abstract class PlayerSettings : DataContainerConfig
 	[DisplayName("Aspect ratio shortcut")]
 	[Editor(DataContainerEditors.Shortcut, "")]
 	public string AspectRatioKeys { get; set; } = "A";
+
+	[DisplayName("Close player shortcut")]
+	[Editor(DataContainerEditors.Shortcut, "")]
+	public string CloseKeys { get; set; } = "Q";
 
 	[DisplayName("Volume")]
 	[Description("Changing it in the player changes it here too.")]

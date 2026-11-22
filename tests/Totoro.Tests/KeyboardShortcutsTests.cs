@@ -25,4 +25,20 @@ public class KeyboardShortcutsTests
 	[InlineData("Number1", "1")]
 	[InlineData("PageUp", "PageUp")]
 	public void LabelsShowArrowsAndDigits(string shortcut, string expected) => Assert.Equal(expected, KeyboardShortcuts.Label(shortcut));
+
+	[Theory]
+	[InlineData(new[] { VirtualKey.Space }, "Space")]
+	[InlineData(new[] { VirtualKey.Shift, VirtualKey.Control, VirtualKey.K }, "Ctrl+Shift+K")]
+	[InlineData(new[] { VirtualKey.LeftControl, VirtualKey.Right }, "Ctrl+Right")]
+	[InlineData(new[] { VirtualKey.LeftWindows, VirtualKey.Number1 }, "Win+Number1")]
+	[InlineData(new[] { VirtualKey.Control }, null)]
+	[InlineData(new[] { VirtualKey.A, VirtualKey.B }, null)]
+	public void FormatsHeldKeysModifiersFirst(VirtualKey[] keys, string? expected) => Assert.Equal(expected, KeyboardShortcuts.Format(keys));
+
+	[Theory]
+	[InlineData(VirtualKey.LeftControl, "Ctrl")]
+	[InlineData(VirtualKey.Menu, "Alt")]
+	[InlineData(VirtualKey.RightWindows, "Win")]
+	[InlineData(VirtualKey.K, "K")]
+	public void NamesModifiersAsWritten(VirtualKey key, string expected) => Assert.Equal(expected, KeyboardShortcuts.ModifierName(key));
 }
