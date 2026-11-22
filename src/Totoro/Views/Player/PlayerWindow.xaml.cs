@@ -350,7 +350,7 @@ public sealed partial class PlayerWindow : Window
 		}
 	}
 
-	// The overlay that hides the cursor stays over the video (see CursorHider), sized with it.
+	// The overlay that hides the cursor stays over the video (see CursorHider), under the title bar.
 	private void PlaceCursorHider()
 	{
 		if (Content.XamlRoot is not { } root)
@@ -364,9 +364,7 @@ public sealed partial class PlayerWindow : Window
 			_cursorHider.Used += (_, _) => ShowControls();
 		}
 
-		var size = AppWindow.ClientSize;
-		var titleBar = (int)(TitleBarArea.ActualHeight * root.RasterizationScale);
-		_cursorHider.Place(0, titleBar, size.Width, Math.Max(0, size.Height - titleBar));
+		_cursorHider.Place(0, (int)(TitleBarArea.ActualHeight * root.RasterizationScale));
 	}
 
 	private void UpdateTitle() => Title = ViewModel.Title.Length > 0 ? $"{ViewModel.Title} - Totoro" : "Totoro";

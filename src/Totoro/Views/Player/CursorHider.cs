@@ -56,11 +56,12 @@ internal sealed unsafe partial class CursorHider : IDisposable
 	/// <summary>Raised when the mouse is moved or clicked over it while it hides the cursor.</summary>
 	public event EventHandler? Used;
 
-	/// <summary>Covers <paramref name="x"/>, <paramref name="y"/>, <paramref name="width"/>, <paramref name="height"/> (pixels, in the parent's client area).</summary>
-	public void Place(int x, int y, int width, int height)
+	/// <summary>Covers the parent's client area from <paramref name="x"/>, <paramref name="y"/> (pixels) down to its bottom right.</summary>
+	public void Place(int x, int y)
 	{
-		// HWND_TOP, SWP_NOACTIVATE: above WinUI's content (and mpv's window), never focused.
-		SetWindowPos(_window, IntPtr.Zero, x, y, width, height, 0x0010);
+		// HWND_TOP, SWP_NOACTIVATE: above WinUI's content (and mpv's window), never focused. As big as every screen together,
+		// clipped to the parent, so it's never resized: a resized layered window shows opaque for a frame (going full screen).
+		SetWindowPos(_window, IntPtr.Zero, x, y, GetSystemMetrics(78), GetSystemMetrics(79), 0x0010); // SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN
 	}
 
 	/// <summary>Whether it hides the cursor (and catches the mouse), rather than letting the mouse through.</summary>
@@ -163,6 +164,9 @@ internal sealed unsafe partial class CursorHider : IDisposable
 	[LibraryImport("user32.dll")]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	private static partial bool SetLayeredWindowAttributes(IntPtr window, uint key, byte alpha, uint flags);
+
+	[LibraryImport("user32.dll")]
+	private static partial int GetSystemMetrics(int index);
 
 	[LibraryImport("gdi32.dll")]
 	private static partial IntPtr GetStockObject(int index);
