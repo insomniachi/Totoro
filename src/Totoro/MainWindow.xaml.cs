@@ -98,7 +98,7 @@ public sealed partial class MainWindow : Window
 		["Search"] = "Find anime by title, season, year, score, genre and tag, or paste an image (Ctrl+V) to find which anime, episode and moment it's from, and which characters are in it.",
 		["Schedule"] = "When the next episodes of the anime airing now come out.",
 		["News"] = "The latest anime and manga news. Pick a headline to read it here.",
-		["Watch"] ="Search a plugin directly, pick a show, an episode and a stream, and play it. Handy for anything that isn't on your list.",
+		["Watch"] = "Search a plugin directly, pick a show, an episode and a stream, and play it. Handy for anything that isn't on your list.",
 		["Downloads"] = "Episodes downloading and downloaded, to watch offline. The number on it is how many are downloading.",
 		["Discover (manga)"] = "Find something new to read: popular and new manga.",
 		["Library (manga)"] = "Your manga list, by status: reading, plan to read, completed, on hold and dropped.",

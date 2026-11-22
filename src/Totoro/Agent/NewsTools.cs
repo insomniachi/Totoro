@@ -12,8 +12,8 @@ public sealed record NewsItem(
 	string Category,
 	[property: Description("The article's web page.")]
 	string Url,
-	[property: Description("When it was published, in the user's local time.")]
-	DateTime Published);
+	[property: Description("When it was published, in the user's local time; null if the feed doesn't say.")]
+	DateTime? Published);
 
 /// <summary>Agent tools for the News page (see <see cref="NewsService"/>).</summary>
 public sealed class NewsTools(NewsService news)
@@ -33,7 +33,7 @@ public sealed class NewsTools(NewsService news)
 			throw new AgentToolException(ex.Message);
 		}
 
-		return [.. articles.Take(Math.Clamp(count, 1, 50)).Select(x => new NewsItem(x.Title, x.Summary, x.Category, x.Url.ToString(), x.Published.LocalDateTime))];
+		return [.. articles.Take(Math.Clamp(count, 1, 50)).Select(x => new NewsItem(x.Title, x.Summary, x.Category, x.Url.ToString(), x.Published == default ? null : x.Published.LocalDateTime))];
 	}
 
 	[AgentTool("read_news_article")]

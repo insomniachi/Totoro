@@ -74,4 +74,20 @@ public class NewsTests
 			[new ArticleBlock("First.", "", "", null), new ArticleBlock("Second.", "", "", null)],
 			NewsService.ParseArticle(Html, s_page));
 	}
+
+	[Fact]
+	public void ParseArticle_WithoutParagraphs_FindsNothing_AndSkipsHttpImages()
+	{
+		const string Html = """<html><body><nav>Menu</nav><div>Footer</div><img src="http://example.com/a.jpg"></body></html>""";
+
+		Assert.Empty(NewsService.ParseArticle(Html, s_page));
+		Assert.Empty(NewsService.ParseArticle($"""<div class="meat">{Html}</div>""".Replace("Menu", "").Replace("Footer", ""), s_page));
+	}
+
+	[Theory]
+	[InlineData("https://evilanimenewsnetwork.com/news/x")]
+	[InlineData("http://www.animenewsnetwork.com/news/x")]
+	[InlineData("https://animenewsnetwork.com.evil.example/news/x")]
+	public async Task GetArticleAsync_RefusesOtherSites(string url) =>
+		await Assert.ThrowsAsync<ArgumentException>(() => new NewsService(null!).GetArticleAsync(new Uri(url)));
 }

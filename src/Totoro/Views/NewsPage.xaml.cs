@@ -1,6 +1,9 @@
+using System.Globalization;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Totoro.Core.Services;
 using Totoro.ViewModels;
 
@@ -26,23 +29,41 @@ public sealed partial class NewsPage : Page
 		}
 	}
 
-	/// <summary>"5 min ago", "3 h ago", else the date.</summary>
+	/// <summary>"5 min ago", "3 h ago", else the date; "" when the feed gave no date.</summary>
 	public static string Ago(DateTimeOffset published)
 	{
+		if (published == default)
+		{
+			return "";
+		}
+
 		var age = DateTimeOffset.Now - published;
 		return age.TotalMinutes < 1 ? "Just now"
 			: age.TotalHours < 1 ? $"{(int)age.TotalMinutes} min ago"
 			: age.TotalDays < 1 ? $"{(int)age.TotalHours} h ago"
-			: published.LocalDateTime.ToString("d MMM yyyy");
+			: published.LocalDateTime.ToString("d", CultureInfo.CurrentCulture);
 	}
 
 	public static string Describe(string title, string summary, DateTimeOffset published) =>
-		summary.Length > 0 ? $"{title}. {summary}. {Ago(published)}" : $"{title}. {Ago(published)}";
+		string.Join(". ", new[] { title, summary, Ago(published) }.Where(x => x.Length > 0));
+
+	/// <summary>A downloaded picture, decoded for an Image.</summary>
+	public static ImageSource? Picture(byte[]? bytes)
+	{
+		if (bytes is null)
+		{
+			return null;
+		}
+
+		var picture = new BitmapImage();
+		picture.SetSource(new MemoryStream(bytes).AsRandomAccessStream());
+		return picture;
+	}
 
 	public static string Title(NewsArticle? article) => article?.Title ?? "";
 
 	public static string Byline(NewsArticle? article) =>
-		article is null ? "" : article.Category.Length > 0 ? $"{article.Category} · {Ago(article.Published)}" : Ago(article.Published);
+		article is null ? "" : string.Join(" · ", new[] { article.Category, Ago(article.Published) }.Where(x => x.Length > 0));
 
 	public static Uri? Url(NewsArticle? article) => article?.Url;
 

@@ -1,18 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Totoro.Core.Services;
 using Totoro.UI.Navigation;
 
 namespace Totoro.ViewModels;
 
-/// <summary>A piece of the article being read, with its image once it's downloaded.</summary>
+/// <summary>A piece of the article being read, with its image's bytes once they're downloaded (the view decodes them).</summary>
 public sealed partial class ReaderBlock(ArticleBlock block) : ObservableObject
 {
 	public ArticleBlock Block { get; } = block;
 
 	[ObservableProperty]
-	public partial BitmapImage? Picture { get; set; }
+	public partial byte[]? Picture { get; set; }
 }
 
 /// <summary>The latest anime news headlines (see <see cref="NewsService"/>), and the one picked, to read in the app.</summary>
@@ -73,7 +72,10 @@ public sealed partial class NewsViewModel(NewsService news, IHttpClientFactory h
 		IsLoadingArticle = true;
 		try
 		{
-			Blocks = [.. (await news.GetArticleAsync(article.Url, load.Token)).Select(x => new ReaderBlock(x))];
+			var blocks = await news.GetArticleAsync(article.Url, load.Token);
+			// Another article was picked while this one finished: don't show it under that one's title.
+			load.Token.ThrowIfCancellationRequested();
+			Blocks = [.. blocks.Select(x => new ReaderBlock(x))];
 		}
 		catch (OperationCanceledException) when (load.IsCancellationRequested)
 		{
@@ -95,11 +97,7 @@ public sealed partial class NewsViewModel(NewsService news, IHttpClientFactory h
 		try
 		{
 			using var http = httpClients.CreateClient();
-			var bytes = await http.GetByteArrayAsync(block.Block.Image, ct);
-			var picture = new BitmapImage();
-			using var stream = new MemoryStream(bytes);
-			await picture.SetSourceAsync(stream.AsRandomAccessStream());
-			block.Picture = picture;
+			block.Picture = await http.GetByteArrayAsync(block.Block.Image, ct);
 		}
 		catch (Exception)
 		{

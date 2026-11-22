@@ -9,7 +9,12 @@ namespace Totoro.Core.Services;
 
 /// <summary>A news article: its headline, one-line summary, link and when it was published.</summary>
 /// <param name="Category">What it's about, e.g. "Anime", "Manga", "Industry"; "" if the feed doesn't say.</param>
-public sealed record NewsArticle(string Title, string Summary, string Category, Uri Url, DateTimeOffset Published);
+/// <param name="Published">default if the feed's date doesn't parse.</param>
+public sealed record NewsArticle(string Title, string Summary, string Category, Uri Url, DateTimeOffset Published)
+{
+	// Names the headline's list item for UI Automation.
+	public override string ToString() => Title;
+}
 
 /// <summary>A piece of an article's body: a paragraph (<see cref="Text"/>), or an image with its caption; a video is its thumbnail, opening <see cref="Video"/>.</summary>
 public sealed record ArticleBlock(string Text, string Image, string Caption, Uri? Video);
@@ -49,7 +54,8 @@ public sealed class NewsService(IHttpClientFactory httpClients)
 	/// <exception cref="ArgumentException">Not an article from the feed.</exception>
 	public async Task<IReadOnlyList<ArticleBlock>> GetArticleAsync(Uri url, CancellationToken ct = default)
 	{
-		if (url.Scheme != Uri.UriSchemeHttps || !url.Host.EndsWith(FeedHost, StringComparison.OrdinalIgnoreCase))
+		if (url.Scheme != Uri.UriSchemeHttps
+			|| !(url.Host.Equals(FeedHost, StringComparison.OrdinalIgnoreCase) || url.Host.EndsWith("." + FeedHost, StringComparison.OrdinalIgnoreCase)))
 		{
 #pragma warning disable CA2208 // The message is shown to the user and the agent; a parameter name would trail it.
 			throw new ArgumentException($"Only {FeedHost} articles can be read in the app.");
@@ -67,7 +73,8 @@ public sealed class NewsService(IHttpClientFactory httpClients)
 			throw new InvalidOperationException(NetworkErrors.Describe(ex, "the article"), ex);
 		}
 
-		var blocks = ParseArticle(html, url);
+		ct.ThrowIfCancellationRequested();
+		var blocks = await Task.Run(() => ParseArticle(html, url), ct);
 		return blocks.Count > 0 ? blocks : throw new InvalidOperationException("Couldn't find the article's text on its page.");
 	}
 
@@ -79,6 +86,7 @@ public sealed class NewsService(IHttpClientFactory httpClients)
 		// News keeps its body in div.meat; reviews and columns in the element with the most paragraphs.
 		var body = doc.DocumentNode.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' meat ')]")
 			?? doc.DocumentNode.Descendants().Where(x => x.NodeType == HtmlNodeType.Element)
+								.Where(x => x.ChildNodes.Any(c => c.Name == "p"))
 								.MaxBy(x => x.ChildNodes.Count(c => c.Name == "p"));
 		var blocks = new List<ArticleBlock>();
 		if (body is not null)
@@ -152,11 +160,11 @@ public sealed class NewsService(IHttpClientFactory httpClients)
 		}
 	}
 
-	// "//cdn…" and "/…" sources are made absolute against the page.
+	// "//cdn…" and "/…" sources are made absolute against the page; only https ones are downloaded.
 	private static string? Image(HtmlNode? img, Uri page)
 	{
 		var src = img?.GetAttributeValue("data-src", null) ?? img?.GetAttributeValue("src", null);
-		return !string.IsNullOrEmpty(src) && Uri.TryCreate(page, src, out var url) && url.Scheme is "http" or "https" ? url.ToString() : null;
+		return !string.IsNullOrEmpty(src) && Uri.TryCreate(page, src, out var url) && url.Scheme == Uri.UriSchemeHttps ? url.ToString() : null;
 	}
 
 	internal static IReadOnlyList<NewsArticle> Parse(string xml)

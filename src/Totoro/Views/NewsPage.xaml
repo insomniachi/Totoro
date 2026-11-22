@@ -169,7 +169,7 @@
                                         MaxWidth="600"
                                         MaxHeight="480"
                                         HorizontalAlignment="Left"
-                                        Source="{x:Bind Picture, Mode=OneWay}"
+                                        Source="{x:Bind local:NewsPage.Picture(Picture), Mode=OneWay}"
                                         Stretch="Uniform"
                                         Visibility="{x:Bind local:NewsPage.StillImage(Block.Image, Block.Video), Mode=OneTime}" />
                                     <!--  A video: its thumbnail, opening it on YouTube  -->
@@ -179,10 +179,14 @@
                                         NavigateUri="{x:Bind Block.Video, Mode=OneTime}"
                                         ToolTipService.ToolTip="Play on YouTube"
                                         Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(Block.Video), Mode=OneTime}">
-                                        <Grid MinWidth="320" MinHeight="180">
+                                        <!--  Smoke behind the white play glyph keeps it visible before and over any thumbnail.  -->
+                                        <Grid
+                                            MinWidth="320"
+                                            MinHeight="180"
+                                            Background="{ThemeResource SmokeFillColorDefaultBrush}">
                                             <Image
                                                 MaxWidth="600"
-                                                Source="{x:Bind Picture, Mode=OneWay}"
+                                                Source="{x:Bind local:NewsPage.Picture(Picture), Mode=OneWay}"
                                                 Stretch="Uniform" />
                                             <FontIcon
                                                 FontSize="48"
