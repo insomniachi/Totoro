@@ -72,6 +72,16 @@ public static class Icons
 		FallbackIconSource = new FontIconSource { Glyph = "" },
 	};
 
+	/// <summary>
+	/// A newspaper, lifting and tilting as the pointer comes over as if picked up, and when clicked squashing flat and
+	/// springing back as its headline and lines of text type out again, one after another.
+	/// </summary>
+	public static AnimatedIcon NewsAnimated => new()
+	{
+		Source = new AnimatedVisuals.AnimatedNewsVisualSource(),
+		FallbackIconSource = new FontIconSource { Glyph = "" },
+	};
+
 	/// <summary>An open book, for reading manga; still (there's no animation for it yet).</summary>
 	public static AnimatedIcon ReadAnimated => new()
 	{

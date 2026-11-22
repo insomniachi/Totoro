@@ -13,7 +13,7 @@ using Totoro.ViewModels.Chat;
 
 namespace Totoro.ViewModels;
 
-public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDatabaseChangedMessage>, IRecipient<OtherListSyncFailedMessage>
+public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDatabaseChangedMessage>, IRecipient<OtherListSyncFailedMessage>, IRecipient<ShowNewsChangedMessage>
 {
 	private readonly IReadOnlyList<AccountViewModel> _accounts;
 	private readonly IDialogService _dialogs;
@@ -67,6 +67,7 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 			IsVisible = false,
 		};
 		_allItems = [.. navigationItems.Where(x => x.Mode is not null), reading, .. navigationItems.Where(x => x.Mode is null)];
+		Receive(new ShowNewsChangedMessage(preferences.ShowNews));
 		// The app opens in the startup mode, on that mode's page named as the startup page (Library for Library); a
 		// startup page only one mode has (e.g. Schedule) opens in its mode.
 		Mode = preferences.StartupMode;
@@ -81,8 +82,8 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 		// The mode's kind: Anime and Manga are the first two, in the same order as MediaMode's.
 		SearchCategory = (SearchCategory)Mode;
 
-		StartupItem = startup is not null && NavigationItems.Contains(startup) ? startup
-			: NavigationItems.FirstOrDefault(x => x.Label == startup?.Label) ?? NavigationItems.FirstOrDefault();
+		StartupItem = startup is { IsVisible: true } && NavigationItems.Contains(startup) ? startup
+			: NavigationItems.FirstOrDefault(x => x.IsVisible && x.Label == startup?.Label) ?? NavigationItems.FirstOrDefault();
 		CurrentItem = StartupItem;
 
 		_preferences = preferences;
@@ -119,6 +120,21 @@ public partial class MainWindowViewModel : ObservableObject, IRecipient<AnimeDat
 	// The menu gets new lists rather than hiding items: an ItemsRepeater whose first item is collapsed shows nothing.
 	private List<NavigationItemViewModel> ItemsFor(MediaMode mode, bool footer) =>
 		[.. _allItems.Where(x => x.IsFooter == footer && (x.Mode is null || x.Mode == mode))];
+
+	// News is hidden in place (it's never first), so the menu keeps its selection.
+	public void Receive(ShowNewsChangedMessage message)
+	{
+		foreach (var news in _allItems.Where(x => x.Key == NewsPreferences.PageKey))
+		{
+			news.IsVisible = message.Show;
+		}
+
+		if (!message.Show && CurrentItem?.Key == NewsPreferences.PageKey)
+		{
+			ModeSwitchItem = null;
+			ModeSwitchItem = NavigationItems.FirstOrDefault();
+		}
+	}
 
 	/// <param name="current">The page showing, whose counterpart is shown in the new mode.</param>
 	public void SwitchMode(MediaMode mode, NavigationItemViewModel? current = null)

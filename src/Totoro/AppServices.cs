@@ -115,6 +115,7 @@ internal static class AppServices
 				.AddAgentTools<AnimePluginTools>()
 				.AddAgentTools<PluginTools>()
 				.AddAgentTools<ReleaseScheduleTools>()
+				.AddAgentTools<NewsTools>()
 				.AddAgentTools<MangaTools>()
 				.AddAgentTools<ImageSearchTools>()
 				.AddAgentTools<PlaylistTools>();
@@ -184,6 +185,11 @@ internal static class AppServices
 		{
 			x.Mode = MediaMode.Anime;
 			x.AnimatedIcon = () => Icons.ScheduleAnimated;
+		});
+		services.AddMainNavigationItem<NewsPage, NewsViewModel>("News", x =>
+		{
+			x.Mode = MediaMode.Anime;
+			x.AnimatedIcon = () => Icons.NewsAnimated;
 		});
 		services.AddMainNavigationItem<ProviderWatchPage, ProviderWatchViewModel>("Watch", x =>
 		{

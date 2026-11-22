@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Totoro.Views.NewsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:local="using:Totoro.Views"
+    xmlns:services="using:Totoro.Core.Services"
+    xmlns:vm="using:Totoro.ViewModels">
+
+    <!--  Spacing per the Windows guidelines: 16 padding, 12 between content areas, 8 between buttons and from a header to its control.  -->
+    <!--  shortcut: the two panes sit side by side at every width; stack them if narrow windows matter.  -->
+    <Grid Margin="16" ColumnSpacing="12" RowSpacing="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" MaxWidth="560" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid
+            Grid.ColumnSpan="2"
+            ColumnSpacing="8"
+            RowSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Style="{ThemeResource TitleTextBlockStyle}" Text="News" />
+            <TextBlock
+                Grid.Row="1"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="The latest anime and manga headlines." />
+            <Button
+                Grid.RowSpan="2"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                AutomationProperties.Name="Refresh"
+                Command="{x:Bind ViewModel.RefreshCommand, Mode=OneWay}"
+                ToolTipService.ToolTip="Refresh">
+                <FontIcon FontSize="16" Glyph="&#xE72C;" />
+            </Button>
+            <InfoBar
+                Title="Couldn't load the news"
+                Grid.Row="2"
+                Grid.ColumnSpan="2"
+                IsClosable="False"
+                IsOpen="True"
+                Message="{x:Bind ViewModel.Error, Mode=OneWay}"
+                Severity="Error"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Error), Mode=OneWay}" />
+        </Grid>
+
+        <!--  The headlines; picking one reads it on the right  -->
+        <ProgressRing
+            Grid.Row="1"
+            IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsBusy), Mode=OneWay}" />
+        <ListView
+            x:Name="Headlines"
+            Grid.Row="1"
+            AutomationProperties.Name="Headlines"
+            ItemsSource="{x:Bind ViewModel.Articles, Mode=OneWay}"
+            SelectionChanged="OnArticleSelected"
+            SelectionMode="Single">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="services:NewsArticle">
+                    <StackPanel
+                        Padding="0,8"
+                        AutomationProperties.Name="{x:Bind local:NewsPage.Describe(Title, Summary, Published), Mode=OneTime}"
+                        Spacing="4">
+                        <TextBlock
+                            Style="{ThemeResource BodyStrongTextBlockStyle}"
+                            Text="{x:Bind Title, Mode=OneTime}"
+                            TextWrapping="Wrap" />
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            MaxLines="2"
+                            Text="{x:Bind Summary, Mode=OneTime}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Summary), Mode=OneTime}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind Category, Mode=OneTime}"
+                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Category), Mode=OneTime}" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind local:NewsPage.Ago(Published), Mode=OneTime}" />
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!--  The article picked, read in the app  -->
+        <Grid
+            Grid.Row="1"
+            Grid.Column="1"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{ThemeResource OverlayCornerRadius}">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="Pick a headline to read it."
+                Visibility="{x:Bind local:NewsPage.VisibleIfNone(ViewModel.Article), Mode=OneWay}" />
+            <ScrollViewer x:Name="Reader" Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(ViewModel.Article), Mode=OneWay}">
+                <StackPanel
+                    MaxWidth="720"
+                    Padding="16"
+                    HorizontalAlignment="Left"
+                    Spacing="12">
+                    <StackPanel Spacing="8">
+                        <TextBlock
+                            IsTextSelectionEnabled="True"
+                            Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind local:NewsPage.Title(ViewModel.Article), Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                Text="{x:Bind local:NewsPage.Byline(ViewModel.Article), Mode=OneWay}" />
+                            <HyperlinkButton
+                                Padding="4,2"
+                                Content="Open in browser"
+                                NavigateUri="{x:Bind local:NewsPage.Url(ViewModel.Article), Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                    <ProgressRing
+                        HorizontalAlignment="Left"
+                        IsActive="{x:Bind ViewModel.IsLoadingArticle, Mode=OneWay}"
+                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.IsLoadingArticle), Mode=OneWay}" />
+                    <InfoBar
+                        Title="Couldn't load the article"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Message="{x:Bind ViewModel.ArticleError, Mode=OneWay}"
+                        Severity="Error"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.ArticleError), Mode=OneWay}" />
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.Blocks, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="12" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ReaderBlock">
+                                <StackPanel Spacing="4">
+                                    <TextBlock
+                                        IsTextSelectionEnabled="True"
+                                        LineHeight="24"
+                                        Text="{x:Bind Block.Text, Mode=OneTime}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Block.Text), Mode=OneTime}" />
+                                    <Image
+                                        MaxWidth="600"
+                                        MaxHeight="480"
+                                        HorizontalAlignment="Left"
+                                        Source="{x:Bind Picture, Mode=OneWay}"
+                                        Stretch="Uniform"
+                                        Visibility="{x:Bind local:NewsPage.StillImage(Block.Image, Block.Video), Mode=OneTime}" />
+                                    <!--  A video: its thumbnail, opening it on YouTube  -->
+                                    <HyperlinkButton
+                                        Padding="0"
+                                        AutomationProperties.Name="Play the video on YouTube"
+                                        NavigateUri="{x:Bind Block.Video, Mode=OneTime}"
+                                        ToolTipService.ToolTip="Play on YouTube"
+                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(Block.Video), Mode=OneTime}">
+                                        <Grid MinWidth="320" MinHeight="180">
+                                            <Image
+                                                MaxWidth="600"
+                                                Source="{x:Bind Picture, Mode=OneWay}"
+                                                Stretch="Uniform" />
+                                            <FontIcon
+                                                FontSize="48"
+                                                Foreground="White"
+                                                Glyph="&#xF5B0;" />
+                                        </Grid>
+                                    </HyperlinkButton>
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Block.Caption, Mode=OneTime}"
+                                        TextWrapping="Wrap"
+                                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Block.Caption), Mode=OneTime}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

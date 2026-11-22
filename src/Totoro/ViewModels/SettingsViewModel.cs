@@ -130,6 +130,7 @@ public partial class SettingsViewModel : ObservableObject
 		PlayDownloadsFirst = preferences.PlayDownloadsFirst;
 		AutoDownloadNext = preferences.AutoDownloadNext;
 		NotifyNewEpisodes = preferences.NotifyNewEpisodes;
+		ShowNews = preferences.ShowNews;
 		Updates = updates;
 		Updates.PropertyChanged += (_, _) =>
 		{
@@ -497,6 +498,12 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool NotifyNewEpisodes { get; set; }
 
 	partial void OnNotifyNewEpisodesChanged(bool value) => _preferences.NotifyNewEpisodes = value;
+
+	/// <summary>Whether the menu has News.</summary>
+	[ObservableProperty]
+	public partial bool ShowNews { get; set; }
+
+	partial void OnShowNewsChanged(bool value) => _preferences.ShowNews = value;
 
 	[RelayCommand]
 	private Task TestNotificationAsync() => _notifier.NotifyTestAsync();

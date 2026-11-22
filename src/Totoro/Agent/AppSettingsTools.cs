@@ -46,7 +46,9 @@ public sealed record AppSettings(
 	[property: Description("yt-dlp.exe, which downloads HLS streams; empty when it's found on the PATH.")]
 	string YtDlpPath,
 	[property: Description("Whether the user gets a Windows notification when the next episode of an anime they're watching is out (while the app's open).")]
-	bool NotifyNewEpisodes);
+	bool NotifyNewEpisodes,
+	[property: Description("Whether the menu has the News page (anime and manga headlines).")]
+	bool ShowNews);
 
 [Description("A module (an anime database, provider, media player...) and its settings.")]
 public sealed record ModuleSettingsInfo(string Module, IReadOnlyList<ModuleSettingInfo> Settings);
@@ -78,7 +80,7 @@ public sealed class AppSettingsTools(
 	Playback.DownloadNotifier notifier)
 {
 	[AgentTool("get_app_settings")]
-	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page and mode (anime or manga), download folder, new-episode notifications.")]
+	[Description("The app's settings: theme, anime database (and keeping other lists in sync), anime provider, media player, skipping, playing the next episode, showing it on Discord, what anime cards show, startup page and mode (anime or manga), download folder, new-episode notifications, showing News in the menu.")]
 	public AppSettings GetAppSettings()
 	{
 		var databases = trackers.CreateAll().ToList();
@@ -108,7 +110,8 @@ public sealed class AppSettingsTools(
 			preferences.StartupMode,
 			preferences.DownloadFolder,
 			preferences.YtDlpPath,
-			preferences.NotifyNewEpisodes);
+			preferences.NotifyNewEpisodes,
+			preferences.ShowNews);
 	}
 
 	[AgentTool("update_app_settings")]
@@ -129,7 +132,8 @@ public sealed class AppSettingsTools(
 		[Description("Whether the app opens on anime or manga.")] MediaMode? startupMode = null,
 		[Description("A folder to download episodes to; empty for the default (Videos\\Totoro).")] string? downloadFolder = null,
 		[Description("The path of yt-dlp.exe, which downloads HLS streams; empty to find it on the PATH.")] string? ytDlpPath = null,
-		[Description("Whether the user's notified when a new episode of an anime they're watching is out.")] bool? notifyNewEpisodes = null)
+		[Description("Whether the user's notified when a new episode of an anime they're watching is out.")] bool? notifyNewEpisodes = null,
+		[Description("Whether the menu has the News page; it shows or hides straight away.")] bool? showNews = null)
 	{
 		if (animeDatabase is not null)
 		{
@@ -228,6 +232,11 @@ public sealed class AppSettingsTools(
 		if (notifyNewEpisodes is { } notifyNew)
 		{
 			preferences.NotifyNewEpisodes = notifyNew;
+		}
+
+		if (showNews is { } news)
+		{
+			preferences.ShowNews = news;
 		}
 
 		return GetAppSettings();
