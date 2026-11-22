@@ -58,6 +58,19 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
           Write-Host "Version $version"
 
+      # The commits since the last release, as the release's notes: the app shows them when it offers the update.
+      - name: Write the release notes
+        shell: pwsh
+        run: |
+          $last = git tag --list 'v*' |
+            Where-Object { $v = $null; [version]::TryParse($_.Substring(1), [ref]$v) } |
+            Sort-Object { [version]$_.Substring(1) } -Descending | Select-Object -First 1
+          # Not the version bumps, which skip CI.
+          $commits = if ($last) { git log "$last..HEAD" --no-merges --invert-grep --grep '\[skip ci\]' --pretty='format:- %s' }
+          $notes = if ($commits) { "## What's new`n`n" + ($commits -join "`n") } else { "" }
+          Set-Content release-notes.md $notes
+          Write-Host $notes
+
       - name: Install Inno Setup
         shell: pwsh
         run: |
@@ -101,4 +114,5 @@ jobs:
           tag_name: v${{ steps.version.outputs.version }}
           target_commitish: ${{ steps.bump.outputs.sha }}
           files: installer/output/*.exe
+          body_path: release-notes.md
           generate_release_notes: true

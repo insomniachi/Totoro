@@ -381,6 +381,12 @@ public sealed partial class MainWindow : Window
 
 	public static Uri? ReleasePage(AppRelease? release) => release?.Page;
 
+	// The release's notes (Markdown, from the release workflow) as plain text: without headings and bold.
+	public static string ReleaseNotes(AppRelease? release) => release is null ? "" : string.Join('\n',
+		release.Notes.Replace("\r", "").Replace("**", "").Split('\n').Where(x => !x.TrimStart().StartsWith('#'))).Trim();
+
+	public static Visibility VisibleIfReleaseNotes(AppRelease? release) => ReleaseNotes(release).Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+
 	public static string UpdateMessage(UpdateState state, string error) => state switch
 	{
 		UpdateState.Downloading => "Downloading it…",

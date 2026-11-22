@@ -66,7 +66,7 @@ publishes the app self-contained (with .NET and the Windows App SDK's runtime) a
 
 GitHub Actions builds the installer only when run by hand (Actions > Installer > Run workflow). It takes a version, or uses the last release's with the patch number incremented, sets the project to that version, and publishes a GitHub release tagged with it (such as `v2.1.0`) with the installer attached.
 
-Installed copies update themselves from those releases: Totoro looks for a newer one when it starts (Settings > About), offers it, and installs it on a click, checking the download against GitHub's SHA-256. It closes for the installer, which starts it again.
+Installed copies update themselves from those releases: Totoro looks for a newer one when it starts (Settings > About), offers it with what's new (the release's notes: its commits since the last one), and installs it on a click, checking the download against GitHub's SHA-256. It closes for the installer, which starts it again.
 
 ## Repository layout
 

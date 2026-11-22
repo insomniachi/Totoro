@@ -1081,6 +1081,15 @@
                                 Maximum="1"
                                 Visibility="{x:Bind local:MainWindow.VisibleWhileUpdating(ViewModel.Updates.State), Mode=OneWay}"
                                 Value="{x:Bind ViewModel.Updates.Progress, Mode=OneWay}" />
+                            <ScrollViewer
+                                MaxHeight="240"
+                                AutomationProperties.Name="Release notes"
+                                Visibility="{x:Bind local:MainWindow.VisibleIfReleaseNotes(ViewModel.Updates.Available), Mode=OneWay}">
+                                <TextBlock
+                                    IsTextSelectionEnabled="True"
+                                    Text="{x:Bind local:MainWindow.ReleaseNotes(ViewModel.Updates.Available), Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </ScrollViewer>
                             <HyperlinkButton
                                 Padding="0"
                                 Content="What's new"
