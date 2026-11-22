@@ -1,5 +1,6 @@
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Controls;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Totoro.ViewModels;
 
@@ -23,6 +24,25 @@ public sealed partial class MediaSearchView : UserControl
 
 	/// <summary>What the button shows and does, e.g. "Highest first. Click to reverse."</summary>
 	public static string SortOrderName(string order) => $"{order}. Click to reverse.";
+
+	/// <summary>Draws a mark under the year range slider every 5 years, from its earliest year.</summary>
+	private void OnYearTicksSizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		var canvas = (Canvas)sender;
+		canvas.Children.Clear();
+		if (ViewModel is not { } viewModel)
+		{
+			return;
+		}
+
+		var (first, last) = (viewModel.EarliestYear, viewModel.LatestYear);
+		for (var year = first; year <= last; year += 5)
+		{
+			var tick = new Microsoft.UI.Xaml.Shapes.Rectangle { Style = (Style)Resources["YearTickStyle"] };
+			Canvas.SetLeft(tick, (year - first) * e.NewSize.Width / (last - first));
+			canvas.Children.Add(tick);
+		}
+	}
 
 	/// <summary>Suggests the database's genres matching what's typed, leaving out ones already in either box.</summary>
 	private void OnGenreTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

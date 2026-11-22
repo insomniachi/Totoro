@@ -21,6 +21,11 @@
     <UserControl.Resources>
         <helpers:NullableNumberConverter x:Key="NullableNumber" />
         <helpers:OptionalBoundConverter x:Key="OptionalBound" />
+        <Style x:Key="YearTickStyle" TargetType="Rectangle">
+            <Setter Property="Width" Value="1" />
+            <Setter Property="Height" Value="4" />
+            <Setter Property="Fill" Value="{ThemeResource ControlStrongFillColorDefaultBrush}" />
+        </Style>
 
         <!--  Same card actions as the user list; each Command receives the card's AnimeModel  -->
         <overlays:CardActionCollection x:Key="CardActions">
@@ -249,33 +254,26 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.Year, Mode=TwoWay, Converter={StaticResource NullableNumber}, ConverterParameter=Int32}" />
                             </toolkit:Case>
+                            <!--  The thumbs at the ends mean no limit on that side  -->
                             <toolkit:Case Value="Range">
-                                <Grid ColumnSpacing="8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <NumberBox
-                                        AutomationProperties.Name="From year"
-                                        Maximum="{x:Bind ViewModel.LatestYear, Mode=OneTime}"
-                                        Minimum="1940"
-                                        PlaceholderText="Any"
-                                        SpinButtonPlacementMode="Compact"
-                                        Value="{x:Bind ViewModel.MinimumYear, Mode=TwoWay, Converter={StaticResource NullableNumber}, ConverterParameter=Int32}" />
+                                <StackPanel Spacing="8">
                                     <TextBlock
-                                        Grid.Column="1"
-                                        VerticalAlignment="Center"
-                                        Text="to" />
-                                    <NumberBox
-                                        Grid.Column="2"
-                                        AutomationProperties.Name="To year"
+                                        HorizontalAlignment="Right"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind ViewModel.YearRangeText, Mode=OneWay}" />
+                                    <toolkit:RangeSelector
+                                        AutomationProperties.Name="Year range"
                                         Maximum="{x:Bind ViewModel.LatestYear, Mode=OneTime}"
-                                        Minimum="1940"
-                                        PlaceholderText="Any"
-                                        SpinButtonPlacementMode="Compact"
-                                        Value="{x:Bind ViewModel.MaximumYear, Mode=TwoWay, Converter={StaticResource NullableNumber}, ConverterParameter=Int32}" />
-                                </Grid>
+                                        Minimum="{x:Bind ViewModel.EarliestYear, Mode=OneTime}"
+                                        RangeEnd="{x:Bind ViewModel.RangeEndYear, Mode=TwoWay}"
+                                        RangeStart="{x:Bind ViewModel.RangeStartYear, Mode=TwoWay}"
+                                        StepFrequency="1" />
+                                    <!--  A mark every 5 years; inset by half a thumb, where the thumbs' centers stop  -->
+                                    <Canvas
+                                        Height="4"
+                                        Margin="11,-4,11,0"
+                                        SizeChanged="OnYearTicksSizeChanged" />
+                                </StackPanel>
                             </toolkit:Case>
                         </toolkit:SwitchPresenter>
                     </StackPanel>

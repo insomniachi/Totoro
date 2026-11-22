@@ -120,7 +120,14 @@ public abstract partial class MediaSearchViewModel : NavigatableViewModel
 	public int? Year
 	{
 		get => MinimumYear;
-		set => MinimumYear = MaximumYear = value;
+		set
+		{
+			// The Year box stays bound while another mode shows, and writes back here: it mustn't collapse a range.
+			if (YearMode == YearFilterMode.Year)
+			{
+				MinimumYear = MaximumYear = value;
+			}
+		}
 	}
 
 	partial void OnYearModeChanged(YearFilterMode value)
@@ -137,7 +144,44 @@ public abstract partial class MediaSearchViewModel : NavigatableViewModel
 		}
 	}
 
-	partial void OnMinimumYearChanged(int? value) => OnPropertyChanged(nameof(Year));
+	partial void OnMinimumYearChanged(int? value)
+	{
+		OnPropertyChanged(nameof(Year));
+		OnPropertyChanged(nameof(RangeStartYear));
+		OnPropertyChanged(nameof(YearRangeText));
+	}
+
+	partial void OnMaximumYearChanged(int? value)
+	{
+		OnPropertyChanged(nameof(RangeEndYear));
+		OnPropertyChanged(nameof(YearRangeText));
+	}
+
+	/// <summary>Earliest year the filter allows.</summary>
+	public int EarliestYear => 1980;
+
+	/// <summary><see cref="MinimumYear"/> as a slider's start: the slider's start means no lower bound.</summary>
+	public double RangeStartYear
+	{
+		get => MinimumYear ?? EarliestYear;
+		set => MinimumYear = value <= EarliestYear ? null : (int)Math.Round(value);
+	}
+
+	/// <summary><see cref="MaximumYear"/> as a slider's end: the slider's end means no upper bound.</summary>
+	public double RangeEndYear
+	{
+		get => MaximumYear ?? LatestYear;
+		set => MaximumYear = value >= LatestYear ? null : (int)Math.Round(value);
+	}
+
+	/// <summary>The year range in words, e.g. "2010 to 2016" or "Any year".</summary>
+	public string YearRangeText => (MinimumYear, MaximumYear) switch
+	{
+		(null, null) => "Any year",
+		({ } min, null) => $"{min} and later",
+		(null, { } max) => $"Up to {max}",
+		({ } min, { } max) => $"{min} to {max}",
+	};
 
 	/// <summary>On a 0-10 scale, inclusive.</summary>
 	[ObservableProperty] public partial float? MinimumScore { get; set; }
