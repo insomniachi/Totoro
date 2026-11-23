@@ -265,14 +265,7 @@ public sealed partial class PlayerWindow : Window
 		PlaceCursorHider();
 	}
 
-	private void OnVideoTapped(object sender, TappedRoutedEventArgs e) => ViewModel.PlayPauseCommand.Execute(null);
-
-	private void OnVideoDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-	{
-		// The double click's first click played or paused it: undo that.
-		ViewModel.PlayPauseCommand.Execute(null);
-		ViewModel.ToggleFullScreenCommand.Execute(null);
-	}
+	private void OnVideoDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => ViewModel.ToggleFullScreenCommand.Execute(null);
 
 	/// <summary>Shows the title bar and the controls (sliding back in), and starts the wait to hide them again.</summary>
 	private void ShowControls()

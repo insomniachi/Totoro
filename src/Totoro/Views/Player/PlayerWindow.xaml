@@ -68,11 +68,8 @@
             SizeChanged="OnVideoAreaSizeChanged">
             <!--  The video goes first here, in code: libvlc's view or Windows' element, by the player (see AddVideoView)  -->
 
-            <!--  Clicking the video plays or pauses it; double-clicking goes full screen  -->
-            <Grid
-                Background="Transparent"
-                DoubleTapped="OnVideoDoubleTapped"
-                Tapped="OnVideoTapped" />
+            <!--  Double-clicking the video goes full screen  -->
+            <Grid Background="Transparent" DoubleTapped="OnVideoDoubleTapped" />
 
             <ProgressRing
                 Width="48"
