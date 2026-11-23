@@ -1,6 +1,7 @@
 using System.Globalization;
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -29,6 +30,15 @@ public sealed partial class NewsPage : Page
 		}
 	}
 
+	// Names the list item itself, which UI Automation selects, rather than its content.
+	private void OnHeadlineContainerChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+	{
+		if (args.Item is NewsArticle article)
+		{
+			AutomationProperties.SetName(args.ItemContainer, Describe(article.Title, article.Summary, article.Published));
+		}
+	}
+
 	/// <summary>"5 min ago", "3 h ago", else the date; "" when the feed gave no date.</summary>
 	public static string Ago(DateTimeOffset published)
 	{
@@ -47,17 +57,30 @@ public sealed partial class NewsPage : Page
 	public static string Describe(string title, string summary, DateTimeOffset published) =>
 		string.Join(". ", new[] { title, summary, Ago(published) }.Where(x => x.Length > 0));
 
-	/// <summary>A downloaded picture, decoded for an Image.</summary>
-	public static ImageSource? Picture(byte[]? bytes)
+	// Each block shows its picture in one Image only: the still one, or the video's thumbnail. The other gets null, so it isn't decoded twice.
+	public static ImageSource? StillPicture(byte[]? bytes, Uri? video) => video is null ? Decode(bytes) : null;
+
+	public static ImageSource? VideoPicture(byte[]? bytes, Uri? video) => video is null ? null : Decode(bytes);
+
+	// A downloaded picture, decoded for an Image; null if there's none or it isn't one the codecs read.
+	private static BitmapImage? Decode(byte[]? bytes)
 	{
 		if (bytes is null)
 		{
 			return null;
 		}
 
-		var picture = new BitmapImage();
-		picture.SetSource(new MemoryStream(bytes).AsRandomAccessStream());
-		return picture;
+		try
+		{
+			var picture = new BitmapImage();
+			picture.SetSource(new MemoryStream(bytes).AsRandomAccessStream());
+			return picture;
+		}
+		catch (Exception)
+		{
+			// An error page or an unsupported format: the article reads fine without it.
+			return null;
+		}
 	}
 
 	public static string Title(NewsArticle? article) => article?.Title ?? "";

@@ -10,11 +10,7 @@ namespace Totoro.Core.Services;
 /// <summary>A news article: its headline, one-line summary, link and when it was published.</summary>
 /// <param name="Category">What it's about, e.g. "Anime", "Manga", "Industry"; "" if the feed doesn't say.</param>
 /// <param name="Published">default if the feed's date doesn't parse.</param>
-public sealed record NewsArticle(string Title, string Summary, string Category, Uri Url, DateTimeOffset Published)
-{
-	// Names the headline's list item for UI Automation.
-	public override string ToString() => Title;
-}
+public sealed record NewsArticle(string Title, string Summary, string Category, Uri Url, DateTimeOffset Published);
 
 /// <summary>A piece of an article's body: a paragraph (<see cref="Text"/>), or an image with its caption; a video is its thumbnail, opening <see cref="Video"/>.</summary>
 public sealed record ArticleBlock(string Text, string Image, string Caption, Uri? Video);

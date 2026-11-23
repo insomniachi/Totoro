@@ -77,8 +77,9 @@ public sealed partial class NewsViewModel(NewsService news, IHttpClientFactory h
 			load.Token.ThrowIfCancellationRequested();
 			Blocks = [.. blocks.Select(x => new ReaderBlock(x))];
 		}
-		catch (OperationCanceledException) when (load.IsCancellationRequested)
+		catch (Exception) when (load.IsCancellationRequested)
 		{
+			// Another article was picked: whatever this one ended in, it's not shown.
 			return;
 		}
 		catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)

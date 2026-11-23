@@ -67,15 +67,13 @@
             x:Name="Headlines"
             Grid.Row="1"
             AutomationProperties.Name="Headlines"
+            ContainerContentChanging="OnHeadlineContainerChanging"
             ItemsSource="{x:Bind ViewModel.Articles, Mode=OneWay}"
             SelectionChanged="OnArticleSelected"
             SelectionMode="Single">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="services:NewsArticle">
-                    <StackPanel
-                        Padding="0,8"
-                        AutomationProperties.Name="{x:Bind local:NewsPage.Describe(Title, Summary, Published), Mode=OneTime}"
-                        Spacing="4">
+                    <StackPanel Padding="0,8" Spacing="4">
                         <TextBlock
                             Style="{ThemeResource BodyStrongTextBlockStyle}"
                             Text="{x:Bind Title, Mode=OneTime}"
@@ -169,7 +167,7 @@
                                         MaxWidth="600"
                                         MaxHeight="480"
                                         HorizontalAlignment="Left"
-                                        Source="{x:Bind local:NewsPage.Picture(Picture), Mode=OneWay}"
+                                        Source="{x:Bind local:NewsPage.StillPicture(Picture, Block.Video), Mode=OneWay}"
                                         Stretch="Uniform"
                                         Visibility="{x:Bind local:NewsPage.StillImage(Block.Image, Block.Video), Mode=OneTime}" />
                                     <!--  A video: its thumbnail, opening it on YouTube  -->
@@ -186,7 +184,7 @@
                                             Background="{ThemeResource SmokeFillColorDefaultBrush}">
                                             <Image
                                                 MaxWidth="600"
-                                                Source="{x:Bind local:NewsPage.Picture(Picture), Mode=OneWay}"
+                                                Source="{x:Bind local:NewsPage.VideoPicture(Picture, Block.Video), Mode=OneWay}"
                                                 Stretch="Uniform" />
                                             <FontIcon
                                                 FontSize="48"
