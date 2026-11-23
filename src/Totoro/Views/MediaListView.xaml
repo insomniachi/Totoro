@@ -21,6 +21,18 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
+        <!--  The filters growing out of their button (see FiltersHost): revealed by their clip, not stretched  -->
+        <toolkitui:TransitionHelper
+            x:Key="FiltersTransition"
+            Duration="0:0:0.3"
+            ReverseDuration="0:0:0.2">
+            <toolkitui:TransitionHelper.Configs>
+                <toolkitui:TransitionConfig
+                    EnableClipAnimation="True"
+                    Id="Filters"
+                    ScaleMode="None" />
+            </toolkitui:TransitionHelper.Configs>
+        </toolkitui:TransitionHelper>
         <helpers:NullableNumberConverter x:Key="NullableNumber" />
 
         <!--  Actions of each card, on hover and in its right-click menu; each Command receives the card's AnimeModel  -->
@@ -172,6 +184,13 @@
                 </controls:SelectableSegmented>
             </ScrollView>
 
+            <!--  Where the filters grow from (FiltersTransition): a stand-in, as the transition hides its source  -->
+            <Grid
+                x:Name="FiltersGhost"
+                Grid.Column="1"
+                IsHitTestVisible="False">
+                <Border toolkitui:TransitionHelper.Id="Filters" CornerRadius="{ThemeResource ControlCornerRadius}" />
+            </Grid>
             <!--  The filters (title, genres, season, year) and sorting show only while Filters is on; it's right of the tabs  -->
             <ToggleButton
                 Grid.Column="1"
@@ -196,36 +215,31 @@
             State="{x:Bind ViewModel.LoadState, Mode=OneTime}"
             Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.LoadState.HasMessage), Mode=OneWay}" />
 
-        <Border
+        <!--  It grows out of the Filters button as it opens, and back into it as it closes  -->
+        <Grid
+            x:Name="FiltersHost"
             Grid.Row="2"
             Grid.Column="1"
+            Visibility="Collapsed">
+            <Interactivity:Interaction.Behaviors>
+                <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.ShowFilters, Mode=OneWay}" Value="True">
+                    <toolkitui:StartTransitionAction
+                        Source="{x:Bind FiltersGhost}"
+                        Target="{x:Bind FiltersHost}"
+                        Transition="{StaticResource FiltersTransition}" />
+                </Interactivity:DataTriggerBehavior>
+                <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.ShowFilters, Mode=OneWay}" Value="False">
+                    <toolkitui:ReverseTransitionAction Transition="{StaticResource FiltersTransition}" />
+                </Interactivity:DataTriggerBehavior>
+            </Interactivity:Interaction.Behaviors>
+        <Border
             Width="320"
             Margin="16,8,16,0"
+            toolkitui:TransitionHelper.Id="Filters"
             Background="{ThemeResource LayerFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="8"
-            Visibility="{x:Bind ViewModel.ShowFilters, Mode=OneWay}">
-            <animations:Implicit.ShowAnimations>
-                <animations:OpacityAnimation
-                    From="0"
-                    To="1"
-                    Duration="0:0:0.2" />
-                <animations:TranslationAnimation
-                    From="16,0,0"
-                    To="0"
-                    Duration="0:0:0.2" />
-            </animations:Implicit.ShowAnimations>
-            <animations:Implicit.HideAnimations>
-                <animations:OpacityAnimation
-                    From="1"
-                    To="0"
-                    Duration="0:0:0.15" />
-                <animations:TranslationAnimation
-                    From="0"
-                    To="16,0,0"
-                    Duration="0:0:0.15" />
-            </animations:Implicit.HideAnimations>
+            CornerRadius="8">
             <ScrollView>
                 <StackPanel Padding="16" Spacing="12">
                     <!--  The panel's heading, with clearing every filter at its end  -->
@@ -362,6 +376,7 @@
                 </StackPanel>
             </ScrollView>
         </Border>
+        </Grid>
 
         <!--  Placeholder cards from the card template while the list loads, so the page doesn't jump when it arrives  -->
         <controls:ShimmerView Grid.Row="2" IsLoading="{x:Bind ViewModel.IsBusy, Mode=OneWay}">

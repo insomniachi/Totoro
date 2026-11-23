@@ -29,6 +29,19 @@
             <KeyboardAccelerator Key="Escape" Invoked="OnEscapeInvoked" />
         </Grid.KeyboardAccelerators>
         <Grid.Resources>
+            <!--  The assistant's panel growing out of its button (see ChatHost): revealed by its clip, not stretched  -->
+            <ui:TransitionHelper
+                x:Key="ChatTransition"
+                Duration="0:0:0.3"
+                ReverseDuration="0:0:0.2">
+                <ui:TransitionHelper.Configs>
+                    <ui:TransitionConfig
+                        EnableClipAnimation="True"
+                        Id="Assistant"
+                        ScaleMode="None" />
+                </ui:TransitionHelper.Configs>
+            </ui:TransitionHelper>
+
             <!--  The now-playing bar's round, flat buttons  -->
             <Style
                 x:Key="NowPlayingButtonStyle"
@@ -535,6 +548,15 @@
 
                     <!--  Opens and closes the assistant's panel  -->
                     <!--  Just the icon, as subtle buttons are: the accent color while the panel's open, not a filled button  -->
+                    <Grid Visibility="{x:Bind ViewModel.Chat.IsAvailable, Mode=OneWay}">
+                    <!--  Where the panel grows from (ChatTransition): a stand-in, as the transition hides its source  -->
+                    <Grid
+                        x:Name="AssistantGhost"
+                        Height="32"
+                        VerticalAlignment="Center"
+                        IsHitTestVisible="False">
+                        <Border ui:TransitionHelper.Id="Assistant" CornerRadius="{ThemeResource ControlCornerRadius}" />
+                    </Grid>
                     <ToggleButton
                         x:Name="AssistantButton"
                         AutomationProperties.AutomationId="AssistantButton"
@@ -543,8 +565,7 @@
                         AutomationProperties.Name="Assistant"
                         BorderThickness="0"
                         IsChecked="{x:Bind ViewModel.Chat.IsOpen, Mode=TwoWay}"
-                        ToolTipService.ToolTip="Assistant"
-                        Visibility="{x:Bind ViewModel.Chat.IsAvailable, Mode=OneWay}">
+                        ToolTipService.ToolTip="Assistant">
                         <ToggleButton.Resources>
                             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
                             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -561,6 +582,7 @@
                         </ToggleButton.Resources>
                         <FontIcon FontSize="16" Glyph="&#xE8BD;" />
                     </ToggleButton>
+                    </Grid>
 
                     <!--  The account of the selected anime database; click to sign in or out  -->
                     <Button
@@ -1025,18 +1047,36 @@
             </SplitView>
         </NavigationView>
 
-        <!--  The assistant (see ChatService): beside the pages rather than over them, so what it does shows as it does it  -->
-        <Border
+        <!--
+            The assistant (see ChatService): beside the pages rather than over them, so what it does shows as it does it.
+            It grows out of the Assistant button as it opens, and back into it as it closes.
+        -->
+        <Grid
+            x:Name="ChatHost"
             Grid.Row="1"
             Grid.Column="1"
-            Width="380"
-            Background="{ThemeResource LayerFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1,1,0,0"
-            CornerRadius="8,0,0,0"
-            Visibility="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}">
-            <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat, Mode=OneTime}" />
-        </Border>
+            Visibility="Collapsed">
+            <Interactivity:Interaction.Behaviors>
+                <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}" Value="True">
+                    <ui:StartTransitionAction
+                        Source="{x:Bind AssistantGhost}"
+                        Target="{x:Bind ChatHost}"
+                        Transition="{StaticResource ChatTransition}" />
+                </Interactivity:DataTriggerBehavior>
+                <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}" Value="False">
+                    <ui:ReverseTransitionAction Transition="{StaticResource ChatTransition}" />
+                </Interactivity:DataTriggerBehavior>
+            </Interactivity:Interaction.Behaviors>
+            <Border
+                Width="380"
+                ui:TransitionHelper.Id="Assistant"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1,1,0,0"
+                CornerRadius="8,0,0,0">
+                <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat, Mode=OneTime}" />
+            </Border>
+        </Grid>
 
         <!--  Notices over the top-right corner of the content, raised like the status bar below  -->
         <StackPanel
