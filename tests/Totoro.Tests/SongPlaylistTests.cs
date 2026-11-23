@@ -1,4 +1,3 @@
-using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Services;

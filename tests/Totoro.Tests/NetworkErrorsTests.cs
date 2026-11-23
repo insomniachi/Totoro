@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Net.Sockets;
 using Totoro.Core.Helpers;
 using Xunit;

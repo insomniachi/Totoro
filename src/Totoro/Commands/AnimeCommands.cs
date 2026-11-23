@@ -5,7 +5,6 @@ using Totoro.Core.Dialogs;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Navigation;
-using Totoro.Core.Relations;
 using Totoro.Core.Services;
 using Totoro.Playback;
 using Totoro.UI.Navigation;

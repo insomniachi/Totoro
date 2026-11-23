@@ -415,7 +415,7 @@ public sealed partial class WatchService(
 
 	/// <summary>
 	/// Plays a video the user chose on a provider (from <see cref="IAnimeProvider.GetServersAsync"/>) as the anime's episode
-	/// <paramref name="number"/> (see <see cref="GetAnimeEpisodeAsync"/>), leaving the anime's settings (its provider, show)
+	/// <paramref name="number"/> (see <see cref="ShowResolver.GetAnimeEpisodeAsync"/>), leaving the anime's settings (its provider, show)
 	/// as they are. With <paramref name="track"/> off it doesn't resume, save progress or mark the episode watched. The next
 	/// episode isn't offered either way: it'd be played from the anime's own provider.
 	/// </summary>

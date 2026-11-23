@@ -1,4 +1,3 @@
-using Microsoft.UI.Xaml;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Settings;

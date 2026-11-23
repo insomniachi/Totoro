@@ -14,7 +14,7 @@ public static class SeasonMap
 	private const int MaxSeries = 40;
 
 	/// <summary>
-	/// The seasons of the series <paramref name="anime"/> belongs to, first to last, including it (with each one's full
+	/// The seasons of the series anime <paramref name="animeId"/> belongs to, first to last, including it (with each one's full
 	/// details: its episode count, its ids). Just the anime when it has no prequels or sequels.
 	/// </summary>
 	public static async Task<IReadOnlyList<AnimeModel>> GetSeasonsAsync(IAnimeMetadataProvider database, long animeId, CancellationToken ct)

@@ -20,8 +20,6 @@ namespace Totoro.ViewModels.Player;
 /// The player's window, playing with Windows' own media engine (Media Foundation) into a <see cref="MediaPlayerElement"/>,
 /// its own controls off so the app's show instead.
 /// </summary>
-/// <param name="audioLanguage">The audio track to pick: language codes in order of preference, e.g. "jpn,ja".</param>
-/// <param name="subtitleLanguage">The subtitle track to pick, when no subtitle files are given with the video.</param>
 public sealed partial class MediaFoundationPlayerViewModel : PlayerViewModel
 {
 	private readonly WinMediaPlayer _player = new() { AutoPlay = true };
@@ -72,6 +70,8 @@ public sealed partial class MediaFoundationPlayerViewModel : PlayerViewModel
 	private bool _isEnded;
 	private bool _isSubtitleChosen;
 
+	/// <param name="audioLanguage">The audio track to pick: language codes in order of preference, e.g. "jpn,ja".</param>
+	/// <param name="subtitleLanguage">The subtitle track to pick, when no subtitle files are given with the video.</param>
 	public MediaFoundationPlayerViewModel(int volume, PlayerAspectRatio aspectRatio, string audioLanguage, string subtitleLanguage, ILogger logger)
 		: base(volume, aspectRatio, logger)
 	{

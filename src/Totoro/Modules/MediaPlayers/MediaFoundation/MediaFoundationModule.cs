@@ -1,8 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Media;
-using Totoro.UI.Player;
 
 namespace Totoro.Modules.MediaPlayers.MediaFoundation;
 

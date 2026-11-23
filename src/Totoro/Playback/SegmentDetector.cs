@@ -1,11 +1,9 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Totoro.Core.Helpers;
-using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Services;
-using Totoro.Helpers;
 using Totoro.Modules.MediaPlayers.Mpv;
 
 namespace Totoro.Playback;

@@ -1,7 +1,6 @@
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Manga;
-using Totoro.Core.Navigation;
 
 namespace Totoro.Core.Services;
 

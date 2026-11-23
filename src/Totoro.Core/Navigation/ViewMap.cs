@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Totoro.Core.Navigation;
+﻿namespace Totoro.Core.Navigation;
 
 public record ViewMap(Type View, Type ViewModel);
 

@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using System.Globalization;
-using System.Reflection;
 using Totoro.Core.Agent;
 using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;

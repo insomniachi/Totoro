@@ -15,13 +15,13 @@ public static class AnimeStoreKeyExtensions
 			? anime.ExternalIds.MyAnimeList.ToString(CultureInfo.InvariantCulture)
 			: anime.DatabaseKey;
 
-		/// <summary>The anime's database and its id there; what was saved was keyed by this before <see cref="StoreKey"/>.</summary>
+		/// <summary>The anime's database and its id there; what was saved was keyed by this before <see cref="AnimeStoreKeyExtensions.extension(AnimeModel).StoreKey"/>.</summary>
 		public string DatabaseKey => $"{anime.ServiceId}/{anime.Id}";
 	}
 
 	/// <summary>
-	/// The anime's <see cref="StoreKey"/> in <paramref name="entries"/>, after moving its entry there from its
-	/// <see cref="DatabaseKey"/> (how it was keyed before), if it's still under that. Returns whether it moved one, for
+	/// The anime's <see cref="AnimeStoreKeyExtensions.extension(AnimeModel).StoreKey"/> in <paramref name="entries"/>, after moving its entry there from its
+	/// <see cref="AnimeStoreKeyExtensions.extension(AnimeModel).DatabaseKey"/> (how it was keyed before), if it's still under that. Returns whether it moved one, for
 	/// the caller to save. An entry that's already under the new key is kept, and an old one left where it is.
 	/// </summary>
 	internal static bool MoveToStoreKey<T>(this Dictionary<string, T> entries, AnimeModel anime, out string key)

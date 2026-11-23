@@ -9,7 +9,7 @@ namespace Totoro.Core.Services;
 /// <summary>
 /// Changes the user's list, for the UI and agent tools alike: saves to the tracker of the database the anime came from,
 /// updates the anime, and sends an <see cref="AnimeTrackingChangedMessage"/> so every view showing it follows. Then, if
-/// <see cref="AnimeDatabasePreferences.SyncOtherLists"/> is on, makes the same change on the user's other lists (the
+/// <see cref="AnimeDatabasePreferences.extension(IPreferences).SyncOtherLists"/> is on, makes the same change on the user's other lists (the
 /// other databases they're signed in to), finding the anime's id there; a failure there is reported with an
 /// <see cref="OtherListSyncFailedMessage"/> rather than failing the change.
 /// </summary>
@@ -128,7 +128,7 @@ public sealed record AnimeTrackingChangedMessage(AnimeModel Anime, Tracking? Tra
 
 /// <summary>
 /// Sent (with WeakReferenceMessenger.Default) when a change to the user's list couldn't be made on one of their other
-/// lists (see <see cref="AnimeDatabasePreferences.SyncOtherLists"/>); the change on their main list was made.
+/// lists (see <see cref="AnimeDatabasePreferences.extension(IPreferences).SyncOtherLists"/>); the change on their main list was made.
 /// </summary>
 /// <param name="List">The other list's service, e.g. "MyAnimeList".</param>
 public sealed record OtherListSyncFailedMessage(string List, string Message);

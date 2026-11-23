@@ -27,6 +27,7 @@ Enforced at build time by `.editorconfig` (warnings):
 
 - Microsoft's C# naming conventions: `_camelCase` fields, `s_camelCase` static fields, `Async` suffix, and so on.
 - Namespaces match folders, and are file-scoped.
+- No unused usings (IDE0005; it's why the XML docs are generated, not published).
 
 Also:
 

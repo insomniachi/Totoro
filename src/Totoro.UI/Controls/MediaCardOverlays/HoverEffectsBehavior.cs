@@ -1,4 +1,3 @@
-using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations;
 using CommunityToolkit.WinUI.Behaviors;
 using CommunityToolkit.WinUI.Media.Pipelines;
@@ -7,7 +6,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Totoro.UI.Controls.MediaCardOverlays;

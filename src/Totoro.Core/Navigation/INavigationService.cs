@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Totoro.Core.Navigation;
+﻿namespace Totoro.Core.Navigation;
 
 public interface INavigator
 {

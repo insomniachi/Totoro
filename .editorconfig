@@ -126,3 +126,6 @@ dotnet_diagnostic.IDE0130.severity = warning
 
 csharp_style_namespace_declarations = file_scoped
 dotnet_diagnostic.IDE0161.severity = warning
+
+# No unused usings: IDE0005 warnings, at build time too (it needs GenerateDocumentationFile, see Directory.Build.props).
+dotnet_diagnostic.IDE0005.severity = warning

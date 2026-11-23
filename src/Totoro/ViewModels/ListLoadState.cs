@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using GraphQL.Client.Http;
 using Totoro.Core.Helpers;
 using Totoro.Core.Modules;
-using Totoro.Core.Services;
 
 namespace Totoro.ViewModels;
 

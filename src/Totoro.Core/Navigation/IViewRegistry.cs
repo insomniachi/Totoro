@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Totoro.Core.Navigation;
+﻿namespace Totoro.Core.Navigation;
 
 public interface IViewRegistry
 {

@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;

@@ -13,6 +13,13 @@
 	  <AppendPlatformToOutputPath>false</AppendPlatformToOutputPath>
 	  <!-- Report .editorconfig code-style rules (the naming conventions, IDE1006) when building, not only in the editor -->
 	  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+	  <!-- Unused usings (IDE0005) are only reported with documentation comments parsed, so the XML docs are generated: not
+	       published (the installer ships the publish folder). Comments stay optional: a member without one (CS1591), or a
+	       comment describing only the parameters that need it (CS1573), isn't a warning. -->
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+	  <PublishDocumentationFile>false</PublishDocumentationFile>
+	  <PublishReferencesDocumentationFiles>false</PublishReferencesDocumentationFiles>
+	  <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	  <!-- CsWinRT1032: collection expressions are only a problem for trimmed/AOT builds, and the app isn't trimmed.
 	       WFO2000: getters that return a new object each time do so on purpose (XAML icons can't share a parent; snapshots). -->
 	  <NoWarn>$(NoWarn);CsWinRT1032;WFO2000</NoWarn>

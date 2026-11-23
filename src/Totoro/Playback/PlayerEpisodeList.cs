@@ -1,6 +1,5 @@
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
-using Totoro.Core.Services;
 
 namespace Totoro.Playback;
 

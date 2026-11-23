@@ -4,43 +4,24 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Serilog;
-using Totoro.Agent;
-using Totoro.Commands;
 using Totoro.Core;
-using Totoro.Core.Agent;
-using Totoro.Core.Authentication;
-using Totoro.Core.Dialogs;
-using Totoro.Core.Extensions;
 using Totoro.Core.Modules;
-using Totoro.Core.Modules.Anime;
-using Totoro.Core.Modules.Chat;
-using Totoro.Core.Modules.Manga;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Modules.Streaming;
 using Totoro.Core.Navigation;
 using Totoro.Core.Plugins;
-using Totoro.Core.Relations;
 using Totoro.Core.Services;
 using Totoro.Core.Settings;
-using Totoro.Core.Web;
 using Totoro.Playback;
-using Totoro.UI;
-using Totoro.UI.Authentication;
 using Totoro.UI.Dialogs;
-using Totoro.UI.Theming;
-using Totoro.UI.Threading;
-using Totoro.UI.Web;
 using WinUIEx;
-using WebAuthenticator = Totoro.UI.Authentication.WebAuthenticator;
 using Totoro.ViewModels;
-using Totoro.ViewModels.Chat;
-using Totoro.ViewModels.Relations;
-using Totoro.ViewModels.Manga;
-using Totoro.Views;
-using Totoro.Views.Manga;
-using Totoro.Views.Relations;
-using Totoro.Views.Settings;
 using Totoro.Setup;
+#if DEBUG
+// For the agent tools' HTTP server (see OnLaunched).
+using Totoro.Agent;
+using Totoro.Core.Agent;
+#endif
 
 
 namespace Totoro;
