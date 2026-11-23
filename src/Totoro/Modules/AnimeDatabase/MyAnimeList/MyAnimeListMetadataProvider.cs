@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Net;
+using System.Text.Json.Nodes;
 using Flurl;
 using Flurl.Http;
 using GraphQL.Client.Http;
@@ -141,6 +144,62 @@ internal class MyAnimeListMetadataProvider(
 	public Task<List<CharacterModel>> GetCharactersAsync(long animeId)
 	{
 		return AnilistMetadataProvider.FetchCharactersAsync(anilistClient, malId: (int)animeId);
+	}
+
+	/// <summary>
+	/// From Tenrai (MAL's own API has none), in MyAnimeList's order. Spoilers are left out: MAL's reviews are plain text,
+	/// with no spoiler markup to hide them behind.
+	/// </summary>
+	public async Task<List<ReviewModel>> GetReviewsAsync(long animeId)
+	{
+		var response = await new Url("https://api.tenrai.org/v1/anime").AppendPathSegments(animeId, "reviews")
+																	   .AppendQueryParam("spoilers", "false")
+																	   .GetJsonAsync<JsonObject>();
+		return [.. (response["data"]?.AsArray() ?? []).OfType<JsonNode>().Take(10).Select(ConvertReview)];
+	}
+
+	internal static ReviewModel ConvertReview(JsonNode review)
+	{
+		var text = ((string?)review["review"] ?? "").Trim();
+		var reception = string.Join(" · ", new[]
+		{
+			string.Join(", ", review["tags"]?.AsArray().Select(x => (string?)x) ?? []),
+			(int?)review["reactions"]?["overall"] is > 0 and var reactions ? $"{reactions:N0} reactions" : null,
+		}.Where(x => !string.IsNullOrEmpty(x)));
+
+		return new ReviewModel(
+			nameof(AnimeId.MyAnimeList),
+			(string?)review["user"]?["username"] ?? "",
+			(string?)review["user"]?["images"]?["jpg"]?["image_url"] is { Length: > 0 } image ? image : null,
+			Excerpt(text),
+			TextToHtml(text),
+			(int?)review["score"] is > 0 and var score ? score * 10 : null,
+			reception.Length > 0 ? reception : null,
+			(string?)review["url"],
+			DateTimeOffset.TryParse((string?)review["date"], CultureInfo.InvariantCulture, out var date) ? date : null);
+	}
+
+	/// <summary>
+	/// Its opening, cut at a word near 160 characters, its lines run together (a first line is often only a heading,
+	/// e.g. "Style-"): MAL's reviews have no summary of their own.
+	/// </summary>
+	internal static string Excerpt(string text)
+	{
+		var line = string.Join(' ', text.Split((char[])['\n', '\r', ' ', '\t'], StringSplitOptions.RemoveEmptyEntries));
+		if (line.Length <= 160)
+		{
+			return line;
+		}
+
+		var cut = line.LastIndexOf(' ', 160);
+		return $"{line[..(cut > 0 ? cut : 160)].TrimEnd()}…";
+	}
+
+	/// <summary>Plain text as HTML: a paragraph per blank-line-separated block, its single newlines kept as line breaks.</summary>
+	internal static string TextToHtml(string text)
+	{
+		var paragraphs = text.Replace("\r\n", "\n").Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+		return string.Concat(paragraphs.Select(x => $"<p>{WebUtility.HtmlEncode(x).Replace("\n", "<br>")}</p>"));
 	}
 
 	public async Task<List<string>> GetGenresAsync()

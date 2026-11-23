@@ -123,6 +123,7 @@
                     <SelectorBarItem Tag="Characters" Text="Characters" />
                     <SelectorBarItem Tag="Music" Text="Music" />
                     <SelectorBarItem Tag="Related" Text="Related" />
+                    <SelectorBarItem Tag="Reviews" Text="Reviews" />
                 </SelectorBar>
 
                 <toolkit:SwitchPresenter Value="{x:Bind ViewModel.SelectedTab, Mode=OneWay}">
@@ -140,6 +141,9 @@
                     </toolkit:Case>
                     <toolkit:Case Value="Related">
                         <details:RelatedTabView ViewModel="{x:Bind ViewModel.Related, Mode=OneWay}" />
+                    </toolkit:Case>
+                    <toolkit:Case Value="Reviews">
+                        <details:ReviewsTabView ViewModel="{x:Bind ViewModel.Reviews, Mode=OneWay}" />
                     </toolkit:Case>
                 </toolkit:SwitchPresenter>
             </StackPanel>

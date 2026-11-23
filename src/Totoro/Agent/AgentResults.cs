@@ -259,3 +259,21 @@ public sealed record PlaylistPlaying(
 	string Song,
 	bool Shuffle,
 	PlaylistLoop Loop);
+
+[Description("A user's review of an anime.")]
+public sealed record ReviewSummary(
+	[property: Description("The database it's from, e.g. Anilist; AniList's when the anime's own database has none.")]
+	string Source,
+	string Author,
+	[property: Description("A line summing the review up, or the whole of a short one.")]
+	string Summary,
+	[property: Description("The score the reviewer gives it, out of 10.")]
+	double? Score,
+	[property: Description("How readers took it, e.g. \"42 of 50 found it helpful\".")]
+	string? Reception,
+	[property: Description("The full review, to open in the browser.")]
+	string? Url)
+{
+	public static ReviewSummary From(ReviewModel review) =>
+		new(review.Source, review.Author, review.Summary, review.Score is > 0 and var score ? score / 10.0 : null, review.Reception, review.Url);
+}

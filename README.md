@@ -33,7 +33,7 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 | | |
 |---|---|
 | ![Library: the anime being watched, with countdowns to their next episodes and progress](docs/screenshots/library.jpg) | ![An anime's details: its facts, synopsis and videos, with tabs for episodes, characters, music and related anime](docs/screenshots/details.jpg) |
-| **Library**: your list, with countdowns to the next episodes | **Details**: an anime's episodes, characters, music and related anime |
+| **Library**: your list, with countdowns to the next episodes | **Details**: an anime's episodes, characters, music, related anime and reviews |
 | ![Sequels and spin-offs missed: a grid of related anime not on the list, with filters and sorting](docs/screenshots/missed.jpg) | ![Release schedule: a month's calendar of when watched anime air](docs/screenshots/schedule.jpg) |
 | **Missed sequels and spin-offs**, filtered and sorted | **Schedule**: when what you're watching airs |
 | ![Manga Discover: trending and all-time popular manga](docs/screenshots/manga-discover.jpg) | ![The manga reader showing the first page of a chapter](docs/screenshots/manga-reader.jpg) |
@@ -93,7 +93,7 @@ Totoro is MIT licensed; see [LICENSE](LICENSE). What it includes, and their lice
 - [rqbit](https://github.com/ikatson/rqbit) (Apache-2.0) streams torrents.
 - [NAudio](https://github.com/naudio/NAudio) plays songs' audio (decoded with [Concentus](https://github.com/lostromb/concentus)), and hears what the PC plays for [Shazam](https://www.shazam.com) to name, as [shazam-for-real](https://github.com/AlekseyMartynov/shazam-for-real) (ISC) does.
 - Anime data comes from [AniList](https://anilist.co), [MyAnimeList](https://myanimelist.net) (its search, genres and schedule through [tenrai](https://tenrai.org), which serves the [Jikan](https://jikan.moe) API).
-- Episode details and id mappings come from [ani.zip](https://ani.zip) and [tenrai](https://tenrai.org).
+- Episode details and id mappings come from [ani.zip](https://ani.zip) and [tenrai](https://tenrai.org), and MyAnimeList's reviews from tenrai. Other databases without reviews of their own show AniList's.
 - Skip times come from [Aniskip](https://aniskip.com), episode numbering from [anime-relations](https://github.com/erengy/anime-relations), and songs from [AnimeThemes](https://animethemes.moe).
 - Lyrics come from [LRCLIB](https://lrclib.net), with Japanese read by [NMeCab](https://github.com/komutan/NMeCab) (LGPL-2.1).
 - [trace.moe](https://trace.moe) finds anime from screenshots, and [AnimeTrace](https://www.animetrace.com) names the characters in pictures.

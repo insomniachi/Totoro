@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Totoro.Views.AnimeDetails.ReviewsTabView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:details="using:Totoro.Views.AnimeDetails"
+    xmlns:helpers="using:Totoro.Helpers"
+    xmlns:text="using:Totoro.UI.Text"
+    xmlns:ui="using:Totoro.UI.Controls"
+    xmlns:vm="using:Totoro.ViewModels.AnimeDetails">
+
+    <UserControl.Resources>
+        <!--  The author, the line under them, and the summary: an expander's header, or a short review's whole card  -->
+        <DataTemplate x:Key="ReviewHeaderTemplate" x:DataType="vm:ReviewItem">
+            <Grid Padding="0,12" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <PersonPicture
+                    Width="40"
+                    Height="40"
+                    VerticalAlignment="Top"
+                    DisplayName="{x:Bind Author, Mode=OneTime}"
+                    ProfilePicture="{x:Bind helpers:CommonConverters.ToImageSource(AuthorImage), Mode=OneTime}" />
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Style="{ThemeResource BodyStrongTextBlockStyle}" Text="{x:Bind Author, Mode=OneTime}" />
+                    <TextBlock
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"
+                        Text="{x:Bind Meta, Mode=OneTime}"
+                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Meta), Mode=OneTime}" />
+                    <TextBlock Text="{x:Bind Summary, Mode=OneTime}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <details:ReviewTemplateSelector x:Key="ReviewTemplateSelector">
+            <!--  The summary, expanding to the review itself  -->
+            <details:ReviewTemplateSelector.Expandable>
+                <DataTemplate x:DataType="vm:ReviewItem">
+                    <Expander
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        AutomationProperties.Name="{x:Bind Name, Mode=OneTime}"
+                        Header="{x:Bind}"
+                        HeaderTemplate="{StaticResource ReviewHeaderTemplate}">
+                        <StackPanel Spacing="12">
+                            <RichTextBlock text:HtmlText.Html="{x:Bind Body, Mode=OneTime}" Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Body), Mode=OneTime}" />
+                            <HyperlinkButton
+                                Padding="0"
+                                Content="{x:Bind LinkText, Mode=OneTime}"
+                                NavigateUri="{x:Bind Url, Mode=OneTime}"
+                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfNotNull(Url), Mode=OneTime}" />
+                        </StackPanel>
+                    </Expander>
+                </DataTemplate>
+            </details:ReviewTemplateSelector.Expandable>
+            <!--  Nothing more than the summary (e.g. a Kitsu reaction): a card like an expander's header  -->
+            <details:ReviewTemplateSelector.Plain>
+                <DataTemplate x:DataType="vm:ReviewItem">
+                    <Border
+                        Padding="16,0"
+                        AutomationProperties.Name="{x:Bind Name, Mode=OneTime}"
+                        Background="{ThemeResource ExpanderHeaderBackground}"
+                        BorderBrush="{ThemeResource ExpanderHeaderBorderBrush}"
+                        BorderThickness="{ThemeResource ExpanderHeaderBorderThickness}"
+                        CornerRadius="{ThemeResource ControlCornerRadius}">
+                        <ContentPresenter Content="{x:Bind}" ContentTemplate="{StaticResource ReviewHeaderTemplate}" />
+                    </Border>
+                </DataTemplate>
+            </details:ReviewTemplateSelector.Plain>
+        </details:ReviewTemplateSelector>
+    </UserControl.Resources>
+
+    <!--  Placeholder cards from the ItemTemplate while loading  -->
+    <ui:ShimmerView Padding="24,0" IsLoading="{x:Bind helpers:CommonConverters.Not(ViewModel.IsLoaded), Mode=OneWay}">
+        <StackPanel Spacing="12">
+            <TextBlock
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind ViewModel.Message, Mode=OneWay}"
+                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Message), Mode=OneWay}" />
+            <ItemsRepeater
+                ui:ShimmerView.PlaceholderCount="3"
+                ui:ShimmerView.PlaceholderItem="{x:Bind vm:ReviewItem.Placeholder, Mode=OneTime}"
+                ItemTemplate="{StaticResource ReviewTemplateSelector}"
+                ItemsSource="{x:Bind ViewModel.Reviews, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <StackLayout Spacing="12" />
+                </ItemsRepeater.Layout>
+            </ItemsRepeater>
+        </StackPanel>
+    </ui:ShimmerView>
+</UserControl>

@@ -13,6 +13,9 @@ public interface IAnimeMetadataProvider
 	Task<List<AnimeModel>> SearchAnimeAsync(AdvancedSearchRequest request);
 	Task<List<EpisodeInfo>> GetEpisodesAsync(AnimeModel anime);
 	Task<List<CharacterModel>> GetCharactersAsync(long animeId);
+
+	/// <summary>Its users' reviews, most helpful first. Empty from a database that has none.</summary>
+	Task<List<ReviewModel>> GetReviewsAsync(long animeId) => Task.FromResult(new List<ReviewModel>());
 	Task<List<string>> GetGenresAsync();
 	Task<List<AnimeModel>> GetPopularAnimeAsync(CancellationToken ct);
 	Task<List<AnimeModel>> GetUpcomingAnimeAsync(CancellationToken ct);

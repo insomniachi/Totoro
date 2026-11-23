@@ -229,6 +229,57 @@ internal partial class AnilistMetadataProvider(
 		];
 	}
 
+	public Task<List<ReviewModel>> GetReviewsAsync(long animeId)
+	{
+		return FetchReviewsAsync(client, (int)animeId);
+	}
+
+	/// <summary>An anime's reviews, most helpful first.</summary>
+	private static async Task<List<ReviewModel>> FetchReviewsAsync(GraphQLHttpClient client, int anilistId)
+	{
+		var query = new QueryQueryBuilder().WithMedia(new MediaQueryBuilder()
+														  .WithReviews(new ReviewConnectionQueryBuilder()
+																		   .WithNodes(new ReviewQueryBuilder()
+																					  .WithSummary()
+																					  .WithBody(true)
+																					  .WithScore()
+																					  .WithRating()
+																					  .WithRatingAmount()
+																					  .WithSiteUrl()
+																					  .WithCreatedAt()
+																					  .WithUser(new UserQueryBuilder()
+																									.WithName()
+																									.WithAvatar(new UserAvatarQueryBuilder().WithMedium()))),
+																	   sort: new List<ReviewSort?> { ReviewSort.RatingDesc },
+																	   perPage: 10),
+													  id: anilistId,
+													  type: MediaType.Anime).Build();
+
+		var response = await client.SendQueryAsync<Query>(new GraphQLRequest
+		{
+			Query = query
+		});
+
+		if (response.Errors?.Length > 0)
+		{
+			throw new InvalidOperationException($"AniList couldn't load reviews for {anilistId}: {DescribeErrors(response.Errors)}");
+		}
+
+		return
+		[
+			.. (response.Data?.Media?.Reviews?.Nodes ?? []).Where(x => x is not null).Select(x => new ReviewModel(
+				nameof(AnimeId.Anilist),
+				x.User?.Name ?? "",
+				string.IsNullOrEmpty(x.User?.Avatar?.Medium) ? null : x.User.Avatar.Medium,
+				x.Summary ?? "",
+				x.Body ?? "",
+				x.Score,
+				x.RatingAmount is > 0 and var votes ? $"{x.Rating ?? 0} of {votes} found it helpful" : null,
+				string.IsNullOrEmpty(x.SiteUrl) ? null : x.SiteUrl,
+				x.CreatedAt is { } created ? DateTimeOffset.FromUnixTimeSeconds(created) : null))
+		];
+	}
+
 	/// <summary>AniList's stand-in for a character without a picture (character/large/default.jpg): no image, really.</summary>
 	internal static bool IsPlaceholder(Uri image) => image.AbsolutePath.EndsWith("/default.jpg", StringComparison.OrdinalIgnoreCase);
 

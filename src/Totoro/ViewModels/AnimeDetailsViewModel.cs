@@ -31,11 +31,15 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	private IAnimeMetadataProvider? _provider;
 	private AnimeModel _details;
 
+	// Set once those are; the tabs wait for it, as one can be selected while the details load.
+	private readonly TaskCompletionSource _detailsLoaded = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
 	public AnimeDetailsViewModel(
 		AnimeModel anime,
 		IFactory<IAnimeMetadataProvider> providers,
 		IPlaybackProgressStore progress,
 		AnimeSongService songs,
+		AnimeReviewService reviews,
 		ISongPlayer songPlayer,
 		SongPlaylistService playlists,
 		IEnumerable<Descriptor> modules,
@@ -49,12 +53,15 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		_details = anime;
 
 		Episodes = new EpisodesTab(
-			() => _provider?.GetEpisodesAsync(_details) ?? Task.FromResult(new List<EpisodeInfo>()),
+			() => AfterDetailsAsync(provider => provider?.GetEpisodesAsync(_details) ?? Task.FromResult(new List<EpisodeInfo>())),
 			anime,
 			progress,
 			logger);
 		Characters = new CharactersTab(
-			() => _provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>()),
+			() => AfterDetailsAsync(provider => provider?.GetCharactersAsync(Anime.Id) ?? Task.FromResult(new List<CharacterModel>())),
+			logger);
+		Reviews = new ReviewsTab(
+			() => AfterDetailsAsync(provider => provider is null ? Task.FromResult(new List<ReviewModel>()) : reviews.GetReviewsAsync(provider, _details)),
 			logger);
 		Music = new MusicTab(() => songs.GetSongsAsync(_details), song => new SongItem(song, songs, songPlayer, playlists, _details), logger);
 		Related = new RelatedTab(
@@ -73,11 +80,13 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 	public const string CharactersTabKey = "Characters";
 	public const string MusicTabKey = "Music";
 	public const string RelatedTabKey = "Related";
+	public const string ReviewsTabKey = "Reviews";
 
 	public EpisodesTab Episodes { get; }
 	public CharactersTab Characters { get; }
 	public MusicTab Music { get; }
 	public RelatedTab Related { get; }
+	public ReviewsTab Reviews { get; }
 
 	/// <summary>The key of the tab being shown; a tab loads its content the first time it's selected.</summary>
 	[ObservableProperty]
@@ -91,6 +100,7 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 			CharactersTabKey => Characters,
 			MusicTabKey => Music,
 			RelatedTabKey => Related,
+			ReviewsTabKey => Reviews,
 			_ => null,
 		};
 
@@ -149,21 +159,29 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		// anime as given if they can't be loaded.
 		var details = Anime;
 
-		// Ask the provider the anime came from; ids aren't shared between databases.
-		_provider = Anime.ServiceId is { } serviceId ? _providers.Create(serviceId) : _providers.CreateDefault();
-		if (_provider is not null)
+		try
 		{
-			try
+			// Ask the provider the anime came from; ids aren't shared between databases.
+			_provider = Anime.ServiceId is { } serviceId ? _providers.Create(serviceId) : _providers.CreateDefault();
+			if (_provider is not null)
 			{
-				details = await _provider.GetAnimeAsync(Anime.Id);
+				try
+				{
+					details = await _provider.GetAnimeAsync(Anime.Id);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogWarning(ex, "Failed to load details for {Anime}", Anime.Title);
+				}
 			}
-			catch (Exception ex)
-			{
-				_logger.LogWarning(ex, "Failed to load details for {Anime}", Anime.Title);
-			}
+
+			_details = details;
+		}
+		finally
+		{
+			_detailsLoaded.TrySetResult();
 		}
 
-		_details = details;
 		ShowDetails(details);
 		IsLoaded = true;
 		await FindDatabaseIdsAsync(details);
@@ -280,6 +298,13 @@ public partial class AnimeDetailsViewModel : NavigatableViewModel, IRecipient<Pl
 		Studios = string.Join(", ", details.Studios);
 		Trailers = [.. details.Trailers.Select(TrailerItem.From).OfType<TrailerItem>()];
 		ShowLinks(details);
+	}
+
+	/// <summary>Fetches a tab's content from the anime's database once the details have loaded; null if there's none.</summary>
+	private async Task<T> AfterDetailsAsync<T>(Func<IAnimeMetadataProvider?, Task<T>> fetch)
+	{
+		await _detailsLoaded.Task;
+		return await fetch(_provider);
 	}
 
 	private static string? NullIfEmpty(string? value) => string.IsNullOrEmpty(value) ? null : value;

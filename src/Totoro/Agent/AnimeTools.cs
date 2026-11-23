@@ -33,6 +33,7 @@ public sealed class AnimeTools(
 	AnimeTrackingService tracking,
 	IPlaybackProgressStore progress,
 	AnimeSongService songs,
+	AnimeReviewService reviews,
 	ISongPlayer songPlayer)
 {
 	[AgentTool("search_anime")]
@@ -203,6 +204,23 @@ public sealed class AnimeTools(
 		var watched = anime.Tracking?.WatchedEpisodes ?? 0;
 		var saved = progress.GetAll(anime);
 		return [.. episodes.Select(x => EpisodeSummary.From(x, watched, x.IsSpecial ? null : saved.GetValueOrDefault(x.EpisodeNumber)))];
+	}
+
+	[AgentTool("get_anime_reviews")]
+	[Description("Users' reviews of an anime, as the Reviews tab shows them (the database's own, else AniList's): each one's summary and score, to tell the user what people think of it.")]
+	public async Task<IReadOnlyList<ReviewSummary>> GetAnimeReviewsAsync(long animeId)
+	{
+		var anime = await lookup.GetAsync(animeId);
+		var database = lookup.Database;
+		try
+		{
+			return [.. (await reviews.GetReviewsAsync(database, anime)).Select(ReviewSummary.From)];
+		}
+		catch (Exception ex)
+		{
+			// The anime was found, so its id is right: only the reviews couldn't be loaded.
+			throw new AgentToolException($"Couldn't load the reviews of anime {animeId} right now ({ex.Message}). Tell the user, and try again later.");
+		}
 	}
 
 	[AgentTool("get_anime_songs")]
