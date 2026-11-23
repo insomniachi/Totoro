@@ -18,11 +18,21 @@
         appears all at once. The content stays in the tree meanwhile, hidden, so its images load.
     -->
     <ui:ShimmerView x:Name="LoadingShimmer">
-        <ScrollView>
+        <ScrollViewer x:Name="PageScroller">
             <StackPanel Padding="0,0,0,32" Spacing="24">
 
-                <!--  Header: banner fading into the page, with the cover and title over it  -->
-                <Grid Height="320">
+                <!--
+                    Header: banner fading into the page, with the cover and title over it. A shy header (see the code-behind):
+                    it collapses to its bottom edge as the page scrolls, the banner held still behind it and the cover shrinking,
+                    then stays at the top. Clipped, so the held banner doesn't show below it.
+                -->
+                <Grid
+                    x:Name="Header"
+                    Height="320"
+                    Canvas.ZIndex="1">
+                    <Grid.Clip>
+                        <RectangleGeometry Rect="0,0,100000,321" />
+                    </Grid.Clip>
                     <!--  No placeholder: the cover's and title's stand out on the plain page, rather than doubling up over one  -->
                     <Image
                         x:Name="BannerImageElement"
@@ -51,6 +61,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Border
+                            x:Name="Cover"
                             Width="170"
                             Height="240"
                             CornerRadius="8">
@@ -62,6 +73,7 @@
                                 Stretch="UniformToFill" />
                         </Border>
                         <StackPanel
+                            x:Name="TitleBlock"
                             Grid.Column="1"
                             VerticalAlignment="Bottom"
                             Spacing="4">
@@ -109,22 +121,30 @@
                     </Grid>
                 </Grid>
 
-                <!--  Tab keys must match AnimeDetailsViewModel's *Tab constants. Shown while loading: they don't wait on anything.  -->
-                <SelectorBar
-                    x:Name="Tabs"
-                    Margin="16,-8,16,0"
-                    ui:ShimmerView.Ignore="True"
-                    SelectionChanged="OnTabSelectionChanged">
-                    <SelectorBarItem
-                        IsSelected="True"
-                        Tag="Overview"
-                        Text="Overview" />
-                    <SelectorBarItem Tag="Episodes" Text="Episodes" />
-                    <SelectorBarItem Tag="Characters" Text="Characters" />
-                    <SelectorBarItem Tag="Music" Text="Music" />
-                    <SelectorBarItem Tag="Related" Text="Related" />
-                    <SelectorBarItem Tag="Reviews" Text="Reviews" />
-                </SelectorBar>
+                <!--
+                    Tab keys must match AnimeDetailsViewModel's *Tab constants. Shown while loading: they don't wait on anything.
+                    Stays under the header once it's collapsed: the page's background, full width and reaching up to the header,
+                    hides what scrolls under it, and the ZIndex keeps it above the tab content that follows it.
+                -->
+                <Grid
+                    x:Name="TabsBar"
+                    Margin="0,-24,0,0"
+                    Padding="16,16,16,0"
+                    Canvas.ZIndex="1"
+                    Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                    ui:ShimmerView.Ignore="True">
+                    <SelectorBar x:Name="Tabs" SelectionChanged="OnTabSelectionChanged">
+                        <SelectorBarItem
+                            IsSelected="True"
+                            Tag="Overview"
+                            Text="Overview" />
+                        <SelectorBarItem Tag="Episodes" Text="Episodes" />
+                        <SelectorBarItem Tag="Characters" Text="Characters" />
+                        <SelectorBarItem Tag="Music" Text="Music" />
+                        <SelectorBarItem Tag="Related" Text="Related" />
+                        <SelectorBarItem Tag="Reviews" Text="Reviews" />
+                    </SelectorBar>
+                </Grid>
 
                 <toolkit:SwitchPresenter Value="{x:Bind ViewModel.SelectedTab, Mode=OneWay}">
                     <toolkit:Case Value="Overview">
@@ -147,6 +167,6 @@
                     </toolkit:Case>
                 </toolkit:SwitchPresenter>
             </StackPanel>
-        </ScrollView>
+        </ScrollViewer>
     </ui:ShimmerView>
 </Page>
