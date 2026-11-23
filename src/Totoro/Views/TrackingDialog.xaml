@@ -103,8 +103,8 @@
         </local:ScoreTemplateSelector>
     </UserControl.Resources>
 
-    <!--  A fixed width: measured without one, the two-column grids size their columns to their content instead of halving it  -->
-    <StackPanel Width="400" Spacing="16">
+    <!--  A minimum width, so the two-column grids halve it rather than size to their content; it stretches when a long title widens the dialog  -->
+    <StackPanel MinWidth="400" Spacing="16">
         <ComboBox
             HorizontalAlignment="Stretch"
             Header="Status"
