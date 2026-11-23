@@ -207,7 +207,7 @@ public sealed record AnimeCharacters(
 	[property: Description("The anime's title; empty while the user is picking.")]
 	string Anime,
 	IReadOnlyList<CharacterSummary> Characters,
-	[property: Description("The anime the title could be, shown to the user as buttons to pick one: stop and wait for their pick.")]
+	[property: Description("The anime the title could be (with their ids), shown to the user as buttons to pick one: stop and say nothing. Each time the user asks, call this tool again: the buttons are only shown then.")]
 	IReadOnlyList<string>? PickOne = null) : IAgentCharacters, IAgentChoices
 {
 	private IReadOnlyList<CharacterModel> _shown = [];
@@ -220,7 +220,7 @@ public sealed record AnimeCharacters(
 	IReadOnlyList<AgentChoice> IAgentChoices.Choices => _choices;
 
 	/// <summary>The anime a title could be, for the user to pick; each pick asks for its characters by id.</summary>
-	public static AnimeCharacters Pick(IReadOnlyList<AnimeModel> candidates) => new("", [], [.. candidates.Select(x => x.Title)])
+	public static AnimeCharacters Pick(IReadOnlyList<AnimeModel> candidates) => new("", [], [.. candidates.Select(x => $"{x.Title} (anime id {x.Id})")])
 	{
 		_choices = [.. candidates.Select(x => new AgentChoice(x.Title, $"Show me the characters of {x.Title} (anime id {x.Id})", x))],
 	};
@@ -243,7 +243,7 @@ public sealed record CharacterSummary(
 public sealed record CharacterAnime(
 	[property: Description("The character found, e.g. \"Himmel\".")]
 	string Character,
-	[property: Description("How many anime it appears in; these are the first of them.")]
+	[property: Description("About how many anime it appears in (counting at most its 50 most popular); these are the first of them.")]
 	int Total,
 	IReadOnlyList<AnimeSummary> Anime) : IAgentAnimeList
 {

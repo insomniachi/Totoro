@@ -82,11 +82,14 @@ public sealed class ChatSongEntry(IReadOnlyList<SongItem> songs) : ChatEntry
 }
 
 /// <summary>A question with choices a tool returned (e.g. which anime the user meant), as buttons that answer it.</summary>
-public sealed class ChatChoiceEntry(string question, IReadOnlyList<ChatChoiceItem> choices) : ChatEntry
+public sealed partial class ChatChoiceEntry(string question, IReadOnlyList<ChatChoiceItem> choices) : ChatEntry
 {
 	public string Question { get; } = question;
 
 	public IReadOnlyList<ChatChoiceItem> Choices { get; } = choices;
+
+	/// <summary>Whether it can still be answered: until one is picked, or the user sends anything else.</summary>
+	[ObservableProperty] public partial bool IsOpen { get; set; } = true;
 }
 
 /// <summary>A choice's button: <paramref name="Message"/> is sent as the user's when it's clicked; <paramref name="Image"/> and <paramref name="Facts"/> are "" when none.</summary>
@@ -234,6 +237,9 @@ public sealed partial class ChatService(
 	private ChatEntry? _pendingCards;
 	private bool _quiet;
 
+	// Where the last turn starts in the history (its user message), if it ended with choices.
+	private int? _unansweredChoices;
+
 	/// <summary>The conversation so far, as shown.</summary>
 	public ObservableCollection<ChatEntry> Entries { get; } = [];
 
@@ -254,11 +260,24 @@ public sealed partial class ChatService(
 			return;
 		}
 
+		// The turn that ended with choices goes from the model's history, picked from or not (a pick names its anime by id).
+		// Kept, the model copies it next time and asks in text instead of calling the tool, which leaves the user no buttons.
+		if (_unansweredChoices is { } start && start < _history.Count)
+		{
+			_history.RemoveRange(start, _history.Count - start);
+		}
+
 		// An unanswered approval can't be left behind: the model waits on it.
 		foreach (var pending in Entries.OfType<ChatApprovalEntry>().Where(x => x.State == ChatApprovalState.Pending).ToList())
 		{
 			pending.State = ChatApprovalState.Denied;
 			_history.Add(new ChatMessage(ChatRole.User, [pending.Request.CreateResponse(false, "The user moved on without answering.")]));
+		}
+
+		// Choices answer only the question they came with: a pick later on would be out of place.
+		foreach (var choices in Entries.OfType<ChatChoiceEntry>())
+		{
+			choices.IsOpen = false;
 		}
 
 		Entries.Add(new ChatUserEntry(text.Trim()));
@@ -283,6 +302,12 @@ public sealed partial class ChatService(
 		}
 	}
 
+	/// <summary>Answers a question with choices (<see cref="ChatChoiceEntry"/>) by sending the one picked as the user's message, if it's still open.</summary>
+	public Task ChooseAsync(ChatChoiceItem choice) =>
+		Entries.OfType<ChatChoiceEntry>().Any(x => x.IsOpen && x.Choices.Any(c => ReferenceEquals(c, choice)))
+			? SendAsync(choice.Message)
+			: Task.CompletedTask;
+
 	/// <summary>Stops the reply (and any tools after the one running).</summary>
 	public void Stop() => _running?.Cancel();
 
@@ -291,6 +316,7 @@ public sealed partial class ChatService(
 	{
 		Stop();
 		_history.Clear();
+		_unansweredChoices = null;
 		_knownAnime.Clear();
 
 		Entries.Clear();
@@ -330,6 +356,7 @@ public sealed partial class ChatService(
 					.Build();
 		var options = new ChatOptions { Instructions = Instructions, Tools = [.. tools.Tools] };
 		var historyBefore = _history.Count;
+		_unansweredChoices = null;
 		_turnStart = Entries.Count;
 		_pendingCards = null;
 		_quiet = false;
@@ -355,6 +382,21 @@ public sealed partial class ChatService(
 			}
 
 			_history.AddMessages(updates);
+			if (_pendingCards is not null && _history[^1] is { Role.Value: "assistant" } last)
+			{
+				// Its text after the cards wasn't shown: kept, the model would build on what the user never saw (e.g. ask
+				// "did you mean ...?" next time, instead of calling the tool).
+				last.Contents = [.. last.Contents.Where(x => x is not TextContent)];
+				if (last.Contents.Count == 0)
+				{
+					_history.RemoveAt(_history.Count - 1);
+				}
+			}
+
+			if (_pendingCards is ChatChoiceEntry && historyBefore > 0)
+			{
+				_unansweredChoices = historyBefore - 1;
+			}
 		}
 		catch (OperationCanceledException) when (running.IsCancellationRequested)
 		{
@@ -404,6 +446,13 @@ public sealed partial class ChatService(
 		_knownAnime.RememberResult(result);
 		var raw = AgentToolResult.Of(context.Arguments);
 		_results[context.CallContent.CallId] = raw;
+		// The user answers choices: the turn ends with them. Otherwise the model asks again in text (hidden, but kept in
+		// its history), and next time it copies that question instead of calling the tool, so the user gets no buttons.
+		if (raw is IAgentChoices { Choices.Count: > 0 })
+		{
+			context.Terminate = true;
+		}
+
 		return ShownAs(raw) is { } shown && result is JsonElement json
 			? JsonSerializer.SerializeToElement(new ShownResult(
 				$"The user now sees {shown}. Don't describe it in text (the user won't see that). If this was a step towards what the user asked for (e.g. you searched to get an anime's id), carry on and do it; if not, you're done.",

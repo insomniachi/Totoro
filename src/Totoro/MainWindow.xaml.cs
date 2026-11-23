@@ -48,7 +48,8 @@ public sealed partial class MainWindow : Window
 	{
 		// e.g. https://anilist.co/character/24595 or .../character/26832/Kadota-Kyohei
 		var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-		if (!uri.Host.EndsWith("anilist.co", StringComparison.OrdinalIgnoreCase) || segments is not ["character", var number, ..] ||
+		var anilist = uri.Host.Equals("anilist.co", StringComparison.OrdinalIgnoreCase) || uri.Host.EndsWith(".anilist.co", StringComparison.OrdinalIgnoreCase);
+		if (!anilist || segments is not ["character", var number, ..] ||
 			!long.TryParse(number, out var id) || !Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
 		{
 			return false;

@@ -312,7 +312,10 @@
                 <DataTemplate x:DataType="services:ChatChoiceEntry">
                     <StackPanel Spacing="8">
                         <TextBlock Text="{x:Bind Question, Mode=OneTime}" TextWrapping="Wrap" />
-                        <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Choices, Mode=OneTime}">
+                        <ItemsControl
+                            IsEnabled="{x:Bind IsOpen, Mode=OneWay}"
+                            IsTabStop="False"
+                            ItemsSource="{x:Bind Choices, Mode=OneTime}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Spacing="8" />
@@ -325,8 +328,7 @@
                                         HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
                                         AutomationProperties.Name="{x:Bind Label, Mode=OneTime}"
-                                        Click="OnSuggestionClick"
-                                        Tag="{x:Bind Message, Mode=OneTime}"
+                                        Click="OnChoiceClick"
                                         ToolTipService.ToolTip="{x:Bind Label, Mode=OneTime}">
                                         <Grid ColumnSpacing="12">
                                             <Grid.ColumnDefinitions>

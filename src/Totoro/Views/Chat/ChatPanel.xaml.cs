@@ -40,6 +40,14 @@ public sealed partial class ChatPanel : UserControl
 		}
 	}
 
+	private void OnChoiceClick(object sender, RoutedEventArgs e)
+	{
+		if ((sender as FrameworkElement)?.DataContext is ChatChoiceItem choice)
+		{
+			ViewModel?.ChooseCommand.Execute(choice);
+		}
+	}
+
 	private void OnAllowClick(object sender, RoutedEventArgs e) => Answer(sender, true);
 
 	private void OnDenyClick(object sender, RoutedEventArgs e) => Answer(sender, false);

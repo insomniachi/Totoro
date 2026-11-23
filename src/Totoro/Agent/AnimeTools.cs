@@ -287,24 +287,37 @@ public sealed class AnimeTools(
 
 		var database = lookup.Database;
 		var wanted = character.Anime.Take(Math.Clamp(limit, 1, 50)).ToList();
-		// Characters come from AniList: with another database, its own anime (by id there), dropping those it hasn't.
-		var anime = database.Name == nameof(AnimeId.Anilist)
-			? wanted
-			: [.. (await Task.WhenAll(wanted.Select(x => x.ExternalIds.GetIdForService(database.Name) is long id and > 0 ? GetOrNullAsync(id) : Task.FromResult<AnimeModel?>(null))))
-				.OfType<AnimeModel>()];
-		return new CharacterAnime(character.Name, character.Anime.Count, [.. anime.Select(AnimeSummary.From)]);
+		if (database.Name == nameof(AnimeId.Anilist))
+		{
+			return new CharacterAnime(character.Name, character.Anime.Count, [.. wanted.Select(AnimeSummary.From)]);
+		}
 
-		async Task<AnimeModel?> GetOrNullAsync(long id)
+		// Characters come from AniList: with another database, its own anime (by id there), dropping those it hasn't. One at
+		// a time, so as not to be rate limited.
+		List<AnimeModel> anime = [];
+		Exception? failure = null;
+		foreach (var id in wanted.Select(x => x.ExternalIds.GetIdForService(database.Name) ?? 0).Where(x => x > 0))
 		{
 			try
 			{
-				return await database.GetAnimeAsync(id);
+				anime.Add(await database.GetAnimeAsync(id));
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				return null;
+				failure ??= ex;
 			}
 		}
+
+		if (anime.Count == 0)
+		{
+			throw new AgentToolException(failure is null
+				? $"{character.Name} was found, but none of their anime is on {database.Name}. Tell the user."
+				: $"Couldn't look up {character.Name}'s anime on {database.Name} right now ({failure.Message}). Tell the user, and try again later.");
+		}
+
+		// Its anime the database has, of those looked up: the rest of AniList's count may not all be there.
+		var total = character.Anime.Count - (wanted.Count - anime.Count);
+		return new CharacterAnime(character.Name, total, [.. anime.Select(AnimeSummary.From)]);
 	}
 
 	[AgentTool("get_episodes")]
@@ -359,9 +372,14 @@ public sealed class AnimeTools(
 		[Description("The singer or band, when the user asks for their songs, e.g. LiSA.")] string? artist = null,
 		[Description("How many songs to return, at most.")] int limit = 10)
 	{
-		var found = !string.IsNullOrWhiteSpace(title) ? await songs.SearchSongsAsync(title.Trim(), Math.Clamp(limit, 1, 20))
-			: !string.IsNullOrWhiteSpace(artist) ? await AnimeSongService.SongsByAsync(artist.Trim())
-			: throw new AgentToolException("Give a song's title or a singer to search for.");
+		var byTitle = !string.IsNullOrWhiteSpace(title);
+		var query = (byTitle ? title : artist)?.Trim();
+		if (string.IsNullOrEmpty(query))
+		{
+			throw new AgentToolException("Give a song's title or a singer to search for.");
+		}
+
+		var found = byTitle ? await songs.SearchSongsAsync(query, Math.Clamp(limit, 1, 20)) : await AnimeSongService.SongsByAsync(query);
 		var database = lookup.Database;
 		// Only songs of anime the database knows can be played by id.
 		var results = found.Select(x => (Match: x, Id: x.Anime.ExternalIds.GetIdForService(database.Name) ?? 0))
@@ -370,7 +388,7 @@ public sealed class AnimeTools(
 						   .ToList();
 		return results.Count > 0
 			? FoundSongs.From(results)
-			: throw new AgentToolException($"No song matches \"{title ?? artist}\". If it's misspelt, search again with it spelt right; else tell the user none was found.");
+			: throw new AgentToolException($"No song matches \"{query}\". If it's misspelt, search again with it spelt right; else tell the user none was found.");
 	}
 
 	[AgentTool("play_anime_song")]

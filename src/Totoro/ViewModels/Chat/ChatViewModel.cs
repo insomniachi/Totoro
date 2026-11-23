@@ -79,4 +79,7 @@ public sealed partial class ChatViewModel : ObservableObject
 
 	[RelayCommand]
 	private Task DenyAsync(ChatApprovalEntry entry) => Chat.AnswerAsync(entry, false);
+
+	[RelayCommand]
+	private Task ChooseAsync(ChatChoiceItem choice) => Chat.ChooseAsync(choice);
 }

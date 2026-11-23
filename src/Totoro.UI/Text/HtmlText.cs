@@ -478,10 +478,18 @@ internal sealed partial class HtmlRenderer
 		var link = new Hyperlink();
 		link.Click += async (sender, _) =>
 		{
-			var text = string.Concat(sender.Inlines.OfType<Run>().Select(x => x.Text));
-			if (HtmlText.OpenInApp?.Invoke(uri, text) != true)
+			// async void: an exception here would end the app; a link that doesn't open is all that's lost.
+			try
 			{
-				await Windows.System.Launcher.LaunchUriAsync(uri);
+				var text = string.Concat(sender.Inlines.OfType<Run>().Select(x => x.Text));
+				if (HtmlText.OpenInApp?.Invoke(uri, text) != true)
+				{
+					await Windows.System.Launcher.LaunchUriAsync(uri);
+				}
+			}
+			catch (Exception ex)
+			{
+				System.Diagnostics.Debug.WriteLine($"Couldn't open {uri}: {ex}");
 			}
 		};
 		return link;
