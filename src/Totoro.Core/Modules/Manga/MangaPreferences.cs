@@ -61,8 +61,21 @@ public static class MangaPreferences
 			get => preferences.ReadKey(ReaderTwoPagesKey, false);
 			set => preferences.SaveKey(ReaderTwoPagesKey, value);
 		}
+
+		/// <summary>Where the user stopped reading each manga, by source and the source's manga id, to reopen there.</summary>
+		public Dictionary<string, ReaderPosition> ReaderPositions
+		{
+			get => preferences.ReadKey<Dictionary<string, ReaderPosition>>(ReaderPositionsKey) ?? [];
+			set => preferences.SaveKey(ReaderPositionsKey, value);
+		}
 	}
+
+	public const string ReaderPositionsKey = "ReaderPositions";
 }
+
+/// <param name="ChapterId">The source's id of the chapter being read.</param>
+/// <param name="Page">The page reached, from 0.</param>
+public sealed record ReaderPosition(string ChapterId, int Page);
 
 /// <summary>Sent (with WeakReferenceMessenger.Default) after the selected manga database changes.</summary>
 public sealed record MangaDatabaseChangedMessage(Guid ModuleId);

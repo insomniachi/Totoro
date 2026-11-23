@@ -86,6 +86,9 @@ public partial class ReaderViewModel : NavigatableViewModel
 	// Set while one of PageIndex and SpreadIndex follows the other, so it doesn't follow back.
 	private bool _syncing;
 
+	// The saved page the chapter reopened at, until another page is turned to.
+	private int? _resumeAt;
+
 	partial void OnPagesChanged(List<ReaderPageItem> value) => UpdateSpreads();
 
 	partial void OnTwoPagesChanged(bool value)
@@ -97,7 +100,8 @@ public partial class ReaderViewModel : NavigatableViewModel
 	private void UpdateSpreads()
 	{
 		// Re-paired (a wide page found), the spread showing starts where the old one did, not at the page it ended on.
-		var anchor = Spreads.ElementAtOrDefault(SpreadIndex) is { } shown && Pages.Contains(shown.Pages[0]) ? shown.Pages[0].Number - 1 : PageIndex;
+		// Reopened at a saved page, that page stays the one shown, though the pages paired with it change as they load.
+		var anchor = _resumeAt ?? (Spreads.ElementAtOrDefault(SpreadIndex) is { } shown && Pages.Contains(shown.Pages[0]) ? shown.Pages[0].Number - 1 : PageIndex);
 		// The flip view goes back to its first spread when given new ones, which mustn't turn back the page being read.
 		_syncing = true;
 		Spreads = ReaderSpread.Of(Pages, TwoPages, IsRightToLeft);
@@ -185,12 +189,37 @@ public partial class ReaderViewModel : NavigatableViewModel
 
 	partial void OnPageIndexChanged(int value)
 	{
-		FollowPage();
-		if (Pages.Count > 0 && value >= Pages.Count - 1)
+		if (value != _resumeAt)
 		{
+			_resumeAt = null;
+		}
+
+		FollowPage();
+		if (Pages.Count == 0)
+		{
+			return;
+		}
+
+		// Finished, the chapter opens from the start again; otherwise it reopens here.
+		var positions = _preferences.ReaderPositions;
+		if (value >= Pages.Count - 1)
+		{
+			positions.Remove(PositionKey);
 			_ = MarkReadAsync();
 		}
+		else
+		{
+			positions[PositionKey] = new ReaderPosition(Chapter.Id, value);
+		}
+
+		_preferences.ReaderPositions = positions;
 	}
+
+	private string PositionKey => $"{_request.SourceId}/{Chapter.MangaId}";
+
+	/// <summary>The page the user stopped at in this chapter, or the first.</summary>
+	private int SavedPage() =>
+		_preferences.ReaderPositions.GetValueOrDefault(PositionKey) is { } saved && saved.ChapterId == Chapter.Id ? Math.Clamp(saved.Page, 0, LastPage) : 0;
 
 	protected override Task OnNavigatedToInternalAsync() => LoadChapterAsync();
 
@@ -208,6 +237,7 @@ public partial class ReaderViewModel : NavigatableViewModel
 		_load?.Cancel();
 		var load = _load = new CancellationTokenSource();
 		_markedRead = false;
+		_resumeAt = null;
 		Error = "";
 		Pages = [];
 		PageIndex = 0;
@@ -228,7 +258,8 @@ public partial class ReaderViewModel : NavigatableViewModel
 				}
 
 				Pages = [.. pages.Select((x, i) => new ReaderPageItem(x, i + 1, pages.Count))];
-				PageIndex = fromEnd ? LastPage : 0;
+				_resumeAt = fromEnd ? null : SavedPage();
+				PageIndex = fromEnd ? LastPage : _resumeAt.Value;
 				if (Pages.Count == 0)
 				{
 					Error = "This chapter has no pages on the source.";

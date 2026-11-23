@@ -284,6 +284,55 @@ public class MangaTests
 	}
 
 	[Fact]
+	public async Task Reader_ReopensAtThePageLeft_UntilTheChapterIsFinished()
+	{
+		var source = new FakeSource { PageCount = 3 };
+		var preferences = new PluginLoaderTests.FakePreferences();
+		List<ProviderChapter> chapters = [new("m", "c1", 1)];
+		ReaderViewModel Open() => new(new ReaderRequest(null, source.Id, chapters, 0),
+			new MangaReadingService(new Factory<IMangaProvider>(source), preferences),
+			new MangaTrackingService(new Factory<IMangaTracker>(new FakeTracker())),
+			preferences, new HttpClients(), NullLogger<ReaderViewModel>.Instance) { Mode = ReaderMode.PagedLeftToRight };
+
+		var reader = Open();
+		await reader.OnNavigatedToAsync();
+		reader.NextPageCommand.Execute(null);
+		await reader.OnNavigatedFromAsync();
+
+		reader = Open();
+		await reader.OnNavigatedToAsync();
+		Assert.Equal(1, reader.PageIndex);
+
+		reader.NextPageCommand.Execute(null);
+		reader = Open();
+		await reader.OnNavigatedToAsync();
+		Assert.Equal(0, reader.PageIndex);
+	}
+
+	[Fact]
+	public async Task Reader_ReopenedTwoPages_StaysOnTheSavedPage_WhenItTurnsOutWide()
+	{
+		var source = new FakeSource { PageCount = 5 };
+		var preferences = new PluginLoaderTests.FakePreferences();
+		preferences.ReaderTwoPages = true;
+		preferences.ReaderPositions = new() { [$"{source.Id}/m"] = new ReaderPosition("c1", 2) };
+		var reader = new ReaderViewModel(new ReaderRequest(null, source.Id, [new("m", "c1", 1)], 0),
+			new MangaReadingService(new Factory<IMangaProvider>(source), preferences),
+			new MangaTrackingService(new Factory<IMangaTracker>(new FakeTracker())),
+			preferences, new HttpClients(), NullLogger<ReaderViewModel>.Instance) { Mode = ReaderMode.PagedLeftToRight };
+
+		await reader.OnNavigatedToAsync();
+		Assert.Equal(2, reader.PageIndex);
+
+		// Page 3 loads and is wide, so it's re-paired alone (as a load does, through the spreads being made again).
+		reader.Pages[2].AsWide();
+		reader.TwoPages = false;
+		reader.TwoPages = true;
+		Assert.Equal(2, reader.PageIndex);
+		Assert.Equal(2, preferences.ReaderPositions[$"{source.Id}/m"].Page);
+	}
+
+	[Fact]
 	public async Task Reader_SwitchingChapterOrLeaving_WhilePagesLoad_DoesNotThrow()
 	{
 		// A server that takes connections and never answers: the pages are still loading when the chapter changes.
@@ -326,8 +375,10 @@ public class MangaTests
 		public Task<List<ProviderChapter>> GetChaptersAsync(string mangaId, CancellationToken ct) => Task.FromResult<List<ProviderChapter>>([]);
 
 		// Nowhere to load from: the pages fail, which the reader shows with Retry.
+		public int PageCount { get; init; } = 2;
+
 		public Task<List<MangaPage>> GetPagesAsync(ProviderChapter chapter, CancellationToken ct) =>
-			Task.FromResult<List<MangaPage>>([new(new Uri(PageUrl + "1.png")), new(new Uri(PageUrl + "2.png"))]);
+			Task.FromResult<List<MangaPage>>([.. Enumerable.Range(1, PageCount).Select(n => new MangaPage(new Uri($"{PageUrl}{n}.png")))]);
 	}
 
 	private sealed class FakeTracker : IMangaTracker
