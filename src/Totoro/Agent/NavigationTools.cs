@@ -15,9 +15,11 @@ public sealed class NavigationTools(AnimeLookup lookup, IEnumerable<NavigationIt
 
 	[AgentTool("open_anime_details")]
 	[Description("Opens an anime's details page in the app's side pane. Only when the user asks to open it or see its details: anime the other tools return are already shown to them in the chat.")]
-	public async Task<string> OpenAnimeDetailsAsync(long animeId)
+	public async Task<string> OpenAnimeDetailsAsync(
+		[Description(AnimeLookup.TitleHelp)] string? title = null,
+		[Description(AnimeLookup.IdHelp)] long? animeId = null)
 	{
-		var anime = await lookup.GetAsync(animeId);
+		var anime = await lookup.GetAsync(animeId, title);
 		if (!Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
 		{
 			throw new AgentToolException("The app's window isn't ready.");

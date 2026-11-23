@@ -203,11 +203,13 @@ public sealed partial class ChatService(
 		app, through your tools: look anime up, change their list (on AniList or MyAnimeList), play episodes, change
 		settings, and so on. What you change shows in the app straight away. Today is {DateTime.Now:dddd d MMMM yyyy}.
 
-		Anime ids belong to the user's anime database: find them with search_anime, discover_anime or get_user_list before
-		using one; don't guess them. Every anime those return has the user's listEntry, or none if it isn't on their list.
-		If a tool fails, its error says why; act on it, or tell the user. Search for titles as the user wrote them, typos and all: the search
-		forgives them. Only if it finds nothing, search again with the title you think they meant. "Play X" may name a song
-		(an opening or ending) rather than an anime: if X isn't clearly an anime's title, look for it with search_songs.
+		Tools that act on one anime (play it, change its list entry, its characters, songs, anime like it...) take its title:
+		give it as the user wrote it, typos and all, without searching first. Give an animeId instead only if a tool gave it
+		to you; never guess one. Tools that take only an animeId need one a tool gave you: get it with search_anime or
+		get_user_list first. Every anime the tools return has the user's listEntry, or none if it isn't on their list.
+		If a tool fails, its error says why; act on it, or tell the user. Only if a title finds nothing, try again with the
+		title you think they meant. "Play X" may name a song (an opening or ending) rather than an anime: if X isn't clearly
+		an anime's title, look for it with search_songs.
 
 		The anime and songs your tools return are shown to the user as cards, with buttons to open, add or play each. They're
 		the answer: don't describe them in text. Ask the tools for just what's relevant, with their filters and limit.
@@ -435,6 +437,13 @@ public sealed partial class ChatService(
 	/// </summary>
 	private async ValueTask<object?> InvokeToolAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
 	{
+		// A made-up id beside the title: the title says which anime.
+		if (_knownAnime.MadeUp(context.Arguments) is not null &&
+			context.Arguments.TryGetValue("title", out var title) && !string.IsNullOrWhiteSpace(title?.ToString()))
+		{
+			context.Arguments.Remove("animeId");
+		}
+
 		if (_knownAnime.MadeUp(context.Arguments) is { } madeUp)
 		{
 			// Not shown: the model corrects itself, which is all the user needs to see.
@@ -500,8 +509,11 @@ public sealed partial class ChatService(
 
 		if (raw is IAgentChoices { Choices.Count: > 0 } choices)
 		{
+			// e.g. "set my score for frieren to 9 (I mean Frieren, anime id 154587)": the pick answers the request it came from.
+			var request = choices.CompletesRequest ? Entries.OfType<ChatUserEntry>().LastOrDefault()?.Text : null;
 			return new ChatChoiceEntry(choices.Question, [.. choices.Choices.Select(x => new ChatChoiceItem(
-				x.Label, x.Anime is null ? "" : new ChatAnimeItem(x.Anime).Facts, x.Anime?.Image ?? "", x.Message))]);
+				x.Label, x.Anime is null ? "" : new ChatAnimeItem(x.Anime).Facts, x.Anime?.Image ?? "",
+				request is null ? x.Message : $"{request} ({x.Message})"))]);
 		}
 
 		if (raw is IAgentCharacters { Shown.Count: > 0 } characters)

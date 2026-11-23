@@ -202,28 +202,14 @@ public sealed record ListEntries(
 	IReadOnlyList<IAgentAnime> IAgentAnimeList.Ranked => Anime;
 }
 
-[Description("An anime's characters, which the user sees as a grid of their pictures and names; or, when the title could be several anime, those the user is asked to pick from.")]
+[Description("An anime's characters, which the user sees as a grid of their pictures and names.")]
 public sealed record AnimeCharacters(
-	[property: Description("The anime's title; empty while the user is picking.")]
 	string Anime,
-	IReadOnlyList<CharacterSummary> Characters,
-	[property: Description("The anime the title could be (with their ids), shown to the user as buttons to pick one: stop and say nothing. Each time the user asks, call this tool again: the buttons are only shown then.")]
-	IReadOnlyList<string>? PickOne = null) : IAgentCharacters, IAgentChoices
+	IReadOnlyList<CharacterSummary> Characters) : IAgentCharacters
 {
 	private IReadOnlyList<CharacterModel> _shown = [];
-	private IReadOnlyList<AgentChoice> _choices = [];
 
 	IReadOnlyList<CharacterModel> IAgentCharacters.Shown => _shown;
-
-	string IAgentChoices.Question => "Which anime's characters?";
-
-	IReadOnlyList<AgentChoice> IAgentChoices.Choices => _choices;
-
-	/// <summary>The anime a title could be, for the user to pick; each pick asks for its characters by id.</summary>
-	public static AnimeCharacters Pick(IReadOnlyList<AnimeModel> candidates) => new("", [], [.. candidates.Select(x => $"{x.Title} (anime id {x.Id})")])
-	{
-		_choices = [.. candidates.Select(x => new AgentChoice(x.Title, $"Show me the characters of {x.Title} (anime id {x.Id})", x))],
-	};
 
 	public static AnimeCharacters From(AnimeModel anime, IReadOnlyList<CharacterModel> characters) => new(
 		anime.Title,

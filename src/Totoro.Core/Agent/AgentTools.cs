@@ -105,6 +105,11 @@ internal sealed class AgentTools(
 				AgentToolResult.Set(arguments, raw.Value);
 				return raw.Value is null ? null : JsonSerializer.SerializeToElement(raw.Value, raw.Type ?? raw.Value.GetType(), SerializerOptions);
 			}
+			catch (AgentChoicesException ex)
+			{
+				AgentToolResult.Set(arguments, ex.Pick);
+				return JsonSerializer.SerializeToElement(ex.Pick, SerializerOptions);
+			}
 			catch (AgentToolException ex)
 			{
 				return Error(ex.Message);

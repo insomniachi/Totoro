@@ -91,11 +91,12 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, ShowRe
 	[Description("Plays an episode of an anime in the media player, resuming where the user left off. Playback continues on its own; " +
 				 "it's marked watched when they finish it.")]
 	public async Task<PlayResult> PlayEpisodeAsync(
-		long animeId,
+		[Description(AnimeLookup.TitleHelp)] string? title = null,
+		[Description(AnimeLookup.IdHelp)] long? animeId = null,
 		[Description("The episode's number; leave it out for the next one the user hasn't watched (past fillers, if they skip them).")] int? episode = null,
 		[Description("Where to start, in seconds from the episode's start (e.g. a scene's playFromSeconds); leave it out to resume where the user left off.")] double? startAtSeconds = null)
 	{
-		var anime = await lookup.GetAsync(animeId);
+		var anime = await lookup.GetAsync(animeId, title);
 		var number = episode ?? await watch.NextToWatchAsync(anime);
 		if (shows.GetProvider(anime) is not { } provider)
 		{
@@ -252,8 +253,9 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, ShowRe
 	[Description("Downloads episodes of an anime from its provider (or another) to the download folder, one after the other in the background " +
 				 "(get_downloads shows how they go). Episodes already in the folder aren't downloaded again.")]
 	public async Task<IReadOnlyList<DownloadInfo>> DownloadEpisodesAsync(
-		long animeId,
 		[Description("The first episode to download.")] int fromEpisode,
+		[Description(AnimeLookup.TitleHelp)] string? title = null,
+		[Description(AnimeLookup.IdHelp)] long? animeId = null,
 		[Description("The last episode to download; leave it out for just the first.")] int? toEpisode = null,
 		[Description("The provider to download from; leave it out for the anime's.")] string? provider = null,
 		[Description("Provider settings for this download only, over the anime's (or the provider's): a JSON object of setting names " +
@@ -264,7 +266,7 @@ public sealed class PlaybackTools(AnimeLookup lookup, WatchService watch, ShowRe
 			throw new AgentToolException("toEpisode can't be before fromEpisode.");
 		}
 
-		var anime = await lookup.GetAsync(animeId);
+		var anime = await lookup.GetAsync(animeId, title);
 		var source = GetProvider(anime, provider);
 		if (providerSettings is not null)
 		{

@@ -42,9 +42,9 @@ public class UserListFilterTests
 	public void IsTitleOf_IgnoresCaseAndPunctuation_ButNotPartialTitles()
 	{
 		var anime = new AnimeModel { Title = "Durarara!!", EngTitle = "Durarara!!", AlternateTitles = ["デュラララ!!"] };
-		Assert.True(Totoro.Agent.AnimeTools.IsTitleOf(anime, "durarara"));
-		Assert.False(Totoro.Agent.AnimeTools.IsTitleOf(new AnimeModel { Title = "Fate/stay night" }, "fate"));
-		Assert.False(Totoro.Agent.AnimeTools.IsTitleOf(anime, "!!"));
+		Assert.True(Totoro.Agent.AnimeLookup.IsTitleOf(anime, "durarara"));
+		Assert.False(Totoro.Agent.AnimeLookup.IsTitleOf(new AnimeModel { Title = "Fate/stay night" }, "fate"));
+		Assert.False(Totoro.Agent.AnimeLookup.IsTitleOf(anime, "!!"));
 	}
 
 	[Fact]

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.Extensions.AI;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Services;
@@ -43,6 +44,41 @@ public interface IAgentChoices
 	string Question { get; }
 
 	IReadOnlyList<AgentChoice> Choices { get; }
+
+	/// <summary>Whether a choice's message only completes the user's request (e.g. "I mean X"), so it's sent with it.</summary>
+	bool CompletesRequest => false;
+}
+
+/// <summary>
+/// The anime a title given to a tool could be, for the user to pick: the tool throws <see cref="AgentChoicesException"/>
+/// with it, and the pick, sent with their request, names the anime by id.
+/// </summary>
+public sealed record AnimePick(
+	[property: Description("The anime the title could be (with their ids), shown to the user as buttons to pick one: stop and say nothing. Each time the user asks, call the tool again with the title: the buttons are only shown then.")]
+	IReadOnlyList<string> PickOne) : IAgentChoices
+{
+	private IReadOnlyList<AgentChoice> _choices = [];
+
+	string IAgentChoices.Question => "Which anime did you mean?";
+
+	IReadOnlyList<AgentChoice> IAgentChoices.Choices => _choices;
+
+	bool IAgentChoices.CompletesRequest => true;
+
+	public static AnimePick Of(IEnumerable<AnimeModel> candidates)
+	{
+		var anime = candidates.ToList();
+		return new AnimePick([.. anime.Select(x => $"{x.Title} (anime id {x.Id})")])
+		{
+			_choices = [.. anime.Select(x => new AgentChoice(x.Title, $"I mean {x.Title}, anime id {x.Id}", x))],
+		};
+	}
+}
+
+/// <summary>Thrown by a tool when it can't tell which anime it was asked about: the user picks (<see cref="AnimePick"/>).</summary>
+public sealed class AgentChoicesException(AnimePick pick) : Exception("The user is picking which anime they meant.")
+{
+	public AnimePick Pick { get; } = pick;
 }
 
 /// <summary>One of an <see cref="IAgentChoices"/>' choices; <paramref name="Anime"/> is shown with it, if it's one.</summary>
