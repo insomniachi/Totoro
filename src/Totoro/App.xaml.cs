@@ -69,6 +69,14 @@ public partial class App : Application
 	/// Restarts the app, e.g. to load plugins that were installed, with the arguments it was started with (so dev
 	/// plugins, from --dev or --plugin-dir, are still loaded).
 	/// </summary>
+	[System.Runtime.InteropServices.LibraryImport("user32.dll")]
+	[return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+	private static partial bool IsIconic(nint window);
+
+	[System.Runtime.InteropServices.LibraryImport("user32.dll")]
+	[return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+	private static partial bool ShowWindow(nint window, int command);
+
 	public static void Restart()
 	{
 		// Not --startup: the user asked for the restart, so it opens the window.
@@ -198,9 +206,12 @@ public partial class App : Application
 
 		void Show()
 		{
-			if (manager.WindowState == WinUIEx.WindowState.Minimized)
+			// Through Windows: minimized while full screen (a player in it), the presenter can't restore it (WinUIEx's Restore
+			// throws), and doesn't say it's minimized.
+			var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+			if (IsIconic(hwnd))
 			{
-				window.Restore();
+				ShowWindow(hwnd, 9 /* SW_RESTORE */);
 			}
 			else
 			{
@@ -216,6 +227,12 @@ public partial class App : Application
 
 			shown = true;
 			window.SetForegroundWindow();
+		}
+
+		// A player opening in it shows it, from the tray or minimized too.
+		if (window is MainWindow main)
+		{
+			main.BringToFront = Show;
 		}
 
 		// Its icon is there while the window's hidden in it, and while closing the window doesn't quit, to quit from.
@@ -263,6 +280,8 @@ public partial class App : Application
 			}
 
 			quitting = true;
+			// A player playing in this window closes first, so what was watched is saved.
+			(window as MainWindow)?.ClosePlayer();
 			window.Close();
 		}
 
@@ -274,6 +293,12 @@ public partial class App : Application
 			}
 
 			args.Cancel = true;
+			// A player playing in this window: the window's close button closes the player, back to the app.
+			if ((window as MainWindow)?.ClosePlayer() == true)
+			{
+				return;
+			}
+
 			switch (preferences.CloseAction)
 			{
 				case WindowCloseAction.Minimize:
@@ -346,6 +371,7 @@ public partial class App : Application
 		WeakReferenceMessenger.Default.Register<App, AppExitRequestedMessage>(this, (_, _) =>
 		{
 			quitting = true;
+			(window as MainWindow)?.ClosePlayer();
 			window.Close();
 		});
 		// Rewritten so an entry from before --startup existed gets it (and follows the exe if it moved).

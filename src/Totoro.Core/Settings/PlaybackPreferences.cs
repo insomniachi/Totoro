@@ -23,6 +23,7 @@ public static class PlaybackPreferences
 	public const string SkipFillersKey = "SkipFillers";
 	public const string ShowOnDiscordKey = "ShowOnDiscord";
 	public const string TrackBrowserPlaybackKey = "TrackBrowserPlayback";
+	public const string PlayInMainWindowKey = "PlayInMainWindow";
 
 	/// <summary>Preference key holding the id of the anime provider episodes are found on (unless an anime has its own).</summary>
 	public const string AnimeProviderKey = "SelectedAnimeProvider";
@@ -59,6 +60,16 @@ public static class PlaybackPreferences
 		{
 			get => preferences.ReadKey(EndingSkipKey, SkipMode.Ask);
 			set => preferences.SaveKey(EndingSkipKey, value);
+		}
+
+		/// <summary>
+		/// Whether the app's own players play in the main window, covering it while they play (so sharing that one window,
+		/// e.g. on Discord, shows the episode too), rather than in a window of their own. Read as a player opens.
+		/// </summary>
+		public bool PlayInMainWindow
+		{
+			get => preferences.ReadKey(PlayInMainWindowKey, true);
+			set => preferences.SaveKey(PlayInMainWindowKey, value);
 		}
 
 		/// <summary>Whether the next episode starts by itself (after a short countdown) when one is finished.</summary>

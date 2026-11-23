@@ -48,7 +48,9 @@ public sealed record AppSettings(
 	[property: Description("Whether the user gets a Windows notification when the next episode of an anime they're watching is out (while the app's open).")]
 	bool NotifyNewEpisodes,
 	[property: Description("Whether the menu has the News page (anime and manga headlines).")]
-	bool ShowNews);
+	bool ShowNews,
+	[property: Description("Whether the app's own players (the built-in player, mpv playing in the app) play in Totoro's main window, covering it while they play, so sharing that one window (e.g. on Discord) shows the episode; false opens a window of their own. Applies to the next player opened.")]
+	bool PlayInMainWindow);
 
 [Description("A module (an anime database, provider, media player...) and its settings.")]
 public sealed record ModuleSettingsInfo(string Module, IReadOnlyList<ModuleSettingInfo> Settings);
@@ -111,7 +113,8 @@ public sealed class AppSettingsTools(
 			preferences.DownloadFolder,
 			preferences.YtDlpPath,
 			preferences.NotifyNewEpisodes,
-			preferences.ShowNews);
+			preferences.ShowNews,
+			preferences.PlayInMainWindow);
 	}
 
 	[AgentTool("update_app_settings")]
@@ -133,7 +136,8 @@ public sealed class AppSettingsTools(
 		[Description("A folder to download episodes to; empty for the default (Videos\\Totoro).")] string? downloadFolder = null,
 		[Description("The path of yt-dlp.exe, which downloads HLS streams; empty to find it on the PATH.")] string? ytDlpPath = null,
 		[Description("Whether the user's notified when a new episode of an anime they're watching is out.")] bool? notifyNewEpisodes = null,
-		[Description("Whether the menu has the News page; it shows or hides straight away.")] bool? showNews = null)
+		[Description("Whether the menu has the News page; it shows or hides straight away.")] bool? showNews = null,
+		[Description("true plays episodes in Totoro's main window (the default; sharing that window shows them), false in a window of their own; applies to the next player opened.")] bool? playInMainWindow = null)
 	{
 		if (animeDatabase is not null)
 		{
@@ -237,6 +241,11 @@ public sealed class AppSettingsTools(
 		if (showNews is { } news)
 		{
 			preferences.ShowNews = news;
+		}
+
+		if (playInMainWindow is { } inMainWindow)
+		{
+			preferences.PlayInMainWindow = inMainWindow;
 		}
 
 		return GetAppSettings();

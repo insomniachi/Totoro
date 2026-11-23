@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Window
-    x:Class="Totoro.Views.Player.PlayerWindow"
+<UserControl
+    x:Class="Totoro.Views.Player.PlayerView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:Totoro.Helpers"
@@ -74,7 +74,7 @@
             <ProgressRing
                 Width="48"
                 Height="48"
-                IsActive="{x:Bind local:PlayerWindow.IsBufferingShown(ViewModel.IsBuffering, ViewModel.IsStatusVisible), Mode=OneWay}"
+                IsActive="{x:Bind local:PlayerView.IsBufferingShown(ViewModel.IsBuffering, ViewModel.IsStatusVisible), Mode=OneWay}"
                 IsHitTestVisible="False" />
 
             <!--  While there's no video: starting, getting the next episode ready, or why it can't play  -->
@@ -90,7 +90,7 @@
                     <ProgressRing
                         Width="32"
                         Height="32"
-                        IsActive="{x:Bind local:PlayerWindow.IsWorking(ViewModel.IsStatusVisible, ViewModel.IsStatusError), Mode=OneWay}" />
+                        IsActive="{x:Bind local:PlayerView.IsWorking(ViewModel.IsStatusVisible, ViewModel.IsStatusError), Mode=OneWay}" />
                     <FontIcon
                         FontSize="32"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
@@ -125,7 +125,7 @@
                             Padding="16,12,28,12"
                             HorizontalAlignment="Center"
                             AutomationProperties.LiveSetting="Polite"
-                            AutomationProperties.Name="{x:Bind local:PlayerWindow.NoticeText(Person, Text), Mode=OneTime}"
+                            AutomationProperties.Name="{x:Bind local:PlayerView.NoticeText(Person, Text), Mode=OneTime}"
                             Background="{StaticResource OverlayBackgroundBrush}"
                             BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                             BorderThickness="2"
@@ -202,11 +202,11 @@
                     HorizontalAlignment="Right"
                     AutomationProperties.AutomationId="SaveIndicator"
                     AutomationProperties.LiveSetting="Polite"
-                    AutomationProperties.Name="{x:Bind local:PlayerWindow.SavingText(ViewModel.IsSaving, ViewModel.IsSaved), Mode=OneWay}"
+                    AutomationProperties.Name="{x:Bind local:PlayerView.SavingText(ViewModel.IsSaving, ViewModel.IsSaved), Mode=OneWay}"
                     Background="{StaticResource OverlayBackgroundBrush}"
                     CornerRadius="20"
                     IsHitTestVisible="False"
-                    Opacity="{x:Bind local:PlayerWindow.Opaque(ViewModel.IsSaveIndicatorVisible), Mode=OneWay}"
+                    Opacity="{x:Bind local:PlayerView.Opaque(ViewModel.IsSaveIndicatorVisible), Mode=OneWay}"
                     Orientation="Horizontal"
                     Spacing="8">
                     <StackPanel.OpacityTransition>
@@ -217,7 +217,7 @@
                             Width="24"
                             Height="24"
                             IsActive="{x:Bind ViewModel.IsSaving, Mode=OneWay}"
-                            Opacity="{x:Bind local:PlayerWindow.Opaque(ViewModel.IsSaving), Mode=OneWay}">
+                            Opacity="{x:Bind local:PlayerView.Opaque(ViewModel.IsSaving), Mode=OneWay}">
                             <ProgressRing.OpacityTransition>
                                 <ScalarTransition />
                             </ProgressRing.OpacityTransition>
@@ -229,8 +229,8 @@
                             FontSize="20"
                             Foreground="{ThemeResource SystemFillColorSuccessBrush}"
                             Glyph="&#xE73E;"
-                            Opacity="{x:Bind local:PlayerWindow.Opaque(ViewModel.IsSaved), Mode=OneWay}"
-                            Scale="{x:Bind local:PlayerWindow.TickScale(ViewModel.IsSaved), Mode=OneWay}">
+                            Opacity="{x:Bind local:PlayerView.Opaque(ViewModel.IsSaved), Mode=OneWay}"
+                            Scale="{x:Bind local:PlayerView.TickScale(ViewModel.IsSaved), Mode=OneWay}">
                             <FontIcon.OpacityTransition>
                                 <ScalarTransition />
                             </FontIcon.OpacityTransition>
@@ -239,7 +239,7 @@
                             </FontIcon.ScaleTransition>
                         </FontIcon>
                     </Grid>
-                    <TextBlock VerticalAlignment="Center" Text="{x:Bind local:PlayerWindow.SavingText(ViewModel.IsSaving, ViewModel.IsSaved), Mode=OneWay}" />
+                    <TextBlock VerticalAlignment="Center" Text="{x:Bind local:PlayerView.SavingText(ViewModel.IsSaving, ViewModel.IsSaved), Mode=OneWay}" />
                 </StackPanel>
             </StackPanel>
 
@@ -269,7 +269,7 @@
                     -->
                     <Grid
                         Width="360"
-                        Height="{x:Bind local:PlayerWindow.NextCardHeight(ViewModel.NextImage), Mode=OneWay}"
+                        Height="{x:Bind local:PlayerView.NextCardHeight(ViewModel.NextImage), Mode=OneWay}"
                         Background="{StaticResource OverlayBackgroundBrush}"
                         BorderBrush="{ThemeResource SurfaceStrokeColorFlyoutBrush}"
                         BorderThickness="1"
@@ -291,7 +291,7 @@
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind local:PlayerWindow.UpNext(ViewModel.NextTitle), Mode=OneWay}" />
+                                Text="{x:Bind local:PlayerView.UpNext(ViewModel.NextTitle), Mode=OneWay}" />
                             <TextBlock
                                 MaxLines="2"
                                 Style="{ThemeResource BodyStrongTextBlockStyle}"
@@ -301,7 +301,7 @@
                             <TextBlock
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Text="{x:Bind ViewModel.NextCountdown, Mode=OneWay}"
-                                Visibility="{x:Bind local:PlayerWindow.VisibleIfAny(ViewModel.NextCountdown), Mode=OneWay}" />
+                                Visibility="{x:Bind local:PlayerView.VisibleIfAny(ViewModel.NextCountdown), Mode=OneWay}" />
                             <StackPanel
                                 Margin="0,8,0,0"
                                 Orientation="Horizontal"
@@ -376,4 +376,4 @@
             </local:PlayerTransportControls.TranslationTransition>
         </local:PlayerTransportControls>
     </Grid>
-</Window>
+</UserControl>

@@ -66,7 +66,7 @@ internal static class AppServices
 		services.AddSingleton<ShowResolver>();
 		services.AddSingleton<WatchService>();
 		// The built-in players' window, which plugins' players play in too.
-		services.AddSingleton<Totoro.UI.Player.IPlayerWindowFactory, Views.Player.PlayerWindowFactory>();
+		services.AddSingleton<Totoro.UI.Player.IPlayerWindowFactory>(sp => new Views.Player.PlayerWindowFactory(sp.GetRequiredService<IPreferences>(), () => window() as MainWindow));
 		// What the provider has of an anime's new episodes, for the cards' badges.
 		services.AddSingleton<IProviderEpisodes, ProviderEpisodes>();
 		services.AddSingleton<DownloadService>();

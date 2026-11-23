@@ -13,7 +13,7 @@ namespace Totoro.UI.Player;
 /// </summary>
 public abstract class WindowMediaPlayer(IPlayerWindowFactory windows, IModuleSettings<PlayerSettings> settings, IPreferences preferences, ILogger logger) : IInteractiveMediaPlayer
 {
-	private Window? _window;
+	private IPlayerHost? _window;
 	private PlayerViewModel? _viewModel;
 
 	/// <summary>Serves what's played with HTTP headers the player can't send itself.</summary>

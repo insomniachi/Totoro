@@ -30,9 +30,11 @@ public sealed class AppearanceService(IPreferences preferences, Func<Window?> wi
 		}
 	}
 
+	public bool IsHeld { get; set; }
+
 	public void Apply()
 	{
-		if (window() is not { Content: FrameworkElement root } w)
+		if (IsHeld || window() is not { Content: FrameworkElement root } w)
 		{
 			return;
 		}
@@ -81,7 +83,7 @@ public sealed class AppearanceService(IPreferences preferences, Func<Window?> wi
 	/// </summary>
 	private void ApplySolidBackground(FrameworkElement root)
 	{
-		if (root is not Panel panel)
+		if (IsHeld || root is not Panel panel)
 		{
 			return;
 		}

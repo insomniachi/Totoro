@@ -75,6 +75,19 @@
                 </ComboBox>
             </toolkit:SettingsCard>
 
+            <toolkit:SettingsCard Description="Play episodes in Totoro's window, or in a window of their own." Header="Where episodes play">
+                <toolkit:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE737;" />
+                </toolkit:SettingsCard.HeaderIcon>
+                <ComboBox
+                    MinWidth="200"
+                    AutomationProperties.Name="Where episodes play"
+                    SelectedIndex="{x:Bind ViewModel.PlayerWindowIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="Same window" />
+                    <ComboBoxItem Content="Separate window" />
+                </ComboBox>
+            </toolkit:SettingsCard>
+
             <toolkit:SettingsCard
                 AutomationProperties.Name="Player settings"
                 Command="{x:Bind ViewModel.OpenCommand, Mode=OneTime}"

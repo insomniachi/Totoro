@@ -24,6 +24,12 @@ public interface IAppearanceService
 
 	AppBackdrop Backdrop { get; set; }
 
+	/// <summary>
+	/// While true (a player covers the main window, mpv's video see-through under it), changes are saved but not applied:
+	/// <see cref="Apply"/> once it's false again.
+	/// </summary>
+	bool IsHeld { get; set; }
+
 	/// <summary>Applies the saved theme and backdrop; call once the main window exists.</summary>
 	void Apply();
 }

@@ -14,89 +14,216 @@ using Windows.Graphics;
 using Windows.System;
 using Windows.UI;
 using Totoro.Core.Modules.Media;
+using Totoro.Core.Settings;
 using Totoro.UI.Input;
 using Totoro.UI.Player;
 using Totoro.ViewModels.Player;
 
 namespace Totoro.Views.Player;
 
-/// <summary>Makes <see cref="PlayerWindow"/>s, for the players that play in it (plugins' too).</summary>
-internal sealed class PlayerWindowFactory : IPlayerWindowFactory
+/// <summary>
+/// Plays in the main window (so a screen share of the app's window shows the episode too), or in a
+/// <see cref="PlayerWindow"/> of its own (see <c>PlayInMainWindow</c>), for the players that play in the app (plugins' too).
+/// </summary>
+internal sealed class PlayerWindowFactory(IPreferences preferences, Func<MainWindow?> mainWindow) : IPlayerWindowFactory
 {
-	public Window Create(PlayerViewModel viewModel, PlayerSettings settings) => new PlayerWindow(viewModel, settings);
+	public IPlayerHost Create(PlayerViewModel viewModel, PlayerSettings settings) =>
+		preferences.PlayInMainWindow && mainWindow() is { } main
+			? new MainWindowPlayerHost(main, new PlayerView(main, viewModel, settings))
+			: new WindowPlayerHost(new PlayerWindow(viewModel, settings));
+}
+
+internal sealed class WindowPlayerHost : IPlayerHost
+{
+	private readonly PlayerWindow _window;
+
+	public WindowPlayerHost(PlayerWindow window)
+	{
+		_window = window;
+		window.Closed += (_, _) => Closed?.Invoke(this, EventArgs.Empty);
+	}
+
+	public event EventHandler? Closed;
+
+	public void Activate() => _window.Activate();
+
+	public void Close() => _window.Close();
+}
+
+/// <summary>The player over the whole main window, which comes back as it was when the player closes.</summary>
+internal sealed class MainWindowPlayerHost : IPlayerHost
+{
+	private readonly MainWindow _window;
+	private readonly PlayerView _view;
+	private bool _isClosed;
+
+	public MainWindowPlayerHost(MainWindow window, PlayerView view)
+	{
+		_window = window;
+		_view = view;
+		view.CloseRequested += (_, _) => Close();
+		window.ShowPlayer(view, this);
+	}
+
+	public event EventHandler? Closed;
+
+	public void Activate() => (_window.BringToFront ?? _window.Activate)();
+
+	public void Close()
+	{
+		if (_isClosed)
+		{
+			return;
+		}
+
+		_isClosed = true;
+		_view.Detach();
+		_window.HidePlayer(_view);
+		Closed?.Invoke(this, EventArgs.Empty);
+	}
+}
+
+/// <summary>A window of the player's own (when it doesn't play in the main window), placed over most of the screen.</summary>
+internal sealed partial class PlayerWindow : Window
+{
+	public PlayerWindow(PlayerViewModel viewModel, PlayerSettings settings)
+	{
+		var view = new PlayerView(this, viewModel, settings);
+		Content = view;
+		view.Attach();
+		PlaceOnScreen();
+		view.CloseRequested += (_, _) => Close();
+		Activated += OnFirstActivated;
+		Closed += (_, _) => view.Detach();
+
+		void OnFirstActivated(object sender, WindowActivatedEventArgs args)
+		{
+			Activated -= OnFirstActivated;
+			view.FocusPlayPause();
+		}
+	}
+
+	/// <summary>Most of the screen, centred, at 16:9: the video fills the window, the title bar and the controls over it.</summary>
+	private void PlaceOnScreen()
+	{
+		var area = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Primary).WorkArea;
+		var width = (int)(area.Width * 0.7);
+		AppWindow.ResizeClient(new SizeInt32(width, Math.Min(width * 9 / 16, (int)(area.Height * 0.9))));
+		var size = AppWindow.Size;
+		AppWindow.Move(new PointInt32(area.X + (area.Width - size.Width) / 2, area.Y + (area.Height - size.Height) / 2));
+	}
 }
 
 /// <summary>
-/// The built-in player's window: the video with the app's own controls over it, which hide (with the pointer) while
-/// it plays and the pointer is still.
+/// The built-in player: the video with the app's own controls over it, which hide (with the pointer) while it plays and
+/// the pointer is still. It fills the window it's in (its own, or the main window), title bar
+/// included, and drives that window's title bar, title and full screen.
 /// </summary>
-public sealed partial class PlayerWindow : Window
+public sealed partial class PlayerView : UserControl
 {
 	private static readonly TimeSpan s_hideControlsAfter = TimeSpan.FromSeconds(3);
 	private static readonly TimeSpan s_arrowSeek = TimeSpan.FromSeconds(5);
 
+	private readonly Window _host;
 	private readonly DispatcherTimer _hideTimer = new() { Interval = s_hideControlsAfter };
 	private CursorHider? _cursorHider;
 	private bool _areControlsShown = true;
+	// Popups the window already had open as the player loaded (the main window keeps one open): not the player's menus.
+	private HashSet<Popup> _windowPopups = [];
 
 	// How far the title bar and the controls slide as they hide.
 	private const float ChromeSlide = 24;
 
-	public PlayerWindow(PlayerViewModel viewModel, PlayerSettings shortcuts)
+	public PlayerView(Window host, PlayerViewModel viewModel, PlayerSettings shortcuts)
 	{
+		_host = host;
 		ViewModel = viewModel;
 		Shortcuts = shortcuts;
 		InitializeComponent();
 		AddVideoView();
 		Controls.Attach(viewModel, shortcuts);
+	}
 
+	/// <summary>Closing the player (its key), which closes what it's in.</summary>
+	public event EventHandler? CloseRequested;
+
+	/// <summary>Takes over its window's title bar, title and full screen: call once the view is the window's (or in it).</summary>
+	public void Attach()
+	{
+		var appWindow = _host.AppWindow;
 		// Its own title bar, on Mica like the controls.
-		ExtendsContentIntoTitleBar = true;
-		SetTitleBar(TitleBarArea);
-		AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+		_host.ExtendsContentIntoTitleBar = true;
+		_host.SetTitleBar(TitleBarArea);
+		appWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
 		// The taskbar's and Alt+Tab's icon.
-		AppWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "Totoro.ico"));
-		// White window buttons over the video, in colours of their own (a preferred theme would override them), so they can
-		// fade with the title bar.
-		AppWindow.TitleBar.ButtonHoverBackgroundColor = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF);
-		AppWindow.TitleBar.ButtonPressedBackgroundColor = Color.FromArgb(0x1A, 0xFF, 0xFF, 0xFF);
-		AppWindow.TitleBar.ButtonHoverForegroundColor = Colors.White;
-		AppWindow.TitleBar.ButtonPressedForegroundColor = Colors.White;
+		appWindow.SetIcon(System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "Totoro.ico"));
+		// White window buttons over the video, in colours of their own (a preferred theme would override them, so the main
+		// window's is cleared; it comes back as the player closes), so they can fade with the title bar.
+		appWindow.TitleBar.PreferredTheme = TitleBarTheme.Legacy;
+		appWindow.TitleBar.ButtonHoverBackgroundColor = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF);
+		appWindow.TitleBar.ButtonPressedBackgroundColor = Color.FromArgb(0x1A, 0xFF, 0xFF, 0xFF);
+		appWindow.TitleBar.ButtonHoverForegroundColor = Colors.White;
+		appWindow.TitleBar.ButtonPressedForegroundColor = Colors.White;
 		// The video shows behind the window's own buttons too.
-		AppWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-		AppWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-		PlaceOnScreen();
+		appWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+		appWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 		// Launched full screen (a setting): changes after this are applied as they happen, see OnViewModelPropertyChanged.
-		if (ViewModel.IsFullScreen)
+		if (appWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen)
 		{
-			AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+			// The main window, already full screen (F11): the player follows it.
+			ViewModel.IsFullScreen = true;
+		}
+		else if (ViewModel.IsFullScreen)
+		{
+			appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
 		}
 
 		UpdateTitle();
 
 		ViewModel.PropertyChanged += OnViewModelPropertyChanged;
 		ViewModel.EpisodeList.PropertyChanged += OnEpisodeListPropertyChanged;
-		_hideTimer.Tick += (_, _) => HideControlsIfIdle();
-		AppWindow.Changed += (_, e) =>
+		_hideTimer.Tick += OnHideTimerTick;
+		appWindow.Changed += OnAppWindowChanged;
+		// In the main window, focus can stay on (or fall back to) the hidden app behind the player: its keys are taken at
+		// the window's root, which every key passes through on its way in, so they're the player's wherever focus is.
+		if (_host.Content is UIElement root && root != this)
 		{
-			if (e.DidPresenterChange)
-			{
-				ViewModel.IsFullScreen = AppWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen;
-			}
-		};
+			root.PreviewKeyDown += OnPreviewKeyDown;
+		}
 
-		Activated += OnFirstActivated;
-		Closed += (_, _) =>
-		{
-			_hideTimer.Stop();
-			_cursorHider?.Dispose();
-			ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
-			ViewModel.EpisodeList.PropertyChanged -= OnEpisodeListPropertyChanged;
-			Controls.Detach();
-		};
+		Loaded += OnLoaded;
 		SetChromeShown(true);
 		ShowControls();
 		ViewModel.UpdateViewportSize(VideoArea.ActualWidth, VideoArea.ActualHeight);
+	}
+
+	/// <summary>Lets go of its window, as the player closes.</summary>
+	public void Detach()
+	{
+		_hideTimer.Stop();
+		_hideTimer.Tick -= OnHideTimerTick;
+		_host.AppWindow.Changed -= OnAppWindowChanged;
+		if (_host.Content is UIElement root && root != this)
+		{
+			root.PreviewKeyDown -= OnPreviewKeyDown;
+		}
+
+		Loaded -= OnLoaded;
+		_cursorHider?.Dispose();
+		_cursorHider = null;
+		ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+		ViewModel.EpisodeList.PropertyChanged -= OnEpisodeListPropertyChanged;
+		Controls.Detach();
+	}
+
+	public void FocusPlayPause() => Controls.FocusPlayPause();
+
+	private void OnLoaded(object sender, RoutedEventArgs e)
+	{
+		if (XamlRoot is { } root)
+		{
+			_windowPopups = [.. VisualTreeHelper.GetOpenPopupsForXamlRoot(root)];
+		}
 	}
 
 	public PlayerViewModel ViewModel { get; }
@@ -143,8 +270,8 @@ public sealed partial class PlayerWindow : Window
 			// mpv draws in a window of its own inside this one, under the XAML: the window and the video area are see-through
 			// over it (they're otherwise painted over it, whatever the windows' order).
 			VideoArea.Background = null;
-			SystemBackdrop = new WinUIEx.TransparentTintBackdrop();
-			_ = mpv.InitializeAsync(Win32Interop.GetWindowFromWindowId(AppWindow.Id));
+			_host.SystemBackdrop = new WinUIEx.TransparentTintBackdrop();
+			_ = mpv.InitializeAsync(Win32Interop.GetWindowFromWindowId(_host.AppWindow.Id));
 			return;
 		}
 		else
@@ -157,10 +284,14 @@ public sealed partial class PlayerWindow : Window
 		VideoArea.Children.Insert(0, view);
 	}
 
-	private void OnFirstActivated(object sender, WindowActivatedEventArgs args)
+	private void OnHideTimerTick(object? sender, object e) => HideControlsIfIdle();
+
+	private void OnAppWindowChanged(AppWindow sender, AppWindowChangedEventArgs e)
 	{
-		Activated -= OnFirstActivated;
-		Controls.FocusPlayPause();
+		if (e.DidPresenterChange)
+		{
+			ViewModel.IsFullScreen = sender.Presenter.Kind == AppWindowPresenterKind.FullScreen;
+		}
 	}
 
 	// The episode list opens over the controls (the control shows it): they come back first.
@@ -185,9 +316,9 @@ public sealed partial class PlayerWindow : Window
 				break;
 			case nameof(PlayerViewModel.IsFullScreen):
 				var kind = ViewModel.IsFullScreen ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Overlapped;
-				if (AppWindow.Presenter.Kind != kind)
+				if (_host.AppWindow.Presenter.Kind != kind)
 				{
-					AppWindow.SetPresenter(kind);
+					_host.AppWindow.SetPresenter(kind);
 				}
 
 				break;
@@ -246,7 +377,7 @@ public sealed partial class PlayerWindow : Window
 				ViewModel.NextEpisodeCommand.Execute(null);
 				break;
 			case var key when KeyboardShortcuts.IsPressed(keys.CloseKeys, key):
-				Close();
+				CloseRequested?.Invoke(this, EventArgs.Empty);
 				return;
 			default:
 				e.Handled = false;
@@ -288,7 +419,7 @@ public sealed partial class PlayerWindow : Window
 		_hideTimer.Stop();
 		// Not while paused, being used, or a menu or the episode list is open.
 		if (!ViewModel.IsPlaying || Controls.IsBusy || ViewModel.EpisodeList.IsEpisodeListOpen ||
-			Content.XamlRoot is { } root && VisualTreeHelper.GetOpenPopupsForXamlRoot(root).Count > 0)
+			XamlRoot is { } root && VisualTreeHelper.GetOpenPopupsForXamlRoot(root).Any(x => !_windowPopups.Contains(x)))
 		{
 			_hideTimer.Start();
 			return;
@@ -318,7 +449,7 @@ public sealed partial class PlayerWindow : Window
 		LiftSubtitles(shown);
 
 		// The window's own buttons (minimise, maximise, close) go too: drawn see-through.
-		var titleBar = AppWindow.TitleBar;
+		var titleBar = _host.AppWindow.TitleBar;
 		titleBar.ButtonForegroundColor = shown ? Colors.White : Colors.Transparent;
 		titleBar.ButtonInactiveForegroundColor = shown ? Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF) : Colors.Transparent;
 	}
@@ -349,29 +480,19 @@ public sealed partial class PlayerWindow : Window
 	// The overlay that hides the cursor stays over the video (see CursorHider), under the title bar.
 	private void PlaceCursorHider()
 	{
-		if (Content.XamlRoot is not { } root)
+		if (XamlRoot is not { } root)
 		{
 			return;
 		}
 
 		if (_cursorHider is null)
 		{
-			_cursorHider = new CursorHider(Win32Interop.GetWindowFromWindowId(AppWindow.Id));
+			_cursorHider = new CursorHider(Win32Interop.GetWindowFromWindowId(_host.AppWindow.Id));
 			_cursorHider.Used += (_, _) => ShowControls();
 		}
 
 		_cursorHider.Place(0, (int)(TitleBarArea.ActualHeight * root.RasterizationScale));
 	}
 
-	private void UpdateTitle() => Title = ViewModel.Title.Length > 0 ? $"{ViewModel.Title} - Totoro" : "Totoro";
-
-	/// <summary>Most of the screen, centred, at 16:9: the video fills the window, the title bar and the controls over it.</summary>
-	private void PlaceOnScreen()
-	{
-		var area = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Primary).WorkArea;
-		var width = (int)(area.Width * 0.7);
-		AppWindow.ResizeClient(new SizeInt32(width, Math.Min(width * 9 / 16, (int)(area.Height * 0.9))));
-		var size = AppWindow.Size;
-		AppWindow.Move(new PointInt32(area.X + (area.Width - size.Width) / 2, area.Y + (area.Height - size.Height) / 2));
-	}
+	private void UpdateTitle() => _host.Title = ViewModel.Title.Length > 0 ? $"{ViewModel.Title} - Totoro" : "Totoro";
 }

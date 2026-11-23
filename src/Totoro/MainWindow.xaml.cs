@@ -390,6 +390,94 @@ public sealed partial class MainWindow : Window
 		AppWindow.SetPresenter(isFullScreen ? AppWindowPresenterKind.FullScreen : AppWindowPresenterKind.Overlapped);
 	}
 
+	// The player over the whole window (see MainWindowPlayerHost), and what it changed, to put back.
+	private Views.Player.MainWindowPlayerHost? _player;
+	private (string Title, bool IsFullScreen, Windows.UI.Color?[] Buttons, Visibility[] Children) _beforePlayer;
+
+	/// <summary>Shows the window and brings it to the front, restoring it from the tray or minimized (see App).</summary>
+	internal Action? BringToFront { get; set; }
+
+	/// <summary>Whether the player is playing in this window.</summary>
+	internal bool IsPlayerShown => _player is not null;
+
+	/// <summary>Closes the player playing in this window, if one is: true if it did.</summary>
+	internal bool ClosePlayer()
+	{
+		if (_player is not { } player)
+		{
+			return false;
+		}
+
+		player.Close();
+		return true;
+	}
+
+	/// <summary>
+	/// Covers the whole window with the player. The rest is only hidden (not taken out), so the pages stay as they were.
+	/// </summary>
+	internal void ShowPlayer(Views.Player.PlayerView view, Views.Player.MainWindowPlayerHost host)
+	{
+		// Another player (a different engine) already here: it goes first, so what's saved below is the app's own state.
+		ClosePlayer();
+		var titleBar = AppWindow.TitleBar;
+		_beforePlayer = (Title, IsFullScreen,
+		[
+			titleBar.ButtonBackgroundColor, titleBar.ButtonInactiveBackgroundColor, titleBar.ButtonForegroundColor,
+			titleBar.ButtonInactiveForegroundColor, titleBar.ButtonHoverBackgroundColor, titleBar.ButtonPressedBackgroundColor,
+			titleBar.ButtonHoverForegroundColor, titleBar.ButtonPressedForegroundColor,
+		], [.. Root.Children.Select(x => x.Visibility)]);
+		_player = host;
+		foreach (var child in Root.Children)
+		{
+			child.Visibility = Visibility.Collapsed;
+		}
+
+		// Playing mid-tour skips it: its tip would float over the video.
+		if (TourTip.IsOpen)
+		{
+			OnTourSkip(TourTip, EventArgs.Empty);
+		}
+
+		// Without a backdrop the root is painted (see AppearanceService), which would hide mpv's video under it; and a theme
+		// or backdrop change while it plays waits for it to close.
+		Core.Locator.GetRequiredService<Core.Settings.IAppearanceService>().IsHeld = true;
+		Root.Background = null;
+		Grid.SetRowSpan(view, 2);
+		Grid.SetColumnSpan(view, 2);
+		Root.Children.Add(view);
+		view.Attach();
+		// Already active, so the play/pause button gets the keys once it's loaded.
+		view.Loaded += (_, _) => view.FocusPlayPause();
+	}
+
+	/// <summary>Puts the window back as it was before <see cref="ShowPlayer"/>.</summary>
+	internal void HidePlayer(Views.Player.PlayerView view)
+	{
+		_player = null;
+		Root.Children.Remove(view);
+		var (title, isFullScreen, buttons, children) = _beforePlayer;
+		for (var i = 0; i < children.Length && i < Root.Children.Count; i++)
+		{
+			Root.Children[i].Visibility = children[i];
+		}
+
+		Title = title;
+		// The user's backdrop and background again (mpv's see-through one replaced the backdrop).
+		var appearance = Core.Locator.GetRequiredService<Core.Settings.IAppearanceService>();
+		appearance.IsHeld = false;
+		appearance.Apply();
+		var titleBar = AppWindow.TitleBar;
+		(titleBar.ButtonBackgroundColor, titleBar.ButtonInactiveBackgroundColor, titleBar.ButtonForegroundColor,
+			titleBar.ButtonInactiveForegroundColor, titleBar.ButtonHoverBackgroundColor, titleBar.ButtonPressedBackgroundColor,
+			titleBar.ButtonHoverForegroundColor, titleBar.ButtonPressedForegroundColor) =
+			(buttons[0], buttons[1], buttons[2], buttons[3], buttons[4], buttons[5], buttons[6], buttons[7]);
+		SetTitleBar(AppTitleBar);
+		if (IsFullScreen != isFullScreen)
+		{
+			SetFullScreen(isFullScreen);
+		}
+	}
+
 	/// <summary>The app's version, e.g. "2.1.0", for the title bar: the release's (see .github/workflows), without the commit's hash.</summary>
 	public static string Version { get; } =
 		(typeof(MainWindow).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "")

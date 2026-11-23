@@ -453,8 +453,11 @@ public sealed partial class WatchService(
 
 	private async Task RunAsync(AnimeModel anime, int number, bool binge, bool fromDownloads, TimeSpan? startAt, Func<CancellationToken, Task> play)
 	{
-		_cancellation?.Cancel();
+		// The new one first: cancelling can run the replaced one's ending right away (on this thread), which must see it's
+		// been replaced rather than cancelled, or it clears the status bar under this one.
+		var replaced = _cancellation;
 		using var cancellation = _cancellation = new CancellationTokenSource();
+		replaced?.Cancel();
 		var ct = cancellation.Token;
 
 		_binge = binge;
@@ -786,8 +789,9 @@ public sealed partial class WatchService(
 				}
 			}
 
-			// Other players (mpv) have no check to show, so it's said over the video.
-			if (player is not IInteractiveMediaPlayer)
+			// Other players (mpv) have no check to show, so it's said over the video. A failure is said there in the app's
+			// own players too: their badge just fades, and the status bar saying it may be hidden under the player.
+			if (player is not IInteractiveMediaPlayer || !marked)
 			{
 				_ = player.ShowMessageAsync(message, s_playerMessageDuration);
 			}

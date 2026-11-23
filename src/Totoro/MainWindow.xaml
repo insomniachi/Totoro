@@ -22,7 +22,7 @@
 
     <!--  Theme and backdrop come from the user's settings; see IAppearanceService  -->
     <!--  Hidden: else WinUI shows an "F11" accelerator tooltip when hovering anywhere in the window  -->
-    <Grid KeyboardAcceleratorPlacementMode="Hidden">
+    <Grid x:Name="Root" KeyboardAcceleratorPlacementMode="Hidden">
         <!--  Window-wide: F11 toggles full screen, Esc only leaves it  -->
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="F11" Invoked="OnFullScreenInvoked" />
@@ -1051,31 +1051,32 @@
             The assistant (see ChatService): beside the pages rather than over them, so what it does shows as it does it.
             It grows out of the Assistant button as it opens, and back into it as it closes.
         -->
-        <Grid
-            x:Name="ChatHost"
-            Grid.Row="1"
-            Grid.Column="1"
-            Visibility="Collapsed">
-            <Interactivity:Interaction.Behaviors>
-                <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}" Value="True">
-                    <ui:StartTransitionAction
-                        Source="{x:Bind AssistantGhost}"
-                        Target="{x:Bind ChatHost}"
-                        Transition="{StaticResource ChatTransition}" />
-                </Interactivity:DataTriggerBehavior>
-                <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}" Value="False">
-                    <ui:ReverseTransitionAction Transition="{StaticResource ChatTransition}" />
-                </Interactivity:DataTriggerBehavior>
-            </Interactivity:Interaction.Behaviors>
-            <Border
-                Width="380"
-                ui:TransitionHelper.Id="Assistant"
-                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1,1,0,0"
-                CornerRadius="8,0,0,0">
-                <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat, Mode=OneTime}" />
-            </Border>
+        <!--  A wrapper of its own, so a player playing in this window can hide it (the panel's transition shows and hides the panel itself)  -->
+        <Grid Grid.Row="1" Grid.Column="1">
+            <Grid
+                x:Name="ChatHost"
+                Visibility="Collapsed">
+                <Interactivity:Interaction.Behaviors>
+                    <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}" Value="True">
+                        <ui:StartTransitionAction
+                            Source="{x:Bind AssistantGhost}"
+                            Target="{x:Bind ChatHost}"
+                            Transition="{StaticResource ChatTransition}" />
+                    </Interactivity:DataTriggerBehavior>
+                    <Interactivity:DataTriggerBehavior Binding="{x:Bind ViewModel.Chat.IsOpen, Mode=OneWay}" Value="False">
+                        <ui:ReverseTransitionAction Transition="{StaticResource ChatTransition}" />
+                    </Interactivity:DataTriggerBehavior>
+                </Interactivity:Interaction.Behaviors>
+                <Border
+                    Width="380"
+                    ui:TransitionHelper.Id="Assistant"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1,1,0,0"
+                    CornerRadius="8,0,0,0">
+                    <chat:ChatPanel ViewModel="{x:Bind ViewModel.Chat, Mode=OneTime}" />
+                </Border>
+            </Grid>
         </Grid>
 
         <!--  Notices over the top-right corner of the content, raised like the status bar below  -->
@@ -1193,151 +1194,153 @@
             corners clip what it draws, shadow included. Not a ThemeShadow: outside a popup that only falls on listed
             receivers, and the details pane it floats over is raised itself.
         -->
-        <Grid
-            Grid.Row="1"
-            MaxWidth="560"
-            Margin="0,0,24,24"
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsOpen), Mode=OneWay}">
-            <ui:Effects.Shadow>
-                <media:AttachedCardShadow
-                    BlurRadius="24"
-                    CornerRadius="8"
-                    Opacity="0.6"
-                    Offset="0,8"
-                    Color="Black" />
-            </ui:Effects.Shadow>
-            <InfoBar
-                Title="{x:Bind ViewModel.Playback.CardTitle, Mode=OneWay}"
-                DataContext="{x:Bind ViewModel.Playback, Mode=OneWay}"
-                IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
-                Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
-                Severity="{x:Bind local:MainWindow.ToSeverity(ViewModel.Playback.Kind), Mode=OneWay}"
-                Style="{StaticResource PlaybackInfoBarStyle}">
-                <InfoBar.ActionButton>
-                    <!--  Cancel while getting ready, "Play episode 6" once one's watched...  -->
-                    <Button
-                        AutomationProperties.AutomationId="PlaybackActionButton"
-                        Command="{x:Bind ViewModel.Playback.ActionCommand}"
-                        Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
-                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />
-                </InfoBar.ActionButton>
-                <StackPanel Spacing="4">
-                    <!--  The English title, under the anime's own (the card's title), if it's another  -->
-                    <TextBlock
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Style="{ThemeResource BodyTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Playback.EnglishTitle, Mode=OneWay}"
-                        TextTrimming="CharacterEllipsis"
-                        TextWrapping="NoWrap"
-                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EnglishTitle), Mode=OneWay}" />
+        <!--  A wrapper of its own, so a player playing in this window can hide it (its own visibility follows playback)  -->
+        <Grid Grid.Row="1">
+            <Grid
+                MaxWidth="560"
+                Margin="0,0,24,24"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsOpen), Mode=OneWay}">
+                <ui:Effects.Shadow>
+                    <media:AttachedCardShadow
+                        BlurRadius="24"
+                        CornerRadius="8"
+                        Opacity="0.6"
+                        Offset="0,8"
+                        Color="Black" />
+                </ui:Effects.Shadow>
+                <InfoBar
+                    Title="{x:Bind ViewModel.Playback.CardTitle, Mode=OneWay}"
+                    DataContext="{x:Bind ViewModel.Playback, Mode=OneWay}"
+                    IsOpen="{x:Bind ViewModel.Playback.IsOpen, Mode=TwoWay}"
+                    Message="{x:Bind ViewModel.Playback.Message, Mode=OneWay}"
+                    Severity="{x:Bind local:MainWindow.ToSeverity(ViewModel.Playback.Kind), Mode=OneWay}"
+                    Style="{StaticResource PlaybackInfoBarStyle}">
+                    <InfoBar.ActionButton>
+                        <!--  Cancel while getting ready, "Play episode 6" once one's watched...  -->
+                        <Button
+                            AutomationProperties.AutomationId="PlaybackActionButton"
+                            Command="{x:Bind ViewModel.Playback.ActionCommand}"
+                            Content="{x:Bind ViewModel.Playback.ActionText, Mode=OneWay}"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.ActionText), Mode=OneWay}" />
+                    </InfoBar.ActionButton>
+                    <StackPanel Spacing="4">
+                        <!--  The English title, under the anime's own (the card's title), if it's another  -->
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource BodyTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Playback.EnglishTitle, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EnglishTitle), Mode=OneWay}" />
 
-                    <!--  The episode, once: "5 · The Journey's End" (its name from ani.zip, when known); set apart from the titles above  -->
-                    <TextBlock
-                        Margin="0,8,0,0"
-                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        Style="{ThemeResource BodyStrongTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Playback.EpisodeLine, Mode=OneWay}"
-                        TextTrimming="CharacterEllipsis"
-                        TextWrapping="NoWrap"
-                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EpisodeLine), Mode=OneWay}" />
+                        <!--  The episode, once: "5 · The Journey's End" (its name from ani.zip, when known); set apart from the titles above  -->
+                        <TextBlock
+                            Margin="0,8,0,0"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                            Style="{ThemeResource BodyStrongTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Playback.EpisodeLine, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.EpisodeLine), Mode=OneWay}" />
 
-                    <!--  Metadata tags: Format, season/year, rating, studio  -->
-                    <TextBlock
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Style="{ThemeResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Playback.Metadata, Mode=OneWay}"
-                        TextTrimming="CharacterEllipsis"
-                        TextWrapping="NoWrap"
-                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.Metadata), Mode=OneWay}" />
+                        <!--  Metadata tags: Format, season/year, rating, studio  -->
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Playback.Metadata, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.Metadata), Mode=OneWay}" />
 
-                    <!--  Source tags: Provider, player  -->
-                    <TextBlock
-                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                        Style="{ThemeResource CaptionTextBlockStyle}"
-                        Text="{x:Bind ViewModel.Playback.SourceInfo, Mode=OneWay}"
-                        TextTrimming="CharacterEllipsis"
-                        TextWrapping="NoWrap"
-                        Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.SourceInfo), Mode=OneWay}" />
+                        <!--  Source tags: Provider, player  -->
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Playback.SourceInfo, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.SourceInfo), Mode=OneWay}" />
 
-                    <!--  Indeterminate progress while getting ready; filling during the countdown to the next episode  -->
-                    <ProgressBar
-                        Margin="0,4,0,0"
-                        IsIndeterminate="{x:Bind local:MainWindow.IsIndeterminate(ViewModel.Playback.CountdownFraction), Mode=OneWay}"
-                        Maximum="1"
-                        Value="{x:Bind ViewModel.Playback.CountdownFraction, Mode=OneWay}"
-                        Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
+                        <!--  Indeterminate progress while getting ready; filling during the countdown to the next episode  -->
+                        <ProgressBar
+                            Margin="0,4,0,0"
+                            IsIndeterminate="{x:Bind local:MainWindow.IsIndeterminate(ViewModel.Playback.CountdownFraction), Mode=OneWay}"
+                            Maximum="1"
+                            Value="{x:Bind ViewModel.Playback.CountdownFraction, Mode=OneWay}"
+                            Visibility="{x:Bind local:MainWindow.VisibleWhileWorking(ViewModel.Playback.Kind), Mode=OneWay}" />
 
-                    <!--  Playback progress and times while playing  -->
-                    <Grid
-                        Margin="0,4,0,0"
-                        RowSpacing="4"
-                        Visibility="{x:Bind local:MainWindow.VisibleWhilePlaying(ViewModel.Playback.PlaybackFraction), Mode=OneWay}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <!--  The position: green once the episode is marked watched; until then, a notch where it will be  -->
-                        <Grid>
-                            <ProgressBar
-                                VerticalAlignment="Center"
-                                AutomationProperties.Name="Playback position"
-                                Maximum="1"
-                                Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}"
-                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
-                            <ProgressBar
-                                VerticalAlignment="Center"
-                                AutomationProperties.Name="Playback position, marked as watched"
-                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                Maximum="1"
-                                Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}"
-                                Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
-                            <Grid IsHitTestVisible="False" Visibility="{x:Bind local:MainWindow.VisibleWhileNotMarked(ViewModel.Playback.CountsAtFraction, ViewModel.Playback.IsMarkedWatched), Mode=OneWay}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="{x:Bind local:MainWindow.Before(ViewModel.Playback.CountsAtFraction), Mode=OneWay}" />
-                                    <ColumnDefinition Width="{x:Bind local:MainWindow.After(ViewModel.Playback.CountsAtFraction), Mode=OneWay}" />
-                                </Grid.ColumnDefinitions>
-                                <Rectangle
-                                    Grid.Column="1"
-                                    Width="2"
-                                    Height="10"
-                                    Margin="-1,0,0,0"
-                                    HorizontalAlignment="Left"
+                        <!--  Playback progress and times while playing  -->
+                        <Grid
+                            Margin="0,4,0,0"
+                            RowSpacing="4"
+                            Visibility="{x:Bind local:MainWindow.VisibleWhilePlaying(ViewModel.Playback.PlaybackFraction), Mode=OneWay}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <!--  The position: green once the episode is marked watched; until then, a notch where it will be  -->
+                            <Grid>
+                                <ProgressBar
                                     VerticalAlignment="Center"
-                                    AutomationProperties.Name="Counts as watched here"
-                                    Fill="{ThemeResource TextFillColorSecondaryBrush}"
-                                    RadiusX="1"
-                                    RadiusY="1"
-                                    ToolTipService.ToolTip="Counts as watched here" />
+                                    AutomationProperties.Name="Playback position"
+                                    Maximum="1"
+                                    Visibility="{x:Bind helpers:CommonConverters.InvertedBooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}"
+                                    Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
+                                <ProgressBar
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="Playback position, marked as watched"
+                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                    Maximum="1"
+                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}"
+                                    Value="{x:Bind ViewModel.Playback.PlaybackFraction, Mode=OneWay}" />
+                                <Grid IsHitTestVisible="False" Visibility="{x:Bind local:MainWindow.VisibleWhileNotMarked(ViewModel.Playback.CountsAtFraction, ViewModel.Playback.IsMarkedWatched), Mode=OneWay}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="{x:Bind local:MainWindow.Before(ViewModel.Playback.CountsAtFraction), Mode=OneWay}" />
+                                        <ColumnDefinition Width="{x:Bind local:MainWindow.After(ViewModel.Playback.CountsAtFraction), Mode=OneWay}" />
+                                    </Grid.ColumnDefinitions>
+                                    <Rectangle
+                                        Grid.Column="1"
+                                        Width="2"
+                                        Height="10"
+                                        Margin="-1,0,0,0"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Counts as watched here"
+                                        Fill="{ThemeResource TextFillColorSecondaryBrush}"
+                                        RadiusX="1"
+                                        RadiusY="1"
+                                        ToolTipService.ToolTip="Counts as watched here" />
+                                </Grid>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.Name="Marked as watched"
+                                        FontSize="12"
+                                        Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                        Glyph="&#xEC61;"
+                                        ToolTipService.ToolTip="Marked as watched"
+                                        Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind ViewModel.Playback.PlaybackTime, Mode=OneWay}" />
+                                </StackPanel>
+                                <TextBlock
+                                    HorizontalAlignment="Right"
+                                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind ViewModel.Playback.PlaybackPercent, Mode=OneWay}"
+                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.PlaybackPercent), Mode=OneWay}" />
                             </Grid>
                         </Grid>
-                        <Grid Grid.Row="1">
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <FontIcon
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.Name="Marked as watched"
-                                    FontSize="12"
-                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                    Glyph="&#xEC61;"
-                                    ToolTipService.ToolTip="Marked as watched"
-                                    Visibility="{x:Bind helpers:CommonConverters.BooleanToVisibility(ViewModel.Playback.IsMarkedWatched), Mode=OneWay}" />
-                                <TextBlock
-                                    VerticalAlignment="Center"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Style="{ThemeResource CaptionTextBlockStyle}"
-                                    Text="{x:Bind ViewModel.Playback.PlaybackTime, Mode=OneWay}" />
-                            </StackPanel>
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Text="{x:Bind ViewModel.Playback.PlaybackPercent, Mode=OneWay}"
-                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(ViewModel.Playback.PlaybackPercent), Mode=OneWay}" />
-                        </Grid>
-                    </Grid>
-                </StackPanel>
-            </InfoBar>
+                    </StackPanel>
+                </InfoBar>
+            </Grid>
         </Grid>
 
         <!--  The first-run tour (see StartTour): one tip, moved from step to step; Next to the next, Skip tour to end it  -->

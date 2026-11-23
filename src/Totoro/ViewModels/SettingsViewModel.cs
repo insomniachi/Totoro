@@ -178,6 +178,7 @@ public partial class SettingsViewModel : ObservableObject
 		TorrentStreamers = [.. torrentStreamers.CreateAll().Select(x => new TorrentStreamerOption(x.Id, x.Name, IconOf(x.Id)))];
 		TorrentStreamer = TorrentStreamers.FirstOrDefault(x => x.Id == preferences.SelectedTorrentStreamer) ?? TorrentStreamers.FirstOrDefault();
 		PlayNextAutomatically = preferences.PlayNextAutomatically;
+		PlayerWindowIndex = preferences.PlayInMainWindow ? 0 : 1;
 		SkipFillers = preferences.SkipFillers;
 		ShowOnDiscord = preferences.ShowOnDiscord;
 		TrackBrowserPlayback = preferences.TrackBrowserPlayback;
@@ -320,6 +321,12 @@ public partial class SettingsViewModel : ObservableObject
 	public partial bool PlayNextAutomatically { get; set; }
 
 	partial void OnPlayNextAutomaticallyChanged(bool value) => _preferences.PlayNextAutomatically = value;
+
+	/// <summary>Where the app's own players open: 0 in Totoro's window (covering it while they play), 1 in a window of their own.</summary>
+	[ObservableProperty]
+	public partial int PlayerWindowIndex { get; set; }
+
+	partial void OnPlayerWindowIndexChanged(int value) => _preferences.PlayInMainWindow = value == 0;
 
 	[ObservableProperty]
 	public partial bool SkipFillers { get; set; }
