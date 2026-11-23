@@ -605,6 +605,7 @@ internal partial class AnilistMetadataProvider(
 							.WithThumbnail()
 							.WithId())
 			   .WithGenres()
+			   .WithTags(new MediaTagQueryBuilder().WithName())
 			   .WithStartDate(new FuzzyDateQueryBuilder().WithAllFields())
 			   .WithEndDate(new FuzzyDateQueryBuilder().WithAllFields())
 			   .WithSeason()

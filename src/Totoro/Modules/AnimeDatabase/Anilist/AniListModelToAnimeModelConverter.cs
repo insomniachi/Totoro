@@ -60,6 +60,7 @@ public static partial class AniListModelToAnimeModelConverter
             Url = $"https://anilist.co/anime/{media.Id}/",
             MediaFormat = ConvertMediaFormat(media.Format),
             Genres = [..media.Genres],
+            Tags = [.. media.Tags?.Where(x => !string.IsNullOrEmpty(x?.Name)).Select(x => x.Name) ?? []],
             Studios = [.. media.Studios?.Nodes.Where(x => x.IsAnimationStudio == true).Select(x => x.Name).Distinct() ?? []],
             Trailers = ConvertTrailers(media.Trailer),
             StreamingLinks = [.. media.ExternalLinks?.Where(x => x is { Type: ExternalLinkType.Streaming } && !string.IsNullOrEmpty(x.Url) && !string.IsNullOrEmpty(x.Site))

@@ -261,6 +261,108 @@
                     </ItemsControl>
                 </DataTemplate>
             </chat:ChatEntryTemplateSelector.Songs>
+            <!--  Characters (an anime's cast): a grid of pictures, each over its name; a long name is trimmed, and whole in the tooltip  -->
+            <chat:ChatEntryTemplateSelector.Characters>
+                <DataTemplate x:DataType="services:ChatCharacterEntry">
+                    <ItemsRepeater ItemsSource="{x:Bind Characters, Mode=OneTime}">
+                        <ItemsRepeater.Layout>
+                            <UniformGridLayout
+                                ItemsJustification="Start"
+                                MinColumnSpacing="8"
+                                ItemsStretch="Fill"
+                                MinItemWidth="88"
+                                MinRowSpacing="12" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="services:ChatCharacterItem">
+                                <!--  Clicking one opens the character's page in the side pane, as the details page's Characters tab does  -->
+                                <Button
+                                    Padding="0"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    AutomationProperties.Name="{x:Bind Name, Mode=OneTime}"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="OnCharacterClick"
+                                    Tag="{x:Bind Character, Mode=OneTime}"
+                                    ToolTipService.ToolTip="{x:Bind Name, Mode=OneTime}">
+                                <StackPanel Spacing="4">
+                                    <Border
+                                        Height="120"
+                                        Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                        CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                        <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
+                                    </Border>
+                                    <TextBlock
+                                        MaxLines="1"
+                                        Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Name, Mode=OneTime}"
+                                        TextAlignment="Center"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </DataTemplate>
+            </chat:ChatEntryTemplateSelector.Characters>
+            <!--  A question with choices (e.g. which anime the user meant): clicking one sends it as the user's answer  -->
+            <chat:ChatEntryTemplateSelector.Choices>
+                <DataTemplate x:DataType="services:ChatChoiceEntry">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{x:Bind Question, Mode=OneTime}" TextWrapping="Wrap" />
+                        <ItemsControl IsTabStop="False" ItemsSource="{x:Bind Choices, Mode=OneTime}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="services:ChatChoiceItem">
+                                    <Button
+                                        Padding="8"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        AutomationProperties.Name="{x:Bind Label, Mode=OneTime}"
+                                        Click="OnSuggestionClick"
+                                        Tag="{x:Bind Message, Mode=OneTime}"
+                                        ToolTipService.ToolTip="{x:Bind Label, Mode=OneTime}">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border
+                                                Width="40"
+                                                Height="56"
+                                                Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                                                CornerRadius="4"
+                                                Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Image), Mode=OneTime}">
+                                                <Image Source="{x:Bind helpers:CommonConverters.ToImageSource(Image), Mode=OneTime}" Stretch="UniformToFill" />
+                                            </Border>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock
+                                                    Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                                    Text="{x:Bind Label, Mode=OneTime}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Facts, Mode=OneTime}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap"
+                                                    Visibility="{x:Bind helpers:CommonConverters.VisibleIfAny(Facts), Mode=OneTime}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+            </chat:ChatEntryTemplateSelector.Choices>
         </chat:ChatEntryTemplateSelector>
     </UserControl.Resources>
 

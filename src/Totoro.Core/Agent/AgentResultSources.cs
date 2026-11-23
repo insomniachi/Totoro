@@ -22,13 +22,31 @@ public interface IAgentAnimeList
 	int Total { get; }
 }
 
-/// <summary>A tool result about an anime's songs, e.g. the one playing.</summary>
+/// <summary>A tool result about songs, e.g. an anime's, or the one playing: each with the anime it's from.</summary>
 public interface IAgentSongs
 {
-	AnimeModel? Anime { get; }
-
-	IReadOnlyList<AnimeSong> Songs { get; }
+	IReadOnlyList<SongMatch> Shown { get; }
 }
+
+/// <summary>A tool result about characters, e.g. an anime's cast: shown as a grid of their pictures and names.</summary>
+public interface IAgentCharacters
+{
+	IReadOnlyList<CharacterModel> Shown { get; }
+}
+
+/// <summary>
+/// A tool result asking the user to pick, e.g. which of several anime they meant: shown as buttons, each sending its
+/// <see cref="AgentChoice.Message"/> as theirs, so they needn't type.
+/// </summary>
+public interface IAgentChoices
+{
+	string Question { get; }
+
+	IReadOnlyList<AgentChoice> Choices { get; }
+}
+
+/// <summary>One of an <see cref="IAgentChoices"/>' choices; <paramref name="Anime"/> is shown with it, if it's one.</summary>
+public sealed record AgentChoice(string Label, string Message, AnimeModel? Anime = null);
 
 /// <summary>A tool's result as it returned it, before it was made JSON for the agent.</summary>
 public static class AgentToolResult

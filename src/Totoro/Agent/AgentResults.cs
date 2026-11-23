@@ -147,10 +147,35 @@ public sealed record AnimeSongList(IReadOnlyList<AnimeSong> Songs) : IAgentSongs
 	// The anime, for the chat to show the songs with their player.
 	private AnimeModel? _anime;
 
-	AnimeModel? IAgentSongs.Anime => _anime;
+	IReadOnlyList<SongMatch> IAgentSongs.Shown => _anime is null ? [] : [.. Songs.Select(x => new SongMatch(x, _anime))];
 
 	public static AnimeSongList From(AnimeModel anime, IReadOnlyList<AnimeSong> songs) => new(songs) { _anime = anime };
 }
+
+[Description("Songs found by their title or singer, each with the anime it's from.")]
+public sealed record FoundSongs(IReadOnlyList<FoundSong> Songs) : IAgentSongs
+{
+	private IReadOnlyList<SongMatch> _shown = [];
+
+	IReadOnlyList<SongMatch> IAgentSongs.Shown => _shown;
+
+	public static FoundSongs From(IReadOnlyList<(SongMatch Match, long AnimeId)> found) => new(
+		[.. found.Select(x => new FoundSong(x.AnimeId, x.Match.Anime.Title, x.Match.Song.Kind, x.Match.Song.Number, x.Match.Song.Title, x.Match.Song.Artist))])
+	{
+		_shown = [.. found.Select(x => x.Match)],
+	};
+}
+
+[Description("A song found by its title or singer, and the anime it's from; play_anime_song plays it with its animeId, kind and number.")]
+public sealed record FoundSong(
+	[property: Description("The anime's id in the user's anime database.")]
+	long AnimeId,
+	string AnimeTitle,
+	AnimeSongKind Kind,
+	[property: Description("Its number among its kind; null if it's the only one.")]
+	int? Number,
+	string Title,
+	string Artist);
 
 [Description("A song that started playing.")]
 public sealed record SongPlaying(
@@ -162,9 +187,7 @@ public sealed record SongPlaying(
 	private AnimeModel? _anime;
 	private AnimeSong? _song;
 
-	AnimeModel? IAgentSongs.Anime => _anime;
-
-	IReadOnlyList<AnimeSong> IAgentSongs.Songs => _song is null ? [] : [_song];
+	IReadOnlyList<SongMatch> IAgentSongs.Shown => _song is null || _anime is null ? [] : [new SongMatch(_song, _anime)];
 
 	public static SongPlaying From(AnimeModel anime, AnimeSong song, bool video) =>
 		new($"{song.Label}: {song.Title}", video ? "the media player" : "the app") { _anime = anime, _song = song };
@@ -173,6 +196,54 @@ public sealed record SongPlaying(
 [Description("Anime, in the order asked for.")]
 public sealed record ListEntries(
 	[property: Description("How many anime match; these are the first of them.")]
+	int Total,
+	IReadOnlyList<AnimeSummary> Anime) : IAgentAnimeList
+{
+	IReadOnlyList<IAgentAnime> IAgentAnimeList.Ranked => Anime;
+}
+
+[Description("An anime's characters, which the user sees as a grid of their pictures and names; or, when the title could be several anime, those the user is asked to pick from.")]
+public sealed record AnimeCharacters(
+	[property: Description("The anime's title; empty while the user is picking.")]
+	string Anime,
+	IReadOnlyList<CharacterSummary> Characters,
+	[property: Description("The anime the title could be, shown to the user as buttons to pick one: stop and wait for their pick.")]
+	IReadOnlyList<string>? PickOne = null) : IAgentCharacters, IAgentChoices
+{
+	private IReadOnlyList<CharacterModel> _shown = [];
+	private IReadOnlyList<AgentChoice> _choices = [];
+
+	IReadOnlyList<CharacterModel> IAgentCharacters.Shown => _shown;
+
+	string IAgentChoices.Question => "Which anime's characters?";
+
+	IReadOnlyList<AgentChoice> IAgentChoices.Choices => _choices;
+
+	/// <summary>The anime a title could be, for the user to pick; each pick asks for its characters by id.</summary>
+	public static AnimeCharacters Pick(IReadOnlyList<AnimeModel> candidates) => new("", [], [.. candidates.Select(x => x.Title)])
+	{
+		_choices = [.. candidates.Select(x => new AgentChoice(x.Title, $"Show me the characters of {x.Title} (anime id {x.Id})", x))],
+	};
+
+	public static AnimeCharacters From(AnimeModel anime, IReadOnlyList<CharacterModel> characters) => new(
+		anime.Title,
+		[.. characters.Select(x => new CharacterSummary(x.Name, string.IsNullOrEmpty(x.NativeName) ? null : x.NativeName))])
+	{
+		_shown = characters,
+	};
+}
+
+[Description("A character of an anime.")]
+public sealed record CharacterSummary(
+	string Name,
+	[property: Description("Its name in Japanese, if known.")]
+	string? NativeName);
+
+[Description("The anime a character appears in, most popular first.")]
+public sealed record CharacterAnime(
+	[property: Description("The character found, e.g. \"Himmel\".")]
+	string Character,
+	[property: Description("How many anime it appears in; these are the first of them.")]
 	int Total,
 	IReadOnlyList<AnimeSummary> Anime) : IAgentAnimeList
 {

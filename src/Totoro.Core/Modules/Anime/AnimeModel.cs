@@ -69,6 +69,8 @@ public partial class AnimeModel : ObservableObject, IMediaModel
 	public string Url { get; init; } = "";
 	public AnimeMediaFormat MediaFormat { get; init; } = AnimeMediaFormat.Unknown;
 	public IReadOnlyCollection<string> Genres { get; init; } = [];
+	/// <summary>Its tags (e.g. Isekai, Time Travel), where the database has them apart from its genres (AniList).</summary>
+	public IReadOnlyCollection<string> Tags { get; init; } = [];
 	public IReadOnlyCollection<string> Studios { get; init; } = [];
 	public IReadOnlyCollection<TrailerVideo> Trailers { get; set; } = [];
 	/// <summary>Where it streams legally (e.g. Crunchyroll, Netflix); only AniList gives these.</summary>

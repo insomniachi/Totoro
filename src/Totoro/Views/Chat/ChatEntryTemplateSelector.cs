@@ -21,6 +21,10 @@ public sealed partial class ChatEntryTemplateSelector : DataTemplateSelector
 
 	public DataTemplate? Songs { get; set; }
 
+	public DataTemplate? Characters { get; set; }
+
+	public DataTemplate? Choices { get; set; }
+
 	// ChatEntry is closed, so a new kind of entry without a template here is a compiler warning.
 	protected override DataTemplate? SelectTemplateCore(object item) => item is ChatEntry entry
 		? entry switch
@@ -32,6 +36,8 @@ public sealed partial class ChatEntryTemplateSelector : DataTemplateSelector
 			ChatErrorEntry => Error,
 			ChatAnimeEntry => Anime,
 			ChatSongEntry => Songs,
+			ChatCharacterEntry => Characters,
+			ChatChoiceEntry => Choices,
 		}
 		: null;
 

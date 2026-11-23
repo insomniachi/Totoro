@@ -81,6 +81,26 @@ public sealed class ChatSongEntry(IReadOnlyList<SongItem> songs) : ChatEntry
 	public IReadOnlyList<SongItem> Songs { get; } = songs;
 }
 
+/// <summary>A question with choices a tool returned (e.g. which anime the user meant), as buttons that answer it.</summary>
+public sealed class ChatChoiceEntry(string question, IReadOnlyList<ChatChoiceItem> choices) : ChatEntry
+{
+	public string Question { get; } = question;
+
+	public IReadOnlyList<ChatChoiceItem> Choices { get; } = choices;
+}
+
+/// <summary>A choice's button: <paramref name="Message"/> is sent as the user's when it's clicked; <paramref name="Image"/> and <paramref name="Facts"/> are "" when none.</summary>
+public sealed record ChatChoiceItem(string Label, string Facts, string Image, string Message);
+
+/// <summary>Characters a tool returned (e.g. an anime's cast), as a grid of their pictures and names.</summary>
+public sealed class ChatCharacterEntry(IReadOnlyList<ChatCharacterItem> characters) : ChatEntry
+{
+	public IReadOnlyList<ChatCharacterItem> Characters { get; } = characters;
+}
+
+/// <summary>A character in the chat's grid; <paramref name="Image"/> is "" when it has none.</summary>
+public sealed record ChatCharacterItem(string Name, string Image, CharacterModel Character);
+
 /// <summary>Anime a tool returned (e.g. search results), as cards the user can open, add to their list or play.</summary>
 public sealed class ChatAnimeEntry(IReadOnlyList<ChatAnimeItem> anime, int total) : ChatEntry
 {
@@ -183,10 +203,13 @@ public sealed partial class ChatService(
 		Anime ids belong to the user's anime database: find them with search_anime, discover_anime or get_user_list before
 		using one; don't guess them. Every anime those return has the user's listEntry, or none if it isn't on their list.
 		If a tool fails, its error says why; act on it, or tell the user. Search for titles as the user wrote them, typos and all: the search
-		forgives them. Only if it finds nothing, search again with the title you think they meant.
+		forgives them. Only if it finds nothing, search again with the title you think they meant. "Play X" may name a song
+		(an opening or ending) rather than an anime: if X isn't clearly an anime's title, look for it with search_songs.
 
 		The anime and songs your tools return are shown to the user as cards, with buttons to open, add or play each. They're
 		the answer: don't describe them in text. Ask the tools for just what's relevant, with their filters and limit.
+		Never ask the user in text which anime they mean: call the tool with the title as they wrote it, and if it could be
+		several, the user is shown buttons to pick one.
 
 		Always reply in the language the user writes in. Keep replies short, in plain text without Markdown (the chat shows
 		it as is): the user is in the middle of using the app.
@@ -394,9 +417,19 @@ public sealed partial class ChatService(
 	/// <summary>How the user sees a tool's result (see <see cref="EntryFor"/>), for the model; null if not as cards.</summary>
 	private static string? ShownAs(object? raw)
 	{
-		if (raw is IAgentSongs { Anime: not null, Songs.Count: > 0 } songs)
+		if (raw is IAgentSongs { Shown.Count: > 0 } songs)
 		{
-			return songs.Songs.Count == 1 ? "this song as a card, with its player" : "these songs as cards, each with its player";
+			return songs.Shown.Count == 1 ? "this song as a card, with its player" : "these songs as cards, each with its player";
+		}
+
+		if (raw is IAgentChoices { Choices.Count: > 0 })
+		{
+			return "these choices as buttons. Stop here and say nothing: the user will click one, which answers you";
+		}
+
+		if (raw is IAgentCharacters { Shown.Count: > 0 })
+		{
+			return "these characters as a grid of their pictures and names";
 		}
 
 		var anime = TotalOf(raw);
@@ -411,9 +444,20 @@ public sealed partial class ChatService(
 	/// <summary>A tool's result as cards: an anime's songs with their player, or anime (search results, the user's list...).</summary>
 	private ChatEntry? EntryFor(object? raw)
 	{
-		if (raw is IAgentSongs { Anime: not null, Songs.Count: > 0 } songList)
+		if (raw is IAgentSongs { Shown.Count: > 0 } songList)
 		{
-			return new ChatSongEntry([.. songList.Songs.Select(x => new SongItem(x, songs, songPlayer, playlists, songList.Anime))]);
+			return new ChatSongEntry([.. songList.Shown.Select(x => new SongItem(x.Song, songs, songPlayer, playlists, x.Anime))]);
+		}
+
+		if (raw is IAgentChoices { Choices.Count: > 0 } choices)
+		{
+			return new ChatChoiceEntry(choices.Question, [.. choices.Choices.Select(x => new ChatChoiceItem(
+				x.Label, x.Anime is null ? "" : new ChatAnimeItem(x.Anime).Facts, x.Anime?.Image ?? "", x.Message))]);
+		}
+
+		if (raw is IAgentCharacters { Shown.Count: > 0 } characters)
+		{
+			return new ChatCharacterEntry([.. characters.Shown.Select(x => new ChatCharacterItem(x.Name, x.Image?.AbsoluteUri ?? "", x))]);
 		}
 
 		var anime = AnimeIn(raw);

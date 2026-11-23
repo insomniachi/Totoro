@@ -5,6 +5,7 @@ using Totoro.Core.Modules;
 using Totoro.Core.Modules.Anime;
 using Totoro.Core.Modules.Media;
 using Totoro.Core.Services;
+using Totoro.Modules.AnimeDatabase.Anilist;
 
 namespace Totoro.Agent;
 
@@ -34,7 +35,8 @@ public sealed class AnimeTools(
 	IPlaybackProgressStore progress,
 	AnimeSongService songs,
 	AnimeReviewService reviews,
-	ISongPlayer songPlayer)
+	ISongPlayer songPlayer,
+	AnilistPeople people)
 {
 	[AgentTool("search_anime")]
 	[Description("Searches the anime database. Give at least one filter; results are best match first.")]
@@ -97,21 +99,25 @@ public sealed class AnimeTools(
 	public Task<List<string>> GetGenresAsync() => lookup.Database.GetGenresAsync();
 
 	[AgentTool("get_user_list")]
-	[Description("Anime on the user's list (what they're watching, plan to watch, have completed...), with their progress and scores: filtered, sorted, and the first few of them. E.g. their longest completed anime: status Completed, sortBy Episodes, limit 1. For counts and totals, use get_list_stats.")]
+	[Description("Anime on the user's list (what they're watching, plan to watch, have completed...), with their progress and scores: filtered, sorted, and the first few of them. E.g. their longest completed anime: status Completed, sortBy Episodes, limit 1; their romance comedies by score: genres [Romance, Comedy], sortBy AverageScore (UserScore only when they say their own score); what they watched in 2024 (or this year): finishedInYear 2024, sortBy FinishDate. For counts and totals, use get_list_stats.")]
 	public async Task<ListEntries> GetUserListAsync(
 		[Description("Only anime with this status. Watching includes rewatching.")] ListItemStatus? status = null,
-		[Description("Only anime with this genre, e.g. Romance.")] string? genre = null,
+		[Description("Only anime with all of these genres, tags or themes (names from get_genres), e.g. [Romance, Isekai].")] string[]? genres = null,
 		[Description("Only anime of this format, e.g. Movie.")] AnimeMediaFormat? format = null,
+		[Description("Only anime the user finished in this year, by their list entry's finish date, e.g. for \"what I watched this year\" (today's date is in your instructions).")] int? finishedInYear = null,
 		[Description("Only anime that started airing in or after this year.")] int? fromYear = null,
 		[Description("Only anime that started airing in or before this year.")] int? toYear = null,
 		[Description("Only anime whose title (its own, English or another) contains this, e.g. part of a name the user remembers.")] string? title = null,
 		[Description("Only anime that aired in this season (of any year, or of fromYear/toYear's).")] AnimeSeason? season = null,
+		[Description("Only when the user asks about scores: true for only anime they've scored, false for only those they haven't (unscored). Leave it out otherwise.")] bool? scored = null,
 		[Description("What to sort them by; LastUpdated (what they changed last) if left out.")] ListSort sortBy = ListSort.LastUpdated,
 		[Description("Highest first (true) or lowest first (false); for Title, Z to A (true) or A to Z (false).")] bool descending = true,
 		[Description("How many to return, at most.")] int limit = 10)
 	{
-		var list = Filter(await GetListAsync(), status, genre, format, fromYear, toYear)
-				   .Where(x => UserListQuery.MatchesTitle(x, title) && UserListQuery.MatchesSeason(x, season, null, null))
+		var list = Filter(await GetListAsync(), status, genres, format, fromYear, toYear)
+				   .Where(x => UserListQuery.MatchesTitle(x, title) && UserListQuery.MatchesSeason(x, season, null, null) &&
+							   UserListQuery.FinishedIn(x, finishedInYear) &&
+							   (scored is null || x.Tracking?.Score is > 0 == scored))
 				   .ToList();
 		var sorted = UserListQuery.Sort(list, sortBy, descending);
 		return new ListEntries(list.Count, [.. sorted.Take(Math.Clamp(limit, 1, 50)).Select(AnimeSummary.From)]);
@@ -126,7 +132,7 @@ public sealed class AnimeTools(
 		[Description("Only anime of this format.")] AnimeMediaFormat? format = null,
 		[Description("How many groups to return, at most.")] int limit = 15)
 	{
-		var list = Filter(await GetListAsync(), status, genre, format, null, null).ToList();
+		var list = Filter(await GetListAsync(), status, genre is null ? null : [genre], format, null, null).ToList();
 		if (groupBy is ListGrouping.None)
 		{
 			return ListStats.From(list, []);
@@ -172,11 +178,11 @@ public sealed class AnimeTools(
 		}
 	}
 
-	private static IEnumerable<AnimeModel> Filter(IEnumerable<AnimeModel> list, ListItemStatus? status, string? genre, AnimeMediaFormat? format, int? fromYear, int? toYear)
+	private static IEnumerable<AnimeModel> Filter(IEnumerable<AnimeModel> list, ListItemStatus? status, string[]? genres, AnimeMediaFormat? format, int? fromYear, int? toYear)
 	{
 		return list.Where(x => status is null || x.Tracking?.Status == status ||
 							   status == ListItemStatus.Watching && x.Tracking?.Status == ListItemStatus.Rewatching)
-				   .Where(x => string.IsNullOrWhiteSpace(genre) || x.Genres.Contains(genre.Trim(), StringComparer.OrdinalIgnoreCase))
+				   .Where(x => UserListQuery.MatchesGenres(x, genres))
 				   .Where(x => format is null || x.MediaFormat == format)
 				   .Where(x => fromYear is null || x.Season?.Year >= fromYear)
 				   .Where(x => toYear is null || x.Season is { Year: > 1900 } && x.Season.Year <= toYear);
@@ -194,6 +200,112 @@ public sealed class AnimeTools(
 	[AgentTool("get_anime")]
 	[Description("Everything about an anime: synopsis, studios, related anime, and the user's list entry.")]
 	public async Task<AnimeDetails> GetAnimeAsync(long animeId) => AnimeDetails.From(await lookup.GetAsync(animeId));
+
+	[AgentTool("get_anime_characters")]
+	[Description("An anime's characters; the user sees them as a grid of their pictures and names. Use it when the user asks who's in an anime or about its characters. Give the title as the user wrote it (don't search for it first), or its id if you have it. If the title could be several anime, the user is shown them to pick from: then stop and say nothing.")]
+	public async Task<AnimeCharacters> GetAnimeCharactersAsync(
+		[Description("The anime's title, as the user wrote it; typos are forgiven.")] string? title = null,
+		[Description("The anime's id, if a tool or the user gave it; else leave it out and give the title.")] long? animeId = null,
+		[Description("How many characters to return, at most.")] int limit = 24)
+	{
+		AnimeModel anime;
+		if (animeId is { } id)
+		{
+			anime = await lookup.GetAsync(id);
+		}
+		else if (!string.IsNullOrWhiteSpace(title))
+		{
+			var found = await lookup.Database.FindAnimeAsync(new AdvancedSearchRequest { Title = title.Trim() }, trackers.CreateDefault());
+			if (found.Count == 0)
+			{
+				throw new AgentToolException($"No anime matches \"{title}\". Tell the user it wasn't found; don't show other anime.");
+			}
+
+			// Only a title that is the best match's (e.g. "durarara" for "Durarara!!") is sure; a franchise ("fate") or a typo,
+			// the user picks.
+			if (found.Count > 1 && !IsTitleOf(found[0], title))
+			{
+				return AnimeCharacters.Pick([.. found.Take(5)]);
+			}
+
+			anime = found[0];
+		}
+		else
+		{
+			throw new AgentToolException("Give the anime's title or id.");
+		}
+
+		List<CharacterModel> characters;
+		try
+		{
+			characters = await lookup.Database.GetCharactersAsync(anime.Id);
+		}
+		catch (Exception ex)
+		{
+			throw new AgentToolException($"Couldn't load the characters of {anime.Title} right now ({ex.Message}). Tell the user, and try again later.");
+		}
+
+		return characters.Count > 0
+			? AnimeCharacters.From(anime, [.. characters.Take(Math.Clamp(limit, 1, 50))])
+			: throw new AgentToolException($"{lookup.Database.Name} has no characters for {anime.Title}.");
+	}
+
+	/// <summary>Whether <paramref name="title"/> is one of the anime's titles, but for case, spaces and punctuation.</summary>
+	internal static bool IsTitleOf(AnimeModel anime, string title)
+	{
+		static string Plain(string? text) => new([.. (text ?? "").Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant)]);
+		var wanted = Plain(title);
+		return wanted.Length > 0 && new[] { anime.Title, anime.EngTitle, anime.RomajiTitle }.Concat(anime.AlternateTitles).Any(x => Plain(x) == wanted);
+	}
+
+	[AgentTool("find_character_anime")]
+	[Description("Finds a character by name and the anime they appear in, most popular first; the user sees them as cards. Use it when the user asks which anime a character is from.")]
+	public async Task<CharacterAnime> FindCharacterAnimeAsync(
+		[Description("The character's name, as the user wrote it, e.g. Himmel.")] string name,
+		[Description("How many anime to return, at most.")] int limit = 10)
+	{
+		if (string.IsNullOrWhiteSpace(name))
+		{
+			throw new AgentToolException("Give the character's name.");
+		}
+
+		CharacterModel character;
+		try
+		{
+			var found = await people.SearchCharactersAsync(name.Trim(), 1);
+			if (found is not [{ Id: > 0 } best])
+			{
+				throw new AgentToolException($"No character is named \"{name}\". If it's misspelt, search again with it spelt right; else tell the user none was found.");
+			}
+
+			character = await people.GetCharacterAsync(best.Id);
+		}
+		catch (InvalidOperationException ex)
+		{
+			throw new AgentToolException(ex.Message);
+		}
+
+		var database = lookup.Database;
+		var wanted = character.Anime.Take(Math.Clamp(limit, 1, 50)).ToList();
+		// Characters come from AniList: with another database, its own anime (by id there), dropping those it hasn't.
+		var anime = database.Name == nameof(AnimeId.Anilist)
+			? wanted
+			: [.. (await Task.WhenAll(wanted.Select(x => x.ExternalIds.GetIdForService(database.Name) is long id and > 0 ? GetOrNullAsync(id) : Task.FromResult<AnimeModel?>(null))))
+				.OfType<AnimeModel>()];
+		return new CharacterAnime(character.Name, character.Anime.Count, [.. anime.Select(AnimeSummary.From)]);
+
+		async Task<AnimeModel?> GetOrNullAsync(long id)
+		{
+			try
+			{
+				return await database.GetAnimeAsync(id);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+	}
 
 	[AgentTool("get_episodes")]
 	[Description("An anime's aired episodes, with which the user has watched and where unfinished ones resume from.")]
@@ -240,8 +352,29 @@ public sealed class AnimeTools(
 		return AnimeSongList.From(anime, number is null ? [.. all.Where(x => x.Kind == kind)] : [FindSong(anime, all, kind.Value, number)]);
 	}
 
+	[AgentTool("search_songs")]
+	[Description("Finds anime songs (openings, endings, insert songs) by their title, or all of a singer's, with the anime each is from; the user sees them as cards they can play. When the user names a song (e.g. \"play Adamas\") or a singer (e.g. \"songs by LiSA\"), find it here, not with search_anime: a song's title isn't an anime's. play_anime_song plays one.")]
+	public async Task<FoundSongs> SearchSongsAsync(
+		[Description("The song's title, as the user wrote it. Leave it out when looking for a singer's songs.")] string? title = null,
+		[Description("The singer or band, when the user asks for their songs, e.g. LiSA.")] string? artist = null,
+		[Description("How many songs to return, at most.")] int limit = 10)
+	{
+		var found = !string.IsNullOrWhiteSpace(title) ? await songs.SearchSongsAsync(title.Trim(), Math.Clamp(limit, 1, 20))
+			: !string.IsNullOrWhiteSpace(artist) ? await AnimeSongService.SongsByAsync(artist.Trim())
+			: throw new AgentToolException("Give a song's title or a singer to search for.");
+		var database = lookup.Database;
+		// Only songs of anime the database knows can be played by id.
+		var results = found.Select(x => (Match: x, Id: x.Anime.ExternalIds.GetIdForService(database.Name) ?? 0))
+						   .Where(x => x.Id > 0)
+						   .Take(Math.Clamp(limit, 1, 50))
+						   .ToList();
+		return results.Count > 0
+			? FoundSongs.From(results)
+			: throw new AgentToolException($"No song matches \"{title ?? artist}\". If it's misspelt, search again with it spelt right; else tell the user none was found.");
+	}
+
 	[AgentTool("play_anime_song")]
-	[Description("Plays one of an anime's songs: its audio in the app (the Music tab), or its creditless video in the media player.")]
+	[Description("Plays one of an anime's songs: its audio in the app (the Music tab), or its creditless video in the media player. To play a song the user names by title, find it with search_songs first.")]
 	public async Task<SongPlaying> PlayAnimeSongAsync(
 		long animeId,
 		AnimeSongKind kind,

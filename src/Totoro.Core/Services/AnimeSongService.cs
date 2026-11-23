@@ -282,7 +282,7 @@ public sealed class AnimeSongService(IFactory<IMediaPlayer> players, ISongPlayer
 	public static string NormaliseTitle(string title) => string.Concat(title.Where(char.IsLetterOrDigit)).ToLowerInvariant();
 
 	/// <summary>The songs of the artist AnimeThemes finds first for <paramref name="artist"/>, each with its anime; none if the search fails.</summary>
-	private static async Task<IReadOnlyList<SongMatch>> SongsByAsync(string artist, CancellationToken ct)
+	public static async Task<IReadOnlyList<SongMatch>> SongsByAsync(string artist, CancellationToken ct = default)
 	{
 		var graphQl = $$"""
 			query ($search: String!) { search(search: $search, first: 1) { artists { performances { song { animethemes { {{ThemeFields}}

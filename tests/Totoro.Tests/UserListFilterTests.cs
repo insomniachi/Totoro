@@ -29,6 +29,36 @@ public class UserListFilterTests
 	}
 
 	[Fact]
+	public void MatchesGenres_NeedsEveryOne_InGenresOrTags_IgnoringCase()
+	{
+		var anime = new AnimeModel { Title = "A", Genres = ["Fantasy"], Tags = ["Isekai"] };
+		Assert.True(UserListQuery.MatchesGenres(anime, ["fantasy", "ISEKAI"]));
+		Assert.False(UserListQuery.MatchesGenres(anime, ["Fantasy", "Romance"]));
+		Assert.True(UserListQuery.MatchesGenres(anime, null));
+		Assert.True(UserListQuery.MatchesGenres(anime, []));
+	}
+
+	[Fact]
+	public void IsTitleOf_IgnoresCaseAndPunctuation_ButNotPartialTitles()
+	{
+		var anime = new AnimeModel { Title = "Durarara!!", EngTitle = "Durarara!!", AlternateTitles = ["デュラララ!!"] };
+		Assert.True(Totoro.Agent.AnimeTools.IsTitleOf(anime, "durarara"));
+		Assert.False(Totoro.Agent.AnimeTools.IsTitleOf(new AnimeModel { Title = "Fate/stay night" }, "fate"));
+		Assert.False(Totoro.Agent.AnimeTools.IsTitleOf(anime, "!!"));
+	}
+
+	[Fact]
+	public void FinishedIn_GoesByTheFinishDate()
+	{
+		var anime = Anime("A");
+		anime.Tracking!.FinishDate = new DateTime(2024, 12, 31);
+		Assert.True(UserListQuery.FinishedIn(anime, 2024));
+		Assert.False(UserListQuery.FinishedIn(anime, 2025));
+		Assert.False(UserListQuery.FinishedIn(Anime("B"), 2024));
+		Assert.True(UserListQuery.FinishedIn(Anime("B"), null));
+	}
+
+	[Fact]
 	public void Genres_NeedEveryTickedOne()
 	{
 		var both = Anime("A", genres: ["Romance", "Comedy"]);

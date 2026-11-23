@@ -38,6 +38,14 @@ public static class UserListQuery
 			.Any(x => !string.IsNullOrEmpty(x) && compare.IndexOf(x, query.Trim(), Options) >= 0);
 	}
 
+	/// <summary>Whether it has every one of <paramref name="genres"/> among its genres or tags, ignoring case (none given matches any).</summary>
+	public static bool MatchesGenres(AnimeModel anime, IEnumerable<string>? genres) =>
+		genres?.Where(x => !string.IsNullOrWhiteSpace(x))
+			  .All(x => anime.Genres.Concat(anime.Tags).Contains(x.Trim(), StringComparer.OrdinalIgnoreCase)) ?? true;
+
+	/// <summary>Whether the user finished it in <paramref name="year"/>, by their list entry's finish date (none given matches any).</summary>
+	public static bool FinishedIn(AnimeModel anime, int? year) => year is null || anime.Tracking?.FinishDate?.Year == year;
+
 	/// <summary>Whether it aired in that season and from fromYear to toYear (any left out matches any).</summary>
 	public static bool MatchesSeason(AnimeModel anime, AnimeSeason? season, int? fromYear, int? toYear)
 	{

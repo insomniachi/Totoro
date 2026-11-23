@@ -32,6 +32,14 @@ public sealed partial class ChatPanel : UserControl
 		}
 	}
 
+	private async void OnCharacterClick(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement { Tag: Totoro.Core.Modules.Anime.CharacterModel character } && Totoro.UI.Navigation.Navigators.TryGetNavigator("pane", out var pane))
+		{
+			await pane.NavigateToDataAsync(character);
+		}
+	}
+
 	private void OnAllowClick(object sender, RoutedEventArgs e) => Answer(sender, true);
 
 	private void OnDenyClick(object sender, RoutedEventArgs e) => Answer(sender, false);

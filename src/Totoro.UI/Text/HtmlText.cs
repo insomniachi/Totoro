@@ -32,6 +32,12 @@ public static class HtmlText
 	public static readonly DependencyProperty HtmlProperty = DependencyProperty.RegisterAttached(
 		"Html", typeof(string), typeof(HtmlText), new PropertyMetadata(null, OnHtmlChanged));
 
+	/// <summary>
+	/// Opens a clicked link in the app instead of the browser (e.g. a character's AniList page in the side pane), given
+	/// the link and its text; returns false to leave it to the browser. Null: every link opens in the browser.
+	/// </summary>
+	public static Func<Uri, string, bool>? OpenInApp { get; set; }
+
 	public static string? GetHtml(RichTextBlock textBlock) => (string?)textBlock.GetValue(HtmlProperty);
 
 	public static void SetHtml(RichTextBlock textBlock, string? value) => textBlock.SetValue(HtmlProperty, value);
@@ -203,7 +209,7 @@ internal sealed partial class HtmlRenderer
 
 		if (isLink)
 		{
-			var link = new Hyperlink { NavigateUri = uri };
+			var link = NewLink(uri);
 			Current.Add(link);
 			_containers.Push(link.Inlines);
 		}
@@ -242,6 +248,8 @@ internal sealed partial class HtmlRenderer
 	/// <summary>Spoiler text is collected into a span that stays hidden behind a "Spoiler" link until it's clicked.</summary>
 	private void StartSpoiler()
 	{
+		// Its paragraph first: starting one later (at its first text) would clear the stack, losing the spoiler's container.
+		EnsureParagraph();
 		var content = new Span();
 		_spoilers.Push(content);
 		_containers.Push(content.Inlines);
@@ -453,9 +461,30 @@ internal sealed partial class HtmlRenderer
 			return;
 		}
 
-		var link = new Hyperlink { NavigateUri = uri };
+		var link = NewLink(uri);
 		link.Inlines.Add(new Run { Text = text });
 		Current.Add(link);
+	}
+
+	/// <summary>A link to <paramref name="uri"/>: opened in the app if <see cref="HtmlText.OpenInApp"/> takes it, else in the browser.</summary>
+	private static Hyperlink NewLink(Uri uri)
+	{
+		if (HtmlText.OpenInApp is null)
+		{
+			return new Hyperlink { NavigateUri = uri };
+		}
+
+		// No NavigateUri: it would open the browser whatever Click does.
+		var link = new Hyperlink();
+		link.Click += async (sender, _) =>
+		{
+			var text = string.Concat(sender.Inlines.OfType<Run>().Select(x => x.Text));
+			if (HtmlText.OpenInApp?.Invoke(uri, text) != true)
+			{
+				await Windows.System.Launcher.LaunchUriAsync(uri);
+			}
+		};
+		return link;
 	}
 
 	private void AddImage(string attributes)

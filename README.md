@@ -20,7 +20,7 @@ A Windows app for tracking and watching anime, and tracking and reading manga, b
 - **Find an anime from a screenshot.** trace.moe finds which anime a picture is from.
 - **Name the characters in a picture.** Paste fan art or a collage on the Search page's Image tab (or ask the assistant) and AnimeTrace names each character, left to right, and the anime they're from.
 - **Discord.** It can show the episode you're watching as your Discord status.
-- **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "play the opening of Frieren"); it answers with the app's own cards. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (its settings are on the Plugins page).
+- **An assistant.** Ask it about your list or for anything the app does ("what's airing that I haven't added?", "my romance comedies, best first", "what did I finish in 2024?", "who are the characters in Frieren?", "which anime is Himmel from?", "play the opening of Frieren"); it answers with the app's own cards, and characters as a grid of pictures and names. It runs on your PC through [Ollama](https://ollama.com), with `qwen2.5:14b` by default (its settings are on the Plugins page).
 - **AI-agent friendly.** Everything the app does is also an agent tool (see [AGENTS.md](AGENTS.md)).
 - **Stays out of the way.** It can start with Windows, sit in the notification area, tell you when a new episode of something you're watching is out on its plugin, and update itself from GitHub releases.
 

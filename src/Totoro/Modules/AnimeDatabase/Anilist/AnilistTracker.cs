@@ -279,6 +279,8 @@ internal class AnilistTracker(GraphQLHttpClient client, IModuleSettings<Settings
 							.WithThumbnail()
 							.WithId())
 			   .WithGenres()
+			   // For the agent to find anime on the list by tag, e.g. Isekai.
+			   .WithTags(new MediaTagQueryBuilder().WithName())
 			   .WithStartDate(new FuzzyDateQueryBuilder().WithAllFields())
 			   .WithEndDate(new FuzzyDateQueryBuilder().WithAllFields())
 			   .WithSeason()

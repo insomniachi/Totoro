@@ -37,6 +37,26 @@ public sealed partial class MainWindow : Window
 		// The "main" navigator is created when the NavigationView loads, after this constructor runs.
 		Navigators.NavigatorAdded += OnNavigatorAdded;
 		Navigators.NavigatorAdded += OnPaneNavigatorAdded;
+		Totoro.UI.Text.HtmlText.OpenInApp = OpenCharacterLink;
+	}
+
+	/// <summary>
+	/// A link to a character's AniList page (in a description, e.g. another character's) opens that character in the side
+	/// pane, as if found in the app; other links are left to the browser.
+	/// </summary>
+	private static bool OpenCharacterLink(Uri uri, string text)
+	{
+		// e.g. https://anilist.co/character/24595 or .../character/26832/Kadota-Kyohei
+		var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+		if (!uri.Host.EndsWith("anilist.co", StringComparison.OrdinalIgnoreCase) || segments is not ["character", var number, ..] ||
+			!long.TryParse(number, out var id) || !Navigators.TryGetNavigator(PaneNavigatorKey, out var pane))
+		{
+			return false;
+		}
+
+		// Its name shows at once; the rest loads on its page.
+		_ = pane.NavigateToDataAsync(new Core.Modules.Anime.CharacterModel { Id = id, Name = text });
+		return true;
 	}
 
 	private const string MainNavigatorKey = "main";
