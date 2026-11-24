@@ -72,13 +72,13 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 
 	/// <summary>
 	/// Creates mpv to draw in <paramref name="window"/> (the player's). Off the UI thread: loading libmpv and starting it
-	/// takes a moment.
+	/// takes a moment. True once mpv's (black) window is up in it; false if it didn't start, or the player closed meanwhile.
 	/// </summary>
-	public async Task InitializeAsync(nint window)
+	public async Task<bool> InitializeAsync(nint window)
 	{
 		if (_window != 0)
 		{
-			return;
+			return _mpv is not null;
 		}
 
 		_window = window;
@@ -106,7 +106,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 			ShowStatus("Couldn't start mpv: download it again in the MPV player's settings.", isError: true);
 			// Plays waiting on it go on (and do nothing, there being no mpv) rather than waiting for ever.
 			Initialized.TrySetResult();
-			return;
+			return false;
 		}
 
 		// Closed while mpv started: closing found no mpv to end, so it's ended here.
@@ -114,7 +114,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 		{
 			await Task.Run(started.Dispose);
 			Initialized.TrySetResult();
-			return;
+			return false;
 		}
 
 		_mpv = started;
@@ -122,6 +122,7 @@ public sealed partial class MpvPlayerViewModel(int volume, PlayerAspectRatio asp
 		_events = Task.Run(() => FollowEvents(started));
 		ApplyAspectRatio();
 		Initialized.TrySetResult();
+		return true;
 	}
 
 	/// <summary>Sets <paramref name="mpv"/>'s options and starts it, drawing in <paramref name="window"/>.</summary>

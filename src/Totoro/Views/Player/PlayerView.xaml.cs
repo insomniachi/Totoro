@@ -264,10 +264,9 @@ public sealed partial class PlayerView : UserControl
 		else if (ViewModel is MpvPlayerViewModel mpv)
 		{
 			// mpv draws in a window of its own inside this one, under the XAML: the window and the video area are see-through
-			// over it (they're otherwise painted over it, whatever the windows' order).
-			VideoArea.Background = null;
-			_host.SystemBackdrop = new WinUIEx.TransparentTintBackdrop();
-			_ = mpv.InitializeAsync(Win32Interop.GetWindowFromWindowId(_host.AppWindow.Id));
+			// over it (they're otherwise painted over it, whatever the windows' order). Only once its window is up: loading
+			// mpv takes a few seconds, and see-through before then shows what's behind the window.
+			_ = SeeThroughToMpvAsync(mpv);
 			return;
 		}
 		else
@@ -278,6 +277,15 @@ public sealed partial class PlayerView : UserControl
 		}
 
 		VideoArea.Children.Insert(0, view);
+	}
+
+	private async Task SeeThroughToMpvAsync(MpvPlayerViewModel mpv)
+	{
+		if (await mpv.InitializeAsync(Win32Interop.GetWindowFromWindowId(_host.AppWindow.Id)))
+		{
+			VideoArea.Background = null;
+			_host.SystemBackdrop = new WinUIEx.TransparentTintBackdrop();
+		}
 	}
 
 	private void OnHideTimerTick(object? sender, object e) => HideControlsIfIdle();
