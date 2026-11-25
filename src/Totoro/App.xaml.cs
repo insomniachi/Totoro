@@ -616,7 +616,8 @@ public partial class App : Application
 			new Modules.MediaPlayers.MediaFoundation.MediaFoundationModule(),
 			new Modules.TorrentStreamers.Rqbit.RqbitModule(),
 			new Modules.MediaSegments.Aniskip.AniskipModule(),
-			new Modules.ChatModels.Ollama.OllamaModule()
+			new Modules.ChatModels.Ollama.OllamaModule(),
+			new Modules.ChatModels.OpenAICompatible.OpenAICompatibleModule()
 		];
 	}
 }

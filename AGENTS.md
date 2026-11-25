@@ -1,6 +1,6 @@
 # Totoro
 
-A WinUI 3 app (.NET 10, Windows App SDK) for tracking and watching anime.
+A WinUI 3 app (.NET 11, Windows App SDK) for tracking and watching anime.
 
 ## Projects and folders
 
@@ -39,7 +39,7 @@ Also:
 
 ## Everything the app does is available to AI agents
 
-The app has an assistant: a chat panel (the title bar's Assistant button) whose model, a local one through Ollama for now, calls the agent tools (`ChatService`, with models as `IChatModel` modules under `Totoro/Modules/ChatModels`). Agents, in the app or later over MCP, must be able to do whatever the user can do in the UI. So every feature has three parts:
+The app has an assistant: a chat panel (the title bar's Assistant button) whose model (a local one through Ollama, or a cloud one through any OpenAI-style API) calls the agent tools (`ChatService`, with models as `IChatModel` modules under `Totoro/Modules/ChatModels`). Agents, in the app or later over MCP, must be able to do whatever the user can do in the UI. So every feature has three parts:
 
 1. **Logic in a service, not a view model or dialog.** Views and agent tools both call it, e.g. `AnimeTrackingService`, `WatchService`, `IAnimeSettingsStore`.
 2. **An agent tool.** It's a method marked `[AgentTool("snake_case_name")]` in a tool class under `Totoro/Agent`, or a module's own class, registered with `services.AddAgentTools<T>()`.

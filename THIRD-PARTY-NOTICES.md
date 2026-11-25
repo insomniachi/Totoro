@@ -25,6 +25,7 @@ given. This file is shipped with the app.
 | Concentus.OggFile | MIT | Logan Stromberg, Andrew Ward | https://github.com/lostromb/concentus.oggfile |
 | Newtonsoft.Json | MIT | James Newton-King | https://github.com/JamesNK/Newtonsoft.Json |
 | OllamaSharp | MIT | Andreas Wäscher | https://github.com/awaescher/OllamaSharp |
+| OpenAI .NET (OpenAI) | MIT | OpenAI | https://github.com/openai/openai-dotnet |
 | SharpCompress | MIT | Adam Hathcock | https://github.com/adamhathcock/sharpcompress |
 | Reactive Extensions (System.Reactive) | MIT | .NET Foundation and Contributors | https://github.com/dotnet/reactive |
 | Polly, Polly.Extensions.Http | BSD-3-Clause | App vNext | https://github.com/App-vNext/Polly |

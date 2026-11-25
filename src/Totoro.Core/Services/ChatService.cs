@@ -249,10 +249,16 @@ public sealed partial class ChatService(
 	[ObservableProperty] public partial bool IsBusy { get; private set; }
 
 	/// <summary>Whether a chat model is set up, so there's someone to chat with.</summary>
-	public bool IsAvailable => models.CreateDefault()?.IsAvailable() == true;
+	public bool IsAvailable => Model?.IsAvailable() == true;
 
 	/// <summary>The model's name, e.g. "Ollama (qwen2.5:14b)"; empty when there's none.</summary>
-	public string ModelName => models.CreateDefault()?.Name ?? "";
+	public string ModelName => Model?.Name ?? "";
+
+	// The selected model if it's set up, else the first that is (e.g. a cloud one when Ollama isn't enabled).
+	private IChatModel? Model =>
+		models.CreateDefault() is { } selected && selected.IsAvailable()
+			? selected
+			: models.CreateAll().FirstOrDefault(x => x.IsAvailable()) ?? models.CreateDefault();
 
 	/// <summary>Sends the user's message and streams the reply, using tools as the model asks.</summary>
 	public async Task SendAsync(string text)
@@ -347,7 +353,7 @@ public sealed partial class ChatService(
 	/// </summary>
 	private async Task RunAsync()
 	{
-		if (models.CreateDefault() is not { } model || !model.IsAvailable())
+		if (Model is not { } model || !model.IsAvailable())
 		{
 			Entries.Add(new ChatErrorEntry("There's no assistant model set up yet: set one up in Settings, under Modules."));
 			return;
